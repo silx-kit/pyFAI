@@ -231,8 +231,8 @@ void __Pyx_call_destructor(T* x) {
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE__bilinear
-#define __PYX_HAVE_API__bilinear
+#define __PYX_HAVE__src__bilinear
+#define __PYX_HAVE_API__src__bilinear
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -444,8 +444,8 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "bilinear.pyx",
-  "bilinear.pxi",
+  "src/bilinear.pyx",
+  "src/bilinear.pxi",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -542,7 +542,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
 #endif
 
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":723
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":723
  * # in Cython to enable them only on the right systems.
  * 
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
@@ -551,7 +551,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
  */
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":724
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":724
  * 
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
@@ -560,7 +560,7 @@ typedef npy_int8 __pyx_t_5numpy_int8_t;
  */
 typedef npy_int16 __pyx_t_5numpy_int16_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":725
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":725
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t             # <<<<<<<<<<<<<<
@@ -569,7 +569,7 @@ typedef npy_int16 __pyx_t_5numpy_int16_t;
  */
 typedef npy_int32 __pyx_t_5numpy_int32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":726
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":726
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
  * ctypedef npy_int64      int64_t             # <<<<<<<<<<<<<<
@@ -578,7 +578,7 @@ typedef npy_int32 __pyx_t_5numpy_int32_t;
  */
 typedef npy_int64 __pyx_t_5numpy_int64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":730
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":730
  * #ctypedef npy_int128     int128_t
  * 
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
@@ -587,7 +587,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
  */
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":731
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":731
  * 
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
@@ -596,7 +596,7 @@ typedef npy_uint8 __pyx_t_5numpy_uint8_t;
  */
 typedef npy_uint16 __pyx_t_5numpy_uint16_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":732
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":732
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t             # <<<<<<<<<<<<<<
@@ -605,7 +605,7 @@ typedef npy_uint16 __pyx_t_5numpy_uint16_t;
  */
 typedef npy_uint32 __pyx_t_5numpy_uint32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":733
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":733
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
  * ctypedef npy_uint64     uint64_t             # <<<<<<<<<<<<<<
@@ -614,7 +614,7 @@ typedef npy_uint32 __pyx_t_5numpy_uint32_t;
  */
 typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":737
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":737
  * #ctypedef npy_uint128    uint128_t
  * 
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
@@ -623,7 +623,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
  */
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":738
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":738
  * 
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
@@ -632,7 +632,7 @@ typedef npy_float32 __pyx_t_5numpy_float32_t;
  */
 typedef npy_float64 __pyx_t_5numpy_float64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":747
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":747
  * # The int types are mapped a bit surprising --
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t             # <<<<<<<<<<<<<<
@@ -641,7 +641,7 @@ typedef npy_float64 __pyx_t_5numpy_float64_t;
  */
 typedef npy_long __pyx_t_5numpy_int_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":748
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":748
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
@@ -650,7 +650,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":749
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":749
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
@@ -659,7 +659,7 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":751
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":751
  * ctypedef npy_longlong   longlong_t
  * 
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
@@ -668,7 +668,7 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
  */
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":752
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":752
  * 
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
@@ -677,7 +677,7 @@ typedef npy_ulong __pyx_t_5numpy_uint_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":753
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":753
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
@@ -686,7 +686,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":755
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":755
  * ctypedef npy_ulonglong  ulonglong_t
  * 
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
@@ -695,7 +695,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":756
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":756
  * 
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
@@ -704,7 +704,7 @@ typedef npy_intp __pyx_t_5numpy_intp_t;
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":758
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":758
  * ctypedef npy_uintp      uintp_t
  * 
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
@@ -713,7 +713,7 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
  */
 typedef npy_double __pyx_t_5numpy_float_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":759
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":759
  * 
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
@@ -722,7 +722,7 @@ typedef npy_double __pyx_t_5numpy_float_t;
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":760
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":760
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
@@ -752,13 +752,13 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_8bilinear_Bilinear;
+struct __pyx_obj_3src_8bilinear_Bilinear;
 struct __pyx_array_obj;
 struct __pyx_MemviewEnum_obj;
 struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":762
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":762
  * ctypedef npy_longdouble longdouble_t
  * 
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
@@ -767,7 +767,7 @@ struct __pyx_memoryviewslice_obj;
  */
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":763
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":763
  * 
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
@@ -776,7 +776,7 @@ typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":764
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":764
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
@@ -785,7 +785,7 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":766
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":766
  * ctypedef npy_clongdouble clongdouble_t
  * 
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
@@ -841,9 +841,9 @@ struct __pyx_defaults7 {
  *     """Bilinear interpolator for finding max.
  * 
  */
-struct __pyx_obj_8bilinear_Bilinear {
+struct __pyx_obj_3src_8bilinear_Bilinear {
   PyObject_HEAD
-  struct __pyx_vtabstruct_8bilinear_Bilinear *__pyx_vtab;
+  struct __pyx_vtabstruct_3src_8bilinear_Bilinear *__pyx_vtab;
   __Pyx_memviewslice data;
   float maxi;
   float mini;
@@ -937,11 +937,11 @@ struct __pyx_memoryviewslice_obj {
  * 
  */
 
-struct __pyx_vtabstruct_8bilinear_Bilinear {
-  size_t (*cp_local_maxi)(struct __pyx_obj_8bilinear_Bilinear *, size_t, int __pyx_skip_dispatch);
-  size_t (*c_local_maxi)(struct __pyx_obj_8bilinear_Bilinear *, size_t);
+struct __pyx_vtabstruct_3src_8bilinear_Bilinear {
+  size_t (*cp_local_maxi)(struct __pyx_obj_3src_8bilinear_Bilinear *, size_t, int __pyx_skip_dispatch);
+  size_t (*c_local_maxi)(struct __pyx_obj_3src_8bilinear_Bilinear *, size_t);
 };
-static struct __pyx_vtabstruct_8bilinear_Bilinear *__pyx_vtabptr_8bilinear_Bilinear;
+static struct __pyx_vtabstruct_3src_8bilinear_Bilinear *__pyx_vtabptr_3src_8bilinear_Bilinear;
 
 
 /* "View.MemoryView":302
@@ -1603,8 +1603,8 @@ static PyTypeObject *__Pyx_ImportType(const char *module_name, const char *class
 
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
-static size_t __pyx_f_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch); /* proto*/
-static size_t __pyx_f_8bilinear_8Bilinear_c_local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto*/
+static size_t __pyx_f_3src_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch); /* proto*/
+static size_t __pyx_f_3src_8bilinear_8Bilinear_c_local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto*/
 static char *__pyx_memoryview_get_item_pointer(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_index); /* proto*/
 static PyObject *__pyx_memoryview_is_slice(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_obj); /* proto*/
 static PyObject *__pyx_memoryview_setitem_slice_assignment(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_dst, PyObject *__pyx_v_src); /* proto*/
@@ -1648,8 +1648,8 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libc.math' */
 
-/* Module declarations from 'bilinear' */
-static PyTypeObject *__pyx_ptype_8bilinear_Bilinear = 0;
+/* Module declarations from 'src.bilinear' */
+static PyTypeObject *__pyx_ptype_3src_8bilinear_Bilinear = 0;
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1694,10 +1694,10 @@ static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t = { "float32_t", NULL, sizeof(__pyx_t_5numpy_float32_t), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_float = { "float", NULL, sizeof(float), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), { 0 }, 0, 'R', 0, 0 };
-#define __Pyx_MODULE_NAME "bilinear"
-int __pyx_module_is_main_bilinear = 0;
+#define __Pyx_MODULE_NAME "src.bilinear"
+int __pyx_module_is_main_src__bilinear = 0;
 
-/* Implementation of 'bilinear' */
+/* Implementation of 'src.bilinear' */
 static PyObject *__pyx_builtin_ImportError;
 static PyObject *__pyx_builtin_AttributeError;
 static PyObject *__pyx_builtin_TypeError;
@@ -1713,26 +1713,26 @@ static PyObject *__pyx_builtin_Ellipsis;
 static PyObject *__pyx_builtin_xrange;
 static PyObject *__pyx_builtin_id;
 static PyObject *__pyx_builtin_IndexError;
-static PyObject *__pyx_pf_8bilinear_calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults); /* proto */
-static PyObject *__pyx_pf_8bilinear_20__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat); /* proto */
-static PyObject *__pyx_pf_8bilinear_22__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat); /* proto */
-static PyObject *__pyx_pf_8bilinear_2convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults); /* proto */
-static PyObject *__pyx_pf_8bilinear_28__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3); /* proto */
-static PyObject *__pyx_pf_8bilinear_30__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3); /* proto */
-static int __pyx_pf_8bilinear_8Bilinear___cinit__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_data); /* proto */
-static void __pyx_pf_8bilinear_8Bilinear_2__dealloc__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4f_cy(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_6local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_8cp_local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4data___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4maxi___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4mini___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_5width___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_8bilinear_8Bilinear_6height___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_20__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_22__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_2convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_28__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_30__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3); /* proto */
+static int __pyx_pf_3src_8bilinear_8Bilinear___cinit__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_data); /* proto */
+static void __pyx_pf_3src_8bilinear_8Bilinear_2__dealloc__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4f_cy(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_6local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_8cp_local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4data___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4maxi___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4mini___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_5width___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_6height___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1767,7 +1767,7 @@ static PyObject *__pyx_memoryview_MemoryView_10memoryview_20copy(struct __pyx_me
 static PyObject *__pyx_memoryview_MemoryView_10memoryview_22copy_fortran(struct __pyx_memoryview_obj *__pyx_v_self); /* proto */
 static void __pyx_memoryviewslice_MemoryView_16_memoryviewslice___dealloc__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
 static PyObject *__pyx_memoryviewslice__get__base_MemoryView_16_memoryviewslice_4base___get__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
-static PyObject *__pyx_tp_new_8bilinear_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_3src_8bilinear_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_memoryview(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -1883,7 +1883,6 @@ static char __pyx_k_logging[] = "logging";
 static char __pyx_k_memview[] = "memview";
 static char __pyx_k_ndarray[] = "ndarray";
 static char __pyx_k_Ellipsis[] = "Ellipsis";
-static char __pyx_k_bilinear[] = "bilinear";
 static char __pyx_k_defaults[] = "defaults";
 static char __pyx_k_itemsize[] = "itemsize";
 static char __pyx_k_TypeError[] = "TypeError";
@@ -1898,6 +1897,7 @@ static char __pyx_k_signatures[] = "signatures";
 static char __pyx_k_ImportError[] = "ImportError";
 static char __pyx_k_MemoryError[] = "MemoryError";
 static char __pyx_k_RuntimeError[] = "RuntimeError";
+static char __pyx_k_src_bilinear[] = "src.bilinear";
 static char __pyx_k_cp_local_maxi[] = "cp_local_maxi";
 static char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static char __pyx_k_2011_2015_ESRF[] = "2011-2015, ESRF";
@@ -1930,7 +1930,7 @@ static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous
 static char __pyx_k_Expected_at_least_d_arguments[] = "Expected at least %d arguments";
 static char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static char __pyx_k_mntdirect__scisoft_users_kieffe[] = "/mntdirect/_scisoft/users/kieffer/workspace/pyFAI/src/bilinear.pyx";
+static char __pyx_k_home_jerome_workspace_pyFAI_src[] = "/home/jerome/workspace/pyFAI/src/bilinear.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
 static char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
@@ -2001,7 +2001,6 @@ static PyObject *__pyx_n_s_args;
 static PyObject *__pyx_n_s_ascontiguousarray;
 static PyObject *__pyx_n_s_author;
 static PyObject *__pyx_n_s_base;
-static PyObject *__pyx_n_s_bilinear;
 static PyObject *__pyx_n_s_c;
 static PyObject *__pyx_n_u_c;
 static PyObject *__pyx_n_s_calc_cartesian_positions;
@@ -2044,6 +2043,7 @@ static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_n_s_getLogger;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
+static PyObject *__pyx_kp_s_home_jerome_workspace_pyFAI_src;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_import;
@@ -2061,7 +2061,6 @@ static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_max;
 static PyObject *__pyx_n_s_memview;
 static PyObject *__pyx_n_s_min;
-static PyObject *__pyx_kp_s_mntdirect__scisoft_users_kieffe;
 static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_name;
 static PyObject *__pyx_n_s_name_2;
@@ -2091,6 +2090,7 @@ static PyObject *__pyx_n_s_shape1;
 static PyObject *__pyx_n_s_signatures;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_split;
+static PyObject *__pyx_n_s_src_bilinear;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_step;
 static PyObject *__pyx_n_s_stop;
@@ -2154,7 +2154,7 @@ static PyObject *__pyx_tuple__41;
 static PyObject *__pyx_codeobj__34;
 static PyObject *__pyx_codeobj__36;
 
-/* "bilinear.pyx":50
+/* "src/bilinear.pyx":50
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,             # <<<<<<<<<<<<<<
@@ -2163,10 +2163,10 @@ static PyObject *__pyx_codeobj__36;
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_1calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_8bilinear_calc_cartesian_positions[] = "\n    Calculate the Cartesian position for array of position (d1, d2)\n    with pixel coordinated stored in array pos\n    This is bilinear interpolation\n\n    @param d1: position in dim1\n    @param d2: position in dim2\n    @param pos: array with position of pixels corners\n    @return 3-tuple of position.\n    ";
-static PyMethodDef __pyx_mdef_8bilinear_1calc_cartesian_positions = {"calc_cartesian_positions", (PyCFunction)__pyx_pw_8bilinear_1calc_cartesian_positions, METH_VARARGS|METH_KEYWORDS, __pyx_doc_8bilinear_calc_cartesian_positions};
-static PyObject *__pyx_pw_8bilinear_1calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_8bilinear_1calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_8bilinear_calc_cartesian_positions[] = "\n    Calculate the Cartesian position for array of position (d1, d2)\n    with pixel coordinated stored in array pos\n    This is bilinear interpolation\n\n    @param d1: position in dim1\n    @param d2: position in dim2\n    @param pos: array with position of pixels corners\n    @return 3-tuple of position.\n    ";
+static PyMethodDef __pyx_mdef_3src_8bilinear_1calc_cartesian_positions = {"calc_cartesian_positions", (PyCFunction)__pyx_pw_3src_8bilinear_1calc_cartesian_positions, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_8bilinear_calc_cartesian_positions};
+static PyObject *__pyx_pw_3src_8bilinear_1calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_signatures = 0;
   PyObject *__pyx_v_args = 0;
   PyObject *__pyx_v_kwargs = 0;
@@ -2233,18 +2233,18 @@ static PyObject *__pyx_pw_8bilinear_1calc_cartesian_positions(PyObject *__pyx_se
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__pyx_fused_cpdef", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8bilinear_calc_cartesian_positions(__pyx_self, __pyx_v_signatures, __pyx_v_args, __pyx_v_kwargs, __pyx_v_defaults);
+  __pyx_r = __pyx_pf_3src_8bilinear_calc_cartesian_positions(__pyx_self, __pyx_v_signatures, __pyx_v_args, __pyx_v_kwargs, __pyx_v_defaults);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults) {
+static PyObject *__pyx_pf_3src_8bilinear_calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults) {
   PyObject *__pyx_v_dest_sig = NULL;
   PyObject *__pyx_v_ndarray = 0;
   PyObject *__pyx_v_numpy = NULL;
@@ -2328,7 +2328,7 @@ static PyObject *__pyx_pf_8bilinear_calc_cartesian_positions(CYTHON_UNUSED PyObj
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_7 = PyErr_ExceptionMatches(__pyx_builtin_ImportError) || PyErr_ExceptionMatches(__pyx_builtin_AttributeError) || PyErr_ExceptionMatches(__pyx_builtin_TypeError);
     if (__pyx_t_7) {
-      __Pyx_AddTraceback("bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("src.bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
       if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_8, &__pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L6_except_error;}
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_GOTREF(__pyx_t_8);
@@ -2789,7 +2789,7 @@ static PyObject *__pyx_pf_8bilinear_calc_cartesian_positions(CYTHON_UNUSED PyObj
   __Pyx_XDECREF(__pyx_t_16);
   __Pyx_XDECREF(__pyx_t_17);
   __Pyx_XDECREF(__pyx_t_18);
-  __Pyx_AddTraceback("bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_dest_sig);
@@ -2808,7 +2808,7 @@ static PyObject *__pyx_pf_8bilinear_calc_cartesian_positions(CYTHON_UNUSED PyObj
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_20__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_3src_8bilinear_20__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2841,7 +2841,7 @@ static PyObject *__pyx_pf_8bilinear_20__defaults__(CYTHON_UNUSED PyObject *__pyx
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2850,9 +2850,9 @@ static PyObject *__pyx_pf_8bilinear_20__defaults__(CYTHON_UNUSED PyObject *__pyx
 }
 
 /* Python wrapper */
-static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_5calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_fuse_0__pyx_mdef_8bilinear_5calc_cartesian_positions = {"__pyx_fuse_0calc_cartesian_positions", (PyCFunction)__pyx_fuse_0__pyx_pw_8bilinear_5calc_cartesian_positions, METH_VARARGS|METH_KEYWORDS, __pyx_doc_8bilinear_calc_cartesian_positions};
-static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_5calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_fuse_0__pyx_pw_3src_8bilinear_5calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_fuse_0__pyx_mdef_3src_8bilinear_5calc_cartesian_positions = {"__pyx_fuse_0calc_cartesian_positions", (PyCFunction)__pyx_fuse_0__pyx_pw_3src_8bilinear_5calc_cartesian_positions, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_8bilinear_calc_cartesian_positions};
+static PyObject *__pyx_fuse_0__pyx_pw_3src_8bilinear_5calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_d1 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_d2 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_pos = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2925,18 +2925,18 @@ static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_5calc_cartesian_positions(PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_cartesian_positions", 0, 3, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8bilinear_4calc_cartesian_positions(__pyx_self, __pyx_v_d1, __pyx_v_d2, __pyx_v_pos, __pyx_v_is_flat);
+  __pyx_r = __pyx_pf_3src_8bilinear_4calc_cartesian_positions(__pyx_self, __pyx_v_d1, __pyx_v_d2, __pyx_v_pos, __pyx_v_is_flat);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat) {
+static PyObject *__pyx_pf_3src_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat) {
   int __pyx_v_i;
   int __pyx_v_p1;
   int __pyx_v_p2;
@@ -3061,7 +3061,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_pybuffernd_out3.data = NULL;
   __pyx_pybuffernd_out3.rcbuffer = &__pyx_pybuffer_out3;
 
-  /* "bilinear.pyx":64
+  /* "src/bilinear.pyx":64
  *     """
  *     cdef:
  *         int i, p1, p2, dim1, dim2, size = d1.size             # <<<<<<<<<<<<<<
@@ -3077,7 +3077,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_size = __pyx_t_3;
 
-  /* "bilinear.pyx":66
+  /* "src/bilinear.pyx":66
  *         int i, p1, p2, dim1, dim2, size = d1.size
  *         float delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.zeros(size, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -3124,7 +3124,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_v_out1 = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "bilinear.pyx":67
+  /* "src/bilinear.pyx":67
  *         float delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.zeros(size, dtype=numpy.float32)
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.zeros(size, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -3171,7 +3171,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_v_out2 = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "bilinear.pyx":69
+  /* "src/bilinear.pyx":69
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.zeros(size, dtype=numpy.float32)
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out3
  *     if not is_flat:             # <<<<<<<<<<<<<<
@@ -3181,7 +3181,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_t_9 = ((!(__pyx_v_is_flat != 0)) != 0);
   if (__pyx_t_9) {
 
-    /* "bilinear.pyx":70
+    /* "src/bilinear.pyx":70
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out3
  *     if not is_flat:
  *         out3 = numpy.zeros(size, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -3239,7 +3239,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   }
   __pyx_L3:;
 
-  /* "bilinear.pyx":71
+  /* "src/bilinear.pyx":71
  *     if not is_flat:
  *         out3 = numpy.zeros(size, dtype=numpy.float32)
  *     dim1 = pos.shape[0]             # <<<<<<<<<<<<<<
@@ -3248,7 +3248,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
   __pyx_v_dim1 = (__pyx_v_pos.shape[0]);
 
-  /* "bilinear.pyx":72
+  /* "src/bilinear.pyx":72
  *         out3 = numpy.zeros(size, dtype=numpy.float32)
  *     dim1 = pos.shape[0]
  *     dim2 = pos.shape[1]             # <<<<<<<<<<<<<<
@@ -3257,7 +3257,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
   __pyx_v_dim2 = (__pyx_v_pos.shape[1]);
 
-  /* "bilinear.pyx":73
+  /* "src/bilinear.pyx":73
  *     dim1 = pos.shape[0]
  *     dim2 = pos.shape[1]
  *     assert size == d2.size             # <<<<<<<<<<<<<<
@@ -3285,7 +3285,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   }
   #endif
 
-  /* "bilinear.pyx":75
+  /* "src/bilinear.pyx":75
  *     assert size == d2.size
  * 
  *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -3301,16 +3301,16 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
         __pyx_t_3 = __pyx_v_size;
         if (1 == 0) abort();
         {
-            float __pyx_parallel_temp0 = __PYX_NAN();
-            int __pyx_parallel_temp1 = 0xbad0bad0;
-            int __pyx_parallel_temp2 = 0xbad0bad0;
+            int __pyx_parallel_temp0 = 0xbad0bad0;
+            float __pyx_parallel_temp1 = __PYX_NAN();
+            float __pyx_parallel_temp2 = __PYX_NAN();
             float __pyx_parallel_temp3 = __PYX_NAN();
-            int __pyx_parallel_temp4 = 0xbad0bad0;
+            float __pyx_parallel_temp4 = __PYX_NAN();
             float __pyx_parallel_temp5 = __PYX_NAN();
             float __pyx_parallel_temp6 = __PYX_NAN();
             float __pyx_parallel_temp7 = __PYX_NAN();
             float __pyx_parallel_temp8 = __PYX_NAN();
-            float __pyx_parallel_temp9 = __PYX_NAN();
+            int __pyx_parallel_temp9 = 0xbad0bad0;
             float __pyx_parallel_temp10 = __PYX_NAN();
             float __pyx_parallel_temp11 = __PYX_NAN();
             float __pyx_parallel_temp12 = __PYX_NAN();
@@ -3319,7 +3319,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
             float __pyx_parallel_temp15 = __PYX_NAN();
             float __pyx_parallel_temp16 = __PYX_NAN();
             float __pyx_parallel_temp17 = __PYX_NAN();
-            float __pyx_parallel_temp18 = __PYX_NAN();
+            int __pyx_parallel_temp18 = 0xbad0bad0;
             const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
             PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
             int __pyx_parallel_why;
@@ -3334,7 +3334,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
             if (__pyx_t_15 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_45, __pyx_t_40, __pyx_t_32, __pyx_t_55, __pyx_t_19, __pyx_t_27, __pyx_t_9, __pyx_t_38, __pyx_t_29, __pyx_t_49, __pyx_t_57, __pyx_t_21, __pyx_t_24, __pyx_t_41, __pyx_t_71, __pyx_t_54, __pyx_t_60, __pyx_t_31, __pyx_t_43, __pyx_t_66, __pyx_t_18, __pyx_t_68, __pyx_t_65, __pyx_t_58, __pyx_t_35, __pyx_t_42, __pyx_t_64, __pyx_t_17, __pyx_t_37, __pyx_t_59, __pyx_t_56, __pyx_t_53, __pyx_t_25, __pyx_t_46, __pyx_t_63, __pyx_t_70, __pyx_t_61, __pyx_t_30, __pyx_t_22, __pyx_t_67, __pyx_t_69, __pyx_t_73, __pyx_t_34, __pyx_t_62, __pyx_t_16, __pyx_t_44, __pyx_t_36, __pyx_t_33, __pyx_t_72, __pyx_t_52, __pyx_t_26, __pyx_t_50, __pyx_t_48, __pyx_t_74, __pyx_t_23, __pyx_t_39, __pyx_t_28, __pyx_t_51, __pyx_t_47, __pyx_t_20) firstprivate(__pyx_t_5, __pyx_t_2, __pyx_t_4, __pyx_t_1, __pyx_t_6) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                #pragma omp parallel private(__pyx_t_39, __pyx_t_43, __pyx_t_19, __pyx_t_41, __pyx_t_9, __pyx_t_54, __pyx_t_51, __pyx_t_26, __pyx_t_48, __pyx_t_18, __pyx_t_58, __pyx_t_73, __pyx_t_23, __pyx_t_74, __pyx_t_28, __pyx_t_64, __pyx_t_44, __pyx_t_53, __pyx_t_38, __pyx_t_29, __pyx_t_45, __pyx_t_66, __pyx_t_60, __pyx_t_27, __pyx_t_24, __pyx_t_37, __pyx_t_68, __pyx_t_65, __pyx_t_31, __pyx_t_25, __pyx_t_46, __pyx_t_35, __pyx_t_36, __pyx_t_59, __pyx_t_16, __pyx_t_50, __pyx_t_52, __pyx_t_57, __pyx_t_47, __pyx_t_42, __pyx_t_17, __pyx_t_69, __pyx_t_71, __pyx_t_62, __pyx_t_72, __pyx_t_49, __pyx_t_34, __pyx_t_40, __pyx_t_56, __pyx_t_30, __pyx_t_33, __pyx_t_70, __pyx_t_67, __pyx_t_61, __pyx_t_20, __pyx_t_63, __pyx_t_22, __pyx_t_32, __pyx_t_55, __pyx_t_21) firstprivate(__pyx_t_4, __pyx_t_2, __pyx_t_6, __pyx_t_5, __pyx_t_1) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -3344,33 +3344,33 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                     Py_BEGIN_ALLOW_THREADS
                     #endif /* _OPENMP */
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_B2) lastprivate(__pyx_v_p2) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_delta1) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_C1) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_C0) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_C2) lastprivate(__pyx_v_A2) lastprivate(__pyx_v_f1) lastprivate(__pyx_v_B0) lastprivate(__pyx_v_A1) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_B1) lastprivate(__pyx_v_delta2) schedule(static)
+                    #pragma omp for lastprivate(__pyx_v_p2) lastprivate(__pyx_v_B1) lastprivate(__pyx_v_C1) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_delta2) lastprivate(__pyx_v_C0) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_C2) lastprivate(__pyx_v_f1) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_delta1) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_A2) lastprivate(__pyx_v_A1) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_B2) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_B0) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_15; __pyx_t_14++){
                         if (__pyx_parallel_why < 2)
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_14;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_B2 = ((float)__PYX_NAN());
                             __pyx_v_p2 = ((int)0xbad0bad0);
+                            __pyx_v_B1 = ((float)__PYX_NAN());
+                            __pyx_v_C1 = ((float)__PYX_NAN());
+                            __pyx_v_D1 = ((float)__PYX_NAN());
+                            __pyx_v_delta2 = ((float)__PYX_NAN());
+                            __pyx_v_C0 = ((float)__PYX_NAN());
+                            __pyx_v_D2 = ((float)__PYX_NAN());
+                            __pyx_v_C2 = ((float)__PYX_NAN());
+                            __pyx_v_f1 = ((float)__PYX_NAN());
                             __pyx_v_p1 = ((int)0xbad0bad0);
                             __pyx_v_delta1 = ((float)__PYX_NAN());
-                            __pyx_v_C1 = ((float)__PYX_NAN());
                             __pyx_v_f2 = ((float)__PYX_NAN());
-                            __pyx_v_C0 = ((float)__PYX_NAN());
-                            __pyx_v_A0 = ((float)__PYX_NAN());
-                            __pyx_v_C2 = ((float)__PYX_NAN());
                             __pyx_v_A2 = ((float)__PYX_NAN());
-                            __pyx_v_f1 = ((float)__PYX_NAN());
-                            __pyx_v_B0 = ((float)__PYX_NAN());
                             __pyx_v_A1 = ((float)__PYX_NAN());
-                            __pyx_v_D2 = ((float)__PYX_NAN());
+                            __pyx_v_A0 = ((float)__PYX_NAN());
+                            __pyx_v_B2 = ((float)__PYX_NAN());
                             __pyx_v_D0 = ((float)__PYX_NAN());
-                            __pyx_v_D1 = ((float)__PYX_NAN());
-                            __pyx_v_B1 = ((float)__PYX_NAN());
-                            __pyx_v_delta2 = ((float)__PYX_NAN());
+                            __pyx_v_B0 = ((float)__PYX_NAN());
 
-                            /* "bilinear.pyx":76
+                            /* "src/bilinear.pyx":76
  * 
  *     for i in prange(size, nogil=True, schedule="static"):
  *         f1 = floor(d1[i])             # <<<<<<<<<<<<<<
@@ -3380,7 +3380,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_16 = __pyx_v_i;
                             __pyx_v_f1 = floor((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_d1.data) + __pyx_t_16)) ))));
 
-                            /* "bilinear.pyx":77
+                            /* "src/bilinear.pyx":77
  *     for i in prange(size, nogil=True, schedule="static"):
  *         f1 = floor(d1[i])
  *         f2 = floor(d2[i])             # <<<<<<<<<<<<<<
@@ -3390,7 +3390,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_17 = __pyx_v_i;
                             __pyx_v_f2 = floor((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_d2.data) + __pyx_t_17)) ))));
 
-                            /* "bilinear.pyx":79
+                            /* "src/bilinear.pyx":79
  *         f2 = floor(d2[i])
  * 
  *         p1 = <int> f1             # <<<<<<<<<<<<<<
@@ -3399,7 +3399,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                             __pyx_v_p1 = ((int)__pyx_v_f1);
 
-                            /* "bilinear.pyx":80
+                            /* "src/bilinear.pyx":80
  * 
  *         p1 = <int> f1
  *         p2 = <int> f2             # <<<<<<<<<<<<<<
@@ -3408,7 +3408,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                             __pyx_v_p2 = ((int)__pyx_v_f2);
 
-                            /* "bilinear.pyx":82
+                            /* "src/bilinear.pyx":82
  *         p2 = <int> f2
  * 
  *         delta1 = d1[i] - f1             # <<<<<<<<<<<<<<
@@ -3418,7 +3418,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_18 = __pyx_v_i;
                             __pyx_v_delta1 = ((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_d1.data) + __pyx_t_18)) ))) - __pyx_v_f1);
 
-                            /* "bilinear.pyx":83
+                            /* "src/bilinear.pyx":83
  * 
  *         delta1 = d1[i] - f1
  *         delta2 = d2[i] - f2             # <<<<<<<<<<<<<<
@@ -3428,7 +3428,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_19 = __pyx_v_i;
                             __pyx_v_delta2 = ((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_d2.data) + __pyx_t_19)) ))) - __pyx_v_f2);
 
-                            /* "bilinear.pyx":85
+                            /* "src/bilinear.pyx":85
  *         delta2 = d2[i] - f2
  * 
  *         if p1 < 0:             # <<<<<<<<<<<<<<
@@ -3438,7 +3438,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p1 < 0) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":86
+                              /* "src/bilinear.pyx":86
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -3451,7 +3451,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                   #endif
                                   /*try:*/ {
 
-                                    /* "bilinear.pyx":87
+                                    /* "src/bilinear.pyx":87
  *         if p1 < 0:
  *             with gil:
  *                 print("f1= %s" % f1)             # <<<<<<<<<<<<<<
@@ -3467,7 +3467,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
                                   }
 
-                                  /* "bilinear.pyx":86
+                                  /* "src/bilinear.pyx":86
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -3494,7 +3494,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L11:;
 
-                            /* "bilinear.pyx":89
+                            /* "src/bilinear.pyx":89
  *                 print("f1= %s" % f1)
  * 
  *         if p1 < 0:             # <<<<<<<<<<<<<<
@@ -3504,7 +3504,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p1 < 0) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":90
+                              /* "src/bilinear.pyx":90
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -3517,7 +3517,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                   #endif
                                   /*try:*/ {
 
-                                    /* "bilinear.pyx":91
+                                    /* "src/bilinear.pyx":91
  *         if p1 < 0:
  *             with gil:
  *                 print("f2= %s" % f2)             # <<<<<<<<<<<<<<
@@ -3533,7 +3533,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
                                   }
 
-                                  /* "bilinear.pyx":90
+                                  /* "src/bilinear.pyx":90
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -3560,7 +3560,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L17:;
 
-                            /* "bilinear.pyx":93
+                            /* "src/bilinear.pyx":93
  *                 print("f2= %s" % f2)
  * 
  *         if p1 >= dim1:             # <<<<<<<<<<<<<<
@@ -3570,7 +3570,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p1 >= __pyx_v_dim1) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":94
+                              /* "src/bilinear.pyx":94
  * 
  *         if p1 >= dim1:
  *             if p1>dim1:             # <<<<<<<<<<<<<<
@@ -3580,7 +3580,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_9 = ((__pyx_v_p1 > __pyx_v_dim1) != 0);
                               if (__pyx_t_9) {
 
-                                /* "bilinear.pyx":95
+                                /* "src/bilinear.pyx":95
  *         if p1 >= dim1:
  *             if p1>dim1:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -3593,7 +3593,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     #endif
                                     /*try:*/ {
 
-                                      /* "bilinear.pyx":96
+                                      /* "src/bilinear.pyx":96
  *             if p1>dim1:
  *                 with gil:
  *                     print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))             # <<<<<<<<<<<<<<
@@ -3630,7 +3630,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
                                     }
 
-                                    /* "bilinear.pyx":95
+                                    /* "src/bilinear.pyx":95
  *         if p1 >= dim1:
  *             if p1>dim1:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -3657,7 +3657,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               }
                               __pyx_L24:;
 
-                              /* "bilinear.pyx":97
+                              /* "src/bilinear.pyx":97
  *                 with gil:
  *                     print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))
  *             p1 = dim1 - 1             # <<<<<<<<<<<<<<
@@ -3666,7 +3666,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                               __pyx_v_p1 = (__pyx_v_dim1 - 1);
 
-                              /* "bilinear.pyx":98
+                              /* "src/bilinear.pyx":98
  *                     print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))
  *             p1 = dim1 - 1
  *             delta1 = d1[i] - p1             # <<<<<<<<<<<<<<
@@ -3679,7 +3679,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L23:;
 
-                            /* "bilinear.pyx":100
+                            /* "src/bilinear.pyx":100
  *             delta1 = d1[i] - p1
  * 
  *         if p2 >= dim2:             # <<<<<<<<<<<<<<
@@ -3689,7 +3689,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p2 >= __pyx_v_dim2) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":101
+                              /* "src/bilinear.pyx":101
  * 
  *         if p2 >= dim2:
  *             if p2>dim2:             # <<<<<<<<<<<<<<
@@ -3699,7 +3699,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_9 = ((__pyx_v_p2 > __pyx_v_dim2) != 0);
                               if (__pyx_t_9) {
 
-                                /* "bilinear.pyx":102
+                                /* "src/bilinear.pyx":102
  *         if p2 >= dim2:
  *             if p2>dim2:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -3712,7 +3712,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     #endif
                                     /*try:*/ {
 
-                                      /* "bilinear.pyx":103
+                                      /* "src/bilinear.pyx":103
  *             if p2>dim2:
  *                 with gil:
  *                     print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))             # <<<<<<<<<<<<<<
@@ -3749,7 +3749,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                                       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
                                     }
 
-                                    /* "bilinear.pyx":102
+                                    /* "src/bilinear.pyx":102
  *         if p2 >= dim2:
  *             if p2>dim2:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -3776,7 +3776,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               }
                               __pyx_L31:;
 
-                              /* "bilinear.pyx":104
+                              /* "src/bilinear.pyx":104
  *                 with gil:
  *                     print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))
  *             p2 = dim2 - 1             # <<<<<<<<<<<<<<
@@ -3785,7 +3785,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                               __pyx_v_p2 = (__pyx_v_dim2 - 1);
 
-                              /* "bilinear.pyx":105
+                              /* "src/bilinear.pyx":105
  *                     print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))
  *             p2 = dim2 - 1
  *             delta2 = d2[i] - p2             # <<<<<<<<<<<<<<
@@ -3798,7 +3798,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L30:;
 
-                            /* "bilinear.pyx":107
+                            /* "src/bilinear.pyx":107
  *             delta2 = d2[i] - p2
  * 
  *         A1 = pos[p1, p2, 0, 1]             # <<<<<<<<<<<<<<
@@ -3811,7 +3811,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_27 = 1;
                             __pyx_v_A1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_24 * __pyx_v_pos.strides[0]) ) + __pyx_t_25 * __pyx_v_pos.strides[1]) ) + __pyx_t_26 * __pyx_v_pos.strides[2]) )) + __pyx_t_27)) )));
 
-                            /* "bilinear.pyx":108
+                            /* "src/bilinear.pyx":108
  * 
  *         A1 = pos[p1, p2, 0, 1]
  *         A2 = pos[p1, p2, 0, 2]             # <<<<<<<<<<<<<<
@@ -3824,7 +3824,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_31 = 2;
                             __pyx_v_A2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_28 * __pyx_v_pos.strides[0]) ) + __pyx_t_29 * __pyx_v_pos.strides[1]) ) + __pyx_t_30 * __pyx_v_pos.strides[2]) )) + __pyx_t_31)) )));
 
-                            /* "bilinear.pyx":109
+                            /* "src/bilinear.pyx":109
  *         A1 = pos[p1, p2, 0, 1]
  *         A2 = pos[p1, p2, 0, 2]
  *         B1 = pos[p1, p2, 1, 1]             # <<<<<<<<<<<<<<
@@ -3837,7 +3837,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_35 = 1;
                             __pyx_v_B1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_32 * __pyx_v_pos.strides[0]) ) + __pyx_t_33 * __pyx_v_pos.strides[1]) ) + __pyx_t_34 * __pyx_v_pos.strides[2]) )) + __pyx_t_35)) )));
 
-                            /* "bilinear.pyx":110
+                            /* "src/bilinear.pyx":110
  *         A2 = pos[p1, p2, 0, 2]
  *         B1 = pos[p1, p2, 1, 1]
  *         B2 = pos[p1, p2, 1, 2]             # <<<<<<<<<<<<<<
@@ -3850,7 +3850,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_39 = 2;
                             __pyx_v_B2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_36 * __pyx_v_pos.strides[0]) ) + __pyx_t_37 * __pyx_v_pos.strides[1]) ) + __pyx_t_38 * __pyx_v_pos.strides[2]) )) + __pyx_t_39)) )));
 
-                            /* "bilinear.pyx":111
+                            /* "src/bilinear.pyx":111
  *         B1 = pos[p1, p2, 1, 1]
  *         B2 = pos[p1, p2, 1, 2]
  *         C1 = pos[p1, p2, 2, 1]             # <<<<<<<<<<<<<<
@@ -3863,7 +3863,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_43 = 1;
                             __pyx_v_C1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_40 * __pyx_v_pos.strides[0]) ) + __pyx_t_41 * __pyx_v_pos.strides[1]) ) + __pyx_t_42 * __pyx_v_pos.strides[2]) )) + __pyx_t_43)) )));
 
-                            /* "bilinear.pyx":112
+                            /* "src/bilinear.pyx":112
  *         B2 = pos[p1, p2, 1, 2]
  *         C1 = pos[p1, p2, 2, 1]
  *         C2 = pos[p1, p2, 2, 2]             # <<<<<<<<<<<<<<
@@ -3876,7 +3876,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_47 = 2;
                             __pyx_v_C2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_44 * __pyx_v_pos.strides[0]) ) + __pyx_t_45 * __pyx_v_pos.strides[1]) ) + __pyx_t_46 * __pyx_v_pos.strides[2]) )) + __pyx_t_47)) )));
 
-                            /* "bilinear.pyx":113
+                            /* "src/bilinear.pyx":113
  *         C1 = pos[p1, p2, 2, 1]
  *         C2 = pos[p1, p2, 2, 2]
  *         D1 = pos[p1, p2, 3, 1]             # <<<<<<<<<<<<<<
@@ -3889,7 +3889,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_51 = 1;
                             __pyx_v_D1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_48 * __pyx_v_pos.strides[0]) ) + __pyx_t_49 * __pyx_v_pos.strides[1]) ) + __pyx_t_50 * __pyx_v_pos.strides[2]) )) + __pyx_t_51)) )));
 
-                            /* "bilinear.pyx":114
+                            /* "src/bilinear.pyx":114
  *         C2 = pos[p1, p2, 2, 2]
  *         D1 = pos[p1, p2, 3, 1]
  *         D2 = pos[p1, p2, 3, 2]             # <<<<<<<<<<<<<<
@@ -3902,7 +3902,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_55 = 2;
                             __pyx_v_D2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_52 * __pyx_v_pos.strides[0]) ) + __pyx_t_53 * __pyx_v_pos.strides[1]) ) + __pyx_t_54 * __pyx_v_pos.strides[2]) )) + __pyx_t_55)) )));
 
-                            /* "bilinear.pyx":115
+                            /* "src/bilinear.pyx":115
  *         D1 = pos[p1, p2, 3, 1]
  *         D2 = pos[p1, p2, 3, 2]
  *         if not is_flat:             # <<<<<<<<<<<<<<
@@ -3912,7 +3912,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((!(__pyx_v_is_flat != 0)) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":116
+                              /* "src/bilinear.pyx":116
  *         D2 = pos[p1, p2, 3, 2]
  *         if not is_flat:
  *             A0 = pos[p1, p2, 0, 0]             # <<<<<<<<<<<<<<
@@ -3925,7 +3925,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_59 = 0;
                               __pyx_v_A0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_56 * __pyx_v_pos.strides[0]) ) + __pyx_t_57 * __pyx_v_pos.strides[1]) ) + __pyx_t_58 * __pyx_v_pos.strides[2]) )) + __pyx_t_59)) )));
 
-                              /* "bilinear.pyx":117
+                              /* "src/bilinear.pyx":117
  *         if not is_flat:
  *             A0 = pos[p1, p2, 0, 0]
  *             B0 = pos[p1, p2, 1, 0]             # <<<<<<<<<<<<<<
@@ -3938,7 +3938,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_63 = 0;
                               __pyx_v_B0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_60 * __pyx_v_pos.strides[0]) ) + __pyx_t_61 * __pyx_v_pos.strides[1]) ) + __pyx_t_62 * __pyx_v_pos.strides[2]) )) + __pyx_t_63)) )));
 
-                              /* "bilinear.pyx":118
+                              /* "src/bilinear.pyx":118
  *             A0 = pos[p1, p2, 0, 0]
  *             B0 = pos[p1, p2, 1, 0]
  *             C0 = pos[p1, p2, 2, 0]             # <<<<<<<<<<<<<<
@@ -3951,7 +3951,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_67 = 0;
                               __pyx_v_C0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_64 * __pyx_v_pos.strides[0]) ) + __pyx_t_65 * __pyx_v_pos.strides[1]) ) + __pyx_t_66 * __pyx_v_pos.strides[2]) )) + __pyx_t_67)) )));
 
-                              /* "bilinear.pyx":119
+                              /* "src/bilinear.pyx":119
  *             B0 = pos[p1, p2, 1, 0]
  *             C0 = pos[p1, p2, 2, 0]
  *             D0 = pos[p1, p2, 3, 0]             # <<<<<<<<<<<<<<
@@ -3964,7 +3964,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_71 = 0;
                               __pyx_v_D0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_68 * __pyx_v_pos.strides[0]) ) + __pyx_t_69 * __pyx_v_pos.strides[1]) ) + __pyx_t_70 * __pyx_v_pos.strides[2]) )) + __pyx_t_71)) )));
 
-                              /* "bilinear.pyx":120
+                              /* "src/bilinear.pyx":120
  *             C0 = pos[p1, p2, 2, 0]
  *             D0 = pos[p1, p2, 3, 0]
  *             out3[i] += A0 * (1.0 - delta1) * (1.0 - delta2) \             # <<<<<<<<<<<<<<
@@ -3977,7 +3977,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L37:;
 
-                            /* "bilinear.pyx":128
+                            /* "src/bilinear.pyx":128
  *         # A and B are on the same:  dim2 (X)
  *         # nota: += is needed as well as numpy.zero because of prange: avoid reduction
  *         out1[i] += A1 * (1.0 - delta1) * (1.0 - delta2) \             # <<<<<<<<<<<<<<
@@ -3987,7 +3987,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_73 = __pyx_v_i;
                             *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_out1.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_out1.diminfo[0].strides) += (((((__pyx_v_A1 * (1.0 - __pyx_v_delta1)) * (1.0 - __pyx_v_delta2)) + ((__pyx_v_B1 * __pyx_v_delta1) * (1.0 - __pyx_v_delta2))) + ((__pyx_v_C1 * __pyx_v_delta1) * __pyx_v_delta2)) + ((__pyx_v_D1 * (1.0 - __pyx_v_delta1)) * __pyx_v_delta2));
 
-                            /* "bilinear.pyx":132
+                            /* "src/bilinear.pyx":132
  *             + C1 * delta1 * delta2 \
  *             + D1 * (1.0 - delta1) * delta2
  *         out2[i] += A2 * (1.0 - delta1) * (1.0 - delta2) \             # <<<<<<<<<<<<<<
@@ -4021,25 +4021,25 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                             #pragma omp critical(__pyx_parallel_lastprivates0)
                             #endif /* _OPENMP */
                             {
-                                __pyx_parallel_temp0 = __pyx_v_B2;
-                                __pyx_parallel_temp1 = __pyx_v_p2;
-                                __pyx_parallel_temp2 = __pyx_v_p1;
-                                __pyx_parallel_temp3 = __pyx_v_delta1;
-                                __pyx_parallel_temp4 = __pyx_v_i;
-                                __pyx_parallel_temp5 = __pyx_v_C1;
-                                __pyx_parallel_temp6 = __pyx_v_f2;
-                                __pyx_parallel_temp7 = __pyx_v_C0;
-                                __pyx_parallel_temp8 = __pyx_v_A0;
-                                __pyx_parallel_temp9 = __pyx_v_C2;
-                                __pyx_parallel_temp10 = __pyx_v_A2;
-                                __pyx_parallel_temp11 = __pyx_v_f1;
-                                __pyx_parallel_temp12 = __pyx_v_B0;
+                                __pyx_parallel_temp0 = __pyx_v_p2;
+                                __pyx_parallel_temp1 = __pyx_v_B1;
+                                __pyx_parallel_temp2 = __pyx_v_C1;
+                                __pyx_parallel_temp3 = __pyx_v_D1;
+                                __pyx_parallel_temp4 = __pyx_v_delta2;
+                                __pyx_parallel_temp5 = __pyx_v_C0;
+                                __pyx_parallel_temp6 = __pyx_v_D2;
+                                __pyx_parallel_temp7 = __pyx_v_C2;
+                                __pyx_parallel_temp8 = __pyx_v_f1;
+                                __pyx_parallel_temp9 = __pyx_v_p1;
+                                __pyx_parallel_temp10 = __pyx_v_delta1;
+                                __pyx_parallel_temp11 = __pyx_v_f2;
+                                __pyx_parallel_temp12 = __pyx_v_A2;
                                 __pyx_parallel_temp13 = __pyx_v_A1;
-                                __pyx_parallel_temp14 = __pyx_v_D2;
-                                __pyx_parallel_temp15 = __pyx_v_D0;
-                                __pyx_parallel_temp16 = __pyx_v_D1;
-                                __pyx_parallel_temp17 = __pyx_v_B1;
-                                __pyx_parallel_temp18 = __pyx_v_delta2;
+                                __pyx_parallel_temp14 = __pyx_v_A0;
+                                __pyx_parallel_temp15 = __pyx_v_B2;
+                                __pyx_parallel_temp16 = __pyx_v_D0;
+                                __pyx_parallel_temp17 = __pyx_v_B0;
+                                __pyx_parallel_temp18 = __pyx_v_i;
                             }
                             __pyx_L39:;
                             #ifdef _OPENMP
@@ -4056,16 +4056,16 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
                     #endif
                     #endif /* _OPENMP */
                     /* Clean up any temporaries */
-                    __Pyx_XDECREF(__pyx_t_5);
-                    __pyx_t_5 = NULL;
-                    __Pyx_XDECREF(__pyx_t_2);
-                    __pyx_t_2 = NULL;
                     __Pyx_XDECREF(__pyx_t_4);
                     __pyx_t_4 = NULL;
-                    __Pyx_XDECREF(__pyx_t_1);
-                    __pyx_t_1 = NULL;
+                    __Pyx_XDECREF(__pyx_t_2);
+                    __pyx_t_2 = NULL;
                     __Pyx_XDECREF(__pyx_t_6);
                     __pyx_t_6 = NULL;
+                    __Pyx_XDECREF(__pyx_t_5);
+                    __pyx_t_5 = NULL;
+                    __Pyx_XDECREF(__pyx_t_1);
+                    __pyx_t_1 = NULL;
                     #ifdef WITH_THREAD
                     PyGILState_Release(__pyx_gilstate_save);
                     #endif
@@ -4079,25 +4079,25 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
               __pyx_parallel_why = 4;
             }
             if (__pyx_parallel_why) {
-              __pyx_v_B2 = __pyx_parallel_temp0;
-              __pyx_v_p2 = __pyx_parallel_temp1;
-              __pyx_v_p1 = __pyx_parallel_temp2;
-              __pyx_v_delta1 = __pyx_parallel_temp3;
-              __pyx_v_i = __pyx_parallel_temp4;
-              __pyx_v_C1 = __pyx_parallel_temp5;
-              __pyx_v_f2 = __pyx_parallel_temp6;
-              __pyx_v_C0 = __pyx_parallel_temp7;
-              __pyx_v_A0 = __pyx_parallel_temp8;
-              __pyx_v_C2 = __pyx_parallel_temp9;
-              __pyx_v_A2 = __pyx_parallel_temp10;
-              __pyx_v_f1 = __pyx_parallel_temp11;
-              __pyx_v_B0 = __pyx_parallel_temp12;
+              __pyx_v_p2 = __pyx_parallel_temp0;
+              __pyx_v_B1 = __pyx_parallel_temp1;
+              __pyx_v_C1 = __pyx_parallel_temp2;
+              __pyx_v_D1 = __pyx_parallel_temp3;
+              __pyx_v_delta2 = __pyx_parallel_temp4;
+              __pyx_v_C0 = __pyx_parallel_temp5;
+              __pyx_v_D2 = __pyx_parallel_temp6;
+              __pyx_v_C2 = __pyx_parallel_temp7;
+              __pyx_v_f1 = __pyx_parallel_temp8;
+              __pyx_v_p1 = __pyx_parallel_temp9;
+              __pyx_v_delta1 = __pyx_parallel_temp10;
+              __pyx_v_f2 = __pyx_parallel_temp11;
+              __pyx_v_A2 = __pyx_parallel_temp12;
               __pyx_v_A1 = __pyx_parallel_temp13;
-              __pyx_v_D2 = __pyx_parallel_temp14;
-              __pyx_v_D0 = __pyx_parallel_temp15;
-              __pyx_v_D1 = __pyx_parallel_temp16;
-              __pyx_v_B1 = __pyx_parallel_temp17;
-              __pyx_v_delta2 = __pyx_parallel_temp18;
+              __pyx_v_A0 = __pyx_parallel_temp14;
+              __pyx_v_B2 = __pyx_parallel_temp15;
+              __pyx_v_D0 = __pyx_parallel_temp16;
+              __pyx_v_B0 = __pyx_parallel_temp17;
+              __pyx_v_i = __pyx_parallel_temp18;
               switch (__pyx_parallel_why) {
                     case 3: goto __pyx_L4_return;
                     case 4:
@@ -4124,7 +4124,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
         #endif
       }
 
-      /* "bilinear.pyx":75
+      /* "src/bilinear.pyx":75
  *     assert size == d2.size
  * 
  *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -4154,7 +4154,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
       }
   }
 
-  /* "bilinear.pyx":136
+  /* "src/bilinear.pyx":136
  *             + C2 * delta1 * delta2 \
  *             + D2 * (1.0 - delta1) * delta2
  *     if is_flat:             # <<<<<<<<<<<<<<
@@ -4164,7 +4164,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_t_9 = (__pyx_v_is_flat != 0);
   if (__pyx_t_9) {
 
-    /* "bilinear.pyx":137
+    /* "src/bilinear.pyx":137
  *             + D2 * (1.0 - delta1) * delta2
  *     if is_flat:
  *         return out1, out2, None             # <<<<<<<<<<<<<<
@@ -4189,7 +4189,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   }
   /*else*/ {
 
-    /* "bilinear.pyx":139
+    /* "src/bilinear.pyx":139
  *         return out1, out2, None
  *     else:
  *         return out1, out2, out3             # <<<<<<<<<<<<<<
@@ -4213,7 +4213,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
     goto __pyx_L0;
   }
 
-  /* "bilinear.pyx":50
+  /* "src/bilinear.pyx":50
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,             # <<<<<<<<<<<<<<
@@ -4234,7 +4234,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out2.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out3.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -4253,7 +4253,7 @@ static PyObject *__pyx_pf_8bilinear_4calc_cartesian_positions(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_22__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_3src_8bilinear_22__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4286,7 +4286,7 @@ static PyObject *__pyx_pf_8bilinear_22__defaults__(CYTHON_UNUSED PyObject *__pyx
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4295,9 +4295,9 @@ static PyObject *__pyx_pf_8bilinear_22__defaults__(CYTHON_UNUSED PyObject *__pyx
 }
 
 /* Python wrapper */
-static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_7calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_fuse_1__pyx_mdef_8bilinear_7calc_cartesian_positions = {"__pyx_fuse_1calc_cartesian_positions", (PyCFunction)__pyx_fuse_1__pyx_pw_8bilinear_7calc_cartesian_positions, METH_VARARGS|METH_KEYWORDS, __pyx_doc_8bilinear_calc_cartesian_positions};
-static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_7calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_fuse_1__pyx_pw_3src_8bilinear_7calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_fuse_1__pyx_mdef_3src_8bilinear_7calc_cartesian_positions = {"__pyx_fuse_1calc_cartesian_positions", (PyCFunction)__pyx_fuse_1__pyx_pw_3src_8bilinear_7calc_cartesian_positions, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_8bilinear_calc_cartesian_positions};
+static PyObject *__pyx_fuse_1__pyx_pw_3src_8bilinear_7calc_cartesian_positions(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_d1 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_d2 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_pos = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -4370,18 +4370,18 @@ static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_7calc_cartesian_positions(PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_cartesian_positions", 0, 3, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8bilinear_6calc_cartesian_positions(__pyx_self, __pyx_v_d1, __pyx_v_d2, __pyx_v_pos, __pyx_v_is_flat);
+  __pyx_r = __pyx_pf_3src_8bilinear_6calc_cartesian_positions(__pyx_self, __pyx_v_d1, __pyx_v_d2, __pyx_v_pos, __pyx_v_is_flat);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat) {
+static PyObject *__pyx_pf_3src_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_pos, int __pyx_v_is_flat) {
   int __pyx_v_i;
   int __pyx_v_p1;
   int __pyx_v_p2;
@@ -4506,7 +4506,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_pybuffernd_out3.data = NULL;
   __pyx_pybuffernd_out3.rcbuffer = &__pyx_pybuffer_out3;
 
-  /* "bilinear.pyx":64
+  /* "src/bilinear.pyx":64
  *     """
  *     cdef:
  *         int i, p1, p2, dim1, dim2, size = d1.size             # <<<<<<<<<<<<<<
@@ -4522,7 +4522,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_size = __pyx_t_3;
 
-  /* "bilinear.pyx":66
+  /* "src/bilinear.pyx":66
  *         int i, p1, p2, dim1, dim2, size = d1.size
  *         float delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.zeros(size, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -4569,7 +4569,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_v_out1 = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "bilinear.pyx":67
+  /* "src/bilinear.pyx":67
  *         float delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.zeros(size, dtype=numpy.float32)
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.zeros(size, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -4616,7 +4616,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_v_out2 = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "bilinear.pyx":69
+  /* "src/bilinear.pyx":69
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.zeros(size, dtype=numpy.float32)
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out3
  *     if not is_flat:             # <<<<<<<<<<<<<<
@@ -4626,7 +4626,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_t_9 = ((!(__pyx_v_is_flat != 0)) != 0);
   if (__pyx_t_9) {
 
-    /* "bilinear.pyx":70
+    /* "src/bilinear.pyx":70
  *         numpy.ndarray[numpy.float32_t, ndim = 1] out3
  *     if not is_flat:
  *         out3 = numpy.zeros(size, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -4684,7 +4684,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   }
   __pyx_L3:;
 
-  /* "bilinear.pyx":71
+  /* "src/bilinear.pyx":71
  *     if not is_flat:
  *         out3 = numpy.zeros(size, dtype=numpy.float32)
  *     dim1 = pos.shape[0]             # <<<<<<<<<<<<<<
@@ -4693,7 +4693,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
   __pyx_v_dim1 = (__pyx_v_pos.shape[0]);
 
-  /* "bilinear.pyx":72
+  /* "src/bilinear.pyx":72
  *         out3 = numpy.zeros(size, dtype=numpy.float32)
  *     dim1 = pos.shape[0]
  *     dim2 = pos.shape[1]             # <<<<<<<<<<<<<<
@@ -4702,7 +4702,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
   __pyx_v_dim2 = (__pyx_v_pos.shape[1]);
 
-  /* "bilinear.pyx":73
+  /* "src/bilinear.pyx":73
  *     dim1 = pos.shape[0]
  *     dim2 = pos.shape[1]
  *     assert size == d2.size             # <<<<<<<<<<<<<<
@@ -4730,7 +4730,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   }
   #endif
 
-  /* "bilinear.pyx":75
+  /* "src/bilinear.pyx":75
  *     assert size == d2.size
  * 
  *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -4747,23 +4747,23 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
         if (1 == 0) abort();
         {
             float __pyx_parallel_temp0 = __PYX_NAN();
-            float __pyx_parallel_temp1 = __PYX_NAN();
+            int __pyx_parallel_temp1 = 0xbad0bad0;
             float __pyx_parallel_temp2 = __PYX_NAN();
             float __pyx_parallel_temp3 = __PYX_NAN();
             float __pyx_parallel_temp4 = __PYX_NAN();
-            int __pyx_parallel_temp5 = 0xbad0bad0;
+            float __pyx_parallel_temp5 = __PYX_NAN();
             float __pyx_parallel_temp6 = __PYX_NAN();
-            float __pyx_parallel_temp7 = __PYX_NAN();
+            int __pyx_parallel_temp7 = 0xbad0bad0;
             float __pyx_parallel_temp8 = __PYX_NAN();
             float __pyx_parallel_temp9 = __PYX_NAN();
             float __pyx_parallel_temp10 = __PYX_NAN();
-            float __pyx_parallel_temp11 = __PYX_NAN();
+            int __pyx_parallel_temp11 = 0xbad0bad0;
             float __pyx_parallel_temp12 = __PYX_NAN();
             float __pyx_parallel_temp13 = __PYX_NAN();
-            int __pyx_parallel_temp14 = 0xbad0bad0;
+            float __pyx_parallel_temp14 = __PYX_NAN();
             float __pyx_parallel_temp15 = __PYX_NAN();
             float __pyx_parallel_temp16 = __PYX_NAN();
-            int __pyx_parallel_temp17 = 0xbad0bad0;
+            float __pyx_parallel_temp17 = __PYX_NAN();
             float __pyx_parallel_temp18 = __PYX_NAN();
             const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
             PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
@@ -4779,7 +4779,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
             if (__pyx_t_15 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_45, __pyx_t_40, __pyx_t_32, __pyx_t_55, __pyx_t_19, __pyx_t_27, __pyx_t_9, __pyx_t_38, __pyx_t_29, __pyx_t_49, __pyx_t_57, __pyx_t_21, __pyx_t_24, __pyx_t_41, __pyx_t_71, __pyx_t_54, __pyx_t_60, __pyx_t_31, __pyx_t_43, __pyx_t_66, __pyx_t_18, __pyx_t_68, __pyx_t_65, __pyx_t_58, __pyx_t_35, __pyx_t_42, __pyx_t_64, __pyx_t_17, __pyx_t_37, __pyx_t_59, __pyx_t_56, __pyx_t_53, __pyx_t_25, __pyx_t_46, __pyx_t_63, __pyx_t_70, __pyx_t_61, __pyx_t_30, __pyx_t_22, __pyx_t_67, __pyx_t_69, __pyx_t_73, __pyx_t_34, __pyx_t_62, __pyx_t_16, __pyx_t_44, __pyx_t_36, __pyx_t_33, __pyx_t_72, __pyx_t_52, __pyx_t_26, __pyx_t_50, __pyx_t_48, __pyx_t_74, __pyx_t_23, __pyx_t_39, __pyx_t_28, __pyx_t_51, __pyx_t_47, __pyx_t_20) firstprivate(__pyx_t_5, __pyx_t_2, __pyx_t_4, __pyx_t_1, __pyx_t_6) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                #pragma omp parallel private(__pyx_t_39, __pyx_t_43, __pyx_t_19, __pyx_t_41, __pyx_t_9, __pyx_t_54, __pyx_t_51, __pyx_t_26, __pyx_t_48, __pyx_t_18, __pyx_t_58, __pyx_t_73, __pyx_t_23, __pyx_t_74, __pyx_t_28, __pyx_t_64, __pyx_t_44, __pyx_t_53, __pyx_t_38, __pyx_t_29, __pyx_t_45, __pyx_t_66, __pyx_t_60, __pyx_t_27, __pyx_t_24, __pyx_t_37, __pyx_t_68, __pyx_t_65, __pyx_t_31, __pyx_t_25, __pyx_t_46, __pyx_t_35, __pyx_t_36, __pyx_t_59, __pyx_t_16, __pyx_t_50, __pyx_t_52, __pyx_t_57, __pyx_t_47, __pyx_t_42, __pyx_t_17, __pyx_t_69, __pyx_t_71, __pyx_t_62, __pyx_t_72, __pyx_t_49, __pyx_t_34, __pyx_t_40, __pyx_t_56, __pyx_t_30, __pyx_t_33, __pyx_t_70, __pyx_t_67, __pyx_t_61, __pyx_t_20, __pyx_t_63, __pyx_t_22, __pyx_t_32, __pyx_t_55, __pyx_t_21) firstprivate(__pyx_t_4, __pyx_t_2, __pyx_t_6, __pyx_t_5, __pyx_t_1) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -4789,33 +4789,33 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                     Py_BEGIN_ALLOW_THREADS
                     #endif /* _OPENMP */
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_C0) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_f1) lastprivate(__pyx_v_B1) lastprivate(__pyx_v_A2) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_delta1) lastprivate(__pyx_v_delta2) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_A1) lastprivate(__pyx_v_C1) lastprivate(__pyx_v_B2) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_C2) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_p2) lastprivate(__pyx_v_B0) schedule(static)
+                    #pragma omp for lastprivate(__pyx_v_B1) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_A1) lastprivate(__pyx_v_delta1) lastprivate(__pyx_v_delta2) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_A2) lastprivate(__pyx_v_p2) lastprivate(__pyx_v_C0) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_B0) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_C2) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_B2) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_C1) lastprivate(__pyx_v_f1) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_15; __pyx_t_14++){
                         if (__pyx_parallel_why < 2)
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_14;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_C0 = ((float)__PYX_NAN());
-                            __pyx_v_f2 = ((float)__PYX_NAN());
-                            __pyx_v_f1 = ((float)__PYX_NAN());
                             __pyx_v_B1 = ((float)__PYX_NAN());
-                            __pyx_v_A2 = ((float)__PYX_NAN());
+                            __pyx_v_p1 = ((int)0xbad0bad0);
+                            __pyx_v_A1 = ((float)__PYX_NAN());
                             __pyx_v_delta1 = ((float)__PYX_NAN());
                             __pyx_v_delta2 = ((float)__PYX_NAN());
-                            __pyx_v_D2 = ((float)__PYX_NAN());
-                            __pyx_v_A1 = ((float)__PYX_NAN());
-                            __pyx_v_C1 = ((float)__PYX_NAN());
-                            __pyx_v_B2 = ((float)__PYX_NAN());
-                            __pyx_v_D1 = ((float)__PYX_NAN());
                             __pyx_v_D0 = ((float)__PYX_NAN());
-                            __pyx_v_p1 = ((int)0xbad0bad0);
+                            __pyx_v_A2 = ((float)__PYX_NAN());
+                            __pyx_v_p2 = ((int)0xbad0bad0);
+                            __pyx_v_C0 = ((float)__PYX_NAN());
+                            __pyx_v_D1 = ((float)__PYX_NAN());
+                            __pyx_v_B0 = ((float)__PYX_NAN());
                             __pyx_v_C2 = ((float)__PYX_NAN());
                             __pyx_v_A0 = ((float)__PYX_NAN());
-                            __pyx_v_p2 = ((int)0xbad0bad0);
-                            __pyx_v_B0 = ((float)__PYX_NAN());
+                            __pyx_v_B2 = ((float)__PYX_NAN());
+                            __pyx_v_D2 = ((float)__PYX_NAN());
+                            __pyx_v_f2 = ((float)__PYX_NAN());
+                            __pyx_v_C1 = ((float)__PYX_NAN());
+                            __pyx_v_f1 = ((float)__PYX_NAN());
 
-                            /* "bilinear.pyx":76
+                            /* "src/bilinear.pyx":76
  * 
  *     for i in prange(size, nogil=True, schedule="static"):
  *         f1 = floor(d1[i])             # <<<<<<<<<<<<<<
@@ -4825,7 +4825,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_16 = __pyx_v_i;
                             __pyx_v_f1 = floor((*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_d1.data) + __pyx_t_16)) ))));
 
-                            /* "bilinear.pyx":77
+                            /* "src/bilinear.pyx":77
  *     for i in prange(size, nogil=True, schedule="static"):
  *         f1 = floor(d1[i])
  *         f2 = floor(d2[i])             # <<<<<<<<<<<<<<
@@ -4835,7 +4835,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_17 = __pyx_v_i;
                             __pyx_v_f2 = floor((*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_d2.data) + __pyx_t_17)) ))));
 
-                            /* "bilinear.pyx":79
+                            /* "src/bilinear.pyx":79
  *         f2 = floor(d2[i])
  * 
  *         p1 = <int> f1             # <<<<<<<<<<<<<<
@@ -4844,7 +4844,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                             __pyx_v_p1 = ((int)__pyx_v_f1);
 
-                            /* "bilinear.pyx":80
+                            /* "src/bilinear.pyx":80
  * 
  *         p1 = <int> f1
  *         p2 = <int> f2             # <<<<<<<<<<<<<<
@@ -4853,7 +4853,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                             __pyx_v_p2 = ((int)__pyx_v_f2);
 
-                            /* "bilinear.pyx":82
+                            /* "src/bilinear.pyx":82
  *         p2 = <int> f2
  * 
  *         delta1 = d1[i] - f1             # <<<<<<<<<<<<<<
@@ -4863,7 +4863,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_18 = __pyx_v_i;
                             __pyx_v_delta1 = ((*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_d1.data) + __pyx_t_18)) ))) - __pyx_v_f1);
 
-                            /* "bilinear.pyx":83
+                            /* "src/bilinear.pyx":83
  * 
  *         delta1 = d1[i] - f1
  *         delta2 = d2[i] - f2             # <<<<<<<<<<<<<<
@@ -4873,7 +4873,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_19 = __pyx_v_i;
                             __pyx_v_delta2 = ((*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_d2.data) + __pyx_t_19)) ))) - __pyx_v_f2);
 
-                            /* "bilinear.pyx":85
+                            /* "src/bilinear.pyx":85
  *         delta2 = d2[i] - f2
  * 
  *         if p1 < 0:             # <<<<<<<<<<<<<<
@@ -4883,7 +4883,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p1 < 0) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":86
+                              /* "src/bilinear.pyx":86
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -4896,7 +4896,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                   #endif
                                   /*try:*/ {
 
-                                    /* "bilinear.pyx":87
+                                    /* "src/bilinear.pyx":87
  *         if p1 < 0:
  *             with gil:
  *                 print("f1= %s" % f1)             # <<<<<<<<<<<<<<
@@ -4912,7 +4912,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
                                   }
 
-                                  /* "bilinear.pyx":86
+                                  /* "src/bilinear.pyx":86
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -4939,7 +4939,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L11:;
 
-                            /* "bilinear.pyx":89
+                            /* "src/bilinear.pyx":89
  *                 print("f1= %s" % f1)
  * 
  *         if p1 < 0:             # <<<<<<<<<<<<<<
@@ -4949,7 +4949,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p1 < 0) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":90
+                              /* "src/bilinear.pyx":90
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -4962,7 +4962,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                   #endif
                                   /*try:*/ {
 
-                                    /* "bilinear.pyx":91
+                                    /* "src/bilinear.pyx":91
  *         if p1 < 0:
  *             with gil:
  *                 print("f2= %s" % f2)             # <<<<<<<<<<<<<<
@@ -4978,7 +4978,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
                                   }
 
-                                  /* "bilinear.pyx":90
+                                  /* "src/bilinear.pyx":90
  * 
  *         if p1 < 0:
  *             with gil:             # <<<<<<<<<<<<<<
@@ -5005,7 +5005,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L17:;
 
-                            /* "bilinear.pyx":93
+                            /* "src/bilinear.pyx":93
  *                 print("f2= %s" % f2)
  * 
  *         if p1 >= dim1:             # <<<<<<<<<<<<<<
@@ -5015,7 +5015,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p1 >= __pyx_v_dim1) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":94
+                              /* "src/bilinear.pyx":94
  * 
  *         if p1 >= dim1:
  *             if p1>dim1:             # <<<<<<<<<<<<<<
@@ -5025,7 +5025,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_9 = ((__pyx_v_p1 > __pyx_v_dim1) != 0);
                               if (__pyx_t_9) {
 
-                                /* "bilinear.pyx":95
+                                /* "src/bilinear.pyx":95
  *         if p1 >= dim1:
  *             if p1>dim1:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -5038,7 +5038,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     #endif
                                     /*try:*/ {
 
-                                      /* "bilinear.pyx":96
+                                      /* "src/bilinear.pyx":96
  *             if p1>dim1:
  *                 with gil:
  *                     print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))             # <<<<<<<<<<<<<<
@@ -5075,7 +5075,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
                                     }
 
-                                    /* "bilinear.pyx":95
+                                    /* "src/bilinear.pyx":95
  *         if p1 >= dim1:
  *             if p1>dim1:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -5102,7 +5102,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               }
                               __pyx_L24:;
 
-                              /* "bilinear.pyx":97
+                              /* "src/bilinear.pyx":97
  *                 with gil:
  *                     print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))
  *             p1 = dim1 - 1             # <<<<<<<<<<<<<<
@@ -5111,7 +5111,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                               __pyx_v_p1 = (__pyx_v_dim1 - 1);
 
-                              /* "bilinear.pyx":98
+                              /* "src/bilinear.pyx":98
  *                     print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))
  *             p1 = dim1 - 1
  *             delta1 = d1[i] - p1             # <<<<<<<<<<<<<<
@@ -5124,7 +5124,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L23:;
 
-                            /* "bilinear.pyx":100
+                            /* "src/bilinear.pyx":100
  *             delta1 = d1[i] - p1
  * 
  *         if p2 >= dim2:             # <<<<<<<<<<<<<<
@@ -5134,7 +5134,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((__pyx_v_p2 >= __pyx_v_dim2) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":101
+                              /* "src/bilinear.pyx":101
  * 
  *         if p2 >= dim2:
  *             if p2>dim2:             # <<<<<<<<<<<<<<
@@ -5144,7 +5144,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_9 = ((__pyx_v_p2 > __pyx_v_dim2) != 0);
                               if (__pyx_t_9) {
 
-                                /* "bilinear.pyx":102
+                                /* "src/bilinear.pyx":102
  *         if p2 >= dim2:
  *             if p2>dim2:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -5157,7 +5157,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                     #endif
                                     /*try:*/ {
 
-                                      /* "bilinear.pyx":103
+                                      /* "src/bilinear.pyx":103
  *             if p2>dim2:
  *                 with gil:
  *                     print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))             # <<<<<<<<<<<<<<
@@ -5194,7 +5194,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                                       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
                                     }
 
-                                    /* "bilinear.pyx":102
+                                    /* "src/bilinear.pyx":102
  *         if p2 >= dim2:
  *             if p2>dim2:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -5221,7 +5221,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               }
                               __pyx_L31:;
 
-                              /* "bilinear.pyx":104
+                              /* "src/bilinear.pyx":104
  *                 with gil:
  *                     print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))
  *             p2 = dim2 - 1             # <<<<<<<<<<<<<<
@@ -5230,7 +5230,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
                               __pyx_v_p2 = (__pyx_v_dim2 - 1);
 
-                              /* "bilinear.pyx":105
+                              /* "src/bilinear.pyx":105
  *                     print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))
  *             p2 = dim2 - 1
  *             delta2 = d2[i] - p2             # <<<<<<<<<<<<<<
@@ -5243,7 +5243,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L30:;
 
-                            /* "bilinear.pyx":107
+                            /* "src/bilinear.pyx":107
  *             delta2 = d2[i] - p2
  * 
  *         A1 = pos[p1, p2, 0, 1]             # <<<<<<<<<<<<<<
@@ -5256,7 +5256,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_27 = 1;
                             __pyx_v_A1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_24 * __pyx_v_pos.strides[0]) ) + __pyx_t_25 * __pyx_v_pos.strides[1]) ) + __pyx_t_26 * __pyx_v_pos.strides[2]) )) + __pyx_t_27)) )));
 
-                            /* "bilinear.pyx":108
+                            /* "src/bilinear.pyx":108
  * 
  *         A1 = pos[p1, p2, 0, 1]
  *         A2 = pos[p1, p2, 0, 2]             # <<<<<<<<<<<<<<
@@ -5269,7 +5269,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_31 = 2;
                             __pyx_v_A2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_28 * __pyx_v_pos.strides[0]) ) + __pyx_t_29 * __pyx_v_pos.strides[1]) ) + __pyx_t_30 * __pyx_v_pos.strides[2]) )) + __pyx_t_31)) )));
 
-                            /* "bilinear.pyx":109
+                            /* "src/bilinear.pyx":109
  *         A1 = pos[p1, p2, 0, 1]
  *         A2 = pos[p1, p2, 0, 2]
  *         B1 = pos[p1, p2, 1, 1]             # <<<<<<<<<<<<<<
@@ -5282,7 +5282,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_35 = 1;
                             __pyx_v_B1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_32 * __pyx_v_pos.strides[0]) ) + __pyx_t_33 * __pyx_v_pos.strides[1]) ) + __pyx_t_34 * __pyx_v_pos.strides[2]) )) + __pyx_t_35)) )));
 
-                            /* "bilinear.pyx":110
+                            /* "src/bilinear.pyx":110
  *         A2 = pos[p1, p2, 0, 2]
  *         B1 = pos[p1, p2, 1, 1]
  *         B2 = pos[p1, p2, 1, 2]             # <<<<<<<<<<<<<<
@@ -5295,7 +5295,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_39 = 2;
                             __pyx_v_B2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_36 * __pyx_v_pos.strides[0]) ) + __pyx_t_37 * __pyx_v_pos.strides[1]) ) + __pyx_t_38 * __pyx_v_pos.strides[2]) )) + __pyx_t_39)) )));
 
-                            /* "bilinear.pyx":111
+                            /* "src/bilinear.pyx":111
  *         B1 = pos[p1, p2, 1, 1]
  *         B2 = pos[p1, p2, 1, 2]
  *         C1 = pos[p1, p2, 2, 1]             # <<<<<<<<<<<<<<
@@ -5308,7 +5308,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_43 = 1;
                             __pyx_v_C1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_40 * __pyx_v_pos.strides[0]) ) + __pyx_t_41 * __pyx_v_pos.strides[1]) ) + __pyx_t_42 * __pyx_v_pos.strides[2]) )) + __pyx_t_43)) )));
 
-                            /* "bilinear.pyx":112
+                            /* "src/bilinear.pyx":112
  *         B2 = pos[p1, p2, 1, 2]
  *         C1 = pos[p1, p2, 2, 1]
  *         C2 = pos[p1, p2, 2, 2]             # <<<<<<<<<<<<<<
@@ -5321,7 +5321,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_47 = 2;
                             __pyx_v_C2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_44 * __pyx_v_pos.strides[0]) ) + __pyx_t_45 * __pyx_v_pos.strides[1]) ) + __pyx_t_46 * __pyx_v_pos.strides[2]) )) + __pyx_t_47)) )));
 
-                            /* "bilinear.pyx":113
+                            /* "src/bilinear.pyx":113
  *         C1 = pos[p1, p2, 2, 1]
  *         C2 = pos[p1, p2, 2, 2]
  *         D1 = pos[p1, p2, 3, 1]             # <<<<<<<<<<<<<<
@@ -5334,7 +5334,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_51 = 1;
                             __pyx_v_D1 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_48 * __pyx_v_pos.strides[0]) ) + __pyx_t_49 * __pyx_v_pos.strides[1]) ) + __pyx_t_50 * __pyx_v_pos.strides[2]) )) + __pyx_t_51)) )));
 
-                            /* "bilinear.pyx":114
+                            /* "src/bilinear.pyx":114
  *         C2 = pos[p1, p2, 2, 2]
  *         D1 = pos[p1, p2, 3, 1]
  *         D2 = pos[p1, p2, 3, 2]             # <<<<<<<<<<<<<<
@@ -5347,7 +5347,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_55 = 2;
                             __pyx_v_D2 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_52 * __pyx_v_pos.strides[0]) ) + __pyx_t_53 * __pyx_v_pos.strides[1]) ) + __pyx_t_54 * __pyx_v_pos.strides[2]) )) + __pyx_t_55)) )));
 
-                            /* "bilinear.pyx":115
+                            /* "src/bilinear.pyx":115
  *         D1 = pos[p1, p2, 3, 1]
  *         D2 = pos[p1, p2, 3, 2]
  *         if not is_flat:             # <<<<<<<<<<<<<<
@@ -5357,7 +5357,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_9 = ((!(__pyx_v_is_flat != 0)) != 0);
                             if (__pyx_t_9) {
 
-                              /* "bilinear.pyx":116
+                              /* "src/bilinear.pyx":116
  *         D2 = pos[p1, p2, 3, 2]
  *         if not is_flat:
  *             A0 = pos[p1, p2, 0, 0]             # <<<<<<<<<<<<<<
@@ -5370,7 +5370,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_59 = 0;
                               __pyx_v_A0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_56 * __pyx_v_pos.strides[0]) ) + __pyx_t_57 * __pyx_v_pos.strides[1]) ) + __pyx_t_58 * __pyx_v_pos.strides[2]) )) + __pyx_t_59)) )));
 
-                              /* "bilinear.pyx":117
+                              /* "src/bilinear.pyx":117
  *         if not is_flat:
  *             A0 = pos[p1, p2, 0, 0]
  *             B0 = pos[p1, p2, 1, 0]             # <<<<<<<<<<<<<<
@@ -5383,7 +5383,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_63 = 0;
                               __pyx_v_B0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_60 * __pyx_v_pos.strides[0]) ) + __pyx_t_61 * __pyx_v_pos.strides[1]) ) + __pyx_t_62 * __pyx_v_pos.strides[2]) )) + __pyx_t_63)) )));
 
-                              /* "bilinear.pyx":118
+                              /* "src/bilinear.pyx":118
  *             A0 = pos[p1, p2, 0, 0]
  *             B0 = pos[p1, p2, 1, 0]
  *             C0 = pos[p1, p2, 2, 0]             # <<<<<<<<<<<<<<
@@ -5396,7 +5396,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_67 = 0;
                               __pyx_v_C0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_64 * __pyx_v_pos.strides[0]) ) + __pyx_t_65 * __pyx_v_pos.strides[1]) ) + __pyx_t_66 * __pyx_v_pos.strides[2]) )) + __pyx_t_67)) )));
 
-                              /* "bilinear.pyx":119
+                              /* "src/bilinear.pyx":119
  *             B0 = pos[p1, p2, 1, 0]
  *             C0 = pos[p1, p2, 2, 0]
  *             D0 = pos[p1, p2, 3, 0]             # <<<<<<<<<<<<<<
@@ -5409,7 +5409,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                               __pyx_t_71 = 0;
                               __pyx_v_D0 = (*((float *) ( /* dim=3 */ ((char *) (((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_68 * __pyx_v_pos.strides[0]) ) + __pyx_t_69 * __pyx_v_pos.strides[1]) ) + __pyx_t_70 * __pyx_v_pos.strides[2]) )) + __pyx_t_71)) )));
 
-                              /* "bilinear.pyx":120
+                              /* "src/bilinear.pyx":120
  *             C0 = pos[p1, p2, 2, 0]
  *             D0 = pos[p1, p2, 3, 0]
  *             out3[i] += A0 * (1.0 - delta1) * (1.0 - delta2) \             # <<<<<<<<<<<<<<
@@ -5422,7 +5422,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             }
                             __pyx_L37:;
 
-                            /* "bilinear.pyx":128
+                            /* "src/bilinear.pyx":128
  *         # A and B are on the same:  dim2 (X)
  *         # nota: += is needed as well as numpy.zero because of prange: avoid reduction
  *         out1[i] += A1 * (1.0 - delta1) * (1.0 - delta2) \             # <<<<<<<<<<<<<<
@@ -5432,7 +5432,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             __pyx_t_73 = __pyx_v_i;
                             *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_out1.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_out1.diminfo[0].strides) += (((((__pyx_v_A1 * (1.0 - __pyx_v_delta1)) * (1.0 - __pyx_v_delta2)) + ((__pyx_v_B1 * __pyx_v_delta1) * (1.0 - __pyx_v_delta2))) + ((__pyx_v_C1 * __pyx_v_delta1) * __pyx_v_delta2)) + ((__pyx_v_D1 * (1.0 - __pyx_v_delta1)) * __pyx_v_delta2));
 
-                            /* "bilinear.pyx":132
+                            /* "src/bilinear.pyx":132
  *             + C1 * delta1 * delta2 \
  *             + D1 * (1.0 - delta1) * delta2
  *         out2[i] += A2 * (1.0 - delta1) * (1.0 - delta2) \             # <<<<<<<<<<<<<<
@@ -5466,25 +5466,25 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                             #pragma omp critical(__pyx_parallel_lastprivates1)
                             #endif /* _OPENMP */
                             {
-                                __pyx_parallel_temp0 = __pyx_v_C0;
-                                __pyx_parallel_temp1 = __pyx_v_f2;
-                                __pyx_parallel_temp2 = __pyx_v_f1;
-                                __pyx_parallel_temp3 = __pyx_v_B1;
-                                __pyx_parallel_temp4 = __pyx_v_A2;
-                                __pyx_parallel_temp5 = __pyx_v_i;
-                                __pyx_parallel_temp6 = __pyx_v_delta1;
-                                __pyx_parallel_temp7 = __pyx_v_delta2;
-                                __pyx_parallel_temp8 = __pyx_v_D2;
-                                __pyx_parallel_temp9 = __pyx_v_A1;
-                                __pyx_parallel_temp10 = __pyx_v_C1;
-                                __pyx_parallel_temp11 = __pyx_v_B2;
-                                __pyx_parallel_temp12 = __pyx_v_D1;
-                                __pyx_parallel_temp13 = __pyx_v_D0;
-                                __pyx_parallel_temp14 = __pyx_v_p1;
-                                __pyx_parallel_temp15 = __pyx_v_C2;
-                                __pyx_parallel_temp16 = __pyx_v_A0;
-                                __pyx_parallel_temp17 = __pyx_v_p2;
-                                __pyx_parallel_temp18 = __pyx_v_B0;
+                                __pyx_parallel_temp0 = __pyx_v_B1;
+                                __pyx_parallel_temp1 = __pyx_v_p1;
+                                __pyx_parallel_temp2 = __pyx_v_A1;
+                                __pyx_parallel_temp3 = __pyx_v_delta1;
+                                __pyx_parallel_temp4 = __pyx_v_delta2;
+                                __pyx_parallel_temp5 = __pyx_v_D0;
+                                __pyx_parallel_temp6 = __pyx_v_A2;
+                                __pyx_parallel_temp7 = __pyx_v_p2;
+                                __pyx_parallel_temp8 = __pyx_v_C0;
+                                __pyx_parallel_temp9 = __pyx_v_D1;
+                                __pyx_parallel_temp10 = __pyx_v_B0;
+                                __pyx_parallel_temp11 = __pyx_v_i;
+                                __pyx_parallel_temp12 = __pyx_v_C2;
+                                __pyx_parallel_temp13 = __pyx_v_A0;
+                                __pyx_parallel_temp14 = __pyx_v_B2;
+                                __pyx_parallel_temp15 = __pyx_v_D2;
+                                __pyx_parallel_temp16 = __pyx_v_f2;
+                                __pyx_parallel_temp17 = __pyx_v_C1;
+                                __pyx_parallel_temp18 = __pyx_v_f1;
                             }
                             __pyx_L39:;
                             #ifdef _OPENMP
@@ -5501,16 +5501,16 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
                     #endif
                     #endif /* _OPENMP */
                     /* Clean up any temporaries */
-                    __Pyx_XDECREF(__pyx_t_5);
-                    __pyx_t_5 = NULL;
-                    __Pyx_XDECREF(__pyx_t_2);
-                    __pyx_t_2 = NULL;
                     __Pyx_XDECREF(__pyx_t_4);
                     __pyx_t_4 = NULL;
-                    __Pyx_XDECREF(__pyx_t_1);
-                    __pyx_t_1 = NULL;
+                    __Pyx_XDECREF(__pyx_t_2);
+                    __pyx_t_2 = NULL;
                     __Pyx_XDECREF(__pyx_t_6);
                     __pyx_t_6 = NULL;
+                    __Pyx_XDECREF(__pyx_t_5);
+                    __pyx_t_5 = NULL;
+                    __Pyx_XDECREF(__pyx_t_1);
+                    __pyx_t_1 = NULL;
                     #ifdef WITH_THREAD
                     PyGILState_Release(__pyx_gilstate_save);
                     #endif
@@ -5524,25 +5524,25 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
               __pyx_parallel_why = 4;
             }
             if (__pyx_parallel_why) {
-              __pyx_v_C0 = __pyx_parallel_temp0;
-              __pyx_v_f2 = __pyx_parallel_temp1;
-              __pyx_v_f1 = __pyx_parallel_temp2;
-              __pyx_v_B1 = __pyx_parallel_temp3;
-              __pyx_v_A2 = __pyx_parallel_temp4;
-              __pyx_v_i = __pyx_parallel_temp5;
-              __pyx_v_delta1 = __pyx_parallel_temp6;
-              __pyx_v_delta2 = __pyx_parallel_temp7;
-              __pyx_v_D2 = __pyx_parallel_temp8;
-              __pyx_v_A1 = __pyx_parallel_temp9;
-              __pyx_v_C1 = __pyx_parallel_temp10;
-              __pyx_v_B2 = __pyx_parallel_temp11;
-              __pyx_v_D1 = __pyx_parallel_temp12;
-              __pyx_v_D0 = __pyx_parallel_temp13;
-              __pyx_v_p1 = __pyx_parallel_temp14;
-              __pyx_v_C2 = __pyx_parallel_temp15;
-              __pyx_v_A0 = __pyx_parallel_temp16;
-              __pyx_v_p2 = __pyx_parallel_temp17;
-              __pyx_v_B0 = __pyx_parallel_temp18;
+              __pyx_v_B1 = __pyx_parallel_temp0;
+              __pyx_v_p1 = __pyx_parallel_temp1;
+              __pyx_v_A1 = __pyx_parallel_temp2;
+              __pyx_v_delta1 = __pyx_parallel_temp3;
+              __pyx_v_delta2 = __pyx_parallel_temp4;
+              __pyx_v_D0 = __pyx_parallel_temp5;
+              __pyx_v_A2 = __pyx_parallel_temp6;
+              __pyx_v_p2 = __pyx_parallel_temp7;
+              __pyx_v_C0 = __pyx_parallel_temp8;
+              __pyx_v_D1 = __pyx_parallel_temp9;
+              __pyx_v_B0 = __pyx_parallel_temp10;
+              __pyx_v_i = __pyx_parallel_temp11;
+              __pyx_v_C2 = __pyx_parallel_temp12;
+              __pyx_v_A0 = __pyx_parallel_temp13;
+              __pyx_v_B2 = __pyx_parallel_temp14;
+              __pyx_v_D2 = __pyx_parallel_temp15;
+              __pyx_v_f2 = __pyx_parallel_temp16;
+              __pyx_v_C1 = __pyx_parallel_temp17;
+              __pyx_v_f1 = __pyx_parallel_temp18;
               switch (__pyx_parallel_why) {
                     case 3: goto __pyx_L4_return;
                     case 4:
@@ -5569,7 +5569,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
         #endif
       }
 
-      /* "bilinear.pyx":75
+      /* "src/bilinear.pyx":75
  *     assert size == d2.size
  * 
  *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -5599,7 +5599,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
       }
   }
 
-  /* "bilinear.pyx":136
+  /* "src/bilinear.pyx":136
  *             + C2 * delta1 * delta2 \
  *             + D2 * (1.0 - delta1) * delta2
  *     if is_flat:             # <<<<<<<<<<<<<<
@@ -5609,7 +5609,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   __pyx_t_9 = (__pyx_v_is_flat != 0);
   if (__pyx_t_9) {
 
-    /* "bilinear.pyx":137
+    /* "src/bilinear.pyx":137
  *             + D2 * (1.0 - delta1) * delta2
  *     if is_flat:
  *         return out1, out2, None             # <<<<<<<<<<<<<<
@@ -5634,7 +5634,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   }
   /*else*/ {
 
-    /* "bilinear.pyx":139
+    /* "src/bilinear.pyx":139
  *         return out1, out2, None
  *     else:
  *         return out1, out2, out3             # <<<<<<<<<<<<<<
@@ -5658,7 +5658,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
     goto __pyx_L0;
   }
 
-  /* "bilinear.pyx":50
+  /* "src/bilinear.pyx":50
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,             # <<<<<<<<<<<<<<
@@ -5679,7 +5679,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out2.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out3.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.calc_cartesian_positions", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -5698,7 +5698,7 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "bilinear.pyx":145
+/* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
@@ -5707,10 +5707,10 @@ static PyObject *__pyx_pf_8bilinear_6calc_cartesian_positions(CYTHON_UNUSED PyOb
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_3convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_8bilinear_2convert_corner_2D_to_4D[] = "\n    Convert 2 (or 3) arrays of corner position into a 4D array of pixel corner coordinates\n\n    @param ndim: 2d or 3D output\n    @param d1: 2D position in dim1 (shape +1)\n    @param d2: 2D position in dim2 (shape +1)\n    @param d3: 2D position in dim3 (z) (shape +1)\n    @return: pos 4D array with position of pixels corners\n    ";
-static PyMethodDef __pyx_mdef_8bilinear_3convert_corner_2D_to_4D = {"convert_corner_2D_to_4D", (PyCFunction)__pyx_pw_8bilinear_3convert_corner_2D_to_4D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_8bilinear_2convert_corner_2D_to_4D};
-static PyObject *__pyx_pw_8bilinear_3convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_8bilinear_3convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_8bilinear_2convert_corner_2D_to_4D[] = "\n    Convert 2 (or 3) arrays of corner position into a 4D array of pixel corner coordinates\n\n    @param ndim: 2d or 3D output\n    @param d1: 2D position in dim1 (shape +1)\n    @param d2: 2D position in dim2 (shape +1)\n    @param d3: 2D position in dim3 (z) (shape +1)\n    @return: pos 4D array with position of pixels corners\n    ";
+static PyMethodDef __pyx_mdef_3src_8bilinear_3convert_corner_2D_to_4D = {"convert_corner_2D_to_4D", (PyCFunction)__pyx_pw_3src_8bilinear_3convert_corner_2D_to_4D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_8bilinear_2convert_corner_2D_to_4D};
+static PyObject *__pyx_pw_3src_8bilinear_3convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_signatures = 0;
   PyObject *__pyx_v_args = 0;
   PyObject *__pyx_v_kwargs = 0;
@@ -5777,18 +5777,18 @@ static PyObject *__pyx_pw_8bilinear_3convert_corner_2D_to_4D(PyObject *__pyx_sel
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__pyx_fused_cpdef", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8bilinear_2convert_corner_2D_to_4D(__pyx_self, __pyx_v_signatures, __pyx_v_args, __pyx_v_kwargs, __pyx_v_defaults);
+  __pyx_r = __pyx_pf_3src_8bilinear_2convert_corner_2D_to_4D(__pyx_self, __pyx_v_signatures, __pyx_v_args, __pyx_v_kwargs, __pyx_v_defaults);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_2convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults) {
+static PyObject *__pyx_pf_3src_8bilinear_2convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_signatures, PyObject *__pyx_v_args, PyObject *__pyx_v_kwargs, CYTHON_UNUSED PyObject *__pyx_v_defaults) {
   PyObject *__pyx_v_dest_sig = NULL;
   PyObject *__pyx_v_ndarray = 0;
   PyObject *__pyx_v_numpy = NULL;
@@ -5872,7 +5872,7 @@ static PyObject *__pyx_pf_8bilinear_2convert_corner_2D_to_4D(CYTHON_UNUSED PyObj
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_7 = PyErr_ExceptionMatches(__pyx_builtin_ImportError) || PyErr_ExceptionMatches(__pyx_builtin_AttributeError) || PyErr_ExceptionMatches(__pyx_builtin_TypeError);
     if (__pyx_t_7) {
-      __Pyx_AddTraceback("bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("src.bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
       if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_8, &__pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L6_except_error;}
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_GOTREF(__pyx_t_8);
@@ -6333,7 +6333,7 @@ static PyObject *__pyx_pf_8bilinear_2convert_corner_2D_to_4D(CYTHON_UNUSED PyObj
   __Pyx_XDECREF(__pyx_t_16);
   __Pyx_XDECREF(__pyx_t_17);
   __Pyx_XDECREF(__pyx_t_18);
-  __Pyx_AddTraceback("bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__pyx_fused_cpdef", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_dest_sig);
@@ -6352,7 +6352,7 @@ static PyObject *__pyx_pf_8bilinear_2convert_corner_2D_to_4D(CYTHON_UNUSED PyObj
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_28__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_3src_8bilinear_28__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6385,7 +6385,7 @@ static PyObject *__pyx_pf_8bilinear_28__defaults__(CYTHON_UNUSED PyObject *__pyx
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6394,9 +6394,9 @@ static PyObject *__pyx_pf_8bilinear_28__defaults__(CYTHON_UNUSED PyObject *__pyx
 }
 
 /* Python wrapper */
-static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_11convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_fuse_0__pyx_mdef_8bilinear_11convert_corner_2D_to_4D = {"__pyx_fuse_0convert_corner_2D_to_4D", (PyCFunction)__pyx_fuse_0__pyx_pw_8bilinear_11convert_corner_2D_to_4D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_8bilinear_2convert_corner_2D_to_4D};
-static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_11convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_fuse_0__pyx_pw_3src_8bilinear_11convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_fuse_0__pyx_mdef_3src_8bilinear_11convert_corner_2D_to_4D = {"__pyx_fuse_0convert_corner_2D_to_4D", (PyCFunction)__pyx_fuse_0__pyx_pw_3src_8bilinear_11convert_corner_2D_to_4D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_8bilinear_2convert_corner_2D_to_4D};
+static PyObject *__pyx_fuse_0__pyx_pw_3src_8bilinear_11convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_ndim;
   __Pyx_memviewslice __pyx_v_d1 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_d2 = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -6470,7 +6470,7 @@ static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_11convert_corner_2D_to_4D(PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("convert_corner_2D_to_4D", 0, 3, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
@@ -6480,7 +6480,7 @@ static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_11convert_corner_2D_to_4D(PyObje
   if (unlikely(((PyObject *)__pyx_v_d2.memview) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "d2"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 147; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_8bilinear_10convert_corner_2D_to_4D(__pyx_self, __pyx_v_ndim, __pyx_v_d1, __pyx_v_d2, __pyx_v_d3);
+  __pyx_r = __pyx_pf_3src_8bilinear_10convert_corner_2D_to_4D(__pyx_self, __pyx_v_ndim, __pyx_v_d1, __pyx_v_d2, __pyx_v_d3);
 
   /* function exit code */
   goto __pyx_L0;
@@ -6491,7 +6491,7 @@ static PyObject *__pyx_fuse_0__pyx_pw_8bilinear_11convert_corner_2D_to_4D(PyObje
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3) {
+static PyObject *__pyx_pf_3src_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3) {
   int __pyx_v_shape0;
   int __pyx_v_shape1;
   int __pyx_v_i;
@@ -6595,7 +6595,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_pybuffernd_pos.data = NULL;
   __pyx_pybuffernd_pos.rcbuffer = &__pyx_pybuffer_pos;
 
-  /* "bilinear.pyx":160
+  /* "src/bilinear.pyx":160
  *     cdef int shape0, shape1, i, j
  *     #  edges position are n+1 compared to number of pixels
  *     shape0 = d1.shape[0] - 1             # <<<<<<<<<<<<<<
@@ -6604,7 +6604,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
  */
   __pyx_v_shape0 = ((__pyx_v_d1.shape[0]) - 1);
 
-  /* "bilinear.pyx":161
+  /* "src/bilinear.pyx":161
  *     #  edges position are n+1 compared to number of pixels
  *     shape0 = d1.shape[0] - 1
  *     shape1 = d2.shape[1] - 1             # <<<<<<<<<<<<<<
@@ -6613,7 +6613,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
  */
   __pyx_v_shape1 = ((__pyx_v_d2.shape[1]) - 1);
 
-  /* "bilinear.pyx":162
+  /* "src/bilinear.pyx":162
  *     shape0 = d1.shape[0] - 1
  *     shape1 = d2.shape[1] - 1
  *     assert d1.shape[0] == d2.shape[0]             # <<<<<<<<<<<<<<
@@ -6629,7 +6629,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   }
   #endif
 
-  /* "bilinear.pyx":163
+  /* "src/bilinear.pyx":163
  *     shape1 = d2.shape[1] - 1
  *     assert d1.shape[0] == d2.shape[0]
  *     assert d1.shape[1] == d2.shape[1]             # <<<<<<<<<<<<<<
@@ -6645,7 +6645,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   }
   #endif
 
-  /* "bilinear.pyx":164
+  /* "src/bilinear.pyx":164
  *     assert d1.shape[0] == d2.shape[0]
  *     assert d1.shape[1] == d2.shape[1]
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -6710,7 +6710,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_v_pos = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "bilinear.pyx":165
+  /* "src/bilinear.pyx":165
  *     assert d1.shape[1] == d2.shape[1]
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
  *     for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -6736,7 +6736,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
             if (__pyx_t_9 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_23, __pyx_t_28, __pyx_t_45, __pyx_t_32, __pyx_t_14, __pyx_t_19, __pyx_t_38, __pyx_t_49, __pyx_t_50, __pyx_t_24, __pyx_t_27, __pyx_t_13, __pyx_t_58, __pyx_t_55, __pyx_t_41, __pyx_t_35, __pyx_t_57, __pyx_t_21, __pyx_t_42, __pyx_t_54, __pyx_t_17, __pyx_t_18, __pyx_t_31, __pyx_t_53, __pyx_t_12, __pyx_t_34, __pyx_t_56, __pyx_t_25, __pyx_t_11, __pyx_t_37, __pyx_t_30, __pyx_t_16, __pyx_t_29, __pyx_t_36, __pyx_t_46, __pyx_t_52, __pyx_t_22, __pyx_t_59, __pyx_t_44, __pyx_t_43, __pyx_t_33, __pyx_t_47, __pyx_t_10, __pyx_t_15, __pyx_t_39, __pyx_t_51, __pyx_t_26, __pyx_t_40, __pyx_t_48, __pyx_t_20)
+                #pragma omp parallel private(__pyx_t_19, __pyx_t_34, __pyx_t_44, __pyx_t_43, __pyx_t_48, __pyx_t_50, __pyx_t_13, __pyx_t_18, __pyx_t_31, __pyx_t_36, __pyx_t_52, __pyx_t_37, __pyx_t_38, __pyx_t_46, __pyx_t_12, __pyx_t_59, __pyx_t_30, __pyx_t_15, __pyx_t_16, __pyx_t_14, __pyx_t_20, __pyx_t_40, __pyx_t_25, __pyx_t_47, __pyx_t_23, __pyx_t_57, __pyx_t_28, __pyx_t_17, __pyx_t_26, __pyx_t_54, __pyx_t_41, __pyx_t_22, __pyx_t_58, __pyx_t_55, __pyx_t_35, __pyx_t_42, __pyx_t_56, __pyx_t_29, __pyx_t_11, __pyx_t_33, __pyx_t_49, __pyx_t_45, __pyx_t_24, __pyx_t_27, __pyx_t_53, __pyx_t_10, __pyx_t_39, __pyx_t_32, __pyx_t_21, __pyx_t_51)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -6748,7 +6748,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                             /* Initialize private variables to invalid values */
                             __pyx_v_j = ((int)0xbad0bad0);
 
-                            /* "bilinear.pyx":166
+                            /* "src/bilinear.pyx":166
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
  *     for i in prange(shape0, nogil=True, schedule="static"):
  *         for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -6759,7 +6759,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                             for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
                               __pyx_v_j = __pyx_t_11;
 
-                              /* "bilinear.pyx":167
+                              /* "src/bilinear.pyx":167
  *     for i in prange(shape0, nogil=True, schedule="static"):
  *         for j in range(shape1):
  *             pos[i, j, 0, ndim - 2] += d1[i, j]             # <<<<<<<<<<<<<<
@@ -6774,7 +6774,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_17 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_14, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_15, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_16, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_17, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_12 * __pyx_v_d1.strides[0]) )) + __pyx_t_13)) )));
 
-                              /* "bilinear.pyx":168
+                              /* "src/bilinear.pyx":168
  *         for j in range(shape1):
  *             pos[i, j, 0, ndim - 2] += d1[i, j]
  *             pos[i, j, 0, ndim - 1] += d2[i, j]             # <<<<<<<<<<<<<<
@@ -6789,7 +6789,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_23 = (__pyx_v_ndim - 1);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_20, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_21, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_22, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_23, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d2.data + __pyx_t_18 * __pyx_v_d2.strides[0]) )) + __pyx_t_19)) )));
 
-                              /* "bilinear.pyx":169
+                              /* "src/bilinear.pyx":169
  *             pos[i, j, 0, ndim - 2] += d1[i, j]
  *             pos[i, j, 0, ndim - 1] += d2[i, j]
  *             pos[i, j, 1, ndim - 2] += d1[i + 1, j]             # <<<<<<<<<<<<<<
@@ -6804,7 +6804,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_29 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_26, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_27, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_28, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_29, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_24 * __pyx_v_d1.strides[0]) )) + __pyx_t_25)) )));
 
-                              /* "bilinear.pyx":170
+                              /* "src/bilinear.pyx":170
  *             pos[i, j, 0, ndim - 1] += d2[i, j]
  *             pos[i, j, 1, ndim - 2] += d1[i + 1, j]
  *             pos[i, j, 1, ndim - 1] += d2[i + 1, j]             # <<<<<<<<<<<<<<
@@ -6819,7 +6819,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_35 = (__pyx_v_ndim - 1);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_33, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_34, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_35, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d2.data + __pyx_t_30 * __pyx_v_d2.strides[0]) )) + __pyx_t_31)) )));
 
-                              /* "bilinear.pyx":171
+                              /* "src/bilinear.pyx":171
  *             pos[i, j, 1, ndim - 2] += d1[i + 1, j]
  *             pos[i, j, 1, ndim - 1] += d2[i + 1, j]
  *             pos[i, j, 2, ndim - 2] += d1[i + 1, j + 1]             # <<<<<<<<<<<<<<
@@ -6834,7 +6834,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_41 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_38, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_39, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_40, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_41, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_36 * __pyx_v_d1.strides[0]) )) + __pyx_t_37)) )));
 
-                              /* "bilinear.pyx":172
+                              /* "src/bilinear.pyx":172
  *             pos[i, j, 1, ndim - 1] += d2[i + 1, j]
  *             pos[i, j, 2, ndim - 2] += d1[i + 1, j + 1]
  *             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]             # <<<<<<<<<<<<<<
@@ -6849,7 +6849,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_47 = (__pyx_v_ndim - 1);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_44, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_45, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_46, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_47, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d2.data + __pyx_t_42 * __pyx_v_d2.strides[0]) )) + __pyx_t_43)) )));
 
-                              /* "bilinear.pyx":173
+                              /* "src/bilinear.pyx":173
  *             pos[i, j, 2, ndim - 2] += d1[i + 1, j + 1]
  *             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]
  *             pos[i, j, 3, ndim - 2] += d1[i, j + 1]             # <<<<<<<<<<<<<<
@@ -6864,7 +6864,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_53 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_50, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_51, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_52, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_53, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_48 * __pyx_v_d1.strides[0]) )) + __pyx_t_49)) )));
 
-                              /* "bilinear.pyx":174
+                              /* "src/bilinear.pyx":174
  *             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]
  *             pos[i, j, 3, ndim - 2] += d1[i, j + 1]
  *             pos[i, j, 3, ndim - 1] += d2[i, j + 1]             # <<<<<<<<<<<<<<
@@ -6892,7 +6892,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
         #endif
       }
 
-      /* "bilinear.pyx":165
+      /* "src/bilinear.pyx":165
  *     assert d1.shape[1] == d2.shape[1]
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
  *     for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -6910,7 +6910,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
       }
   }
 
-  /* "bilinear.pyx":175
+  /* "src/bilinear.pyx":175
  *             pos[i, j, 3, ndim - 2] += d1[i, j + 1]
  *             pos[i, j, 3, ndim - 1] += d2[i, j + 1]
  *     if (d3 is not None) and (ndim == 3):             # <<<<<<<<<<<<<<
@@ -6928,7 +6928,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_L15_bool_binop_done:;
   if (__pyx_t_60) {
 
-    /* "bilinear.pyx":176
+    /* "src/bilinear.pyx":176
  *             pos[i, j, 3, ndim - 1] += d2[i, j + 1]
  *     if (d3 is not None) and (ndim == 3):
  *         assert d1.shape[0] == d3.shape[0]             # <<<<<<<<<<<<<<
@@ -6944,7 +6944,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
     }
     #endif
 
-    /* "bilinear.pyx":177
+    /* "src/bilinear.pyx":177
  *     if (d3 is not None) and (ndim == 3):
  *         assert d1.shape[0] == d3.shape[0]
  *         assert d1.shape[1] == d3.shape[1]             # <<<<<<<<<<<<<<
@@ -6960,7 +6960,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
     }
     #endif
 
-    /* "bilinear.pyx":178
+    /* "src/bilinear.pyx":178
  *         assert d1.shape[0] == d3.shape[0]
  *         assert d1.shape[1] == d3.shape[1]
  *         for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -6986,7 +6986,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
               if (__pyx_t_7 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_80, __pyx_t_64, __pyx_t_67, __pyx_t_83, __pyx_t_76, __pyx_t_84, __pyx_t_73, __pyx_t_63, __pyx_t_71, __pyx_t_79, __pyx_t_72, __pyx_t_68, __pyx_t_65, __pyx_t_81, __pyx_t_75, __pyx_t_85, __pyx_t_70, __pyx_t_11, __pyx_t_78, __pyx_t_69, __pyx_t_74, __pyx_t_66, __pyx_t_10, __pyx_t_82, __pyx_t_77, __pyx_t_62)
+                  #pragma omp parallel private(__pyx_t_72, __pyx_t_62, __pyx_t_76, __pyx_t_74, __pyx_t_63, __pyx_t_80, __pyx_t_64, __pyx_t_67, __pyx_t_65, __pyx_t_66, __pyx_t_71, __pyx_t_79, __pyx_t_69, __pyx_t_82, __pyx_t_81, __pyx_t_84, __pyx_t_73, __pyx_t_68, __pyx_t_70, __pyx_t_11, __pyx_t_78, __pyx_t_83, __pyx_t_75, __pyx_t_10, __pyx_t_85, __pyx_t_77)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -6998,7 +6998,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               /* Initialize private variables to invalid values */
                               __pyx_v_j = ((int)0xbad0bad0);
 
-                              /* "bilinear.pyx":179
+                              /* "src/bilinear.pyx":179
  *         assert d1.shape[1] == d3.shape[1]
  *         for i in prange(shape0, nogil=True, schedule="static"):
  *             for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -7009,7 +7009,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
                                 __pyx_v_j = __pyx_t_11;
 
-                                /* "bilinear.pyx":180
+                                /* "src/bilinear.pyx":180
  *         for i in prange(shape0, nogil=True, schedule="static"):
  *             for j in range(shape1):
  *                 pos[i, j, 0, 0] += d3[i, j]             # <<<<<<<<<<<<<<
@@ -7024,7 +7024,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                                 __pyx_t_67 = 0;
                                 *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_64, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_65, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_66, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_67, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d3.data + __pyx_t_62 * __pyx_v_d3.strides[0]) )) + __pyx_t_63)) )));
 
-                                /* "bilinear.pyx":181
+                                /* "src/bilinear.pyx":181
  *             for j in range(shape1):
  *                 pos[i, j, 0, 0] += d3[i, j]
  *                 pos[i, j, 1, 0] += d3[i + 1, j]             # <<<<<<<<<<<<<<
@@ -7039,7 +7039,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                                 __pyx_t_73 = 0;
                                 *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_70, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_71, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_72, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_73, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d3.data + __pyx_t_68 * __pyx_v_d3.strides[0]) )) + __pyx_t_69)) )));
 
-                                /* "bilinear.pyx":182
+                                /* "src/bilinear.pyx":182
  *                 pos[i, j, 0, 0] += d3[i, j]
  *                 pos[i, j, 1, 0] += d3[i + 1, j]
  *                 pos[i, j, 2, 0] += d3[i + 1, j + 1]             # <<<<<<<<<<<<<<
@@ -7054,7 +7054,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                                 __pyx_t_79 = 0;
                                 *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_76, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_77, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_78, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_79, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_d3.data + __pyx_t_74 * __pyx_v_d3.strides[0]) )) + __pyx_t_75)) )));
 
-                                /* "bilinear.pyx":183
+                                /* "src/bilinear.pyx":183
  *                 pos[i, j, 1, 0] += d3[i + 1, j]
  *                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
  *                 pos[i, j, 3, 0] += d3[i, j + 1]             # <<<<<<<<<<<<<<
@@ -7082,7 +7082,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
           #endif
         }
 
-        /* "bilinear.pyx":178
+        /* "src/bilinear.pyx":178
  *         assert d1.shape[0] == d3.shape[0]
  *         assert d1.shape[1] == d3.shape[1]
  *         for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -7103,7 +7103,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   }
   __pyx_L14:;
 
-  /* "bilinear.pyx":184
+  /* "src/bilinear.pyx":184
  *                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
  *                 pos[i, j, 3, 0] += d3[i, j + 1]
  *     return pos             # <<<<<<<<<<<<<<
@@ -7115,7 +7115,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_r = ((PyObject *)__pyx_v_pos);
   goto __pyx_L0;
 
-  /* "bilinear.pyx":145
+  /* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
@@ -7134,7 +7134,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_pos.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -7149,7 +7149,7 @@ static PyObject *__pyx_pf_8bilinear_10convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_30__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_3src_8bilinear_30__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7182,7 +7182,7 @@ static PyObject *__pyx_pf_8bilinear_30__defaults__(CYTHON_UNUSED PyObject *__pyx
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7191,9 +7191,9 @@ static PyObject *__pyx_pf_8bilinear_30__defaults__(CYTHON_UNUSED PyObject *__pyx
 }
 
 /* Python wrapper */
-static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_13convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_fuse_1__pyx_mdef_8bilinear_13convert_corner_2D_to_4D = {"__pyx_fuse_1convert_corner_2D_to_4D", (PyCFunction)__pyx_fuse_1__pyx_pw_8bilinear_13convert_corner_2D_to_4D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_8bilinear_2convert_corner_2D_to_4D};
-static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_13convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_fuse_1__pyx_pw_3src_8bilinear_13convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_fuse_1__pyx_mdef_3src_8bilinear_13convert_corner_2D_to_4D = {"__pyx_fuse_1convert_corner_2D_to_4D", (PyCFunction)__pyx_fuse_1__pyx_pw_3src_8bilinear_13convert_corner_2D_to_4D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_8bilinear_2convert_corner_2D_to_4D};
+static PyObject *__pyx_fuse_1__pyx_pw_3src_8bilinear_13convert_corner_2D_to_4D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_ndim;
   __Pyx_memviewslice __pyx_v_d1 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_d2 = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -7267,7 +7267,7 @@ static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_13convert_corner_2D_to_4D(PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("convert_corner_2D_to_4D", 0, 3, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
@@ -7277,7 +7277,7 @@ static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_13convert_corner_2D_to_4D(PyObje
   if (unlikely(((PyObject *)__pyx_v_d2.memview) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "d2"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 147; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_8bilinear_12convert_corner_2D_to_4D(__pyx_self, __pyx_v_ndim, __pyx_v_d1, __pyx_v_d2, __pyx_v_d3);
+  __pyx_r = __pyx_pf_3src_8bilinear_12convert_corner_2D_to_4D(__pyx_self, __pyx_v_ndim, __pyx_v_d1, __pyx_v_d2, __pyx_v_d3);
 
   /* function exit code */
   goto __pyx_L0;
@@ -7288,7 +7288,7 @@ static PyObject *__pyx_fuse_1__pyx_pw_8bilinear_13convert_corner_2D_to_4D(PyObje
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3) {
+static PyObject *__pyx_pf_3src_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_ndim, __Pyx_memviewslice __pyx_v_d1, __Pyx_memviewslice __pyx_v_d2, __Pyx_memviewslice __pyx_v_d3) {
   int __pyx_v_shape0;
   int __pyx_v_shape1;
   int __pyx_v_i;
@@ -7392,7 +7392,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_pybuffernd_pos.data = NULL;
   __pyx_pybuffernd_pos.rcbuffer = &__pyx_pybuffer_pos;
 
-  /* "bilinear.pyx":160
+  /* "src/bilinear.pyx":160
  *     cdef int shape0, shape1, i, j
  *     #  edges position are n+1 compared to number of pixels
  *     shape0 = d1.shape[0] - 1             # <<<<<<<<<<<<<<
@@ -7401,7 +7401,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
  */
   __pyx_v_shape0 = ((__pyx_v_d1.shape[0]) - 1);
 
-  /* "bilinear.pyx":161
+  /* "src/bilinear.pyx":161
  *     #  edges position are n+1 compared to number of pixels
  *     shape0 = d1.shape[0] - 1
  *     shape1 = d2.shape[1] - 1             # <<<<<<<<<<<<<<
@@ -7410,7 +7410,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
  */
   __pyx_v_shape1 = ((__pyx_v_d2.shape[1]) - 1);
 
-  /* "bilinear.pyx":162
+  /* "src/bilinear.pyx":162
  *     shape0 = d1.shape[0] - 1
  *     shape1 = d2.shape[1] - 1
  *     assert d1.shape[0] == d2.shape[0]             # <<<<<<<<<<<<<<
@@ -7426,7 +7426,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   }
   #endif
 
-  /* "bilinear.pyx":163
+  /* "src/bilinear.pyx":163
  *     shape1 = d2.shape[1] - 1
  *     assert d1.shape[0] == d2.shape[0]
  *     assert d1.shape[1] == d2.shape[1]             # <<<<<<<<<<<<<<
@@ -7442,7 +7442,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   }
   #endif
 
-  /* "bilinear.pyx":164
+  /* "src/bilinear.pyx":164
  *     assert d1.shape[0] == d2.shape[0]
  *     assert d1.shape[1] == d2.shape[1]
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -7507,7 +7507,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_v_pos = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "bilinear.pyx":165
+  /* "src/bilinear.pyx":165
  *     assert d1.shape[1] == d2.shape[1]
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
  *     for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -7533,11 +7533,11 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
             if (__pyx_t_9 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_23, __pyx_t_28, __pyx_t_45, __pyx_t_32, __pyx_t_14, __pyx_t_19, __pyx_t_38, __pyx_t_49, __pyx_t_50, __pyx_t_24, __pyx_t_27, __pyx_t_13, __pyx_t_58, __pyx_t_55, __pyx_t_41, __pyx_t_35, __pyx_t_57, __pyx_t_21, __pyx_t_42, __pyx_t_54, __pyx_t_17, __pyx_t_18, __pyx_t_31, __pyx_t_53, __pyx_t_12, __pyx_t_34, __pyx_t_56, __pyx_t_25, __pyx_t_11, __pyx_t_37, __pyx_t_30, __pyx_t_16, __pyx_t_29, __pyx_t_36, __pyx_t_46, __pyx_t_52, __pyx_t_22, __pyx_t_59, __pyx_t_44, __pyx_t_43, __pyx_t_33, __pyx_t_47, __pyx_t_10, __pyx_t_15, __pyx_t_39, __pyx_t_51, __pyx_t_26, __pyx_t_40, __pyx_t_48, __pyx_t_20)
+                #pragma omp parallel private(__pyx_t_19, __pyx_t_34, __pyx_t_44, __pyx_t_43, __pyx_t_48, __pyx_t_50, __pyx_t_13, __pyx_t_18, __pyx_t_31, __pyx_t_36, __pyx_t_52, __pyx_t_37, __pyx_t_38, __pyx_t_46, __pyx_t_12, __pyx_t_59, __pyx_t_30, __pyx_t_15, __pyx_t_16, __pyx_t_14, __pyx_t_20, __pyx_t_40, __pyx_t_25, __pyx_t_47, __pyx_t_23, __pyx_t_57, __pyx_t_28, __pyx_t_17, __pyx_t_26, __pyx_t_54, __pyx_t_41, __pyx_t_22, __pyx_t_58, __pyx_t_55, __pyx_t_35, __pyx_t_42, __pyx_t_56, __pyx_t_29, __pyx_t_11, __pyx_t_33, __pyx_t_49, __pyx_t_45, __pyx_t_24, __pyx_t_27, __pyx_t_53, __pyx_t_10, __pyx_t_39, __pyx_t_32, __pyx_t_21, __pyx_t_51)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_j) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                    #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                         {
@@ -7545,7 +7545,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                             /* Initialize private variables to invalid values */
                             __pyx_v_j = ((int)0xbad0bad0);
 
-                            /* "bilinear.pyx":166
+                            /* "src/bilinear.pyx":166
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
  *     for i in prange(shape0, nogil=True, schedule="static"):
  *         for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -7556,7 +7556,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                             for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
                               __pyx_v_j = __pyx_t_11;
 
-                              /* "bilinear.pyx":167
+                              /* "src/bilinear.pyx":167
  *     for i in prange(shape0, nogil=True, schedule="static"):
  *         for j in range(shape1):
  *             pos[i, j, 0, ndim - 2] += d1[i, j]             # <<<<<<<<<<<<<<
@@ -7571,7 +7571,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_17 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_14, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_15, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_16, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_17, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_12 * __pyx_v_d1.strides[0]) )) + __pyx_t_13)) )));
 
-                              /* "bilinear.pyx":168
+                              /* "src/bilinear.pyx":168
  *         for j in range(shape1):
  *             pos[i, j, 0, ndim - 2] += d1[i, j]
  *             pos[i, j, 0, ndim - 1] += d2[i, j]             # <<<<<<<<<<<<<<
@@ -7586,7 +7586,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_23 = (__pyx_v_ndim - 1);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_20, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_21, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_22, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_23, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d2.data + __pyx_t_18 * __pyx_v_d2.strides[0]) )) + __pyx_t_19)) )));
 
-                              /* "bilinear.pyx":169
+                              /* "src/bilinear.pyx":169
  *             pos[i, j, 0, ndim - 2] += d1[i, j]
  *             pos[i, j, 0, ndim - 1] += d2[i, j]
  *             pos[i, j, 1, ndim - 2] += d1[i + 1, j]             # <<<<<<<<<<<<<<
@@ -7601,7 +7601,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_29 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_26, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_27, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_28, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_29, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_24 * __pyx_v_d1.strides[0]) )) + __pyx_t_25)) )));
 
-                              /* "bilinear.pyx":170
+                              /* "src/bilinear.pyx":170
  *             pos[i, j, 0, ndim - 1] += d2[i, j]
  *             pos[i, j, 1, ndim - 2] += d1[i + 1, j]
  *             pos[i, j, 1, ndim - 1] += d2[i + 1, j]             # <<<<<<<<<<<<<<
@@ -7616,7 +7616,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_35 = (__pyx_v_ndim - 1);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_33, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_34, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_35, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d2.data + __pyx_t_30 * __pyx_v_d2.strides[0]) )) + __pyx_t_31)) )));
 
-                              /* "bilinear.pyx":171
+                              /* "src/bilinear.pyx":171
  *             pos[i, j, 1, ndim - 2] += d1[i + 1, j]
  *             pos[i, j, 1, ndim - 1] += d2[i + 1, j]
  *             pos[i, j, 2, ndim - 2] += d1[i + 1, j + 1]             # <<<<<<<<<<<<<<
@@ -7631,7 +7631,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_41 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_38, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_39, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_40, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_41, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_36 * __pyx_v_d1.strides[0]) )) + __pyx_t_37)) )));
 
-                              /* "bilinear.pyx":172
+                              /* "src/bilinear.pyx":172
  *             pos[i, j, 1, ndim - 1] += d2[i + 1, j]
  *             pos[i, j, 2, ndim - 2] += d1[i + 1, j + 1]
  *             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]             # <<<<<<<<<<<<<<
@@ -7646,7 +7646,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_47 = (__pyx_v_ndim - 1);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_44, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_45, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_46, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_47, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d2.data + __pyx_t_42 * __pyx_v_d2.strides[0]) )) + __pyx_t_43)) )));
 
-                              /* "bilinear.pyx":173
+                              /* "src/bilinear.pyx":173
  *             pos[i, j, 2, ndim - 2] += d1[i + 1, j + 1]
  *             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]
  *             pos[i, j, 3, ndim - 2] += d1[i, j + 1]             # <<<<<<<<<<<<<<
@@ -7661,7 +7661,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               __pyx_t_53 = (__pyx_v_ndim - 2);
                               *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_50, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_51, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_52, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_53, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d1.data + __pyx_t_48 * __pyx_v_d1.strides[0]) )) + __pyx_t_49)) )));
 
-                              /* "bilinear.pyx":174
+                              /* "src/bilinear.pyx":174
  *             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]
  *             pos[i, j, 3, ndim - 2] += d1[i, j + 1]
  *             pos[i, j, 3, ndim - 1] += d2[i, j + 1]             # <<<<<<<<<<<<<<
@@ -7689,7 +7689,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
         #endif
       }
 
-      /* "bilinear.pyx":165
+      /* "src/bilinear.pyx":165
  *     assert d1.shape[1] == d2.shape[1]
  *     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
  *     for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -7707,7 +7707,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
       }
   }
 
-  /* "bilinear.pyx":175
+  /* "src/bilinear.pyx":175
  *             pos[i, j, 3, ndim - 2] += d1[i, j + 1]
  *             pos[i, j, 3, ndim - 1] += d2[i, j + 1]
  *     if (d3 is not None) and (ndim == 3):             # <<<<<<<<<<<<<<
@@ -7725,7 +7725,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_L15_bool_binop_done:;
   if (__pyx_t_60) {
 
-    /* "bilinear.pyx":176
+    /* "src/bilinear.pyx":176
  *             pos[i, j, 3, ndim - 1] += d2[i, j + 1]
  *     if (d3 is not None) and (ndim == 3):
  *         assert d1.shape[0] == d3.shape[0]             # <<<<<<<<<<<<<<
@@ -7741,7 +7741,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
     }
     #endif
 
-    /* "bilinear.pyx":177
+    /* "src/bilinear.pyx":177
  *     if (d3 is not None) and (ndim == 3):
  *         assert d1.shape[0] == d3.shape[0]
  *         assert d1.shape[1] == d3.shape[1]             # <<<<<<<<<<<<<<
@@ -7757,7 +7757,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
     }
     #endif
 
-    /* "bilinear.pyx":178
+    /* "src/bilinear.pyx":178
  *         assert d1.shape[0] == d3.shape[0]
  *         assert d1.shape[1] == d3.shape[1]
  *         for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -7783,11 +7783,11 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
               if (__pyx_t_7 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_80, __pyx_t_64, __pyx_t_67, __pyx_t_83, __pyx_t_76, __pyx_t_84, __pyx_t_73, __pyx_t_63, __pyx_t_71, __pyx_t_79, __pyx_t_72, __pyx_t_68, __pyx_t_65, __pyx_t_81, __pyx_t_75, __pyx_t_85, __pyx_t_70, __pyx_t_11, __pyx_t_78, __pyx_t_69, __pyx_t_74, __pyx_t_66, __pyx_t_10, __pyx_t_82, __pyx_t_77, __pyx_t_62)
+                  #pragma omp parallel private(__pyx_t_72, __pyx_t_62, __pyx_t_76, __pyx_t_74, __pyx_t_63, __pyx_t_80, __pyx_t_64, __pyx_t_67, __pyx_t_65, __pyx_t_66, __pyx_t_71, __pyx_t_79, __pyx_t_69, __pyx_t_82, __pyx_t_81, __pyx_t_84, __pyx_t_73, __pyx_t_68, __pyx_t_70, __pyx_t_11, __pyx_t_78, __pyx_t_83, __pyx_t_75, __pyx_t_10, __pyx_t_85, __pyx_t_77)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_j) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                      #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8++){
                           {
@@ -7795,7 +7795,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               /* Initialize private variables to invalid values */
                               __pyx_v_j = ((int)0xbad0bad0);
 
-                              /* "bilinear.pyx":179
+                              /* "src/bilinear.pyx":179
  *         assert d1.shape[1] == d3.shape[1]
  *         for i in prange(shape0, nogil=True, schedule="static"):
  *             for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -7806,7 +7806,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                               for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
                                 __pyx_v_j = __pyx_t_11;
 
-                                /* "bilinear.pyx":180
+                                /* "src/bilinear.pyx":180
  *         for i in prange(shape0, nogil=True, schedule="static"):
  *             for j in range(shape1):
  *                 pos[i, j, 0, 0] += d3[i, j]             # <<<<<<<<<<<<<<
@@ -7821,7 +7821,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                                 __pyx_t_67 = 0;
                                 *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_64, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_65, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_66, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_67, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d3.data + __pyx_t_62 * __pyx_v_d3.strides[0]) )) + __pyx_t_63)) )));
 
-                                /* "bilinear.pyx":181
+                                /* "src/bilinear.pyx":181
  *             for j in range(shape1):
  *                 pos[i, j, 0, 0] += d3[i, j]
  *                 pos[i, j, 1, 0] += d3[i + 1, j]             # <<<<<<<<<<<<<<
@@ -7836,7 +7836,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                                 __pyx_t_73 = 0;
                                 *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_70, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_71, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_72, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_73, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d3.data + __pyx_t_68 * __pyx_v_d3.strides[0]) )) + __pyx_t_69)) )));
 
-                                /* "bilinear.pyx":182
+                                /* "src/bilinear.pyx":182
  *                 pos[i, j, 0, 0] += d3[i, j]
  *                 pos[i, j, 1, 0] += d3[i + 1, j]
  *                 pos[i, j, 2, 0] += d3[i + 1, j + 1]             # <<<<<<<<<<<<<<
@@ -7851,7 +7851,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
                                 __pyx_t_79 = 0;
                                 *__Pyx_BufPtrStrided4d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_pos.rcbuffer->pybuffer.buf, __pyx_t_76, __pyx_pybuffernd_pos.diminfo[0].strides, __pyx_t_77, __pyx_pybuffernd_pos.diminfo[1].strides, __pyx_t_78, __pyx_pybuffernd_pos.diminfo[2].strides, __pyx_t_79, __pyx_pybuffernd_pos.diminfo[3].strides) += (*((double *) ( /* dim=1 */ ((char *) (((double *) ( /* dim=0 */ (__pyx_v_d3.data + __pyx_t_74 * __pyx_v_d3.strides[0]) )) + __pyx_t_75)) )));
 
-                                /* "bilinear.pyx":183
+                                /* "src/bilinear.pyx":183
  *                 pos[i, j, 1, 0] += d3[i + 1, j]
  *                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
  *                 pos[i, j, 3, 0] += d3[i, j + 1]             # <<<<<<<<<<<<<<
@@ -7879,7 +7879,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
           #endif
         }
 
-        /* "bilinear.pyx":178
+        /* "src/bilinear.pyx":178
  *         assert d1.shape[0] == d3.shape[0]
  *         assert d1.shape[1] == d3.shape[1]
  *         for i in prange(shape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -7900,7 +7900,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   }
   __pyx_L14:;
 
-  /* "bilinear.pyx":184
+  /* "src/bilinear.pyx":184
  *                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
  *                 pos[i, j, 3, 0] += d3[i, j + 1]
  *     return pos             # <<<<<<<<<<<<<<
@@ -7912,7 +7912,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
   __pyx_r = ((PyObject *)__pyx_v_pos);
   goto __pyx_L0;
 
-  /* "bilinear.pyx":145
+  /* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
@@ -7931,7 +7931,7 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_pos.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.convert_corner_2D_to_4D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -7955,8 +7955,8 @@ static PyObject *__pyx_pf_8bilinear_12convert_corner_2D_to_4D(CYTHON_UNUSED PyOb
  */
 
 /* Python wrapper */
-static int __pyx_pw_8bilinear_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_8bilinear_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_3src_8bilinear_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_3src_8bilinear_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_data = 0;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -7995,14 +7995,14 @@ static int __pyx_pw_8bilinear_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObj
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[1]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_data) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "data"); {__pyx_filename = __pyx_f[1]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear___cinit__(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self), __pyx_v_data);
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear___cinit__(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self), __pyx_v_data);
 
   /* function exit code */
   goto __pyx_L0;
@@ -8013,7 +8013,7 @@ static int __pyx_pw_8bilinear_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObj
   return __pyx_r;
 }
 
-static int __pyx_pf_8bilinear_8Bilinear___cinit__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_data) {
+static int __pyx_pf_3src_8bilinear_8Bilinear___cinit__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_data) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8203,7 +8203,7 @@ static int __pyx_pf_8bilinear_8Bilinear___cinit__(struct __pyx_obj_8bilinear_Bil
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_8);
   __PYX_XDEC_MEMVIEW(&__pyx_t_9, 1);
-  __Pyx_AddTraceback("bilinear.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -8219,17 +8219,17 @@ static int __pyx_pf_8bilinear_8Bilinear___cinit__(struct __pyx_obj_8bilinear_Bil
  */
 
 /* Python wrapper */
-static void __pyx_pw_8bilinear_8Bilinear_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_8bilinear_8Bilinear_3__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_3src_8bilinear_8Bilinear_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_3src_8bilinear_8Bilinear_3__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_8bilinear_8Bilinear_2__dealloc__(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self));
+  __pyx_pf_3src_8bilinear_8Bilinear_2__dealloc__(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
 }
 
-static void __pyx_pf_8bilinear_8Bilinear_2__dealloc__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self) {
+static void __pyx_pf_3src_8bilinear_8Bilinear_2__dealloc__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_memviewslice __pyx_t_1 = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_lineno = 0;
@@ -8263,7 +8263,7 @@ static void __pyx_pf_8bilinear_8Bilinear_2__dealloc__(struct __pyx_obj_8bilinear
   goto __pyx_L0;
   __pyx_L1_error:;
   __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
-  __Pyx_WriteUnraisable("bilinear.Bilinear.__dealloc__", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src.bilinear.Bilinear.__dealloc__", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
@@ -8277,20 +8277,20 @@ static void __pyx_pf_8bilinear_8Bilinear_2__dealloc__(struct __pyx_obj_8bilinear
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_8bilinear_8Bilinear_4f_cy[] = "\n        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates\n        @param x: 2-tuple of float\n        @return: Interpolated signal from the image (negative for minimizer)\n\n        ";
-static PyObject *__pyx_pw_8bilinear_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
+static char __pyx_doc_3src_8bilinear_8Bilinear_4f_cy[] = "\n        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates\n        @param x: 2-tuple of float\n        @return: Interpolated signal from the image (negative for minimizer)\n\n        ";
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("f_cy (wrapper)", 0);
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_4f_cy(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_4f_cy(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4f_cy(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4f_cy(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
   float __pyx_v_d0;
   float __pyx_v_d1;
   int __pyx_v_i0;
@@ -8711,7 +8711,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4f_cy(struct __pyx_obj_8bilinear_B
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("bilinear.Bilinear.f_cy", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.f_cy", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8728,20 +8728,20 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4f_cy(struct __pyx_obj_8bilinear_B
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_8bilinear_8Bilinear_6local_maxi[] = "\n        Return the local maximum ... with sub-pixel refinement\n\n        @param x: 2-tuple of integers\n        @param w: half with of the window: 1 or 2 are advised\n        @return: 2-tuple of int with the nearest local maximum\n\n\n        Sub-pixel refinement:\n        Second order Taylor expansion of the function; first derivative is null\n        delta = x-i = -Inverse[Hessian].gradient\n\n        if Hessian is singular or |delta|>1: use a center of mass.\n\n        ";
-static PyObject *__pyx_pw_8bilinear_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
+static char __pyx_doc_3src_8bilinear_8Bilinear_6local_maxi[] = "\n        Return the local maximum ... with sub-pixel refinement\n\n        @param x: 2-tuple of integers\n        @param w: half with of the window: 1 or 2 are advised\n        @return: 2-tuple of int with the nearest local maximum\n\n\n        Sub-pixel refinement:\n        Second order Taylor expansion of the function; first derivative is null\n        delta = x-i = -Inverse[Hessian].gradient\n\n        if Hessian is singular or |delta|>1: use a center of mass.\n\n        ";
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("local_maxi (wrapper)", 0);
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_6local_maxi(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_6local_maxi(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_6local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_6local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
   int __pyx_v_res;
   int __pyx_v_current0;
   int __pyx_v_current1;
@@ -8853,7 +8853,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_6local_maxi(struct __pyx_obj_8bili
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __Pyx_PyInt_As_size_t(__pyx_t_1); if (unlikely((__pyx_t_4 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_v_res = ((struct __pyx_vtabstruct_8bilinear_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_t_4);
+  __pyx_v_res = ((struct __pyx_vtabstruct_3src_8bilinear_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_t_4);
 
   /* "src/bilinear.pxi":122
  *         res = self.c_local_maxi(round(x[0]) * self.width + round(x[1]))
@@ -9297,7 +9297,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_6local_maxi(struct __pyx_obj_8bili
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("bilinear.Bilinear.local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9313,8 +9313,8 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_6local_maxi(struct __pyx_obj_8bili
  * 
  */
 
-static PyObject *__pyx_pw_8bilinear_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
-static size_t __pyx_f_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
+static size_t __pyx_f_3src_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch) {
   size_t __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9334,7 +9334,7 @@ static size_t __pyx_f_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_8biline
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_cp_local_maxi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_8bilinear_8Bilinear_9cp_local_maxi)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_8bilinear_8Bilinear_9cp_local_maxi)) {
       __pyx_t_3 = __Pyx_PyInt_FromSize_t(__pyx_v_x); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
@@ -9380,7 +9380,7 @@ static size_t __pyx_f_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_8biline
  * 
  *     @cython.boundscheck(False)
  */
-  __pyx_r = ((struct __pyx_vtabstruct_8bilinear_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_v_x);
+  __pyx_r = ((struct __pyx_vtabstruct_3src_8bilinear_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_v_x);
   goto __pyx_L0;
 
   /* "src/bilinear.pxi":161
@@ -9399,7 +9399,7 @@ static size_t __pyx_f_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_8biline
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_WriteUnraisable("bilinear.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src.bilinear.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -9407,8 +9407,8 @@ static size_t __pyx_f_8bilinear_8Bilinear_cp_local_maxi(struct __pyx_obj_8biline
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
-static PyObject *__pyx_pw_8bilinear_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x) {
   size_t __pyx_v_x;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -9421,18 +9421,18 @@ static PyObject *__pyx_pw_8bilinear_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_s
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("bilinear.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_8cp_local_maxi(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self), ((size_t)__pyx_v_x));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_8cp_local_maxi(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self), ((size_t)__pyx_v_x));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_8cp_local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_8cp_local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9441,7 +9441,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_8cp_local_maxi(struct __pyx_obj_8b
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("cp_local_maxi", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_8bilinear_8Bilinear_cp_local_maxi(__pyx_v_self, __pyx_v_x, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_3src_8bilinear_8Bilinear_cp_local_maxi(__pyx_v_self, __pyx_v_x, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -9450,7 +9450,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_8cp_local_maxi(struct __pyx_obj_8b
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("bilinear.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9466,7 +9466,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_8cp_local_maxi(struct __pyx_obj_8b
  *         Return the local maximum ... without sub-pixel refinement
  */
 
-static size_t __pyx_f_8bilinear_8Bilinear_c_local_maxi(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
+static size_t __pyx_f_3src_8bilinear_8Bilinear_c_local_maxi(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
   int __pyx_v_current0;
   int __pyx_v_current1;
   int __pyx_v_i0;
@@ -9736,7 +9736,7 @@ static size_t __pyx_f_8bilinear_8Bilinear_c_local_maxi(struct __pyx_obj_8bilinea
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("bilinear.Bilinear.c_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src.bilinear.Bilinear.c_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   return __pyx_r;
@@ -9751,19 +9751,19 @@ static size_t __pyx_f_8bilinear_8Bilinear_c_local_maxi(struct __pyx_obj_8bilinea
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_4data_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_8bilinear_8Bilinear_4data_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_4data_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_4data_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_4data___get__(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_4data___get__(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4data___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4data___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9782,7 +9782,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4data___get__(struct __pyx_obj_8bi
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("bilinear.Bilinear.data.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.data.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9799,19 +9799,19 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4data___get__(struct __pyx_obj_8bi
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_8bilinear_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_4maxi___get__(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_4maxi___get__(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4maxi___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4maxi___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9829,7 +9829,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4maxi___get__(struct __pyx_obj_8bi
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("bilinear.Bilinear.maxi.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.maxi.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9838,19 +9838,19 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4maxi___get__(struct __pyx_obj_8bi
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_8bilinear_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_4mini___get__(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_4mini___get__(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_4mini___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_4mini___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9868,7 +9868,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4mini___get__(struct __pyx_obj_8bi
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("bilinear.Bilinear.mini.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.mini.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9885,19 +9885,19 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_4mini___get__(struct __pyx_obj_8bi
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_5width_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_8bilinear_8Bilinear_5width_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_5width_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_5width_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_5width___get__(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_5width___get__(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_5width___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_5width___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9915,7 +9915,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_5width___get__(struct __pyx_obj_8b
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("bilinear.Bilinear.width.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.width.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9924,19 +9924,19 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_5width___get__(struct __pyx_obj_8b
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8bilinear_8Bilinear_6height_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_8bilinear_8Bilinear_6height_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_6height_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_8bilinear_8Bilinear_6height_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_8bilinear_8Bilinear_6height___get__(((struct __pyx_obj_8bilinear_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_8bilinear_8Bilinear_6height___get__(((struct __pyx_obj_3src_8bilinear_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8bilinear_8Bilinear_6height___get__(struct __pyx_obj_8bilinear_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_8bilinear_8Bilinear_6height___get__(struct __pyx_obj_3src_8bilinear_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -9954,7 +9954,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_6height___get__(struct __pyx_obj_8
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("bilinear.Bilinear.height.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.bilinear.Bilinear.height.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9962,7 +9962,7 @@ static PyObject *__pyx_pf_8bilinear_8Bilinear_6height___get__(struct __pyx_obj_8
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -10012,7 +10012,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_GIVEREF(__pyx_v_info->obj);
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":200
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":200
  *             # of flags
  * 
  *             if info == NULL: return             # <<<<<<<<<<<<<<
@@ -10025,7 +10025,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L0;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":203
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":203
  * 
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -10034,7 +10034,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":204
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":204
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -10043,7 +10043,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":206
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":206
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)
  * 
  *             ndim = PyArray_NDIM(self)             # <<<<<<<<<<<<<<
@@ -10052,7 +10052,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_ndim = PyArray_NDIM(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":208
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":208
  *             ndim = PyArray_NDIM(self)
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -10062,7 +10062,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":209
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":209
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 copy_shape = 1             # <<<<<<<<<<<<<<
@@ -10074,7 +10074,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":211
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":211
  *                 copy_shape = 1
  *             else:
  *                 copy_shape = 0             # <<<<<<<<<<<<<<
@@ -10085,7 +10085,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L4:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":213
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":213
  *                 copy_shape = 0
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10099,7 +10099,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L6_bool_binop_done;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":214
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":214
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -10111,7 +10111,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L6_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -10125,7 +10125,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     {__pyx_filename = __pyx_f[2]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":217
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":217
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10139,7 +10139,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L9_bool_binop_done;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":218
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":218
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -10151,7 +10151,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L9_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -10165,7 +10165,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     {__pyx_filename = __pyx_f[2]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":221
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":221
  *                 raise ValueError(u"ndarray is not Fortran contiguous")
  * 
  *             info.buf = PyArray_DATA(self)             # <<<<<<<<<<<<<<
@@ -10174,7 +10174,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->buf = PyArray_DATA(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":222
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":222
  * 
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim             # <<<<<<<<<<<<<<
@@ -10183,7 +10183,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->ndim = __pyx_v_ndim;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":223
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":223
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim
  *             if copy_shape:             # <<<<<<<<<<<<<<
@@ -10193,7 +10193,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (__pyx_v_copy_shape != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":226
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":226
  *                 # Allocate new buffer for strides and shape info.
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)             # <<<<<<<<<<<<<<
@@ -10202,7 +10202,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)malloc((((sizeof(Py_ssize_t)) * ((size_t)__pyx_v_ndim)) * 2)));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":227
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":227
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim             # <<<<<<<<<<<<<<
@@ -10211,7 +10211,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->shape = (__pyx_v_info->strides + __pyx_v_ndim);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":228
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":228
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):             # <<<<<<<<<<<<<<
@@ -10222,7 +10222,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
       __pyx_v_i = __pyx_t_5;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":229
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":229
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]             # <<<<<<<<<<<<<<
@@ -10231,7 +10231,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
       (__pyx_v_info->strides[__pyx_v_i]) = (PyArray_STRIDES(__pyx_v_self)[__pyx_v_i]);
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":230
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":230
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]
  *                     info.shape[i] = PyArray_DIMS(self)[i]             # <<<<<<<<<<<<<<
@@ -10244,7 +10244,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":232
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":232
  *                     info.shape[i] = PyArray_DIMS(self)[i]
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)             # <<<<<<<<<<<<<<
@@ -10253,7 +10253,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)PyArray_STRIDES(__pyx_v_self));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":233
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":233
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)             # <<<<<<<<<<<<<<
@@ -10264,7 +10264,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L11:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":234
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":234
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL             # <<<<<<<<<<<<<<
@@ -10273,7 +10273,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->suboffsets = NULL;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":235
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":235
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)             # <<<<<<<<<<<<<<
@@ -10282,7 +10282,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->itemsize = PyArray_ITEMSIZE(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":236
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":236
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)
  *             info.readonly = not PyArray_ISWRITEABLE(self)             # <<<<<<<<<<<<<<
@@ -10291,7 +10291,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->readonly = (!(PyArray_ISWRITEABLE(__pyx_v_self) != 0));
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":239
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":239
  * 
  *             cdef int t
  *             cdef char* f = NULL             # <<<<<<<<<<<<<<
@@ -10300,7 +10300,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_f = NULL;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":240
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":240
  *             cdef int t
  *             cdef char* f = NULL
  *             cdef dtype descr = self.descr             # <<<<<<<<<<<<<<
@@ -10312,7 +10312,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_v_descr = ((PyArray_Descr *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":244
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":244
  *             cdef int offset
  * 
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)             # <<<<<<<<<<<<<<
@@ -10321,7 +10321,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_hasfields = PyDataType_HASFIELDS(__pyx_v_descr);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":246
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":246
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)
  * 
  *             if not hasfields and not copy_shape:             # <<<<<<<<<<<<<<
@@ -10339,7 +10339,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L15_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":248
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":248
  *             if not hasfields and not copy_shape:
  *                 # do not call releasebuffer
  *                 info.obj = None             # <<<<<<<<<<<<<<
@@ -10355,7 +10355,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":251
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":251
  *             else:
  *                 # need to call releasebuffer
  *                 info.obj = self             # <<<<<<<<<<<<<<
@@ -10370,7 +10370,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L14:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":253
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":253
  *                 info.obj = self
  * 
  *             if not hasfields:             # <<<<<<<<<<<<<<
@@ -10380,7 +10380,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = ((!(__pyx_v_hasfields != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":254
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":254
  * 
  *             if not hasfields:
  *                 t = descr.type_num             # <<<<<<<<<<<<<<
@@ -10390,7 +10390,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_4 = __pyx_v_descr->type_num;
     __pyx_v_t = __pyx_t_4;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":255
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":255
  *             if not hasfields:
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -10410,7 +10410,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     }
     __pyx_L20_next_or:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":256
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":256
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -10428,7 +10428,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_L19_bool_binop_done:;
     if (__pyx_t_1) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -10442,7 +10442,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       {__pyx_filename = __pyx_f[2]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -10451,7 +10451,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     switch (__pyx_v_t) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":258
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":258
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"             # <<<<<<<<<<<<<<
@@ -10462,7 +10462,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_b;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":259
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":259
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"             # <<<<<<<<<<<<<<
@@ -10473,7 +10473,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_B;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":260
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":260
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"             # <<<<<<<<<<<<<<
@@ -10484,7 +10484,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_h;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":261
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":261
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"             # <<<<<<<<<<<<<<
@@ -10495,7 +10495,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_H;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":262
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":262
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"             # <<<<<<<<<<<<<<
@@ -10506,7 +10506,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_i;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":263
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":263
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"             # <<<<<<<<<<<<<<
@@ -10517,7 +10517,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_I;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":264
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":264
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"             # <<<<<<<<<<<<<<
@@ -10528,7 +10528,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_l;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":265
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":265
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"             # <<<<<<<<<<<<<<
@@ -10539,7 +10539,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_L;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":266
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":266
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"             # <<<<<<<<<<<<<<
@@ -10550,7 +10550,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_q;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":267
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":267
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"             # <<<<<<<<<<<<<<
@@ -10561,7 +10561,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Q;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":268
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":268
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"             # <<<<<<<<<<<<<<
@@ -10572,7 +10572,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_f;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":269
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":269
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"             # <<<<<<<<<<<<<<
@@ -10583,7 +10583,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_d;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":270
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":270
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"             # <<<<<<<<<<<<<<
@@ -10594,7 +10594,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_g;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":271
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":271
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"             # <<<<<<<<<<<<<<
@@ -10605,7 +10605,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zf;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":272
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":272
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"             # <<<<<<<<<<<<<<
@@ -10616,7 +10616,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zd;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":273
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":273
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"             # <<<<<<<<<<<<<<
@@ -10627,7 +10627,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zg;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -10639,7 +10639,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
       default:
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":276
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":276
  *                 elif t == NPY_OBJECT:      f = "O"
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -10665,7 +10665,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":277
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":277
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f             # <<<<<<<<<<<<<<
@@ -10674,7 +10674,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = __pyx_v_f;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":278
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":278
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f
  *                 return             # <<<<<<<<<<<<<<
@@ -10686,7 +10686,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":280
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":280
  *                 return
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)             # <<<<<<<<<<<<<<
@@ -10695,7 +10695,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = ((char *)malloc(255));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":281
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":281
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment             # <<<<<<<<<<<<<<
@@ -10704,7 +10704,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     (__pyx_v_info->format[0]) = '^';
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":282
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":282
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0             # <<<<<<<<<<<<<<
@@ -10713,7 +10713,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_offset = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":283
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":283
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0
  *                 f = _util_dtypestring(descr, info.format + 1,             # <<<<<<<<<<<<<<
@@ -10723,7 +10723,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_7 = __pyx_f_5numpy__util_dtypestring(__pyx_v_descr, (__pyx_v_info->format + 1), (__pyx_v_info->format + 255), (&__pyx_v_offset)); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_f = __pyx_t_7;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":286
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":286
  *                                       info.format + _buffer_format_string_len,
  *                                       &offset)
  *                 f[0] = c'\0' # Terminate format string             # <<<<<<<<<<<<<<
@@ -10733,7 +10733,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     (__pyx_v_f[0]) = '\x00';
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -10765,7 +10765,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -10789,7 +10789,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__releasebuffer__", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":289
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":289
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):             # <<<<<<<<<<<<<<
@@ -10799,7 +10799,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (PyArray_HASFIELDS(__pyx_v_self) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":290
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":290
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)             # <<<<<<<<<<<<<<
@@ -10811,7 +10811,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   }
   __pyx_L3:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":291
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":291
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -10821,7 +10821,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":292
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":292
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 stdlib.free(info.strides)             # <<<<<<<<<<<<<<
@@ -10833,7 +10833,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   }
   __pyx_L4:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -10845,7 +10845,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -10862,7 +10862,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":769
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":769
  * 
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
@@ -10876,7 +10876,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -10895,7 +10895,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -10912,7 +10912,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":772
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":772
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
@@ -10926,7 +10926,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -10945,7 +10945,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -10962,7 +10962,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":775
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":775
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
@@ -10976,7 +10976,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -10995,7 +10995,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -11012,7 +11012,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":778
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":778
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
@@ -11026,7 +11026,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -11045,7 +11045,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -11062,7 +11062,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":781
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":781
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
@@ -11076,7 +11076,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -11095,7 +11095,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -11127,7 +11127,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_util_dtypestring", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":790
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":790
  *     cdef int delta_offset
  *     cdef tuple i
  *     cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -11136,7 +11136,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":791
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":791
  *     cdef tuple i
  *     cdef int endian_detector = 1
  *     cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -11145,7 +11145,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -11167,7 +11167,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_childname, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":795
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":795
  * 
  *     for childname in descr.names:
  *         fields = descr.fields[childname]             # <<<<<<<<<<<<<<
@@ -11180,7 +11180,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_fields, ((PyObject*)__pyx_t_3));
     __pyx_t_3 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":796
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":796
  *     for childname in descr.names:
  *         fields = descr.fields[childname]
  *         child, new_offset = fields             # <<<<<<<<<<<<<<
@@ -11219,7 +11219,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_new_offset, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":798
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":798
  *         child, new_offset = fields
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:             # <<<<<<<<<<<<<<
@@ -11236,7 +11236,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((((__pyx_v_end - __pyx_v_f) - ((int)__pyx_t_5)) < 15) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -11250,7 +11250,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       {__pyx_filename = __pyx_f[2]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -11270,7 +11270,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L8_next_or:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":802
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":802
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -11288,7 +11288,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_L7_bool_binop_done:;
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -11302,7 +11302,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       {__pyx_filename = __pyx_f[2]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":813
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":813
  * 
  *         # Output padding bytes
  *         while offset[0] < new_offset:             # <<<<<<<<<<<<<<
@@ -11318,7 +11318,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (!__pyx_t_6) break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":814
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":814
  *         # Output padding bytes
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte             # <<<<<<<<<<<<<<
@@ -11327,7 +11327,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       (__pyx_v_f[0]) = 120;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":815
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":815
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte
  *             f += 1             # <<<<<<<<<<<<<<
@@ -11336,7 +11336,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       __pyx_v_f = (__pyx_v_f + 1);
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":816
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":816
  *             f[0] = 120 # "x"; pad byte
  *             f += 1
  *             offset[0] += 1             # <<<<<<<<<<<<<<
@@ -11347,7 +11347,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + 1);
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":818
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":818
  *             offset[0] += 1
  * 
  *         offset[0] += child.itemsize             # <<<<<<<<<<<<<<
@@ -11357,7 +11357,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_8 = 0;
     (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + __pyx_v_child->elsize);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":820
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":820
  *         offset[0] += child.itemsize
  * 
  *         if not PyDataType_HASFIELDS(child):             # <<<<<<<<<<<<<<
@@ -11367,7 +11367,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((!(PyDataType_HASFIELDS(__pyx_v_child) != 0)) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":821
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":821
  * 
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num             # <<<<<<<<<<<<<<
@@ -11379,7 +11379,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_XDECREF_SET(__pyx_v_t, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":822
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":822
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num
  *             if end - f < 5:             # <<<<<<<<<<<<<<
@@ -11389,7 +11389,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __pyx_t_6 = (((__pyx_v_end - __pyx_v_f) < 5) != 0);
       if (__pyx_t_6) {
 
-        /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+        /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -11403,7 +11403,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         {__pyx_filename = __pyx_f[2]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":826
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":826
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"             # <<<<<<<<<<<<<<
@@ -11421,7 +11421,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":827
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":827
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"             # <<<<<<<<<<<<<<
@@ -11439,7 +11439,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":828
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":828
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"             # <<<<<<<<<<<<<<
@@ -11457,7 +11457,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":829
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":829
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"             # <<<<<<<<<<<<<<
@@ -11475,7 +11475,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":830
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":830
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"             # <<<<<<<<<<<<<<
@@ -11493,7 +11493,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":831
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":831
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"             # <<<<<<<<<<<<<<
@@ -11511,7 +11511,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":832
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":832
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"             # <<<<<<<<<<<<<<
@@ -11529,7 +11529,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":833
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":833
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"             # <<<<<<<<<<<<<<
@@ -11547,7 +11547,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":834
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":834
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"             # <<<<<<<<<<<<<<
@@ -11565,7 +11565,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":835
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":835
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"             # <<<<<<<<<<<<<<
@@ -11583,7 +11583,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":836
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":836
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"             # <<<<<<<<<<<<<<
@@ -11601,7 +11601,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":837
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":837
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"             # <<<<<<<<<<<<<<
@@ -11619,7 +11619,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":838
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":838
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"             # <<<<<<<<<<<<<<
@@ -11637,7 +11637,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":839
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":839
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf             # <<<<<<<<<<<<<<
@@ -11657,7 +11657,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":840
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":840
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd             # <<<<<<<<<<<<<<
@@ -11677,7 +11677,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":841
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":841
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg             # <<<<<<<<<<<<<<
@@ -11697,7 +11697,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":842
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":842
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"             # <<<<<<<<<<<<<<
@@ -11716,7 +11716,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       /*else*/ {
 
-        /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":844
+        /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":844
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -11739,7 +11739,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       __pyx_L15:;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":845
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":845
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *             f += 1             # <<<<<<<<<<<<<<
@@ -11751,7 +11751,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     /*else*/ {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":849
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":849
  *             # Cython ignores struct boundary information ("T{...}"),
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)             # <<<<<<<<<<<<<<
@@ -11763,7 +11763,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L13:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -11773,7 +11773,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":850
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":850
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)
  *     return f             # <<<<<<<<<<<<<<
@@ -11783,7 +11783,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   __pyx_r = __pyx_v_f;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -11808,7 +11808,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -11823,7 +11823,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":968
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":968
  * cdef inline void set_array_base(ndarray arr, object base):
  *      cdef PyObject* baseptr
  *      if base is None:             # <<<<<<<<<<<<<<
@@ -11834,7 +11834,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":969
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":969
  *      cdef PyObject* baseptr
  *      if base is None:
  *          baseptr = NULL             # <<<<<<<<<<<<<<
@@ -11846,7 +11846,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":971
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":971
  *          baseptr = NULL
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!             # <<<<<<<<<<<<<<
@@ -11855,7 +11855,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
     Py_INCREF(__pyx_v_base);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":972
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":972
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base             # <<<<<<<<<<<<<<
@@ -11866,7 +11866,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   __pyx_L3:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":973
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":973
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)             # <<<<<<<<<<<<<<
@@ -11875,7 +11875,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   Py_XDECREF(__pyx_v_arr->base);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":974
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":974
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)
  *      arr.base = baseptr             # <<<<<<<<<<<<<<
@@ -11884,7 +11884,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   __pyx_v_arr->base = __pyx_v_baseptr;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -11896,7 +11896,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -11910,7 +11910,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":977
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":977
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:             # <<<<<<<<<<<<<<
@@ -11920,7 +11920,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __pyx_t_1 = ((__pyx_v_arr->base == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":978
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":978
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:
  *         return None             # <<<<<<<<<<<<<<
@@ -11934,7 +11934,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":980
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":980
  *         return None
  *     else:
  *         return <object>arr.base             # <<<<<<<<<<<<<<
@@ -11945,7 +11945,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     goto __pyx_L0;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -22593,10 +22593,10 @@ static void __pyx_memoryview__slice_assign_scalar(char *__pyx_v_data, Py_ssize_t
 
   /* function exit code */
 }
-static struct __pyx_vtabstruct_8bilinear_Bilinear __pyx_vtable_8bilinear_Bilinear;
+static struct __pyx_vtabstruct_3src_8bilinear_Bilinear __pyx_vtable_3src_8bilinear_Bilinear;
 
-static PyObject *__pyx_tp_new_8bilinear_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_8bilinear_Bilinear *p;
+static PyObject *__pyx_tp_new_3src_8bilinear_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k) {
+  struct __pyx_obj_3src_8bilinear_Bilinear *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -22604,18 +22604,18 @@ static PyObject *__pyx_tp_new_8bilinear_Bilinear(PyTypeObject *t, PyObject *a, P
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_8bilinear_Bilinear *)o);
-  p->__pyx_vtab = __pyx_vtabptr_8bilinear_Bilinear;
+  p = ((struct __pyx_obj_3src_8bilinear_Bilinear *)o);
+  p->__pyx_vtab = __pyx_vtabptr_3src_8bilinear_Bilinear;
   p->data.data = NULL;
   p->data.memview = NULL;
-  if (unlikely(__pyx_pw_8bilinear_8Bilinear_1__cinit__(o, a, k) < 0)) {
+  if (unlikely(__pyx_pw_3src_8bilinear_8Bilinear_1__cinit__(o, a, k) < 0)) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_8bilinear_Bilinear(PyObject *o) {
-  struct __pyx_obj_8bilinear_Bilinear *p = (struct __pyx_obj_8bilinear_Bilinear *)o;
+static void __pyx_tp_dealloc_3src_8bilinear_Bilinear(PyObject *o) {
+  struct __pyx_obj_3src_8bilinear_Bilinear *p = (struct __pyx_obj_3src_8bilinear_Bilinear *)o;
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -22625,7 +22625,7 @@ static void __pyx_tp_dealloc_8bilinear_Bilinear(PyObject *o) {
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     ++Py_REFCNT(o);
-    __pyx_pw_8bilinear_8Bilinear_3__dealloc__(o);
+    __pyx_pw_3src_8bilinear_8Bilinear_3__dealloc__(o);
     --Py_REFCNT(o);
     PyErr_Restore(etype, eval, etb);
   }
@@ -22633,48 +22633,48 @@ static void __pyx_tp_dealloc_8bilinear_Bilinear(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyObject *__pyx_getprop_8bilinear_8Bilinear_data(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_8bilinear_8Bilinear_4data_1__get__(o);
+static PyObject *__pyx_getprop_3src_8bilinear_8Bilinear_data(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_8bilinear_8Bilinear_4data_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_8bilinear_8Bilinear_maxi(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_8bilinear_8Bilinear_4maxi_1__get__(o);
+static PyObject *__pyx_getprop_3src_8bilinear_8Bilinear_maxi(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_8bilinear_8Bilinear_4maxi_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_8bilinear_8Bilinear_mini(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_8bilinear_8Bilinear_4mini_1__get__(o);
+static PyObject *__pyx_getprop_3src_8bilinear_8Bilinear_mini(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_8bilinear_8Bilinear_4mini_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_8bilinear_8Bilinear_width(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_8bilinear_8Bilinear_5width_1__get__(o);
+static PyObject *__pyx_getprop_3src_8bilinear_8Bilinear_width(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_8bilinear_8Bilinear_5width_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_8bilinear_8Bilinear_height(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_8bilinear_8Bilinear_6height_1__get__(o);
+static PyObject *__pyx_getprop_3src_8bilinear_8Bilinear_height(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_8bilinear_8Bilinear_6height_1__get__(o);
 }
 
-static PyMethodDef __pyx_methods_8bilinear_Bilinear[] = {
-  {"f_cy", (PyCFunction)__pyx_pw_8bilinear_8Bilinear_5f_cy, METH_O, __pyx_doc_8bilinear_8Bilinear_4f_cy},
-  {"local_maxi", (PyCFunction)__pyx_pw_8bilinear_8Bilinear_7local_maxi, METH_O, __pyx_doc_8bilinear_8Bilinear_6local_maxi},
-  {"cp_local_maxi", (PyCFunction)__pyx_pw_8bilinear_8Bilinear_9cp_local_maxi, METH_O, 0},
+static PyMethodDef __pyx_methods_3src_8bilinear_Bilinear[] = {
+  {"f_cy", (PyCFunction)__pyx_pw_3src_8bilinear_8Bilinear_5f_cy, METH_O, __pyx_doc_3src_8bilinear_8Bilinear_4f_cy},
+  {"local_maxi", (PyCFunction)__pyx_pw_3src_8bilinear_8Bilinear_7local_maxi, METH_O, __pyx_doc_3src_8bilinear_8Bilinear_6local_maxi},
+  {"cp_local_maxi", (PyCFunction)__pyx_pw_3src_8bilinear_8Bilinear_9cp_local_maxi, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static struct PyGetSetDef __pyx_getsets_8bilinear_Bilinear[] = {
-  {(char *)"data", __pyx_getprop_8bilinear_8Bilinear_data, 0, 0, 0},
-  {(char *)"maxi", __pyx_getprop_8bilinear_8Bilinear_maxi, 0, 0, 0},
-  {(char *)"mini", __pyx_getprop_8bilinear_8Bilinear_mini, 0, 0, 0},
-  {(char *)"width", __pyx_getprop_8bilinear_8Bilinear_width, 0, 0, 0},
-  {(char *)"height", __pyx_getprop_8bilinear_8Bilinear_height, 0, 0, 0},
+static struct PyGetSetDef __pyx_getsets_3src_8bilinear_Bilinear[] = {
+  {(char *)"data", __pyx_getprop_3src_8bilinear_8Bilinear_data, 0, 0, 0},
+  {(char *)"maxi", __pyx_getprop_3src_8bilinear_8Bilinear_maxi, 0, 0, 0},
+  {(char *)"mini", __pyx_getprop_3src_8bilinear_8Bilinear_mini, 0, 0, 0},
+  {(char *)"width", __pyx_getprop_3src_8bilinear_8Bilinear_width, 0, 0, 0},
+  {(char *)"height", __pyx_getprop_3src_8bilinear_8Bilinear_height, 0, 0, 0},
   {0, 0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_8bilinear_Bilinear = {
+static PyTypeObject __pyx_type_3src_8bilinear_Bilinear = {
   PyVarObject_HEAD_INIT(0, 0)
-  "bilinear.Bilinear", /*tp_name*/
-  sizeof(struct __pyx_obj_8bilinear_Bilinear), /*tp_basicsize*/
+  "src.bilinear.Bilinear", /*tp_name*/
+  sizeof(struct __pyx_obj_3src_8bilinear_Bilinear), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_8bilinear_Bilinear, /*tp_dealloc*/
+  __pyx_tp_dealloc_3src_8bilinear_Bilinear, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -22701,9 +22701,9 @@ static PyTypeObject __pyx_type_8bilinear_Bilinear = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_8bilinear_Bilinear, /*tp_methods*/
+  __pyx_methods_3src_8bilinear_Bilinear, /*tp_methods*/
   0, /*tp_members*/
-  __pyx_getsets_8bilinear_Bilinear, /*tp_getset*/
+  __pyx_getsets_3src_8bilinear_Bilinear, /*tp_getset*/
   0, /*tp_base*/
   0, /*tp_dict*/
   0, /*tp_descr_get*/
@@ -22711,7 +22711,7 @@ static PyTypeObject __pyx_type_8bilinear_Bilinear = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_8bilinear_Bilinear, /*tp_new*/
+  __pyx_tp_new_3src_8bilinear_Bilinear, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -22843,7 +22843,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "bilinear.array", /*tp_name*/
+  "src.bilinear.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -22948,7 +22948,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "bilinear.Enum", /*tp_name*/
+  "src.bilinear.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -23194,7 +23194,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "bilinear.memoryview", /*tp_name*/
+  "src.bilinear.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -23318,7 +23318,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "bilinear._memoryviewslice", /*tp_name*/
+  "src.bilinear._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -23455,7 +23455,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_ascontiguousarray, __pyx_k_ascontiguousarray, sizeof(__pyx_k_ascontiguousarray), 0, 0, 1, 1},
   {&__pyx_n_s_author, __pyx_k_author, sizeof(__pyx_k_author), 0, 0, 1, 1},
   {&__pyx_n_s_base, __pyx_k_base, sizeof(__pyx_k_base), 0, 0, 1, 1},
-  {&__pyx_n_s_bilinear, __pyx_k_bilinear, sizeof(__pyx_k_bilinear), 0, 0, 1, 1},
   {&__pyx_n_s_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 0, 1, 1},
   {&__pyx_n_u_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 1, 0, 1},
   {&__pyx_n_s_calc_cartesian_positions, __pyx_k_calc_cartesian_positions, sizeof(__pyx_k_calc_cartesian_positions), 0, 0, 1, 1},
@@ -23498,6 +23497,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_n_s_getLogger, __pyx_k_getLogger, sizeof(__pyx_k_getLogger), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_k_home_jerome_workspace_pyFAI_src, sizeof(__pyx_k_home_jerome_workspace_pyFAI_src), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
@@ -23515,7 +23515,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_max, __pyx_k_max, sizeof(__pyx_k_max), 0, 0, 1, 1},
   {&__pyx_n_s_memview, __pyx_k_memview, sizeof(__pyx_k_memview), 0, 0, 1, 1},
   {&__pyx_n_s_min, __pyx_k_min, sizeof(__pyx_k_min), 0, 0, 1, 1},
-  {&__pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_k_mntdirect__scisoft_users_kieffe, sizeof(__pyx_k_mntdirect__scisoft_users_kieffe), 0, 0, 1, 0},
   {&__pyx_n_s_mode, __pyx_k_mode, sizeof(__pyx_k_mode), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
   {&__pyx_n_s_name_2, __pyx_k_name_2, sizeof(__pyx_k_name_2), 0, 0, 1, 1},
@@ -23545,6 +23544,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_signatures, __pyx_k_signatures, sizeof(__pyx_k_signatures), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_split, __pyx_k_split, sizeof(__pyx_k_split), 0, 0, 1, 1},
+  {&__pyx_n_s_src_bilinear, __pyx_k_src_bilinear, sizeof(__pyx_k_src_bilinear), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
   {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -23594,7 +23594,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "bilinear.pyx":50
+  /* "src/bilinear.pyx":50
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,             # <<<<<<<<<<<<<<
@@ -23614,7 +23614,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
 
-  /* "bilinear.pyx":145
+  /* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
@@ -23656,7 +23656,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -23667,7 +23667,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -23678,7 +23678,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -23689,7 +23689,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -23700,7 +23700,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -23711,7 +23711,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -23843,7 +23843,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__31);
   __Pyx_GIVEREF(__pyx_tuple__31);
 
-  /* "bilinear.pyx":42
+  /* "src/bilinear.pyx":42
  * 
  * import logging
  * logger = logging.getLogger("pyFAI.bilinear")             # <<<<<<<<<<<<<<
@@ -23854,7 +23854,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__32);
   __Pyx_GIVEREF(__pyx_tuple__32);
 
-  /* "bilinear.pyx":50
+  /* "src/bilinear.pyx":50
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,             # <<<<<<<<<<<<<<
@@ -23864,9 +23864,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__33 = PyTuple_Pack(29, __pyx_n_s_d1, __pyx_n_s_d2, __pyx_n_s_pos, __pyx_n_s_is_flat, __pyx_n_s_i, __pyx_n_s_p1, __pyx_n_s_p2, __pyx_n_s_dim1, __pyx_n_s_dim2, __pyx_n_s_size, __pyx_n_s_delta1, __pyx_n_s_delta2, __pyx_n_s_f1, __pyx_n_s_f2, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_A2, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_B2, __pyx_n_s_C1, __pyx_n_s_C0, __pyx_n_s_C2, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_D2, __pyx_n_s_out1, __pyx_n_s_out2, __pyx_n_s_out3); if (unlikely(!__pyx_tuple__33)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__33);
   __Pyx_GIVEREF(__pyx_tuple__33);
-  __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(4, 0, 29, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_calc_cartesian_positions, 50, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(4, 0, 29, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_calc_cartesian_positions, 50, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":145
+  /* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
@@ -23876,7 +23876,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__35 = PyTuple_Pack(9, __pyx_n_s_ndim, __pyx_n_s_d1, __pyx_n_s_d2, __pyx_n_s_d3, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_pos); if (unlikely(!__pyx_tuple__35)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__35);
   __Pyx_GIVEREF(__pyx_tuple__35);
-  __pyx_codeobj__36 = (PyObject*)__Pyx_PyCode_New(4, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__35, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_convert_corner_2D_to_4D, 145, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__36)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__36 = (PyObject*)__Pyx_PyCode_New(4, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__35, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_convert_corner_2D_to_4D, 145, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__36)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":276
  *         return self.name
@@ -24027,14 +24027,14 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
-  if (__pyx_module_is_main_bilinear) {
+  if (__pyx_module_is_main_src__bilinear) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    if (!PyDict_GetItemString(modules, "bilinear")) {
-      if (unlikely(PyDict_SetItemString(modules, "bilinear", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyDict_GetItemString(modules, "src.bilinear")) {
+      if (unlikely(PyDict_SetItemString(modules, "src.bilinear", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
   #endif
@@ -24051,14 +24051,14 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  __pyx_vtabptr_8bilinear_Bilinear = &__pyx_vtable_8bilinear_Bilinear;
-  __pyx_vtable_8bilinear_Bilinear.cp_local_maxi = (size_t (*)(struct __pyx_obj_8bilinear_Bilinear *, size_t, int __pyx_skip_dispatch))__pyx_f_8bilinear_8Bilinear_cp_local_maxi;
-  __pyx_vtable_8bilinear_Bilinear.c_local_maxi = (size_t (*)(struct __pyx_obj_8bilinear_Bilinear *, size_t))__pyx_f_8bilinear_8Bilinear_c_local_maxi;
-  if (PyType_Ready(&__pyx_type_8bilinear_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_8bilinear_Bilinear.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_8bilinear_Bilinear.tp_dict, __pyx_vtabptr_8bilinear_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "Bilinear", (PyObject *)&__pyx_type_8bilinear_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_8bilinear_Bilinear = &__pyx_type_8bilinear_Bilinear;
+  __pyx_vtabptr_3src_8bilinear_Bilinear = &__pyx_vtable_3src_8bilinear_Bilinear;
+  __pyx_vtable_3src_8bilinear_Bilinear.cp_local_maxi = (size_t (*)(struct __pyx_obj_3src_8bilinear_Bilinear *, size_t, int __pyx_skip_dispatch))__pyx_f_3src_8bilinear_8Bilinear_cp_local_maxi;
+  __pyx_vtable_3src_8bilinear_Bilinear.c_local_maxi = (size_t (*)(struct __pyx_obj_3src_8bilinear_Bilinear *, size_t))__pyx_f_3src_8bilinear_8Bilinear_c_local_maxi;
+  if (PyType_Ready(&__pyx_type_3src_8bilinear_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_type_3src_8bilinear_Bilinear.tp_print = 0;
+  if (__Pyx_SetVtable(__pyx_type_3src_8bilinear_Bilinear.tp_dict, __pyx_vtabptr_3src_8bilinear_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "Bilinear", (PyObject *)&__pyx_type_3src_8bilinear_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_3src_8bilinear_Bilinear = &__pyx_type_3src_8bilinear_Bilinear;
   if (PyType_Ready(&__pyx_type___pyx_array) < 0) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type___pyx_array.tp_print = 0;
   __pyx_array_type = &__pyx_type___pyx_array;
@@ -24103,7 +24103,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "bilinear.pyx":24
+  /* "src/bilinear.pyx":24
  * #
  * 
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
@@ -24112,7 +24112,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":25
+  /* "src/bilinear.pyx":25
  * 
  * __author__ = "Jerome Kieffer"
  * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
@@ -24121,7 +24121,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":26
+  /* "src/bilinear.pyx":26
  * __author__ = "Jerome Kieffer"
  * __license__ = "GPLv3+"
  * __date__ = "28/10/2015"             # <<<<<<<<<<<<<<
@@ -24130,7 +24130,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_28_10_2015) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":27
+  /* "src/bilinear.pyx":27
  * __license__ = "GPLv3+"
  * __date__ = "28/10/2015"
  * __copyright__ = "2011-2015, ESRF"             # <<<<<<<<<<<<<<
@@ -24139,7 +24139,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_copyright, __pyx_kp_s_2011_2015_ESRF) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":28
+  /* "src/bilinear.pyx":28
  * __date__ = "28/10/2015"
  * __copyright__ = "2011-2015, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
@@ -24148,7 +24148,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":31
+  /* "src/bilinear.pyx":31
  * 
  * import cython
  * import numpy             # <<<<<<<<<<<<<<
@@ -24160,7 +24160,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "bilinear.pyx":41
+  /* "src/bilinear.pyx":41
  * from cython.parallel import prange
  * 
  * import logging             # <<<<<<<<<<<<<<
@@ -24172,7 +24172,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logging, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "bilinear.pyx":42
+  /* "src/bilinear.pyx":42
  * 
  * import logging
  * logger = logging.getLogger("pyFAI.bilinear")             # <<<<<<<<<<<<<<
@@ -24190,7 +24190,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logger, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "bilinear.pyx":44
+  /* "src/bilinear.pyx":44
  * logger = logging.getLogger("pyFAI.bilinear")
  * 
  * from .utils import timeit             # <<<<<<<<<<<<<<
@@ -24211,7 +24211,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "bilinear.pyx":52
+  /* "src/bilinear.pyx":52
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
  *                              float[:, :, :, ::1] pos,
  *                              bint is_flat=True):             # <<<<<<<<<<<<<<
@@ -24221,7 +24221,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __pyx_t_2 = __Pyx_PyBool_FromLong(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
 
-  /* "bilinear.pyx":50
+  /* "src/bilinear.pyx":50
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,             # <<<<<<<<<<<<<<
@@ -24234,7 +24234,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __Pyx_GIVEREF(__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "bilinear.pyx":52
+  /* "src/bilinear.pyx":52
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
  *                              float[:, :, :, ::1] pos,
  *                              bint is_flat=True):             # <<<<<<<<<<<<<<
@@ -24247,7 +24247,7 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __Pyx_GIVEREF(__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "bilinear.pyx":50
+  /* "src/bilinear.pyx":50
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,             # <<<<<<<<<<<<<<
@@ -24256,33 +24256,33 @@ PyMODINIT_FUNC PyInit_bilinear(void)
  */
   __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_8bilinear_5calc_cartesian_positions, 0, __pyx_n_s_calc_cartesian_positions, NULL, __pyx_n_s_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_3src_8bilinear_5calc_cartesian_positions, 0, __pyx_n_s_calc_cartesian_positions, NULL, __pyx_n_s_src_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_3, sizeof(__pyx_defaults2), 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_CyFunction_Defaults(__pyx_defaults2, __pyx_t_3)->__pyx_arg_is_flat = 1;
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_3, __pyx_t_1);
-  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_3, __pyx_pf_8bilinear_20__defaults__);
+  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_3, __pyx_pf_3src_8bilinear_20__defaults__);
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_float, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_8bilinear_7calc_cartesian_positions, 0, __pyx_n_s_calc_cartesian_positions, NULL, __pyx_n_s_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_3src_8bilinear_7calc_cartesian_positions, 0, __pyx_n_s_calc_cartesian_positions, NULL, __pyx_n_s_src_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_3, sizeof(__pyx_defaults3), 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_CyFunction_Defaults(__pyx_defaults3, __pyx_t_3)->__pyx_arg_is_flat = 1;
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_3, __pyx_t_1);
-  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_3, __pyx_pf_8bilinear_22__defaults__);
+  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_3, __pyx_pf_3src_8bilinear_22__defaults__);
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_double, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __pyx_FusedFunction_NewEx(&__pyx_mdef_8bilinear_1calc_cartesian_positions, 0, __pyx_n_s_calc_cartesian_positions, NULL, __pyx_n_s_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __pyx_FusedFunction_NewEx(&__pyx_mdef_3src_8bilinear_1calc_cartesian_positions, 0, __pyx_n_s_calc_cartesian_positions, NULL, __pyx_n_s_src_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_3, __pyx_t_1);
-  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_3, __pyx_pf_8bilinear_20__defaults__);
+  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_3, __pyx_pf_3src_8bilinear_20__defaults__);
   ((__pyx_FusedFunctionObject *) __pyx_t_3)->__signatures__ = __pyx_t_2;
   __Pyx_GIVEREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_cartesian_positions, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "bilinear.pyx":145
+  /* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
@@ -24299,11 +24299,11 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __Pyx_GIVEREF(Py_None);
   __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_8bilinear_11convert_corner_2D_to_4D, 0, __pyx_n_s_convert_corner_2D_to_4D, NULL, __pyx_n_s_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__36)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_3src_8bilinear_11convert_corner_2D_to_4D, 0, __pyx_n_s_convert_corner_2D_to_4D, NULL, __pyx_n_s_src_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__36)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_6, sizeof(__pyx_defaults6), 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":148
+  /* "src/bilinear.pyx":148
  *                             floating[:, ::1] d1 not None,
  *                             floating[:, ::1] d2 not None,
  *                             floating[:, ::1] d3=None):             # <<<<<<<<<<<<<<
@@ -24316,22 +24316,22 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __pyx_t_7.memview = NULL;
   __pyx_t_7.data = NULL;
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_6, __pyx_t_4);
-  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_6, __pyx_pf_8bilinear_28__defaults__);
+  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_6, __pyx_pf_3src_8bilinear_28__defaults__);
   if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_float, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "bilinear.pyx":145
+  /* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
  *                             floating[:, ::1] d1 not None,
  *                             floating[:, ::1] d2 not None,
  */
-  __pyx_t_6 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_8bilinear_13convert_corner_2D_to_4D, 0, __pyx_n_s_convert_corner_2D_to_4D, NULL, __pyx_n_s_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__36)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_3src_8bilinear_13convert_corner_2D_to_4D, 0, __pyx_n_s_convert_corner_2D_to_4D, NULL, __pyx_n_s_src_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__36)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_6, sizeof(__pyx_defaults7), 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "bilinear.pyx":148
+  /* "src/bilinear.pyx":148
  *                             floating[:, ::1] d1 not None,
  *                             floating[:, ::1] d2 not None,
  *                             floating[:, ::1] d3=None):             # <<<<<<<<<<<<<<
@@ -24344,28 +24344,28 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_6, __pyx_t_4);
-  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_6, __pyx_pf_8bilinear_30__defaults__);
+  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_6, __pyx_pf_3src_8bilinear_30__defaults__);
   if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_double, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "bilinear.pyx":145
+  /* "src/bilinear.pyx":145
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def convert_corner_2D_to_4D(int ndim,             # <<<<<<<<<<<<<<
  *                             floating[:, ::1] d1 not None,
  *                             floating[:, ::1] d2 not None,
  */
-  __pyx_t_6 = __pyx_FusedFunction_NewEx(&__pyx_mdef_8bilinear_3convert_corner_2D_to_4D, 0, __pyx_n_s_convert_corner_2D_to_4D, NULL, __pyx_n_s_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__36)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __pyx_FusedFunction_NewEx(&__pyx_mdef_3src_8bilinear_3convert_corner_2D_to_4D, 0, __pyx_n_s_convert_corner_2D_to_4D, NULL, __pyx_n_s_src_bilinear, __pyx_d, ((PyObject *)__pyx_codeobj__36)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_6, __pyx_t_4);
-  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_6, __pyx_pf_8bilinear_28__defaults__);
+  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_6, __pyx_pf_3src_8bilinear_28__defaults__);
   ((__pyx_FusedFunctionObject *) __pyx_t_6)->__signatures__ = __pyx_t_5;
   __Pyx_GIVEREF(__pyx_t_5);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_convert_corner_2D_to_4D, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "bilinear.pyx":1
+  /* "src/bilinear.pyx":1
  * # -*- coding: utf-8 -*-             # <<<<<<<<<<<<<<
  * #
  * #    Project: Fast Azimuthal integration
@@ -24506,11 +24506,11 @@ PyMODINIT_FUNC PyInit_bilinear(void)
   __Pyx_XDECREF(__pyx_t_9);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init bilinear", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init src.bilinear", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init bilinear");
+    PyErr_SetString(PyExc_ImportError, "init src.bilinear");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

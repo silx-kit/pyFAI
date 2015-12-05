@@ -231,8 +231,8 @@ void __Pyx_call_destructor(T* x) {
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE__watershed
-#define __PYX_HAVE_API__watershed
+#define __PYX_HAVE__src__watershed
+#define __PYX_HAVE_API__src__watershed
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -444,8 +444,8 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "watershed.pyx",
-  "bilinear.pxi",
+  "src/watershed.pyx",
+  "src/bilinear.pxi",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -542,7 +542,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
 #endif
 
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":723
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":723
  * # in Cython to enable them only on the right systems.
  * 
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
@@ -551,7 +551,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
  */
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":724
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":724
  * 
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
@@ -560,7 +560,7 @@ typedef npy_int8 __pyx_t_5numpy_int8_t;
  */
 typedef npy_int16 __pyx_t_5numpy_int16_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":725
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":725
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t             # <<<<<<<<<<<<<<
@@ -569,7 +569,7 @@ typedef npy_int16 __pyx_t_5numpy_int16_t;
  */
 typedef npy_int32 __pyx_t_5numpy_int32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":726
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":726
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
  * ctypedef npy_int64      int64_t             # <<<<<<<<<<<<<<
@@ -578,7 +578,7 @@ typedef npy_int32 __pyx_t_5numpy_int32_t;
  */
 typedef npy_int64 __pyx_t_5numpy_int64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":730
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":730
  * #ctypedef npy_int128     int128_t
  * 
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
@@ -587,7 +587,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
  */
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":731
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":731
  * 
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
@@ -596,7 +596,7 @@ typedef npy_uint8 __pyx_t_5numpy_uint8_t;
  */
 typedef npy_uint16 __pyx_t_5numpy_uint16_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":732
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":732
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t             # <<<<<<<<<<<<<<
@@ -605,7 +605,7 @@ typedef npy_uint16 __pyx_t_5numpy_uint16_t;
  */
 typedef npy_uint32 __pyx_t_5numpy_uint32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":733
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":733
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
  * ctypedef npy_uint64     uint64_t             # <<<<<<<<<<<<<<
@@ -614,7 +614,7 @@ typedef npy_uint32 __pyx_t_5numpy_uint32_t;
  */
 typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":737
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":737
  * #ctypedef npy_uint128    uint128_t
  * 
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
@@ -623,7 +623,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
  */
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":738
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":738
  * 
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
@@ -632,7 +632,7 @@ typedef npy_float32 __pyx_t_5numpy_float32_t;
  */
 typedef npy_float64 __pyx_t_5numpy_float64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":747
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":747
  * # The int types are mapped a bit surprising --
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t             # <<<<<<<<<<<<<<
@@ -641,7 +641,7 @@ typedef npy_float64 __pyx_t_5numpy_float64_t;
  */
 typedef npy_long __pyx_t_5numpy_int_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":748
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":748
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
@@ -650,7 +650,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":749
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":749
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
@@ -659,7 +659,7 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":751
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":751
  * ctypedef npy_longlong   longlong_t
  * 
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
@@ -668,7 +668,7 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
  */
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":752
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":752
  * 
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
@@ -677,7 +677,7 @@ typedef npy_ulong __pyx_t_5numpy_uint_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":753
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":753
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
@@ -686,7 +686,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":755
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":755
  * ctypedef npy_ulonglong  ulonglong_t
  * 
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
@@ -695,7 +695,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":756
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":756
  * 
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
@@ -704,7 +704,7 @@ typedef npy_intp __pyx_t_5numpy_intp_t;
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":758
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":758
  * ctypedef npy_uintp      uintp_t
  * 
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
@@ -713,7 +713,7 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
  */
 typedef npy_double __pyx_t_5numpy_float_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":759
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":759
  * 
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
@@ -722,7 +722,7 @@ typedef npy_double __pyx_t_5numpy_float_t;
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":760
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":760
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
@@ -752,14 +752,14 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_9watershed_Bilinear;
-struct __pyx_obj_9watershed_Region;
+struct __pyx_obj_3src_9watershed_Bilinear;
+struct __pyx_obj_3src_9watershed_Region;
 struct __pyx_array_obj;
 struct __pyx_MemviewEnum_obj;
 struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":762
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":762
  * ctypedef npy_longdouble longdouble_t
  * 
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
@@ -768,7 +768,7 @@ struct __pyx_memoryviewslice_obj;
  */
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":763
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":763
  * 
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
@@ -777,7 +777,7 @@ typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":764
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":764
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
@@ -786,7 +786,7 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":766
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":766
  * ctypedef npy_clongdouble clongdouble_t
  * 
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
@@ -802,9 +802,9 @@ typedef npy_cdouble __pyx_t_5numpy_complex_t;
  *     """Bilinear interpolator for finding max.
  * 
  */
-struct __pyx_obj_9watershed_Bilinear {
+struct __pyx_obj_3src_9watershed_Bilinear {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9watershed_Bilinear *__pyx_vtab;
+  struct __pyx_vtabstruct_3src_9watershed_Bilinear *__pyx_vtab;
   __Pyx_memviewslice data;
   float maxi;
   float mini;
@@ -813,14 +813,14 @@ struct __pyx_obj_9watershed_Bilinear {
 };
 
 
-/* "watershed.pyx":49
+/* "src/watershed.pyx":49
  * 
  * 
  * cdef class Region:             # <<<<<<<<<<<<<<
  *     cdef:
  *         readonly int index, size, pass_to
  */
-struct __pyx_obj_9watershed_Region {
+struct __pyx_obj_3src_9watershed_Region {
   PyObject_HEAD
   int index;
   int size;
@@ -919,11 +919,11 @@ struct __pyx_memoryviewslice_obj {
  * 
  */
 
-struct __pyx_vtabstruct_9watershed_Bilinear {
-  size_t (*cp_local_maxi)(struct __pyx_obj_9watershed_Bilinear *, size_t, int __pyx_skip_dispatch);
-  size_t (*c_local_maxi)(struct __pyx_obj_9watershed_Bilinear *, size_t);
+struct __pyx_vtabstruct_3src_9watershed_Bilinear {
+  size_t (*cp_local_maxi)(struct __pyx_obj_3src_9watershed_Bilinear *, size_t, int __pyx_skip_dispatch);
+  size_t (*c_local_maxi)(struct __pyx_obj_3src_9watershed_Bilinear *, size_t);
 };
-static struct __pyx_vtabstruct_9watershed_Bilinear *__pyx_vtabptr_9watershed_Bilinear;
+static struct __pyx_vtabstruct_3src_9watershed_Bilinear *__pyx_vtabptr_3src_9watershed_Bilinear;
 
 
 /* "View.MemoryView":302
@@ -1636,8 +1636,8 @@ static PyTypeObject *__Pyx_ImportType(const char *module_name, const char *class
 
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
-static size_t __pyx_f_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch); /* proto*/
-static size_t __pyx_f_9watershed_8Bilinear_c_local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto*/
+static size_t __pyx_f_3src_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch); /* proto*/
+static size_t __pyx_f_3src_9watershed_8Bilinear_c_local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto*/
 static char *__pyx_memoryview_get_item_pointer(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_index); /* proto*/
 static PyObject *__pyx_memoryview_is_slice(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_obj); /* proto*/
 static PyObject *__pyx_memoryview_setitem_slice_assignment(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_dst, PyObject *__pyx_v_src); /* proto*/
@@ -1681,9 +1681,9 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libc.math' */
 
-/* Module declarations from 'watershed' */
-static PyTypeObject *__pyx_ptype_9watershed_Bilinear = 0;
-static PyTypeObject *__pyx_ptype_9watershed_Region = 0;
+/* Module declarations from 'src.watershed' */
+static PyTypeObject *__pyx_ptype_3src_9watershed_Bilinear = 0;
+static PyTypeObject *__pyx_ptype_3src_9watershed_Region = 0;
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1693,7 +1693,7 @@ static PyObject *strided = 0;
 static PyObject *indirect = 0;
 static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
-static int __pyx_f_9watershed_get_bit(int, int); /*proto*/
+static int __pyx_f_3src_9watershed_get_bit(int, int); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1730,10 +1730,10 @@ static __Pyx_TypeInfo __Pyx_TypeInfo_float = { "float", NULL, sizeof(float), { 0
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t = { "int32_t", NULL, sizeof(__pyx_t_5numpy_int32_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int32_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int32_t), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_uint8_t = { "uint8_t", NULL, sizeof(__pyx_t_5numpy_uint8_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_uint8_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_uint8_t), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_int = { "int", NULL, sizeof(int), { 0 }, 0, IS_UNSIGNED(int) ? 'U' : 'I', IS_UNSIGNED(int), 0 };
-#define __Pyx_MODULE_NAME "watershed"
-int __pyx_module_is_main_watershed = 0;
+#define __Pyx_MODULE_NAME "src.watershed"
+int __pyx_module_is_main_src__watershed = 0;
 
-/* Implementation of 'watershed' */
+/* Implementation of 'src.watershed' */
 static PyObject *__pyx_builtin_object;
 static PyObject *__pyx_builtin_round;
 static PyObject *__pyx_builtin_range;
@@ -1747,51 +1747,51 @@ static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_xrange;
 static PyObject *__pyx_builtin_id;
 static PyObject *__pyx_builtin_IndexError;
-static int __pyx_pf_9watershed_8Bilinear___cinit__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_data); /* proto */
-static void __pyx_pf_9watershed_8Bilinear_2__dealloc__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_4f_cy(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_6local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_8cp_local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_4data___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_4maxi___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_4mini___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_5width___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_8Bilinear_6height___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self); /* proto */
-static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Region *__pyx_v_self, int __pyx_v_idx); /* proto */
-static void __pyx_pf_9watershed_6Region_2__dealloc__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9watershed_Region *__pyx_v_self, __Pyx_memviewslice __pyx_v_flat); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_8get_size(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_10get_highest_pass(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_12get_maxi(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_14get_mini(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_16get_pass_to(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_18get_index(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_20get_borders(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_22get_neighbors(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed_Region *__pyx_v_self, struct __pyx_obj_9watershed_Region *__pyx_v_other); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_5index___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_4size___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_7pass_to___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_4mini___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_4maxi___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_12highest_pass___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_9neighbors___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_6border___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_6Region_5peaks___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_data, PyObject *__pyx_v_thres); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_fname); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_cls, PyObject *__pyx_v_fname); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_thres); /* proto */
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_mask, PyObject *__pyx_v_Imin, PyObject *__pyx_v_keep, int __pyx_v_refine, float __pyx_v_dmin, CYTHON_UNUSED PyObject *__pyx_v_kwarg); /* proto */
+static int __pyx_pf_3src_9watershed_8Bilinear___cinit__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_data); /* proto */
+static void __pyx_pf_3src_9watershed_8Bilinear_2__dealloc__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4f_cy(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_6local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_8cp_local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4data___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4maxi___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4mini___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_5width___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_6height___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self); /* proto */
+static int __pyx_pf_3src_9watershed_6Region___cinit__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self, int __pyx_v_idx); /* proto */
+static void __pyx_pf_3src_9watershed_6Region_2__dealloc__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_4__repr__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_6init_values(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self, __Pyx_memviewslice __pyx_v_flat); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_8get_size(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_10get_highest_pass(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_12get_maxi(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_14get_mini(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_16get_pass_to(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_18get_index(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_20get_borders(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_22get_neighbors(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_24merge(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self, struct __pyx_obj_3src_9watershed_Region *__pyx_v_other); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_5index___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_4size___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_7pass_to___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_4mini___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_4maxi___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_12highest_pass___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_9neighbors___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_6border___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_6Region_5peaks___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_data, PyObject *__pyx_v_thres); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_fname); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_cls, PyObject *__pyx_v_fname); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_10init_labels(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_12init_borders(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_14init_regions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_18merge_singleton(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_22merge_intense(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_thres); /* proto */
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_24peaks_from_area(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_mask, PyObject *__pyx_v_Imin, PyObject *__pyx_v_keep, int __pyx_v_refine, float __pyx_v_dmin, CYTHON_UNUSED PyObject *__pyx_v_kwarg); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1826,8 +1826,8 @@ static PyObject *__pyx_memoryview_MemoryView_10memoryview_20copy(struct __pyx_me
 static PyObject *__pyx_memoryview_MemoryView_10memoryview_22copy_fortran(struct __pyx_memoryview_obj *__pyx_v_self); /* proto */
 static void __pyx_memoryviewslice_MemoryView_16_memoryviewslice___dealloc__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
 static PyObject *__pyx_memoryviewslice__get__base_MemoryView_16_memoryviewslice_4base___get__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
-static PyObject *__pyx_tp_new_9watershed_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_9watershed_Region(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_3src_9watershed_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_3src_9watershed_Region(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_memoryview(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -1999,7 +1999,6 @@ static char __pyx_k_init_pass[] = "init_pass";
 static char __pyx_k_mask_flat[] = "mask_flat";
 static char __pyx_k_metaclass[] = "__metaclass__";
 static char __pyx_k_neighbors[] = "neighbors";
-static char __pyx_k_watershed[] = "watershed";
 static char __pyx_k_03_09_2015[] = "03/09/2015";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
@@ -2023,6 +2022,7 @@ static char __pyx_k_merge_intense[] = "merge_intense";
 static char __pyx_k_output_points[] = "output_points";
 static char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static char __pyx_k_require_group[] = "require_group";
+static char __pyx_k_src_watershed[] = "src.watershed";
 static char __pyx_k_Jerome_Kieffer[] = "Jerome Kieffer";
 static char __pyx_k_no_neighbors_s[] = "no neighbors: %s";
 static char __pyx_k_allocate_buffer[] = "allocate_buffer";
@@ -2068,7 +2068,7 @@ static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or i
 static char __pyx_k_Cannot_increase_threshold_was_s[] = "Cannot increase threshold: was %s, requested %s. You should re-init the object.";
 static char __pyx_k_Idea_label_all_peaks_define_reg[] = "\n    Idea:\n\n    * label all peaks\n    * define region around those peaks which raise always to this peak\n    * define the border of such region\n    * search for the pass between two peaks\n    * merge region with high pass between them\n\n    ";
 static char __pyx_k_Inverse_watershed_for_connectin[] = "\nInverse watershed for connecting region of high intensity\n";
-static char __pyx_k_mntdirect__scisoft_users_kieffe[] = "/mntdirect/_scisoft/users/kieffer/workspace/pyFAI/src/watershed.pyx";
+static char __pyx_k_home_jerome_workspace_pyFAI_src[] = "/home/jerome/workspace/pyFAI/src/watershed.pyx";
 static char __pyx_k_peaks_s_maxi_s_mini_s_pass_s_to[] = "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
@@ -2200,6 +2200,7 @@ static PyObject *__pyx_n_s_h5;
 static PyObject *__pyx_n_s_h5py;
 static PyObject *__pyx_n_s_height;
 static PyObject *__pyx_n_s_highest_pass;
+static PyObject *__pyx_kp_s_home_jerome_workspace_pyFAI_src;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_idx;
@@ -2252,7 +2253,6 @@ static PyObject *__pyx_n_s_merge_twins;
 static PyObject *__pyx_n_s_metaclass;
 static PyObject *__pyx_n_s_min;
 static PyObject *__pyx_n_s_mini;
-static PyObject *__pyx_kp_s_mntdirect__scisoft_users_kieffe;
 static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_module;
 static PyObject *__pyx_n_s_name;
@@ -2302,6 +2302,7 @@ static PyObject *__pyx_n_s_self;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_sorted;
+static PyObject *__pyx_n_s_src_watershed;
 static PyObject *__pyx_n_s_stable;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_status;
@@ -2327,7 +2328,6 @@ static PyObject *__pyx_n_s_val;
 static PyObject *__pyx_n_s_value;
 static PyObject *__pyx_n_s_values;
 static PyObject *__pyx_n_s_warning;
-static PyObject *__pyx_n_s_watershed;
 static PyObject *__pyx_n_s_where;
 static PyObject *__pyx_n_s_width;
 static PyObject *__pyx_n_s_x;
@@ -2408,8 +2408,8 @@ static PyObject *__pyx_codeobj__54;
  */
 
 /* Python wrapper */
-static int __pyx_pw_9watershed_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_9watershed_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_3src_9watershed_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_3src_9watershed_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_data = 0;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -2448,14 +2448,14 @@ static int __pyx_pw_9watershed_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[1]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_data) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "data"); {__pyx_filename = __pyx_f[1]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_9watershed_8Bilinear___cinit__(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self), __pyx_v_data);
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear___cinit__(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self), __pyx_v_data);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2466,7 +2466,7 @@ static int __pyx_pw_9watershed_8Bilinear_1__cinit__(PyObject *__pyx_v_self, PyOb
   return __pyx_r;
 }
 
-static int __pyx_pf_9watershed_8Bilinear___cinit__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_data) {
+static int __pyx_pf_3src_9watershed_8Bilinear___cinit__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_data) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2656,7 +2656,7 @@ static int __pyx_pf_9watershed_8Bilinear___cinit__(struct __pyx_obj_9watershed_B
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_8);
   __PYX_XDEC_MEMVIEW(&__pyx_t_9, 1);
-  __Pyx_AddTraceback("watershed.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -2672,17 +2672,17 @@ static int __pyx_pf_9watershed_8Bilinear___cinit__(struct __pyx_obj_9watershed_B
  */
 
 /* Python wrapper */
-static void __pyx_pw_9watershed_8Bilinear_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_9watershed_8Bilinear_3__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_3src_9watershed_8Bilinear_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_3src_9watershed_8Bilinear_3__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_9watershed_8Bilinear_2__dealloc__(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self));
+  __pyx_pf_3src_9watershed_8Bilinear_2__dealloc__(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
 }
 
-static void __pyx_pf_9watershed_8Bilinear_2__dealloc__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self) {
+static void __pyx_pf_3src_9watershed_8Bilinear_2__dealloc__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_memviewslice __pyx_t_1 = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_lineno = 0;
@@ -2716,7 +2716,7 @@ static void __pyx_pf_9watershed_8Bilinear_2__dealloc__(struct __pyx_obj_9watersh
   goto __pyx_L0;
   __pyx_L1_error:;
   __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
-  __Pyx_WriteUnraisable("watershed.Bilinear.__dealloc__", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src.watershed.Bilinear.__dealloc__", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
 }
@@ -2730,20 +2730,20 @@ static void __pyx_pf_9watershed_8Bilinear_2__dealloc__(struct __pyx_obj_9watersh
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_9watershed_8Bilinear_4f_cy[] = "\n        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates\n        @param x: 2-tuple of float\n        @return: Interpolated signal from the image (negative for minimizer)\n\n        ";
-static PyObject *__pyx_pw_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
+static char __pyx_doc_3src_9watershed_8Bilinear_4f_cy[] = "\n        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates\n        @param x: 2-tuple of float\n        @return: Interpolated signal from the image (negative for minimizer)\n\n        ";
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("f_cy (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_4f_cy(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_4f_cy(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_4f_cy(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4f_cy(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
   float __pyx_v_d0;
   float __pyx_v_d1;
   int __pyx_v_i0;
@@ -3164,7 +3164,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4f_cy(struct __pyx_obj_9watershed
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Bilinear.f_cy", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.f_cy", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -3181,20 +3181,20 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4f_cy(struct __pyx_obj_9watershed
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_9watershed_8Bilinear_6local_maxi[] = "\n        Return the local maximum ... with sub-pixel refinement\n\n        @param x: 2-tuple of integers\n        @param w: half with of the window: 1 or 2 are advised\n        @return: 2-tuple of int with the nearest local maximum\n\n\n        Sub-pixel refinement:\n        Second order Taylor expansion of the function; first derivative is null\n        delta = x-i = -Inverse[Hessian].gradient\n\n        if Hessian is singular or |delta|>1: use a center of mass.\n\n        ";
-static PyObject *__pyx_pw_9watershed_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
+static char __pyx_doc_3src_9watershed_8Bilinear_6local_maxi[] = "\n        Return the local maximum ... with sub-pixel refinement\n\n        @param x: 2-tuple of integers\n        @param w: half with of the window: 1 or 2 are advised\n        @return: 2-tuple of int with the nearest local maximum\n\n\n        Sub-pixel refinement:\n        Second order Taylor expansion of the function; first derivative is null\n        delta = x-i = -Inverse[Hessian].gradient\n\n        if Hessian is singular or |delta|>1: use a center of mass.\n\n        ";
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("local_maxi (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_6local_maxi(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_6local_maxi(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self), ((PyObject *)__pyx_v_x));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_6local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_6local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, PyObject *__pyx_v_x) {
   int __pyx_v_res;
   int __pyx_v_current0;
   int __pyx_v_current1;
@@ -3306,7 +3306,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_6local_maxi(struct __pyx_obj_9wat
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = __Pyx_PyInt_As_size_t(__pyx_t_1); if (unlikely((__pyx_t_4 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_v_res = ((struct __pyx_vtabstruct_9watershed_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_t_4);
+  __pyx_v_res = ((struct __pyx_vtabstruct_3src_9watershed_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_t_4);
 
   /* "src/bilinear.pxi":122
  *         res = self.c_local_maxi(round(x[0]) * self.width + round(x[1]))
@@ -3750,7 +3750,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_6local_maxi(struct __pyx_obj_9wat
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("watershed.Bilinear.local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -3766,8 +3766,8 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_6local_maxi(struct __pyx_obj_9wat
  * 
  */
 
-static PyObject *__pyx_pw_9watershed_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
-static size_t __pyx_f_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
+static size_t __pyx_f_3src_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x, int __pyx_skip_dispatch) {
   size_t __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -3787,7 +3787,7 @@ static size_t __pyx_f_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_9water
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_cp_local_maxi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_9watershed_8Bilinear_9cp_local_maxi)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_9watershed_8Bilinear_9cp_local_maxi)) {
       __pyx_t_3 = __Pyx_PyInt_FromSize_t(__pyx_v_x); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
@@ -3833,7 +3833,7 @@ static size_t __pyx_f_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_9water
  * 
  *     @cython.boundscheck(False)
  */
-  __pyx_r = ((struct __pyx_vtabstruct_9watershed_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_v_x);
+  __pyx_r = ((struct __pyx_vtabstruct_3src_9watershed_Bilinear *)__pyx_v_self->__pyx_vtab)->c_local_maxi(__pyx_v_self, __pyx_v_x);
   goto __pyx_L0;
 
   /* "src/bilinear.pxi":161
@@ -3852,7 +3852,7 @@ static size_t __pyx_f_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_9water
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_WriteUnraisable("watershed.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src.watershed.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -3860,8 +3860,8 @@ static size_t __pyx_f_9watershed_8Bilinear_cp_local_maxi(struct __pyx_obj_9water
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
-static PyObject *__pyx_pw_9watershed_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_arg_x) {
   size_t __pyx_v_x;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -3874,18 +3874,18 @@ static PyObject *__pyx_pw_9watershed_8Bilinear_9cp_local_maxi(PyObject *__pyx_v_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_8cp_local_maxi(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self), ((size_t)__pyx_v_x));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_8cp_local_maxi(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self), ((size_t)__pyx_v_x));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_8cp_local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_8cp_local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -3894,7 +3894,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_8cp_local_maxi(struct __pyx_obj_9
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("cp_local_maxi", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_9watershed_8Bilinear_cp_local_maxi(__pyx_v_self, __pyx_v_x, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_3src_9watershed_8Bilinear_cp_local_maxi(__pyx_v_self, __pyx_v_x, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3903,7 +3903,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_8cp_local_maxi(struct __pyx_obj_9
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.cp_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -3919,7 +3919,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_8cp_local_maxi(struct __pyx_obj_9
  *         Return the local maximum ... without sub-pixel refinement
  */
 
-static size_t __pyx_f_9watershed_8Bilinear_c_local_maxi(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
+static size_t __pyx_f_3src_9watershed_8Bilinear_c_local_maxi(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self, size_t __pyx_v_x) {
   int __pyx_v_current0;
   int __pyx_v_current1;
   int __pyx_v_i0;
@@ -4189,7 +4189,7 @@ static size_t __pyx_f_9watershed_8Bilinear_c_local_maxi(struct __pyx_obj_9waters
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("watershed.Bilinear.c_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src.watershed.Bilinear.c_local_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   return __pyx_r;
@@ -4204,19 +4204,19 @@ static size_t __pyx_f_9watershed_8Bilinear_c_local_maxi(struct __pyx_obj_9waters
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_4data_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_8Bilinear_4data_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_4data_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_4data_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_4data___get__(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_4data___get__(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_4data___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4data___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4235,7 +4235,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4data___get__(struct __pyx_obj_9w
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Bilinear.data.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.data.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4252,19 +4252,19 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4data___get__(struct __pyx_obj_9w
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_4maxi_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_4maxi___get__(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_4maxi___get__(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_4maxi___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4maxi___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4282,7 +4282,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4maxi___get__(struct __pyx_obj_9w
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Bilinear.maxi.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.maxi.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4291,19 +4291,19 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4maxi___get__(struct __pyx_obj_9w
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_4mini_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_4mini___get__(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_4mini___get__(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_4mini___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_4mini___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4321,7 +4321,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4mini___get__(struct __pyx_obj_9w
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Bilinear.mini.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.mini.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4338,19 +4338,19 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_4mini___get__(struct __pyx_obj_9w
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_5width_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_8Bilinear_5width_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_5width_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_5width_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_5width___get__(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_5width___get__(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_5width___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_5width___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4368,7 +4368,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_5width___get__(struct __pyx_obj_9
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Bilinear.width.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.width.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4377,19 +4377,19 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_5width___get__(struct __pyx_obj_9
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_8Bilinear_6height_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_8Bilinear_6height_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_6height_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_8Bilinear_6height_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_8Bilinear_6height___get__(((struct __pyx_obj_9watershed_Bilinear *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_8Bilinear_6height___get__(((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_8Bilinear_6height___get__(struct __pyx_obj_9watershed_Bilinear *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_8Bilinear_6height___get__(struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4407,7 +4407,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_6height___get__(struct __pyx_obj_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Bilinear.height.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Bilinear.height.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4415,7 +4415,7 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_6height___get__(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "watershed.pyx":45
+/* "src/watershed.pyx":45
  * include "bilinear.pxi"
  * 
  * cdef bint get_bit(int byteval, int idx) nogil:             # <<<<<<<<<<<<<<
@@ -4423,10 +4423,10 @@ static PyObject *__pyx_pf_9watershed_8Bilinear_6height___get__(struct __pyx_obj_
  * 
  */
 
-static int __pyx_f_9watershed_get_bit(int __pyx_v_byteval, int __pyx_v_idx) {
+static int __pyx_f_3src_9watershed_get_bit(int __pyx_v_byteval, int __pyx_v_idx) {
   int __pyx_r;
 
-  /* "watershed.pyx":46
+  /* "src/watershed.pyx":46
  * 
  * cdef bint get_bit(int byteval, int idx) nogil:
  *     return ((byteval & (1 << idx)) != 0)             # <<<<<<<<<<<<<<
@@ -4436,7 +4436,7 @@ static int __pyx_f_9watershed_get_bit(int __pyx_v_byteval, int __pyx_v_idx) {
   __pyx_r = ((__pyx_v_byteval & (1 << __pyx_v_idx)) != 0);
   goto __pyx_L0;
 
-  /* "watershed.pyx":45
+  /* "src/watershed.pyx":45
  * include "bilinear.pxi"
  * 
  * cdef bint get_bit(int byteval, int idx) nogil:             # <<<<<<<<<<<<<<
@@ -4449,7 +4449,7 @@ static int __pyx_f_9watershed_get_bit(int __pyx_v_byteval, int __pyx_v_idx) {
   return __pyx_r;
 }
 
-/* "watershed.pyx":55
+/* "src/watershed.pyx":55
  *         readonly list neighbors, border, peaks
  * 
  *     def __cinit__(self, int idx):             # <<<<<<<<<<<<<<
@@ -4458,8 +4458,8 @@ static int __pyx_f_9watershed_get_bit(int __pyx_v_byteval, int __pyx_v_idx) {
  */
 
 /* Python wrapper */
-static int __pyx_pw_9watershed_6Region_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_9watershed_6Region_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_3src_9watershed_6Region_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_3src_9watershed_6Region_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_idx;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -4498,18 +4498,18 @@ static int __pyx_pw_9watershed_6Region_1__cinit__(PyObject *__pyx_v_self, PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.Region.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_9watershed_6Region___cinit__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self), __pyx_v_idx);
+  __pyx_r = __pyx_pf_3src_9watershed_6Region___cinit__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self), __pyx_v_idx);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Region *__pyx_v_self, int __pyx_v_idx) {
+static int __pyx_pf_3src_9watershed_6Region___cinit__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self, int __pyx_v_idx) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4520,7 +4520,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "watershed.pyx":56
+  /* "src/watershed.pyx":56
  * 
  *     def __cinit__(self, int idx):
  *         self.index = idx             # <<<<<<<<<<<<<<
@@ -4529,7 +4529,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
  */
   __pyx_v_self->index = __pyx_v_idx;
 
-  /* "watershed.pyx":57
+  /* "src/watershed.pyx":57
  *     def __cinit__(self, int idx):
  *         self.index = idx
  *         self.neighbors = []             # <<<<<<<<<<<<<<
@@ -4544,7 +4544,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
   __pyx_v_self->neighbors = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":58
+  /* "src/watershed.pyx":58
  *         self.index = idx
  *         self.neighbors = []
  *         self.border = []  # list of pixel indices of the border             # <<<<<<<<<<<<<<
@@ -4559,7 +4559,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
   __pyx_v_self->border = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":59
+  /* "src/watershed.pyx":59
  *         self.neighbors = []
  *         self.border = []  # list of pixel indices of the border
  *         self.peaks = [idx]             # <<<<<<<<<<<<<<
@@ -4579,7 +4579,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
   __pyx_v_self->peaks = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "watershed.pyx":60
+  /* "src/watershed.pyx":60
  *         self.border = []  # list of pixel indices of the border
  *         self.peaks = [idx]
  *         self.size = 0             # <<<<<<<<<<<<<<
@@ -4588,7 +4588,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
  */
   __pyx_v_self->size = 0;
 
-  /* "watershed.pyx":61
+  /* "src/watershed.pyx":61
  *         self.peaks = [idx]
  *         self.size = 0
  *         self.pass_to = - 1             # <<<<<<<<<<<<<<
@@ -4597,7 +4597,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
  */
   __pyx_v_self->pass_to = -1;
 
-  /* "watershed.pyx":62
+  /* "src/watershed.pyx":62
  *         self.size = 0
  *         self.pass_to = - 1
  *         self.mini = - 1             # <<<<<<<<<<<<<<
@@ -4606,7 +4606,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
  */
   __pyx_v_self->mini = -1.0;
 
-  /* "watershed.pyx":63
+  /* "src/watershed.pyx":63
  *         self.pass_to = - 1
  *         self.mini = - 1
  *         self.maxi = - 1             # <<<<<<<<<<<<<<
@@ -4615,7 +4615,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
  */
   __pyx_v_self->maxi = -1.0;
 
-  /* "watershed.pyx":64
+  /* "src/watershed.pyx":64
  *         self.mini = - 1
  *         self.maxi = - 1
  *         self.highest_pass = -sys.maxsize             # <<<<<<<<<<<<<<
@@ -4634,7 +4634,7 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_self->highest_pass = __pyx_t_3;
 
-  /* "watershed.pyx":55
+  /* "src/watershed.pyx":55
  *         readonly list neighbors, border, peaks
  * 
  *     def __cinit__(self, int idx):             # <<<<<<<<<<<<<<
@@ -4648,14 +4648,14 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("watershed.Region.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "watershed.pyx":66
+/* "src/watershed.pyx":66
  *         self.highest_pass = -sys.maxsize
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -4664,21 +4664,21 @@ static int __pyx_pf_9watershed_6Region___cinit__(struct __pyx_obj_9watershed_Reg
  */
 
 /* Python wrapper */
-static void __pyx_pw_9watershed_6Region_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_9watershed_6Region_3__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_3src_9watershed_6Region_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_3src_9watershed_6Region_3__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_9watershed_6Region_2__dealloc__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_pf_3src_9watershed_6Region_2__dealloc__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
 }
 
-static void __pyx_pf_9watershed_6Region_2__dealloc__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static void __pyx_pf_3src_9watershed_6Region_2__dealloc__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "watershed.pyx":68
+  /* "src/watershed.pyx":68
  *     def __dealloc__(self):
  *         """Destructor"""
  *         self.neighbors = None             # <<<<<<<<<<<<<<
@@ -4691,7 +4691,7 @@ static void __pyx_pf_9watershed_6Region_2__dealloc__(struct __pyx_obj_9watershed
   __Pyx_DECREF(__pyx_v_self->neighbors);
   __pyx_v_self->neighbors = ((PyObject*)Py_None);
 
-  /* "watershed.pyx":69
+  /* "src/watershed.pyx":69
  *         """Destructor"""
  *         self.neighbors = None
  *         self.border = None             # <<<<<<<<<<<<<<
@@ -4704,7 +4704,7 @@ static void __pyx_pf_9watershed_6Region_2__dealloc__(struct __pyx_obj_9watershed
   __Pyx_DECREF(__pyx_v_self->border);
   __pyx_v_self->border = ((PyObject*)Py_None);
 
-  /* "watershed.pyx":70
+  /* "src/watershed.pyx":70
  *         self.neighbors = None
  *         self.border = None
  *         self.peaks = None             # <<<<<<<<<<<<<<
@@ -4717,7 +4717,7 @@ static void __pyx_pf_9watershed_6Region_2__dealloc__(struct __pyx_obj_9watershed
   __Pyx_DECREF(__pyx_v_self->peaks);
   __pyx_v_self->peaks = ((PyObject*)Py_None);
 
-  /* "watershed.pyx":66
+  /* "src/watershed.pyx":66
  *         self.highest_pass = -sys.maxsize
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -4729,7 +4729,7 @@ static void __pyx_pf_9watershed_6Region_2__dealloc__(struct __pyx_obj_9watershed
   __Pyx_RefNannyFinishContext();
 }
 
-/* "watershed.pyx":72
+/* "src/watershed.pyx":72
  *         self.peaks = None
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -4738,19 +4738,19 @@ static void __pyx_pf_9watershed_6Region_2__dealloc__(struct __pyx_obj_9watershed
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_5__repr__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_5__repr__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_5__repr__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_5__repr__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__repr__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_4__repr__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_4__repr__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_4__repr__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4764,7 +4764,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watersh
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "watershed.pyx":73
+  /* "src/watershed.pyx":73
  * 
  *     def __repr__(self):
  *         return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \             # <<<<<<<<<<<<<<
@@ -4794,7 +4794,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watersh
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "watershed.pyx":74
+  /* "src/watershed.pyx":74
  *     def __repr__(self):
  *         return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \
  *                "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s" % (self.peaks, self.maxi, self.mini, self.highest_pass, self.pass_to)             # <<<<<<<<<<<<<<
@@ -4830,7 +4830,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watersh
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":73
+  /* "src/watershed.pyx":73
  * 
  *     def __repr__(self):
  *         return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \             # <<<<<<<<<<<<<<
@@ -4845,7 +4845,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watersh
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "watershed.pyx":72
+  /* "src/watershed.pyx":72
  *         self.peaks = None
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -4861,7 +4861,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watersh
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("watershed.Region.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4869,7 +4869,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watersh
   return __pyx_r;
 }
 
-/* "watershed.pyx":79
+/* "src/watershed.pyx":79
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_values(self, float[:] flat):             # <<<<<<<<<<<<<<
@@ -4878,9 +4878,9 @@ static PyObject *__pyx_pf_9watershed_6Region_4__repr__(struct __pyx_obj_9watersh
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_7init_values(PyObject *__pyx_v_self, PyObject *__pyx_arg_flat); /*proto*/
-static char __pyx_doc_9watershed_6Region_6init_values[] = "\n        Initialize the values : maxi, mini and pass both height and so on\n        @param flat: flat view on the data (intensity)\n        @return: True if there is a problem and the region should be removed\n        ";
-static PyObject *__pyx_pw_9watershed_6Region_7init_values(PyObject *__pyx_v_self, PyObject *__pyx_arg_flat) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_7init_values(PyObject *__pyx_v_self, PyObject *__pyx_arg_flat); /*proto*/
+static char __pyx_doc_3src_9watershed_6Region_6init_values[] = "\n        Initialize the values : maxi, mini and pass both height and so on\n        @param flat: flat view on the data (intensity)\n        @return: True if there is a problem and the region should be removed\n        ";
+static PyObject *__pyx_pw_3src_9watershed_6Region_7init_values(PyObject *__pyx_v_self, PyObject *__pyx_arg_flat) {
   __Pyx_memviewslice __pyx_v_flat = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -4893,18 +4893,18 @@ static PyObject *__pyx_pw_9watershed_6Region_7init_values(PyObject *__pyx_v_self
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.Region.init_values", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.init_values", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_9watershed_6Region_6init_values(((struct __pyx_obj_9watershed_Region *)__pyx_v_self), __pyx_v_flat);
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_6init_values(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self), __pyx_v_flat);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9watershed_Region *__pyx_v_self, __Pyx_memviewslice __pyx_v_flat) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_6init_values(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self, __Pyx_memviewslice __pyx_v_flat) {
   int __pyx_v_i;
   int __pyx_v_k;
   int __pyx_v_imax;
@@ -4933,7 +4933,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("init_values", 0);
 
-  /* "watershed.pyx":88
+  /* "src/watershed.pyx":88
  *             int i, k, imax, imin
  *             float mini, maxi, val
  *             int border_size = len(self.border)             # <<<<<<<<<<<<<<
@@ -4950,7 +4950,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_border_size = __pyx_t_2;
 
-  /* "watershed.pyx":89
+  /* "src/watershed.pyx":89
  *             float mini, maxi, val
  *             int border_size = len(self.border)
  *             int neighbors_size = len(self.neighbors)             # <<<<<<<<<<<<<<
@@ -4967,7 +4967,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_neighbors_size = __pyx_t_2;
 
-  /* "watershed.pyx":90
+  /* "src/watershed.pyx":90
  *             int border_size = len(self.border)
  *             int neighbors_size = len(self.neighbors)
  *         self.maxi = flat[self.index]             # <<<<<<<<<<<<<<
@@ -4977,7 +4977,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   __pyx_t_3 = __pyx_v_self->index;
   __pyx_v_self->maxi = (*((float *) ( /* dim=0 */ (__pyx_v_flat.data + __pyx_t_3 * __pyx_v_flat.strides[0]) )));
 
-  /* "watershed.pyx":91
+  /* "src/watershed.pyx":91
  *             int neighbors_size = len(self.neighbors)
  *         self.maxi = flat[self.index]
  *         if neighbors_size != border_size:             # <<<<<<<<<<<<<<
@@ -4987,7 +4987,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   __pyx_t_4 = ((__pyx_v_neighbors_size != __pyx_v_border_size) != 0);
   if (__pyx_t_4) {
 
-    /* "watershed.pyx":92
+    /* "src/watershed.pyx":92
  *         self.maxi = flat[self.index]
  *         if neighbors_size != border_size:
  *             print(self.index, neighbors_size, border_size)             # <<<<<<<<<<<<<<
@@ -5014,7 +5014,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     if (__Pyx_PrintOne(0, __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 92; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "watershed.pyx":93
+    /* "src/watershed.pyx":93
  *         if neighbors_size != border_size:
  *             print(self.index, neighbors_size, border_size)
  *             print(self)             # <<<<<<<<<<<<<<
@@ -5023,7 +5023,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
  */
     if (__Pyx_PrintOne(0, ((PyObject *)__pyx_v_self)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "watershed.pyx":94
+    /* "src/watershed.pyx":94
  *             print(self.index, neighbors_size, border_size)
  *             print(self)
  *             return True             # <<<<<<<<<<<<<<
@@ -5036,7 +5036,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     goto __pyx_L0;
   }
 
-  /* "watershed.pyx":95
+  /* "src/watershed.pyx":95
  *             print(self)
  *             return True
  *         if neighbors_size:             # <<<<<<<<<<<<<<
@@ -5046,7 +5046,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   __pyx_t_4 = (__pyx_v_neighbors_size != 0);
   if (__pyx_t_4) {
 
-    /* "watershed.pyx":96
+    /* "src/watershed.pyx":96
  *             return True
  *         if neighbors_size:
  *             imax = imin = 0             # <<<<<<<<<<<<<<
@@ -5056,7 +5056,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     __pyx_v_imax = 0;
     __pyx_v_imin = 0;
 
-    /* "watershed.pyx":97
+    /* "src/watershed.pyx":97
  *         if neighbors_size:
  *             imax = imin = 0
  *             i = self.border[imax]             # <<<<<<<<<<<<<<
@@ -5070,7 +5070,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     __pyx_t_8 = __Pyx_PyInt_As_int(PyList_GET_ITEM(__pyx_v_self->border, __pyx_v_imax)); if (unlikely((__pyx_t_8 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_i = __pyx_t_8;
 
-    /* "watershed.pyx":98
+    /* "src/watershed.pyx":98
  *             imax = imin = 0
  *             i = self.border[imax]
  *             val = mini = maxi = flat[i]             # <<<<<<<<<<<<<<
@@ -5083,7 +5083,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     __pyx_v_mini = __pyx_t_9;
     __pyx_v_maxi = __pyx_t_9;
 
-    /* "watershed.pyx":99
+    /* "src/watershed.pyx":99
  *             i = self.border[imax]
  *             val = mini = maxi = flat[i]
  *             for k in range(1, border_size):             # <<<<<<<<<<<<<<
@@ -5094,7 +5094,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     for (__pyx_t_11 = 1; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
       __pyx_v_k = __pyx_t_11;
 
-      /* "watershed.pyx":100
+      /* "src/watershed.pyx":100
  *             val = mini = maxi = flat[i]
  *             for k in range(1, border_size):
  *                 i = self.border[k]             # <<<<<<<<<<<<<<
@@ -5108,7 +5108,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
       __pyx_t_12 = __Pyx_PyInt_As_int(PyList_GET_ITEM(__pyx_v_self->border, __pyx_v_k)); if (unlikely((__pyx_t_12 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_v_i = __pyx_t_12;
 
-      /* "watershed.pyx":101
+      /* "src/watershed.pyx":101
  *             for k in range(1, border_size):
  *                 i = self.border[k]
  *                 val = flat[i]             # <<<<<<<<<<<<<<
@@ -5118,7 +5118,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
       __pyx_t_12 = __pyx_v_i;
       __pyx_v_val = (*((float *) ( /* dim=0 */ (__pyx_v_flat.data + __pyx_t_12 * __pyx_v_flat.strides[0]) )));
 
-      /* "watershed.pyx":102
+      /* "src/watershed.pyx":102
  *                 i = self.border[k]
  *                 val = flat[i]
  *                 if val < mini:             # <<<<<<<<<<<<<<
@@ -5128,7 +5128,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
       __pyx_t_4 = ((__pyx_v_val < __pyx_v_mini) != 0);
       if (__pyx_t_4) {
 
-        /* "watershed.pyx":103
+        /* "src/watershed.pyx":103
  *                 val = flat[i]
  *                 if val < mini:
  *                     mini = val             # <<<<<<<<<<<<<<
@@ -5137,7 +5137,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
  */
         __pyx_v_mini = __pyx_v_val;
 
-        /* "watershed.pyx":104
+        /* "src/watershed.pyx":104
  *                 if val < mini:
  *                     mini = val
  *                     imin = k             # <<<<<<<<<<<<<<
@@ -5148,7 +5148,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
         goto __pyx_L7;
       }
 
-      /* "watershed.pyx":105
+      /* "src/watershed.pyx":105
  *                     mini = val
  *                     imin = k
  *                 elif val > maxi:             # <<<<<<<<<<<<<<
@@ -5158,7 +5158,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
       __pyx_t_4 = ((__pyx_v_val > __pyx_v_maxi) != 0);
       if (__pyx_t_4) {
 
-        /* "watershed.pyx":106
+        /* "src/watershed.pyx":106
  *                     imin = k
  *                 elif val > maxi:
  *                     maxi = val             # <<<<<<<<<<<<<<
@@ -5167,7 +5167,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
  */
         __pyx_v_maxi = __pyx_v_val;
 
-        /* "watershed.pyx":107
+        /* "src/watershed.pyx":107
  *                 elif val > maxi:
  *                     maxi = val
  *                     imax = k             # <<<<<<<<<<<<<<
@@ -5180,7 +5180,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
       __pyx_L7:;
     }
 
-    /* "watershed.pyx":108
+    /* "src/watershed.pyx":108
  *                     maxi = val
  *                     imax = k
  *             if self.mini == - 1:             # <<<<<<<<<<<<<<
@@ -5190,7 +5190,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     __pyx_t_4 = ((__pyx_v_self->mini == -1.0) != 0);
     if (__pyx_t_4) {
 
-      /* "watershed.pyx":109
+      /* "src/watershed.pyx":109
  *                     imax = k
  *             if self.mini == - 1:
  *                 self.mini = mini             # <<<<<<<<<<<<<<
@@ -5202,7 +5202,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
     }
     __pyx_L8:;
 
-    /* "watershed.pyx":110
+    /* "src/watershed.pyx":110
  *             if self.mini == - 1:
  *                 self.mini = mini
  *             self.highest_pass = maxi             # <<<<<<<<<<<<<<
@@ -5211,7 +5211,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
  */
     __pyx_v_self->highest_pass = __pyx_v_maxi;
 
-    /* "watershed.pyx":111
+    /* "src/watershed.pyx":111
  *                 self.mini = mini
  *             self.highest_pass = maxi
  *             self.pass_to = self.neighbors[imax]             # <<<<<<<<<<<<<<
@@ -5228,7 +5228,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   }
   /*else*/ {
 
-    /* "watershed.pyx":113
+    /* "src/watershed.pyx":113
  *             self.pass_to = self.neighbors[imax]
  *         else:
  *             return True             # <<<<<<<<<<<<<<
@@ -5242,7 +5242,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   }
   __pyx_L4:;
 
-  /* "watershed.pyx":79
+  /* "src/watershed.pyx":79
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_values(self, float[:] flat):             # <<<<<<<<<<<<<<
@@ -5258,7 +5258,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("watershed.Region.init_values", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.init_values", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_flat, 1);
@@ -5267,7 +5267,7 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
   return __pyx_r;
 }
 
-/* "watershed.pyx":115
+/* "src/watershed.pyx":115
  *             return True
  * 
  *     def get_size(self):             # <<<<<<<<<<<<<<
@@ -5276,19 +5276,19 @@ static PyObject *__pyx_pf_9watershed_6Region_6init_values(struct __pyx_obj_9wate
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_9get_size(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_9get_size(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_9get_size(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_9get_size(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_size (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_8get_size(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_8get_size(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_8get_size(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_8get_size(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5297,7 +5297,7 @@ static PyObject *__pyx_pf_9watershed_6Region_8get_size(struct __pyx_obj_9watersh
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_size", 0);
 
-  /* "watershed.pyx":116
+  /* "src/watershed.pyx":116
  * 
  *     def get_size(self):
  *         return self.size             # <<<<<<<<<<<<<<
@@ -5311,7 +5311,7 @@ static PyObject *__pyx_pf_9watershed_6Region_8get_size(struct __pyx_obj_9watersh
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "watershed.pyx":115
+  /* "src/watershed.pyx":115
  *             return True
  * 
  *     def get_size(self):             # <<<<<<<<<<<<<<
@@ -5322,7 +5322,7 @@ static PyObject *__pyx_pf_9watershed_6Region_8get_size(struct __pyx_obj_9watersh
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.get_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.get_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5330,7 +5330,7 @@ static PyObject *__pyx_pf_9watershed_6Region_8get_size(struct __pyx_obj_9watersh
   return __pyx_r;
 }
 
-/* "watershed.pyx":118
+/* "src/watershed.pyx":118
  *         return self.size
  * 
  *     def get_highest_pass(self):             # <<<<<<<<<<<<<<
@@ -5339,19 +5339,19 @@ static PyObject *__pyx_pf_9watershed_6Region_8get_size(struct __pyx_obj_9watersh
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_11get_highest_pass(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_11get_highest_pass(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_11get_highest_pass(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_11get_highest_pass(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_highest_pass (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_10get_highest_pass(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_10get_highest_pass(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_10get_highest_pass(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_10get_highest_pass(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5360,7 +5360,7 @@ static PyObject *__pyx_pf_9watershed_6Region_10get_highest_pass(struct __pyx_obj
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_highest_pass", 0);
 
-  /* "watershed.pyx":119
+  /* "src/watershed.pyx":119
  * 
  *     def get_highest_pass(self):
  *         return self.highest_pass             # <<<<<<<<<<<<<<
@@ -5374,7 +5374,7 @@ static PyObject *__pyx_pf_9watershed_6Region_10get_highest_pass(struct __pyx_obj
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "watershed.pyx":118
+  /* "src/watershed.pyx":118
  *         return self.size
  * 
  *     def get_highest_pass(self):             # <<<<<<<<<<<<<<
@@ -5385,7 +5385,7 @@ static PyObject *__pyx_pf_9watershed_6Region_10get_highest_pass(struct __pyx_obj
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.get_highest_pass", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.get_highest_pass", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5393,7 +5393,7 @@ static PyObject *__pyx_pf_9watershed_6Region_10get_highest_pass(struct __pyx_obj
   return __pyx_r;
 }
 
-/* "watershed.pyx":121
+/* "src/watershed.pyx":121
  *         return self.highest_pass
  * 
  *     def get_maxi(self):             # <<<<<<<<<<<<<<
@@ -5402,19 +5402,19 @@ static PyObject *__pyx_pf_9watershed_6Region_10get_highest_pass(struct __pyx_obj
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_13get_maxi(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_13get_maxi(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_13get_maxi(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_13get_maxi(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_maxi (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_12get_maxi(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_12get_maxi(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_12get_maxi(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_12get_maxi(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5423,7 +5423,7 @@ static PyObject *__pyx_pf_9watershed_6Region_12get_maxi(struct __pyx_obj_9waters
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_maxi", 0);
 
-  /* "watershed.pyx":122
+  /* "src/watershed.pyx":122
  * 
  *     def get_maxi(self):
  *         return self.maxi             # <<<<<<<<<<<<<<
@@ -5437,7 +5437,7 @@ static PyObject *__pyx_pf_9watershed_6Region_12get_maxi(struct __pyx_obj_9waters
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "watershed.pyx":121
+  /* "src/watershed.pyx":121
  *         return self.highest_pass
  * 
  *     def get_maxi(self):             # <<<<<<<<<<<<<<
@@ -5448,7 +5448,7 @@ static PyObject *__pyx_pf_9watershed_6Region_12get_maxi(struct __pyx_obj_9waters
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.get_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.get_maxi", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5456,7 +5456,7 @@ static PyObject *__pyx_pf_9watershed_6Region_12get_maxi(struct __pyx_obj_9waters
   return __pyx_r;
 }
 
-/* "watershed.pyx":124
+/* "src/watershed.pyx":124
  *         return self.maxi
  * 
  *     def get_mini(self):             # <<<<<<<<<<<<<<
@@ -5465,19 +5465,19 @@ static PyObject *__pyx_pf_9watershed_6Region_12get_maxi(struct __pyx_obj_9waters
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_15get_mini(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_15get_mini(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_15get_mini(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_15get_mini(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_mini (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_14get_mini(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_14get_mini(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_14get_mini(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_14get_mini(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5486,7 +5486,7 @@ static PyObject *__pyx_pf_9watershed_6Region_14get_mini(struct __pyx_obj_9waters
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_mini", 0);
 
-  /* "watershed.pyx":125
+  /* "src/watershed.pyx":125
  * 
  *     def get_mini(self):
  *         return self.mini             # <<<<<<<<<<<<<<
@@ -5500,7 +5500,7 @@ static PyObject *__pyx_pf_9watershed_6Region_14get_mini(struct __pyx_obj_9waters
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "watershed.pyx":124
+  /* "src/watershed.pyx":124
  *         return self.maxi
  * 
  *     def get_mini(self):             # <<<<<<<<<<<<<<
@@ -5511,7 +5511,7 @@ static PyObject *__pyx_pf_9watershed_6Region_14get_mini(struct __pyx_obj_9waters
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.get_mini", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.get_mini", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5519,7 +5519,7 @@ static PyObject *__pyx_pf_9watershed_6Region_14get_mini(struct __pyx_obj_9waters
   return __pyx_r;
 }
 
-/* "watershed.pyx":127
+/* "src/watershed.pyx":127
  *         return self.mini
  * 
  *     def get_pass_to(self):             # <<<<<<<<<<<<<<
@@ -5528,19 +5528,19 @@ static PyObject *__pyx_pf_9watershed_6Region_14get_mini(struct __pyx_obj_9waters
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_17get_pass_to(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_17get_pass_to(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_17get_pass_to(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_17get_pass_to(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_pass_to (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_16get_pass_to(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_16get_pass_to(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_16get_pass_to(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_16get_pass_to(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5549,7 +5549,7 @@ static PyObject *__pyx_pf_9watershed_6Region_16get_pass_to(struct __pyx_obj_9wat
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_pass_to", 0);
 
-  /* "watershed.pyx":128
+  /* "src/watershed.pyx":128
  * 
  *     def get_pass_to(self):
  *         return self.pass_to             # <<<<<<<<<<<<<<
@@ -5563,7 +5563,7 @@ static PyObject *__pyx_pf_9watershed_6Region_16get_pass_to(struct __pyx_obj_9wat
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "watershed.pyx":127
+  /* "src/watershed.pyx":127
  *         return self.mini
  * 
  *     def get_pass_to(self):             # <<<<<<<<<<<<<<
@@ -5574,7 +5574,7 @@ static PyObject *__pyx_pf_9watershed_6Region_16get_pass_to(struct __pyx_obj_9wat
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.get_pass_to", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.get_pass_to", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5582,7 +5582,7 @@ static PyObject *__pyx_pf_9watershed_6Region_16get_pass_to(struct __pyx_obj_9wat
   return __pyx_r;
 }
 
-/* "watershed.pyx":130
+/* "src/watershed.pyx":130
  *         return self.pass_to
  * 
  *     def get_index(self):             # <<<<<<<<<<<<<<
@@ -5591,19 +5591,19 @@ static PyObject *__pyx_pf_9watershed_6Region_16get_pass_to(struct __pyx_obj_9wat
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_19get_index(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_19get_index(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_19get_index(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_19get_index(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_index (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_18get_index(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_18get_index(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_18get_index(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_18get_index(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5612,7 +5612,7 @@ static PyObject *__pyx_pf_9watershed_6Region_18get_index(struct __pyx_obj_9water
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_index", 0);
 
-  /* "watershed.pyx":131
+  /* "src/watershed.pyx":131
  * 
  *     def get_index(self):
  *         return self.index             # <<<<<<<<<<<<<<
@@ -5626,7 +5626,7 @@ static PyObject *__pyx_pf_9watershed_6Region_18get_index(struct __pyx_obj_9water
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "watershed.pyx":130
+  /* "src/watershed.pyx":130
  *         return self.pass_to
  * 
  *     def get_index(self):             # <<<<<<<<<<<<<<
@@ -5637,7 +5637,7 @@ static PyObject *__pyx_pf_9watershed_6Region_18get_index(struct __pyx_obj_9water
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.get_index", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.get_index", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5645,7 +5645,7 @@ static PyObject *__pyx_pf_9watershed_6Region_18get_index(struct __pyx_obj_9water
   return __pyx_r;
 }
 
-/* "watershed.pyx":133
+/* "src/watershed.pyx":133
  *         return self.index
  * 
  *     def get_borders(self):             # <<<<<<<<<<<<<<
@@ -5654,24 +5654,24 @@ static PyObject *__pyx_pf_9watershed_6Region_18get_index(struct __pyx_obj_9water
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_21get_borders(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_21get_borders(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_21get_borders(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_21get_borders(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_borders (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_20get_borders(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_20get_borders(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_20get_borders(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_20get_borders(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_borders", 0);
 
-  /* "watershed.pyx":134
+  /* "src/watershed.pyx":134
  * 
  *     def get_borders(self):
  *         return self.border             # <<<<<<<<<<<<<<
@@ -5683,7 +5683,7 @@ static PyObject *__pyx_pf_9watershed_6Region_20get_borders(struct __pyx_obj_9wat
   __pyx_r = __pyx_v_self->border;
   goto __pyx_L0;
 
-  /* "watershed.pyx":133
+  /* "src/watershed.pyx":133
  *         return self.index
  * 
  *     def get_borders(self):             # <<<<<<<<<<<<<<
@@ -5698,7 +5698,7 @@ static PyObject *__pyx_pf_9watershed_6Region_20get_borders(struct __pyx_obj_9wat
   return __pyx_r;
 }
 
-/* "watershed.pyx":136
+/* "src/watershed.pyx":136
  *         return self.border
  * 
  *     def get_neighbors(self):             # <<<<<<<<<<<<<<
@@ -5707,24 +5707,24 @@ static PyObject *__pyx_pf_9watershed_6Region_20get_borders(struct __pyx_obj_9wat
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_23get_neighbors(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_23get_neighbors(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_23get_neighbors(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_23get_neighbors(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_neighbors (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_22get_neighbors(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_22get_neighbors(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_22get_neighbors(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_22get_neighbors(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_neighbors", 0);
 
-  /* "watershed.pyx":137
+  /* "src/watershed.pyx":137
  * 
  *     def get_neighbors(self):
  *         return self.neighbors             # <<<<<<<<<<<<<<
@@ -5736,7 +5736,7 @@ static PyObject *__pyx_pf_9watershed_6Region_22get_neighbors(struct __pyx_obj_9w
   __pyx_r = __pyx_v_self->neighbors;
   goto __pyx_L0;
 
-  /* "watershed.pyx":136
+  /* "src/watershed.pyx":136
  *         return self.border
  * 
  *     def get_neighbors(self):             # <<<<<<<<<<<<<<
@@ -5751,7 +5751,7 @@ static PyObject *__pyx_pf_9watershed_6Region_22get_neighbors(struct __pyx_obj_9w
   return __pyx_r;
 }
 
-/* "watershed.pyx":142
+/* "src/watershed.pyx":142
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def merge(self, Region other):             # <<<<<<<<<<<<<<
@@ -5760,17 +5760,17 @@ static PyObject *__pyx_pf_9watershed_6Region_22get_neighbors(struct __pyx_obj_9w
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_25merge(PyObject *__pyx_v_self, PyObject *__pyx_v_other); /*proto*/
-static char __pyx_doc_9watershed_6Region_24merge[] = "\n        merge 2 regions\n        ";
-static PyObject *__pyx_pw_9watershed_6Region_25merge(PyObject *__pyx_v_self, PyObject *__pyx_v_other) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_25merge(PyObject *__pyx_v_self, PyObject *__pyx_v_other); /*proto*/
+static char __pyx_doc_3src_9watershed_6Region_24merge[] = "\n        merge 2 regions\n        ";
+static PyObject *__pyx_pw_3src_9watershed_6Region_25merge(PyObject *__pyx_v_self, PyObject *__pyx_v_other) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
   CYTHON_UNUSED int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("merge (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_other), __pyx_ptype_9watershed_Region, 1, "other", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_9watershed_6Region_24merge(((struct __pyx_obj_9watershed_Region *)__pyx_v_self), ((struct __pyx_obj_9watershed_Region *)__pyx_v_other));
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_other), __pyx_ptype_3src_9watershed_Region, 1, "other", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_24merge(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self), ((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_other));
 
   /* function exit code */
   goto __pyx_L0;
@@ -5781,11 +5781,11 @@ static PyObject *__pyx_pw_9watershed_6Region_25merge(PyObject *__pyx_v_self, PyO
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed_Region *__pyx_v_self, struct __pyx_obj_9watershed_Region *__pyx_v_other) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_24merge(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self, struct __pyx_obj_3src_9watershed_Region *__pyx_v_other) {
   int __pyx_v_i;
   PyObject *__pyx_v_new_neighbors = 0;
   PyObject *__pyx_v_new_border = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region = 0;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5803,7 +5803,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("merge", 0);
 
-  /* "watershed.pyx":148
+  /* "src/watershed.pyx":148
  *         cdef:
  *             int i
  *             list new_neighbors = []             # <<<<<<<<<<<<<<
@@ -5815,7 +5815,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __pyx_v_new_neighbors = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":149
+  /* "src/watershed.pyx":149
  *             int i
  *             list new_neighbors = []
  *             list new_border = []             # <<<<<<<<<<<<<<
@@ -5827,7 +5827,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __pyx_v_new_border = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":151
+  /* "src/watershed.pyx":151
  *             list new_border = []
  *             Region region
  *         if other.maxi > self.maxi:             # <<<<<<<<<<<<<<
@@ -5837,7 +5837,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __pyx_t_2 = ((__pyx_v_other->maxi > __pyx_v_self->maxi) != 0);
   if (__pyx_t_2) {
 
-    /* "watershed.pyx":152
+    /* "src/watershed.pyx":152
  *             Region region
  *         if other.maxi > self.maxi:
  *             region = Region(other.index)             # <<<<<<<<<<<<<<
@@ -5851,13 +5851,13 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
     PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
     __Pyx_GIVEREF(__pyx_t_1);
     __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_9watershed_Region)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_3src_9watershed_Region)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_v_region = ((struct __pyx_obj_9watershed_Region *)__pyx_t_1);
+    __pyx_v_region = ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "watershed.pyx":153
+    /* "src/watershed.pyx":153
  *         if other.maxi > self.maxi:
  *             region = Region(other.index)
  *             region.maxi = other.maxi             # <<<<<<<<<<<<<<
@@ -5870,7 +5870,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   }
   /*else*/ {
 
-    /* "watershed.pyx":155
+    /* "src/watershed.pyx":155
  *             region.maxi = other.maxi
  *         else:
  *             region = Region(self.index)             # <<<<<<<<<<<<<<
@@ -5884,13 +5884,13 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
     PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
     __Pyx_GIVEREF(__pyx_t_1);
     __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_9watershed_Region)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_3src_9watershed_Region)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_v_region = ((struct __pyx_obj_9watershed_Region *)__pyx_t_1);
+    __pyx_v_region = ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "watershed.pyx":156
+    /* "src/watershed.pyx":156
  *         else:
  *             region = Region(self.index)
  *             region.maxi = self.maxi             # <<<<<<<<<<<<<<
@@ -5902,7 +5902,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   }
   __pyx_L3:;
 
-  /* "watershed.pyx":157
+  /* "src/watershed.pyx":157
  *             region = Region(self.index)
  *             region.maxi = self.maxi
  *         region.mini = min(self.mini, other.mini)             # <<<<<<<<<<<<<<
@@ -5918,7 +5918,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   }
   __pyx_v_region->mini = __pyx_t_6;
 
-  /* "watershed.pyx":158
+  /* "src/watershed.pyx":158
  *             region.maxi = self.maxi
  *         region.mini = min(self.mini, other.mini)
  *         for i in range(len(self.neighbors)):             # <<<<<<<<<<<<<<
@@ -5936,7 +5936,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
     __pyx_v_i = __pyx_t_8;
 
-    /* "watershed.pyx":159
+    /* "src/watershed.pyx":159
  *         region.mini = min(self.mini, other.mini)
  *         for i in range(len(self.neighbors)):
  *             if self.neighbors[i] not in other.peaks:             # <<<<<<<<<<<<<<
@@ -5951,7 +5951,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
     __pyx_t_9 = (__pyx_t_2 != 0);
     if (__pyx_t_9) {
 
-      /* "watershed.pyx":160
+      /* "src/watershed.pyx":160
  *         for i in range(len(self.neighbors)):
  *             if self.neighbors[i] not in other.peaks:
  *                 if self.border[i] not in new_border:             # <<<<<<<<<<<<<<
@@ -5966,7 +5966,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
       __pyx_t_2 = (__pyx_t_9 != 0);
       if (__pyx_t_2) {
 
-        /* "watershed.pyx":161
+        /* "src/watershed.pyx":161
  *             if self.neighbors[i] not in other.peaks:
  *                 if self.border[i] not in new_border:
  *                     new_border.append(self.border[i])             # <<<<<<<<<<<<<<
@@ -5982,7 +5982,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
         __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_new_border, __pyx_t_1); if (unlikely(__pyx_t_10 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "watershed.pyx":162
+        /* "src/watershed.pyx":162
  *                 if self.border[i] not in new_border:
  *                     new_border.append(self.border[i])
  *                     new_neighbors.append(self.neighbors[i])             # <<<<<<<<<<<<<<
@@ -6005,7 +6005,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
     __pyx_L6:;
   }
 
-  /* "watershed.pyx":163
+  /* "src/watershed.pyx":163
  *                     new_border.append(self.border[i])
  *                     new_neighbors.append(self.neighbors[i])
  *         for i in range(len(other.neighbors)):             # <<<<<<<<<<<<<<
@@ -6023,7 +6023,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
     __pyx_v_i = __pyx_t_8;
 
-    /* "watershed.pyx":164
+    /* "src/watershed.pyx":164
  *                     new_neighbors.append(self.neighbors[i])
  *         for i in range(len(other.neighbors)):
  *             if other.neighbors[i] not in self.peaks:             # <<<<<<<<<<<<<<
@@ -6038,7 +6038,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
     __pyx_t_9 = (__pyx_t_2 != 0);
     if (__pyx_t_9) {
 
-      /* "watershed.pyx":165
+      /* "src/watershed.pyx":165
  *         for i in range(len(other.neighbors)):
  *             if other.neighbors[i] not in self.peaks:
  *                 if other.border[i] not in new_border:             # <<<<<<<<<<<<<<
@@ -6053,7 +6053,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
       __pyx_t_2 = (__pyx_t_9 != 0);
       if (__pyx_t_2) {
 
-        /* "watershed.pyx":166
+        /* "src/watershed.pyx":166
  *             if other.neighbors[i] not in self.peaks:
  *                 if other.border[i] not in new_border:
  *                     new_border.append(other.border[i])             # <<<<<<<<<<<<<<
@@ -6069,7 +6069,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
         __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_new_border, __pyx_t_1); if (unlikely(__pyx_t_10 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "watershed.pyx":167
+        /* "src/watershed.pyx":167
  *                 if other.border[i] not in new_border:
  *                     new_border.append(other.border[i])
  *                     new_neighbors.append(other.neighbors[i])             # <<<<<<<<<<<<<<
@@ -6092,7 +6092,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
     __pyx_L10:;
   }
 
-  /* "watershed.pyx":168
+  /* "src/watershed.pyx":168
  *                     new_border.append(other.border[i])
  *                     new_neighbors.append(other.neighbors[i])
  *         region.neighbors = new_neighbors             # <<<<<<<<<<<<<<
@@ -6105,7 +6105,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __Pyx_DECREF(__pyx_v_region->neighbors);
   __pyx_v_region->neighbors = __pyx_v_new_neighbors;
 
-  /* "watershed.pyx":169
+  /* "src/watershed.pyx":169
  *                     new_neighbors.append(other.neighbors[i])
  *         region.neighbors = new_neighbors
  *         region.border = new_border             # <<<<<<<<<<<<<<
@@ -6118,7 +6118,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __Pyx_DECREF(__pyx_v_region->border);
   __pyx_v_region->border = __pyx_v_new_border;
 
-  /* "watershed.pyx":170
+  /* "src/watershed.pyx":170
  *         region.neighbors = new_neighbors
  *         region.border = new_border
  *         region.peaks = self.peaks + other.peaks             # <<<<<<<<<<<<<<
@@ -6133,7 +6133,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __pyx_v_region->peaks = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":171
+  /* "src/watershed.pyx":171
  *         region.border = new_border
  *         region.peaks = self.peaks + other.peaks
  *         region.size = self.size + other.size             # <<<<<<<<<<<<<<
@@ -6142,7 +6142,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
  */
   __pyx_v_region->size = (__pyx_v_self->size + __pyx_v_other->size);
 
-  /* "watershed.pyx":172
+  /* "src/watershed.pyx":172
  *         region.peaks = self.peaks + other.peaks
  *         region.size = self.size + other.size
  *         return region             # <<<<<<<<<<<<<<
@@ -6154,7 +6154,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __pyx_r = ((PyObject *)__pyx_v_region);
   goto __pyx_L0;
 
-  /* "watershed.pyx":142
+  /* "src/watershed.pyx":142
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def merge(self, Region other):             # <<<<<<<<<<<<<<
@@ -6166,7 +6166,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("watershed.Region.merge", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.merge", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_new_neighbors);
@@ -6177,7 +6177,7 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
   return __pyx_r;
 }
 
-/* "watershed.pyx":51
+/* "src/watershed.pyx":51
  * cdef class Region:
  *     cdef:
  *         readonly int index, size, pass_to             # <<<<<<<<<<<<<<
@@ -6186,19 +6186,19 @@ static PyObject *__pyx_pf_9watershed_6Region_24merge(struct __pyx_obj_9watershed
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_5index_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_5index_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_5index_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_5index_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_5index___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_5index___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_5index___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_5index___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6216,7 +6216,7 @@ static PyObject *__pyx_pf_9watershed_6Region_5index___get__(struct __pyx_obj_9wa
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.index.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.index.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6225,19 +6225,19 @@ static PyObject *__pyx_pf_9watershed_6Region_5index___get__(struct __pyx_obj_9wa
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_4size_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_4size_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_4size_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_4size_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_4size___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_4size___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_4size___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_4size___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6255,7 +6255,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4size___get__(struct __pyx_obj_9wat
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.size.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.size.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6264,19 +6264,19 @@ static PyObject *__pyx_pf_9watershed_6Region_4size___get__(struct __pyx_obj_9wat
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_7pass_to_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_7pass_to_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_7pass_to_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_7pass_to_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_7pass_to___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_7pass_to___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_7pass_to___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_7pass_to___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6294,7 +6294,7 @@ static PyObject *__pyx_pf_9watershed_6Region_7pass_to___get__(struct __pyx_obj_9
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.pass_to.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.pass_to.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6302,7 +6302,7 @@ static PyObject *__pyx_pf_9watershed_6Region_7pass_to___get__(struct __pyx_obj_9
   return __pyx_r;
 }
 
-/* "watershed.pyx":52
+/* "src/watershed.pyx":52
  *     cdef:
  *         readonly int index, size, pass_to
  *         readonly float mini, maxi, highest_pass             # <<<<<<<<<<<<<<
@@ -6311,19 +6311,19 @@ static PyObject *__pyx_pf_9watershed_6Region_7pass_to___get__(struct __pyx_obj_9
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_4mini_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_4mini_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_4mini_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_4mini_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_4mini___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_4mini___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_4mini___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_4mini___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6341,7 +6341,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4mini___get__(struct __pyx_obj_9wat
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.mini.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.mini.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6350,19 +6350,19 @@ static PyObject *__pyx_pf_9watershed_6Region_4mini___get__(struct __pyx_obj_9wat
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_4maxi_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_4maxi_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_4maxi_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_4maxi_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_4maxi___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_4maxi___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_4maxi___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_4maxi___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6380,7 +6380,7 @@ static PyObject *__pyx_pf_9watershed_6Region_4maxi___get__(struct __pyx_obj_9wat
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.maxi.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.maxi.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6389,19 +6389,19 @@ static PyObject *__pyx_pf_9watershed_6Region_4maxi___get__(struct __pyx_obj_9wat
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_12highest_pass_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_12highest_pass_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_12highest_pass_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_12highest_pass_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_12highest_pass___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_12highest_pass___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_12highest_pass___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_12highest_pass___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6419,7 +6419,7 @@ static PyObject *__pyx_pf_9watershed_6Region_12highest_pass___get__(struct __pyx
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("watershed.Region.highest_pass.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.Region.highest_pass.__get__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6427,7 +6427,7 @@ static PyObject *__pyx_pf_9watershed_6Region_12highest_pass___get__(struct __pyx
   return __pyx_r;
 }
 
-/* "watershed.pyx":53
+/* "src/watershed.pyx":53
  *         readonly int index, size, pass_to
  *         readonly float mini, maxi, highest_pass
  *         readonly list neighbors, border, peaks             # <<<<<<<<<<<<<<
@@ -6436,19 +6436,19 @@ static PyObject *__pyx_pf_9watershed_6Region_12highest_pass___get__(struct __pyx
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_9neighbors_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_9neighbors_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_9neighbors_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_9neighbors_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_9neighbors___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_9neighbors___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_9neighbors___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_9neighbors___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__", 0);
@@ -6465,19 +6465,19 @@ static PyObject *__pyx_pf_9watershed_6Region_9neighbors___get__(struct __pyx_obj
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_6border_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_6border_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_6border_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_6border_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_6border___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_6border___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_6border___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_6border___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__", 0);
@@ -6494,19 +6494,19 @@ static PyObject *__pyx_pf_9watershed_6Region_6border___get__(struct __pyx_obj_9w
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_6Region_5peaks_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_9watershed_6Region_5peaks_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_6Region_5peaks_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_9watershed_6Region_5peaks_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_6Region_5peaks___get__(((struct __pyx_obj_9watershed_Region *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_6Region_5peaks___get__(((struct __pyx_obj_3src_9watershed_Region *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_6Region_5peaks___get__(struct __pyx_obj_9watershed_Region *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_6Region_5peaks___get__(struct __pyx_obj_3src_9watershed_Region *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__", 0);
@@ -6522,7 +6522,7 @@ static PyObject *__pyx_pf_9watershed_6Region_5peaks___get__(struct __pyx_obj_9wa
   return __pyx_r;
 }
 
-/* "watershed.pyx":197
+/* "src/watershed.pyx":197
  *     VERSION = "1.0"
  * 
  *     def __init__(self, data not None, thres=1.0):             # <<<<<<<<<<<<<<
@@ -6531,10 +6531,10 @@ static PyObject *__pyx_pf_9watershed_6Region_5peaks___get__(struct __pyx_obj_9wa
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed___init__[] = "\n        @param data: 2d image as numpy array\n\n        ";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_1__init__ = {"__init__", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_1__init__, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9watershed_16InverseWatershed___init__};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed___init__[] = "\n        @param data: 2d image as numpy array\n\n        ";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_1__init__ = {"__init__", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_1__init__, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_9watershed_16InverseWatershed___init__};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_data = 0;
   PyObject *__pyx_v_thres = 0;
@@ -6594,14 +6594,14 @@ static PyObject *__pyx_pw_9watershed_16InverseWatershed_1__init__(PyObject *__py
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.InverseWatershed.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_data) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "data"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed___init__(__pyx_self, __pyx_v_self, __pyx_v_data, __pyx_v_thres);
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed___init__(__pyx_self, __pyx_v_self, __pyx_v_data, __pyx_v_thres);
 
   /* function exit code */
   goto __pyx_L0;
@@ -6612,7 +6612,7 @@ static PyObject *__pyx_pw_9watershed_16InverseWatershed_1__init__(PyObject *__py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_data, PyObject *__pyx_v_thres) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_data, PyObject *__pyx_v_thres) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6627,7 +6627,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "watershed.pyx":202
+  /* "src/watershed.pyx":202
  * 
  *         """
  *         assert data.ndim == 2             # <<<<<<<<<<<<<<
@@ -6649,7 +6649,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   }
   #endif
 
-  /* "watershed.pyx":203
+  /* "src/watershed.pyx":203
  *         """
  *         assert data.ndim == 2
  *         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -6683,7 +6683,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_data, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":205
+  /* "src/watershed.pyx":205
  *         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
  * 
  *         self.height, self.width = data.shape             # <<<<<<<<<<<<<<
@@ -6747,7 +6747,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_width, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "watershed.pyx":206
+  /* "src/watershed.pyx":206
  * 
  *         self.height, self.width = data.shape
  *         self.bilinear = Bilinear(data)             # <<<<<<<<<<<<<<
@@ -6759,13 +6759,13 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   __Pyx_INCREF(__pyx_v_data);
   PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_v_data);
   __Pyx_GIVEREF(__pyx_v_data);
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_9watershed_Bilinear)), __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 206; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_3src_9watershed_Bilinear)), __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 206; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_bilinear, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 206; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "watershed.pyx":207
+  /* "src/watershed.pyx":207
  *         self.height, self.width = data.shape
  *         self.bilinear = Bilinear(data)
  *         self.regions = {}             # <<<<<<<<<<<<<<
@@ -6777,7 +6777,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_regions, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "watershed.pyx":208
+  /* "src/watershed.pyx":208
  *         self.bilinear = Bilinear(data)
  *         self.regions = {}
  *         self.labels = numpy.zeros((self.height, self.width), dtype="int32")             # <<<<<<<<<<<<<<
@@ -6817,7 +6817,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_labels, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "watershed.pyx":209
+  /* "src/watershed.pyx":209
  *         self.regions = {}
  *         self.labels = numpy.zeros((self.height, self.width), dtype="int32")
  *         self.borders = numpy.zeros((self.height, self.width), dtype="uint8")             # <<<<<<<<<<<<<<
@@ -6857,7 +6857,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_borders, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "watershed.pyx":210
+  /* "src/watershed.pyx":210
  *         self.labels = numpy.zeros((self.height, self.width), dtype="int32")
  *         self.borders = numpy.zeros((self.height, self.width), dtype="uint8")
  *         self.thres = thres             # <<<<<<<<<<<<<<
@@ -6866,7 +6866,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_thres, __pyx_v_thres) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 210; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":211
+  /* "src/watershed.pyx":211
  *         self.borders = numpy.zeros((self.height, self.width), dtype="uint8")
  *         self.thres = thres
  *         self._actual_thres = 2             # <<<<<<<<<<<<<<
@@ -6875,7 +6875,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_actual_thres, __pyx_int_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":197
+  /* "src/watershed.pyx":197
  *     VERSION = "1.0"
  * 
  *     def __init__(self, data not None, thres=1.0):             # <<<<<<<<<<<<<<
@@ -6892,7 +6892,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("watershed.InverseWatershed.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6900,7 +6900,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
   return __pyx_r;
 }
 
-/* "watershed.pyx":213
+/* "src/watershed.pyx":213
  *         self._actual_thres = 2
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -6909,21 +6909,21 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed___init__(CYTHON_UNUSED P
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_3__dealloc__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed_2__dealloc__[] = "destructor";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_3__dealloc__ = {"__dealloc__", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_3__dealloc__, METH_O, __pyx_doc_9watershed_16InverseWatershed_2__dealloc__};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_3__dealloc__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_3__dealloc__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed_2__dealloc__[] = "destructor";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_3__dealloc__ = {"__dealloc__", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_3__dealloc__, METH_O, __pyx_doc_3src_9watershed_16InverseWatershed_2__dealloc__};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_3__dealloc__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_2__dealloc__(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_2__dealloc__(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_lineno = 0;
@@ -6931,7 +6931,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "watershed.pyx":215
+  /* "src/watershed.pyx":215
  *     def __dealloc__(self):
  *         """destructor"""
  *         self.data = None             # <<<<<<<<<<<<<<
@@ -6940,7 +6940,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_data, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":216
+  /* "src/watershed.pyx":216
  *         """destructor"""
  *         self.data = None
  *         self.bilinear = None             # <<<<<<<<<<<<<<
@@ -6949,7 +6949,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_bilinear, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 216; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":217
+  /* "src/watershed.pyx":217
  *         self.data = None
  *         self.bilinear = None
  *         self.regions = None             # <<<<<<<<<<<<<<
@@ -6958,7 +6958,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_regions, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":218
+  /* "src/watershed.pyx":218
  *         self.bilinear = None
  *         self.regions = None
  *         self.labels = None             # <<<<<<<<<<<<<<
@@ -6967,7 +6967,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_labels, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":219
+  /* "src/watershed.pyx":219
  *         self.regions = None
  *         self.labels = None
  *         self.borders = None             # <<<<<<<<<<<<<<
@@ -6976,7 +6976,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_borders, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":220
+  /* "src/watershed.pyx":220
  *         self.labels = None
  *         self.borders = None
  *         self.dict = None             # <<<<<<<<<<<<<<
@@ -6985,7 +6985,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dict, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":213
+  /* "src/watershed.pyx":213
  *         self._actual_thres = 2
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -6997,7 +6997,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("watershed.InverseWatershed.__dealloc__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.__dealloc__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7005,7 +7005,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
   return __pyx_r;
 }
 
-/* "watershed.pyx":222
+/* "src/watershed.pyx":222
  *         self.dict = None
  * 
  *     def save(self, fname):             # <<<<<<<<<<<<<<
@@ -7014,10 +7014,10 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_2__dealloc__(CYTHON_UNUS
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_5save(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed_4save[] = "\n        Save all regions into a HDF5 file\n        ";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_5save = {"save", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_5save, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9watershed_16InverseWatershed_4save};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_5save(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_5save(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed_4save[] = "\n        Save all regions into a HDF5 file\n        ";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_5save = {"save", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_5save, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_9watershed_16InverseWatershed_4save};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_5save(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_fname = 0;
   int __pyx_lineno = 0;
@@ -7065,18 +7065,18 @@ static PyObject *__pyx_pw_9watershed_16InverseWatershed_5save(PyObject *__pyx_se
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("save", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.InverseWatershed.save", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.save", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_4save(__pyx_self, __pyx_v_self, __pyx_v_fname);
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_4save(__pyx_self, __pyx_v_self, __pyx_v_fname);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_fname) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_fname) {
   PyObject *__pyx_v_h5py = NULL;
   PyObject *__pyx_v_h5 = NULL;
   PyObject *__pyx_v_i = NULL;
@@ -7105,7 +7105,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("save", 0);
 
-  /* "watershed.pyx":226
+  /* "src/watershed.pyx":226
  *         Save all regions into a HDF5 file
  *         """
  *         import h5py             # <<<<<<<<<<<<<<
@@ -7117,7 +7117,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
   __pyx_v_h5py = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":227
+  /* "src/watershed.pyx":227
  *         """
  *         import h5py
  *         with h5py.File(fname) as h5:             # <<<<<<<<<<<<<<
@@ -7187,7 +7187,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
           __pyx_v_h5 = __pyx_t_4;
           __pyx_t_4 = 0;
 
-          /* "watershed.pyx":228
+          /* "src/watershed.pyx":228
  *         import h5py
  *         with h5py.File(fname) as h5:
  *             h5["NAME"] = self.NAME             # <<<<<<<<<<<<<<
@@ -7199,7 +7199,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
           if (unlikely(PyObject_SetItem(__pyx_v_h5, __pyx_n_s_NAME, __pyx_t_4) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-          /* "watershed.pyx":229
+          /* "src/watershed.pyx":229
  *         with h5py.File(fname) as h5:
  *             h5["NAME"] = self.NAME
  *             h5["VERSION"] = self.VERSION             # <<<<<<<<<<<<<<
@@ -7211,7 +7211,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
           if (unlikely(PyObject_SetItem(__pyx_v_h5, __pyx_n_s_VERSION, __pyx_t_4) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-          /* "watershed.pyx":230
+          /* "src/watershed.pyx":230
  *             h5["NAME"] = self.NAME
  *             h5["VERSION"] = self.VERSION
  *             for i in ("data", "height", "width", "labels", "borders", "thres"):             # <<<<<<<<<<<<<<
@@ -7229,7 +7229,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
             __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_1);
             __pyx_t_1 = 0;
 
-            /* "watershed.pyx":231
+            /* "src/watershed.pyx":231
  *             h5["VERSION"] = self.VERSION
  *             for i in ("data", "height", "width", "labels", "borders", "thres"):
  *                 h5[i] = self.__getattribute__(i)             # <<<<<<<<<<<<<<
@@ -7266,7 +7266,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
             if (unlikely(PyObject_SetItem(__pyx_v_h5, __pyx_v_i, __pyx_t_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-            /* "watershed.pyx":230
+            /* "src/watershed.pyx":230
  *             h5["NAME"] = self.NAME
  *             h5["VERSION"] = self.VERSION
  *             for i in ("data", "height", "width", "labels", "borders", "thres"):             # <<<<<<<<<<<<<<
@@ -7276,7 +7276,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
           }
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-          /* "watershed.pyx":232
+          /* "src/watershed.pyx":232
  *             for i in ("data", "height", "width", "labels", "borders", "thres"):
  *                 h5[i] = self.__getattribute__(i)
  *             r = h5.require_group("regions")             # <<<<<<<<<<<<<<
@@ -7291,7 +7291,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
           __pyx_v_r = __pyx_t_1;
           __pyx_t_1 = 0;
 
-          /* "watershed.pyx":234
+          /* "src/watershed.pyx":234
  *             r = h5.require_group("regions")
  * 
  *             for i in set(self.regions.values()):             # <<<<<<<<<<<<<<
@@ -7344,7 +7344,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
             __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_2);
             __pyx_t_2 = 0;
 
-            /* "watershed.pyx":235
+            /* "src/watershed.pyx":235
  * 
  *             for i in set(self.regions.values()):
  *                 s = r.require_group(str(i.index))             # <<<<<<<<<<<<<<
@@ -7392,7 +7392,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
             __Pyx_XDECREF_SET(__pyx_v_s, __pyx_t_2);
             __pyx_t_2 = 0;
 
-            /* "watershed.pyx":236
+            /* "src/watershed.pyx":236
  *             for i in set(self.regions.values()):
  *                 s = r.require_group(str(i.index))
  *                 for j in ("index", "size", "pass_to", "mini", "maxi", "highest_pass", "neighbors", "border", "peaks"):             # <<<<<<<<<<<<<<
@@ -7410,7 +7410,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
               __Pyx_XDECREF_SET(__pyx_v_j, __pyx_t_4);
               __pyx_t_4 = 0;
 
-              /* "watershed.pyx":237
+              /* "src/watershed.pyx":237
  *                 s = r.require_group(str(i.index))
  *                 for j in ("index", "size", "pass_to", "mini", "maxi", "highest_pass", "neighbors", "border", "peaks"):
  *                     s[j] = i.__getattribute__(j)             # <<<<<<<<<<<<<<
@@ -7447,7 +7447,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
               if (unlikely(PyObject_SetItem(__pyx_v_s, __pyx_v_j, __pyx_t_4) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
               __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-              /* "watershed.pyx":236
+              /* "src/watershed.pyx":236
  *             for i in set(self.regions.values()):
  *                 s = r.require_group(str(i.index))
  *                 for j in ("index", "size", "pass_to", "mini", "maxi", "highest_pass", "neighbors", "border", "peaks"):             # <<<<<<<<<<<<<<
@@ -7457,7 +7457,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
             }
             __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-            /* "watershed.pyx":234
+            /* "src/watershed.pyx":234
  *             r = h5.require_group("regions")
  * 
  *             for i in set(self.regions.values()):             # <<<<<<<<<<<<<<
@@ -7479,7 +7479,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
         __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "watershed.pyx":227
+        /* "src/watershed.pyx":227
  *         """
  *         import h5py
  *         with h5py.File(fname) as h5:             # <<<<<<<<<<<<<<
@@ -7487,7 +7487,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
  *             h5["VERSION"] = self.VERSION
  */
         /*except:*/ {
-          __Pyx_AddTraceback("watershed.InverseWatershed.save", __pyx_clineno, __pyx_lineno, __pyx_filename);
+          __Pyx_AddTraceback("src.watershed.InverseWatershed.save", __pyx_clineno, __pyx_lineno, __pyx_filename);
           if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L9_except_error;}
           __Pyx_GOTREF(__pyx_t_1);
           __Pyx_GOTREF(__pyx_t_2);
@@ -7550,7 +7550,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
     __pyx_L24:;
   }
 
-  /* "watershed.pyx":222
+  /* "src/watershed.pyx":222
  *         self.dict = None
  * 
  *     def save(self, fname):             # <<<<<<<<<<<<<<
@@ -7568,7 +7568,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_12);
-  __Pyx_AddTraceback("watershed.InverseWatershed.save", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.save", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_h5py);
@@ -7582,7 +7582,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "watershed.pyx":240
+/* "src/watershed.pyx":240
  * 
  *     @classmethod
  *     def load(cls, fname):             # <<<<<<<<<<<<<<
@@ -7591,10 +7591,10 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_4save(CYTHON_UNUSED PyOb
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_7load(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed_6load[] = "\n        Load data from a HDF5 file\n        ";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_7load = {"load", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_7load, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9watershed_16InverseWatershed_6load};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_7load(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_7load(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed_6load[] = "\n        Load data from a HDF5 file\n        ";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_7load = {"load", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_7load, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_9watershed_16InverseWatershed_6load};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_7load(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_cls = 0;
   PyObject *__pyx_v_fname = 0;
   int __pyx_lineno = 0;
@@ -7642,23 +7642,23 @@ static PyObject *__pyx_pw_9watershed_16InverseWatershed_7load(PyObject *__pyx_se
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("load", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.InverseWatershed.load", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.load", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_6load(__pyx_self, __pyx_v_cls, __pyx_v_fname);
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_6load(__pyx_self, __pyx_v_cls, __pyx_v_fname);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_cls, PyObject *__pyx_v_fname) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_cls, PyObject *__pyx_v_fname) {
   PyObject *__pyx_v_h5py = NULL;
   PyObject *__pyx_v_h5 = NULL;
   PyObject *__pyx_v_self = NULL;
   PyObject *__pyx_v_i = NULL;
-  struct __pyx_obj_9watershed_Region *__pyx_v_r = NULL;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_r = NULL;
   PyObject *__pyx_v_j = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -7686,7 +7686,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("load", 0);
 
-  /* "watershed.pyx":244
+  /* "src/watershed.pyx":244
  *         Load data from a HDF5 file
  *         """
  *         import h5py             # <<<<<<<<<<<<<<
@@ -7698,7 +7698,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
   __pyx_v_h5py = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":245
+  /* "src/watershed.pyx":245
  *         """
  *         import h5py
  *         with h5py.File(fname) as h5:             # <<<<<<<<<<<<<<
@@ -7768,7 +7768,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
           __pyx_v_h5 = __pyx_t_4;
           __pyx_t_4 = 0;
 
-          /* "watershed.pyx":246
+          /* "src/watershed.pyx":246
  *         import h5py
  *         with h5py.File(fname) as h5:
  *             assert h5["VERSION"].value == cls.VERSION             # <<<<<<<<<<<<<<
@@ -7796,7 +7796,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
           }
           #endif
 
-          /* "watershed.pyx":247
+          /* "src/watershed.pyx":247
  *         with h5py.File(fname) as h5:
  *             assert h5["VERSION"].value == cls.VERSION
  *             assert h5["NAME"].value == cls.NAME             # <<<<<<<<<<<<<<
@@ -7824,7 +7824,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
           }
           #endif
 
-          /* "watershed.pyx":248
+          /* "src/watershed.pyx":248
  *             assert h5["VERSION"].value == cls.VERSION
  *             assert h5["NAME"].value == cls.NAME
  *             self = cls(h5["data"].value, h5["thres"].value)             # <<<<<<<<<<<<<<
@@ -7872,7 +7872,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
           __pyx_v_self = __pyx_t_1;
           __pyx_t_1 = 0;
 
-          /* "watershed.pyx":249
+          /* "src/watershed.pyx":249
  *             assert h5["NAME"].value == cls.NAME
  *             self = cls(h5["data"].value, h5["thres"].value)
  *             for i in ("labels", "borders"):             # <<<<<<<<<<<<<<
@@ -7890,7 +7890,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_2);
             __pyx_t_2 = 0;
 
-            /* "watershed.pyx":250
+            /* "src/watershed.pyx":250
  *             self = cls(h5["data"].value, h5["thres"].value)
  *             for i in ("labels", "borders"):
  *                 setattr(self, i, h5[i].value)             # <<<<<<<<<<<<<<
@@ -7905,7 +7905,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __pyx_t_13 = PyObject_SetAttr(__pyx_v_self, __pyx_v_i, __pyx_t_12); if (unlikely(__pyx_t_13 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
             __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-            /* "watershed.pyx":249
+            /* "src/watershed.pyx":249
  *             assert h5["NAME"].value == cls.NAME
  *             self = cls(h5["data"].value, h5["thres"].value)
  *             for i in ("labels", "borders"):             # <<<<<<<<<<<<<<
@@ -7915,7 +7915,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
           }
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-          /* "watershed.pyx":251
+          /* "src/watershed.pyx":251
  *             for i in ("labels", "borders"):
  *                 setattr(self, i, h5[i].value)
  *             for i in h5["regions"].values():             # <<<<<<<<<<<<<<
@@ -7986,7 +7986,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_1);
             __pyx_t_1 = 0;
 
-            /* "watershed.pyx":252
+            /* "src/watershed.pyx":252
  *                 setattr(self, i, h5[i].value)
  *             for i in h5["regions"].values():
  *                 r = Region(i["index"].value)             # <<<<<<<<<<<<<<
@@ -8003,13 +8003,13 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_12);
             __Pyx_GIVEREF(__pyx_t_12);
             __pyx_t_12 = 0;
-            __pyx_t_12 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_9watershed_Region)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+            __pyx_t_12 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_3src_9watershed_Region)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
             __Pyx_GOTREF(__pyx_t_12);
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-            __Pyx_XDECREF_SET(__pyx_v_r, ((struct __pyx_obj_9watershed_Region *)__pyx_t_12));
+            __Pyx_XDECREF_SET(__pyx_v_r, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_12));
             __pyx_t_12 = 0;
 
-            /* "watershed.pyx":253
+            /* "src/watershed.pyx":253
  *             for i in h5["regions"].values():
  *                 r = Region(i["index"].value)
  *                 r.size = i["size"].value             # <<<<<<<<<<<<<<
@@ -8025,7 +8025,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
             __pyx_v_r->size = __pyx_t_15;
 
-            /* "watershed.pyx":254
+            /* "src/watershed.pyx":254
  *                 r = Region(i["index"].value)
  *                 r.size = i["size"].value
  *                 r.pass_to = i["pass_to"].value             # <<<<<<<<<<<<<<
@@ -8041,7 +8041,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
             __pyx_v_r->pass_to = __pyx_t_15;
 
-            /* "watershed.pyx":255
+            /* "src/watershed.pyx":255
  *                 r.size = i["size"].value
  *                 r.pass_to = i["pass_to"].value
  *                 r.mini = i["mini"].value             # <<<<<<<<<<<<<<
@@ -8057,7 +8057,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
             __pyx_v_r->mini = __pyx_t_16;
 
-            /* "watershed.pyx":256
+            /* "src/watershed.pyx":256
  *                 r.pass_to = i["pass_to"].value
  *                 r.mini = i["mini"].value
  *                 r.maxi = i["maxi"].value             # <<<<<<<<<<<<<<
@@ -8073,7 +8073,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
             __pyx_v_r->maxi = __pyx_t_16;
 
-            /* "watershed.pyx":257
+            /* "src/watershed.pyx":257
  *                 r.mini = i["mini"].value
  *                 r.maxi = i["maxi"].value
  *                 r.highest_pass = i["highest_pass"].value             # <<<<<<<<<<<<<<
@@ -8089,7 +8089,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
             __pyx_v_r->highest_pass = __pyx_t_16;
 
-            /* "watershed.pyx":258
+            /* "src/watershed.pyx":258
  *                 r.maxi = i["maxi"].value
  *                 r.highest_pass = i["highest_pass"].value
  *                 r.neighbors = list(i["neighbors"].value)             # <<<<<<<<<<<<<<
@@ -8115,7 +8115,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __pyx_v_r->neighbors = ((PyObject*)__pyx_t_12);
             __pyx_t_12 = 0;
 
-            /* "watershed.pyx":259
+            /* "src/watershed.pyx":259
  *                 r.highest_pass = i["highest_pass"].value
  *                 r.neighbors = list(i["neighbors"].value)
  *                 r.border = list(i["border"].value)             # <<<<<<<<<<<<<<
@@ -8141,7 +8141,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __pyx_v_r->border = ((PyObject*)__pyx_t_1);
             __pyx_t_1 = 0;
 
-            /* "watershed.pyx":260
+            /* "src/watershed.pyx":260
  *                 r.neighbors = list(i["neighbors"].value)
  *                 r.border = list(i["border"].value)
  *                 r.peaks = list(i["peaks"].value)             # <<<<<<<<<<<<<<
@@ -8167,7 +8167,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             __pyx_v_r->peaks = ((PyObject*)__pyx_t_12);
             __pyx_t_12 = 0;
 
-            /* "watershed.pyx":261
+            /* "src/watershed.pyx":261
  *                 r.border = list(i["border"].value)
  *                 r.peaks = list(i["peaks"].value)
  *                 for j in r.peaks:             # <<<<<<<<<<<<<<
@@ -8189,7 +8189,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
               __Pyx_XDECREF_SET(__pyx_v_j, __pyx_t_1);
               __pyx_t_1 = 0;
 
-              /* "watershed.pyx":262
+              /* "src/watershed.pyx":262
  *                 r.peaks = list(i["peaks"].value)
  *                 for j in r.peaks:
  *                     self.regions[j] = r             # <<<<<<<<<<<<<<
@@ -8201,7 +8201,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
               if (unlikely(PyObject_SetItem(__pyx_t_1, __pyx_v_j, ((PyObject *)__pyx_v_r)) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 262; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-              /* "watershed.pyx":261
+              /* "src/watershed.pyx":261
  *                 r.border = list(i["border"].value)
  *                 r.peaks = list(i["peaks"].value)
  *                 for j in r.peaks:             # <<<<<<<<<<<<<<
@@ -8211,7 +8211,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
             }
             __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-            /* "watershed.pyx":251
+            /* "src/watershed.pyx":251
  *             for i in ("labels", "borders"):
  *                 setattr(self, i, h5[i].value)
  *             for i in h5["regions"].values():             # <<<<<<<<<<<<<<
@@ -8233,7 +8233,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
         __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
         __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "watershed.pyx":245
+        /* "src/watershed.pyx":245
  *         """
  *         import h5py
  *         with h5py.File(fname) as h5:             # <<<<<<<<<<<<<<
@@ -8241,7 +8241,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
  *             assert h5["NAME"].value == cls.NAME
  */
         /*except:*/ {
-          __Pyx_AddTraceback("watershed.InverseWatershed.load", __pyx_clineno, __pyx_lineno, __pyx_filename);
+          __Pyx_AddTraceback("src.watershed.InverseWatershed.load", __pyx_clineno, __pyx_lineno, __pyx_filename);
           if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_12, &__pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L9_except_error;}
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_GOTREF(__pyx_t_12);
@@ -8304,7 +8304,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
     __pyx_L24:;
   }
 
-  /* "watershed.pyx":263
+  /* "src/watershed.pyx":263
  *                 for j in r.peaks:
  *                     self.regions[j] = r
  *         return self             # <<<<<<<<<<<<<<
@@ -8317,7 +8317,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
   __pyx_r = __pyx_v_self;
   goto __pyx_L0;
 
-  /* "watershed.pyx":240
+  /* "src/watershed.pyx":240
  * 
  *     @classmethod
  *     def load(cls, fname):             # <<<<<<<<<<<<<<
@@ -8333,7 +8333,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_12);
-  __Pyx_AddTraceback("watershed.InverseWatershed.load", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.load", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_h5py);
@@ -8347,7 +8347,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "watershed.pyx":265
+/* "src/watershed.pyx":265
  *         return self
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
@@ -8356,20 +8356,20 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_6load(CYTHON_UNUSED PyOb
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_9init(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_9init = {"init", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_9init, METH_O, 0};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_9init(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_9init(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_9init = {"init", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_9init, METH_O, 0};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_9init(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("init (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_8init(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_8init(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8384,7 +8384,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("init", 0);
 
-  /* "watershed.pyx":266
+  /* "src/watershed.pyx":266
  * 
  *     def init(self):
  *         self.init_labels()             # <<<<<<<<<<<<<<
@@ -8413,7 +8413,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":267
+  /* "src/watershed.pyx":267
  *     def init(self):
  *         self.init_labels()
  *         self.init_borders()             # <<<<<<<<<<<<<<
@@ -8442,7 +8442,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":268
+  /* "src/watershed.pyx":268
  *         self.init_labels()
  *         self.init_borders()
  *         self.init_regions()             # <<<<<<<<<<<<<<
@@ -8471,7 +8471,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":269
+  /* "src/watershed.pyx":269
  *         self.init_borders()
  *         self.init_regions()
  *         self.init_pass()             # <<<<<<<<<<<<<<
@@ -8500,7 +8500,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":273
+  /* "src/watershed.pyx":273
  * #        self.merge_twins()
  * #        self.merge_intense(self.thres)
  *         logger.info("found %s regions, after merge remains %s" % (len(self.regions), len(set(self.regions.values()))))             # <<<<<<<<<<<<<<
@@ -8587,7 +8587,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":265
+  /* "src/watershed.pyx":265
  *         return self
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
@@ -8605,7 +8605,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("watershed.InverseWatershed.init", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.init", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8613,7 +8613,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "watershed.pyx":279
+/* "src/watershed.pyx":279
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_labels(self):             # <<<<<<<<<<<<<<
@@ -8622,20 +8622,20 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_8init(CYTHON_UNUSED PyOb
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_11init_labels(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_11init_labels = {"init_labels", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_11init_labels, METH_O, 0};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_11init_labels(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_11init_labels(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_11init_labels = {"init_labels", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_11init_labels, METH_O, 0};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_11init_labels(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("init_labels (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_10init_labels(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_10init_labels(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_10init_labels(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_width;
@@ -8644,7 +8644,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   int __pyx_v_res;
   __Pyx_memviewslice __pyx_v_labels = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_v_regions = 0;
-  struct __pyx_obj_9watershed_Bilinear *__pyx_v_bilinear = 0;
+  struct __pyx_obj_3src_9watershed_Bilinear *__pyx_v_bilinear = 0;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8662,7 +8662,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("init_labels", 0);
 
-  /* "watershed.pyx":281
+  /* "src/watershed.pyx":281
  *     def init_labels(self):
  *         cdef:
  *             int i, j, width = self.width, height = self.height, idx, res             # <<<<<<<<<<<<<<
@@ -8680,7 +8680,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_height = __pyx_t_2;
 
-  /* "watershed.pyx":282
+  /* "src/watershed.pyx":282
  *         cdef:
  *             int i, j, width = self.width, height = self.height, idx, res
  *             numpy.int32_t[:, :] labels = self.labels             # <<<<<<<<<<<<<<
@@ -8696,7 +8696,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "watershed.pyx":283
+  /* "src/watershed.pyx":283
  *             int i, j, width = self.width, height = self.height, idx, res
  *             numpy.int32_t[:, :] labels = self.labels
  *             dict regions = self.regions             # <<<<<<<<<<<<<<
@@ -8709,7 +8709,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   __pyx_v_regions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":284
+  /* "src/watershed.pyx":284
  *             numpy.int32_t[:, :] labels = self.labels
  *             dict regions = self.regions
  *             Bilinear bilinear = self.bilinear             # <<<<<<<<<<<<<<
@@ -8718,11 +8718,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_bilinear); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Bilinear))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_v_bilinear = ((struct __pyx_obj_9watershed_Bilinear *)__pyx_t_1);
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Bilinear))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_v_bilinear = ((struct __pyx_obj_3src_9watershed_Bilinear *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":285
+  /* "src/watershed.pyx":285
  *             dict regions = self.regions
  *             Bilinear bilinear = self.bilinear
  *         for i in range(height):             # <<<<<<<<<<<<<<
@@ -8733,7 +8733,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_2; __pyx_t_4+=1) {
     __pyx_v_i = __pyx_t_4;
 
-    /* "watershed.pyx":286
+    /* "src/watershed.pyx":286
  *             Bilinear bilinear = self.bilinear
  *         for i in range(height):
  *             for j in range(width):             # <<<<<<<<<<<<<<
@@ -8744,7 +8744,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
     for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_5; __pyx_t_6+=1) {
       __pyx_v_j = __pyx_t_6;
 
-      /* "watershed.pyx":287
+      /* "src/watershed.pyx":287
  *         for i in range(height):
  *             for j in range(width):
  *                 idx = j + i * width             # <<<<<<<<<<<<<<
@@ -8753,16 +8753,16 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
  */
       __pyx_v_idx = (__pyx_v_j + (__pyx_v_i * __pyx_v_width));
 
-      /* "watershed.pyx":288
+      /* "src/watershed.pyx":288
  *             for j in range(width):
  *                 idx = j + i * width
  *                 res = bilinear.c_local_maxi(idx)             # <<<<<<<<<<<<<<
  *                 labels[i, j] += res
  *                 if idx == res:
  */
-      __pyx_v_res = ((struct __pyx_vtabstruct_9watershed_Bilinear *)__pyx_v_bilinear->__pyx_vtab)->c_local_maxi(__pyx_v_bilinear, __pyx_v_idx);
+      __pyx_v_res = ((struct __pyx_vtabstruct_3src_9watershed_Bilinear *)__pyx_v_bilinear->__pyx_vtab)->c_local_maxi(__pyx_v_bilinear, __pyx_v_idx);
 
-      /* "watershed.pyx":289
+      /* "src/watershed.pyx":289
  *                 idx = j + i * width
  *                 res = bilinear.c_local_maxi(idx)
  *                 labels[i, j] += res             # <<<<<<<<<<<<<<
@@ -8773,7 +8773,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
       __pyx_t_8 = __pyx_v_j;
       *((__pyx_t_5numpy_int32_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_labels.data + __pyx_t_7 * __pyx_v_labels.strides[0]) ) + __pyx_t_8 * __pyx_v_labels.strides[1]) )) += __pyx_v_res;
 
-      /* "watershed.pyx":290
+      /* "src/watershed.pyx":290
  *                 res = bilinear.c_local_maxi(idx)
  *                 labels[i, j] += res
  *                 if idx == res:             # <<<<<<<<<<<<<<
@@ -8783,7 +8783,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
       __pyx_t_9 = ((__pyx_v_idx == __pyx_v_res) != 0);
       if (__pyx_t_9) {
 
-        /* "watershed.pyx":291
+        /* "src/watershed.pyx":291
  *                 labels[i, j] += res
  *                 if idx == res:
  *                     regions[res] = Region(res)             # <<<<<<<<<<<<<<
@@ -8797,7 +8797,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
         PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_t_1);
         __Pyx_GIVEREF(__pyx_t_1);
         __pyx_t_1 = 0;
-        __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_9watershed_Region)), __pyx_t_10, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 291; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_3src_9watershed_Region)), __pyx_t_10, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 291; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
         if (unlikely(__pyx_v_regions == Py_None)) {
@@ -8815,7 +8815,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
     }
   }
 
-  /* "watershed.pyx":279
+  /* "src/watershed.pyx":279
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_labels(self):             # <<<<<<<<<<<<<<
@@ -8830,7 +8830,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   __Pyx_XDECREF(__pyx_t_1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_3, 1);
   __Pyx_XDECREF(__pyx_t_10);
-  __Pyx_AddTraceback("watershed.InverseWatershed.init_labels", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.init_labels", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_labels, 1);
@@ -8841,7 +8841,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
   return __pyx_r;
 }
 
-/* "watershed.pyx":297
+/* "src/watershed.pyx":297
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_borders(self):             # <<<<<<<<<<<<<<
@@ -8850,20 +8850,20 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_10init_labels(CYTHON_UNU
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_13init_borders(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_13init_borders = {"init_borders", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_13init_borders, METH_O, 0};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_13init_borders(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_13init_borders(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_13init_borders = {"init_borders", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_13init_borders, METH_O, 0};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_13init_borders(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("init_borders (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_12init_borders(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_12init_borders(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_12init_borders(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_width;
@@ -8909,7 +8909,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("init_borders", 0);
 
-  /* "watershed.pyx":299
+  /* "src/watershed.pyx":299
  *     def init_borders(self):
  *         cdef:
  *             int i, j, width = self.width, height = self.height, idx, res             # <<<<<<<<<<<<<<
@@ -8927,7 +8927,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_height = __pyx_t_2;
 
-  /* "watershed.pyx":300
+  /* "src/watershed.pyx":300
  *         cdef:
  *             int i, j, width = self.width, height = self.height, idx, res
  *             numpy.int32_t[:, :] labels = self.labels             # <<<<<<<<<<<<<<
@@ -8943,7 +8943,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "watershed.pyx":301
+  /* "src/watershed.pyx":301
  *             int i, j, width = self.width, height = self.height, idx, res
  *             numpy.int32_t[:, :] labels = self.labels
  *             numpy.uint8_t[:, :] borders = self.borders             # <<<<<<<<<<<<<<
@@ -8959,7 +8959,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
   __pyx_t_4.memview = NULL;
   __pyx_t_4.data = NULL;
 
-  /* "watershed.pyx":303
+  /* "src/watershed.pyx":303
  *             numpy.uint8_t[:, :] borders = self.borders
  *             numpy.uint8_t neighb
  *         for i in range(height):             # <<<<<<<<<<<<<<
@@ -8970,7 +8970,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_2; __pyx_t_5+=1) {
     __pyx_v_i = __pyx_t_5;
 
-    /* "watershed.pyx":304
+    /* "src/watershed.pyx":304
  *             numpy.uint8_t neighb
  *         for i in range(height):
  *             for j in range(width):             # <<<<<<<<<<<<<<
@@ -8981,7 +8981,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
     for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
       __pyx_v_j = __pyx_t_7;
 
-      /* "watershed.pyx":305
+      /* "src/watershed.pyx":305
  *         for i in range(height):
  *             for j in range(width):
  *                 neighb = 0             # <<<<<<<<<<<<<<
@@ -8990,7 +8990,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
  */
       __pyx_v_neighb = 0;
 
-      /* "watershed.pyx":306
+      /* "src/watershed.pyx":306
  *             for j in range(width):
  *                 neighb = 0
  *                 idx = j + i * width             # <<<<<<<<<<<<<<
@@ -8999,7 +8999,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
  */
       __pyx_v_idx = (__pyx_v_j + (__pyx_v_i * __pyx_v_width));
 
-      /* "watershed.pyx":307
+      /* "src/watershed.pyx":307
  *                 neighb = 0
  *                 idx = j + i * width
  *                 res = labels[i, j]             # <<<<<<<<<<<<<<
@@ -9010,7 +9010,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_t_9 = __pyx_v_j;
       __pyx_v_res = (*((__pyx_t_5numpy_int32_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_labels.data + __pyx_t_8 * __pyx_v_labels.strides[0]) ) + __pyx_t_9 * __pyx_v_labels.strides[1]) )));
 
-      /* "watershed.pyx":308
+      /* "src/watershed.pyx":308
  *                 idx = j + i * width
  *                 res = labels[i, j]
  *                 if (i > 0) and (j > 0) and (labels[i - 1, j - 1] != res):             # <<<<<<<<<<<<<<
@@ -9036,7 +9036,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L8_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":309
+        /* "src/watershed.pyx":309
  *                 res = labels[i, j]
  *                 if (i > 0) and (j > 0) and (labels[i - 1, j - 1] != res):
  *                     neighb |= 1             # <<<<<<<<<<<<<<
@@ -9048,7 +9048,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L7:;
 
-      /* "watershed.pyx":310
+      /* "src/watershed.pyx":310
  *                 if (i > 0) and (j > 0) and (labels[i - 1, j - 1] != res):
  *                     neighb |= 1
  *                 if (i > 0) and (labels[i - 1, j] != res):             # <<<<<<<<<<<<<<
@@ -9068,7 +9068,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L12_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":311
+        /* "src/watershed.pyx":311
  *                     neighb |= 1
  *                 if (i > 0) and (labels[i - 1, j] != res):
  *                     neighb |= 1 << 1             # <<<<<<<<<<<<<<
@@ -9080,7 +9080,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L11:;
 
-      /* "watershed.pyx":312
+      /* "src/watershed.pyx":312
  *                 if (i > 0) and (labels[i - 1, j] != res):
  *                     neighb |= 1 << 1
  *                 if (i > 0) and (j < (width - 1)) and (labels[i - 1, j + 1] != res):             # <<<<<<<<<<<<<<
@@ -9106,7 +9106,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L15_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":313
+        /* "src/watershed.pyx":313
  *                     neighb |= 1 << 1
  *                 if (i > 0) and (j < (width - 1)) and (labels[i - 1, j + 1] != res):
  *                     neighb |= 1 << 2             # <<<<<<<<<<<<<<
@@ -9118,7 +9118,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L14:;
 
-      /* "watershed.pyx":314
+      /* "src/watershed.pyx":314
  *                 if (i > 0) and (j < (width - 1)) and (labels[i - 1, j + 1] != res):
  *                     neighb |= 1 << 2
  *                 if (j < (width - 1)) and (labels[i, j + 1] != res):             # <<<<<<<<<<<<<<
@@ -9138,7 +9138,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L19_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":315
+        /* "src/watershed.pyx":315
  *                     neighb |= 1 << 2
  *                 if (j < (width - 1)) and (labels[i, j + 1] != res):
  *                     neighb |= 1 << 3             # <<<<<<<<<<<<<<
@@ -9150,7 +9150,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L18:;
 
-      /* "watershed.pyx":316
+      /* "src/watershed.pyx":316
  *                 if (j < (width - 1)) and (labels[i, j + 1] != res):
  *                     neighb |= 1 << 3
  *                 if (i < (height - 1)) and (j < (width - 1)) and (labels[i + 1, j + 1] != res):             # <<<<<<<<<<<<<<
@@ -9176,7 +9176,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L22_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":317
+        /* "src/watershed.pyx":317
  *                     neighb |= 1 << 3
  *                 if (i < (height - 1)) and (j < (width - 1)) and (labels[i + 1, j + 1] != res):
  *                     neighb |= 1 << 4             # <<<<<<<<<<<<<<
@@ -9188,7 +9188,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L21:;
 
-      /* "watershed.pyx":318
+      /* "src/watershed.pyx":318
  *                 if (i < (height - 1)) and (j < (width - 1)) and (labels[i + 1, j + 1] != res):
  *                     neighb |= 1 << 4
  *                 if (i < (height - 1)) and (labels[i + 1, j] != res):             # <<<<<<<<<<<<<<
@@ -9208,7 +9208,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L26_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":319
+        /* "src/watershed.pyx":319
  *                     neighb |= 1 << 4
  *                 if (i < (height - 1)) and (labels[i + 1, j] != res):
  *                     neighb |= 1 << 5             # <<<<<<<<<<<<<<
@@ -9220,7 +9220,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L25:;
 
-      /* "watershed.pyx":320
+      /* "src/watershed.pyx":320
  *                 if (i < (height - 1)) and (labels[i + 1, j] != res):
  *                     neighb |= 1 << 5
  *                 if (i < (height - 1)) and (j > 0) and (labels[i + 1, j - 1] != res):             # <<<<<<<<<<<<<<
@@ -9246,7 +9246,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L29_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":321
+        /* "src/watershed.pyx":321
  *                     neighb |= 1 << 5
  *                 if (i < (height - 1)) and (j > 0) and (labels[i + 1, j - 1] != res):
  *                     neighb |= 1 << 6             # <<<<<<<<<<<<<<
@@ -9258,7 +9258,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L28:;
 
-      /* "watershed.pyx":322
+      /* "src/watershed.pyx":322
  *                 if (i < (height - 1)) and (j > 0) and (labels[i + 1, j - 1] != res):
  *                     neighb |= 1 << 6
  *                 if (j > 0) and (labels[i, j - 1] != res):             # <<<<<<<<<<<<<<
@@ -9278,7 +9278,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       __pyx_L33_bool_binop_done:;
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":323
+        /* "src/watershed.pyx":323
  *                     neighb |= 1 << 6
  *                 if (j > 0) and (labels[i, j - 1] != res):
  *                     neighb |= 1 << 7             # <<<<<<<<<<<<<<
@@ -9290,7 +9290,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
       }
       __pyx_L32:;
 
-      /* "watershed.pyx":324
+      /* "src/watershed.pyx":324
  *                 if (j > 0) and (labels[i, j - 1] != res):
  *                     neighb |= 1 << 7
  *                 borders[i, j] = neighb             # <<<<<<<<<<<<<<
@@ -9303,7 +9303,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
     }
   }
 
-  /* "watershed.pyx":297
+  /* "src/watershed.pyx":297
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_borders(self):             # <<<<<<<<<<<<<<
@@ -9318,7 +9318,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
   __Pyx_XDECREF(__pyx_t_1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_3, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_4, 1);
-  __Pyx_AddTraceback("watershed.InverseWatershed.init_borders", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.init_borders", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_labels, 1);
@@ -9328,7 +9328,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
   return __pyx_r;
 }
 
-/* "watershed.pyx":330
+/* "src/watershed.pyx":330
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_regions(self):             # <<<<<<<<<<<<<<
@@ -9337,20 +9337,20 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_12init_borders(CYTHON_UN
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_15init_regions(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_15init_regions = {"init_regions", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_15init_regions, METH_O, 0};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_15init_regions(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_15init_regions(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_15init_regions = {"init_regions", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_15init_regions, METH_O, 0};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_15init_regions(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("init_regions (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_14init_regions(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_14init_regions(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_14init_regions(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_idx;
@@ -9358,7 +9358,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   __Pyx_memviewslice __pyx_v_labels = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_borders = { 0, 0, { 0 }, { 0 }, { 0 } };
   __pyx_t_5numpy_uint8_t __pyx_v_neighb;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region = 0;
   PyObject *__pyx_v_regions = 0;
   int __pyx_v_width;
   int __pyx_v_height;
@@ -9399,7 +9399,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("init_regions", 0);
 
-  /* "watershed.pyx":333
+  /* "src/watershed.pyx":333
  *         cdef:
  *             int i, j, idx, res
  *             numpy.int32_t[:, :] labels = self.labels             # <<<<<<<<<<<<<<
@@ -9415,7 +9415,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   __pyx_t_2.memview = NULL;
   __pyx_t_2.data = NULL;
 
-  /* "watershed.pyx":334
+  /* "src/watershed.pyx":334
  *             int i, j, idx, res
  *             numpy.int32_t[:, :] labels = self.labels
  *             numpy.uint8_t[:, :] borders = self.borders             # <<<<<<<<<<<<<<
@@ -9431,7 +9431,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "watershed.pyx":335
+  /* "src/watershed.pyx":335
  *             numpy.int32_t[:, :] labels = self.labels
  *             numpy.uint8_t[:, :] borders = self.borders
  *             numpy.uint8_t neighb = 0             # <<<<<<<<<<<<<<
@@ -9440,7 +9440,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
  */
   __pyx_v_neighb = 0;
 
-  /* "watershed.pyx":337
+  /* "src/watershed.pyx":337
  *             numpy.uint8_t neighb = 0
  *             Region region
  *             dict regions = self.regions             # <<<<<<<<<<<<<<
@@ -9453,7 +9453,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   __pyx_v_regions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":338
+  /* "src/watershed.pyx":338
  *             Region region
  *             dict regions = self.regions
  *             int width = self.width             # <<<<<<<<<<<<<<
@@ -9466,7 +9466,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_width = __pyx_t_4;
 
-  /* "watershed.pyx":339
+  /* "src/watershed.pyx":339
  *             dict regions = self.regions
  *             int width = self.width
  *             int  height = self.height             # <<<<<<<<<<<<<<
@@ -9479,7 +9479,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_height = __pyx_t_4;
 
-  /* "watershed.pyx":340
+  /* "src/watershed.pyx":340
  *             int width = self.width
  *             int  height = self.height
  *         for i in range(height):             # <<<<<<<<<<<<<<
@@ -9490,7 +9490,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
     __pyx_v_i = __pyx_t_5;
 
-    /* "watershed.pyx":341
+    /* "src/watershed.pyx":341
  *             int  height = self.height
  *         for i in range(height):
  *             for j in range(width):             # <<<<<<<<<<<<<<
@@ -9501,7 +9501,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
     for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
       __pyx_v_j = __pyx_t_7;
 
-      /* "watershed.pyx":342
+      /* "src/watershed.pyx":342
  *         for i in range(height):
  *             for j in range(width):
  *                 idx = j + i * width             # <<<<<<<<<<<<<<
@@ -9510,7 +9510,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
  */
       __pyx_v_idx = (__pyx_v_j + (__pyx_v_i * __pyx_v_width));
 
-      /* "watershed.pyx":343
+      /* "src/watershed.pyx":343
  *             for j in range(width):
  *                 idx = j + i * width
  *                 neighb = borders[i, j]             # <<<<<<<<<<<<<<
@@ -9521,7 +9521,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
       __pyx_t_9 = __pyx_v_j;
       __pyx_v_neighb = (*((__pyx_t_5numpy_uint8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_borders.data + __pyx_t_8 * __pyx_v_borders.strides[0]) ) + __pyx_t_9 * __pyx_v_borders.strides[1]) )));
 
-      /* "watershed.pyx":344
+      /* "src/watershed.pyx":344
  *                 idx = j + i * width
  *                 neighb = borders[i, j]
  *                 res = labels[i, j]             # <<<<<<<<<<<<<<
@@ -9532,7 +9532,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
       __pyx_t_11 = __pyx_v_j;
       __pyx_v_res = (*((__pyx_t_5numpy_int32_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_labels.data + __pyx_t_10 * __pyx_v_labels.strides[0]) ) + __pyx_t_11 * __pyx_v_labels.strides[1]) )));
 
-      /* "watershed.pyx":345
+      /* "src/watershed.pyx":345
  *                 neighb = borders[i, j]
  *                 res = labels[i, j]
  *                 region = regions[res]             # <<<<<<<<<<<<<<
@@ -9548,11 +9548,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
       __pyx_t_12 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_1); if (unlikely(__pyx_t_12 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
       __Pyx_GOTREF(__pyx_t_12);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      if (!(likely(((__pyx_t_12) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_12, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_9watershed_Region *)__pyx_t_12));
+      if (!(likely(((__pyx_t_12) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_12, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_12));
       __pyx_t_12 = 0;
 
-      /* "watershed.pyx":346
+      /* "src/watershed.pyx":346
  *                 res = labels[i, j]
  *                 region = regions[res]
  *                 region.size += 1             # <<<<<<<<<<<<<<
@@ -9561,7 +9561,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
  */
       __pyx_v_region->size = (__pyx_v_region->size + 1);
 
-      /* "watershed.pyx":347
+      /* "src/watershed.pyx":347
  *                 region = regions[res]
  *                 region.size += 1
  *                 if neighb == 0:             # <<<<<<<<<<<<<<
@@ -9571,7 +9571,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
       __pyx_t_13 = ((__pyx_v_neighb == 0) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":348
+        /* "src/watershed.pyx":348
  *                 region.size += 1
  *                 if neighb == 0:
  *                     continue             # <<<<<<<<<<<<<<
@@ -9581,7 +9581,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L5_continue;
       }
 
-      /* "watershed.pyx":349
+      /* "src/watershed.pyx":349
  *                 if neighb == 0:
  *                     continue
  *                 region.border.append(idx)             # <<<<<<<<<<<<<<
@@ -9597,17 +9597,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
       __pyx_t_14 = __Pyx_PyList_Append(__pyx_v_region->border, __pyx_t_12); if (unlikely(__pyx_t_14 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 349; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-      /* "watershed.pyx":350
+      /* "src/watershed.pyx":350
  *                     continue
  *                 region.border.append(idx)
  *                 if get_bit(neighb, 1):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i - 1, j])
  *                 elif get_bit(neighb, 3):
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 1) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 1) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":351
+        /* "src/watershed.pyx":351
  *                 region.border.append(idx)
  *                 if get_bit(neighb, 1):
  *                     region.neighbors.append(labels[i - 1, j])             # <<<<<<<<<<<<<<
@@ -9627,17 +9627,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L8;
       }
 
-      /* "watershed.pyx":352
+      /* "src/watershed.pyx":352
  *                 if get_bit(neighb, 1):
  *                     region.neighbors.append(labels[i - 1, j])
  *                 elif get_bit(neighb, 3):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i, j + 1])
  *                 elif get_bit(neighb, 5):
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 3) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 3) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":353
+        /* "src/watershed.pyx":353
  *                     region.neighbors.append(labels[i - 1, j])
  *                 elif get_bit(neighb, 3):
  *                     region.neighbors.append(labels[i, j + 1])             # <<<<<<<<<<<<<<
@@ -9657,17 +9657,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L8;
       }
 
-      /* "watershed.pyx":354
+      /* "src/watershed.pyx":354
  *                 elif get_bit(neighb, 3):
  *                     region.neighbors.append(labels[i, j + 1])
  *                 elif get_bit(neighb, 5):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i + 1, j])
  *                 elif get_bit(neighb, 7):
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 5) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 5) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":355
+        /* "src/watershed.pyx":355
  *                     region.neighbors.append(labels[i, j + 1])
  *                 elif get_bit(neighb, 5):
  *                     region.neighbors.append(labels[i + 1, j])             # <<<<<<<<<<<<<<
@@ -9687,17 +9687,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L8;
       }
 
-      /* "watershed.pyx":356
+      /* "src/watershed.pyx":356
  *                 elif get_bit(neighb, 5):
  *                     region.neighbors.append(labels[i + 1, j])
  *                 elif get_bit(neighb, 7):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i, j - 1])
  *                 elif get_bit(neighb, 0):
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 7) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 7) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":357
+        /* "src/watershed.pyx":357
  *                     region.neighbors.append(labels[i + 1, j])
  *                 elif get_bit(neighb, 7):
  *                     region.neighbors.append(labels[i, j - 1])             # <<<<<<<<<<<<<<
@@ -9717,17 +9717,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L8;
       }
 
-      /* "watershed.pyx":358
+      /* "src/watershed.pyx":358
  *                 elif get_bit(neighb, 7):
  *                     region.neighbors.append(labels[i, j - 1])
  *                 elif get_bit(neighb, 0):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i - 1, j - 1])
  *                 elif get_bit(neighb, 2):
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 0) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 0) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":359
+        /* "src/watershed.pyx":359
  *                     region.neighbors.append(labels[i, j - 1])
  *                 elif get_bit(neighb, 0):
  *                     region.neighbors.append(labels[i - 1, j - 1])             # <<<<<<<<<<<<<<
@@ -9747,17 +9747,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L8;
       }
 
-      /* "watershed.pyx":360
+      /* "src/watershed.pyx":360
  *                 elif get_bit(neighb, 0):
  *                     region.neighbors.append(labels[i - 1, j - 1])
  *                 elif get_bit(neighb, 2):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i - 1, j + 1])
  *                 elif get_bit(neighb, 4):
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 2) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 2) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":361
+        /* "src/watershed.pyx":361
  *                     region.neighbors.append(labels[i - 1, j - 1])
  *                 elif get_bit(neighb, 2):
  *                     region.neighbors.append(labels[i - 1, j + 1])             # <<<<<<<<<<<<<<
@@ -9777,17 +9777,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L8;
       }
 
-      /* "watershed.pyx":362
+      /* "src/watershed.pyx":362
  *                 elif get_bit(neighb, 2):
  *                     region.neighbors.append(labels[i - 1, j + 1])
  *                 elif get_bit(neighb, 4):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i + 1, j + 1])
  *                 elif get_bit(neighb, 6):
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 4) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 4) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":363
+        /* "src/watershed.pyx":363
  *                     region.neighbors.append(labels[i - 1, j + 1])
  *                 elif get_bit(neighb, 4):
  *                     region.neighbors.append(labels[i + 1, j + 1])             # <<<<<<<<<<<<<<
@@ -9807,17 +9807,17 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
         goto __pyx_L8;
       }
 
-      /* "watershed.pyx":364
+      /* "src/watershed.pyx":364
  *                 elif get_bit(neighb, 4):
  *                     region.neighbors.append(labels[i + 1, j + 1])
  *                 elif get_bit(neighb, 6):             # <<<<<<<<<<<<<<
  *                     region.neighbors.append(labels[i + 1, j - 1])
  * 
  */
-      __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 6) != 0);
+      __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 6) != 0);
       if (__pyx_t_13) {
 
-        /* "watershed.pyx":365
+        /* "src/watershed.pyx":365
  *                     region.neighbors.append(labels[i + 1, j + 1])
  *                 elif get_bit(neighb, 6):
  *                     region.neighbors.append(labels[i + 1, j - 1])             # <<<<<<<<<<<<<<
@@ -9841,7 +9841,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
     }
   }
 
-  /* "watershed.pyx":330
+  /* "src/watershed.pyx":330
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_regions(self):             # <<<<<<<<<<<<<<
@@ -9857,7 +9857,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   __PYX_XDEC_MEMVIEW(&__pyx_t_2, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_3, 1);
   __Pyx_XDECREF(__pyx_t_12);
-  __Pyx_AddTraceback("watershed.InverseWatershed.init_regions", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.init_regions", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_labels, 1);
@@ -9869,7 +9869,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
   return __pyx_r;
 }
 
-/* "watershed.pyx":371
+/* "src/watershed.pyx":371
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_pass(self):             # <<<<<<<<<<<<<<
@@ -9878,23 +9878,23 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_14init_regions(CYTHON_UN
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_17init_pass(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_17init_pass = {"init_pass", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_17init_pass, METH_O, 0};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_17init_pass(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_17init_pass(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_17init_pass = {"init_pass", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_17init_pass, METH_O, 0};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_17init_pass(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("init_pass (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_16init_pass(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_16init_pass(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   __Pyx_memviewslice __pyx_v_flat = { 0, 0, { 0 }, { 0 }, { 0 } };
   CYTHON_UNUSED __pyx_t_5numpy_uint8_t __pyx_v_neighb;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region = 0;
   PyObject *__pyx_v_regions = 0;
   CYTHON_UNUSED int __pyx_v_width;
   PyObject *__pyx_r = NULL;
@@ -9914,7 +9914,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("init_pass", 0);
 
-  /* "watershed.pyx":374
+  /* "src/watershed.pyx":374
  *         cdef:
  *             int i, j, k, imax, imin
  *             float[:] flat = self.data.ravel()             # <<<<<<<<<<<<<<
@@ -9951,7 +9951,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
   __pyx_t_4.memview = NULL;
   __pyx_t_4.data = NULL;
 
-  /* "watershed.pyx":375
+  /* "src/watershed.pyx":375
  *             int i, j, k, imax, imin
  *             float[:] flat = self.data.ravel()
  *             numpy.uint8_t neighb = 0             # <<<<<<<<<<<<<<
@@ -9960,7 +9960,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
  */
   __pyx_v_neighb = 0;
 
-  /* "watershed.pyx":377
+  /* "src/watershed.pyx":377
  *             numpy.uint8_t neighb = 0
  *             Region region
  *             dict regions = self.regions             # <<<<<<<<<<<<<<
@@ -9973,7 +9973,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
   __pyx_v_regions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":379
+  /* "src/watershed.pyx":379
  *             dict regions = self.regions
  *             float val, maxi, mini
  *             int width = self.width             # <<<<<<<<<<<<<<
@@ -9986,7 +9986,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_width = __pyx_t_5;
 
-  /* "watershed.pyx":380
+  /* "src/watershed.pyx":380
  *             float val, maxi, mini
  *             int width = self.width
  *         for region in list(regions.values()):             # <<<<<<<<<<<<<<
@@ -10016,11 +10016,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
     #else
     __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 380; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #endif
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 380; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_9watershed_Region *)__pyx_t_1));
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 380; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "watershed.pyx":381
+    /* "src/watershed.pyx":381
  *             int width = self.width
  *         for region in list(regions.values()):
  *             if region.init_values(flat):             # <<<<<<<<<<<<<<
@@ -10061,7 +10061,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (__pyx_t_10) {
 
-      /* "watershed.pyx":382
+      /* "src/watershed.pyx":382
  *         for region in list(regions.values()):
  *             if region.init_values(flat):
  *                 regions.pop(region.index)             # <<<<<<<<<<<<<<
@@ -10103,7 +10103,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
     }
     __pyx_L5:;
 
-    /* "watershed.pyx":380
+    /* "src/watershed.pyx":380
  *             float val, maxi, mini
  *             int width = self.width
  *         for region in list(regions.values()):             # <<<<<<<<<<<<<<
@@ -10113,7 +10113,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "watershed.pyx":371
+  /* "src/watershed.pyx":371
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_pass(self):             # <<<<<<<<<<<<<<
@@ -10132,7 +10132,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_8);
   __Pyx_XDECREF(__pyx_t_9);
-  __Pyx_AddTraceback("watershed.InverseWatershed.init_pass", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.init_pass", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_flat, 1);
@@ -10143,7 +10143,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
   return __pyx_r;
 }
 
-/* "watershed.pyx":385
+/* "src/watershed.pyx":385
  * 
  *     @timeit
  *     def merge_singleton(self):             # <<<<<<<<<<<<<<
@@ -10152,29 +10152,29 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_16init_pass(CYTHON_UNUSE
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_19merge_singleton(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed_18merge_singleton[] = "merge single pixel region";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_19merge_singleton = {"merge_singleton", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_19merge_singleton, METH_O, __pyx_doc_9watershed_16InverseWatershed_18merge_singleton};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_19merge_singleton(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_19merge_singleton(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed_18merge_singleton[] = "merge single pixel region";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_19merge_singleton = {"merge_singleton", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_19merge_singleton, METH_O, __pyx_doc_3src_9watershed_16InverseWatershed_18merge_singleton};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_19merge_singleton(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("merge_singleton (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_18merge_singleton(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_18merge_singleton(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_18merge_singleton(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   int __pyx_v_idx;
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_key;
   int __pyx_v_key1;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region1 = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region2 = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region1 = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region2 = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region = 0;
   PyObject *__pyx_v_regions = 0;
   __pyx_t_5numpy_uint8_t __pyx_v_neighb;
   float __pyx_v_ref;
@@ -10242,7 +10242,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("merge_singleton", 0);
 
-  /* "watershed.pyx":390
+  /* "src/watershed.pyx":390
  *             int idx, i, j, key, key1
  *             Region region1, region2, region
  *             dict regions = self.regions             # <<<<<<<<<<<<<<
@@ -10255,7 +10255,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __pyx_v_regions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":391
+  /* "src/watershed.pyx":391
  *             Region region1, region2, region
  *             dict regions = self.regions
  *             numpy.uint8_t neighb = 0             # <<<<<<<<<<<<<<
@@ -10264,7 +10264,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
  */
   __pyx_v_neighb = 0;
 
-  /* "watershed.pyx":392
+  /* "src/watershed.pyx":392
  *             dict regions = self.regions
  *             numpy.uint8_t neighb = 0
  *             float ref = 0.0             # <<<<<<<<<<<<<<
@@ -10273,7 +10273,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
  */
   __pyx_v_ref = 0.0;
 
-  /* "watershed.pyx":393
+  /* "src/watershed.pyx":393
  *             numpy.uint8_t neighb = 0
  *             float ref = 0.0
  *             float[:, :] data = self.data             # <<<<<<<<<<<<<<
@@ -10289,7 +10289,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __pyx_t_2.memview = NULL;
   __pyx_t_2.data = NULL;
 
-  /* "watershed.pyx":394
+  /* "src/watershed.pyx":394
  *             float ref = 0.0
  *             float[:, :] data = self.data
  *             numpy.int32_t[:, :] labels = self.labels             # <<<<<<<<<<<<<<
@@ -10305,7 +10305,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "watershed.pyx":395
+  /* "src/watershed.pyx":395
  *             float[:, :] data = self.data
  *             numpy.int32_t[:, :] labels = self.labels
  *             numpy.uint8_t[:, :] borders = self.borders             # <<<<<<<<<<<<<<
@@ -10321,7 +10321,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __pyx_t_4.memview = NULL;
   __pyx_t_4.data = NULL;
 
-  /* "watershed.pyx":396
+  /* "src/watershed.pyx":396
  *             numpy.int32_t[:, :] labels = self.labels
  *             numpy.uint8_t[:, :] borders = self.borders
  *             int to_merge = -1             # <<<<<<<<<<<<<<
@@ -10330,7 +10330,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
  */
   __pyx_v_to_merge = -1;
 
-  /* "watershed.pyx":397
+  /* "src/watershed.pyx":397
  *             numpy.uint8_t[:, :] borders = self.borders
  *             int to_merge = -1
  *             int width = self.width             # <<<<<<<<<<<<<<
@@ -10343,7 +10343,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_width = __pyx_t_5;
 
-  /* "watershed.pyx":398
+  /* "src/watershed.pyx":398
  *             int to_merge = -1
  *             int width = self.width
  *             int cnt = 0             # <<<<<<<<<<<<<<
@@ -10352,7 +10352,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
  */
   __pyx_v_cnt = 0;
 
-  /* "watershed.pyx":399
+  /* "src/watershed.pyx":399
  *             int width = self.width
  *             int cnt = 0
  *             float[:] flat = self.data.ravel()             # <<<<<<<<<<<<<<
@@ -10389,7 +10389,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "watershed.pyx":400
+  /* "src/watershed.pyx":400
  *             int cnt = 0
  *             float[:] flat = self.data.ravel()
  *         for key1 in list(regions.keys()):             # <<<<<<<<<<<<<<
@@ -10423,7 +10423,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_key1 = __pyx_t_5;
 
-    /* "watershed.pyx":401
+    /* "src/watershed.pyx":401
  *             float[:] flat = self.data.ravel()
  *         for key1 in list(regions.keys()):
  *             region1 = regions[key1]             # <<<<<<<<<<<<<<
@@ -10439,11 +10439,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
     __pyx_t_6 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_1); if (unlikely(__pyx_t_6 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_XDECREF_SET(__pyx_v_region1, ((struct __pyx_obj_9watershed_Region *)__pyx_t_6));
+    if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_XDECREF_SET(__pyx_v_region1, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_6));
     __pyx_t_6 = 0;
 
-    /* "watershed.pyx":402
+    /* "src/watershed.pyx":402
  *         for key1 in list(regions.keys()):
  *             region1 = regions[key1]
  *             if region1.maxi == region1.mini:             # <<<<<<<<<<<<<<
@@ -10453,7 +10453,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
     __pyx_t_10 = ((__pyx_v_region1->maxi == __pyx_v_region1->mini) != 0);
     if (__pyx_t_10) {
 
-      /* "watershed.pyx":403
+      /* "src/watershed.pyx":403
  *             region1 = regions[key1]
  *             if region1.maxi == region1.mini:
  *                 to_merge = -1             # <<<<<<<<<<<<<<
@@ -10462,7 +10462,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
  */
       __pyx_v_to_merge = -1;
 
-      /* "watershed.pyx":404
+      /* "src/watershed.pyx":404
  *             if region1.maxi == region1.mini:
  *                 to_merge = -1
  *                 if region1.size == 1:             # <<<<<<<<<<<<<<
@@ -10472,7 +10472,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
       __pyx_t_10 = ((__pyx_v_region1->size == 1) != 0);
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":405
+        /* "src/watershed.pyx":405
  *                 to_merge = -1
  *                 if region1.size == 1:
  *                     i = region1.index // width             # <<<<<<<<<<<<<<
@@ -10501,7 +10501,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         }
         __pyx_v_i = __Pyx_div_int(__pyx_v_region1->index, __pyx_v_width);
 
-        /* "watershed.pyx":406
+        /* "src/watershed.pyx":406
  *                 if region1.size == 1:
  *                     i = region1.index // width
  *                     j = region1.index % width             # <<<<<<<<<<<<<<
@@ -10520,7 +10520,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         }
         __pyx_v_j = __Pyx_mod_int(__pyx_v_region1->index, __pyx_v_width);
 
-        /* "watershed.pyx":407
+        /* "src/watershed.pyx":407
  *                     i = region1.index // width
  *                     j = region1.index % width
  *                     neighb = borders[i, j]             # <<<<<<<<<<<<<<
@@ -10544,14 +10544,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         }
         __pyx_v_neighb = (*((__pyx_t_5numpy_uint8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_borders.data + __pyx_t_5 * __pyx_v_borders.strides[0]) ) + __pyx_t_11 * __pyx_v_borders.strides[1]) )));
 
-        /* "watershed.pyx":408
+        /* "src/watershed.pyx":408
  *                     j = region1.index % width
  *                     neighb = borders[i, j]
  *                     if get_bit(neighb, 1) and (region1.maxi == data[i - 1, j]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i - 1, j]
  *                     elif get_bit(neighb, 3) and (region1.maxi == data[i, j + 1]):
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 1) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 1) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10577,7 +10577,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L8_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":409
+          /* "src/watershed.pyx":409
  *                     neighb = borders[i, j]
  *                     if get_bit(neighb, 1) and (region1.maxi == data[i - 1, j]):
  *                         to_merge = labels[i - 1, j]             # <<<<<<<<<<<<<<
@@ -10603,14 +10603,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L7;
         }
 
-        /* "watershed.pyx":410
+        /* "src/watershed.pyx":410
  *                     if get_bit(neighb, 1) and (region1.maxi == data[i - 1, j]):
  *                         to_merge = labels[i - 1, j]
  *                     elif get_bit(neighb, 3) and (region1.maxi == data[i, j + 1]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i, j + 1]
  *                     elif get_bit(neighb, 5) and (region1.maxi == data[i + 1, j]):
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 3) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 3) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10636,7 +10636,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L10_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":411
+          /* "src/watershed.pyx":411
  *                         to_merge = labels[i - 1, j]
  *                     elif get_bit(neighb, 3) and (region1.maxi == data[i, j + 1]):
  *                         to_merge = labels[i, j + 1]             # <<<<<<<<<<<<<<
@@ -10662,14 +10662,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L7;
         }
 
-        /* "watershed.pyx":412
+        /* "src/watershed.pyx":412
  *                     elif get_bit(neighb, 3) and (region1.maxi == data[i, j + 1]):
  *                         to_merge = labels[i, j + 1]
  *                     elif get_bit(neighb, 5) and (region1.maxi == data[i + 1, j]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i + 1, j]
  *                     elif get_bit(neighb, 7) and (region1.maxi == data[i, j - 1]):
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 5) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 5) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10695,7 +10695,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L12_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":413
+          /* "src/watershed.pyx":413
  *                         to_merge = labels[i, j + 1]
  *                     elif get_bit(neighb, 5) and (region1.maxi == data[i + 1, j]):
  *                         to_merge = labels[i + 1, j]             # <<<<<<<<<<<<<<
@@ -10721,14 +10721,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L7;
         }
 
-        /* "watershed.pyx":414
+        /* "src/watershed.pyx":414
  *                     elif get_bit(neighb, 5) and (region1.maxi == data[i + 1, j]):
  *                         to_merge = labels[i + 1, j]
  *                     elif get_bit(neighb, 7) and (region1.maxi == data[i, j - 1]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i, j - 1]
  *                     elif get_bit(neighb, 0) and (region1.maxi == data[i - 1, j - 1]):
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 7) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 7) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10754,7 +10754,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L14_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":415
+          /* "src/watershed.pyx":415
  *                         to_merge = labels[i + 1, j]
  *                     elif get_bit(neighb, 7) and (region1.maxi == data[i, j - 1]):
  *                         to_merge = labels[i, j - 1]             # <<<<<<<<<<<<<<
@@ -10780,14 +10780,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L7;
         }
 
-        /* "watershed.pyx":416
+        /* "src/watershed.pyx":416
  *                     elif get_bit(neighb, 7) and (region1.maxi == data[i, j - 1]):
  *                         to_merge = labels[i, j - 1]
  *                     elif get_bit(neighb, 0) and (region1.maxi == data[i - 1, j - 1]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i - 1, j - 1]
  *                     elif get_bit(neighb, 2) and (region1.maxi == data[i - 1, j + 1]):
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 0) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 0) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10813,7 +10813,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L16_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":417
+          /* "src/watershed.pyx":417
  *                         to_merge = labels[i, j - 1]
  *                     elif get_bit(neighb, 0) and (region1.maxi == data[i - 1, j - 1]):
  *                         to_merge = labels[i - 1, j - 1]             # <<<<<<<<<<<<<<
@@ -10839,14 +10839,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L7;
         }
 
-        /* "watershed.pyx":418
+        /* "src/watershed.pyx":418
  *                     elif get_bit(neighb, 0) and (region1.maxi == data[i - 1, j - 1]):
  *                         to_merge = labels[i - 1, j - 1]
  *                     elif get_bit(neighb, 2) and (region1.maxi == data[i - 1, j + 1]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i - 1, j + 1]
  *                     elif get_bit(neighb, 4) and (region1.maxi == data[i + 1, j + 1]):
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 2) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 2) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10872,7 +10872,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L18_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":419
+          /* "src/watershed.pyx":419
  *                         to_merge = labels[i - 1, j - 1]
  *                     elif get_bit(neighb, 2) and (region1.maxi == data[i - 1, j + 1]):
  *                         to_merge = labels[i - 1, j + 1]             # <<<<<<<<<<<<<<
@@ -10898,14 +10898,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L7;
         }
 
-        /* "watershed.pyx":420
+        /* "src/watershed.pyx":420
  *                     elif get_bit(neighb, 2) and (region1.maxi == data[i - 1, j + 1]):
  *                         to_merge = labels[i - 1, j + 1]
  *                     elif get_bit(neighb, 4) and (region1.maxi == data[i + 1, j + 1]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i + 1, j + 1]
  *                     elif get_bit(neighb, 6) and (region1.maxi == data[i + 1, j - 1]):
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 4) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 4) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10931,7 +10931,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L20_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":421
+          /* "src/watershed.pyx":421
  *                         to_merge = labels[i - 1, j + 1]
  *                     elif get_bit(neighb, 4) and (region1.maxi == data[i + 1, j + 1]):
  *                         to_merge = labels[i + 1, j + 1]             # <<<<<<<<<<<<<<
@@ -10957,14 +10957,14 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L7;
         }
 
-        /* "watershed.pyx":422
+        /* "src/watershed.pyx":422
  *                     elif get_bit(neighb, 4) and (region1.maxi == data[i + 1, j + 1]):
  *                         to_merge = labels[i + 1, j + 1]
  *                     elif get_bit(neighb, 6) and (region1.maxi == data[i + 1, j - 1]):             # <<<<<<<<<<<<<<
  *                         to_merge = labels[i + 1, j - 1]
  *                 if to_merge < 0:
  */
-        __pyx_t_13 = (__pyx_f_9watershed_get_bit(__pyx_v_neighb, 6) != 0);
+        __pyx_t_13 = (__pyx_f_3src_9watershed_get_bit(__pyx_v_neighb, 6) != 0);
         if (__pyx_t_13) {
         } else {
           __pyx_t_10 = __pyx_t_13;
@@ -10990,7 +10990,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L22_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":423
+          /* "src/watershed.pyx":423
  *                         to_merge = labels[i + 1, j + 1]
  *                     elif get_bit(neighb, 6) and (region1.maxi == data[i + 1, j - 1]):
  *                         to_merge = labels[i + 1, j - 1]             # <<<<<<<<<<<<<<
@@ -11020,7 +11020,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
       }
       __pyx_L6:;
 
-      /* "watershed.pyx":424
+      /* "src/watershed.pyx":424
  *                     elif get_bit(neighb, 6) and (region1.maxi == data[i + 1, j - 1]):
  *                         to_merge = labels[i + 1, j - 1]
  *                 if to_merge < 0:             # <<<<<<<<<<<<<<
@@ -11030,7 +11030,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
       __pyx_t_10 = ((__pyx_v_to_merge < 0) != 0);
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":425
+        /* "src/watershed.pyx":425
  *                         to_merge = labels[i + 1, j - 1]
  *                 if to_merge < 0:
  *                     if len(region1.neighbors) == 0:             # <<<<<<<<<<<<<<
@@ -11048,7 +11048,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_t_10 = ((__pyx_t_46 == 0) != 0);
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":426
+          /* "src/watershed.pyx":426
  *                 if to_merge < 0:
  *                     if len(region1.neighbors) == 0:
  *                         print("no neighbors: %s" % region1)             # <<<<<<<<<<<<<<
@@ -11062,7 +11062,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L25;
         }
 
-        /* "watershed.pyx":427
+        /* "src/watershed.pyx":427
  *                     if len(region1.neighbors) == 0:
  *                         print("no neighbors: %s" % region1)
  *                     elif (len(region1.neighbors) == 1) or \             # <<<<<<<<<<<<<<
@@ -11084,7 +11084,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           goto __pyx_L26_bool_binop_done;
         }
 
-        /* "watershed.pyx":428
+        /* "src/watershed.pyx":428
  *                         print("no neighbors: %s" % region1)
  *                     elif (len(region1.neighbors) == 1) or \
  *                          (region1.neighbors == [region1.neighbors[0]] * len(region1.neighbors)):             # <<<<<<<<<<<<<<
@@ -11123,7 +11123,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_L26_bool_binop_done:;
         if (__pyx_t_10) {
 
-          /* "watershed.pyx":429
+          /* "src/watershed.pyx":429
  *                     elif (len(region1.neighbors) == 1) or \
  *                          (region1.neighbors == [region1.neighbors[0]] * len(region1.neighbors)):
  *                         to_merge = region1.neighbors[0]             # <<<<<<<<<<<<<<
@@ -11143,7 +11143,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         }
         /*else*/ {
 
-          /* "watershed.pyx":431
+          /* "src/watershed.pyx":431
  *                         to_merge = region1.neighbors[0]
  *                     else:
  *                         to_merge = region1.neighbors[0]             # <<<<<<<<<<<<<<
@@ -11160,7 +11160,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __pyx_v_to_merge = __pyx_t_29;
 
-          /* "watershed.pyx":432
+          /* "src/watershed.pyx":432
  *                     else:
  *                         to_merge = region1.neighbors[0]
  *                         region2 = regions[to_merge]             # <<<<<<<<<<<<<<
@@ -11176,11 +11176,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_6); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
           __Pyx_GOTREF(__pyx_t_1);
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-          __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_9watershed_Region *)__pyx_t_1));
+          if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1));
           __pyx_t_1 = 0;
 
-          /* "watershed.pyx":433
+          /* "src/watershed.pyx":433
  *                         to_merge = region1.neighbors[0]
  *                         region2 = regions[to_merge]
  *                         ref = region2.maxi             # <<<<<<<<<<<<<<
@@ -11190,7 +11190,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           __pyx_t_47 = __pyx_v_region2->maxi;
           __pyx_v_ref = __pyx_t_47;
 
-          /* "watershed.pyx":434
+          /* "src/watershed.pyx":434
  *                         region2 = regions[to_merge]
  *                         ref = region2.maxi
  *                         for idx in region1.neighbors[1:]:             # <<<<<<<<<<<<<<
@@ -11216,7 +11216,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
             __pyx_v_idx = __pyx_t_29;
 
-            /* "watershed.pyx":435
+            /* "src/watershed.pyx":435
  *                         ref = region2.maxi
  *                         for idx in region1.neighbors[1:]:
  *                             region2 = regions[to_merge]             # <<<<<<<<<<<<<<
@@ -11232,11 +11232,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
             __pyx_t_48 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_1); if (unlikely(__pyx_t_48 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
             __Pyx_GOTREF(__pyx_t_48);
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-            if (!(likely(((__pyx_t_48) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_48, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-            __Pyx_DECREF_SET(__pyx_v_region2, ((struct __pyx_obj_9watershed_Region *)__pyx_t_48));
+            if (!(likely(((__pyx_t_48) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_48, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+            __Pyx_DECREF_SET(__pyx_v_region2, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_48));
             __pyx_t_48 = 0;
 
-            /* "watershed.pyx":436
+            /* "src/watershed.pyx":436
  *                         for idx in region1.neighbors[1:]:
  *                             region2 = regions[to_merge]
  *                             if region2.maxi > ref:             # <<<<<<<<<<<<<<
@@ -11246,7 +11246,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
             __pyx_t_10 = ((__pyx_v_region2->maxi > __pyx_v_ref) != 0);
             if (__pyx_t_10) {
 
-              /* "watershed.pyx":437
+              /* "src/watershed.pyx":437
  *                             region2 = regions[to_merge]
  *                             if region2.maxi > ref:
  *                                 to_merge = idx             # <<<<<<<<<<<<<<
@@ -11255,7 +11255,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
  */
               __pyx_v_to_merge = __pyx_v_idx;
 
-              /* "watershed.pyx":438
+              /* "src/watershed.pyx":438
  *                             if region2.maxi > ref:
  *                                 to_merge = idx
  *                                 ref = region2.maxi             # <<<<<<<<<<<<<<
@@ -11268,7 +11268,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
             }
             __pyx_L30:;
 
-            /* "watershed.pyx":434
+            /* "src/watershed.pyx":434
  *                         region2 = regions[to_merge]
  *                         ref = region2.maxi
  *                         for idx in region1.neighbors[1:]:             # <<<<<<<<<<<<<<
@@ -11283,7 +11283,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
       }
       __pyx_L24:;
 
-      /* "watershed.pyx":439
+      /* "src/watershed.pyx":439
  *                                 to_merge = idx
  *                                 ref = region2.maxi
  *                 if (to_merge < 0):             # <<<<<<<<<<<<<<
@@ -11293,7 +11293,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
       __pyx_t_10 = ((__pyx_v_to_merge < 0) != 0);
       if (__pyx_t_10) {
 
-        /* "watershed.pyx":440
+        /* "src/watershed.pyx":440
  *                                 ref = region2.maxi
  *                 if (to_merge < 0):
  *                     logger.info("error in merging %s" % region1)             # <<<<<<<<<<<<<<
@@ -11338,7 +11338,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
       }
       /*else*/ {
 
-        /* "watershed.pyx":442
+        /* "src/watershed.pyx":442
  *                     logger.info("error in merging %s" % region1)
  *                 else:
  *                     region2 = regions[to_merge]             # <<<<<<<<<<<<<<
@@ -11354,11 +11354,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_6); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 442; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 442; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_9watershed_Region *)__pyx_t_1));
+        if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 442; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1));
         __pyx_t_1 = 0;
 
-        /* "watershed.pyx":443
+        /* "src/watershed.pyx":443
  *                 else:
  *                     region2 = regions[to_merge]
  *                     region = region1.merge(region2)             # <<<<<<<<<<<<<<
@@ -11392,11 +11392,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           __Pyx_DECREF(__pyx_t_48); __pyx_t_48 = 0;
         }
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 443; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_9watershed_Region *)__pyx_t_1));
+        if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 443; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1));
         __pyx_t_1 = 0;
 
-        /* "watershed.pyx":444
+        /* "src/watershed.pyx":444
  *                     region2 = regions[to_merge]
  *                     region = region1.merge(region2)
  *                     region.init_values(flat)             # <<<<<<<<<<<<<<
@@ -11435,7 +11435,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "watershed.pyx":445
+        /* "src/watershed.pyx":445
  *                     region = region1.merge(region2)
  *                     region.init_values(flat)
  *                     for key in region.peaks:             # <<<<<<<<<<<<<<
@@ -11458,7 +11458,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __pyx_v_key = __pyx_t_29;
 
-          /* "watershed.pyx":446
+          /* "src/watershed.pyx":446
  *                     region.init_values(flat)
  *                     for key in region.peaks:
  *                         regions[key] = region             # <<<<<<<<<<<<<<
@@ -11474,7 +11474,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
           if (unlikely(PyDict_SetItem(__pyx_v_regions, __pyx_t_6, ((PyObject *)__pyx_v_region)) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 446; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-          /* "watershed.pyx":445
+          /* "src/watershed.pyx":445
  *                     region = region1.merge(region2)
  *                     region.init_values(flat)
  *                     for key in region.peaks:             # <<<<<<<<<<<<<<
@@ -11484,7 +11484,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
         }
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-        /* "watershed.pyx":447
+        /* "src/watershed.pyx":447
  *                     for key in region.peaks:
  *                         regions[key] = region
  *                     cnt += 1             # <<<<<<<<<<<<<<
@@ -11498,7 +11498,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
     }
     __pyx_L5:;
 
-    /* "watershed.pyx":400
+    /* "src/watershed.pyx":400
  *             int cnt = 0
  *             float[:] flat = self.data.ravel()
  *         for key1 in list(regions.keys()):             # <<<<<<<<<<<<<<
@@ -11508,7 +11508,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   }
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "watershed.pyx":448
+  /* "src/watershed.pyx":448
  *                         regions[key] = region
  *                     cnt += 1
  *         logger.info("Did %s merge_singleton" % cnt)             # <<<<<<<<<<<<<<
@@ -11553,7 +11553,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "watershed.pyx":385
+  /* "src/watershed.pyx":385
  * 
  *     @timeit
  *     def merge_singleton(self):             # <<<<<<<<<<<<<<
@@ -11575,7 +11575,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   __Pyx_XDECREF(__pyx_t_48);
   __Pyx_XDECREF(__pyx_t_49);
   __Pyx_XDECREF(__pyx_t_50);
-  __Pyx_AddTraceback("watershed.InverseWatershed.merge_singleton", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.merge_singleton", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_region1);
@@ -11591,7 +11591,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
   return __pyx_r;
 }
 
-/* "watershed.pyx":451
+/* "src/watershed.pyx":451
  * 
  *     @timeit
  *     def merge_twins(self):             # <<<<<<<<<<<<<<
@@ -11600,29 +11600,29 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_18merge_singleton(CYTHON
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_21merge_twins(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed_20merge_twins[] = "\n        Twins are two peak region which are best linked together:\n        A -> B and B -> A\n        ";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_21merge_twins = {"merge_twins", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_21merge_twins, METH_O, __pyx_doc_9watershed_16InverseWatershed_20merge_twins};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_21merge_twins(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_21merge_twins(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed_20merge_twins[] = "\n        Twins are two peak region which are best linked together:\n        A -> B and B -> A\n        ";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_21merge_twins = {"merge_twins", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_21merge_twins, METH_O, __pyx_doc_3src_9watershed_16InverseWatershed_20merge_twins};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_21merge_twins(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("merge_twins (wrapper)", 0);
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_20merge_twins(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_20merge_twins(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   int __pyx_v_key1;
   int __pyx_v_key2;
   int __pyx_v_key;
   __Pyx_memviewslice __pyx_v_flat = { 0, 0, { 0 }, { 0 }, { 0 } };
   CYTHON_UNUSED __pyx_t_5numpy_uint8_t __pyx_v_neighb;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region1 = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region2 = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region1 = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region2 = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region = 0;
   PyObject *__pyx_v_regions = 0;
   CYTHON_UNUSED int __pyx_v_found;
   CYTHON_UNUSED int __pyx_v_width;
@@ -11649,7 +11649,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("merge_twins", 0);
 
-  /* "watershed.pyx":458
+  /* "src/watershed.pyx":458
  *         cdef:
  *             int i, j, k, imax, imin, key1, key2, key
  *             float[:] flat = self.data.ravel()             # <<<<<<<<<<<<<<
@@ -11686,7 +11686,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   __pyx_t_4.memview = NULL;
   __pyx_t_4.data = NULL;
 
-  /* "watershed.pyx":459
+  /* "src/watershed.pyx":459
  *             int i, j, k, imax, imin, key1, key2, key
  *             float[:] flat = self.data.ravel()
  *             numpy.uint8_t neighb = 0             # <<<<<<<<<<<<<<
@@ -11695,7 +11695,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
  */
   __pyx_v_neighb = 0;
 
-  /* "watershed.pyx":461
+  /* "src/watershed.pyx":461
  *             numpy.uint8_t neighb = 0
  *             Region region1, region2, region
  *             dict regions = self.regions             # <<<<<<<<<<<<<<
@@ -11708,7 +11708,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   __pyx_v_regions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":463
+  /* "src/watershed.pyx":463
  *             dict regions = self.regions
  *             float val, maxi, mini
  *             bint found = True             # <<<<<<<<<<<<<<
@@ -11717,7 +11717,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
  */
   __pyx_v_found = 1;
 
-  /* "watershed.pyx":464
+  /* "src/watershed.pyx":464
  *             float val, maxi, mini
  *             bint found = True
  *             int width = self.width             # <<<<<<<<<<<<<<
@@ -11730,7 +11730,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_width = __pyx_t_5;
 
-  /* "watershed.pyx":465
+  /* "src/watershed.pyx":465
  *             bint found = True
  *             int width = self.width
  *             int cnt = 0             # <<<<<<<<<<<<<<
@@ -11739,7 +11739,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
  */
   __pyx_v_cnt = 0;
 
-  /* "watershed.pyx":466
+  /* "src/watershed.pyx":466
  *             int width = self.width
  *             int cnt = 0
  *         for key1 in list(regions.keys()):             # <<<<<<<<<<<<<<
@@ -11773,7 +11773,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_key1 = __pyx_t_5;
 
-    /* "watershed.pyx":467
+    /* "src/watershed.pyx":467
  *             int cnt = 0
  *         for key1 in list(regions.keys()):
  *             region1 = regions[key1]             # <<<<<<<<<<<<<<
@@ -11789,11 +11789,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
     __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_XDECREF_SET(__pyx_v_region1, ((struct __pyx_obj_9watershed_Region *)__pyx_t_2));
+    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_XDECREF_SET(__pyx_v_region1, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_2));
     __pyx_t_2 = 0;
 
-    /* "watershed.pyx":468
+    /* "src/watershed.pyx":468
  *         for key1 in list(regions.keys()):
  *             region1 = regions[key1]
  *             key2 = region1.pass_to             # <<<<<<<<<<<<<<
@@ -11803,7 +11803,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
     __pyx_t_5 = __pyx_v_region1->pass_to;
     __pyx_v_key2 = __pyx_t_5;
 
-    /* "watershed.pyx":469
+    /* "src/watershed.pyx":469
  *             region1 = regions[key1]
  *             key2 = region1.pass_to
  *             region2 = regions[key2]             # <<<<<<<<<<<<<<
@@ -11819,11 +11819,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
     __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_2); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 469; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 469; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_9watershed_Region *)__pyx_t_1));
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 469; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "watershed.pyx":470
+    /* "src/watershed.pyx":470
  *             key2 = region1.pass_to
  *             region2 = regions[key2]
  *             if region1 == region2:             # <<<<<<<<<<<<<<
@@ -11835,7 +11835,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (__pyx_t_7) {
 
-      /* "watershed.pyx":471
+      /* "src/watershed.pyx":471
  *             region2 = regions[key2]
  *             if region1 == region2:
  *                 continue             # <<<<<<<<<<<<<<
@@ -11845,7 +11845,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
       goto __pyx_L3_continue;
     }
 
-    /* "watershed.pyx":472
+    /* "src/watershed.pyx":472
  *             if region1 == region2:
  *                 continue
  *             if (region2.pass_to in region1.peaks and region1.pass_to in region2.peaks):             # <<<<<<<<<<<<<<
@@ -11871,7 +11871,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
     __pyx_L7_bool_binop_done:;
     if (__pyx_t_7) {
 
-      /* "watershed.pyx":473
+      /* "src/watershed.pyx":473
  *                 continue
  *             if (region2.pass_to in region1.peaks and region1.pass_to in region2.peaks):
  *                 idx1 = region1.index             # <<<<<<<<<<<<<<
@@ -11881,7 +11881,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
       __pyx_t_5 = __pyx_v_region1->index;
       __pyx_v_idx1 = __pyx_t_5;
 
-      /* "watershed.pyx":474
+      /* "src/watershed.pyx":474
  *             if (region2.pass_to in region1.peaks and region1.pass_to in region2.peaks):
  *                 idx1 = region1.index
  *                 idx2 = region2.index             # <<<<<<<<<<<<<<
@@ -11891,7 +11891,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
       __pyx_t_5 = __pyx_v_region2->index;
       __pyx_v_idx2 = __pyx_t_5;
 
-      /* "watershed.pyx":476
+      /* "src/watershed.pyx":476
  *                 idx2 = region2.index
  * #                 logger.info("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
  *                 region = region1.merge(region2)             # <<<<<<<<<<<<<<
@@ -11925,11 +11925,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
       }
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 476; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_9watershed_Region *)__pyx_t_1));
+      if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 476; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1));
       __pyx_t_1 = 0;
 
-      /* "watershed.pyx":477
+      /* "src/watershed.pyx":477
  * #                 logger.info("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
  *                 region = region1.merge(region2)
  *                 region.init_values(flat)             # <<<<<<<<<<<<<<
@@ -11968,7 +11968,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "watershed.pyx":478
+      /* "src/watershed.pyx":478
  *                 region = region1.merge(region2)
  *                 region.init_values(flat)
  *                 for key in region.peaks:             # <<<<<<<<<<<<<<
@@ -11991,7 +11991,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __pyx_v_key = __pyx_t_5;
 
-        /* "watershed.pyx":479
+        /* "src/watershed.pyx":479
  *                 region.init_values(flat)
  *                 for key in region.peaks:
  *                     regions[key] = region             # <<<<<<<<<<<<<<
@@ -12007,7 +12007,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
         if (unlikely(PyDict_SetItem(__pyx_v_regions, __pyx_t_2, ((PyObject *)__pyx_v_region)) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 479; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "watershed.pyx":478
+        /* "src/watershed.pyx":478
  *                 region = region1.merge(region2)
  *                 region.init_values(flat)
  *                 for key in region.peaks:             # <<<<<<<<<<<<<<
@@ -12017,7 +12017,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
       }
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "watershed.pyx":480
+      /* "src/watershed.pyx":480
  *                 for key in region.peaks:
  *                     regions[key] = region
  *                 cnt += 1             # <<<<<<<<<<<<<<
@@ -12029,7 +12029,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
     }
     __pyx_L6:;
 
-    /* "watershed.pyx":466
+    /* "src/watershed.pyx":466
  *             int width = self.width
  *             int cnt = 0
  *         for key1 in list(regions.keys()):             # <<<<<<<<<<<<<<
@@ -12040,7 +12040,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "watershed.pyx":481
+  /* "src/watershed.pyx":481
  *                     regions[key] = region
  *                 cnt += 1
  *         logger.info("Did %s merge_twins" % cnt)             # <<<<<<<<<<<<<<
@@ -12085,7 +12085,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "watershed.pyx":451
+  /* "src/watershed.pyx":451
  * 
  *     @timeit
  *     def merge_twins(self):             # <<<<<<<<<<<<<<
@@ -12104,7 +12104,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_11);
   __Pyx_XDECREF(__pyx_t_12);
-  __Pyx_AddTraceback("watershed.InverseWatershed.merge_twins", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.merge_twins", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_flat, 1);
@@ -12117,7 +12117,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
   return __pyx_r;
 }
 
-/* "watershed.pyx":484
+/* "src/watershed.pyx":484
  * 
  *     @timeit
  *     def merge_intense(self, thres=1.0):             # <<<<<<<<<<<<<<
@@ -12126,10 +12126,10 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_20merge_twins(CYTHON_UNU
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_23merge_intense(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed_22merge_intense[] = "\n        Merge groups then (pass-mini)/(maxi-mini) >=thres\n        ";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_23merge_intense = {"merge_intense", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_23merge_intense, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9watershed_16InverseWatershed_22merge_intense};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_23merge_intense(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_23merge_intense(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed_22merge_intense[] = "\n        Merge groups then (pass-mini)/(maxi-mini) >=thres\n        ";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_23merge_intense = {"merge_intense", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_23merge_intense, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_9watershed_16InverseWatershed_22merge_intense};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_23merge_intense(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_thres = 0;
   int __pyx_lineno = 0;
@@ -12180,25 +12180,25 @@ static PyObject *__pyx_pw_9watershed_16InverseWatershed_23merge_intense(PyObject
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("merge_intense", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("watershed.InverseWatershed.merge_intense", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.merge_intense", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_22merge_intense(__pyx_self, __pyx_v_self, __pyx_v_thres);
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_22merge_intense(__pyx_self, __pyx_v_self, __pyx_v_thres);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_thres) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_22merge_intense(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_thres) {
   int __pyx_v_key1;
   int __pyx_v_key2;
   CYTHON_UNUSED int __pyx_v_idx1;
   CYTHON_UNUSED int __pyx_v_idx2;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region1 = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region2 = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region1 = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region2 = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region = 0;
   PyObject *__pyx_v_regions = 0;
   float __pyx_v_ratio;
   __Pyx_memviewslice __pyx_v_flat = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -12224,7 +12224,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("merge_intense", 0);
 
-  /* "watershed.pyx":488
+  /* "src/watershed.pyx":488
  *         Merge groups then (pass-mini)/(maxi-mini) >=thres
  *         """
  *         if thres > self._actual_thres:             # <<<<<<<<<<<<<<
@@ -12239,7 +12239,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (__pyx_t_3) {
 
-    /* "watershed.pyx":489
+    /* "src/watershed.pyx":489
  *         """
  *         if thres > self._actual_thres:
  *             logger.warning("Cannot increase threshold: was %s, requested %s. You should re-init the object." % self._actual_thres, thres)             # <<<<<<<<<<<<<<
@@ -12288,7 +12288,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   }
   __pyx_L3:;
 
-  /* "watershed.pyx":490
+  /* "src/watershed.pyx":490
  *         if thres > self._actual_thres:
  *             logger.warning("Cannot increase threshold: was %s, requested %s. You should re-init the object." % self._actual_thres, thres)
  *         self._actual_thres = thres             # <<<<<<<<<<<<<<
@@ -12297,7 +12297,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_actual_thres, __pyx_v_thres) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":494
+  /* "src/watershed.pyx":494
  *             int key1, key2, idx1, idx2
  *             Region region1, region2, region
  *             dict regions = self.regions             # <<<<<<<<<<<<<<
@@ -12310,7 +12310,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   __pyx_v_regions = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "watershed.pyx":496
+  /* "src/watershed.pyx":496
  *             dict regions = self.regions
  *             float ratio
  *             float[:] flat = self.data.ravel()             # <<<<<<<<<<<<<<
@@ -12347,7 +12347,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "watershed.pyx":497
+  /* "src/watershed.pyx":497
  *             float ratio
  *             float[:] flat = self.data.ravel()
  *             int cnt = 0             # <<<<<<<<<<<<<<
@@ -12356,7 +12356,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
  */
   __pyx_v_cnt = 0;
 
-  /* "watershed.pyx":498
+  /* "src/watershed.pyx":498
  *             float[:] flat = self.data.ravel()
  *             int cnt = 0
  *         for key1 in list(regions.keys()):             # <<<<<<<<<<<<<<
@@ -12390,7 +12390,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_v_key1 = __pyx_t_9;
 
-    /* "watershed.pyx":499
+    /* "src/watershed.pyx":499
  *             int cnt = 0
  *         for key1 in list(regions.keys()):
  *             region1 = regions[key1]             # <<<<<<<<<<<<<<
@@ -12406,11 +12406,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
     __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_2); if (unlikely(__pyx_t_4 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 499; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 499; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_XDECREF_SET(__pyx_v_region1, ((struct __pyx_obj_9watershed_Region *)__pyx_t_4));
+    if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 499; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_XDECREF_SET(__pyx_v_region1, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "watershed.pyx":500
+    /* "src/watershed.pyx":500
  *         for key1 in list(regions.keys()):
  *             region1 = regions[key1]
  *             if region1.maxi == region1.mini:             # <<<<<<<<<<<<<<
@@ -12420,7 +12420,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
     __pyx_t_3 = ((__pyx_v_region1->maxi == __pyx_v_region1->mini) != 0);
     if (__pyx_t_3) {
 
-      /* "watershed.pyx":501
+      /* "src/watershed.pyx":501
  *             region1 = regions[key1]
  *             if region1.maxi == region1.mini:
  *                 logger.error(region1)             # <<<<<<<<<<<<<<
@@ -12459,7 +12459,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "watershed.pyx":502
+      /* "src/watershed.pyx":502
  *             if region1.maxi == region1.mini:
  *                 logger.error(region1)
  *                 continue             # <<<<<<<<<<<<<<
@@ -12469,7 +12469,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       goto __pyx_L4_continue;
     }
 
-    /* "watershed.pyx":503
+    /* "src/watershed.pyx":503
  *                 logger.error(region1)
  *                 continue
  *             ratio = (region1.highest_pass - region1.mini) / (region1.maxi - region1.mini)             # <<<<<<<<<<<<<<
@@ -12490,7 +12490,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
     }
     __pyx_v_ratio = (__pyx_t_10 / __pyx_t_11);
 
-    /* "watershed.pyx":504
+    /* "src/watershed.pyx":504
  *                 continue
  *             ratio = (region1.highest_pass - region1.mini) / (region1.maxi - region1.mini)
  *             if ratio >= thres:             # <<<<<<<<<<<<<<
@@ -12505,7 +12505,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (__pyx_t_3) {
 
-      /* "watershed.pyx":505
+      /* "src/watershed.pyx":505
  *             ratio = (region1.highest_pass - region1.mini) / (region1.maxi - region1.mini)
  *             if ratio >= thres:
  *                 key2 = region1.pass_to             # <<<<<<<<<<<<<<
@@ -12515,7 +12515,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       __pyx_t_9 = __pyx_v_region1->pass_to;
       __pyx_v_key2 = __pyx_t_9;
 
-      /* "watershed.pyx":506
+      /* "src/watershed.pyx":506
  *             if ratio >= thres:
  *                 key2 = region1.pass_to
  *                 idx1 = region1.index             # <<<<<<<<<<<<<<
@@ -12525,7 +12525,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       __pyx_t_9 = __pyx_v_region1->index;
       __pyx_v_idx1 = __pyx_t_9;
 
-      /* "watershed.pyx":507
+      /* "src/watershed.pyx":507
  *                 key2 = region1.pass_to
  *                 idx1 = region1.index
  *                 region2 = regions[key2]             # <<<<<<<<<<<<<<
@@ -12541,11 +12541,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       __pyx_t_4 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_5); if (unlikely(__pyx_t_4 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 507; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 507; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_9watershed_Region *)__pyx_t_4));
+      if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 507; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_XDECREF_SET(__pyx_v_region2, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_4));
       __pyx_t_4 = 0;
 
-      /* "watershed.pyx":508
+      /* "src/watershed.pyx":508
  *                 idx1 = region1.index
  *                 region2 = regions[key2]
  *                 idx2 = region2.index             # <<<<<<<<<<<<<<
@@ -12555,7 +12555,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       __pyx_t_9 = __pyx_v_region2->index;
       __pyx_v_idx2 = __pyx_t_9;
 
-      /* "watershed.pyx":510
+      /* "src/watershed.pyx":510
  *                 idx2 = region2.index
  * #                 print("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
  *                 region = region1.merge(region2)             # <<<<<<<<<<<<<<
@@ -12589,11 +12589,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       }
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 510; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_9watershed_Region *)__pyx_t_4));
+      if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 510; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_4));
       __pyx_t_4 = 0;
 
-      /* "watershed.pyx":511
+      /* "src/watershed.pyx":511
  * #                 print("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
  *                 region = region1.merge(region2)
  *                 region.init_values(flat)             # <<<<<<<<<<<<<<
@@ -12632,7 +12632,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "watershed.pyx":512
+      /* "src/watershed.pyx":512
  *                 region = region1.merge(region2)
  *                 region.init_values(flat)
  *                 for key in region.peaks:             # <<<<<<<<<<<<<<
@@ -12654,7 +12654,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
         __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_5);
         __pyx_t_5 = 0;
 
-        /* "watershed.pyx":513
+        /* "src/watershed.pyx":513
  *                 region.init_values(flat)
  *                 for key in region.peaks:
  *                     regions[key] = region             # <<<<<<<<<<<<<<
@@ -12667,7 +12667,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
         }
         if (unlikely(PyDict_SetItem(__pyx_v_regions, __pyx_v_key, ((PyObject *)__pyx_v_region)) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 513; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-        /* "watershed.pyx":512
+        /* "src/watershed.pyx":512
  *                 region = region1.merge(region2)
  *                 region.init_values(flat)
  *                 for key in region.peaks:             # <<<<<<<<<<<<<<
@@ -12677,7 +12677,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "watershed.pyx":514
+      /* "src/watershed.pyx":514
  *                 for key in region.peaks:
  *                     regions[key] = region
  *                 cnt += 1             # <<<<<<<<<<<<<<
@@ -12689,7 +12689,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
     }
     __pyx_L7:;
 
-    /* "watershed.pyx":498
+    /* "src/watershed.pyx":498
  *             float[:] flat = self.data.ravel()
  *             int cnt = 0
  *         for key1 in list(regions.keys()):             # <<<<<<<<<<<<<<
@@ -12700,7 +12700,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   }
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "watershed.pyx":515
+  /* "src/watershed.pyx":515
  *                     regions[key] = region
  *                 cnt += 1
  *         logger.info("Did %s merge_intense" % cnt)             # <<<<<<<<<<<<<<
@@ -12745,7 +12745,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "watershed.pyx":484
+  /* "src/watershed.pyx":484
  * 
  *     @timeit
  *     def merge_intense(self, thres=1.0):             # <<<<<<<<<<<<<<
@@ -12764,7 +12764,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   __Pyx_XDECREF(__pyx_t_7);
   __PYX_XDEC_MEMVIEW(&__pyx_t_8, 1);
   __Pyx_XDECREF(__pyx_t_12);
-  __Pyx_AddTraceback("watershed.InverseWatershed.merge_intense", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.merge_intense", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_region1);
@@ -12778,7 +12778,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
   return __pyx_r;
 }
 
-/* "watershed.pyx":517
+/* "src/watershed.pyx":517
  *         logger.info("Did %s merge_intense" % cnt)
  * 
  *     def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):             # <<<<<<<<<<<<<<
@@ -12787,10 +12787,10 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_22merge_intense(CYTHON_U
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_25peaks_from_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_9watershed_16InverseWatershed_24peaks_from_area[] = "\n        @param mask: mask of data points valid\n        @param Imin: Minimum intensity for a peak \n        @param keep: Number of  points to keep\n        @param refine: refine sub-pixel position\n        @param dmin: minimum distance from \n        ";
-static PyMethodDef __pyx_mdef_9watershed_16InverseWatershed_25peaks_from_area = {"peaks_from_area", (PyCFunction)__pyx_pw_9watershed_16InverseWatershed_25peaks_from_area, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9watershed_16InverseWatershed_24peaks_from_area};
-static PyObject *__pyx_pw_9watershed_16InverseWatershed_25peaks_from_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_25peaks_from_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_9watershed_16InverseWatershed_24peaks_from_area[] = "\n        @param mask: mask of data points valid\n        @param Imin: Minimum intensity for a peak \n        @param keep: Number of  points to keep\n        @param refine: refine sub-pixel position\n        @param dmin: minimum distance from \n        ";
+static PyMethodDef __pyx_mdef_3src_9watershed_16InverseWatershed_25peaks_from_area = {"peaks_from_area", (PyCFunction)__pyx_pw_3src_9watershed_16InverseWatershed_25peaks_from_area, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_9watershed_16InverseWatershed_24peaks_from_area};
+static PyObject *__pyx_pw_3src_9watershed_16InverseWatershed_25peaks_from_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_mask = 0;
   PyObject *__pyx_v_Imin = 0;
@@ -12890,11 +12890,11 @@ static PyObject *__pyx_pw_9watershed_16InverseWatershed_25peaks_from_area(PyObje
   __Pyx_RaiseArgtupleInvalid("peaks_from_area", 0, 2, 6, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_DECREF(__pyx_v_kwarg); __pyx_v_kwarg = 0;
-  __Pyx_AddTraceback("watershed.InverseWatershed.peaks_from_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.peaks_from_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(__pyx_self, __pyx_v_self, __pyx_v_mask, __pyx_v_Imin, __pyx_v_keep, __pyx_v_refine, __pyx_v_dmin, __pyx_v_kwarg);
+  __pyx_r = __pyx_pf_3src_9watershed_16InverseWatershed_24peaks_from_area(__pyx_self, __pyx_v_self, __pyx_v_mask, __pyx_v_Imin, __pyx_v_keep, __pyx_v_refine, __pyx_v_dmin, __pyx_v_kwarg);
 
   /* function exit code */
   __Pyx_XDECREF(__pyx_v_kwarg);
@@ -12902,7 +12902,7 @@ static PyObject *__pyx_pw_9watershed_16InverseWatershed_25peaks_from_area(PyObje
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_mask, PyObject *__pyx_v_Imin, PyObject *__pyx_v_keep, int __pyx_v_refine, float __pyx_v_dmin, CYTHON_UNUSED PyObject *__pyx_v_kwarg) {
+static PyObject *__pyx_pf_3src_9watershed_16InverseWatershed_24peaks_from_area(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_mask, PyObject *__pyx_v_Imin, PyObject *__pyx_v_keep, int __pyx_v_refine, float __pyx_v_dmin, CYTHON_UNUSED PyObject *__pyx_v_kwarg) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_l;
@@ -12913,7 +12913,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __Pyx_memviewslice __pyx_v_input_points = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_labels = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_v_regions = 0;
-  struct __pyx_obj_9watershed_Region *__pyx_v_region = 0;
+  struct __pyx_obj_3src_9watershed_Region *__pyx_v_region = 0;
   PyObject *__pyx_v_output_points = 0;
   PyObject *__pyx_v_intensities = 0;
   PyObject *__pyx_v_argsort = 0;
@@ -12954,7 +12954,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("peaks_from_area", 0);
 
-  /* "watershed.pyx":526
+  /* "src/watershed.pyx":526
  *         """
  *         cdef:
  *             int i, j, l, x, y, width = self.width             # <<<<<<<<<<<<<<
@@ -12967,7 +12967,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_width = __pyx_t_2;
 
-  /* "watershed.pyx":527
+  /* "src/watershed.pyx":527
  *         cdef:
  *             int i, j, l, x, y, width = self.width
  *             numpy.uint8_t[:] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)             # <<<<<<<<<<<<<<
@@ -13038,7 +13038,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "watershed.pyx":528
+  /* "src/watershed.pyx":528
  *             int i, j, l, x, y, width = self.width
  *             numpy.uint8_t[:] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)
  *             int[:] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)             # <<<<<<<<<<<<<<
@@ -13122,7 +13122,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_t_10.memview = NULL;
   __pyx_t_10.data = NULL;
 
-  /* "watershed.pyx":529
+  /* "src/watershed.pyx":529
  *             numpy.uint8_t[:] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)
  *             int[:] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)
  *             numpy.int32_t[:] labels = self.labels.ravel()             # <<<<<<<<<<<<<<
@@ -13159,7 +13159,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_t_11.memview = NULL;
   __pyx_t_11.data = NULL;
 
-  /* "watershed.pyx":530
+  /* "src/watershed.pyx":530
  *             int[:] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)
  *             numpy.int32_t[:] labels = self.labels.ravel()
  *             dict regions = self.regions             # <<<<<<<<<<<<<<
@@ -13172,7 +13172,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_v_regions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":532
+  /* "src/watershed.pyx":532
  *             dict regions = self.regions
  *             Region region
  *             list output_points = [], intensities = [], argsort, tmp_lst, rej_lst             # <<<<<<<<<<<<<<
@@ -13188,7 +13188,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_v_intensities = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":533
+  /* "src/watershed.pyx":533
  *             Region region
  *             list output_points = [], intensities = [], argsort, tmp_lst, rej_lst
  *             set keep_regions = set()             # <<<<<<<<<<<<<<
@@ -13200,7 +13200,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_v_keep_regions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "watershed.pyx":534
+  /* "src/watershed.pyx":534
  *             list output_points = [], intensities = [], argsort, tmp_lst, rej_lst
  *             set keep_regions = set()
  *             float[:] data = self.data.ravel()             # <<<<<<<<<<<<<<
@@ -13237,7 +13237,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_t_12.memview = NULL;
   __pyx_t_12.data = NULL;
 
-  /* "watershed.pyx":536
+  /* "src/watershed.pyx":536
  *             float[:] data = self.data.ravel()
  *             double d2, dmin2
  *         for i in input_points:             # <<<<<<<<<<<<<<
@@ -13288,7 +13288,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_i = __pyx_t_2;
 
-    /* "watershed.pyx":537
+    /* "src/watershed.pyx":537
  *             double d2, dmin2
  *         for i in input_points:
  *             l = labels[i]             # <<<<<<<<<<<<<<
@@ -13307,7 +13307,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     }
     __pyx_v_l = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_labels.data + __pyx_t_2 * __pyx_v_labels.strides[0]) )));
 
-    /* "watershed.pyx":538
+    /* "src/watershed.pyx":538
  *         for i in input_points:
  *             l = labels[i]
  *             region = regions[l]             # <<<<<<<<<<<<<<
@@ -13323,11 +13323,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_1); if (unlikely(__pyx_t_8 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(((__pyx_t_8) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_8, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_9watershed_Region *)__pyx_t_8));
+    if (!(likely(((__pyx_t_8) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_8, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_8));
     __pyx_t_8 = 0;
 
-    /* "watershed.pyx":539
+    /* "src/watershed.pyx":539
  *             l = labels[i]
  *             region = regions[l]
  *             keep_regions.add(region.index)             # <<<<<<<<<<<<<<
@@ -13339,7 +13339,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __pyx_t_15 = PySet_Add(__pyx_v_keep_regions, __pyx_t_8); if (unlikely(__pyx_t_15 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-    /* "watershed.pyx":536
+    /* "src/watershed.pyx":536
  *             float[:] data = self.data.ravel()
  *             double d2, dmin2
  *         for i in input_points:             # <<<<<<<<<<<<<<
@@ -13349,7 +13349,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "watershed.pyx":540
+  /* "src/watershed.pyx":540
  *             region = regions[l]
  *             keep_regions.add(region.index)
  *         for i in keep_regions:             # <<<<<<<<<<<<<<
@@ -13376,7 +13376,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_v_i = __pyx_t_14;
 
-    /* "watershed.pyx":541
+    /* "src/watershed.pyx":541
  *             keep_regions.add(region.index)
  *         for i in keep_regions:
  *             region = regions[i]             # <<<<<<<<<<<<<<
@@ -13392,11 +13392,11 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_regions, __pyx_t_8); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 541; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 541; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_9watershed_Region *)__pyx_t_1));
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_3src_9watershed_Region))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 541; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_XDECREF_SET(__pyx_v_region, ((struct __pyx_obj_3src_9watershed_Region *)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "watershed.pyx":542
+    /* "src/watershed.pyx":542
  *         for i in keep_regions:
  *             region = regions[i]
  *             for j in region.peaks:             # <<<<<<<<<<<<<<
@@ -13419,7 +13419,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __pyx_v_j = __pyx_t_14;
 
-      /* "watershed.pyx":543
+      /* "src/watershed.pyx":543
  *             region = regions[i]
  *             for j in region.peaks:
  *                 if mask_flat[j]:             # <<<<<<<<<<<<<<
@@ -13439,7 +13439,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
       __pyx_t_17 = ((*((__pyx_t_5numpy_uint8_t *) ( /* dim=0 */ (__pyx_v_mask_flat.data + __pyx_t_14 * __pyx_v_mask_flat.strides[0]) ))) != 0);
       if (__pyx_t_17) {
 
-        /* "watershed.pyx":544
+        /* "src/watershed.pyx":544
  *             for j in region.peaks:
  *                 if mask_flat[j]:
  *                     intensities.append(data[j])             # <<<<<<<<<<<<<<
@@ -13461,7 +13461,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
         __pyx_t_15 = __Pyx_PyList_Append(__pyx_v_intensities, __pyx_t_8); if (unlikely(__pyx_t_15 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 544; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-        /* "watershed.pyx":545
+        /* "src/watershed.pyx":545
  *                 if mask_flat[j]:
  *                     intensities.append(data[j])
  *                     x = j % self.width             # <<<<<<<<<<<<<<
@@ -13480,7 +13480,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __pyx_v_x = __pyx_t_18;
 
-        /* "watershed.pyx":546
+        /* "src/watershed.pyx":546
  *                     intensities.append(data[j])
  *                     x = j % self.width
  *                     y = j // self.width             # <<<<<<<<<<<<<<
@@ -13499,7 +13499,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __pyx_v_y = __pyx_t_18;
 
-        /* "watershed.pyx":547
+        /* "src/watershed.pyx":547
  *                     x = j % self.width
  *                     y = j // self.width
  *                     output_points.append((y, x))             # <<<<<<<<<<<<<<
@@ -13524,7 +13524,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
       }
       __pyx_L9:;
 
-      /* "watershed.pyx":542
+      /* "src/watershed.pyx":542
  *         for i in keep_regions:
  *             region = regions[i]
  *             for j in region.peaks:             # <<<<<<<<<<<<<<
@@ -13534,7 +13534,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "watershed.pyx":540
+    /* "src/watershed.pyx":540
  *             region = regions[l]
  *             keep_regions.add(region.index)
  *         for i in keep_regions:             # <<<<<<<<<<<<<<
@@ -13544,7 +13544,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "watershed.pyx":548
+  /* "src/watershed.pyx":548
  *                     y = j // self.width
  *                     output_points.append((y, x))
  *         if refine:             # <<<<<<<<<<<<<<
@@ -13554,7 +13554,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_t_17 = (__pyx_v_refine != 0);
   if (__pyx_t_17) {
 
-    /* "watershed.pyx":549
+    /* "src/watershed.pyx":549
  *                     output_points.append((y, x))
  *         if refine:
  *             for i in range(len(output_points)):             # <<<<<<<<<<<<<<
@@ -13565,7 +13565,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     for (__pyx_t_18 = 0; __pyx_t_18 < __pyx_t_7; __pyx_t_18+=1) {
       __pyx_v_i = __pyx_t_18;
 
-      /* "watershed.pyx":550
+      /* "src/watershed.pyx":550
  *         if refine:
  *             for i in range(len(output_points)):
  *                 output_points[i] = self.bilinear.local_maxi(output_points[i])             # <<<<<<<<<<<<<<
@@ -13612,7 +13612,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   }
   __pyx_L10:;
 
-  /* "watershed.pyx":551
+  /* "src/watershed.pyx":551
  *             for i in range(len(output_points)):
  *                 output_points[i] = self.bilinear.local_maxi(output_points[i])
  *         if Imin or keep:             # <<<<<<<<<<<<<<
@@ -13630,7 +13630,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_L14_bool_binop_done:;
   if (__pyx_t_17) {
 
-    /* "watershed.pyx":552
+    /* "src/watershed.pyx":552
  *                 output_points[i] = self.bilinear.local_maxi(output_points[i])
  *         if Imin or keep:
  *             argsort = sorted(range(len(intensities)), key=intensities.__getitem__, reverse=True)             # <<<<<<<<<<<<<<
@@ -13668,7 +13668,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __pyx_v_argsort = ((PyObject*)__pyx_t_8);
     __pyx_t_8 = 0;
 
-    /* "watershed.pyx":553
+    /* "src/watershed.pyx":553
  *         if Imin or keep:
  *             argsort = sorted(range(len(intensities)), key=intensities.__getitem__, reverse=True)
  *             if Imin:             # <<<<<<<<<<<<<<
@@ -13678,7 +13678,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __pyx_t_17 = __Pyx_PyObject_IsTrue(__pyx_v_Imin); if (unlikely(__pyx_t_17 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 553; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     if (__pyx_t_17) {
 
-      /* "watershed.pyx":554
+      /* "src/watershed.pyx":554
  *             argsort = sorted(range(len(intensities)), key=intensities.__getitem__, reverse=True)
  *             if Imin:
  *                 argsort = [i for i in argsort if intensities[i] >= Imin]             # <<<<<<<<<<<<<<
@@ -13724,7 +13724,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     }
     __pyx_L16:;
 
-    /* "watershed.pyx":555
+    /* "src/watershed.pyx":555
  *             if Imin:
  *                 argsort = [i for i in argsort if intensities[i] >= Imin]
  *             output_points = [output_points[i] for i in argsort]             # <<<<<<<<<<<<<<
@@ -13757,7 +13757,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __Pyx_DECREF_SET(__pyx_v_output_points, ((PyObject*)__pyx_t_8));
     __pyx_t_8 = 0;
 
-    /* "watershed.pyx":557
+    /* "src/watershed.pyx":557
  *             output_points = [output_points[i] for i in argsort]
  * 
  *             if dmin:             # <<<<<<<<<<<<<<
@@ -13767,7 +13767,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __pyx_t_17 = (__pyx_v_dmin != 0);
     if (__pyx_t_17) {
 
-      /* "watershed.pyx":558
+      /* "src/watershed.pyx":558
  * 
  *             if dmin:
  *                 dmin2 = dmin * dmin             # <<<<<<<<<<<<<<
@@ -13779,7 +13779,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     }
     /*else*/ {
 
-      /* "watershed.pyx":560
+      /* "src/watershed.pyx":560
  *                 dmin2 = dmin * dmin
  *             else:
  *                 dmin2 = 0.0             # <<<<<<<<<<<<<<
@@ -13790,7 +13790,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     }
     __pyx_L22:;
 
-    /* "watershed.pyx":561
+    /* "src/watershed.pyx":561
  *             else:
  *                 dmin2 = 0.0
  *             if keep and len(output_points)>keep:             # <<<<<<<<<<<<<<
@@ -13814,7 +13814,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
     __pyx_L24_bool_binop_done:;
     if (__pyx_t_17) {
 
-      /* "watershed.pyx":562
+      /* "src/watershed.pyx":562
  *                 dmin2 = 0.0
  *             if keep and len(output_points)>keep:
  *                 tmp_lst = output_points             # <<<<<<<<<<<<<<
@@ -13824,7 +13824,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
       __Pyx_INCREF(__pyx_v_output_points);
       __pyx_v_tmp_lst = __pyx_v_output_points;
 
-      /* "watershed.pyx":563
+      /* "src/watershed.pyx":563
  *             if keep and len(output_points)>keep:
  *                 tmp_lst = output_points
  *                 rej_lst = []             # <<<<<<<<<<<<<<
@@ -13836,7 +13836,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
       __pyx_v_rej_lst = ((PyObject*)__pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "watershed.pyx":564
+      /* "src/watershed.pyx":564
  *                 tmp_lst = output_points
  *                 rej_lst = []
  *                 output_points = []             # <<<<<<<<<<<<<<
@@ -13848,7 +13848,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
       __Pyx_DECREF_SET(__pyx_v_output_points, ((PyObject*)__pyx_t_4));
       __pyx_t_4 = 0;
 
-      /* "watershed.pyx":565
+      /* "src/watershed.pyx":565
  *                 rej_lst = []
  *                 output_points = []
  *                 for pt in tmp_lst:             # <<<<<<<<<<<<<<
@@ -13866,7 +13866,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
         __Pyx_XDECREF_SET(__pyx_v_pt, __pyx_t_8);
         __pyx_t_8 = 0;
 
-        /* "watershed.pyx":566
+        /* "src/watershed.pyx":566
  *                 output_points = []
  *                 for pt in tmp_lst:
  *                     for pt2 in output_points:             # <<<<<<<<<<<<<<
@@ -13884,7 +13884,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
           __Pyx_XDECREF_SET(__pyx_v_pt2, __pyx_t_1);
           __pyx_t_1 = 0;
 
-          /* "watershed.pyx":567
+          /* "src/watershed.pyx":567
  *                 for pt in tmp_lst:
  *                     for pt2 in output_points:
  *                         d2 = (pt[0]-pt2[0])**2 + (pt[1]-pt2[1])**2             # <<<<<<<<<<<<<<
@@ -13921,7 +13921,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
           __pyx_v_d2 = __pyx_t_21;
 
-          /* "watershed.pyx":568
+          /* "src/watershed.pyx":568
  *                     for pt2 in output_points:
  *                         d2 = (pt[0]-pt2[0])**2 + (pt[1]-pt2[1])**2
  *                         if d2<=dmin2:             # <<<<<<<<<<<<<<
@@ -13931,7 +13931,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
           __pyx_t_17 = ((__pyx_v_d2 <= __pyx_v_dmin2) != 0);
           if (__pyx_t_17) {
 
-            /* "watershed.pyx":569
+            /* "src/watershed.pyx":569
  *                         d2 = (pt[0]-pt2[0])**2 + (pt[1]-pt2[1])**2
  *                         if d2<=dmin2:
  *                             rej_lst.append(pt)             # <<<<<<<<<<<<<<
@@ -13940,7 +13940,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
  */
             __pyx_t_15 = __Pyx_PyList_Append(__pyx_v_rej_lst, __pyx_v_pt); if (unlikely(__pyx_t_15 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 569; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-            /* "watershed.pyx":570
+            /* "src/watershed.pyx":570
  *                         if d2<=dmin2:
  *                             rej_lst.append(pt)
  *                             break             # <<<<<<<<<<<<<<
@@ -13950,7 +13950,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
             goto __pyx_L29_break;
           }
 
-          /* "watershed.pyx":566
+          /* "src/watershed.pyx":566
  *                 output_points = []
  *                 for pt in tmp_lst:
  *                     for pt2 in output_points:             # <<<<<<<<<<<<<<
@@ -13960,7 +13960,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
         }
         /*else*/ {
 
-          /* "watershed.pyx":572
+          /* "src/watershed.pyx":572
  *                             break
  *                     else:
  *                         output_points.append(pt)             # <<<<<<<<<<<<<<
@@ -13969,7 +13969,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
  */
           __pyx_t_15 = __Pyx_PyList_Append(__pyx_v_output_points, __pyx_v_pt); if (unlikely(__pyx_t_15 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 572; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-          /* "watershed.pyx":573
+          /* "src/watershed.pyx":573
  *                     else:
  *                         output_points.append(pt)
  *                         if len(output_points)>=keep:             # <<<<<<<<<<<<<<
@@ -13985,7 +13985,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
           if (__pyx_t_17) {
 
-            /* "watershed.pyx":574
+            /* "src/watershed.pyx":574
  *                         output_points.append(pt)
  *                         if len(output_points)>=keep:
  *                             return output_points             # <<<<<<<<<<<<<<
@@ -14001,7 +14001,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
           }
         }
 
-        /* "watershed.pyx":566
+        /* "src/watershed.pyx":566
  *                 output_points = []
  *                 for pt in tmp_lst:
  *                     for pt2 in output_points:             # <<<<<<<<<<<<<<
@@ -14011,7 +14011,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
         __pyx_L29_break:;
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-        /* "watershed.pyx":565
+        /* "src/watershed.pyx":565
  *                 rej_lst = []
  *                 output_points = []
  *                 for pt in tmp_lst:             # <<<<<<<<<<<<<<
@@ -14021,7 +14021,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "watershed.pyx":575
+      /* "src/watershed.pyx":575
  *                         if len(output_points)>=keep:
  *                             return output_points
  *                 output_points = (output_points+rej_lst)[:keep]             # <<<<<<<<<<<<<<
@@ -14042,7 +14042,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   }
   __pyx_L13:;
 
-  /* "watershed.pyx":576
+  /* "src/watershed.pyx":576
  *                             return output_points
  *                 output_points = (output_points+rej_lst)[:keep]
  *         return output_points             # <<<<<<<<<<<<<<
@@ -14052,7 +14052,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __pyx_r = __pyx_v_output_points;
   goto __pyx_L0;
 
-  /* "watershed.pyx":517
+  /* "src/watershed.pyx":517
  *         logger.info("Did %s merge_intense" % cnt)
  * 
  *     def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):             # <<<<<<<<<<<<<<
@@ -14072,7 +14072,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_11, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_12, 1);
-  __Pyx_AddTraceback("watershed.InverseWatershed.peaks_from_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src.watershed.InverseWatershed.peaks_from_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_mask_flat, 1);
@@ -14094,7 +14094,7 @@ static PyObject *__pyx_pf_9watershed_16InverseWatershed_24peaks_from_area(CYTHON
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -14144,7 +14144,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_GIVEREF(__pyx_v_info->obj);
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":200
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":200
  *             # of flags
  * 
  *             if info == NULL: return             # <<<<<<<<<<<<<<
@@ -14157,7 +14157,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L0;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":203
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":203
  * 
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -14166,7 +14166,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":204
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":204
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -14175,7 +14175,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":206
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":206
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)
  * 
  *             ndim = PyArray_NDIM(self)             # <<<<<<<<<<<<<<
@@ -14184,7 +14184,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_ndim = PyArray_NDIM(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":208
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":208
  *             ndim = PyArray_NDIM(self)
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -14194,7 +14194,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":209
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":209
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 copy_shape = 1             # <<<<<<<<<<<<<<
@@ -14206,7 +14206,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":211
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":211
  *                 copy_shape = 1
  *             else:
  *                 copy_shape = 0             # <<<<<<<<<<<<<<
@@ -14217,7 +14217,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L4:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":213
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":213
  *                 copy_shape = 0
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -14231,7 +14231,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L6_bool_binop_done;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":214
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":214
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -14243,7 +14243,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L6_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -14257,7 +14257,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     {__pyx_filename = __pyx_f[2]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":217
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":217
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -14271,7 +14271,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L9_bool_binop_done;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":218
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":218
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -14283,7 +14283,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L9_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -14297,7 +14297,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     {__pyx_filename = __pyx_f[2]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":221
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":221
  *                 raise ValueError(u"ndarray is not Fortran contiguous")
  * 
  *             info.buf = PyArray_DATA(self)             # <<<<<<<<<<<<<<
@@ -14306,7 +14306,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->buf = PyArray_DATA(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":222
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":222
  * 
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim             # <<<<<<<<<<<<<<
@@ -14315,7 +14315,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->ndim = __pyx_v_ndim;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":223
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":223
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim
  *             if copy_shape:             # <<<<<<<<<<<<<<
@@ -14325,7 +14325,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (__pyx_v_copy_shape != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":226
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":226
  *                 # Allocate new buffer for strides and shape info.
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)             # <<<<<<<<<<<<<<
@@ -14334,7 +14334,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)malloc((((sizeof(Py_ssize_t)) * ((size_t)__pyx_v_ndim)) * 2)));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":227
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":227
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim             # <<<<<<<<<<<<<<
@@ -14343,7 +14343,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->shape = (__pyx_v_info->strides + __pyx_v_ndim);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":228
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":228
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):             # <<<<<<<<<<<<<<
@@ -14354,7 +14354,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
       __pyx_v_i = __pyx_t_5;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":229
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":229
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]             # <<<<<<<<<<<<<<
@@ -14363,7 +14363,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
       (__pyx_v_info->strides[__pyx_v_i]) = (PyArray_STRIDES(__pyx_v_self)[__pyx_v_i]);
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":230
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":230
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]
  *                     info.shape[i] = PyArray_DIMS(self)[i]             # <<<<<<<<<<<<<<
@@ -14376,7 +14376,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":232
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":232
  *                     info.shape[i] = PyArray_DIMS(self)[i]
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)             # <<<<<<<<<<<<<<
@@ -14385,7 +14385,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)PyArray_STRIDES(__pyx_v_self));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":233
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":233
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)             # <<<<<<<<<<<<<<
@@ -14396,7 +14396,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L11:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":234
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":234
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL             # <<<<<<<<<<<<<<
@@ -14405,7 +14405,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->suboffsets = NULL;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":235
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":235
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)             # <<<<<<<<<<<<<<
@@ -14414,7 +14414,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->itemsize = PyArray_ITEMSIZE(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":236
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":236
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)
  *             info.readonly = not PyArray_ISWRITEABLE(self)             # <<<<<<<<<<<<<<
@@ -14423,7 +14423,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->readonly = (!(PyArray_ISWRITEABLE(__pyx_v_self) != 0));
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":239
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":239
  * 
  *             cdef int t
  *             cdef char* f = NULL             # <<<<<<<<<<<<<<
@@ -14432,7 +14432,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_f = NULL;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":240
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":240
  *             cdef int t
  *             cdef char* f = NULL
  *             cdef dtype descr = self.descr             # <<<<<<<<<<<<<<
@@ -14444,7 +14444,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_v_descr = ((PyArray_Descr *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":244
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":244
  *             cdef int offset
  * 
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)             # <<<<<<<<<<<<<<
@@ -14453,7 +14453,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_hasfields = PyDataType_HASFIELDS(__pyx_v_descr);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":246
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":246
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)
  * 
  *             if not hasfields and not copy_shape:             # <<<<<<<<<<<<<<
@@ -14471,7 +14471,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L15_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":248
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":248
  *             if not hasfields and not copy_shape:
  *                 # do not call releasebuffer
  *                 info.obj = None             # <<<<<<<<<<<<<<
@@ -14487,7 +14487,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":251
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":251
  *             else:
  *                 # need to call releasebuffer
  *                 info.obj = self             # <<<<<<<<<<<<<<
@@ -14502,7 +14502,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L14:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":253
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":253
  *                 info.obj = self
  * 
  *             if not hasfields:             # <<<<<<<<<<<<<<
@@ -14512,7 +14512,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = ((!(__pyx_v_hasfields != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":254
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":254
  * 
  *             if not hasfields:
  *                 t = descr.type_num             # <<<<<<<<<<<<<<
@@ -14522,7 +14522,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_4 = __pyx_v_descr->type_num;
     __pyx_v_t = __pyx_t_4;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":255
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":255
  *             if not hasfields:
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -14542,7 +14542,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     }
     __pyx_L20_next_or:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":256
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":256
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -14560,7 +14560,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_L19_bool_binop_done:;
     if (__pyx_t_1) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -14574,7 +14574,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       {__pyx_filename = __pyx_f[2]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -14583,7 +14583,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     switch (__pyx_v_t) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":258
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":258
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"             # <<<<<<<<<<<<<<
@@ -14594,7 +14594,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_b;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":259
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":259
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"             # <<<<<<<<<<<<<<
@@ -14605,7 +14605,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_B;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":260
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":260
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"             # <<<<<<<<<<<<<<
@@ -14616,7 +14616,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_h;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":261
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":261
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"             # <<<<<<<<<<<<<<
@@ -14627,7 +14627,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_H;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":262
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":262
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"             # <<<<<<<<<<<<<<
@@ -14638,7 +14638,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_i;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":263
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":263
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"             # <<<<<<<<<<<<<<
@@ -14649,7 +14649,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_I;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":264
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":264
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"             # <<<<<<<<<<<<<<
@@ -14660,7 +14660,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_l;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":265
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":265
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"             # <<<<<<<<<<<<<<
@@ -14671,7 +14671,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_L;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":266
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":266
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"             # <<<<<<<<<<<<<<
@@ -14682,7 +14682,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_q;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":267
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":267
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"             # <<<<<<<<<<<<<<
@@ -14693,7 +14693,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Q;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":268
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":268
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"             # <<<<<<<<<<<<<<
@@ -14704,7 +14704,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_f;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":269
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":269
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"             # <<<<<<<<<<<<<<
@@ -14715,7 +14715,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_d;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":270
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":270
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"             # <<<<<<<<<<<<<<
@@ -14726,7 +14726,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_g;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":271
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":271
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"             # <<<<<<<<<<<<<<
@@ -14737,7 +14737,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zf;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":272
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":272
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"             # <<<<<<<<<<<<<<
@@ -14748,7 +14748,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zd;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":273
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":273
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"             # <<<<<<<<<<<<<<
@@ -14759,7 +14759,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zg;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -14771,7 +14771,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
       default:
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":276
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":276
  *                 elif t == NPY_OBJECT:      f = "O"
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -14797,7 +14797,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":277
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":277
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f             # <<<<<<<<<<<<<<
@@ -14806,7 +14806,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = __pyx_v_f;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":278
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":278
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f
  *                 return             # <<<<<<<<<<<<<<
@@ -14818,7 +14818,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":280
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":280
  *                 return
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)             # <<<<<<<<<<<<<<
@@ -14827,7 +14827,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = ((char *)malloc(255));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":281
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":281
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment             # <<<<<<<<<<<<<<
@@ -14836,7 +14836,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     (__pyx_v_info->format[0]) = '^';
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":282
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":282
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0             # <<<<<<<<<<<<<<
@@ -14845,7 +14845,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_offset = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":283
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":283
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0
  *                 f = _util_dtypestring(descr, info.format + 1,             # <<<<<<<<<<<<<<
@@ -14855,7 +14855,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_7 = __pyx_f_5numpy__util_dtypestring(__pyx_v_descr, (__pyx_v_info->format + 1), (__pyx_v_info->format + 255), (&__pyx_v_offset)); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_f = __pyx_t_7;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":286
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":286
  *                                       info.format + _buffer_format_string_len,
  *                                       &offset)
  *                 f[0] = c'\0' # Terminate format string             # <<<<<<<<<<<<<<
@@ -14865,7 +14865,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     (__pyx_v_f[0]) = '\x00';
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -14897,7 +14897,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -14921,7 +14921,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__releasebuffer__", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":289
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":289
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):             # <<<<<<<<<<<<<<
@@ -14931,7 +14931,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (PyArray_HASFIELDS(__pyx_v_self) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":290
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":290
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)             # <<<<<<<<<<<<<<
@@ -14943,7 +14943,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   }
   __pyx_L3:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":291
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":291
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -14953,7 +14953,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":292
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":292
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 stdlib.free(info.strides)             # <<<<<<<<<<<<<<
@@ -14965,7 +14965,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   }
   __pyx_L4:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -14977,7 +14977,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -14994,7 +14994,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":769
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":769
  * 
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
@@ -15008,7 +15008,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -15027,7 +15027,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -15044,7 +15044,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":772
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":772
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
@@ -15058,7 +15058,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -15077,7 +15077,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -15094,7 +15094,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":775
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":775
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
@@ -15108,7 +15108,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -15127,7 +15127,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -15144,7 +15144,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":778
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":778
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
@@ -15158,7 +15158,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -15177,7 +15177,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -15194,7 +15194,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":781
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":781
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
@@ -15208,7 +15208,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -15227,7 +15227,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -15259,7 +15259,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_util_dtypestring", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":790
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":790
  *     cdef int delta_offset
  *     cdef tuple i
  *     cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -15268,7 +15268,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":791
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":791
  *     cdef tuple i
  *     cdef int endian_detector = 1
  *     cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -15277,7 +15277,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -15299,7 +15299,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_childname, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":795
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":795
  * 
  *     for childname in descr.names:
  *         fields = descr.fields[childname]             # <<<<<<<<<<<<<<
@@ -15312,7 +15312,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_fields, ((PyObject*)__pyx_t_3));
     __pyx_t_3 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":796
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":796
  *     for childname in descr.names:
  *         fields = descr.fields[childname]
  *         child, new_offset = fields             # <<<<<<<<<<<<<<
@@ -15351,7 +15351,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_new_offset, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":798
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":798
  *         child, new_offset = fields
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:             # <<<<<<<<<<<<<<
@@ -15368,7 +15368,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((((__pyx_v_end - __pyx_v_f) - ((int)__pyx_t_5)) < 15) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -15382,7 +15382,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       {__pyx_filename = __pyx_f[2]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -15402,7 +15402,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L8_next_or:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":802
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":802
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -15420,7 +15420,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_L7_bool_binop_done:;
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -15434,7 +15434,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       {__pyx_filename = __pyx_f[2]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":813
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":813
  * 
  *         # Output padding bytes
  *         while offset[0] < new_offset:             # <<<<<<<<<<<<<<
@@ -15450,7 +15450,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (!__pyx_t_6) break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":814
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":814
  *         # Output padding bytes
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte             # <<<<<<<<<<<<<<
@@ -15459,7 +15459,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       (__pyx_v_f[0]) = 120;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":815
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":815
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte
  *             f += 1             # <<<<<<<<<<<<<<
@@ -15468,7 +15468,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       __pyx_v_f = (__pyx_v_f + 1);
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":816
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":816
  *             f[0] = 120 # "x"; pad byte
  *             f += 1
  *             offset[0] += 1             # <<<<<<<<<<<<<<
@@ -15479,7 +15479,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + 1);
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":818
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":818
  *             offset[0] += 1
  * 
  *         offset[0] += child.itemsize             # <<<<<<<<<<<<<<
@@ -15489,7 +15489,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_8 = 0;
     (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + __pyx_v_child->elsize);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":820
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":820
  *         offset[0] += child.itemsize
  * 
  *         if not PyDataType_HASFIELDS(child):             # <<<<<<<<<<<<<<
@@ -15499,7 +15499,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((!(PyDataType_HASFIELDS(__pyx_v_child) != 0)) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":821
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":821
  * 
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num             # <<<<<<<<<<<<<<
@@ -15511,7 +15511,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_XDECREF_SET(__pyx_v_t, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":822
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":822
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num
  *             if end - f < 5:             # <<<<<<<<<<<<<<
@@ -15521,7 +15521,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __pyx_t_6 = (((__pyx_v_end - __pyx_v_f) < 5) != 0);
       if (__pyx_t_6) {
 
-        /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+        /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -15535,7 +15535,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         {__pyx_filename = __pyx_f[2]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":826
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":826
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"             # <<<<<<<<<<<<<<
@@ -15553,7 +15553,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":827
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":827
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"             # <<<<<<<<<<<<<<
@@ -15571,7 +15571,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":828
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":828
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"             # <<<<<<<<<<<<<<
@@ -15589,7 +15589,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":829
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":829
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"             # <<<<<<<<<<<<<<
@@ -15607,7 +15607,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":830
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":830
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"             # <<<<<<<<<<<<<<
@@ -15625,7 +15625,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":831
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":831
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"             # <<<<<<<<<<<<<<
@@ -15643,7 +15643,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":832
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":832
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"             # <<<<<<<<<<<<<<
@@ -15661,7 +15661,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":833
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":833
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"             # <<<<<<<<<<<<<<
@@ -15679,7 +15679,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":834
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":834
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"             # <<<<<<<<<<<<<<
@@ -15697,7 +15697,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":835
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":835
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"             # <<<<<<<<<<<<<<
@@ -15715,7 +15715,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":836
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":836
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"             # <<<<<<<<<<<<<<
@@ -15733,7 +15733,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":837
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":837
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"             # <<<<<<<<<<<<<<
@@ -15751,7 +15751,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":838
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":838
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"             # <<<<<<<<<<<<<<
@@ -15769,7 +15769,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":839
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":839
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf             # <<<<<<<<<<<<<<
@@ -15789,7 +15789,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":840
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":840
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd             # <<<<<<<<<<<<<<
@@ -15809,7 +15809,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":841
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":841
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg             # <<<<<<<<<<<<<<
@@ -15829,7 +15829,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":842
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":842
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"             # <<<<<<<<<<<<<<
@@ -15848,7 +15848,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       /*else*/ {
 
-        /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":844
+        /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":844
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -15871,7 +15871,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       __pyx_L15:;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":845
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":845
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *             f += 1             # <<<<<<<<<<<<<<
@@ -15883,7 +15883,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     /*else*/ {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":849
+      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":849
  *             # Cython ignores struct boundary information ("T{...}"),
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)             # <<<<<<<<<<<<<<
@@ -15895,7 +15895,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L13:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -15905,7 +15905,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":850
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":850
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)
  *     return f             # <<<<<<<<<<<<<<
@@ -15915,7 +15915,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   __pyx_r = __pyx_v_f;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -15940,7 +15940,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -15955,7 +15955,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":968
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":968
  * cdef inline void set_array_base(ndarray arr, object base):
  *      cdef PyObject* baseptr
  *      if base is None:             # <<<<<<<<<<<<<<
@@ -15966,7 +15966,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":969
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":969
  *      cdef PyObject* baseptr
  *      if base is None:
  *          baseptr = NULL             # <<<<<<<<<<<<<<
@@ -15978,7 +15978,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":971
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":971
  *          baseptr = NULL
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!             # <<<<<<<<<<<<<<
@@ -15987,7 +15987,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
     Py_INCREF(__pyx_v_base);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":972
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":972
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base             # <<<<<<<<<<<<<<
@@ -15998,7 +15998,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   __pyx_L3:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":973
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":973
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)             # <<<<<<<<<<<<<<
@@ -16007,7 +16007,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   Py_XDECREF(__pyx_v_arr->base);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":974
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":974
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)
  *      arr.base = baseptr             # <<<<<<<<<<<<<<
@@ -16016,7 +16016,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   __pyx_v_arr->base = __pyx_v_baseptr;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -16028,7 +16028,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -16042,7 +16042,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":977
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":977
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:             # <<<<<<<<<<<<<<
@@ -16052,7 +16052,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __pyx_t_1 = ((__pyx_v_arr->base == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":978
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":978
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:
  *         return None             # <<<<<<<<<<<<<<
@@ -16066,7 +16066,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":980
+    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":980
  *         return None
  *     else:
  *         return <object>arr.base             # <<<<<<<<<<<<<<
@@ -16077,7 +16077,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     goto __pyx_L0;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -26725,10 +26725,10 @@ static void __pyx_memoryview__slice_assign_scalar(char *__pyx_v_data, Py_ssize_t
 
   /* function exit code */
 }
-static struct __pyx_vtabstruct_9watershed_Bilinear __pyx_vtable_9watershed_Bilinear;
+static struct __pyx_vtabstruct_3src_9watershed_Bilinear __pyx_vtable_3src_9watershed_Bilinear;
 
-static PyObject *__pyx_tp_new_9watershed_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_9watershed_Bilinear *p;
+static PyObject *__pyx_tp_new_3src_9watershed_Bilinear(PyTypeObject *t, PyObject *a, PyObject *k) {
+  struct __pyx_obj_3src_9watershed_Bilinear *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -26736,18 +26736,18 @@ static PyObject *__pyx_tp_new_9watershed_Bilinear(PyTypeObject *t, PyObject *a, 
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_9watershed_Bilinear *)o);
-  p->__pyx_vtab = __pyx_vtabptr_9watershed_Bilinear;
+  p = ((struct __pyx_obj_3src_9watershed_Bilinear *)o);
+  p->__pyx_vtab = __pyx_vtabptr_3src_9watershed_Bilinear;
   p->data.data = NULL;
   p->data.memview = NULL;
-  if (unlikely(__pyx_pw_9watershed_8Bilinear_1__cinit__(o, a, k) < 0)) {
+  if (unlikely(__pyx_pw_3src_9watershed_8Bilinear_1__cinit__(o, a, k) < 0)) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_9watershed_Bilinear(PyObject *o) {
-  struct __pyx_obj_9watershed_Bilinear *p = (struct __pyx_obj_9watershed_Bilinear *)o;
+static void __pyx_tp_dealloc_3src_9watershed_Bilinear(PyObject *o) {
+  struct __pyx_obj_3src_9watershed_Bilinear *p = (struct __pyx_obj_3src_9watershed_Bilinear *)o;
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -26757,7 +26757,7 @@ static void __pyx_tp_dealloc_9watershed_Bilinear(PyObject *o) {
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     ++Py_REFCNT(o);
-    __pyx_pw_9watershed_8Bilinear_3__dealloc__(o);
+    __pyx_pw_3src_9watershed_8Bilinear_3__dealloc__(o);
     --Py_REFCNT(o);
     PyErr_Restore(etype, eval, etb);
   }
@@ -26765,48 +26765,48 @@ static void __pyx_tp_dealloc_9watershed_Bilinear(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_8Bilinear_data(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_8Bilinear_4data_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_8Bilinear_data(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_8Bilinear_4data_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_8Bilinear_maxi(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_8Bilinear_4maxi_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_8Bilinear_maxi(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_8Bilinear_4maxi_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_8Bilinear_mini(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_8Bilinear_4mini_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_8Bilinear_mini(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_8Bilinear_4mini_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_8Bilinear_width(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_8Bilinear_5width_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_8Bilinear_width(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_8Bilinear_5width_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_8Bilinear_height(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_8Bilinear_6height_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_8Bilinear_height(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_8Bilinear_6height_1__get__(o);
 }
 
-static PyMethodDef __pyx_methods_9watershed_Bilinear[] = {
-  {"f_cy", (PyCFunction)__pyx_pw_9watershed_8Bilinear_5f_cy, METH_O, __pyx_doc_9watershed_8Bilinear_4f_cy},
-  {"local_maxi", (PyCFunction)__pyx_pw_9watershed_8Bilinear_7local_maxi, METH_O, __pyx_doc_9watershed_8Bilinear_6local_maxi},
-  {"cp_local_maxi", (PyCFunction)__pyx_pw_9watershed_8Bilinear_9cp_local_maxi, METH_O, 0},
+static PyMethodDef __pyx_methods_3src_9watershed_Bilinear[] = {
+  {"f_cy", (PyCFunction)__pyx_pw_3src_9watershed_8Bilinear_5f_cy, METH_O, __pyx_doc_3src_9watershed_8Bilinear_4f_cy},
+  {"local_maxi", (PyCFunction)__pyx_pw_3src_9watershed_8Bilinear_7local_maxi, METH_O, __pyx_doc_3src_9watershed_8Bilinear_6local_maxi},
+  {"cp_local_maxi", (PyCFunction)__pyx_pw_3src_9watershed_8Bilinear_9cp_local_maxi, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static struct PyGetSetDef __pyx_getsets_9watershed_Bilinear[] = {
-  {(char *)"data", __pyx_getprop_9watershed_8Bilinear_data, 0, 0, 0},
-  {(char *)"maxi", __pyx_getprop_9watershed_8Bilinear_maxi, 0, 0, 0},
-  {(char *)"mini", __pyx_getprop_9watershed_8Bilinear_mini, 0, 0, 0},
-  {(char *)"width", __pyx_getprop_9watershed_8Bilinear_width, 0, 0, 0},
-  {(char *)"height", __pyx_getprop_9watershed_8Bilinear_height, 0, 0, 0},
+static struct PyGetSetDef __pyx_getsets_3src_9watershed_Bilinear[] = {
+  {(char *)"data", __pyx_getprop_3src_9watershed_8Bilinear_data, 0, 0, 0},
+  {(char *)"maxi", __pyx_getprop_3src_9watershed_8Bilinear_maxi, 0, 0, 0},
+  {(char *)"mini", __pyx_getprop_3src_9watershed_8Bilinear_mini, 0, 0, 0},
+  {(char *)"width", __pyx_getprop_3src_9watershed_8Bilinear_width, 0, 0, 0},
+  {(char *)"height", __pyx_getprop_3src_9watershed_8Bilinear_height, 0, 0, 0},
   {0, 0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_9watershed_Bilinear = {
+static PyTypeObject __pyx_type_3src_9watershed_Bilinear = {
   PyVarObject_HEAD_INIT(0, 0)
-  "watershed.Bilinear", /*tp_name*/
-  sizeof(struct __pyx_obj_9watershed_Bilinear), /*tp_basicsize*/
+  "src.watershed.Bilinear", /*tp_name*/
+  sizeof(struct __pyx_obj_3src_9watershed_Bilinear), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_9watershed_Bilinear, /*tp_dealloc*/
+  __pyx_tp_dealloc_3src_9watershed_Bilinear, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -26833,9 +26833,9 @@ static PyTypeObject __pyx_type_9watershed_Bilinear = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_9watershed_Bilinear, /*tp_methods*/
+  __pyx_methods_3src_9watershed_Bilinear, /*tp_methods*/
   0, /*tp_members*/
-  __pyx_getsets_9watershed_Bilinear, /*tp_getset*/
+  __pyx_getsets_3src_9watershed_Bilinear, /*tp_getset*/
   0, /*tp_base*/
   0, /*tp_dict*/
   0, /*tp_descr_get*/
@@ -26843,7 +26843,7 @@ static PyTypeObject __pyx_type_9watershed_Bilinear = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_9watershed_Bilinear, /*tp_new*/
+  __pyx_tp_new_3src_9watershed_Bilinear, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -26858,8 +26858,8 @@ static PyTypeObject __pyx_type_9watershed_Bilinear = {
   #endif
 };
 
-static PyObject *__pyx_tp_new_9watershed_Region(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_9watershed_Region *p;
+static PyObject *__pyx_tp_new_3src_9watershed_Region(PyTypeObject *t, PyObject *a, PyObject *k) {
+  struct __pyx_obj_3src_9watershed_Region *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -26867,18 +26867,18 @@ static PyObject *__pyx_tp_new_9watershed_Region(PyTypeObject *t, PyObject *a, Py
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_9watershed_Region *)o);
+  p = ((struct __pyx_obj_3src_9watershed_Region *)o);
   p->neighbors = ((PyObject*)Py_None); Py_INCREF(Py_None);
   p->border = ((PyObject*)Py_None); Py_INCREF(Py_None);
   p->peaks = ((PyObject*)Py_None); Py_INCREF(Py_None);
-  if (unlikely(__pyx_pw_9watershed_6Region_1__cinit__(o, a, k) < 0)) {
+  if (unlikely(__pyx_pw_3src_9watershed_6Region_1__cinit__(o, a, k) < 0)) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_9watershed_Region(PyObject *o) {
-  struct __pyx_obj_9watershed_Region *p = (struct __pyx_obj_9watershed_Region *)o;
+static void __pyx_tp_dealloc_3src_9watershed_Region(PyObject *o) {
+  struct __pyx_obj_3src_9watershed_Region *p = (struct __pyx_obj_3src_9watershed_Region *)o;
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && !_PyGC_FINALIZED(o)) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -26889,7 +26889,7 @@ static void __pyx_tp_dealloc_9watershed_Region(PyObject *o) {
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     ++Py_REFCNT(o);
-    __pyx_pw_9watershed_6Region_3__dealloc__(o);
+    __pyx_pw_3src_9watershed_6Region_3__dealloc__(o);
     --Py_REFCNT(o);
     PyErr_Restore(etype, eval, etb);
   }
@@ -26899,9 +26899,9 @@ static void __pyx_tp_dealloc_9watershed_Region(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static int __pyx_tp_traverse_9watershed_Region(PyObject *o, visitproc v, void *a) {
+static int __pyx_tp_traverse_3src_9watershed_Region(PyObject *o, visitproc v, void *a) {
   int e;
-  struct __pyx_obj_9watershed_Region *p = (struct __pyx_obj_9watershed_Region *)o;
+  struct __pyx_obj_3src_9watershed_Region *p = (struct __pyx_obj_3src_9watershed_Region *)o;
   if (p->neighbors) {
     e = (*v)(p->neighbors, a); if (e) return e;
   }
@@ -26914,9 +26914,9 @@ static int __pyx_tp_traverse_9watershed_Region(PyObject *o, visitproc v, void *a
   return 0;
 }
 
-static int __pyx_tp_clear_9watershed_Region(PyObject *o) {
+static int __pyx_tp_clear_3src_9watershed_Region(PyObject *o) {
   PyObject* tmp;
-  struct __pyx_obj_9watershed_Region *p = (struct __pyx_obj_9watershed_Region *)o;
+  struct __pyx_obj_3src_9watershed_Region *p = (struct __pyx_obj_3src_9watershed_Region *)o;
   tmp = ((PyObject*)p->neighbors);
   p->neighbors = ((PyObject*)Py_None); Py_INCREF(Py_None);
   Py_XDECREF(tmp);
@@ -26929,75 +26929,75 @@ static int __pyx_tp_clear_9watershed_Region(PyObject *o) {
   return 0;
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_index(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_5index_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_index(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_5index_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_size(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_4size_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_size(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_4size_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_pass_to(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_7pass_to_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_pass_to(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_7pass_to_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_mini(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_4mini_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_mini(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_4mini_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_maxi(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_4maxi_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_maxi(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_4maxi_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_highest_pass(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_12highest_pass_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_highest_pass(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_12highest_pass_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_neighbors(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_9neighbors_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_neighbors(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_9neighbors_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_border(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_6border_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_border(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_6border_1__get__(o);
 }
 
-static PyObject *__pyx_getprop_9watershed_6Region_peaks(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_9watershed_6Region_5peaks_1__get__(o);
+static PyObject *__pyx_getprop_3src_9watershed_6Region_peaks(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_3src_9watershed_6Region_5peaks_1__get__(o);
 }
 
-static PyMethodDef __pyx_methods_9watershed_Region[] = {
-  {"init_values", (PyCFunction)__pyx_pw_9watershed_6Region_7init_values, METH_O, __pyx_doc_9watershed_6Region_6init_values},
-  {"get_size", (PyCFunction)__pyx_pw_9watershed_6Region_9get_size, METH_NOARGS, 0},
-  {"get_highest_pass", (PyCFunction)__pyx_pw_9watershed_6Region_11get_highest_pass, METH_NOARGS, 0},
-  {"get_maxi", (PyCFunction)__pyx_pw_9watershed_6Region_13get_maxi, METH_NOARGS, 0},
-  {"get_mini", (PyCFunction)__pyx_pw_9watershed_6Region_15get_mini, METH_NOARGS, 0},
-  {"get_pass_to", (PyCFunction)__pyx_pw_9watershed_6Region_17get_pass_to, METH_NOARGS, 0},
-  {"get_index", (PyCFunction)__pyx_pw_9watershed_6Region_19get_index, METH_NOARGS, 0},
-  {"get_borders", (PyCFunction)__pyx_pw_9watershed_6Region_21get_borders, METH_NOARGS, 0},
-  {"get_neighbors", (PyCFunction)__pyx_pw_9watershed_6Region_23get_neighbors, METH_NOARGS, 0},
-  {"merge", (PyCFunction)__pyx_pw_9watershed_6Region_25merge, METH_O, __pyx_doc_9watershed_6Region_24merge},
+static PyMethodDef __pyx_methods_3src_9watershed_Region[] = {
+  {"init_values", (PyCFunction)__pyx_pw_3src_9watershed_6Region_7init_values, METH_O, __pyx_doc_3src_9watershed_6Region_6init_values},
+  {"get_size", (PyCFunction)__pyx_pw_3src_9watershed_6Region_9get_size, METH_NOARGS, 0},
+  {"get_highest_pass", (PyCFunction)__pyx_pw_3src_9watershed_6Region_11get_highest_pass, METH_NOARGS, 0},
+  {"get_maxi", (PyCFunction)__pyx_pw_3src_9watershed_6Region_13get_maxi, METH_NOARGS, 0},
+  {"get_mini", (PyCFunction)__pyx_pw_3src_9watershed_6Region_15get_mini, METH_NOARGS, 0},
+  {"get_pass_to", (PyCFunction)__pyx_pw_3src_9watershed_6Region_17get_pass_to, METH_NOARGS, 0},
+  {"get_index", (PyCFunction)__pyx_pw_3src_9watershed_6Region_19get_index, METH_NOARGS, 0},
+  {"get_borders", (PyCFunction)__pyx_pw_3src_9watershed_6Region_21get_borders, METH_NOARGS, 0},
+  {"get_neighbors", (PyCFunction)__pyx_pw_3src_9watershed_6Region_23get_neighbors, METH_NOARGS, 0},
+  {"merge", (PyCFunction)__pyx_pw_3src_9watershed_6Region_25merge, METH_O, __pyx_doc_3src_9watershed_6Region_24merge},
   {0, 0, 0, 0}
 };
 
-static struct PyGetSetDef __pyx_getsets_9watershed_Region[] = {
-  {(char *)"index", __pyx_getprop_9watershed_6Region_index, 0, 0, 0},
-  {(char *)"size", __pyx_getprop_9watershed_6Region_size, 0, 0, 0},
-  {(char *)"pass_to", __pyx_getprop_9watershed_6Region_pass_to, 0, 0, 0},
-  {(char *)"mini", __pyx_getprop_9watershed_6Region_mini, 0, 0, 0},
-  {(char *)"maxi", __pyx_getprop_9watershed_6Region_maxi, 0, 0, 0},
-  {(char *)"highest_pass", __pyx_getprop_9watershed_6Region_highest_pass, 0, 0, 0},
-  {(char *)"neighbors", __pyx_getprop_9watershed_6Region_neighbors, 0, 0, 0},
-  {(char *)"border", __pyx_getprop_9watershed_6Region_border, 0, 0, 0},
-  {(char *)"peaks", __pyx_getprop_9watershed_6Region_peaks, 0, 0, 0},
+static struct PyGetSetDef __pyx_getsets_3src_9watershed_Region[] = {
+  {(char *)"index", __pyx_getprop_3src_9watershed_6Region_index, 0, 0, 0},
+  {(char *)"size", __pyx_getprop_3src_9watershed_6Region_size, 0, 0, 0},
+  {(char *)"pass_to", __pyx_getprop_3src_9watershed_6Region_pass_to, 0, 0, 0},
+  {(char *)"mini", __pyx_getprop_3src_9watershed_6Region_mini, 0, 0, 0},
+  {(char *)"maxi", __pyx_getprop_3src_9watershed_6Region_maxi, 0, 0, 0},
+  {(char *)"highest_pass", __pyx_getprop_3src_9watershed_6Region_highest_pass, 0, 0, 0},
+  {(char *)"neighbors", __pyx_getprop_3src_9watershed_6Region_neighbors, 0, 0, 0},
+  {(char *)"border", __pyx_getprop_3src_9watershed_6Region_border, 0, 0, 0},
+  {(char *)"peaks", __pyx_getprop_3src_9watershed_6Region_peaks, 0, 0, 0},
   {0, 0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_9watershed_Region = {
+static PyTypeObject __pyx_type_3src_9watershed_Region = {
   PyVarObject_HEAD_INIT(0, 0)
-  "watershed.Region", /*tp_name*/
-  sizeof(struct __pyx_obj_9watershed_Region), /*tp_basicsize*/
+  "src.watershed.Region", /*tp_name*/
+  sizeof(struct __pyx_obj_3src_9watershed_Region), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_9watershed_Region, /*tp_dealloc*/
+  __pyx_tp_dealloc_3src_9watershed_Region, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -27006,7 +27006,7 @@ static PyTypeObject __pyx_type_9watershed_Region = {
   #else
   0, /*reserved*/
   #endif
-  __pyx_pw_9watershed_6Region_5__repr__, /*tp_repr*/
+  __pyx_pw_3src_9watershed_6Region_5__repr__, /*tp_repr*/
   0, /*tp_as_number*/
   0, /*tp_as_sequence*/
   0, /*tp_as_mapping*/
@@ -27018,15 +27018,15 @@ static PyTypeObject __pyx_type_9watershed_Region = {
   0, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
   0, /*tp_doc*/
-  __pyx_tp_traverse_9watershed_Region, /*tp_traverse*/
-  __pyx_tp_clear_9watershed_Region, /*tp_clear*/
+  __pyx_tp_traverse_3src_9watershed_Region, /*tp_traverse*/
+  __pyx_tp_clear_3src_9watershed_Region, /*tp_clear*/
   0, /*tp_richcompare*/
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_9watershed_Region, /*tp_methods*/
+  __pyx_methods_3src_9watershed_Region, /*tp_methods*/
   0, /*tp_members*/
-  __pyx_getsets_9watershed_Region, /*tp_getset*/
+  __pyx_getsets_3src_9watershed_Region, /*tp_getset*/
   0, /*tp_base*/
   0, /*tp_dict*/
   0, /*tp_descr_get*/
@@ -27034,7 +27034,7 @@ static PyTypeObject __pyx_type_9watershed_Region = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_9watershed_Region, /*tp_new*/
+  __pyx_tp_new_3src_9watershed_Region, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -27166,7 +27166,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "watershed.array", /*tp_name*/
+  "src.watershed.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -27271,7 +27271,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "watershed.Enum", /*tp_name*/
+  "src.watershed.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -27517,7 +27517,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "watershed.memoryview", /*tp_name*/
+  "src.watershed.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -27641,7 +27641,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "watershed._memoryviewslice", /*tp_name*/
+  "src.watershed._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -27835,6 +27835,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_h5py, __pyx_k_h5py, sizeof(__pyx_k_h5py), 0, 0, 1, 1},
   {&__pyx_n_s_height, __pyx_k_height, sizeof(__pyx_k_height), 0, 0, 1, 1},
   {&__pyx_n_s_highest_pass, __pyx_k_highest_pass, sizeof(__pyx_k_highest_pass), 0, 0, 1, 1},
+  {&__pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_k_home_jerome_workspace_pyFAI_src, sizeof(__pyx_k_home_jerome_workspace_pyFAI_src), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_idx, __pyx_k_idx, sizeof(__pyx_k_idx), 0, 0, 1, 1},
@@ -27887,7 +27888,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_metaclass, __pyx_k_metaclass, sizeof(__pyx_k_metaclass), 0, 0, 1, 1},
   {&__pyx_n_s_min, __pyx_k_min, sizeof(__pyx_k_min), 0, 0, 1, 1},
   {&__pyx_n_s_mini, __pyx_k_mini, sizeof(__pyx_k_mini), 0, 0, 1, 1},
-  {&__pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_k_mntdirect__scisoft_users_kieffe, sizeof(__pyx_k_mntdirect__scisoft_users_kieffe), 0, 0, 1, 0},
   {&__pyx_n_s_mode, __pyx_k_mode, sizeof(__pyx_k_mode), 0, 0, 1, 1},
   {&__pyx_n_s_module, __pyx_k_module, sizeof(__pyx_k_module), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
@@ -27937,6 +27937,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_sorted, __pyx_k_sorted, sizeof(__pyx_k_sorted), 0, 0, 1, 1},
+  {&__pyx_n_s_src_watershed, __pyx_k_src_watershed, sizeof(__pyx_k_src_watershed), 0, 0, 1, 1},
   {&__pyx_n_s_stable, __pyx_k_stable, sizeof(__pyx_k_stable), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_status, __pyx_k_status, sizeof(__pyx_k_status), 0, 0, 1, 1},
@@ -27962,7 +27963,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_value, __pyx_k_value, sizeof(__pyx_k_value), 0, 0, 1, 1},
   {&__pyx_n_s_values, __pyx_k_values, sizeof(__pyx_k_values), 0, 0, 1, 1},
   {&__pyx_n_s_warning, __pyx_k_warning, sizeof(__pyx_k_warning), 0, 0, 1, 1},
-  {&__pyx_n_s_watershed, __pyx_k_watershed, sizeof(__pyx_k_watershed), 0, 0, 1, 1},
   {&__pyx_n_s_where, __pyx_k_where, sizeof(__pyx_k_where), 0, 0, 1, 1},
   {&__pyx_n_s_width, __pyx_k_width, sizeof(__pyx_k_width), 0, 0, 1, 1},
   {&__pyx_n_s_x, __pyx_k_x, sizeof(__pyx_k_x), 0, 0, 1, 1},
@@ -28020,7 +28020,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "watershed.pyx":230
+  /* "src/watershed.pyx":230
  *             h5["NAME"] = self.NAME
  *             h5["VERSION"] = self.VERSION
  *             for i in ("data", "height", "width", "labels", "borders", "thres"):             # <<<<<<<<<<<<<<
@@ -28031,7 +28031,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "watershed.pyx":232
+  /* "src/watershed.pyx":232
  *             for i in ("data", "height", "width", "labels", "borders", "thres"):
  *                 h5[i] = self.__getattribute__(i)
  *             r = h5.require_group("regions")             # <<<<<<<<<<<<<<
@@ -28042,7 +28042,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
 
-  /* "watershed.pyx":236
+  /* "src/watershed.pyx":236
  *             for i in set(self.regions.values()):
  *                 s = r.require_group(str(i.index))
  *                 for j in ("index", "size", "pass_to", "mini", "maxi", "highest_pass", "neighbors", "border", "peaks"):             # <<<<<<<<<<<<<<
@@ -28053,7 +28053,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__5);
   __Pyx_GIVEREF(__pyx_tuple__5);
 
-  /* "watershed.pyx":227
+  /* "src/watershed.pyx":227
  *         """
  *         import h5py
  *         with h5py.File(fname) as h5:             # <<<<<<<<<<<<<<
@@ -28064,7 +28064,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__6);
   __Pyx_GIVEREF(__pyx_tuple__6);
 
-  /* "watershed.pyx":249
+  /* "src/watershed.pyx":249
  *             assert h5["NAME"].value == cls.NAME
  *             self = cls(h5["data"].value, h5["thres"].value)
  *             for i in ("labels", "borders"):             # <<<<<<<<<<<<<<
@@ -28075,7 +28075,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
 
-  /* "watershed.pyx":245
+  /* "src/watershed.pyx":245
  *         """
  *         import h5py
  *         with h5py.File(fname) as h5:             # <<<<<<<<<<<<<<
@@ -28086,7 +28086,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -28097,7 +28097,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -28108,7 +28108,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -28119,7 +28119,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -28130,7 +28130,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -28141,7 +28141,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -28273,7 +28273,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__25);
   __Pyx_GIVEREF(__pyx_tuple__25);
 
-  /* "watershed.pyx":38
+  /* "src/watershed.pyx":38
  * import sys
  * import logging
  * logger = logging.getLogger("pyFAI.watershed")             # <<<<<<<<<<<<<<
@@ -28284,7 +28284,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__26);
   __Pyx_GIVEREF(__pyx_tuple__26);
 
-  /* "watershed.pyx":197
+  /* "src/watershed.pyx":197
  *     VERSION = "1.0"
  * 
  *     def __init__(self, data not None, thres=1.0):             # <<<<<<<<<<<<<<
@@ -28294,12 +28294,12 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__27 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_data, __pyx_n_s_thres); if (unlikely(!__pyx_tuple__27)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__27);
   __Pyx_GIVEREF(__pyx_tuple__27);
-  __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__27, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_init, 197, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__27, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_init, 197, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__29 = PyTuple_Pack(1, ((PyObject*)__pyx_float_1_0)); if (unlikely(!__pyx_tuple__29)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__29);
   __Pyx_GIVEREF(__pyx_tuple__29);
 
-  /* "watershed.pyx":213
+  /* "src/watershed.pyx":213
  *         self._actual_thres = 2
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -28309,9 +28309,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__30 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__30)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__30);
   __Pyx_GIVEREF(__pyx_tuple__30);
-  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_dealloc, 213, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_dealloc, 213, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":222
+  /* "src/watershed.pyx":222
  *         self.dict = None
  * 
  *     def save(self, fname):             # <<<<<<<<<<<<<<
@@ -28321,9 +28321,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__32 = PyTuple_Pack(8, __pyx_n_s_self, __pyx_n_s_fname, __pyx_n_s_h5py, __pyx_n_s_h5, __pyx_n_s_i, __pyx_n_s_r, __pyx_n_s_s, __pyx_n_s_j); if (unlikely(!__pyx_tuple__32)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__32);
   __Pyx_GIVEREF(__pyx_tuple__32);
-  __pyx_codeobj__33 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__32, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_save, 222, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__33)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__33 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__32, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_save, 222, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__33)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":240
+  /* "src/watershed.pyx":240
  * 
  *     @classmethod
  *     def load(cls, fname):             # <<<<<<<<<<<<<<
@@ -28333,9 +28333,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__34 = PyTuple_Pack(8, __pyx_n_s_cls, __pyx_n_s_fname, __pyx_n_s_h5py, __pyx_n_s_h5, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_r, __pyx_n_s_j); if (unlikely(!__pyx_tuple__34)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__34);
   __Pyx_GIVEREF(__pyx_tuple__34);
-  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__34, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_load, 240, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__34, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_load, 240, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":265
+  /* "src/watershed.pyx":265
  *         return self
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
@@ -28345,9 +28345,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__36 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__36)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__36);
   __Pyx_GIVEREF(__pyx_tuple__36);
-  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_init_2, 265, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_init_2, 265, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":279
+  /* "src/watershed.pyx":279
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_labels(self):             # <<<<<<<<<<<<<<
@@ -28357,9 +28357,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__38 = PyTuple_Pack(10, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_width, __pyx_n_s_height, __pyx_n_s_idx, __pyx_n_s_res, __pyx_n_s_labels, __pyx_n_s_regions, __pyx_n_s_bilinear); if (unlikely(!__pyx_tuple__38)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 279; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__38);
   __Pyx_GIVEREF(__pyx_tuple__38);
-  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_init_labels, 279, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 279; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_init_labels, 279, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 279; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":297
+  /* "src/watershed.pyx":297
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_borders(self):             # <<<<<<<<<<<<<<
@@ -28369,9 +28369,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__40 = PyTuple_Pack(10, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_width, __pyx_n_s_height, __pyx_n_s_idx, __pyx_n_s_res, __pyx_n_s_labels, __pyx_n_s_borders, __pyx_n_s_neighb); if (unlikely(!__pyx_tuple__40)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 297; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__40);
   __Pyx_GIVEREF(__pyx_tuple__40);
-  __pyx_codeobj__41 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__40, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_init_borders, 297, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__41)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 297; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__41 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__40, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_init_borders, 297, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__41)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 297; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":330
+  /* "src/watershed.pyx":330
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_regions(self):             # <<<<<<<<<<<<<<
@@ -28381,9 +28381,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__42 = PyTuple_Pack(12, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_idx, __pyx_n_s_res, __pyx_n_s_labels, __pyx_n_s_borders, __pyx_n_s_neighb, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_width, __pyx_n_s_height); if (unlikely(!__pyx_tuple__42)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__42);
   __Pyx_GIVEREF(__pyx_tuple__42);
-  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(1, 0, 12, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_init_regions, 330, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(1, 0, 12, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_init_regions, 330, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":371
+  /* "src/watershed.pyx":371
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_pass(self):             # <<<<<<<<<<<<<<
@@ -28393,9 +28393,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__44 = PyTuple_Pack(14, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_imax, __pyx_n_s_imin, __pyx_n_s_flat, __pyx_n_s_neighb, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_val, __pyx_n_s_maxi, __pyx_n_s_mini, __pyx_n_s_width); if (unlikely(!__pyx_tuple__44)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 371; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__44);
   __Pyx_GIVEREF(__pyx_tuple__44);
-  __pyx_codeobj__45 = (PyObject*)__Pyx_PyCode_New(1, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__44, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_init_pass, 371, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__45)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 371; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__45 = (PyObject*)__Pyx_PyCode_New(1, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__44, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_init_pass, 371, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__45)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 371; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":385
+  /* "src/watershed.pyx":385
  * 
  *     @timeit
  *     def merge_singleton(self):             # <<<<<<<<<<<<<<
@@ -28405,9 +28405,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__46 = PyTuple_Pack(19, __pyx_n_s_self, __pyx_n_s_idx, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_key, __pyx_n_s_key1, __pyx_n_s_region1, __pyx_n_s_region2, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_neighb, __pyx_n_s_ref, __pyx_n_s_data, __pyx_n_s_labels, __pyx_n_s_borders, __pyx_n_s_to_merge, __pyx_n_s_width, __pyx_n_s_cnt, __pyx_n_s_flat); if (unlikely(!__pyx_tuple__46)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 385; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__46);
   __Pyx_GIVEREF(__pyx_tuple__46);
-  __pyx_codeobj__47 = (PyObject*)__Pyx_PyCode_New(1, 0, 19, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__46, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_merge_singleton, 385, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__47)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 385; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__47 = (PyObject*)__Pyx_PyCode_New(1, 0, 19, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__46, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_merge_singleton, 385, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__47)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 385; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":451
+  /* "src/watershed.pyx":451
  * 
  *     @timeit
  *     def merge_twins(self):             # <<<<<<<<<<<<<<
@@ -28417,9 +28417,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__48 = PyTuple_Pack(23, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_imax, __pyx_n_s_imin, __pyx_n_s_key1, __pyx_n_s_key2, __pyx_n_s_key, __pyx_n_s_flat, __pyx_n_s_neighb, __pyx_n_s_region1, __pyx_n_s_region2, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_val, __pyx_n_s_maxi, __pyx_n_s_mini, __pyx_n_s_found, __pyx_n_s_width, __pyx_n_s_cnt, __pyx_n_s_idx1, __pyx_n_s_idx2); if (unlikely(!__pyx_tuple__48)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 451; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__48);
   __Pyx_GIVEREF(__pyx_tuple__48);
-  __pyx_codeobj__49 = (PyObject*)__Pyx_PyCode_New(1, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__48, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_merge_twins, 451, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__49)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 451; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__49 = (PyObject*)__Pyx_PyCode_New(1, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__48, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_merge_twins, 451, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__49)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 451; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":484
+  /* "src/watershed.pyx":484
  * 
  *     @timeit
  *     def merge_intense(self, thres=1.0):             # <<<<<<<<<<<<<<
@@ -28429,12 +28429,12 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__50 = PyTuple_Pack(14, __pyx_n_s_self, __pyx_n_s_thres, __pyx_n_s_key1, __pyx_n_s_key2, __pyx_n_s_idx1, __pyx_n_s_idx2, __pyx_n_s_region1, __pyx_n_s_region2, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_ratio, __pyx_n_s_flat, __pyx_n_s_cnt, __pyx_n_s_key); if (unlikely(!__pyx_tuple__50)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__50);
   __Pyx_GIVEREF(__pyx_tuple__50);
-  __pyx_codeobj__51 = (PyObject*)__Pyx_PyCode_New(2, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__50, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_merge_intense, 484, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__51)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__51 = (PyObject*)__Pyx_PyCode_New(2, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__50, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_merge_intense, 484, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__51)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__52 = PyTuple_Pack(1, ((PyObject*)__pyx_float_1_0)); if (unlikely(!__pyx_tuple__52)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__52);
   __Pyx_GIVEREF(__pyx_tuple__52);
 
-  /* "watershed.pyx":517
+  /* "src/watershed.pyx":517
  *         logger.info("Did %s merge_intense" % cnt)
  * 
  *     def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):             # <<<<<<<<<<<<<<
@@ -28444,7 +28444,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__53 = PyTuple_Pack(29, __pyx_n_s_self, __pyx_n_s_mask, __pyx_n_s_Imin, __pyx_n_s_keep, __pyx_n_s_refine, __pyx_n_s_dmin, __pyx_n_s_kwarg, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_l, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_width, __pyx_n_s_mask_flat, __pyx_n_s_input_points, __pyx_n_s_labels, __pyx_n_s_regions, __pyx_n_s_region, __pyx_n_s_output_points, __pyx_n_s_intensities, __pyx_n_s_argsort, __pyx_n_s_tmp_lst, __pyx_n_s_rej_lst, __pyx_n_s_keep_regions, __pyx_n_s_data, __pyx_n_s_d2, __pyx_n_s_dmin2, __pyx_n_s_pt, __pyx_n_s_pt2); if (unlikely(!__pyx_tuple__53)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__53);
   __Pyx_GIVEREF(__pyx_tuple__53);
-  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(6, 0, 29, 0, CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_peaks_from_area, 517, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(6, 0, 29, 0, CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_peaks_from_area, 517, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":276
  *         return self.name
@@ -28595,14 +28595,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
-  if (__pyx_module_is_main_watershed) {
+  if (__pyx_module_is_main_src__watershed) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    if (!PyDict_GetItemString(modules, "watershed")) {
-      if (unlikely(PyDict_SetItemString(modules, "watershed", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyDict_GetItemString(modules, "src.watershed")) {
+      if (unlikely(PyDict_SetItemString(modules, "src.watershed", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
   #endif
@@ -28619,18 +28619,18 @@ PyMODINIT_FUNC PyInit_watershed(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  __pyx_vtabptr_9watershed_Bilinear = &__pyx_vtable_9watershed_Bilinear;
-  __pyx_vtable_9watershed_Bilinear.cp_local_maxi = (size_t (*)(struct __pyx_obj_9watershed_Bilinear *, size_t, int __pyx_skip_dispatch))__pyx_f_9watershed_8Bilinear_cp_local_maxi;
-  __pyx_vtable_9watershed_Bilinear.c_local_maxi = (size_t (*)(struct __pyx_obj_9watershed_Bilinear *, size_t))__pyx_f_9watershed_8Bilinear_c_local_maxi;
-  if (PyType_Ready(&__pyx_type_9watershed_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_9watershed_Bilinear.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_9watershed_Bilinear.tp_dict, __pyx_vtabptr_9watershed_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "Bilinear", (PyObject *)&__pyx_type_9watershed_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_9watershed_Bilinear = &__pyx_type_9watershed_Bilinear;
-  if (PyType_Ready(&__pyx_type_9watershed_Region) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_9watershed_Region.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "Region", (PyObject *)&__pyx_type_9watershed_Region) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_9watershed_Region = &__pyx_type_9watershed_Region;
+  __pyx_vtabptr_3src_9watershed_Bilinear = &__pyx_vtable_3src_9watershed_Bilinear;
+  __pyx_vtable_3src_9watershed_Bilinear.cp_local_maxi = (size_t (*)(struct __pyx_obj_3src_9watershed_Bilinear *, size_t, int __pyx_skip_dispatch))__pyx_f_3src_9watershed_8Bilinear_cp_local_maxi;
+  __pyx_vtable_3src_9watershed_Bilinear.c_local_maxi = (size_t (*)(struct __pyx_obj_3src_9watershed_Bilinear *, size_t))__pyx_f_3src_9watershed_8Bilinear_c_local_maxi;
+  if (PyType_Ready(&__pyx_type_3src_9watershed_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_type_3src_9watershed_Bilinear.tp_print = 0;
+  if (__Pyx_SetVtable(__pyx_type_3src_9watershed_Bilinear.tp_dict, __pyx_vtabptr_3src_9watershed_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "Bilinear", (PyObject *)&__pyx_type_3src_9watershed_Bilinear) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_3src_9watershed_Bilinear = &__pyx_type_3src_9watershed_Bilinear;
+  if (PyType_Ready(&__pyx_type_3src_9watershed_Region) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_type_3src_9watershed_Region.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "Region", (PyObject *)&__pyx_type_3src_9watershed_Region) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_3src_9watershed_Region = &__pyx_type_3src_9watershed_Region;
   if (PyType_Ready(&__pyx_type___pyx_array) < 0) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type___pyx_array.tp_print = 0;
   __pyx_array_type = &__pyx_type___pyx_array;
@@ -28675,7 +28675,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "watershed.pyx":24
+  /* "src/watershed.pyx":24
  * #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #
  * __doc__ = """             # <<<<<<<<<<<<<<
@@ -28684,7 +28684,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_doc, __pyx_kp_s_Inverse_watershed_for_connectin) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":27
+  /* "src/watershed.pyx":27
  * Inverse watershed for connecting region of high intensity
  * """
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
@@ -28693,7 +28693,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":28
+  /* "src/watershed.pyx":28
  * """
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
@@ -28702,7 +28702,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":29
+  /* "src/watershed.pyx":29
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "03/09/2015"             # <<<<<<<<<<<<<<
@@ -28711,7 +28711,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_03_09_2015) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":30
+  /* "src/watershed.pyx":30
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "03/09/2015"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
@@ -28720,7 +28720,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":31
+  /* "src/watershed.pyx":31
  * __date__ = "03/09/2015"
  * __status__ = "stable"
  * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
@@ -28729,7 +28729,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":34
+  /* "src/watershed.pyx":34
  * 
  * import cython
  * import numpy             # <<<<<<<<<<<<<<
@@ -28741,7 +28741,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":36
+  /* "src/watershed.pyx":36
  * import numpy
  * cimport numpy
  * import sys             # <<<<<<<<<<<<<<
@@ -28753,7 +28753,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_sys, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":37
+  /* "src/watershed.pyx":37
  * cimport numpy
  * import sys
  * import logging             # <<<<<<<<<<<<<<
@@ -28765,7 +28765,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logging, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":38
+  /* "src/watershed.pyx":38
  * import sys
  * import logging
  * logger = logging.getLogger("pyFAI.watershed")             # <<<<<<<<<<<<<<
@@ -28783,7 +28783,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logger, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "watershed.pyx":39
+  /* "src/watershed.pyx":39
  * import logging
  * logger = logging.getLogger("pyFAI.watershed")
  * from .utils import timeit             # <<<<<<<<<<<<<<
@@ -28832,7 +28832,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   }
   __pyx_L2:;
 
-  /* "watershed.pyx":175
+  /* "src/watershed.pyx":175
  * 
  * 
  * class InverseWatershed(object):             # <<<<<<<<<<<<<<
@@ -28846,10 +28846,10 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __Pyx_GIVEREF(__pyx_builtin_object);
   __pyx_t_1 = __Pyx_CalculateMetaclass(NULL, __pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 175; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_Py3MetaclassPrepare(__pyx_t_1, __pyx_t_2, __pyx_n_s_InverseWatershed, __pyx_n_s_InverseWatershed, (PyObject *) NULL, __pyx_n_s_watershed, __pyx_kp_s_Idea_label_all_peaks_define_reg); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 175; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_Py3MetaclassPrepare(__pyx_t_1, __pyx_t_2, __pyx_n_s_InverseWatershed, __pyx_n_s_InverseWatershed, (PyObject *) NULL, __pyx_n_s_src_watershed, __pyx_kp_s_Idea_label_all_peaks_define_reg); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 175; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
 
-  /* "watershed.pyx":194
+  /* "src/watershed.pyx":194
  * #         readonly float  thres, _actual_thres
  * #         readonly Bilinear bilinear
  *     NAME = "Inverse watershed"             # <<<<<<<<<<<<<<
@@ -28858,7 +28858,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_NAME, __pyx_kp_s_Inverse_watershed) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":195
+  /* "src/watershed.pyx":195
  * #         readonly Bilinear bilinear
  *     NAME = "Inverse watershed"
  *     VERSION = "1.0"             # <<<<<<<<<<<<<<
@@ -28867,54 +28867,54 @@ PyMODINIT_FUNC PyInit_watershed(void)
  */
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_VERSION, __pyx_kp_s_1_0) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 195; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "watershed.pyx":197
+  /* "src/watershed.pyx":197
  *     VERSION = "1.0"
  * 
  *     def __init__(self, data not None, thres=1.0):             # <<<<<<<<<<<<<<
  *         """
  *         @param data: 2d image as numpy array
  */
-  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_1__init__, 0, __pyx_n_s_InverseWatershed___init, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__28)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_1__init__, 0, __pyx_n_s_InverseWatershed___init, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__28)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_5, __pyx_tuple__29);
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_init, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "watershed.pyx":213
+  /* "src/watershed.pyx":213
  *         self._actual_thres = 2
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
  *         """destructor"""
  *         self.data = None
  */
-  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_3__dealloc__, 0, __pyx_n_s_InverseWatershed___dealloc, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__31)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_3__dealloc__, 0, __pyx_n_s_InverseWatershed___dealloc, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__31)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_dealloc, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "watershed.pyx":222
+  /* "src/watershed.pyx":222
  *         self.dict = None
  * 
  *     def save(self, fname):             # <<<<<<<<<<<<<<
  *         """
  *         Save all regions into a HDF5 file
  */
-  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_5save, 0, __pyx_n_s_InverseWatershed_save, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__33)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_5save, 0, __pyx_n_s_InverseWatershed_save, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__33)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_save, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "watershed.pyx":240
+  /* "src/watershed.pyx":240
  * 
  *     @classmethod
  *     def load(cls, fname):             # <<<<<<<<<<<<<<
  *         """
  *         Load data from a HDF5 file
  */
-  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_7load, __Pyx_CYFUNCTION_CLASSMETHOD, __pyx_n_s_InverseWatershed_load, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__35)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_7load, __Pyx_CYFUNCTION_CLASSMETHOD, __pyx_n_s_InverseWatershed_load, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__35)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":239
+  /* "src/watershed.pyx":239
  *                     s[j] = i.__getattribute__(j)
  * 
  *     @classmethod             # <<<<<<<<<<<<<<
@@ -28927,19 +28927,19 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_load, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":265
+  /* "src/watershed.pyx":265
  *         return self
  * 
  *     def init(self):             # <<<<<<<<<<<<<<
  *         self.init_labels()
  *         self.init_borders()
  */
-  __pyx_t_6 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_9init, 0, __pyx_n_s_InverseWatershed_init, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__37)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_9init, 0, __pyx_n_s_InverseWatershed_init, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__37)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_init_2, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":275
+  /* "src/watershed.pyx":275
  *         logger.info("found %s regions, after merge remains %s" % (len(self.regions), len(set(self.regions.values()))))
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -28949,14 +28949,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 275; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":279
+  /* "src/watershed.pyx":279
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_labels(self):             # <<<<<<<<<<<<<<
  *         cdef:
  *             int i, j, width = self.width, height = self.height, idx, res
  */
-  __pyx_t_7 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_11init_labels, 0, __pyx_n_s_InverseWatershed_init_labels, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__39)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 279; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_11init_labels, 0, __pyx_n_s_InverseWatershed_init_labels, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__39)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 279; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
   __pyx_t_8 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -28987,7 +28987,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_init_labels, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 279; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":293
+  /* "src/watershed.pyx":293
  *                     regions[res] = Region(res)
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -28997,14 +28997,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 293; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":297
+  /* "src/watershed.pyx":297
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_borders(self):             # <<<<<<<<<<<<<<
  *         cdef:
  *             int i, j, width = self.width, height = self.height, idx, res
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_13init_borders, 0, __pyx_n_s_InverseWatershed_init_borders, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__41)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 297; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_13init_borders, 0, __pyx_n_s_InverseWatershed_init_borders, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__41)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 297; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_t_7 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -29035,7 +29035,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_init_borders, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 297; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":326
+  /* "src/watershed.pyx":326
  *                 borders[i, j] = neighb
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -29045,14 +29045,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 326; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":330
+  /* "src/watershed.pyx":330
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_regions(self):             # <<<<<<<<<<<<<<
  *         cdef:
  *             int i, j, idx, res
  */
-  __pyx_t_8 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_15init_regions, 0, __pyx_n_s_InverseWatershed_init_regions, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__43)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_15init_regions, 0, __pyx_n_s_InverseWatershed_init_regions, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__43)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
   __pyx_t_9 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -29083,7 +29083,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_init_regions, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":367
+  /* "src/watershed.pyx":367
  *                     region.neighbors.append(labels[i + 1, j - 1])
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -29093,14 +29093,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 367; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":371
+  /* "src/watershed.pyx":371
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     def init_pass(self):             # <<<<<<<<<<<<<<
  *         cdef:
  *             int i, j, k, imax, imin
  */
-  __pyx_t_7 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_17init_pass, 0, __pyx_n_s_InverseWatershed_init_pass, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__45)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 371; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_17init_pass, 0, __pyx_n_s_InverseWatershed_init_pass, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__45)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 371; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
   __pyx_t_8 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -29131,7 +29131,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_init_pass, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 371; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":384
+  /* "src/watershed.pyx":384
  *                 regions.pop(region.index)
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -29141,14 +29141,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 384; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":385
+  /* "src/watershed.pyx":385
  * 
  *     @timeit
  *     def merge_singleton(self):             # <<<<<<<<<<<<<<
  *         "merge single pixel region"
  *         cdef:
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_19merge_singleton, 0, __pyx_n_s_InverseWatershed_merge_singleton, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__47)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 385; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_19merge_singleton, 0, __pyx_n_s_InverseWatershed_merge_singleton, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__47)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 385; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_t_7 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -29179,7 +29179,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_merge_singleton, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 385; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":450
+  /* "src/watershed.pyx":450
  *         logger.info("Did %s merge_singleton" % cnt)
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -29189,14 +29189,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":451
+  /* "src/watershed.pyx":451
  * 
  *     @timeit
  *     def merge_twins(self):             # <<<<<<<<<<<<<<
  *         """
  *         Twins are two peak region which are best linked together:
  */
-  __pyx_t_8 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_21merge_twins, 0, __pyx_n_s_InverseWatershed_merge_twins, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__49)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 451; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_21merge_twins, 0, __pyx_n_s_InverseWatershed_merge_twins, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__49)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 451; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
   __pyx_t_9 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -29227,7 +29227,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_merge_twins, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 451; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":483
+  /* "src/watershed.pyx":483
  *         logger.info("Did %s merge_twins" % cnt)
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -29237,14 +29237,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 483; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "watershed.pyx":484
+  /* "src/watershed.pyx":484
  * 
  *     @timeit
  *     def merge_intense(self, thres=1.0):             # <<<<<<<<<<<<<<
  *         """
  *         Merge groups then (pass-mini)/(maxi-mini) >=thres
  */
-  __pyx_t_7 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_23merge_intense, 0, __pyx_n_s_InverseWatershed_merge_intense, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__51)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_23merge_intense, 0, __pyx_n_s_InverseWatershed_merge_intense, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__51)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_7, __pyx_tuple__52);
   __pyx_t_8 = NULL;
@@ -29276,7 +29276,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_merge_intense, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 484; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "watershed.pyx":517
+  /* "src/watershed.pyx":517
  *         logger.info("Did %s merge_intense" % cnt)
  * 
  *     def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):             # <<<<<<<<<<<<<<
@@ -29301,14 +29301,14 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __Pyx_GIVEREF(__pyx_t_5);
   __pyx_t_6 = 0;
   __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9watershed_16InverseWatershed_25peaks_from_area, 0, __pyx_n_s_InverseWatershed_peaks_from_area, NULL, __pyx_n_s_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__54)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_9watershed_16InverseWatershed_25peaks_from_area, 0, __pyx_n_s_InverseWatershed_peaks_from_area, NULL, __pyx_n_s_src_watershed, __pyx_d, ((PyObject *)__pyx_codeobj__54)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_5, __pyx_t_9);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   if (PyObject_SetItem(__pyx_t_4, __pyx_n_s_peaks_from_area, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "watershed.pyx":175
+  /* "src/watershed.pyx":175
  * 
  * 
  * class InverseWatershed(object):             # <<<<<<<<<<<<<<
@@ -29323,7 +29323,7 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "watershed.pyx":1
+  /* "src/watershed.pyx":1
  * #!/usr/bin/env python             # <<<<<<<<<<<<<<
  * # -*- coding: utf-8 -*-
  * #
@@ -29464,11 +29464,11 @@ PyMODINIT_FUNC PyInit_watershed(void)
   __Pyx_XDECREF(__pyx_t_9);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init watershed", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init src.watershed", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init watershed");
+    PyErr_SetString(PyExc_ImportError, "init src.watershed");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
