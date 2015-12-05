@@ -128,7 +128,7 @@ l_A = Enum(REPR="A",
 LENGTH_UNITS = (l_m, l_mm, l_cm, l_um, l_nm, l_A)
 
 A_deg = Enum(REPR="deg",
-           scale=pi / 180.0,
+           scale=180.0 / pi,
            label=r"angle $\alpha$ ($^{o}$)")
 
 A_rad = Enum(REPR="rad",

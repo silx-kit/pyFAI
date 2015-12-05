@@ -116,9 +116,9 @@ class AbstractCalibration(object):
                 " is why the window showing the diffraction image"\
                 " is closed"
     HELP = {"help": "Try to get the help of a given action, like 'refine?'. Use done when finished. "
-            "Most command are composed of 'action parameter value' like 'set wavelength 1e-10'.",
+            "Most command are composed of 'action parameter value' like 'set wavelength 1 A'.",
             "get": "print he value of a parameter",
-            "set": "set the value of a parameter to the given value, i.e 'set wavelength 1e-10'",
+            "set": "set the value of a parameter to the given value, i.e 'set wavelength 0.1 nm', units are optional",
             'fix': "fixes the value of a parameter so that its value will not be optimized, i.e. 'fix wavelength'",
             'free': "frees the parameter so that the value can be optimized, i.e. 'free wavelength'",
             'bound': "sets the upper and lower bound of a parameter: 'bound dist 0.1 0.2'",
@@ -130,7 +130,7 @@ class AbstractCalibration(object):
             'validate2': "measures the offset of the center as function of azimuthal angle by cross-correlation of 2 plots, 180 deg appart. Option: number of azimuthal sliced, default: 36",
             'integrate': "perform the azimuthal integration and display results",
             'abort': "quit immediately, discarding any unsaved changes",
-            'show': "Just print out the current parameter set",
+            'show': "Just print out the current parameter set. Optional parameters are units for length, rotation and wavelength, i.e. 'show mm deg A'",
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
@@ -774,13 +774,13 @@ class AbstractCalibration(object):
         while True:
             help = False
             print("Fixed: " + ", ".join(self.fixed))
-            ans = input("Modify parameters (or ? for help)?\t ").strip().lower()
+            ans = input("Modify parameters (or ? for help)?\t ").strip()
             if "?" in ans:
                 help = True
             if not ans:
                 print("'done' to continue")
                 continue
-            words = ans.split()
+            words = ans.lower().split()
             action = words[0]
             if action in [ "help", "?"]:
                 help = True
@@ -806,14 +806,19 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
 
             elif action == "set":  # set wavelength 1e-10
-                if (len(words) == 3) and  words[1] in self.PARAMETERS:
+                if (len(words) in (3, 4)) and  words[1] in self.PARAMETERS:
                     param = words[1]
                     try:
                         value = float(words[2])
                     except:
                         logger.warning("invalid value")
                     else:
-                        setattr(self.geoRef, param, value)
+                        scale = 1.0
+                        if len(words) == 4:
+                            unit = units.to_unit(words[3], units.LENGTH_UNITS + units.ANGLE_UNITS)
+                            if unit:
+                                scale = unit.scale
+                        setattr(self.geoRef, param, value / scale)
                 else:
                     print(self.HELP[action])
             elif action == "fix":  # fix wavelength
@@ -964,7 +969,7 @@ class AbstractCalibration(object):
                 args = []
                 print("The current parameter set is:")
                 if len(words) > 1:
-                    args = words[1:]
+                    args = ans.split()[1:]
                 print(self.geoRef.__repr__(*args))
             elif action == "reset":
                 if len(words) > 1:

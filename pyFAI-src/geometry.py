@@ -255,16 +255,15 @@ class Geometry(object):
         dist_unit = units.to_unit(dist_unit, units.LENGTH_UNITS) or units.l_m
         ang_unit = units.to_unit(ang_unit, units.ANGLE_UNITS) or units.A_rad
         wl_unit = units.to_unit(wl_unit, units.LENGTH_UNITS) or units.l_m
-
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         lstTxt = [self.detector.__repr__()]
         if self._wavelength:
             lstTxt.append("Wavelength= %.6e%s" % \
                           (self._wavelength*wl_unit.scale,wl_unit.REPR))
-        lstTxt.append(("SampleDetDist= %.6em\tPONI= %.6e, %.6e%s\trot1=%.6f"
+        lstTxt.append(("SampleDetDist= %.6e%s\tPONI= %.6e, %.6e%s\trot1=%.6f"
                            "  rot2= %.6f  rot3= %.6f %s") % \
-                      (self._dist * dist_unit.scale, self._poni1 * dist_unit.scale,
+                      (self._dist * dist_unit.scale, dist_unit.REPR, self._poni1 * dist_unit.scale,
                        self._poni2 * dist_unit.scale, dist_unit.REPR,
                       self._rot1 * ang_unit.scale, self._rot2 * ang_unit.scale,
                       self._rot3 * ang_unit.scale, ang_unit.REPR))
