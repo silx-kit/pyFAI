@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2015"
+__date__ = "05/12/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instantiate them
@@ -623,7 +623,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         Main differences:
 
             * differentiate pixel center from pixel corner offsets
-            * store all offsets are ndarray according to slow/fast dimention (not x, y)
+            * store all offsets are ndarray according to slow/fast dimension (not x, y)
 
         @param filename: name of the file on the disc
         """
@@ -691,10 +691,11 @@ class NexusDetector(Detector):
     """
     def __init__(self, filename=None):
         Detector.__init__(self)
+        self.uniform_pixel = True
+        self._filename = None
         if filename is not None:
             self.load(filename)
-        self._filename = filename
-        self.uniform_pixel = True
+
 
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
@@ -732,6 +733,7 @@ class NexusDetector(Detector):
                 self.uniform_pixel = False
             else:
                 self.uniform_pixel = True
+        self._filename = filename
 
     @classmethod
     def sload(cls, filename):
@@ -2048,6 +2050,153 @@ class RayonixMx325(Rayonix):
     aliases = ["Rayonix mx325"]
     def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class ADSC_Q315(Detector):
+    """
+    ADSC Quantum 315r detector, 3x3 chips
+
+    Informations from
+    http://www.adsc-xray.com/products/ccd-detectors/q315r-ccd-detector/
+
+    Question: how are the gaps handled ?
+    """
+    MAX_SHAPE = (6140 , 6140)
+    aliases = ["Quantum 315"]
+    def __init__(self, pixel1=51e-6, pixel2=51e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class ADSC_Q210(Detector):
+    """
+    ADSC Quantum 210r detector, 2x2 chips
+
+    Informations from
+    http://www.adsc-xray.com/products/ccd-detectors/q210r-ccd-detector/
+
+    Question: how are the gaps handled ?
+    """
+    MAX_SHAPE = (4096 , 4096)
+    aliases = ["Quantum 210"]
+    def __init__(self, pixel1=51e-6, pixel2=51e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class ADSC_Q270(Detector):
+    """
+    ADSC Quantum 270r detector, 2x2 chips
+
+    Informations from
+    http://www.adsc-xray.com/products/ccd-detectors/q270-ccd-detector/
+
+    Question: how are the gaps handled ?
+    """
+    MAX_SHAPE = (4168 , 4168)
+    aliases = ["Quantum 270"]
+    def __init__(self, pixel1=64.8e-6, pixel2=64.8e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class ADSC_Q4(Detector):
+    """
+    ADSC Quantum 4r detector, 2x2 chips
+
+    Informations from
+    http://proteincrystallography.org/detectors/adsc.php
+
+    Question: how are the gaps handled ?
+    """
+    MAX_SHAPE = (2304 , 2304)
+    aliases = ["Quantum 4"]
+    def __init__(self, pixel1=82e-6, pixel2=82e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class HF_130K(Detector):
+    """
+    ADSC HF-130K 1 module
+
+    Informations from
+    http://www.adsc-xray.com/products/pixel-array-detectors/hf-130k/
+
+    """
+    MAX_SHAPE = (256 , 512)
+    aliases = ["HF-130k"]
+    def __init__(self, pixel1=150e-6, pixel2=150e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class HF_262k(Detector):
+    """
+    ADSC HF-262k 2 module
+
+    Informations from
+    http://www.adsc-xray.com/products/pixel-array-detectors/hf-262k/
+
+    Nota: gaps between modules is not known/described
+    """
+    MAX_SHAPE = (512 , 512)
+    aliases = ["HF-262k"]
+    def __init__(self, pixel1=150e-6, pixel2=150e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class HF_1M(Detector):
+    """
+    ADSC HF-1M 2x4 modules
+
+    Informations from
+    http://www.adsc-xray.com/products/pixel-array-detectors/hf-1m/
+
+    Nota: gaps between modules is not known/described
+    """
+    MAX_SHAPE = (1024 , 1024)
+    aliases = ["HF-1M"]
+    def __init__(self, pixel1=150e-6, pixel2=150e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+class HF_2M(Detector):
+    """
+    ADSC HF-1M 3x6 modules
+
+    Informations from
+    http://www.adsc-xray.com/products/pixel-array-detectors/hf-2.4m/
+
+    Nota: gaps between modules is not known/described
+    """
+    MAX_SHAPE = (1536 , 1536)
+    aliases = ["HF-2.4M"]
+    def __init__(self, pixel1=150e-6, pixel2=150e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class HF_4M(Detector):
+    """
+    ADSC HF-4M 4x8 modules
+
+    Informations from
+    http://www.adsc-xray.com/products/pixel-array-detectors/hf-4m/
+    """
+    MAX_SHAPE = (2048 , 2048)
+    aliases = ["HF-4M"]
+    def __init__(self, pixel1=150e-6, pixel2=150e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class HF_9M(Detector):
+    """
+    ADSC HF-130K 1 module
+
+    Informations from
+    http://www.adsc-xray.com/products/pixel-array-detectors/hf-9-4m/
+
+    """
+    MAX_SHAPE = (3072 , 3072)
+    aliases = ["HF-9.4M"]
+    def __init__(self, pixel1=150e-6, pixel2=150e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
 
 class Aarhus(Detector):
     """
