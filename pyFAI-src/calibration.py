@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2015"
+__date__ = "05/12/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -961,8 +961,11 @@ class AbstractCalibration(object):
             elif action == "abort":
                 sys.exit()
             elif action == "show":
+                args = []
                 print("The current parameter set is:")
-                print(self.geoRef)
+                if len(words) > 1:
+                    args = words[1:]
+                print(self.geoRef.__repr__(*args))
             elif action == "reset":
                 if len(words) > 1:
                     how = words[1]

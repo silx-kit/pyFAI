@@ -108,7 +108,7 @@ R = R_MM = Enum(REPR="r_mm",
 RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, RecD2_A, RecD2_NM)
 
 l_m = Enum(REPR="m",
-           scale=1,
+           scale=1.,
            label=r"length $l$ ($m$)")
 l_mm = Enum(REPR="mm",
            scale=1e3,
