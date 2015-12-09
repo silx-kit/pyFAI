@@ -6,8 +6,7 @@
 Azimuthal integration using the graphical user interface
 ========================================================
 
-Associated video:
-  http://www.edna-site.org/pub/calibration/integration.flv
+`Associated video <http://www.edna-site.org/pub/calibration/integration.flv>`_
 
 Look at your integrated patterns
 --------------------------------

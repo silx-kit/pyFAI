@@ -6,8 +6,7 @@
 Calibration of a diffraction setup
 ==================================
 
-Associated video:
-  http://www.edna-site.org/pub/calibration/calib.flv
+`Associated video <http://www.edna-site.org/pub/calibration/calibration.flv>`_
 
 Review your calibration image
 -----------------------------
