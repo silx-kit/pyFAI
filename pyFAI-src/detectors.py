@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2015"
+__date__ = "10/12/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instantiate them
@@ -2061,7 +2061,8 @@ class ADSC_Q315(Detector):
 
     Question: how are the gaps handled ?
     """
-    MAX_SHAPE = (6140 , 6140)
+    force_pixel = True
+    MAX_SHAPE = (6144 , 6144)
     aliases = ["Quantum 315"]
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2076,6 +2077,7 @@ class ADSC_Q210(Detector):
 
     Question: how are the gaps handled ?
     """
+    force_pixel = True
     MAX_SHAPE = (4096 , 4096)
     aliases = ["Quantum 210"]
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
@@ -2091,6 +2093,7 @@ class ADSC_Q270(Detector):
 
     Question: how are the gaps handled ?
     """
+    force_pixel = True
     MAX_SHAPE = (4168 , 4168)
     aliases = ["Quantum 270"]
     def __init__(self, pixel1=64.8e-6, pixel2=64.8e-6):
@@ -2106,6 +2109,7 @@ class ADSC_Q4(Detector):
 
     Question: how are the gaps handled ?
     """
+    force_pixel = True
     MAX_SHAPE = (2304 , 2304)
     aliases = ["Quantum 4"]
     def __init__(self, pixel1=82e-6, pixel2=82e-6):
@@ -2120,6 +2124,7 @@ class HF_130K(Detector):
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-130k/
 
     """
+    force_pixel = True
     MAX_SHAPE = (256 , 512)
     aliases = ["HF-130k"]
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
@@ -2135,6 +2140,7 @@ class HF_262k(Detector):
 
     Nota: gaps between modules is not known/described
     """
+    force_pixel = True
     MAX_SHAPE = (512 , 512)
     aliases = ["HF-262k"]
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
@@ -2150,6 +2156,7 @@ class HF_1M(Detector):
 
     Nota: gaps between modules is not known/described
     """
+    force_pixel = True
     MAX_SHAPE = (1024 , 1024)
     aliases = ["HF-1M"]
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
@@ -2164,6 +2171,7 @@ class HF_2M(Detector):
 
     Nota: gaps between modules is not known/described
     """
+    force_pixel = True
     MAX_SHAPE = (1536 , 1536)
     aliases = ["HF-2.4M"]
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
@@ -2177,6 +2185,7 @@ class HF_4M(Detector):
     Informations from
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-4m/
     """
+    force_pixel = True
     MAX_SHAPE = (2048 , 2048)
     aliases = ["HF-4M"]
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
@@ -2191,6 +2200,7 @@ class HF_9M(Detector):
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-9-4m/
 
     """
+    force_pixel = True
     MAX_SHAPE = (3072 , 3072)
     aliases = ["HF-9.4M"]
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
@@ -2214,6 +2224,7 @@ class Aarhus(Detector):
     """
     MAX_SHAPE = (1000 , 16000)
     IS_FLAT = False
+    force_pixel = True
     def __init__(self, pixel1=25e-6, pixel2=25e-6, radius=0.3):
         Detector.__init__(self, pixel1, pixel2)
         self.radius = radius
