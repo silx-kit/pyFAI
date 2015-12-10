@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2015"
+__date__ = "10/12/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -260,7 +260,7 @@ class Geometry(object):
         lstTxt = [self.detector.__repr__()]
         if self._wavelength:
             lstTxt.append("Wavelength= %.6e%s" % \
-                          (self._wavelength*wl_unit.scale,wl_unit.REPR))
+                          (self._wavelength * wl_unit.scale, wl_unit.REPR))
         lstTxt.append(("SampleDetDist= %.6e%s\tPONI= %.6e, %.6e%s\trot1=%.6f"
                            "  rot2= %.6f  rot3= %.6f %s") % \
                       (self._dist * dist_unit.scale, dist_unit.REPR, self._poni1 * dist_unit.scale,
@@ -298,19 +298,20 @@ class Geometry(object):
         p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
         return p1 - poni1, p2 - poni2, p3
 
-    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None):
+    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None, corners=False):
         """
-        Allows you to calculate the position of a set of points in space in the sample
-        re
+        Allows you to calculate the position of a set of points in space in the 
+        sample's centers referential. 
+        This is usually used for calculating the pixel position in space. 
 
 
-        @param d0: altitude on the point compared to the detector (i.e. z)
+        @param d0: altitude on the point compared to the detector (i.e. z), may be None
         @param d1: position on the detector along the slow dimention (i.e. y)
         @param d2: position on the detector along the fastest dimention (i.e. x)
-        @return zyx array, so 3D array with dim0=along the beam,
+        @param corners: return positions on the corners (instead of center)
+        @return 3-tuple of nd-array,  with  dim0=along the beam,
                                             dim1=along slowest dimension
                                             dim2=along fastest dimension
-                                            unless rotations are too large
         """
         if param is None:
             param = self.param
@@ -320,7 +321,13 @@ class Geometry(object):
             L = param[0]
         else:
             L = param[0] + d0
-        p1, p2, p3 = self._calc_cartesian_positions(d1, d2, param[1], param[2])
+        if corners:
+            tmp = self.detector.get_pixel_corners()
+            p1 = tmp[..., 1] - param[1] if param else self.poni1
+            p2 = tmp[..., 2] - param[2] if param else self.poni2
+            p3 = tmp[..., 0]
+        else:
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, param[1], param[2])
         if p3 is not None:
             L = L + p3
         cosRot1 = cos(param[3])
@@ -336,12 +343,7 @@ class Geometry(object):
             p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
             L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
         t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
-        shape = 3, d1.shape[0], d1.shape[1]
-        zyx = numpy.zeros(shape)
-        zyx[0] = t3
-        zyx[1] = t1
-        zyx[2] = t2
-        return zyx
+        return (t3, t1, t2)
 
     def tth(self, d1, d2, param=None, path="cython"):
         """
@@ -370,10 +372,7 @@ class Geometry(object):
                                      pos2=p2,
                                      pos3=p3)
         else:
-            zyx = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
-            t1 = zyx[1]
-            t2 = zyx[2]
-            t3 = zyx[0]
+            t3, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
             if path == "cos":
                 tmp = arccos(t3 / sqrt(t1 ** 2 + t2 ** 2 + t3 ** 2))
             else:
@@ -706,6 +705,35 @@ class Geometry(object):
                         corners[:, :, 3, 1] = chi[:-1, 1:]
                     self._corner4Dra = corners
         return self._corner4Dra
+
+    def positionArray(self, shape=None, corners=False):
+        """Generate an array for the pixel position 
+        given the shape of the detector.
+        
+        if corners is False, the coordinates of the center of the pixel
+        is returned in an array of shape: (shape[0], shape[1], 3)
+        where the 3 coordinates are the (z, y, x)
+        
+        If is True, the corner of each pixels are then returned.
+        the output shape is then (shape[0], shape[1], 4, 3)
+
+        @param shape: shape of the array expected
+        @return: 3D coodinated as nd-array
+        
+        Nota: this value is not cached and actually generated on demand (costly)   
+        """
+        if shape is None:
+            shape = self.detector.shape
+
+        pos = numpy.fromfunction(lambda d1, d2:
+                                    self.calc_pos_zyx(None, d1, d2, corners=corners),
+                                shape,
+                                dtype=numpy.float32)
+        outshape = pos[0].shape + (3,)
+        tpos = numpy.empty(outshape, dtype=numpy.float32)
+        for idx in range(3):
+            tpos[..., idx] = pos[idx]
+        return tpos
 
     def cornerRd2Array(self, shape):
         """
