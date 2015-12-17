@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2015"
+__date__ = "17/12/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -952,18 +952,38 @@ class Geometry(object):
         """
         p1, p2, p3 = self._calc_cartesian_positions(d1, d2)
         if p3 is not None:
-            logger.warning("FIXME: Disable solid angle correction for 3D detectors")
+            # case for non-planar detector ...
 
             # Calculate the sample-pixel vector (center of pixel) and norm it
-            Ozyx = self.calc_pos_zyx(None, d1, d2)
-            Ozyx.reshape((-1, 3))
+            z, y, x = self.calc_pos_zyx(None, d1, d2)
+            t = numpy.zeros((z.size, 3))
+            for i, v in enumerate((z, y, x)):
+                t[..., i] = v.ravel()
+            length = numpy.sqrt((t * t).sum(axis=-1))
+            length.shape = (length.size, 1)
+            length.strides = (length.strides[0], 0)
+            t /= length
             # extract the 4 corners of each pixel and calculate the cross product of the diagonal to get the normal
-
+            z, y, x = self.calc_pos_zyx(None, d1, d2, corners=True)
+            corners = numpy.zeros(z.shape + (3,))
+            for i, v in enumerate((z, y, x)):
+                corners[..., i] = v
+            A = corners[..., 0, :]
+            B = corners[..., 1, :]
+            C = corners[..., 2, :]
+            D = corners[..., 3, :]
+            A.shape = -1, 3
+            B.shape = -1, 3
+            C.shape = -1, 3
+            D.shape = -1, 3
+            orth = numpy.cross(C - A, D - B)
             # normalize the normal vector
-
+            length = numpy.sqrt((orth * orth).sum(axis=-1))
+            length.shape = length.shape + (1,)
+            length.strides = length.strides[:-1] + (0,)
+            orth /= length
             # calculate the cosine of the vector using the dot product
-            # res = abs(numpy.dot())
-            return numpy.ones_like(d1)
+            return (t * orth).sum(axis=-1).reshape(d1.shape)
         if path == "cython":
             cosa = _geometry.calc_cosa(self._dist, p1, p2)
         else:

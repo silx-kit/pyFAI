@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "17/12/2015"
 
 
 import unittest
@@ -52,6 +52,7 @@ pyFAI = sys.modules["pyFAI"]
 
 from pyFAI import geometry
 from pyFAI import AzimuthalIntegrator
+from pyFAI.detectors import detector_factory
 import fabio
 
 
@@ -111,6 +112,56 @@ class TestSolidAngle(unittest.TestCase):
         self.assert_(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
         self.assert_(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
         self.assert_(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
+
+    def test_nonflat_center(self):
+        """
+        Test non flat detector cos(incidence) to be 1 (+/- 1%) when centered.
+        
+        Aarhus is a curved detector of radius 0.3m
+        """
+        aarhus = detector_factory("Aarhus")
+        aarhus.binning = (10, 10)
+        ai = AzimuthalIntegrator(aarhus.radius, detector=aarhus)
+        cosa = numpy.fromfunction(ai.cosIncidance,
+                                  aarhus.shape, dtype=numpy.float32)
+        maxi = cosa.max()
+        mini = cosa.min()
+        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assert_(mini > 0.99, 'Cos solid angle is %s >0.99' % mini)
+
+    def test_nonflat_outside(self):
+        """
+        Test non flat detector cos(incidence) to be !=1 when off-centered.
+        
+        Aarhus is a curved detector of radius 0.3m, here we offset of 50%
+        """
+        aarhus = detector_factory("Aarhus")
+        aarhus.binning = (10, 10)
+        ai = AzimuthalIntegrator(aarhus.radius * 1.5, detector=aarhus)
+        cosa = numpy.fromfunction(ai.cosIncidance,
+                                  aarhus.shape, dtype=numpy.float32)
+        maxi = cosa.max()
+        mini = cosa.min()
+        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assert_(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assert_(mini < 0.92, 'Cos solid angle min is %s <0.92' % mini)
+
+    def test_nonflat_inside(self):
+        """
+        Test non flat detector cos(incidence) to be !=1 when off-centered.
+        
+        Aarhus is a curved detector of radius 0.3m, here we offset of 50%
+        """
+        aarhus = detector_factory("Aarhus")
+        aarhus.binning = (10, 10)
+        ai = AzimuthalIntegrator(aarhus.radius * 0.5, detector=aarhus)
+        cosa = numpy.fromfunction(ai.cosIncidance,
+                                  aarhus.shape, dtype=numpy.float32)
+        maxi = cosa.max()
+        mini = cosa.min()
+        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assert_(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assert_(mini < 0.87, 'Cos solid angle min is %s <0.86' % mini)
 
 
 class TestBug88SolidAngle(unittest.TestCase):
@@ -279,6 +330,9 @@ TESTCASES = [
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestSolidAngle("testSolidAngle"))
+    testsuite.addTest(TestSolidAngle("test_nonflat_center"))
+    testsuite.addTest(TestSolidAngle("test_nonflat_outside"))
+    testsuite.addTest(TestSolidAngle("test_nonflat_inside"))
     testsuite.addTest(TestBug88SolidAngle("testSolidAngle"))
     testsuite.addTest(TestRecprocalSpacingSquarred("test_center"))
     testsuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
