@@ -712,13 +712,17 @@ class Geometry(object):
         
         if corners is False, the coordinates of the center of the pixel
         is returned in an array of shape: (shape[0], shape[1], 3)
-        where the 3 coordinates are the (z, y, x)
+        where the 3 coordinates are:
+        * z: along incident beam, 
+        * y: to the top/sky, 
+        * x: towards the center of the ring
         
         If is True, the corner of each pixels are then returned.
         the output shape is then (shape[0], shape[1], 4, 3)
 
         @param shape: shape of the array expected
-        @return: 3D coodinated as nd-array
+        @param corners: set to true to receive a (...,4,3) array of corner positions
+        @return: 3D coodinates as nd-array of size (...,3) or (...,3) (default) 
         
         Nota: this value is not cached and actually generated on demand (costly)   
         """
