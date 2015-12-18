@@ -25,13 +25,14 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2015"
+__date__ = "18/12/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
 logger = logging.getLogger("pyFAI.unit")
 from numpy import pi
+
 try:
     import six
 except (ImportError, Exception):
@@ -60,51 +61,135 @@ class Enum(dict):
 
 UNDEFINED = Enum(REPR='?')
 
+
+def eq_r(x, y, z=None, wavelength=None):
+    """Calculates the radius 
+    
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    """
+    return numpy.sqrt(x * x + y * y)
+
+
+def eq_2th(x, y, z, wavelength=None):
+    """Calculates the 2theta aperture of the cone 
+    
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    """
+    return numpy.arcan2(eq_r(x, y), z)
+
+
+def eq_q(x, y, z, wavelength):
+    """Calculates the modulus of the scattering vector 
+    
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    """
+    return 4.0 * pi * 1e-9 * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
+
+
+def eq_rd2(x, y, z, wavelength):
+    """Calculates the reciprocal spacing squared 
+    
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    """
+    return (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2
+
+
+def eq_logq(x, y, z, wavelength):
+    """Calculates the log (decimal) of the scattering vector 
+    
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    """
+    return numpy.log10(eq_q(x, y, z, wavelength) * 1e9)  # convert in meter
+
+
 TTH_DEG = TTH = Enum(REPR="2th_deg",
                      corner="cornerArray",
                      center="twoThetaArray",
                      delta="delta2Theta",
                      scale=180.0 / pi,
-                     label=r"Scattering angle $2\theta$ ($^{o}$)")
+                     label=r"Scattering angle $2\theta$ ($^{o}$)",
+                     equation=eq_2th)
 
 TTH_RAD = Enum(REPR="2th_rad",
                corner="cornerArray",
                center="twoThetaArray",
                delta="delta2Theta",
                scale=1.0,
-               label=r"Scattering angle $2\theta$ ($rad$)")
+               label=r"Scattering angle $2\theta$ ($rad$)",
+               equation=eq_2th)
 
 Q = Q_NM = Enum(REPR="q_nm^-1",
                 center="qArray",
                 corner="cornerQArray",
                 delta="deltaQ",
                 scale=1.0,
-                label=r"Scattering vector $q$ ($nm^{-1}$)")
+                label=r"Scattering vector $q$ ($nm^{-1}$)",
+                equation=eq_q)
 
 Q_A = Enum(REPR="q_A^-1",
            center="qArray",
            corner="cornerQArray",
            delta="deltaQ",
            scale=0.1,
-           label=r"Scattering vector $q$ ($\AA ^{-1}$)")
+           label=r"Scattering vector $q$ ($\AA ^{-1}$)",
+           equation=eq_q)
+
 RecD2_A = Enum(REPR="d*2_A^-2",
                center="rd2Array",
                corner="cornerRd2Array",
                delta="deltaRd2",
                scale=0.01,
-               label=r"Reciprocal spacing squared $d^{*2}$ ($\AA ^{-2}$)")
+               label=r"Reciprocal spacing squared $d^{*2}$ ($\AA ^{-2}$)",
+               equation=eq_rd2)
+
 RecD2_NM = Enum(REPR="d*2_nm^-2",
                 center="rd2Array",
                 corner="cornerRd2Array",
                 delta="deltaRd2",
                 scale=1.0,
-                label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)")
+                label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)",
+                equation=eq_rd2)
+
 R = R_MM = Enum(REPR="r_mm",
                 center="rArray",
                 corner="cornerRArray",
                 delta="deltaR",
                 scale=1000.0,
-                label=r"Radius $r$ ($mm$)")
+                label=r"Radius $r$ ($mm$)",
+                equation=eq_r)
+
+R_M = Enum(REPR="r_m",
+            center="rArray",
+            corner="cornerRArray",
+            delta="deltaR",
+            scale=1,
+            label=r"Radius $r$ ($m$)",
+            equation=eq_r)
+
+LogQ_M = Enum(REPR="log(q)_m",
+            # center="rArray",
+            # corner="cornerRArray",
+            # delta="deltaR",
+            scale=1,
+            label=r"log10($q$)",
+            equation=eq_logq)
+
+
 RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, RecD2_A, RecD2_NM)
 
 l_m = Enum(REPR="m",
