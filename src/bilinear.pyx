@@ -23,25 +23,20 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "28/10/2015"
+__date__ = "18/12/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
 import numpy
 cimport numpy
-# ctypedef fused floating:
-#     cython.float
-#     cython.double
-#     numpy.float32_t
-#     numpy.float64_t
-from cython cimport floating  # float32 or float64
+from cython cimport floating
 from cython.parallel import prange
 
 import logging
 logger = logging.getLogger("pyFAI.bilinear")
 
-from .utils import timeit
+from .decorators import timeit
 
 
 @cython.boundscheck(False)

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2015"
+__date__ = "18/12/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -47,7 +47,8 @@ import json
 import threading
 import numpy
 from .gui_utils import QtGui, QtCore, Signal, uic, pyplot, update_fig
-from .utils import float_, int_, str_, get_ui_file, timeit
+from .utils import float_, int_, str_, get_ui_file
+from .decorators import timeit
 from .units import to_unit
 from .integrate_widget import AIWidget
 from .diffmap import DiffMap

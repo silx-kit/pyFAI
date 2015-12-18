@@ -35,7 +35,7 @@ if sys.version_info < (2, 6):
 
 
 from .azimuthalIntegrator import AzimuthalIntegrator
-from . import utils
+from .decorators import depreclog
 load = AzimuthalIntegrator.sload
 
 def tests(deprecation=False):
@@ -45,10 +45,10 @@ def tests(deprecation=False):
     @param deprecation: enable/disables deprecation warning in the tests
     """
     if deprecation:
-        utils.depreclog.setLevel(logging.DEBUG)
+        depreclog.setLevel(logging.DEBUG)
     else:
-        utils.depreclog.setLevel(logging.ERROR)
+        depreclog.setLevel(logging.ERROR)
     from . import test
     res = test.run_tests()
-    utils.depreclog.setLevel(logging.DEBUG)
+    depreclog.setLevel(logging.DEBUG)
     return res

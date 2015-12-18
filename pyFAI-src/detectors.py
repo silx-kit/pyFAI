@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/12/2015"
+__date__ = "18/12/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instantiate them
@@ -125,7 +125,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             logger.error(msg)
             raise RuntimeError(msg)
 
-    def __init__(self, pixel1=None, pixel2=None, splineFile=None):
+    def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
         @type pixel1: float
@@ -133,6 +133,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         @type pixel2: float
         @param splineFile: path to file containing the geometric correction.
         @type splineFile: str
+        @param max_shape: maximum size of the detector
+        @type max_shape: 2-tuple of integrers
         """
         self._pixel1 = None
         self._pixel2 = None
@@ -145,7 +147,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if "MAX_SHAPE" in dir(self.__class__):
             self.max_shape = tuple(self.MAX_SHAPE)
         else:
-            self.max_shape = None
+            self.max_shape = max_shape
         self.shape = self.max_shape
         self._binning = (1, 1)
         self._mask = False

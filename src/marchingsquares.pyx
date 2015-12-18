@@ -30,7 +30,7 @@ Cythonized version of the marching square function for "isocontour" plot
 """
 __authors__ = ["Almar Klein", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/10/2014"
+__date__ = "18/12/2015"
 __status__ = "stable"
 __license__ = "BSD-3 clauses"
 
@@ -42,7 +42,7 @@ import cython
 from libc.math cimport M_PI, sin, floor, fabs
 cdef double epsilon = numpy.finfo(numpy.float64).eps
 from cython.view cimport array as cvarray
-from .utils import timeit
+from .decorators import timeit
 
 cdef numpy.int8_t[:, :] EDGETORELATIVEPOSX = numpy.array([[0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], dtype=numpy.int8)
 cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)

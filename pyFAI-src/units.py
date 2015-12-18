@@ -31,6 +31,7 @@ __docformat__ = 'restructuredtext'
 
 import logging
 logger = logging.getLogger("pyFAI.unit")
+import numpy
 from numpy import pi
 
 try:
@@ -81,7 +82,7 @@ def eq_2th(x, y, z, wavelength=None):
     :param z: distance from sample along the beam
     :param wavelength: in meter
     """
-    return numpy.arcan2(eq_r(x, y), z)
+    return numpy.arctan2(eq_r(x, y), z)
 
 
 def eq_q(x, y, z, wavelength):
@@ -92,7 +93,7 @@ def eq_q(x, y, z, wavelength):
     :param z: distance from sample along the beam
     :param wavelength: in meter
     """
-    return 4.0 * pi * 1e-9 * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
+    return 4.0 * numpy.pi * 1e-9 * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
 
 def eq_rd2(x, y, z, wavelength):
@@ -121,7 +122,7 @@ TTH_DEG = TTH = Enum(REPR="2th_deg",
                      corner="cornerArray",
                      center="twoThetaArray",
                      delta="delta2Theta",
-                     scale=180.0 / pi,
+                     scale=180.0 / numpy.pi,
                      label=r"Scattering angle $2\theta$ ($^{o}$)",
                      equation=eq_2th)
 
@@ -181,7 +182,7 @@ R_M = Enum(REPR="r_m",
             label=r"Radius $r$ ($m$)",
             equation=eq_r)
 
-LogQ_M = Enum(REPR="log(q)_m",
+LogQ = Enum(REPR="log(q)_m",
             # center="rArray",
             # corner="cornerRArray",
             # delta="deltaR",
@@ -190,7 +191,7 @@ LogQ_M = Enum(REPR="log(q)_m",
             equation=eq_logq)
 
 
-RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, RecD2_A, RecD2_NM)
+RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, R_M, RecD2_A, RecD2_NM, LogQ)
 
 l_m = Enum(REPR="m",
            scale=1.,

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "18/12/2015"
 __status__ = "production"
 
 import logging
@@ -69,8 +69,6 @@ from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
-timelog = logging.getLogger("pyFAI.timeit")
-depreclog = logging.getLogger("DEPRECATION")
 
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
@@ -88,17 +86,6 @@ except (ImportError, WindowsError) as err:
 
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
-import traceback
-
-def deprecated(func):
-    def wrapper(*arg, **kw):
-        """
-        decorator that deprecates the use of a function
-        """
-        name = func.func_name if sys.version_info[0] < 3 else func.__name__
-        depreclog.warning("%s is Deprecated !!! %s" % (name, os.linesep.join([""] + traceback.format_stack()[:-1])))
-        return func(*arg, **kw)
-    return wrapper
 
 
 StringTypes = (six.binary_type, six.text_type)
@@ -171,21 +158,6 @@ def str_(val):
             # Python2 specific...
             s = unicode(val)
     return s
-
-
-def timeit(func):
-    def wrapper(*arg, **kw):
-        '''This is the docstring of timeit:
-        a decorator that logs the execution time'''
-        t1 = time.time()
-        res = func(*arg, **kw)
-        t2 = time.time()
-        name = func.func_name if sys.version_info[0] < 3 else func.__name__
-        timelog.warning("%s took %.3fs" % (name, t2 - t1))
-        return res
-    wrapper.__name__ = func.__name__
-    wrapper.__doc__ = func.__doc__
-    return wrapper
 
 
 def expand2d(vect, size2, vertical=True):

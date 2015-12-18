@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2015"
+__date__ = "18/12/2015"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -138,8 +138,8 @@ class UtilsTest(object):
                 logger.warning("Remove build and start from scratch %s" % error)
                 sys.argv.append("-r")
         else:
-            import pyFAI.utils
-            pyFAI.utils.depreclog.setLevel(logging.ERROR)
+            import pyFAI.decorators
+            pyFAI.decorators.depreclog.setLevel(logging.ERROR)
     else:
         image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, login))
         if not os.path.exists(image_home):
@@ -176,8 +176,8 @@ class UtilsTest(object):
         logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
-        import pyFAI.utils
-        pyFAI.utils.depreclog.setLevel(logging.ERROR)
+        import pyFAI.decorators
+        pyFAI.decorators.depreclog.setLevel(logging.ERROR)
         return cls.pyFAI
 
     @classmethod

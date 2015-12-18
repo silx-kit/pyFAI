@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2015"
+__date__ = "18/12/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -40,6 +40,7 @@ import types
 
 from . import detectors
 from . import units
+from .decorators import deprecated
 try:
     import six
 except ImportError:
@@ -214,10 +215,11 @@ class Geometry(object):
         self._dra = None
         self._rd2a = None
         self._drd2a = None
-        self._corner4Da = None
-        self._corner4Dqa = None
-        self._corner4Dra = None
-        self._corner4Drd2a = None
+        self._corner4Da = None  # actual 4d corner array
+        self._corner4Ds = None  # space for the corner array, 2th, q, r, ...
+#         self._corner4Dqa = None
+#         self._corner4Dra = None
+#         self._corner4Drd2a = None
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -586,7 +588,9 @@ class Geometry(object):
     def chiArray(self, shape):
         """
         Generate an array of the given shape with chi(i,j) (azimuthal
-        angle) for all elements.
+        angle) for all elements. 
+        
+        Nota: Refers to the pixel centers !
 
         @param shape: the shape of the chi array
         @type shape: ndarray.shape
@@ -599,112 +603,6 @@ class Geometry(object):
             if not self.chiDiscAtPi:
                 self._chia = self._chia % (2.0 * numpy.pi)
         return self._chia
-
-    def cornerArray(self, shape):
-        """
-        Generate a 3D array of the given shape with (i,j) (radial
-        angle 2th, azimuthal angle chi ) for all elements.
-
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are (radial angle 2th, azimuthal angle chi)
-        """
-        if self._corner4Da is None:
-            with self._sem:
-                if self._corner4Da is None:
-                    chi = numpy.fromfunction(self.chi_corner,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    tth = numpy.fromfunction(self.tth_corner,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    if bilinear:
-                        corners = bilinear.convert_corner_2D_to_4D(2, tth, chi)
-                    else:
-                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                  dtype=numpy.float32)
-                        corners[:, :, 0, 0] = tth[:-1, :-1]
-                        corners[:, :, 0, 1] = chi[:-1, :-1]
-                        corners[:, :, 1, 0] = tth[1:, :-1]
-                        corners[:, :, 1, 1] = chi[1:, :-1]
-                        corners[:, :, 2, 0] = tth[1:, 1:]
-                        corners[:, :, 2, 1] = chi[1:, 1:]
-                        corners[:, :, 3, 0] = tth[:-1, 1:]
-                        corners[:, :, 3, 1] = chi[:-1, 1:]
-                    self._corner4Da = corners
-        return self._corner4Da
-
-    def cornerQArray(self, shape):
-        """
-        Generate a 3D array of the given shape with (i,j) (azimuthal
-        angle) for all elements.
-
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
-        """
-        if self._corner4Dqa is None:
-            with self._sem:
-                if self._corner4Dqa is None:
-                    self._corner4Dqa = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                   dtype=numpy.float32)
-                    qar = numpy.fromfunction(self.qCornerFunct,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    chi = numpy.fromfunction(self.chi_corner,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    if bilinear:
-                        corners = bilinear.convert_corner_2D_to_4D(2, qar, chi)
-                    else:
-                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                  dtype=numpy.float32)
-                        corners[:, :, 0, 0] = qar[:-1, :-1]
-                        corners[:, :, 0, 1] = chi[:-1, :-1]
-                        corners[:, :, 1, 0] = qar[1:, :-1]
-                        corners[:, :, 1, 1] = chi[1:, :-1]
-                        corners[:, :, 2, 0] = qar[1:, 1:]
-                        corners[:, :, 2, 1] = chi[1:, 1:]
-                        corners[:, :, 3, 0] = qar[:-1, 1:]
-                        corners[:, :, 3, 1] = chi[:-1, 1:]
-                    self._corner4Dqa = corners
-        return self._corner4Dqa
-
-    def cornerRArray(self, shape):
-        """
-        Generate a 3D array of the given shape with (i,j) (azimuthal
-        angle) for all elements.
-
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
-        """
-        if self._corner4Dra is None:
-            with self._sem:
-                if self._corner4Dra is None:
-                    self._corner4Dra = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                   dtype=numpy.float32)
-                    rar = numpy.fromfunction(self.rCornerFunct,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    chi = numpy.fromfunction(self.chi_corner,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    if bilinear:
-                        corners = bilinear.convert_corner_2D_to_4D(2, rar, chi)
-                    else:
-                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                  dtype=numpy.float32)
-                        corners[:, :, 0, 0] = rar[:-1, :-1]
-                        corners[:, :, 0, 1] = chi[:-1, :-1]
-                        corners[:, :, 1, 0] = rar[1:, :-1]
-                        corners[:, :, 1, 1] = chi[1:, :-1]
-                        corners[:, :, 2, 0] = rar[1:, 1:]
-                        corners[:, :, 2, 1] = chi[1:, 1:]
-                        corners[:, :, 3, 0] = rar[:-1, 1:]
-                        corners[:, :, 3, 1] = chi[:-1, 1:]
-                    self._corner4Dra = corners
-        return self._corner4Dra
 
     def positionArray(self, shape=None, corners=False):
         """Generate an array for the pixel position 
@@ -739,6 +637,155 @@ class Geometry(object):
             tpos[..., idx] = pos[idx]
         return tpos
 
+
+    def corner_array(self, shape, unit="2th", use_cython=False):
+        """
+        Generate a 3D array of the given shape with (i,j) (radial
+        angle 2th, azimuthal angle chi ) for all elements.
+
+        @param shape: expected shape
+        @type shape: 2-tuple of integer
+        @return: 3d array with shape=(*shape,4,2) the two elements are:
+           * dim3[0]: radial angle 2th
+           * dim3[1]: azimuthal angle chi
+        """
+        if unit:
+            unit = units.to_unit(unit)
+            space = unit.REPR.split("_")[0]
+        else:
+            unit = None
+            space = None
+            if (self._corner4Da is not None) and (shape == self._corner4Da.shape[:2]):
+                return self._corner4Da
+        if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
+            with self._sem:
+                if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
+                    if use_cython and space == "2th":
+                        raise NotImplemented
+                        self._corner4Da = _geometry.towrite()
+                    elif use_cython and space == "q":
+                        raise NotImplemented
+                        self._corner4Da = _geometry.towrite()
+                    elif use_cython and space == "r":
+                        raise NotImplemented
+                        self._corner4Da = _geometry.towrite()
+                    elif use_cython and space == "log(q)":
+                        raise NotImplemented
+                        self._corner4Da = _geometry.towrite()
+                    elif use_cython and space == "d*2":
+                        raise NotImplemented
+                        self._corner4Da = _geometry.towrite()
+                    else:
+                        pos = self.positionArray(shape, corners=True)
+                        x = pos[..., 2]
+                        y = pos[..., 1]
+                        z = pos[..., 0]
+                        chi = numpy.arctan2(y, x)
+                        self._corner4Da = numpy.zeros((shape[0], shape[1], 4, 2),
+                                                       dtype=numpy.float32)
+                        if chi.shape[:2] == shape:
+                            self._corner4Da[..., 1] = chi
+                        else:
+                            self._corner4Da[:shape[0], :shape[1], :, 1] = chi[:shape[0], :shape[1], :]
+                        if space is not None:
+                            rad = unit.equation(x, y, z, self._wavelength)
+                            if rad.shape[:2] == shape:
+                                self._corner4Da[..., 0] = rad
+                            else:
+                                self._corner4Da[:shape[0], :shape[1], :, 0] = rad[:shape[0], :shape[1], :]
+
+                    self._corner4Ds = space
+        return self._corner4Da
+
+    @deprecated
+    def cornerArray(self, shape):
+        """Generate a 4D array of the given shape with (i,j) (radial
+        angle 2th, azimuthal angle chi ) for all elements.
+
+        @param shape: expected shape
+        @type shape: 2-tuple of integer
+        @return: 3d array with shape=(*shape,4,2) the two elements are:
+           * dim3[0]: radial angle 2th
+           * dim3[1]: azimuthal angle chi
+        """
+        return self.corner_array(shape, unit=units.TTH_RAD)
+
+    @deprecated
+    def cornerQArray(self, shape):
+        """
+        Generate a 3D array of the given shape with (i,j) (azimuthal
+        angle) for all elements.
+
+        @param shape: expected shape
+        @type shape: 2-tuple of integer
+        @return: 3d array with shape=(*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
+        """
+        return self.corner_array(shape, unit=units.Q, use_cython=False)
+#         if self._corner4Dqa is None:
+#             with self._sem:
+#                 if self._corner4Dqa is None:
+#                     self._corner4Dqa = numpy.zeros((shape[0], shape[1], 4, 2),
+#                                                    dtype=numpy.float32)
+#                     qar = numpy.fromfunction(self.qCornerFunct,
+#                                              (shape[0] + 1, shape[1] + 1),
+#                                              dtype=numpy.float32)
+#                     chi = numpy.fromfunction(self.chi_corner,
+#                                              (shape[0] + 1, shape[1] + 1),
+#                                              dtype=numpy.float32)
+#                     if bilinear:
+#                         corners = bilinear.convert_corner_2D_to_4D(2, qar, chi)
+#                     else:
+#                         corners = numpy.zeros((shape[0], shape[1], 4, 2),
+#                                                   dtype=numpy.float32)
+#                         corners[:, :, 0, 0] = qar[:-1, :-1]
+#                         corners[:, :, 0, 1] = chi[:-1, :-1]
+#                         corners[:, :, 1, 0] = qar[1:, :-1]
+#                         corners[:, :, 1, 1] = chi[1:, :-1]
+#                         corners[:, :, 2, 0] = qar[1:, 1:]
+#                         corners[:, :, 2, 1] = chi[1:, 1:]
+#                         corners[:, :, 3, 0] = qar[:-1, 1:]
+#                         corners[:, :, 3, 1] = chi[:-1, 1:]
+#                     self._corner4Dqa = corners
+#         return self._corner4Dqa
+    @deprecated
+    def cornerRArray(self, shape):
+        """
+        Generate a 3D array of the given shape with (i,j) (azimuthal
+        angle) for all elements.
+
+        @param shape: expected shape
+        @type shape: 2-tuple of integer
+        @return: 3d array with shape=(*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
+        """
+        return self.corner_array(shape, unit=units.R, use_cython=False)
+#         if self._corner4Dra is None:
+#             with self._sem:
+#                 if self._corner4Dra is None:
+#                     self._corner4Dra = numpy.zeros((shape[0], shape[1], 4, 2),
+#                                                    dtype=numpy.float32)
+#                     rar = numpy.fromfunction(self.rCornerFunct,
+#                                              (shape[0] + 1, shape[1] + 1),
+#                                              dtype=numpy.float32)
+#                     chi = numpy.fromfunction(self.chi_corner,
+#                                              (shape[0] + 1, shape[1] + 1),
+#                                              dtype=numpy.float32)
+#                     if bilinear:
+#                         corners = bilinear.convert_corner_2D_to_4D(2, rar, chi)
+#                     else:
+#                         corners = numpy.zeros((shape[0], shape[1], 4, 2),
+#                                                   dtype=numpy.float32)
+#                         corners[:, :, 0, 0] = rar[:-1, :-1]
+#                         corners[:, :, 0, 1] = chi[:-1, :-1]
+#                         corners[:, :, 1, 0] = rar[1:, :-1]
+#                         corners[:, :, 1, 1] = chi[1:, :-1]
+#                         corners[:, :, 2, 0] = rar[1:, 1:]
+#                         corners[:, :, 2, 1] = chi[1:, 1:]
+#                         corners[:, :, 3, 0] = rar[:-1, 1:]
+#                         corners[:, :, 3, 1] = chi[:-1, 1:]
+#                     self._corner4Dra = corners
+#         return self._corner4Dra
+
+#     @deprecated
     def cornerRd2Array(self, shape):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal
@@ -748,33 +795,34 @@ class Geometry(object):
         @type shape: 2-tuple of integer
         @return: 3d array with shape=(*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
         """
-        if self._corner4Drd2a is None:
-            with self._sem:
-                if self._corner4Drd2a is None:
-                    self._corner4Drd2a = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                   dtype=numpy.float32)
-                    qar = numpy.fromfunction(self.qCornerFunct,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    chi = numpy.fromfunction(self.chi_corner,
-                                             (shape[0] + 1, shape[1] + 1),
-                                             dtype=numpy.float32)
-                    rd2 = (qar / (2.0 * numpy.pi)) ** 2
-                    if bilinear:
-                        corners = bilinear.convert_corner_2D_to_4D(2, rd2, chi)
-                    else:
-                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                  dtype=numpy.float32)
-                        corners[:, :, 0, 0] = rd2[:-1, :-1]
-                        corners[:, :, 0, 1] = chi[:-1, :-1]
-                        corners[:, :, 1, 0] = rd2[1:, :-1]
-                        corners[:, :, 1, 1] = chi[1:, :-1]
-                        corners[:, :, 2, 0] = rd2[1:, 1:]
-                        corners[:, :, 2, 1] = chi[1:, 1:]
-                        corners[:, :, 3, 0] = rd2[:-1, 1:]
-                        corners[:, :, 3, 1] = chi[:-1, 1:]
-                    self._corner4Drd2a = corners
-        return self._corner4Drd2a
+        return self.corner_array(shape, unit=units.RecD2_NM)
+#         if self._corner4Drd2a is None:
+#             with self._sem:
+#                 if self._corner4Drd2a is None:
+#                     self._corner4Drd2a = numpy.zeros((shape[0], shape[1], 4, 2),
+#                                                    dtype=numpy.float32)
+#                     qar = numpy.fromfunction(self.qCornerFunct,
+#                                              (shape[0] + 1, shape[1] + 1),
+#                                              dtype=numpy.float32)
+#                     chi = numpy.fromfunction(self.chi_corner,
+#                                              (shape[0] + 1, shape[1] + 1),
+#                                              dtype=numpy.float32)
+#                     rd2 = (qar / (2.0 * numpy.pi)) ** 2
+#                     if bilinear:
+#                         corners = bilinear.convert_corner_2D_to_4D(2, rd2, chi)
+#                     else:
+#                         corners = numpy.zeros((shape[0], shape[1], 4, 2),
+#                                                   dtype=numpy.float32)
+#                         corners[:, :, 0, 0] = rd2[:-1, :-1]
+#                         corners[:, :, 0, 1] = chi[:-1, :-1]
+#                         corners[:, :, 1, 0] = rd2[1:, :-1]
+#                         corners[:, :, 1, 1] = chi[1:, :-1]
+#                         corners[:, :, 2, 0] = rd2[1:, 1:]
+#                         corners[:, :, 2, 1] = chi[1:, 1:]
+#                         corners[:, :, 3, 0] = rd2[:-1, 1:]
+#                         corners[:, :, 3, 1] = chi[:-1, 1:]
+#                     self._corner4Drd2a = corners
+#         return self._corner4Drd2a
 
     def delta2Theta(self, shape):
         """
@@ -784,23 +832,30 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
         """
-        center = self.twoThetaArray(shape)
+
         if self._dttha is None:
+            center = self.twoThetaArray(shape)
+            corners = self.corner_array(shape, unit=units.TTH)
             with self._sem:
                 if self._dttha is None:
-                    if self._corner4Da is not None\
-                            and self._corner4Da.shape[:2] == tuple(shape):
-                        delta = abs(self._corner4Da[:, :, :, 0] - numpy.atleast_3d(center))
-                    else:
-                        tth_corner = numpy.fromfunction(self.tth_corner,
-                            (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
-                        delta = numpy.zeros([shape[0], shape[1], 4],
-                                        dtype=numpy.float32)
-                        delta[:, :, 0] = abs(tth_corner[:-1, :-1] - center)
-                        delta[:, :, 1] = abs(tth_corner[1:, :-1] - center)
-                        delta[:, :, 2] = abs(tth_corner[1:, 1:] - center)
-                        delta[:, :, 3] = abs(tth_corner[:-1, 1:] - center)
-                    self._dttha = delta.max(axis=2)
+                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
+                    self._dttha = delta.max(axis=-1)
+#
+#             with self._sem:
+#                 if self._dttha is None:
+#                     if self._corner4Da is not None\
+#                             and self._corner4Da.shape[:2] == tuple(shape):
+#                         delta = abs(self._corner4Da[:, :, :, 0] - numpy.atleast_3d(center))
+#                     else:
+#                         tth_corner = numpy.fromfunction(self.tth_corner,
+#                             (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+#                         delta = numpy.zeros([shape[0], shape[1], 4],
+#                                         dtype=numpy.float32)
+#                         delta[:, :, 0] = abs(tth_corner[:-1, :-1] - center)
+#                         delta[:, :, 1] = abs(tth_corner[1:, :-1] - center)
+#                         delta[:, :, 2] = abs(tth_corner[1:, 1:] - center)
+#                         delta[:, :, 3] = abs(tth_corner[:-1, 1:] - center)
+#                     self._dttha = delta.max(axis=2)
         return self._dttha
 
     def deltaChi(self, shape):
@@ -811,46 +866,45 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
         """
-        center = numpy.atleast_3d(self.chiArray(shape))
         if self._dchia is None:
+            center = numpy.atleast_3d(self.chiArray(shape))
+            corner = self.corner_array(shape, None)
             with self._sem:
                 if self._dchia is None:
                     twoPi = 2.0 * numpy.pi
-                    if self._corner4Da is not None\
-                            and self._corner4Da.shape[:2] == tuple(shape):
-                        delta = numpy.minimum(((self._corner4Da[:, :, :, 1] - center) % twoPi),
-                                              ((center - self._corner4Da[:, :, :, 1]) % twoPi))
-                    elif self._corner4Dqa is not None\
-                            and self._corner4Dqa.shape[:2] == tuple(shape):
-                        delta = numpy.minimum(((self._corner4Dqa[:, :, :, 1] - center) % twoPi),
-                                              ((center - self._corner4Dqa[:, :, :, 1]) % twoPi))
-                    elif self._corner4Dra is not None\
-                            and self._corner4Dra.shape[:2] == tuple(shape):
-                        delta = numpy.minimum(((self._corner4Dra[:, :, i, 1] - center) % twoPi),
-                                          ((center - self._corner4Dra[:, :, :, 1]) % twoPi))
-                    elif self._corner4Drd2a is not None\
-                            and self._corner4Drd2a.shape[:2] == tuple(shape):
-                        delta = numpy.minimum(((self._corner4Drd2a[:, :, i, 1] - center) % twoPi),
-                                          ((center - self._corner4Drd2a[:, :, :, 1]) % twoPi))
-                    else:
-                        chi_corner = numpy.fromfunction(self.chi_corner,
-                                               (shape[0] + 1, shape[1] + 1),
-                                               dtype=numpy.float32)
-                        delta = numpy.zeros([shape[0], shape[1], 4],
-                                        dtype=numpy.float32)
-                        chi_center = center.reshape(shape)
-                        delta[:, :, 0] = \
-                            numpy.minimum(((chi_corner[:-1, :-1] - chi_center) % twoPi),
-                                          ((chi_center - chi_corner[:-1, :-1]) % twoPi))
-                        delta[:, :, 1] = \
-                            numpy.minimum(((chi_corner[1: , :-1] - chi_center) % twoPi),
-                                          ((chi_center - chi_corner[1: , :-1]) % twoPi))
-                        delta[:, :, 2] = \
-                            numpy.minimum(((chi_corner[1: , 1: ] - chi_center) % twoPi),
-                                          ((chi_center - chi_corner[1: , 1: ]) % twoPi))
-                        delta[:, :, 3] = \
-                            numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
-                                          ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
+                    delta = numpy.minimum(((corner[:, :, :, 1] - center) % twoPi),
+                                          ((center - corner[:, :, :, 1]) % twoPi))
+#                     elif self._corner4Dqa is not None\
+#                             and self._corner4Dqa.shape[:2] == tuple(shape):
+#                         delta = numpy.minimum(((self._corner4Dqa[:, :, :, 1] - center) % twoPi),
+#                                               ((center - self._corner4Dqa[:, :, :, 1]) % twoPi))
+#                     elif self._corner4Dra is not None\
+#                             and self._corner4Dra.shape[:2] == tuple(shape):
+#                         delta = numpy.minimum(((self._corner4Dra[:, :, i, 1] - center) % twoPi),
+#                                           ((center - self._corner4Dra[:, :, :, 1]) % twoPi))
+#                     elif self._corner4Drd2a is not None\
+#                             and self._corner4Drd2a.shape[:2] == tuple(shape):
+#                         delta = numpy.minimum(((self._corner4Drd2a[:, :, i, 1] - center) % twoPi),
+#                                           ((center - self._corner4Drd2a[:, :, :, 1]) % twoPi))
+#                     else:
+#                         chi_corner = numpy.fromfunction(self.chi_corner,
+#                                                (shape[0] + 1, shape[1] + 1),
+#                                                dtype=numpy.float32)
+#                         delta = numpy.zeros([shape[0], shape[1], 4],
+#                                         dtype=numpy.float32)
+#                         chi_center = center.reshape(shape)
+#                         delta[:, :, 0] = \
+#                             numpy.minimum(((chi_corner[:-1, :-1] - chi_center) % twoPi),
+#                                           ((chi_center - chi_corner[:-1, :-1]) % twoPi))
+#                         delta[:, :, 1] = \
+#                             numpy.minimum(((chi_corner[1: , :-1] - chi_center) % twoPi),
+#                                           ((chi_center - chi_corner[1: , :-1]) % twoPi))
+#                         delta[:, :, 2] = \
+#                             numpy.minimum(((chi_corner[1: , 1: ] - chi_center) % twoPi),
+#                                           ((chi_center - chi_corner[1: , 1: ]) % twoPi))
+#                         delta[:, :, 3] = \
+#                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
+#                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
                     self._dchia = delta.max(axis=-1)
         return self._dchia
 
@@ -863,25 +917,12 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        center = self.qArray(shape)
         if self._dqa is None:
+            center = self.qArray(shape)
+            corners = self.corner_array(shape, unit=units.R)
             with self._sem:
                 if self._dqa is None:
-
-                    if self._corner4Dqa is not None\
-                            and self._corner4Dqa.shape[:2] == tuple(shape):
-
-                        delta = abs(self._corner4Dqa[:, :, :, 0] - numpy.atleast_3d(center))
-                    else:
-                        corner = numpy.fromfunction(self.qCornerFunct,
-                                               (shape[0] + 1, shape[1] + 1),
-                                               dtype=numpy.float32)
-                        delta = numpy.zeros([shape[0], shape[1], 4],
-                                        dtype=numpy.float32)
-                        delta[:, :, 0] = abs(corner[:-1, :-1] - center)
-                        delta[:, :, 1] = abs(corner[1:, :-1] - center)
-                        delta[:, :, 2] = abs(corner[1:, 1:] - center)
-                        delta[:, :, 3] = abs(corner[:-1, 1:] - center)
+                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
                     self._dqa = delta.max(axis=-1)
         return self._dqa
 
@@ -893,23 +934,12 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        center = self.rArray(shape)
         if self._dra is None:
+            center = self.rArray(shape)
+            corners = self.corner_array(shape, unit=units.R)
             with self._sem:
                 if self._dra is None:
-                    if self._corner4Dra is not None\
-                            and self._corner4Dra.shape[:2] == tuple(shape):
-                        delta = abs(self._corner4Dra[:, :, :, 0] - numpy.atleast_3d(center))
-                    else:
-                        corners = numpy.fromfunction(self.rCornerFunct,
-                                            (shape[0] + 1, shape[1] + 1),
-                                            dtype=numpy.float32)
-                        delta = numpy.zeros([shape[0], shape[1], 4],
-                                            dtype=numpy.float32)
-                        delta[:, :, 0] = abs(corners[:-1, :-1] - center)
-                        delta[:, :, 1] = abs(corners[1:, :-1] - center)
-                        delta[:, :, 2] = abs(corners[1:, 1:] - center)
-                        delta[:, :, 3] = abs(corners[:-1, 1:] - center)
+                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
                     self._dra = delta.max(axis=-1)
         return self._dra
 
@@ -922,27 +952,9 @@ class Geometry(object):
         @return: array 2D containing the max delta (d*)^2 between a pixel center and any corner in reciprocal spacing squarred (1/nm^2)
         """
         center = self.rd2Array(shape)
-        if self._drd2a is None:
-            with self._sem:
-                if self._drd2a is None:
-                    if self._corner4Drd2a is not None\
-                            and self._corner4Drd2a.shape[:2] == tuple(shape):
-                        delta = abs(self._corner4Drd2a[:, :, :, 0] - numpy.atleast_3d(center))
-                    else:
-                        q = numpy.fromfunction(self.qCornerFunct,
-                                               (shape[0] + 1, shape[1] + 1),
-                                               dtype=numpy.float32)
-                        corners = (q / (2.0 * numpy.pi)) ** 2
-                        delta = numpy.zeros([shape[0], shape[1], 4],
-                                        dtype=numpy.float32)
-                        delta[:, :, 0] = abs(corners[:-1, :-1] - center)
-                        delta[:, :, 1] = abs(corners[1:, :-1] - center)
-                        delta[:, :, 2] = abs(corners[1:, 1:] - center)
-                        delta[:, :, 3] = abs(corners[:-1, 1:] - center)
-#                         print("delta")
-#                         print(delta)
-                    self._dra = delta.max(axis=-1)
-        return self._dra
+        corners = self.corner_array(shape, unit=units.RecD2_NM)
+        delta = abs(corners[..., 0] - numpy.atleast_3d(center)).max(axis=-1)
+        return delta
 
     def cosIncidance(self, d1, d2, path="cython"):
         """
@@ -1389,24 +1401,28 @@ class Geometry(object):
         Set the position of the discontinuity of the chi axis between
         0 and 2pi.  By default it is between pi and -pi
         """
-        self.chiDiscAtPi = False
-        self._chia = None
-        self._corner4Da = None
-        self._corner4Dqa = None
-        self._corner4Dra = None
-        self._corner4Drd2a = None
+        with self._sem:
+            self.chiDiscAtPi = False
+            self._chia = None
+            self._corner4Da = None
+            self._corner4Ds = None
+#             self._corner4Dqa = None
+#             self._corner4Dra = None
+#             self._corner4Drd2a = None
 
     def setChiDiscAtPi(self):
         """
         Set the position of the discontinuity of the chi axis between
         -pi and +pi.  This is the default behavour
         """
-        self.chiDiscAtPi = True
-        self._chia = None
-        self._corner4Da = None
-        self._corner4Dqa = None
-        self._corner4Dra = None
-        self._corner4Drd2a = None
+        with self._sem:
+            self.chiDiscAtPi = True
+            self._chia = None
+            self._corner4Da = None
+            self._corner4Ds = None
+#             self._corner4Dqa = None
+#             self._corner4Dra = None
+#             self._corner4Drd2a = None
 
     def setOversampling(self, iOversampling):
         """
@@ -1551,9 +1567,10 @@ class Geometry(object):
         self._rd2a = None
         self._drd2a = None
         self._corner4Da = None
-        self._corner4Dqa = None
-        self._corner4Dra = None
-        self._corner4Drd2a = None
+        self._corner4Ds = None
+#         self._corner4Dqa = None
+#         self._corner4Dra = None
+#         self._corner4Drd2a = None
         self._polarization = None
         self._polarization_factor = None
         self._transmission_normal = None
@@ -1623,10 +1640,11 @@ class Geometry(object):
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
                      '_polarization_factor', '_polarization_axis_offset',
-                     '_polarization_crc', '_transmission_crc', '_transmission_normal']
+                     '_polarization_crc', '_transmission_crc', '_transmission_normal',
+                     "_corner4Ds"]
         array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
                  "_ra", "_dra", "_rd2a", "_drd2a",
-                 "_corner4Da", "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
+                 "_corner4Da",  # "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1645,10 +1663,11 @@ class Geometry(object):
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
                      '_polarization_factor', '_polarization_axis_offset',
-                     '_polarization_crc', '_transmission_crc', '_transmission_normal']
+                     '_polarization_crc', '_transmission_crc', '_transmission_normal',
+                     "_corner4Ds"]
         array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
                  "_ra", "_dra", "_rd2a", "_drd2a",
-                 "_corner4Da", "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
+                 "_corner4Da",  # "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1757,7 +1776,10 @@ class Geometry(object):
             self._wavelength = float(value)
         self._qa = None
         self._dqa = None
-        self._corner4Dqa = None
+        if self._corner4Ds and ("d" in  self._corner4Ds or "q" in  self._corner4Ds):
+            self._corner4Da = None
+            self._corner4Ds = None
+
 
     def get_wavelength(self):
         if self._wavelength is None:

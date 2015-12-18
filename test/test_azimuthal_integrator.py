@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "18/12/2015"
 
 
 import unittest
@@ -51,6 +51,7 @@ from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.detectors import Detector
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 tmp_dir = UtilsTest.tempdir
@@ -249,8 +250,10 @@ class TestFlatimage(unittest.TestCase):
     epsilon = 1e-4
 
     def test_splitPixel(self):
-        data = numpy.ones((2000, 2000), dtype="float64")
-        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, pixel1=1e-5, pixel2=1e-5)
+        shape = (2000, 2001)
+        data = numpy.ones(shape, dtype="float64")
+        det = Detector(1e-5, 1e-5, max_shape=(2000, 2001))
+        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
         I = ai.xrpd2_splitPixel(data, 2048, 2048, correctSolidAngle=False, dummy=-1.0)[0]
 #        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 

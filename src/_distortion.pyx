@@ -24,7 +24,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "26/10/2015"
+__date__ = "18/12/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,7 +44,8 @@ import sys
 import time
 logger = logging.getLogger("pyFAI._distortion")
 from .detectors import detector_factory
-from .utils import timeit, expand2d
+from .utils import expand2d
+from .decorators import timeit
 try:
     import six
 except ImportError:

@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/09/2015"
+__date__ = "18/12/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -36,7 +36,7 @@ cimport numpy
 import sys 
 import logging
 logger = logging.getLogger("pyFAI.watershed") 
-from .utils import timeit
+from .decorators import timeit
 from cython.parallel import prange
 
 include "numpy_common.pxi"

@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "18/12/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -40,7 +40,8 @@ from math import pi
 from .azimuthalIntegrator import AzimuthalIntegrator
 from . import units
 from . import utils
-from .utils import StringTypes, deprecated, EPS32
+from .utils import StringTypes, EPS32
+from .decorators import deprecated
 import fabio
 import threading
 import numpy

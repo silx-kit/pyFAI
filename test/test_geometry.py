@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2015"
+__date__ = "18/12/2015"
 
 
 import unittest
@@ -187,8 +187,7 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         from pyFAI.detectors import Detector
         self.shape = (50, 49)
         size = (50, 60)
-        det = Detector(*size)
-        det.max_shape = self.shape
+        det = Detector(*size, max_shape=self.shape)
         self.geo = geometry.Geometry(detector=det, wavelength=1e-10)
 
     def tearDown(self):
