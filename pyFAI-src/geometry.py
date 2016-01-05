@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "23/12/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -302,9 +302,9 @@ class Geometry(object):
 
     def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None, corners=False):
         """
-        Allows you to calculate the position of a set of points in space in the 
-        sample's centers referential. 
-        This is usually used for calculating the pixel position in space. 
+        Allows you to calculate the position of a set of points in space in the
+        sample's centers referential.
+        This is usually used for calculating the pixel position in space.
 
 
         @param d0: altitude on the point compared to the detector (i.e. z), may be None
@@ -588,8 +588,8 @@ class Geometry(object):
     def chiArray(self, shape):
         """
         Generate an array of the given shape with chi(i,j) (azimuthal
-        angle) for all elements. 
-        
+        angle) for all elements.
+
         Nota: Refers to the pixel centers !
 
         @param shape: the shape of the chi array
@@ -604,25 +604,26 @@ class Geometry(object):
                 self._chia = self._chia % (2.0 * numpy.pi)
         return self._chia
 
-    def positionArray(self, shape=None, corners=False):
-        """Generate an array for the pixel position 
+    def positionArray(self, shape=None, corners=False, dtype=numpy.float64):
+        """Generate an array for the pixel position
         given the shape of the detector.
-        
+
         if corners is False, the coordinates of the center of the pixel
         is returned in an array of shape: (shape[0], shape[1], 3)
         where the 3 coordinates are:
-        * z: along incident beam, 
-        * y: to the top/sky, 
+        * z: along incident beam,
+        * y: to the top/sky,
         * x: towards the center of the ring
-        
+
         If is True, the corner of each pixels are then returned.
         the output shape is then (shape[0], shape[1], 4, 3)
 
         @param shape: shape of the array expected
         @param corners: set to true to receive a (...,4,3) array of corner positions
-        @return: 3D coodinates as nd-array of size (...,3) or (...,3) (default) 
-        
-        Nota: this value is not cached and actually generated on demand (costly)   
+        @param dtype: output format requested
+        @return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
+
+        Nota: this value is not cached and actually generated on demand (costly)
         """
         if shape is None:
             shape = self.detector.shape
@@ -630,13 +631,12 @@ class Geometry(object):
         pos = numpy.fromfunction(lambda d1, d2:
                                     self.calc_pos_zyx(None, d1, d2, corners=corners),
                                 shape,
-                                dtype=numpy.float32)
+                                dtype=dtype)
         outshape = pos[0].shape + (3,)
-        tpos = numpy.empty(outshape, dtype=numpy.float32)
+        tpos = numpy.empty(outshape, dtype=dtype)
         for idx in range(3):
             tpos[..., idx] = pos[idx]
         return tpos
-
 
     def corner_array(self, shape, unit="2th", use_cython=False):
         """
@@ -919,7 +919,7 @@ class Geometry(object):
         """
         if self._dqa is None:
             center = self.qArray(shape)
-            corners = self.corner_array(shape, unit=units.R)
+            corners = self.corner_array(shape, unit=units.Q)
             with self._sem:
                 if self._dqa is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
