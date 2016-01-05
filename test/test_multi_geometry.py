@@ -33,11 +33,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "05/01/2016"
 
 import os
 import sys
-import time
 import unittest
 import logging
 if sys.version_info[0] > 2:
@@ -99,7 +98,16 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e6 - I_ref).max())
-        self.assert_(delta < 5e-5, "Intensity is the same delta=%s" % delta)
+        if delta > 9e-5:
+            from matplotlib import pyplot
+            f = pyplot.figure()
+            ax = f.add_subplot(1, 1, 1)
+            ax.plot(I_obt * 1e6, label="obt")
+            ax.plot(I_ref, label="ref")
+            ax.legend()
+            f.show()
+            raw_input()
+        self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate1d_withpol(self):
         tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range,
@@ -110,7 +118,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e6 - I_ref).max())
-        self.assert_(delta < 5e-5, "Intensity is the same delta=%s" % delta)
+        self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
         ref = self.ai.integrate2d(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg", method="splitpixel", all=True)
@@ -138,8 +146,8 @@ class TestMultiGeometry(unittest.TestCase):
                 raw_input()
 
         self.assert_(delta_cnt.max() < 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
-        self.assert_(delta_sum.max() < 0.03, "pixel sum is the same delta=%s" % delta_sum.max())
-        self.assert_(delta.max() < 0.004, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
+        self.assert_(delta_sum.max() < 0.04, "pixel sum is the same delta=%s" % delta_sum.max())
+        self.assert_(delta.max() < 0.007, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
 
 
 def suite():
