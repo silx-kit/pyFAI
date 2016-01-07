@@ -1,36 +1,63 @@
 #!/usr/bin/env python
-import sys
-import os
-import logging
-package = "fabio"
+# coding: utf-8
+"""Run the tests of the project.
 
-print("Python %s %s" % (sys.version, tuple.__itemsize__ * 8))
+This script expects a suite function in <project_package>.test,
+which returns a unittest.TestSuite.
+
+Test coverage dependencies: coverage, lxml.
+"""
+
+__authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
+__date__ = "07/01/2016"
+__license__ = "MIT"
+
+import distutils.util
+import logging
+import os
+import subprocess
+import sys
+import time
+import unittest
+import resource
+try:
+    import importlib
+except:
+    importer = __import__
+else:
+    importer = importlib.import_module
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("run_tests")
+logger.setLevel(logging.INFO)
+
+logger.info("Python %s %s" % (sys.version, tuple.__itemsize__ * 8))
 
 try:
     import numpy
 except:
-    print("Numpy missing")
+    logger.warning("Numpy missing")
 else:
     print("Numpy %s" % numpy.version.version)
 
 try:
     import scipy
 except:
-    print("Scipy missing")
+    logger.warning("Scipy missing")
 else:
     print("Scipy %s" % scipy.version.version)
 
 try:
     import fabio
 except:
-    print("FabIO missing")
+    logger.warning("FabIO missing")
 else:
     print("FabIO %s" % fabio.version)
 
 try:
     import h5py
 except Exception as error:
-    print("h5py missing: %s" % error)
+    logger.warning("h5py missing: %s" % error)
 else:
     print("h5py %s" % h5py.version.version)
 
@@ -42,9 +69,37 @@ else:
     print("Cython %s" % Cython.__version__)
 
 
+class TestResult(unittest.TestResult):
+    logger = logging.getLogger("memProf")
+    logger.setLevel(logging.DEBUG)
+    logger.handlers.append(logging.FileHandler("profile.log"))
+
+    def startTest(self, test):
+        self.__mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        self.__time_start = time.time()
+        unittest.TestResult.startTest(self, test)
+
+    def stopTest(self, test):
+        unittest.TestResult.stopTest(self, test)
+        self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s" % (
+            time.time() - self.__time_start,
+            (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss -
+                self.__mem_start) / 1e3,
+            test.id()))
+
+if sys.hexversion < 34013184:  # 2.7
+    class ProfileTestRunner(unittest.TextTestRunner):
+        def _makeResult(self):
+            return TestResult()
+else:
+    class ProfileTestRunner(unittest.TextTestRunner):
+        def _makeResult(self):
+            return TestResult(stream=sys.stderr, descriptions=True, verbosity=1)
+
+
 def report_rst(cov, package="fabio", version="0.0.0", base=""):
     """
-    Generate a report of test coverage in RST (for Sphinx includion)
+    Generate a report of test coverage in RST (for Sphinx inclusion)
     
     @param cov: test coverage instance
     @return: RST string
@@ -56,7 +111,6 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
     from lxml import etree
     xml = etree.parse(fn)
     classes = xml.xpath("//class")
-    import time
     line0 = "Test coverage report for %s" % package
     res = [line0, "=" * len(line0), ""]
     res.append("Measured on *%s* version %s, %s" % (package, version, time.strftime("%d/%m/%Y")))
@@ -85,15 +139,63 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
         tot_sum_hits += sum_hits
     res.append("")
     res.append('   "%s total", "%s", "%s", "%.1f %%"' %
-               (package, tot_sum_lines, tot_sum_hits, 100.0 * tot_sum_hits / tot_sum_lines))
+               (package, tot_sum_lines, tot_sum_hits,
+                100.0 * tot_sum_hits / tot_sum_lines if tot_sum_lines else 0))
     res.append("")
     return os.linesep.join(res)
+
+
+def get_project_name(root_dir):
+    """Retrieve project name by running python setup.py --name in root_dir.
+
+    :param str root_dir: Directory where to run the command.
+    :return: The name of the project stored in root_dir
+    """
+    logger.debug("Getting project name in %s" % root_dir)
+    p = subprocess.Popen([sys.executable, "setup.py", "--name"],
+                         shell=False, cwd=root_dir, stdout=subprocess.PIPE)
+    name, stderr_data = p.communicate()
+    logger.debug("subprocess ended with rc= %s" % p.returncode)
+    return name.split()[-1].decode('ascii')
+
+
+def build_project(name, root_dir):
+    """Run python setup.py build for the project.
+
+    Build directory can be modified by environment variables.
+
+    :param str name: Name of the project.
+    :param str root_dir: Root directory of the project
+    :return: The path to the directory were build was performed
+    """
+    platform = distutils.util.get_platform()
+    architecture = "lib.%s-%i.%i" % (platform,
+                                     sys.version_info[0], sys.version_info[1])
+
+    if os.environ.get("PYBUILD_NAME") == name:
+        # we are in the debian packaging way
+        home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
+    elif os.environ.get("BUILDPYTHONPATH"):
+        home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
+    else:
+        home = os.path.join(root_dir, "build", architecture)
+
+    logger.warning("Building %s to %s" % (name, home))
+    p = subprocess.Popen([sys.executable, "setup.py", "build"],
+                         shell=False, cwd=root_dir)
+    logger.debug("subprocess ended with rc= %s" % p.wait())
+    return home
+
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_NAME = get_project_name(PROJECT_DIR)
+logger.info('Project name: %s' % PROJECT_NAME)
 
 
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from fabio.third_party.argparse import ArgumentParser
+    from pyFAI.third_party.argparse import ArgumentParser
 parser = ArgumentParser(description='Run the tests.')
 
 parser.add_argument("-i", "--insource",
@@ -101,43 +203,81 @@ parser.add_argument("-i", "--insource",
                     help="Use the build source and not the installed version")
 parser.add_argument("-c", "--coverage", dest="coverage",
                     action="store_true", default=False,
-                    help="report coverage of fabio code (requires 'coverage' module)")
+                    help="Report code coverage (requires 'coverage' and 'lxml' module)")
+parser.add_argument("-m", "--memprofile", dest="memprofile",
+                    action="store_true", default=False,
+                    help="Report memory profiling")
 parser.add_argument("-v", "--verbose", default=0,
                     action="count", dest="verbose",
-                    help="increase verbosity")
+                    help="Increase verbosity")
+default_test_name = "%s.test.suite" % PROJECT_NAME
+parser.add_argument("test_name", nargs='*',
+        default=(default_test_name,),
+        help="Test names to run (Default: %s)" % default_test_name)
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
 if options.verbose == 1:
     logging.root.setLevel(logging.INFO)
-    print("Set log level: INFO")
+    logger.info("Set log level: INFO")
 elif options.verbose > 1:
     logging.root.setLevel(logging.DEBUG)
-    print("Set log level: DEBUG")
+    logger.info("Set log level: DEBUG")
 
 if options.coverage:
-    print("Running test-coverage")
+    logger.info("Running test-coverage")
     import coverage
     try:
-        cov = coverage.Coverage(omit=["*test*", "*third_party*"])
+        cov = coverage.Coverage(omit=["*test*", "*third_party*", "*/setup.py"])
     except AttributeError:
-        cov = coverage.coverage(omit=["*test*", "*third_party*"])
+        cov = coverage.coverage(omit=["*test*", "*third_party*", "*/setup.py"])
     cov.start()
 
+# Prevent importing from source directory
+if (os.path.dirname(os.path.abspath(__file__)) ==
+        os.path.abspath(sys.path[0])):
+    removed_from_sys_path = sys.path.pop(0)
+    logger.info("Patched sys.path, removed: '%s'" % removed_from_sys_path)
 
+
+# import module
 if not options.insource:
     try:
-        import pyFAI
+        module = importer(PROJECT_NAME)
     except:
-        print("pyFAI missing, using built (i.e. not installed) version")
+        logger.warning(
+            "%s missing, using built (i.e. not installed) version" % \
+            PROJECT_NAME)
         options.insource = True
 if options.insource:
-    home = os.path.abspath(__file__)
-    sys.path.insert(0, home)
-    from test.utilstest import *
-    import pyFAI
+    build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
 
-print("pyFAI %s from %s" % (pyFAI.version, pyFAI.__path__[0]))
-pyFAI.tests()
+    sys.path.insert(0, build_dir)
+    logger.warning("Patched sys.path, added: '%s'" % build_dir)
+    module = importer(PROJECT_NAME)
+
+
+PROJECT_VERSION = getattr(module, 'version', '')
+PROJECT_PATH = module.__path__[0]
+
+
+# Run the tests
+if options.memprofile:
+    runner = ProfileTestRunner()
+else:
+    runner = unittest.TextTestRunner()
+
+logger.warning("Test %s %s from %s" % (PROJECT_NAME,
+                                       PROJECT_VERSION,
+                                       PROJECT_PATH))
+
+test_suite = unittest.TestSuite()
+test_suite.addTest(
+    unittest.defaultTestLoader.loadTestsFromNames(options.test_name))
+
+if runner.run(test_suite).wasSuccessful():
+    logger.info("Test suite succeeded")
+else:
+    logger.warning("Test suite failed")
 
 
 if options.coverage:
