@@ -23,6 +23,7 @@ MacOSX provides by default Python2.7 with Numpy which is a good basis.
 If you get an error about the local "UTF-8", try to:
 
 .. code::
+
    export LC_ALL=C
 
 Before the installation.
