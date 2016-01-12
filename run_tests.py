@@ -9,7 +9,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "07/01/2016"
+__date__ = "12/01/2016"
 __license__ = "MIT"
 
 import distutils.util
@@ -19,7 +19,10 @@ import subprocess
 import sys
 import time
 import unittest
-import resource
+if os.name == "posix":
+    import resource
+else:
+    resource = None
 try:
     import importlib
 except:
@@ -75,17 +78,19 @@ class TestResult(unittest.TestResult):
     logger.handlers.append(logging.FileHandler("profile.log"))
 
     def startTest(self, test):
-        self.__mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if resource:
+            self.__mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         self.__time_start = time.time()
         unittest.TestResult.startTest(self, test)
 
     def stopTest(self, test):
         unittest.TestResult.stopTest(self, test)
+        if resource:
+            memusage = (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - self.__mem_start) * 0.001
+        else:
+            memusage = 0
         self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s" % (
-            time.time() - self.__time_start,
-            (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss -
-                self.__mem_start) / 1e3,
-            test.id()))
+                        time.time() - self.__time_start, memusage, test.id()))
 
 if sys.hexversion < 34013184:  # 2.7
     class ProfileTestRunner(unittest.TextTestRunner):
@@ -100,7 +105,7 @@ else:
 def report_rst(cov, package="fabio", version="0.0.0", base=""):
     """
     Generate a report of test coverage in RST (for Sphinx inclusion)
-    
+
     @param cov: test coverage instance
     @return: RST string
     """
