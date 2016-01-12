@@ -33,7 +33,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "07/01/2016"
 
 import os
 import sys
@@ -41,6 +41,12 @@ import unittest
 
 from . import utilstest
 from . import test_all
+
+
+def suite():
+    test_suite = unittest.TestSuite()
+    test_suite.addTest(test_all.suite())
+    return test_suite
 
 
 def run_tests():
