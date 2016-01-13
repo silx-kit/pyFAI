@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2015"
+__date__ = "11/01/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -43,7 +43,7 @@ Module with list <-> tree conversion
 import os
 import logging
 from .io import is_hdf5
-from .utils import timeit
+from .decorators import timeit
 logger = logging.getLogger("tree")
 
 from collections import namedtuple
