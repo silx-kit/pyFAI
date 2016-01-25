@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "25/01/2016"
 
 import sys
 import unittest
@@ -49,6 +49,7 @@ from pyFAI import _convolution
 import scipy.ndimage, scipy.misc, scipy.signal
 
 
+
 class TestConvolution(unittest.TestCase):
     def setUp(self):
         self.sigma = 1
@@ -57,7 +58,10 @@ class TestConvolution(unittest.TestCase):
             self.width += 1
         self.gauss = scipy.signal.gaussian(self.width, self.sigma)
         self.gauss /= self.gauss.sum()
-        self.lena = scipy.misc.lena().astype("float32")
+        if "ascent" in dir(scipy.misc):
+            self.lena = scipy.misc.ascent().astype("float32")
+        else:
+            self.lena = scipy.misc.lena().astype("float32")
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
