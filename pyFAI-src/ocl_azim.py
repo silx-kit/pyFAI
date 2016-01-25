@@ -36,7 +36,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "GPLv3"
-__date__ = "29/09/2014"
+__date__ = "25/01/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -83,7 +83,7 @@ class Integrator1d(object):
         else:
             self.logfile = None
         self.lock = threading.Semaphore()
-        #Those are pointer to memory on the GPU (or None if uninitialized
+        # Those are pointer to memory on the GPU (or None if uninitialized
         self._cl_mem = {"tth": None,
                         "tth_delta": None,
                         "image": None,
@@ -334,8 +334,8 @@ class Integrator1d(object):
                                " There is no Active context."
                                " (Hint: run init())")
 
-        #If configure is recalled, force cleanup of OpenCL resources
-        #to avoid accidental leaks
+        # If configure is recalled, force cleanup of OpenCL resources
+        # to avoid accidental leaks
         self.clean(True)
         with self.lock:
             self._allocate_buffers()
@@ -637,7 +637,7 @@ class Integrator1d(object):
             integrate = self._cl_program.create_histo_binarray(
                 self._queue, self.wdim_data, self.tdim,
                 *self._cl_kernel_args["create_histo_binarray"])
-            #convert to float
+            # convert to float
             convert = self._cl_program.ui2f2(self._queue, self.wdim_data,
                                              self.tdim,
                                              *self._cl_kernel_args["ui2f2"])
@@ -656,8 +656,7 @@ class Integrator1d(object):
                     self.log(solid_angle=sa)
                 self.log(integrate=integrate, convert_uint2float=convert,
                          copy_hist=copy_hist, copy_bins=copy_bins)
-            pyopencl.enqueue_barrier(self._queue).wait()
-
+            copy_bins.wait()
         return self.tth_out, histogram, bins
 
     def init(self, devicetype="GPU", useFp64=True,
