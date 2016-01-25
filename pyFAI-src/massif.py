@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/01/2016"
+__date__ = "25/01/2016"
 __status__ = "production"
 
 import sys, os, threading
@@ -156,7 +156,7 @@ class Massif(object):
             if xopt is None:
                 nbFailure += 1
                 continue
-            if (region2[xopt[0], xopt[1]]) and not (xopt in listpeaks):
+            if (region2[int(xopt[0] + 0.5), int(xopt[1] + 0.5)]) and not (xopt in listpeaks):
                 stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
                 listpeaks.append(xopt)
                 nbFailure = 0
