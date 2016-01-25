@@ -24,7 +24,7 @@
 #
 
 __author__ = "Jerome Kieffer"
-__date__ = "28/09/2015"
+__date__ = "25/01/2016"
 __name__ = "histogram"
 __license__ = "GPLv3+"
 __copyright__ = "2011-2014, ESRF"
@@ -49,7 +49,8 @@ def histogram(numpy.ndarray pos not None, \
               bin_range=None,
               pixelSize_in_Pos=None,
               nthread=None,
-              float empty=0.0):
+              double empty=0.0,
+              double normalization_factor=1.0):
     """
     Calculates histogram of pos weighted by weights
 
@@ -58,6 +59,8 @@ def histogram(numpy.ndarray pos not None, \
     @param bins: number of output bins
     @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
     @param nthread: OpenMP is disabled. unused
+    @param empty: value given to empty bins
+    @param normalization_factor: divide the result by this value
 
     @return 2theta, I, weighted histogram, raw histogram
     """
@@ -103,7 +106,7 @@ def histogram(numpy.ndarray pos not None, \
 
         for idx in range(bins):
             if out_count[idx] > epsilon:
-                out_merge[idx] = out_data[idx] / out_count[idx]
+                out_merge[idx] = out_data[idx] / out_count[idx] / normalization_factor
             else:
                 out_merge[idx] = empty
 
@@ -121,7 +124,8 @@ def histogram2d(numpy.ndarray pos0 not None,
                 numpy.ndarray weights not None,
                 split=False,
                 nthread=None,
-                float empty=0.0):
+                double empty=0.0,
+                double normalization_factor=1.0):
     """
     Calculate 2D histogram of pos0,pos1 weighted by weights
 
@@ -130,7 +134,9 @@ def histogram2d(numpy.ndarray pos0 not None,
     @param weights: array with intensities
     @param bins: number of output bins int or 2-tuple of int
     @param split: pixel splitting is disabled in histogram
-    @param nthread: OpenMP is disabled. unused
+    @param nthread: OpenMP is disabled. unused here
+    @param empty: value given to empty bins
+    @param normalization_factor: divide the result by this value
 
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
@@ -185,7 +191,7 @@ def histogram2d(numpy.ndarray pos0 not None,
         for i in range(bins0):
             for j in range(bins1):
                 if out_count[i, j] > epsilon:
-                    out_merge[i, j] = out_data[i, j] / out_count[i, j]
+                    out_merge[i, j] = out_data[i, j] / out_count[i, j] / normalization_factor
                 else:
                     out_merge[i, j] = empty
 

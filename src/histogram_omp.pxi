@@ -53,16 +53,18 @@ def histogram(numpy.ndarray pos not None, \
               bin_range=None,
               pixelSize_in_Pos=None,
               nthread=None,
-              float empty=0.0):
+              double empty=0.0,
+              double normalization_factor=1.0):
     """
     Calculates histogram of pos weighted by weights
 
     @param pos: 2Theta array
     @param weights: array with intensities
     @param bins: number of output bins
-    @param pixelSize_in_Pos: size of a pixels in 2theta
-    @param nthread: maximum number of thread to use. By default: maximum available.
-        One can also limit this with OMP_NUM_THREADS environment variable
+    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
+    @param nthread: OpenMP is disabled. unused
+    @param empty: value given to empty bins
+    @param normalization_factor: divide the result by this value
 
     @return 2theta, I, weighted histogram, raw histogram
     """
@@ -133,7 +135,7 @@ def histogram(numpy.ndarray pos not None, \
             out_count[idx] += tmp_count
             out_data[idx] += tmp_data
             if out_count[idx] > epsilon:
-                out_merge[idx] += tmp_data / tmp_count
+                out_merge[idx] += tmp_data / tmp_count / normalization_factor
             else:
                 out_merge[idx] += empty
 
@@ -151,7 +153,8 @@ def histogram2d(numpy.ndarray pos0 not None,
                 numpy.ndarray weights not None,
                 split=False,
                 nthread=None,
-                float empty=0.0):
+                double empty=0.0,
+                double normalization_factor=1.0):
     """
     Calculate 2D histogram of pos0,pos1 weighted by weights
 
@@ -159,12 +162,14 @@ def histogram2d(numpy.ndarray pos0 not None,
     @param pos1: Chi array
     @param weights: array with intensities
     @param bins: number of output bins int or 2-tuple of int
-	@param split: pixel splitting is disabled in histogram
+    @param split: pixel splitting is disabled in histogram
     @param nthread: maximum number of thread to use. By default: maximum available.
-    One can also limit this with OMP_NUM_THREADS environment variable
-
+    @param empty: value given to empty bins
+    @param normalization_factor: divide the result by this value
 
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+
+    One can also limit this with OMP_NUM_THREADS environment variable
     """
     assert pos0.size == pos1.size
     assert pos0.size == weights.size
@@ -220,7 +225,7 @@ def histogram2d(numpy.ndarray pos0 not None,
         for i in prange(bins0):
             for j in range(bins1):
                 if out_count[i, j] > epsilon:
-                    out_merge[i, j] += out_data[i, j] / out_count[i, j]
+                    out_merge[i, j] += out_data[i, j] / out_count[i, j] / normalization_factor
                 else:
                     out_merge[i, j] += empty
 
