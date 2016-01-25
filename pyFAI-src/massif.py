@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "22/01/2016"
 __status__ = "production"
 
 import sys, os, threading
@@ -182,10 +182,12 @@ class Massif(object):
         res = []
         cnt = 0
         dmin2 = dmin * dmin
-        numpy.random.shuffle(all_points)
+        if len(all_points) > 0:
+            numpy.random.shuffle(all_points)
         if seed:
             seeds = numpy.array(list(seed))
-            numpy.random.shuffle(seeds)
+            if len(seeds) > 0:
+                numpy.random.shuffle(seeds)
             all_points = numpy.concatenate((seeds, all_points))
         for idx in all_points:
             out = self.nearest_peak(idx)
