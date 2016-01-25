@@ -100,7 +100,7 @@ cdef class Bilinear:
 
         @param x: 2-tuple of integers
         @param w: half with of the window: 1 or 2 are advised
-        @return: 2-tuple of int with the nearest local maximum
+        @return: 2-tuple of float with the nearest local maximum
 
 
         Sub-pixel refinement:
