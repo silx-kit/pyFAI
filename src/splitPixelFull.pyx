@@ -30,7 +30,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/03/2015"
+__date__ = "26/01/2016"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -171,7 +171,8 @@ def fullSplit1D(numpy.ndarray pos not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
-                empty=0.0
+                data_t empty=0.0,
+                double normalization_factor=1.0
                 ):
     """
     Calculates histogram of pos weighted by weights
@@ -193,6 +194,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param solidangle: array (of float64) with flat image
     @param polarization: array (of float64) with polarization correction
     @param empty: value of output bins without any contribution when dummy is None
+    @param normalization_factor: divide the valid result by this value
+
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
@@ -371,7 +374,7 @@ def fullSplit1D(numpy.ndarray pos not None,
 
         for i in range(bins):
             if outCount[i] > epsilon:
-                outMerge[i] = outData[i] / outCount[i]
+                outMerge[i] = <float> (outData[i] / outCount[i] / normalization_factor)
             else:
                 outMerge[i] = cdummy
 
@@ -394,7 +397,9 @@ def fullSplit2D(numpy.ndarray pos not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
-                empty=None):
+                data_t empty=0.0,
+                double normalization_factor=1.0
+                ):
     """
     Calculate 2D histogram of pos weighted by weights
 
@@ -413,6 +418,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64)with solid angle corrections
     @param empty: value of output bins without any contribution when dummy is None
+    @param normalization_factor: divide the valid result by this value
 
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """

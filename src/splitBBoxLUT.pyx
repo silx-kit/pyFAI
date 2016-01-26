@@ -376,7 +376,14 @@ class HistoBBox1d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+    def integrate(self, weights,
+                  dummy=None,
+                  delta_dummy=None,
+                  dark=None,
+                  flat=None,
+                  solidAngle=None,
+                  polarization=None,
+                  double normalization_factor=1.0):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -394,6 +401,8 @@ class HistoBBox1d(object):
         @type solidAngle: ndarray
         @param polarization: array with the polarization correction values to be divided by (if any)
         @type polarization: ndarray
+        @param normalization_factor: divide the valid result by this value
+
         @return : positions, pattern, weighted_histogram and unweighted_histogram
         @rtype: 4-tuple of ndarrays
 
@@ -507,7 +516,7 @@ class HistoBBox1d(object):
             outData[i] += sum_data
             outCount[i] += sum_count
             if sum_count > epsilon:
-                outMerge[i] += sum_data / sum_count
+                outMerge[i] += <float>(sum_data / sum_count / normalization_factor)
             else:
                 outMerge[i] += cdummy
 
@@ -521,7 +530,14 @@ class HistoBBox1d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate_kahan(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+    def integrate_kahan(self, weights,
+                        dummy=None,
+                        delta_dummy=None,
+                        dark=None,
+                        flat=None,
+                        solidAngle=None,
+                        polarization=None,
+                        double normalization_factor=1.0):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
         Single precision implementation using Kahan summation
@@ -540,6 +556,8 @@ class HistoBBox1d(object):
         @type solidAngle: ndarray
         @param polarization: array with the polarization correction values to be divided by (if any)
         @type polarization: ndarray
+        @param normalization_factor: divide the valid result by this value
+
         @return : positions, pattern, weighted_histogram and unweighted_histogram
         @rtype: 4-tuple of ndarrays
 
@@ -676,7 +694,7 @@ class HistoBBox1d(object):
             outData[i] += sum_data
             outCount[i] += sum_count
             if sum_count > epsilon:
-                outMerge[i] += sum_data / sum_count
+                outMerge[i] += <float> (sum_data / sum_count / normalization_factor)
             else:
                 outMerge[i] += cdummy
 
@@ -1121,7 +1139,14 @@ class HistoBBox2d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+    def integrate(self, weights,
+                  dummy=None,
+                  delta_dummy=None,
+                  dark=None,
+                  flat=None,
+                  solidAngle=None,
+                  polarization=None,
+                  double normalization_factor=1.0):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
@@ -1139,6 +1164,8 @@ class HistoBBox2d(object):
         @type solidAngle: ndarray
         @param polarization: array with the polarization correction values to be divided by (if any)
         @type polarization: ndarray
+        @param normalization_factor: divide the valid result by this value
+
         @return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
         @rtype: 5-tuple of ndarrays
 
@@ -1249,7 +1276,7 @@ class HistoBBox2d(object):
                 outData[i0, i1] += sum_data
                 outCount[i0, i1] += sum_count
                 if sum_count > epsilon:
-                    outMerge[i0, i1] += sum_data / sum_count
+                    outMerge[i0, i1] += <float> (sum_data / sum_count / normalization_factor)
                 else:
                     outMerge[i0, i1] += cdummy
 

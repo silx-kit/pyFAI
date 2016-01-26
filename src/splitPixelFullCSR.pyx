@@ -28,7 +28,7 @@ Sparse matrix represented using the CompressedSparseROw.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/04/2015"
+__date__ = "26/01/2016"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -440,7 +440,15 @@ class FullSplitCSR_1d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+    def integrate(self,
+                  weights,
+                  dummy=None,
+                  delta_dummy=None,
+                  dark=None,
+                  flat=None,
+                  solidAngle=None,
+                  polarization=None,
+                  double normalization_factor=1.0):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -458,6 +466,8 @@ class FullSplitCSR_1d(object):
         @type solidAngle: ndarray
         @param polarization: array with the polarization correction values to be divided by (if any)
         @type polarization: ndarray
+        @param normalization_factor: divide the valid result by this value
+
         @return : positions, pattern, weighted_histogram and unweighted_histogram
         @rtype: 4-tuple of ndarrays
 
@@ -562,7 +572,7 @@ class FullSplitCSR_1d(object):
             outData[i] += sum_data
             outCount[i] += sum_count
             if sum_count > epsilon:
-                outMerge[i] += sum_data / sum_count
+                outMerge[i] += <float> (sum_data / sum_count / normalization_factor)
             else:
                 outMerge[i] += cdummy
         return  self.outPos, outMerge, outData, outCount
@@ -1067,7 +1077,15 @@ class FullSplitCSR_2d(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+    def integrate(self, weights,
+                  dummy=None,
+                  delta_dummy=None,
+                  dark=None,
+                  flat=None,
+                  solidAngle=None,
+                  polarization=None,
+                  double normalization_factor=1.0
+                  ):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
@@ -1085,6 +1103,8 @@ class FullSplitCSR_2d(object):
         @type solidAngle: ndarray
         @param polarization: array with the polarization correction values to be divided by (if any)
         @type polarization: ndarray
+        @param normalization_factor: divide the valid result by this value
+
         @return : positions, pattern, weighted_histogram and unweighted_histogram
         @rtype: 4-tuple of ndarrays
 
@@ -1190,7 +1210,8 @@ class FullSplitCSR_2d(object):
             outData[i] += sum_data
             outCount[i] += sum_count
             if sum_count > epsilon:
-                outMerge[i] += sum_data / sum_count
+                outMerge[i] += <float> (sum_data / sum_count / normalization_factor)
             else:
                 outMerge[i] += cdummy
+
         return  outMerge, outData, outCount

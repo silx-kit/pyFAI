@@ -115,7 +115,8 @@ def fullSplit1D(numpy.ndarray pos not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
-                empty=0.0
+                float empty=0.0,
+                double normalization_factor=1.0
                 ):
     """
     Calculates histogram of pos weighted by weights
@@ -137,6 +138,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64) with flat image
     @param empty: value of output bins without any contribution when dummy is None
+    @param normalization_factor: divide the valid result by this value
+
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef int  size = weights.size
@@ -236,7 +239,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         cddummy = 0.0
     else:
         check_dummy = False
-        cdummy = <float> float(empty)
+        cdummy = empty
         cddummy = 0.0
 
     if dark is not None:
@@ -332,7 +335,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                 buffer[bin0_min:bin0_max] = 0
         for i in range(bins):
             if outCount[i] > epsilon:
-                outMerge[i] = outData[i] / outCount[i]
+                outMerge[i] = outData[i] / outCount[i] / normalization_factor
             else:
                 outMerge[i] = cdummy
 
@@ -358,7 +361,9 @@ def fullSplit2D(numpy.ndarray pos not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
-                empty=0.0):
+                float empty=0.0,
+                double normalization_factor=1.0
+                ):
     """
     Calculate 2D histogram of pos weighted by weights
 
@@ -378,6 +383,8 @@ def fullSplit2D(numpy.ndarray pos not None,
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64)with solid angle corrections
     @param empty: value of output bins without any contribution when dummy is None
+    @param normalization_factor: divide the valid result by this value
+
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
@@ -617,7 +624,7 @@ def fullSplit2D(numpy.ndarray pos not None,
         for i in range(bins0):
             for j in range(bins1):
                 if outCount[i, j] > epsilon:
-                    outMerge[i, j] = outData[i, j] / outCount[i, j]
+                    outMerge[i, j] = outData[i, j] / outCount[i, j] / normalization_factor
                 else:
                     outMerge[i, j] = cdummy
     return outMerge.T, edges0, edges1, outData.T, outCount.T
