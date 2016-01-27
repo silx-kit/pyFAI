@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "22/09/2015"
+__date__ = "27/01/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -191,7 +191,7 @@ class OCL_LUT_Integrator(object):
         """
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"], \
                                              numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \
-                                             numpy.int32(0), numpy.float32(0), numpy.float32(0)]
+                                             numpy.int32(0), numpy.float32(0.0), numpy.float32(0.0), numpy.float32(0.0)]
         self._cl_kernel_args["lut_integrate"] = [self._cl_mem["image"], self._cl_mem["lut"], numpy.int32(0), numpy.float32(0), \
                                                 self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
@@ -204,14 +204,14 @@ class OCL_LUT_Integrator(object):
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
                             dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
-                            preprocess_only=False, safe=True):
+                            preprocess_only=False, safe=True, normalization_factor=1.0):
         """
         Before performing azimuthal integration, the preprocessing is :
-        
+
         data = (data - dark) / (flat*solidAngle*polarization)
-        
+
         Integration is performed using the CSR representation of the look-up table
-        
+
         @param dark: array of same shape as data for pre-processing
         @param flat: array of same shape as data for pre-processing
         @param solidAngle: array of same shape as data for pre-processing
@@ -221,6 +221,7 @@ class OCL_LUT_Integrator(object):
         @param solidAngle_checksum: CRC32 checksum of the given array
         @param polarization_checksum: CRC32 checksum of the given array
         @param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        @param normalization_factor: divide raw signal by this value
         @param preprocess_only: return the dark subtracted; flat field & solidAngle & polarization corrected image, else
         @return averaged data, weighted histogram, unweighted histogram
         """
@@ -270,6 +271,7 @@ class OCL_LUT_Integrator(object):
             self._cl_kernel_args["corrections"][9] = do_dummy
             self._cl_kernel_args["corrections"][10] = dummy
             self._cl_kernel_args["corrections"][11] = delta_dummy
+            self._cl_kernel_args["corrections"][12] = numpy.float32(normalization_factor)
             self._cl_kernel_args["lut_integrate"][2] = do_dummy
             self._cl_kernel_args["lut_integrate"][3] = dummy
 

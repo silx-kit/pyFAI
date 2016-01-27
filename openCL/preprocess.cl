@@ -25,13 +25,13 @@
 
 /**
  * \file
- * 
+ *
  * \brief OpenCL kernels for image array casting, array mem-setting and normalizing
- * 
+ *
  * Constant to be provided at build time:
  *   NIMAGE: size of the image
  *   NBINS:  number of output bins for histograms
- *   
+ *
  */
 
 #include "for_eclipse.h"
@@ -206,7 +206,8 @@ corrections( 		__global float 	*image,
 			const 	__global float 	*polarization,
 			const		 	 int   	do_dummy,
 			const			 float 	dummy,
-			const		 	 float 	delta_dummy
+			const		 	 float 	delta_dummy,
+			const		 	 float 	normalization_factor
 			)
 {
 	float data;
@@ -224,7 +225,7 @@ corrections( 		__global float 	*image,
 				data/=solidangle[i];
 			if(do_polarization)
 				data/=polarization[i];
-			image[i] = data;
+			image[i] = data/normalization_factor;
 		}else{
 			image[i] = dummy;
 		}//end if do_dummy
