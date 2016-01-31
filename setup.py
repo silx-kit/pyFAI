@@ -156,6 +156,8 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
     """
     Wrapper for distutils' Extension
     """
+    if name.startswith("ext"):
+        name = name[4:]
     if source is None:
         source = name
     cython_c_ext = ".pyx" if USE_CYTHON else ".c"
@@ -179,7 +181,7 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
         extra_link_args.add(USE_OPENMP)
         kwargs["extra_link_args"] = list(extra_link_args)
 
-    ext = _Extension(name=name, sources=sources, include_dirs=include_dirs, **kwargs)
+    ext = _Extension(name="ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
 
     if USE_CYTHON:
         cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
