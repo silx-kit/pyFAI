@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "31/01/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -156,8 +156,8 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
     """
     Wrapper for distutils' Extension
     """
-    if name.startswith("ext"):
-        name = name[4:]
+    if name.startswith("pyFAI.ext."):
+        name = name[10:]
     if source is None:
         source = name
     cython_c_ext = ".pyx" if USE_CYTHON else ".c"
@@ -181,7 +181,7 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
         extra_link_args.add(USE_OPENMP)
         kwargs["extra_link_args"] = list(extra_link_args)
 
-    ext = _Extension(name="ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
+    ext = _Extension(name="pyFAI.ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
 
     if USE_CYTHON:
         cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
@@ -197,6 +197,7 @@ ext_modules = [
     Extension('splitPixelFullLUT'),
     Extension('splitPixelFullLUT_double'),
     Extension('splitBBox'),
+    Extension('histogram', can_use_openmp=False),
     Extension('splitBBoxLUT', can_use_openmp=True),
     Extension('splitBBoxCSR', can_use_openmp=True),
     Extension('splitPixelFullCSR', can_use_openmp=True),
@@ -210,13 +211,12 @@ ext_modules = [
     Extension('morphology'),
     Extension('marchingsquares'),
     Extension('watershed'),
-    Extension('histogram', can_use_openmp=True),
     Extension('_tree')
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):
     ext_modules.append(
-        Extension('fastcrc', extra_sources=[os.path.join(PROJECT, "ext", "crc32.c")])
+        Extension('fastcrc', extra_sources=[os.path.join(PROJECT, "ext", "src", "crc32.c")])
     )
 
 
@@ -545,7 +545,7 @@ if __name__ == "__main__":
           description='Python implementation of fast azimuthal integration',
           url="https://github.com/pyFAI/pyFAI",
           download_url="https://github.com/pyFAI/pyFAI/releases",
-          ext_package="pyFAI.ext",
+          # ext_package="pyFAI.ext",
           scripts=script_files,
           ext_modules=ext_modules,
           packages=packages,
