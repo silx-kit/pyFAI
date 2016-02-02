@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/02/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -86,10 +86,11 @@ except ImportError as error:
     splitBBox = None
 
 try:
-    from .ext import histogram  # IGNORE:F0401
+#     raise ImportError
+    from .ext import histogram
 except ImportError as error:
     logger.error("Unable to import pyFAI.ext.histogram"
-                 " Cython OpenMP histogram implementation: %s" % error)
+                 " Cython histogram implementation: %s" % error)
     histogram = None
 
 try:

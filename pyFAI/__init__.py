@@ -26,7 +26,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "28/01/2016"
+__date__ = "31/01/2016"
 
 import sys
 import logging
@@ -45,7 +45,7 @@ if sys.version_info < (2, 6):
     logger.error("pyFAI required a python version >= 2.6")
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
 
-
+from . import ext
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .decorators import depreclog
 load = AzimuthalIntegrator.sload
@@ -54,7 +54,7 @@ load = AzimuthalIntegrator.sload
 def tests(deprecation=False):
     """
     Runs the test suite of the installed version
-    
+
     @param deprecation: enable/disables deprecation warning in the tests
     """
     if deprecation:

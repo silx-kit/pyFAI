@@ -12,12 +12,12 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -28,7 +28,7 @@ Calculates histograms of pos0 (tth) weighted by Intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "25/01/2016"
+__date__ = "31/01/2016"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -159,7 +159,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         pos0_maxin = max(pos0Range)
     else:
         pos0_maxin = pos0_max
-    if pos0_min<0: 
+    if pos0_min<0:
         pos0_min=0
     pos0_max = pos0_maxin * EPS32
 
@@ -218,7 +218,7 @@ def histoBBox1d(numpy.ndarray weights not None,
                 outCount[bin0_min] += 1.0
                 outData[bin0_min] += data
 
-            else: 
+            else:
                 # we have pixel spliting.
                 deltaA = 1.0 / (fbin0_max - fbin0_min)
 
@@ -288,11 +288,11 @@ def histoBBox2d(numpy.ndarray weights not None,
     @param flat: array (of float32) with flat-field image
     @param solidangle: array (of float32) with solid angle corrections
     @param polarization: array (of float32) with polarization corrections
-    @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[  
+    @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     @param empty: value of output bins without any contribution when dummy is None
     @param normalization_factor: divide the result by this value
-    
-    
+
+
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
@@ -419,7 +419,7 @@ def histoBBox2d(numpy.ndarray weights not None,
 
     delta0 = (pos0_max - pos0_min) / (< float > (bins0))
     delta1 = (pos1_max - pos1_min) / (< float > (bins1))
-    
+
     edges0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_maxin - 0.5 * delta0, bins0)
     edges1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_maxin - 0.5 * delta1, bins1)
 
@@ -488,7 +488,7 @@ def histoBBox2d(numpy.ndarray weights not None,
                         outCount[bin0_min, j] += deltaA
                         outData[bin0_min, j] += data * deltaA
 
-            else: 
+            else:
                 # spread on more than 2 bins in dim 0
                 if bin1_min == bin1_max:
                     # All pixel fall on 1 bins in dim 1

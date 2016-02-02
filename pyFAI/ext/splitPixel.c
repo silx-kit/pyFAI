@@ -4,12 +4,12 @@
 {
     "distutils": {
         "depends": [
-            "/usr/lib/python2.7/dist-packages/numpy/core/include/numpy/arrayobject.h", 
-            "/usr/lib/python2.7/dist-packages/numpy/core/include/numpy/ufuncobject.h"
-        ], 
+            "/usr/lib/python3/dist-packages/numpy/core/include/numpy/arrayobject.h",
+            "/usr/lib/python3/dist-packages/numpy/core/include/numpy/ufuncobject.h"
+        ],
         "include_dirs": [
-            "src", 
-            "/usr/lib/python2.7/dist-packages/numpy/core/include"
+            "pyFAI/ext",
+            "/usr/lib/python3/dist-packages/numpy/core/include"
         ]
     }
 }
@@ -249,8 +249,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__src__splitPixel
-#define __PYX_HAVE_API__src__splitPixel
+#define __PYX_HAVE__pyFAI__ext__splitPixel
+#define __PYX_HAVE_API__pyFAI__ext__splitPixel
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -488,11 +488,11 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "src/splitPixel.pyx",
+  "pyFAI/ext/splitPixel.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
-  "src/regrid_common.pxi",
+  "pyFAI/ext/regrid_common.pxi",
 };
 #define IS_UNSIGNED(type) (((type) -1) > 0)
 struct __Pyx_StructField_;
@@ -587,7 +587,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
 #endif
 
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":725
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":725
  * # in Cython to enable them only on the right systems.
  * 
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
@@ -596,7 +596,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
  */
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":726
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":726
  * 
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
@@ -605,7 +605,7 @@ typedef npy_int8 __pyx_t_5numpy_int8_t;
  */
 typedef npy_int16 __pyx_t_5numpy_int16_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":727
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":727
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t             # <<<<<<<<<<<<<<
@@ -614,7 +614,7 @@ typedef npy_int16 __pyx_t_5numpy_int16_t;
  */
 typedef npy_int32 __pyx_t_5numpy_int32_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":728
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":728
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
  * ctypedef npy_int64      int64_t             # <<<<<<<<<<<<<<
@@ -623,7 +623,7 @@ typedef npy_int32 __pyx_t_5numpy_int32_t;
  */
 typedef npy_int64 __pyx_t_5numpy_int64_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":732
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":732
  * #ctypedef npy_int128     int128_t
  * 
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
@@ -632,7 +632,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
  */
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":733
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":733
  * 
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
@@ -641,7 +641,7 @@ typedef npy_uint8 __pyx_t_5numpy_uint8_t;
  */
 typedef npy_uint16 __pyx_t_5numpy_uint16_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":734
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":734
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t             # <<<<<<<<<<<<<<
@@ -650,7 +650,7 @@ typedef npy_uint16 __pyx_t_5numpy_uint16_t;
  */
 typedef npy_uint32 __pyx_t_5numpy_uint32_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":735
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":735
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
  * ctypedef npy_uint64     uint64_t             # <<<<<<<<<<<<<<
@@ -659,7 +659,7 @@ typedef npy_uint32 __pyx_t_5numpy_uint32_t;
  */
 typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":739
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":739
  * #ctypedef npy_uint128    uint128_t
  * 
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
@@ -668,7 +668,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
  */
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":740
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":740
  * 
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
@@ -677,7 +677,7 @@ typedef npy_float32 __pyx_t_5numpy_float32_t;
  */
 typedef npy_float64 __pyx_t_5numpy_float64_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":749
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":749
  * # The int types are mapped a bit surprising --
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t             # <<<<<<<<<<<<<<
@@ -686,7 +686,7 @@ typedef npy_float64 __pyx_t_5numpy_float64_t;
  */
 typedef npy_long __pyx_t_5numpy_int_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":750
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":750
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
@@ -695,7 +695,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":751
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":751
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
@@ -704,7 +704,7 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":753
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":753
  * ctypedef npy_longlong   longlong_t
  * 
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
@@ -713,7 +713,7 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
  */
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":754
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":754
  * 
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
@@ -722,7 +722,7 @@ typedef npy_ulong __pyx_t_5numpy_uint_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":755
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":755
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
@@ -731,7 +731,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":757
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":757
  * ctypedef npy_ulonglong  ulonglong_t
  * 
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
@@ -740,7 +740,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":758
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":758
  * 
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
@@ -749,7 +749,7 @@ typedef npy_intp __pyx_t_5numpy_intp_t;
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":760
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":760
  * ctypedef npy_uintp      uintp_t
  * 
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
@@ -758,7 +758,7 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
  */
 typedef npy_double __pyx_t_5numpy_float_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":761
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":761
  * 
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
@@ -767,7 +767,7 @@ typedef npy_double __pyx_t_5numpy_float_t;
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":762
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":762
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
@@ -776,23 +776,23 @@ typedef npy_double __pyx_t_5numpy_double_t;
  */
 typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
-/* "src/splitPixel.pyx":45
+/* "pyFAI/ext/splitPixel.pyx":45
  * include "regrid_common.pxi"
  * 
  * ctypedef double position_t             # <<<<<<<<<<<<<<
  * ctypedef double data_t
  * 
  */
-typedef double __pyx_t_3src_10splitPixel_position_t;
+typedef double __pyx_t_5pyFAI_3ext_10splitPixel_position_t;
 
-/* "src/splitPixel.pyx":46
+/* "pyFAI/ext/splitPixel.pyx":46
  * 
  * ctypedef double position_t
  * ctypedef double data_t             # <<<<<<<<<<<<<<
  * 
  * cdef inline position_t area4(position_t a0,
  */
-typedef double __pyx_t_3src_10splitPixel_data_t;
+typedef double __pyx_t_5pyFAI_3ext_10splitPixel_data_t;
 #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
     typedef ::std::complex< float > __pyx_t_float_complex;
@@ -820,7 +820,7 @@ struct __pyx_MemviewEnum_obj;
 struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":764
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":764
  * ctypedef npy_longdouble longdouble_t
  * 
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
@@ -829,7 +829,7 @@ struct __pyx_memoryviewslice_obj;
  */
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":765
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":765
  * 
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
@@ -838,7 +838,7 @@ typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":766
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":766
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
@@ -847,7 +847,7 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":768
  * ctypedef npy_clongdouble clongdouble_t
  * 
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
@@ -1494,11 +1494,11 @@ static int __Pyx_ValidateAndInit_memviewslice(
                 __Pyx_memviewslice *memviewslice,
                 PyObject *original_obj);
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn___pyx_t_3src_10splitPixel_position_t(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t(PyObject *);
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_data_t(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t(PyObject *);
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_position_t(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t(PyObject *);
 
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(PyObject *);
 
@@ -1565,25 +1565,25 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libc.math' */
 
-/* Module declarations from 'src.splitPixel' */
+/* Module declarations from 'pyFAI.ext.splitPixel' */
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
 static PyTypeObject *__pyx_memoryviewslice_type = 0;
-static float __pyx_v_3src_10splitPixel_pi;
-static float __pyx_v_3src_10splitPixel_piover2;
-static float __pyx_v_3src_10splitPixel_onef;
-static float __pyx_v_3src_10splitPixel_zerof;
-static double __pyx_v_3src_10splitPixel_EPS32;
+static float __pyx_v_5pyFAI_3ext_10splitPixel_pi;
+static float __pyx_v_5pyFAI_3ext_10splitPixel_piover2;
+static float __pyx_v_5pyFAI_3ext_10splitPixel_onef;
+static float __pyx_v_5pyFAI_3ext_10splitPixel_zerof;
+static double __pyx_v_5pyFAI_3ext_10splitPixel_EPS32;
 static PyObject *generic = 0;
 static PyObject *strided = 0;
 static PyObject *indirect = 0;
 static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
-static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPixel_area4(__pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t); /*proto*/
-static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPixel_calc_area(__pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t); /*proto*/
-static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice, int, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t, __pyx_t_3src_10splitPixel_position_t); /*proto*/
-static CYTHON_INLINE double __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number(double, double, double); /*proto*/
+static CYTHON_INLINE __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_f_5pyFAI_3ext_10splitPixel_area4(__pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t); /*proto*/
+static CYTHON_INLINE __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(__pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t); /*proto*/
+static CYTHON_INLINE void __pyx_f_5pyFAI_3ext_10splitPixel_integrate(__Pyx_memviewslice, int, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t, __pyx_t_5pyFAI_3ext_10splitPixel_position_t); /*proto*/
+static CYTHON_INLINE double __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number(double, double, double); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1617,14 +1617,14 @@ static void __pyx_memoryview_refcount_objects_in_slice(char *, Py_ssize_t *, Py_
 static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size_t, void *, int); /*proto*/
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t = { "float64_t", NULL, sizeof(__pyx_t_5numpy_float64_t), { 0 }, 0, 'R', 0, 0 };
-static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_3src_10splitPixel_position_t = { "position_t", NULL, sizeof(__pyx_t_3src_10splitPixel_position_t), { 0 }, 0, 'R', 0, 0 };
-static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_3src_10splitPixel_data_t = { "data_t", NULL, sizeof(__pyx_t_3src_10splitPixel_data_t), { 0 }, 0, 'R', 0, 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t = { "position_t", NULL, sizeof(__pyx_t_5pyFAI_3ext_10splitPixel_position_t), { 0 }, 0, 'R', 0, 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t = { "data_t", NULL, sizeof(__pyx_t_5pyFAI_3ext_10splitPixel_data_t), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int8_t = { "int8_t", NULL, sizeof(__pyx_t_5numpy_int8_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int8_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int8_t), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), { 0 }, 0, 'R', 0, 0 };
-#define __Pyx_MODULE_NAME "src.splitPixel"
-int __pyx_module_is_main_src__splitPixel = 0;
+#define __Pyx_MODULE_NAME "pyFAI.ext.splitPixel"
+int __pyx_module_is_main_pyFAI__ext__splitPixel = 0;
 
-/* Implementation of 'src.splitPixel' */
+/* Implementation of 'pyFAI.ext.splitPixel' */
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_min;
 static PyObject *__pyx_builtin_max;
@@ -1779,7 +1779,7 @@ static char __pyx_k_fbin1_max[] = "fbin1_max";
 static char __pyx_k_fbin1_min[] = "fbin1_min";
 static char __pyx_k_pos0Range[] = "pos0Range";
 static char __pyx_k_pos1Range[] = "pos1Range";
-static char __pyx_k_07_04_2015[] = "07/04/2015";
+static char __pyx_k_02_02_2016[] = "02/02/2016";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_aera_pixel[] = "aera_pixel";
@@ -1802,13 +1802,13 @@ static char __pyx_k_do_solidangle[] = "do_solidangle";
 static char __pyx_k_one_over_area[] = "one_over_area";
 static char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static char __pyx_k_Jerome_Kieffer[] = "Jerome Kieffer";
-static char __pyx_k_src_splitPixel[] = "src.splitPixel";
 static char __pyx_k_allocate_buffer[] = "allocate_buffer";
 static char __pyx_k_do_polarization[] = "do_polarization";
 static char __pyx_k_dtype_is_object[] = "dtype_is_object";
 static char __pyx_k_ascontiguousarray[] = "ascontiguousarray";
 static char __pyx_k_strided_and_direct[] = "<strided and direct>";
 static char __pyx_k_normalization_factor[] = "normalization_factor";
+static char __pyx_k_pyFAI_ext_splitPixel[] = "pyFAI.ext.splitPixel";
 static char __pyx_k_strided_and_indirect[] = "<strided and indirect>";
 static char __pyx_k_contiguous_and_direct[] = "<contiguous and direct>";
 static char __pyx_k_Jerome_kieffer_esrf_fr[] = "Jerome.kieffer@esrf.fr";
@@ -1827,12 +1827,13 @@ static char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array 
 static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
 static char __pyx_k_Calculates_histograms_of_pos0_t[] = "\nCalculates histograms of pos0 (tth) weighted by Intensity\n\nSplitting is done by full pixel splitting\nHistogram (direct) implementation\n";
 static char __pyx_k_area_pixel_s_area_sum_s_Error_s[] = "area_pixel=%s area_sum=%s, Error= %s";
-static char __pyx_k_home_jerome_workspace_pyFAI_src[] = "/home/jerome/workspace/pyFAI/src/splitPixel.pyx";
+static char __pyx_k_home_jerome_workspace_pyFAI_pyF[] = "/home/jerome/workspace/pyFAI/pyFAI/ext/splitPixel.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
 static char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
 static char __pyx_k_Cannot_transpose_memoryview_with[] = "Cannot transpose memoryview with indirect dimensions";
+static char __pyx_k_Common_cdef_constants_and_functi[] = "Common cdef constants and functions for preprocessing";
 static char __pyx_k_Empty_shape_tuple_for_cython_arr[] = "Empty shape tuple for cython.array";
 static char __pyx_k_Format_string_allocated_too_shor[] = "Format string allocated too short, see comment in numpy.pxd";
 static char __pyx_k_Indirect_dimensions_not_supporte[] = "Indirect dimensions not supported";
@@ -1844,13 +1845,14 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_07_04_2015;
+static PyObject *__pyx_kp_s_02_02_2016;
 static PyObject *__pyx_kp_s_20141020;
 static PyObject *__pyx_n_s_ASCII;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
 static PyObject *__pyx_kp_s_Calculates_histograms_of_pos0_t;
 static PyObject *__pyx_kp_s_Can_only_create_a_buffer_that_is;
 static PyObject *__pyx_kp_s_Cannot_index_with_type_s;
+static PyObject *__pyx_kp_s_Common_cdef_constants_and_functi;
 static PyObject *__pyx_n_s_Ellipsis;
 static PyObject *__pyx_kp_s_Empty_shape_tuple_for_cython_arr;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor;
@@ -1962,7 +1964,7 @@ static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_n_s_fullSplit1D;
 static PyObject *__pyx_n_s_fullSplit2D;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
-static PyObject *__pyx_kp_s_home_jerome_workspace_pyFAI_src;
+static PyObject *__pyx_kp_s_home_jerome_workspace_pyFAI_pyF;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_idx;
@@ -2008,6 +2010,7 @@ static PyObject *__pyx_n_s_pos1_max;
 static PyObject *__pyx_n_s_pos1_maxin;
 static PyObject *__pyx_n_s_pos1_min;
 static PyObject *__pyx_n_s_print;
+static PyObject *__pyx_n_s_pyFAI_ext_splitPixel;
 static PyObject *__pyx_n_s_pyx_getbuffer;
 static PyObject *__pyx_n_s_pyx_vtable;
 static PyObject *__pyx_n_s_range;
@@ -2016,7 +2019,6 @@ static PyObject *__pyx_n_s_reshape;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_solidangle;
-static PyObject *__pyx_n_s_src_splitPixel;
 static PyObject *__pyx_n_s_stable;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_status;
@@ -2035,8 +2037,8 @@ static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_n_s_weights;
 static PyObject *__pyx_n_s_zeros;
-static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor); /* proto */
-static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor); /* proto */
+static PyObject *__pyx_pf_5pyFAI_3ext_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor); /* proto */
+static PyObject *__pyx_pf_5pyFAI_3ext_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -2132,7 +2134,7 @@ static PyObject *__pyx_tuple__50;
 static PyObject *__pyx_codeobj__43;
 static PyObject *__pyx_codeobj__45;
 
-/* "src/regrid_common.pxi":49
+/* "pyFAI/ext/regrid_common.pxi":25
  * 
  * @cython.cdivision(True)
  * cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:             # <<<<<<<<<<<<<<
@@ -2140,10 +2142,10 @@ static PyObject *__pyx_codeobj__45;
  *     calculate the bin number for any point (as floating)
  */
 
-static CYTHON_INLINE double __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number(double __pyx_v_x0, double __pyx_v_pos0_min, double __pyx_v_delta) {
+static CYTHON_INLINE double __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number(double __pyx_v_x0, double __pyx_v_pos0_min, double __pyx_v_delta) {
   double __pyx_r;
 
-  /* "src/regrid_common.pxi":58
+  /* "pyFAI/ext/regrid_common.pxi":34
  *     @return: bin number as floating point.
  *     """
  *     return (x0 - pos0_min) / delta             # <<<<<<<<<<<<<<
@@ -2151,7 +2153,7 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number
   __pyx_r = ((__pyx_v_x0 - __pyx_v_pos0_min) / __pyx_v_delta);
   goto __pyx_L0;
 
-  /* "src/regrid_common.pxi":49
+  /* "pyFAI/ext/regrid_common.pxi":25
  * 
  * @cython.cdivision(True)
  * cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:             # <<<<<<<<<<<<<<
@@ -2164,7 +2166,7 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number
   return __pyx_r;
 }
 
-/* "src/splitPixel.pyx":48
+/* "pyFAI/ext/splitPixel.pyx":48
  * ctypedef double data_t
  * 
  * cdef inline position_t area4(position_t a0,             # <<<<<<<<<<<<<<
@@ -2172,10 +2174,10 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number
  *                              position_t b0,
  */
 
-static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPixel_area4(__pyx_t_3src_10splitPixel_position_t __pyx_v_a0, __pyx_t_3src_10splitPixel_position_t __pyx_v_a1, __pyx_t_3src_10splitPixel_position_t __pyx_v_b0, __pyx_t_3src_10splitPixel_position_t __pyx_v_b1, __pyx_t_3src_10splitPixel_position_t __pyx_v_c0, __pyx_t_3src_10splitPixel_position_t __pyx_v_c1, __pyx_t_3src_10splitPixel_position_t __pyx_v_d0, __pyx_t_3src_10splitPixel_position_t __pyx_v_d1) {
-  __pyx_t_3src_10splitPixel_position_t __pyx_r;
+static CYTHON_INLINE __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_f_5pyFAI_3ext_10splitPixel_area4(__pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_a0, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_a1, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_b0, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_b1, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_c0, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_c1, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_d0, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_d1) {
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_r;
 
-  /* "src/splitPixel.pyx":64
+  /* "pyFAI/ext/splitPixel.pyx":64
  *     @return: area, i.e. 1/2 * (AC ^ BD)
  *     """
  *     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))             # <<<<<<<<<<<<<<
@@ -2185,7 +2187,7 @@ static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPi
   __pyx_r = (0.5 * fabs((((__pyx_v_c0 - __pyx_v_a0) * (__pyx_v_d1 - __pyx_v_b1)) - ((__pyx_v_c1 - __pyx_v_a1) * (__pyx_v_d0 - __pyx_v_b0)))));
   goto __pyx_L0;
 
-  /* "src/splitPixel.pyx":48
+  /* "pyFAI/ext/splitPixel.pyx":48
  * ctypedef double data_t
  * 
  * cdef inline position_t area4(position_t a0,             # <<<<<<<<<<<<<<
@@ -2198,7 +2200,7 @@ static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPi
   return __pyx_r;
 }
 
-/* "src/splitPixel.pyx":67
+/* "pyFAI/ext/splitPixel.pyx":67
  * 
  * 
  * cdef inline position_t calc_area(position_t I1, position_t I2, position_t slope, position_t intercept) nogil:             # <<<<<<<<<<<<<<
@@ -2206,10 +2208,10 @@ static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPi
  *     return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))
  */
 
-static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPixel_calc_area(__pyx_t_3src_10splitPixel_position_t __pyx_v_I1, __pyx_t_3src_10splitPixel_position_t __pyx_v_I2, __pyx_t_3src_10splitPixel_position_t __pyx_v_slope, __pyx_t_3src_10splitPixel_position_t __pyx_v_intercept) {
-  __pyx_t_3src_10splitPixel_position_t __pyx_r;
+static CYTHON_INLINE __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(__pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_I1, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_I2, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_slope, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_intercept) {
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_r;
 
-  /* "src/splitPixel.pyx":69
+  /* "pyFAI/ext/splitPixel.pyx":69
  * cdef inline position_t calc_area(position_t I1, position_t I2, position_t slope, position_t intercept) nogil:
  *     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
  *     return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))             # <<<<<<<<<<<<<<
@@ -2219,7 +2221,7 @@ static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPi
   __pyx_r = (0.5 * ((__pyx_v_I2 - __pyx_v_I1) * ((__pyx_v_slope * (__pyx_v_I2 + __pyx_v_I1)) + (2.0 * __pyx_v_intercept))));
   goto __pyx_L0;
 
-  /* "src/splitPixel.pyx":67
+  /* "pyFAI/ext/splitPixel.pyx":67
  * 
  * 
  * cdef inline position_t calc_area(position_t I1, position_t I2, position_t slope, position_t intercept) nogil:             # <<<<<<<<<<<<<<
@@ -2232,7 +2234,7 @@ static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPi
   return __pyx_r;
 }
 
-/* "src/splitPixel.pyx":74
+/* "pyFAI/ext/splitPixel.pyx":74
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * cdef inline void integrate(position_t[:] buffer, int buffer_size, position_t start0, position_t start1, position_t stop0, position_t stop1) nogil:             # <<<<<<<<<<<<<<
@@ -2240,9 +2242,9 @@ static CYTHON_INLINE __pyx_t_3src_10splitPixel_position_t __pyx_f_3src_10splitPi
  * 
  */
 
-static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice __pyx_v_buffer, int __pyx_v_buffer_size, __pyx_t_3src_10splitPixel_position_t __pyx_v_start0, __pyx_t_3src_10splitPixel_position_t __pyx_v_start1, __pyx_t_3src_10splitPixel_position_t __pyx_v_stop0, __pyx_t_3src_10splitPixel_position_t __pyx_v_stop1) {
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_slope;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_intercept;
+static CYTHON_INLINE void __pyx_f_5pyFAI_3ext_10splitPixel_integrate(__Pyx_memviewslice __pyx_v_buffer, int __pyx_v_buffer_size, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_start0, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_start1, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_stop0, __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_stop1) {
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_slope;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_intercept;
   int __pyx_v_i;
   int __pyx_v_istart0;
   int __pyx_v_istop0;
@@ -2262,7 +2264,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
   Py_ssize_t __pyx_t_14;
   Py_ssize_t __pyx_t_15;
 
-  /* "src/splitPixel.pyx":77
+  /* "pyFAI/ext/splitPixel.pyx":77
  *     "Integrate in a box a line between start and stop"
  * 
  *     if stop0 == start0:             # <<<<<<<<<<<<<<
@@ -2272,7 +2274,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
   __pyx_t_1 = ((__pyx_v_stop0 == __pyx_v_start0) != 0);
   if (__pyx_t_1) {
 
-    /* "src/splitPixel.pyx":79
+    /* "pyFAI/ext/splitPixel.pyx":79
  *     if stop0 == start0:
  *         #slope is infinite, area is null: no change to the buffer
  *         return             # <<<<<<<<<<<<<<
@@ -2281,7 +2283,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
     goto __pyx_L0;
 
-    /* "src/splitPixel.pyx":77
+    /* "pyFAI/ext/splitPixel.pyx":77
  *     "Integrate in a box a line between start and stop"
  * 
  *     if stop0 == start0:             # <<<<<<<<<<<<<<
@@ -2290,7 +2292,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
   }
 
-  /* "src/splitPixel.pyx":81
+  /* "pyFAI/ext/splitPixel.pyx":81
  *         return
  *     cdef position_t slope, intercept
  *     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)             # <<<<<<<<<<<<<<
@@ -2300,7 +2302,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
   __pyx_v_istart0 = ((int)floor(__pyx_v_start0));
   __pyx_v_istop0 = ((int)floor(__pyx_v_stop0));
 
-  /* "src/splitPixel.pyx":82
+  /* "pyFAI/ext/splitPixel.pyx":82
  *     cdef position_t slope, intercept
  *     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)
  *     slope = (stop1 - start1) / (stop0 - start0)             # <<<<<<<<<<<<<<
@@ -2309,7 +2311,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
   __pyx_v_slope = ((__pyx_v_stop1 - __pyx_v_start1) / (__pyx_v_stop0 - __pyx_v_start0));
 
-  /* "src/splitPixel.pyx":83
+  /* "pyFAI/ext/splitPixel.pyx":83
  *     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)
  *     slope = (stop1 - start1) / (stop0 - start0)
  *     intercept = start1 - slope * start0             # <<<<<<<<<<<<<<
@@ -2318,7 +2320,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
   __pyx_v_intercept = (__pyx_v_start1 - (__pyx_v_slope * __pyx_v_start0));
 
-  /* "src/splitPixel.pyx":84
+  /* "pyFAI/ext/splitPixel.pyx":84
  *     slope = (stop1 - start1) / (stop0 - start0)
  *     intercept = start1 - slope * start0
  *     if buffer_size > istop0 == istart0 >= 0:             # <<<<<<<<<<<<<<
@@ -2335,7 +2337,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "src/splitPixel.pyx":85
+    /* "pyFAI/ext/splitPixel.pyx":85
  *     intercept = start1 - slope * start0
  *     if buffer_size > istop0 == istart0 >= 0:
  *         buffer[istart0] += calc_area(start0, stop0, slope, intercept)             # <<<<<<<<<<<<<<
@@ -2343,9 +2345,9 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  *         if stop0 > start0:
  */
     __pyx_t_3 = __pyx_v_istart0;
-    *((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_3 * __pyx_v_buffer.strides[0]) )) += __pyx_f_3src_10splitPixel_calc_area(__pyx_v_start0, __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
+    *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_3 * __pyx_v_buffer.strides[0]) )) += __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(__pyx_v_start0, __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
 
-    /* "src/splitPixel.pyx":84
+    /* "pyFAI/ext/splitPixel.pyx":84
  *     slope = (stop1 - start1) / (stop0 - start0)
  *     intercept = start1 - slope * start0
  *     if buffer_size > istop0 == istart0 >= 0:             # <<<<<<<<<<<<<<
@@ -2355,7 +2357,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
     goto __pyx_L4;
   }
 
-  /* "src/splitPixel.pyx":87
+  /* "pyFAI/ext/splitPixel.pyx":87
  *         buffer[istart0] += calc_area(start0, stop0, slope, intercept)
  *     else:
  *         if stop0 > start0:             # <<<<<<<<<<<<<<
@@ -2366,7 +2368,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
     __pyx_t_2 = ((__pyx_v_stop0 > __pyx_v_start0) != 0);
     if (__pyx_t_2) {
 
-      /* "src/splitPixel.pyx":88
+      /* "pyFAI/ext/splitPixel.pyx":88
  *     else:
  *         if stop0 > start0:
  *                 if 0 <= start0 < buffer_size:             # <<<<<<<<<<<<<<
@@ -2380,7 +2382,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
       __pyx_t_1 = (__pyx_t_2 != 0);
       if (__pyx_t_1) {
 
-        /* "src/splitPixel.pyx":89
+        /* "pyFAI/ext/splitPixel.pyx":89
  *         if stop0 > start0:
  *                 if 0 <= start0 < buffer_size:
  *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)             # <<<<<<<<<<<<<<
@@ -2388,9 +2390,9 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  *                     buffer[i] += calc_area(i, i+1, slope, intercept)
  */
         __pyx_t_4 = __pyx_v_istart0;
-        *((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_4 * __pyx_v_buffer.strides[0]) )) += __pyx_f_3src_10splitPixel_calc_area(__pyx_v_start0, floor((__pyx_v_start0 + 1.0)), __pyx_v_slope, __pyx_v_intercept);
+        *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_4 * __pyx_v_buffer.strides[0]) )) += __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(__pyx_v_start0, floor((__pyx_v_start0 + 1.0)), __pyx_v_slope, __pyx_v_intercept);
 
-        /* "src/splitPixel.pyx":88
+        /* "pyFAI/ext/splitPixel.pyx":88
  *     else:
  *         if stop0 > start0:
  *                 if 0 <= start0 < buffer_size:             # <<<<<<<<<<<<<<
@@ -2399,7 +2401,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
       }
 
-      /* "src/splitPixel.pyx":90
+      /* "pyFAI/ext/splitPixel.pyx":90
  *                 if 0 <= start0 < buffer_size:
  *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)
  *                 for i in range(max(istart0 + 1, 0), min(istop0, buffer_size)):             # <<<<<<<<<<<<<<
@@ -2424,7 +2426,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
       for (__pyx_t_7 = __pyx_t_10; __pyx_t_7 < __pyx_t_5; __pyx_t_7+=1) {
         __pyx_v_i = __pyx_t_7;
 
-        /* "src/splitPixel.pyx":91
+        /* "pyFAI/ext/splitPixel.pyx":91
  *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)
  *                 for i in range(max(istart0 + 1, 0), min(istop0, buffer_size)):
  *                     buffer[i] += calc_area(i, i+1, slope, intercept)             # <<<<<<<<<<<<<<
@@ -2432,10 +2434,10 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
  */
         __pyx_t_11 = __pyx_v_i;
-        *((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_11 * __pyx_v_buffer.strides[0]) )) += __pyx_f_3src_10splitPixel_calc_area(__pyx_v_i, (__pyx_v_i + 1), __pyx_v_slope, __pyx_v_intercept);
+        *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_11 * __pyx_v_buffer.strides[0]) )) += __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(__pyx_v_i, (__pyx_v_i + 1), __pyx_v_slope, __pyx_v_intercept);
       }
 
-      /* "src/splitPixel.pyx":92
+      /* "pyFAI/ext/splitPixel.pyx":92
  *                 for i in range(max(istart0 + 1, 0), min(istop0, buffer_size)):
  *                     buffer[i] += calc_area(i, i+1, slope, intercept)
  *                 if buffer_size > stop0 >= 0:             # <<<<<<<<<<<<<<
@@ -2449,7 +2451,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
       __pyx_t_2 = (__pyx_t_1 != 0);
       if (__pyx_t_2) {
 
-        /* "src/splitPixel.pyx":93
+        /* "pyFAI/ext/splitPixel.pyx":93
  *                     buffer[i] += calc_area(i, i+1, slope, intercept)
  *                 if buffer_size > stop0 >= 0:
  *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)             # <<<<<<<<<<<<<<
@@ -2457,9 +2459,9 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  *             if 0 <= start0 < buffer_size:
  */
         __pyx_t_12 = __pyx_v_istop0;
-        *((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_12 * __pyx_v_buffer.strides[0]) )) += __pyx_f_3src_10splitPixel_calc_area(__pyx_v_istop0, __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
+        *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_12 * __pyx_v_buffer.strides[0]) )) += __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(__pyx_v_istop0, __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
 
-        /* "src/splitPixel.pyx":92
+        /* "pyFAI/ext/splitPixel.pyx":92
  *                 for i in range(max(istart0 + 1, 0), min(istop0, buffer_size)):
  *                     buffer[i] += calc_area(i, i+1, slope, intercept)
  *                 if buffer_size > stop0 >= 0:             # <<<<<<<<<<<<<<
@@ -2468,7 +2470,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
       }
 
-      /* "src/splitPixel.pyx":87
+      /* "pyFAI/ext/splitPixel.pyx":87
  *         buffer[istart0] += calc_area(start0, stop0, slope, intercept)
  *     else:
  *         if stop0 > start0:             # <<<<<<<<<<<<<<
@@ -2478,7 +2480,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
       goto __pyx_L5;
     }
 
-    /* "src/splitPixel.pyx":95
+    /* "pyFAI/ext/splitPixel.pyx":95
  *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
  *         else:
  *             if 0 <= start0 < buffer_size:             # <<<<<<<<<<<<<<
@@ -2493,7 +2495,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
       __pyx_t_1 = (__pyx_t_2 != 0);
       if (__pyx_t_1) {
 
-        /* "src/splitPixel.pyx":96
+        /* "pyFAI/ext/splitPixel.pyx":96
  *         else:
  *             if 0 <= start0 < buffer_size:
  *                 buffer[istart0] += calc_area(start0, istart0, slope, intercept)             # <<<<<<<<<<<<<<
@@ -2501,9 +2503,9 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  *                 buffer[i] += calc_area(i+1, i, slope, intercept)
  */
         __pyx_t_13 = __pyx_v_istart0;
-        *((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_13 * __pyx_v_buffer.strides[0]) )) += __pyx_f_3src_10splitPixel_calc_area(__pyx_v_start0, __pyx_v_istart0, __pyx_v_slope, __pyx_v_intercept);
+        *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_13 * __pyx_v_buffer.strides[0]) )) += __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(__pyx_v_start0, __pyx_v_istart0, __pyx_v_slope, __pyx_v_intercept);
 
-        /* "src/splitPixel.pyx":95
+        /* "pyFAI/ext/splitPixel.pyx":95
  *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
  *         else:
  *             if 0 <= start0 < buffer_size:             # <<<<<<<<<<<<<<
@@ -2512,7 +2514,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
       }
 
-      /* "src/splitPixel.pyx":97
+      /* "pyFAI/ext/splitPixel.pyx":97
  *             if 0 <= start0 < buffer_size:
  *                 buffer[istart0] += calc_area(start0, istart0, slope, intercept)
  *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):             # <<<<<<<<<<<<<<
@@ -2537,7 +2539,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
       for (__pyx_t_5 = (__pyx_t_6 - 1); __pyx_t_5 > __pyx_t_10; __pyx_t_5-=1) {
         __pyx_v_i = __pyx_t_5;
 
-        /* "src/splitPixel.pyx":98
+        /* "pyFAI/ext/splitPixel.pyx":98
  *                 buffer[istart0] += calc_area(start0, istart0, slope, intercept)
  *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
  *                 buffer[i] += calc_area(i+1, i, slope, intercept)             # <<<<<<<<<<<<<<
@@ -2545,10 +2547,10 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  *                 buffer[istop0] += calc_area(floor(stop0+1), stop0, slope, intercept)
  */
         __pyx_t_14 = __pyx_v_i;
-        *((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_14 * __pyx_v_buffer.strides[0]) )) += __pyx_f_3src_10splitPixel_calc_area((__pyx_v_i + 1), __pyx_v_i, __pyx_v_slope, __pyx_v_intercept);
+        *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_14 * __pyx_v_buffer.strides[0]) )) += __pyx_f_5pyFAI_3ext_10splitPixel_calc_area((__pyx_v_i + 1), __pyx_v_i, __pyx_v_slope, __pyx_v_intercept);
       }
 
-      /* "src/splitPixel.pyx":99
+      /* "pyFAI/ext/splitPixel.pyx":99
  *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
  *                 buffer[i] += calc_area(i+1, i, slope, intercept)
  *             if buffer_size > stop0 >= 0:             # <<<<<<<<<<<<<<
@@ -2562,7 +2564,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
       __pyx_t_2 = (__pyx_t_1 != 0);
       if (__pyx_t_2) {
 
-        /* "src/splitPixel.pyx":100
+        /* "pyFAI/ext/splitPixel.pyx":100
  *                 buffer[i] += calc_area(i+1, i, slope, intercept)
  *             if buffer_size > stop0 >= 0:
  *                 buffer[istop0] += calc_area(floor(stop0+1), stop0, slope, intercept)             # <<<<<<<<<<<<<<
@@ -2570,9 +2572,9 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  * 
  */
         __pyx_t_15 = __pyx_v_istop0;
-        *((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_15 * __pyx_v_buffer.strides[0]) )) += __pyx_f_3src_10splitPixel_calc_area(floor((__pyx_v_stop0 + 1.0)), __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
+        *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_15 * __pyx_v_buffer.strides[0]) )) += __pyx_f_5pyFAI_3ext_10splitPixel_calc_area(floor((__pyx_v_stop0 + 1.0)), __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
 
-        /* "src/splitPixel.pyx":99
+        /* "pyFAI/ext/splitPixel.pyx":99
  *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
  *                 buffer[i] += calc_area(i+1, i, slope, intercept)
  *             if buffer_size > stop0 >= 0:             # <<<<<<<<<<<<<<
@@ -2585,7 +2587,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
   }
   __pyx_L4:;
 
-  /* "src/splitPixel.pyx":74
+  /* "pyFAI/ext/splitPixel.pyx":74
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * cdef inline void integrate(position_t[:] buffer, int buffer_size, position_t start0, position_t start1, position_t stop0, position_t stop1) nogil:             # <<<<<<<<<<<<<<
@@ -2597,7 +2599,7 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
   __pyx_L0:;
 }
 
-/* "src/splitPixel.pyx":106
+/* "pyFAI/ext/splitPixel.pyx":106
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -2606,10 +2608,10 @@ static CYTHON_INLINE void __pyx_f_3src_10splitPixel_integrate(__Pyx_memviewslice
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_3src_10splitPixel_fullSplit1D[] = "\n    Calculates histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D.\n    No compromise for speed has been made here.\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64) with flat image\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return 2theta, I, weighted histogram, unweighted histogram\n    ";
-static PyMethodDef __pyx_mdef_3src_10splitPixel_1fullSplit1D = {"fullSplit1D", (PyCFunction)__pyx_pw_3src_10splitPixel_1fullSplit1D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_10splitPixel_fullSplit1D};
-static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_10splitPixel_fullSplit1D[] = "\n    Calculates histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D.\n    No compromise for speed has been made here.\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64) with flat image\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return 2theta, I, weighted histogram, unweighted histogram\n    ";
+static PyMethodDef __pyx_mdef_5pyFAI_3ext_10splitPixel_1fullSplit1D = {"fullSplit1D", (PyCFunction)__pyx_pw_5pyFAI_3ext_10splitPixel_1fullSplit1D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_10splitPixel_fullSplit1D};
+static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
   PyArrayObject *__pyx_v_weights = 0;
   int __pyx_v_bins;
@@ -2634,7 +2636,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_pos,&__pyx_n_s_weights,&__pyx_n_s_bins,&__pyx_n_s_pos0Range,&__pyx_n_s_pos1Range,&__pyx_n_s_dummy,&__pyx_n_s_delta_dummy,&__pyx_n_s_mask,&__pyx_n_s_dark,&__pyx_n_s_flat,&__pyx_n_s_solidangle,&__pyx_n_s_polarization,&__pyx_n_s_empty,&__pyx_n_s_normalization_factor,0};
     PyObject* values[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    /* "src/splitPixel.pyx":109
+    /* "pyFAI/ext/splitPixel.pyx":109
  *                 numpy.ndarray weights not None,
  *                 int bins=100,
  *                 pos0Range=None,             # <<<<<<<<<<<<<<
@@ -2643,7 +2645,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[3] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":110
+    /* "pyFAI/ext/splitPixel.pyx":110
  *                 int bins=100,
  *                 pos0Range=None,
  *                 pos1Range=None,             # <<<<<<<<<<<<<<
@@ -2652,7 +2654,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[4] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":111
+    /* "pyFAI/ext/splitPixel.pyx":111
  *                 pos0Range=None,
  *                 pos1Range=None,
  *                 dummy=None,             # <<<<<<<<<<<<<<
@@ -2661,7 +2663,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[5] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":112
+    /* "pyFAI/ext/splitPixel.pyx":112
  *                 pos1Range=None,
  *                 dummy=None,
  *                 delta_dummy=None,             # <<<<<<<<<<<<<<
@@ -2670,7 +2672,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[6] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":113
+    /* "pyFAI/ext/splitPixel.pyx":113
  *                 dummy=None,
  *                 delta_dummy=None,
  *                 mask=None,             # <<<<<<<<<<<<<<
@@ -2679,7 +2681,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[7] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":114
+    /* "pyFAI/ext/splitPixel.pyx":114
  *                 delta_dummy=None,
  *                 mask=None,
  *                 dark=None,             # <<<<<<<<<<<<<<
@@ -2688,7 +2690,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[8] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":115
+    /* "pyFAI/ext/splitPixel.pyx":115
  *                 mask=None,
  *                 dark=None,
  *                 flat=None,             # <<<<<<<<<<<<<<
@@ -2697,7 +2699,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[9] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":116
+    /* "pyFAI/ext/splitPixel.pyx":116
  *                 dark=None,
  *                 flat=None,
  *                 solidangle=None,             # <<<<<<<<<<<<<<
@@ -2706,7 +2708,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
  */
     values[10] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":117
+    /* "pyFAI/ext/splitPixel.pyx":117
  *                 flat=None,
  *                 solidangle=None,
  *                 polarization=None,             # <<<<<<<<<<<<<<
@@ -2860,15 +2862,15 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("fullSplit1D", 0, 2, 14, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("src.splitPixel.fullSplit1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyFAI.ext.splitPixel.fullSplit1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pos), __pyx_ptype_5numpy_ndarray, 0, "pos", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_weights), __pyx_ptype_5numpy_ndarray, 0, "weights", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_3src_10splitPixel_fullSplit1D(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_pos0Range, __pyx_v_pos1Range, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_mask, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization, __pyx_v_empty, __pyx_v_normalization_factor);
+  __pyx_r = __pyx_pf_5pyFAI_3ext_10splitPixel_fullSplit1D(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_pos0Range, __pyx_v_pos1Range, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_mask, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization, __pyx_v_empty, __pyx_v_normalization_factor);
 
-  /* "src/splitPixel.pyx":106
+  /* "pyFAI/ext/splitPixel.pyx":106
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -2885,7 +2887,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_1fullSplit1D(PyObject *__pyx_self, P
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor) {
+static PyObject *__pyx_pf_5pyFAI_3ext_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor) {
   int __pyx_v_size;
   __Pyx_memviewslice __pyx_v_cpos = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_cdata = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2898,36 +2900,36 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __Pyx_memviewslice __pyx_v_cpolarization = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_csolidangle = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_buffer = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __pyx_t_3src_10splitPixel_data_t __pyx_v_cdummy;
-  __pyx_t_3src_10splitPixel_data_t __pyx_v_cddummy;
-  __pyx_t_3src_10splitPixel_data_t __pyx_v_data;
-  CYTHON_UNUSED __pyx_t_3src_10splitPixel_position_t __pyx_v_deltaR;
-  CYTHON_UNUSED __pyx_t_3src_10splitPixel_position_t __pyx_v_deltaL;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_one_over_area;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_pos0_min;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_pos0_max;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_pos0_maxin;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_pos1_min;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_pos1_max;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_pos1_maxin;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_aera_pixel;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_sum_area;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_sub_area;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_dpos;
-  CYTHON_UNUSED __pyx_t_3src_10splitPixel_position_t __pyx_v_fbin0_min;
-  CYTHON_UNUSED __pyx_t_3src_10splitPixel_position_t __pyx_v_fbin0_max;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_a0;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_b0;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_c0;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_d0;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_max0;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_min0;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_a1;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_b1;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_c1;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_d1;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_max1;
-  __pyx_t_3src_10splitPixel_position_t __pyx_v_min1;
+  __pyx_t_5pyFAI_3ext_10splitPixel_data_t __pyx_v_cdummy;
+  __pyx_t_5pyFAI_3ext_10splitPixel_data_t __pyx_v_cddummy;
+  __pyx_t_5pyFAI_3ext_10splitPixel_data_t __pyx_v_data;
+  CYTHON_UNUSED __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_deltaR;
+  CYTHON_UNUSED __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_deltaL;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_one_over_area;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_pos0_min;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_pos0_max;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_pos0_maxin;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_pos1_min;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_pos1_max;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_pos1_maxin;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_aera_pixel;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_sum_area;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_sub_area;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_dpos;
+  CYTHON_UNUSED __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_fbin0_min;
+  CYTHON_UNUSED __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_fbin0_max;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_a0;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_b0;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_c0;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_d0;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_max0;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_min0;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_a1;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_b1;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_c1;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_d1;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_max1;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_v_min1;
   double __pyx_v_epsilon;
   int __pyx_v_check_pos1;
   int __pyx_v_check_mask;
@@ -2969,7 +2971,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __Pyx_memviewslice __pyx_t_15 = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_t_16;
   Py_ssize_t __pyx_t_17;
-  __pyx_t_3src_10splitPixel_position_t __pyx_t_18;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_t_18;
   int __pyx_t_19;
   Py_ssize_t __pyx_t_20;
   Py_ssize_t __pyx_t_21;
@@ -3003,10 +3005,10 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   Py_ssize_t __pyx_t_49;
   Py_ssize_t __pyx_t_50;
   Py_ssize_t __pyx_t_51;
-  __pyx_t_3src_10splitPixel_position_t __pyx_t_52;
-  __pyx_t_3src_10splitPixel_position_t __pyx_t_53;
-  __pyx_t_3src_10splitPixel_position_t __pyx_t_54;
-  __pyx_t_3src_10splitPixel_position_t __pyx_t_55;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_t_52;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_t_53;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_t_54;
+  __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_t_55;
   PyObject *__pyx_t_56 = NULL;
   PyObject *__pyx_t_57 = NULL;
   double __pyx_t_58;
@@ -3073,7 +3075,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_pybuffernd_outMerge.data = NULL;
   __pyx_pybuffernd_outMerge.rcbuffer = &__pyx_pybuffer_outMerge;
 
-  /* "src/splitPixel.pyx":145
+  /* "pyFAI/ext/splitPixel.pyx":145
  *     @return 2theta, I, weighted histogram, unweighted histogram
  *     """
  *     cdef int  size = weights.size             # <<<<<<<<<<<<<<
@@ -3086,7 +3088,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_size = __pyx_t_2;
 
-  /* "src/splitPixel.pyx":146
+  /* "pyFAI/ext/splitPixel.pyx":146
  *     """
  *     cdef int  size = weights.size
  *     if pos.ndim>3: #create a view             # <<<<<<<<<<<<<<
@@ -3096,7 +3098,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_t_3 = ((__pyx_v_pos->nd > 3) != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":147
+    /* "pyFAI/ext/splitPixel.pyx":147
  *     cdef int  size = weights.size
  *     if pos.ndim>3: #create a view
  *         pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
@@ -3112,7 +3114,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
     __Pyx_DECREF_SET(__pyx_v_pos, ((PyArrayObject *)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "src/splitPixel.pyx":146
+    /* "pyFAI/ext/splitPixel.pyx":146
  *     """
  *     cdef int  size = weights.size
  *     if pos.ndim>3: #create a view             # <<<<<<<<<<<<<<
@@ -3121,7 +3123,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
  */
   }
 
-  /* "src/splitPixel.pyx":148
+  /* "pyFAI/ext/splitPixel.pyx":148
  *     if pos.ndim>3: #create a view
  *         pos = pos.reshape((-1,4,2))
  *     assert pos.shape[0] == size             # <<<<<<<<<<<<<<
@@ -3137,7 +3139,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   }
   #endif
 
-  /* "src/splitPixel.pyx":149
+  /* "pyFAI/ext/splitPixel.pyx":149
  *         pos = pos.reshape((-1,4,2))
  *     assert pos.shape[0] == size
  *     assert pos.shape[1] == 4             # <<<<<<<<<<<<<<
@@ -3153,7 +3155,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   }
   #endif
 
-  /* "src/splitPixel.pyx":150
+  /* "pyFAI/ext/splitPixel.pyx":150
  *     assert pos.shape[0] == size
  *     assert pos.shape[1] == 4
  *     assert pos.shape[2] == 2             # <<<<<<<<<<<<<<
@@ -3169,7 +3171,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   }
   #endif
 
-  /* "src/splitPixel.pyx":151
+  /* "pyFAI/ext/splitPixel.pyx":151
  *     assert pos.shape[1] == 4
  *     assert pos.shape[2] == 2
  *     assert pos.ndim == 3             # <<<<<<<<<<<<<<
@@ -3185,7 +3187,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   }
   #endif
 
-  /* "src/splitPixel.pyx":152
+  /* "pyFAI/ext/splitPixel.pyx":152
  *     assert pos.shape[2] == 2
  *     assert pos.ndim == 3
  *     assert bins > 1             # <<<<<<<<<<<<<<
@@ -3201,7 +3203,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   }
   #endif
 
-  /* "src/splitPixel.pyx":154
+  /* "pyFAI/ext/splitPixel.pyx":154
  *     assert bins > 1
  *     cdef:
  *         position_t[:,:,:] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -3232,14 +3234,14 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_8 = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn___pyx_t_3src_10splitPixel_position_t(__pyx_t_7);
+  __pyx_t_8 = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t(__pyx_t_7);
   if (unlikely(!__pyx_t_8.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_v_cpos = __pyx_t_8;
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "src/splitPixel.pyx":155
+  /* "pyFAI/ext/splitPixel.pyx":155
  *     cdef:
  *         position_t[:,:,:] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
  *         data_t[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -3290,14 +3292,14 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_data_t(__pyx_t_6);
+  __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t(__pyx_t_6);
   if (unlikely(!__pyx_t_9.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_v_cdata = __pyx_t_9;
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "src/splitPixel.pyx":156
+  /* "pyFAI/ext/splitPixel.pyx":156
  *         position_t[:,:,:] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
  *         data_t[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -3344,7 +3346,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_outData = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "src/splitPixel.pyx":157
+  /* "pyFAI/ext/splitPixel.pyx":157
  *         data_t[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -3391,7 +3393,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_outCount = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "src/splitPixel.pyx":158
+  /* "pyFAI/ext/splitPixel.pyx":158
  *         numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -3438,7 +3440,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_outMerge = ((PyArrayObject *)__pyx_t_7);
   __pyx_t_7 = 0;
 
-  /* "src/splitPixel.pyx":163
+  /* "pyFAI/ext/splitPixel.pyx":163
  *         position_t[:] buffer
  * 
  *         data_t cdummy=0, cddummy=0, data=0             # <<<<<<<<<<<<<<
@@ -3449,7 +3451,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_cddummy = 0.0;
   __pyx_v_data = 0.0;
 
-  /* "src/splitPixel.pyx":164
+  /* "pyFAI/ext/splitPixel.pyx":164
  * 
  *         data_t cdummy=0, cddummy=0, data=0
  *         position_t deltaR=0, deltaL=0, one_over_area=0             # <<<<<<<<<<<<<<
@@ -3460,7 +3462,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_deltaL = 0.0;
   __pyx_v_one_over_area = 0.0;
 
-  /* "src/splitPixel.pyx":165
+  /* "pyFAI/ext/splitPixel.pyx":165
  *         data_t cdummy=0, cddummy=0, data=0
  *         position_t deltaR=0, deltaL=0, one_over_area=0
  *         position_t pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0             # <<<<<<<<<<<<<<
@@ -3474,7 +3476,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_pos1_max = 0.0;
   __pyx_v_pos1_maxin = 0.0;
 
-  /* "src/splitPixel.pyx":166
+  /* "pyFAI/ext/splitPixel.pyx":166
  *         position_t deltaR=0, deltaL=0, one_over_area=0
  *         position_t pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
  *         position_t aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0             # <<<<<<<<<<<<<<
@@ -3488,7 +3490,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_fbin0_min = 0.0;
   __pyx_v_fbin0_max = 0.0;
 
-  /* "src/splitPixel.pyx":167
+  /* "pyFAI/ext/splitPixel.pyx":167
  *         position_t pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
  *         position_t aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0
  *         position_t a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0             # <<<<<<<<<<<<<<
@@ -3508,7 +3510,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_max1 = 0.0;
   __pyx_v_min1 = 0.0;
 
-  /* "src/splitPixel.pyx":168
+  /* "pyFAI/ext/splitPixel.pyx":168
  *         position_t aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0
  *         position_t a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
  *         double epsilon=1e-10             # <<<<<<<<<<<<<<
@@ -3517,7 +3519,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
  */
   __pyx_v_epsilon = 1e-10;
 
-  /* "src/splitPixel.pyx":170
+  /* "pyFAI/ext/splitPixel.pyx":170
  *         double epsilon=1e-10
  * 
  *         bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False             # <<<<<<<<<<<<<<
@@ -3532,7 +3534,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_do_polarization = 0;
   __pyx_v_do_solidangle = 0;
 
-  /* "src/splitPixel.pyx":171
+  /* "pyFAI/ext/splitPixel.pyx":171
  * 
  *         bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
  *         int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0             # <<<<<<<<<<<<<<
@@ -3546,7 +3548,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_v_bin0_max = 0;
   __pyx_v_bin0_min = 0;
 
-  /* "src/splitPixel.pyx":172
+  /* "pyFAI/ext/splitPixel.pyx":172
  *         bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
  *         int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
  *     buffer = view.array(shape=(bins,),itemsize=sizeof(position_t), format="d")             # <<<<<<<<<<<<<<
@@ -3564,7 +3566,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_t_5 = 0;
   if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_shape, __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyInt_FromSize_t((sizeof(__pyx_t_3src_10splitPixel_position_t))); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyInt_FromSize_t((sizeof(__pyx_t_5pyFAI_3ext_10splitPixel_position_t))); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   if (PyDict_SetItem(__pyx_t_7, __pyx_n_s_itemsize, __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -3572,14 +3574,14 @@ static PyObject *__pyx_pf_3src_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *
   __pyx_t_4 = __Pyx_PyObject_Call(((PyObject *)__pyx_array_type), __pyx_empty_tuple, __pyx_t_7); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_position_t(__pyx_t_4);
+  __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t(__pyx_t_4);
   if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_buffer = __pyx_t_13;
   __pyx_t_13.memview = NULL;
   __pyx_t_13.data = NULL;
 
-  /* "src/splitPixel.pyx":173
+  /* "pyFAI/ext/splitPixel.pyx":173
  *         int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
  *     buffer = view.array(shape=(bins,),itemsize=sizeof(position_t), format="d")
  *     buffer[:] = 0             # <<<<<<<<<<<<<<
@@ -3594,7 +3596,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __pyx_t_13.suboffsets[0] = -1;
 
 {
-      __pyx_t_3src_10splitPixel_position_t __pyx_temp_scalar = 0.0;
+      __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_temp_scalar = 0.0;
       {
           Py_ssize_t __pyx_temp_extent_0 = __pyx_t_13.shape[0];
           Py_ssize_t __pyx_temp_stride_0 = __pyx_t_13.strides[0];
@@ -3602,14 +3604,14 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           Py_ssize_t __pyx_temp_idx_0;
           __pyx_temp_pointer_0 = __pyx_t_13.data;
           for (__pyx_temp_idx_0 = 0; __pyx_temp_idx_0 < __pyx_temp_extent_0; __pyx_temp_idx_0++) {
-            *((__pyx_t_3src_10splitPixel_position_t *) __pyx_temp_pointer_0) = __pyx_temp_scalar;
+            *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) __pyx_temp_pointer_0) = __pyx_temp_scalar;
             __pyx_temp_pointer_0 += __pyx_temp_stride_0;
           }
       }
   }
   __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
 
-  /* "src/splitPixel.pyx":175
+  /* "pyFAI/ext/splitPixel.pyx":175
  *     buffer[:] = 0
  * 
  *     if mask is not None:             # <<<<<<<<<<<<<<
@@ -3620,7 +3622,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_14 = (__pyx_t_3 != 0);
   if (__pyx_t_14) {
 
-    /* "src/splitPixel.pyx":176
+    /* "pyFAI/ext/splitPixel.pyx":176
  * 
  *     if mask is not None:
  *         check_mask = True             # <<<<<<<<<<<<<<
@@ -3629,7 +3631,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_check_mask = 1;
 
-    /* "src/splitPixel.pyx":177
+    /* "pyFAI/ext/splitPixel.pyx":177
  *     if mask is not None:
  *         check_mask = True
  *         assert mask.size == size             # <<<<<<<<<<<<<<
@@ -3654,7 +3656,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     }
     #endif
 
-    /* "src/splitPixel.pyx":178
+    /* "pyFAI/ext/splitPixel.pyx":178
  *         check_mask = True
  *         assert mask.size == size
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)             # <<<<<<<<<<<<<<
@@ -3712,7 +3714,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __pyx_t_15.memview = NULL;
     __pyx_t_15.data = NULL;
 
-    /* "src/splitPixel.pyx":175
+    /* "pyFAI/ext/splitPixel.pyx":175
  *     buffer[:] = 0
  * 
  *     if mask is not None:             # <<<<<<<<<<<<<<
@@ -3721,7 +3723,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
   }
 
-  /* "src/splitPixel.pyx":180
+  /* "pyFAI/ext/splitPixel.pyx":180
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
  * 
  *     if pos0Range is not None and len(pos0Range) > 1:             # <<<<<<<<<<<<<<
@@ -3741,7 +3743,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_L6_bool_binop_done:;
   if (__pyx_t_14) {
 
-    /* "src/splitPixel.pyx":181
+    /* "pyFAI/ext/splitPixel.pyx":181
  * 
  *     if pos0Range is not None and len(pos0Range) > 1:
  *         pos0_min = min(pos0Range)             # <<<<<<<<<<<<<<
@@ -3760,7 +3762,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_v_pos0_min = __pyx_t_18;
 
-    /* "src/splitPixel.pyx":182
+    /* "pyFAI/ext/splitPixel.pyx":182
  *     if pos0Range is not None and len(pos0Range) > 1:
  *         pos0_min = min(pos0Range)
  *         pos0_maxin = max(pos0Range)             # <<<<<<<<<<<<<<
@@ -3779,7 +3781,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_v_pos0_maxin = __pyx_t_18;
 
-    /* "src/splitPixel.pyx":180
+    /* "pyFAI/ext/splitPixel.pyx":180
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
  * 
  *     if pos0Range is not None and len(pos0Range) > 1:             # <<<<<<<<<<<<<<
@@ -3789,7 +3791,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     goto __pyx_L5;
   }
 
-  /* "src/splitPixel.pyx":184
+  /* "pyFAI/ext/splitPixel.pyx":184
  *         pos0_maxin = max(pos0Range)
  *     else:
  *         with nogil:             # <<<<<<<<<<<<<<
@@ -3804,7 +3806,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
         #endif
         /*try:*/ {
 
-          /* "src/splitPixel.pyx":185
+          /* "pyFAI/ext/splitPixel.pyx":185
  *     else:
  *         with nogil:
  *             for idx in range(size):             # <<<<<<<<<<<<<<
@@ -3815,7 +3817,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           for (__pyx_t_19 = 0; __pyx_t_19 < __pyx_t_2; __pyx_t_19+=1) {
             __pyx_v_idx = __pyx_t_19;
 
-            /* "src/splitPixel.pyx":186
+            /* "pyFAI/ext/splitPixel.pyx":186
  *         with nogil:
  *             for idx in range(size):
  *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -3835,7 +3837,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_L14_bool_binop_done:;
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":187
+              /* "pyFAI/ext/splitPixel.pyx":187
  *             for idx in range(size):
  *                 if (check_mask) and (cmask[idx]):
  *                     pos0_max = pos0_min = cpos[idx, 0, 0]             # <<<<<<<<<<<<<<
@@ -3845,11 +3847,11 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
               __pyx_t_21 = __pyx_v_idx;
               __pyx_t_22 = 0;
               __pyx_t_23 = 0;
-              __pyx_t_18 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_21 * __pyx_v_cpos.strides[0]) ) + __pyx_t_22 * __pyx_v_cpos.strides[1]) ) + __pyx_t_23 * __pyx_v_cpos.strides[2]) )));
+              __pyx_t_18 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_21 * __pyx_v_cpos.strides[0]) ) + __pyx_t_22 * __pyx_v_cpos.strides[1]) ) + __pyx_t_23 * __pyx_v_cpos.strides[2]) )));
               __pyx_v_pos0_max = __pyx_t_18;
               __pyx_v_pos0_min = __pyx_t_18;
 
-              /* "src/splitPixel.pyx":188
+              /* "pyFAI/ext/splitPixel.pyx":188
  *                 if (check_mask) and (cmask[idx]):
  *                     pos0_max = pos0_min = cpos[idx, 0, 0]
  *                     pos1_max = pos1_min = cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
@@ -3859,11 +3861,11 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
               __pyx_t_24 = __pyx_v_idx;
               __pyx_t_25 = 0;
               __pyx_t_26 = 1;
-              __pyx_t_18 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_24 * __pyx_v_cpos.strides[0]) ) + __pyx_t_25 * __pyx_v_cpos.strides[1]) ) + __pyx_t_26 * __pyx_v_cpos.strides[2]) )));
+              __pyx_t_18 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_24 * __pyx_v_cpos.strides[0]) ) + __pyx_t_25 * __pyx_v_cpos.strides[1]) ) + __pyx_t_26 * __pyx_v_cpos.strides[2]) )));
               __pyx_v_pos1_max = __pyx_t_18;
               __pyx_v_pos1_min = __pyx_t_18;
 
-              /* "src/splitPixel.pyx":189
+              /* "pyFAI/ext/splitPixel.pyx":189
  *                     pos0_max = pos0_min = cpos[idx, 0, 0]
  *                     pos1_max = pos1_min = cpos[idx, 0, 1]
  *                     break             # <<<<<<<<<<<<<<
@@ -3872,7 +3874,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               goto __pyx_L12_break;
 
-              /* "src/splitPixel.pyx":186
+              /* "pyFAI/ext/splitPixel.pyx":186
  *         with nogil:
  *             for idx in range(size):
  *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -3883,7 +3885,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           }
           __pyx_L12_break:;
 
-          /* "src/splitPixel.pyx":190
+          /* "pyFAI/ext/splitPixel.pyx":190
  *                     pos1_max = pos1_min = cpos[idx, 0, 1]
  *                     break
  *             for idx in range(size):             # <<<<<<<<<<<<<<
@@ -3894,7 +3896,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           for (__pyx_t_19 = 0; __pyx_t_19 < __pyx_t_2; __pyx_t_19+=1) {
             __pyx_v_idx = __pyx_t_19;
 
-            /* "src/splitPixel.pyx":191
+            /* "pyFAI/ext/splitPixel.pyx":191
  *                     break
  *             for idx in range(size):
  *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -3914,7 +3916,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_L19_bool_binop_done:;
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":192
+              /* "pyFAI/ext/splitPixel.pyx":192
  *             for idx in range(size):
  *                 if (check_mask) and (cmask[idx]):
  *                     continue             # <<<<<<<<<<<<<<
@@ -3923,7 +3925,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               goto __pyx_L16_continue;
 
-              /* "src/splitPixel.pyx":191
+              /* "pyFAI/ext/splitPixel.pyx":191
  *                     break
  *             for idx in range(size):
  *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -3932,7 +3934,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             }
 
-            /* "src/splitPixel.pyx":193
+            /* "pyFAI/ext/splitPixel.pyx":193
  *                 if (check_mask) and (cmask[idx]):
  *                     continue
  *                 a0 = cpos[idx, 0, 0]             # <<<<<<<<<<<<<<
@@ -3942,9 +3944,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_28 = __pyx_v_idx;
             __pyx_t_29 = 0;
             __pyx_t_30 = 0;
-            __pyx_v_a0 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_28 * __pyx_v_cpos.strides[0]) ) + __pyx_t_29 * __pyx_v_cpos.strides[1]) ) + __pyx_t_30 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_a0 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_28 * __pyx_v_cpos.strides[0]) ) + __pyx_t_29 * __pyx_v_cpos.strides[1]) ) + __pyx_t_30 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":194
+            /* "pyFAI/ext/splitPixel.pyx":194
  *                     continue
  *                 a0 = cpos[idx, 0, 0]
  *                 a1 = cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
@@ -3954,9 +3956,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_31 = __pyx_v_idx;
             __pyx_t_32 = 0;
             __pyx_t_33 = 1;
-            __pyx_v_a1 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_31 * __pyx_v_cpos.strides[0]) ) + __pyx_t_32 * __pyx_v_cpos.strides[1]) ) + __pyx_t_33 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_a1 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_31 * __pyx_v_cpos.strides[0]) ) + __pyx_t_32 * __pyx_v_cpos.strides[1]) ) + __pyx_t_33 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":195
+            /* "pyFAI/ext/splitPixel.pyx":195
  *                 a0 = cpos[idx, 0, 0]
  *                 a1 = cpos[idx, 0, 1]
  *                 b0 = cpos[idx, 1, 0]             # <<<<<<<<<<<<<<
@@ -3966,9 +3968,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_34 = __pyx_v_idx;
             __pyx_t_35 = 1;
             __pyx_t_36 = 0;
-            __pyx_v_b0 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_34 * __pyx_v_cpos.strides[0]) ) + __pyx_t_35 * __pyx_v_cpos.strides[1]) ) + __pyx_t_36 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_b0 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_34 * __pyx_v_cpos.strides[0]) ) + __pyx_t_35 * __pyx_v_cpos.strides[1]) ) + __pyx_t_36 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":196
+            /* "pyFAI/ext/splitPixel.pyx":196
  *                 a1 = cpos[idx, 0, 1]
  *                 b0 = cpos[idx, 1, 0]
  *                 b1 = cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
@@ -3978,9 +3980,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_37 = __pyx_v_idx;
             __pyx_t_38 = 1;
             __pyx_t_39 = 1;
-            __pyx_v_b1 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_37 * __pyx_v_cpos.strides[0]) ) + __pyx_t_38 * __pyx_v_cpos.strides[1]) ) + __pyx_t_39 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_b1 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_37 * __pyx_v_cpos.strides[0]) ) + __pyx_t_38 * __pyx_v_cpos.strides[1]) ) + __pyx_t_39 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":197
+            /* "pyFAI/ext/splitPixel.pyx":197
  *                 b0 = cpos[idx, 1, 0]
  *                 b1 = cpos[idx, 1, 1]
  *                 c0 = cpos[idx, 2, 0]             # <<<<<<<<<<<<<<
@@ -3990,9 +3992,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_40 = __pyx_v_idx;
             __pyx_t_41 = 2;
             __pyx_t_42 = 0;
-            __pyx_v_c0 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_40 * __pyx_v_cpos.strides[0]) ) + __pyx_t_41 * __pyx_v_cpos.strides[1]) ) + __pyx_t_42 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_c0 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_40 * __pyx_v_cpos.strides[0]) ) + __pyx_t_41 * __pyx_v_cpos.strides[1]) ) + __pyx_t_42 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":198
+            /* "pyFAI/ext/splitPixel.pyx":198
  *                 b1 = cpos[idx, 1, 1]
  *                 c0 = cpos[idx, 2, 0]
  *                 c1 = cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
@@ -4002,9 +4004,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_43 = __pyx_v_idx;
             __pyx_t_44 = 2;
             __pyx_t_45 = 1;
-            __pyx_v_c1 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_43 * __pyx_v_cpos.strides[0]) ) + __pyx_t_44 * __pyx_v_cpos.strides[1]) ) + __pyx_t_45 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_c1 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_43 * __pyx_v_cpos.strides[0]) ) + __pyx_t_44 * __pyx_v_cpos.strides[1]) ) + __pyx_t_45 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":199
+            /* "pyFAI/ext/splitPixel.pyx":199
  *                 c0 = cpos[idx, 2, 0]
  *                 c1 = cpos[idx, 2, 1]
  *                 d0 = cpos[idx, 3, 0]             # <<<<<<<<<<<<<<
@@ -4014,9 +4016,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_46 = __pyx_v_idx;
             __pyx_t_47 = 3;
             __pyx_t_48 = 0;
-            __pyx_v_d0 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_46 * __pyx_v_cpos.strides[0]) ) + __pyx_t_47 * __pyx_v_cpos.strides[1]) ) + __pyx_t_48 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_d0 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_46 * __pyx_v_cpos.strides[0]) ) + __pyx_t_47 * __pyx_v_cpos.strides[1]) ) + __pyx_t_48 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":200
+            /* "pyFAI/ext/splitPixel.pyx":200
  *                 c1 = cpos[idx, 2, 1]
  *                 d0 = cpos[idx, 3, 0]
  *                 d1 = cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
@@ -4026,9 +4028,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_49 = __pyx_v_idx;
             __pyx_t_50 = 3;
             __pyx_t_51 = 1;
-            __pyx_v_d1 = (*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_49 * __pyx_v_cpos.strides[0]) ) + __pyx_t_50 * __pyx_v_cpos.strides[1]) ) + __pyx_t_51 * __pyx_v_cpos.strides[2]) )));
+            __pyx_v_d1 = (*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_49 * __pyx_v_cpos.strides[0]) ) + __pyx_t_50 * __pyx_v_cpos.strides[1]) ) + __pyx_t_51 * __pyx_v_cpos.strides[2]) )));
 
-            /* "src/splitPixel.pyx":201
+            /* "pyFAI/ext/splitPixel.pyx":201
  *                 d0 = cpos[idx, 3, 0]
  *                 d1 = cpos[idx, 3, 1]
  *                 min0 = min(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
@@ -4058,7 +4060,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_min0 = __pyx_t_55;
 
-            /* "src/splitPixel.pyx":202
+            /* "pyFAI/ext/splitPixel.pyx":202
  *                 d1 = cpos[idx, 3, 1]
  *                 min0 = min(a0, b0, c0, d0)
  *                 max0 = max(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
@@ -4088,7 +4090,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_max0 = __pyx_t_54;
 
-            /* "src/splitPixel.pyx":203
+            /* "pyFAI/ext/splitPixel.pyx":203
  *                 min0 = min(a0, b0, c0, d0)
  *                 max0 = max(a0, b0, c0, d0)
  *                 if max0>pos0_max:             # <<<<<<<<<<<<<<
@@ -4098,7 +4100,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_14 = ((__pyx_v_max0 > __pyx_v_pos0_max) != 0);
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":204
+              /* "pyFAI/ext/splitPixel.pyx":204
  *                 max0 = max(a0, b0, c0, d0)
  *                 if max0>pos0_max:
  *                     pos0_max = max0             # <<<<<<<<<<<<<<
@@ -4107,7 +4109,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               __pyx_v_pos0_max = __pyx_v_max0;
 
-              /* "src/splitPixel.pyx":203
+              /* "pyFAI/ext/splitPixel.pyx":203
  *                 min0 = min(a0, b0, c0, d0)
  *                 max0 = max(a0, b0, c0, d0)
  *                 if max0>pos0_max:             # <<<<<<<<<<<<<<
@@ -4116,7 +4118,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             }
 
-            /* "src/splitPixel.pyx":205
+            /* "pyFAI/ext/splitPixel.pyx":205
  *                 if max0>pos0_max:
  *                     pos0_max = max0
  *                 if min0<pos0_min:             # <<<<<<<<<<<<<<
@@ -4126,7 +4128,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_14 = ((__pyx_v_min0 < __pyx_v_pos0_min) != 0);
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":206
+              /* "pyFAI/ext/splitPixel.pyx":206
  *                     pos0_max = max0
  *                 if min0<pos0_min:
  *                     pos0_min = min0             # <<<<<<<<<<<<<<
@@ -4135,7 +4137,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               __pyx_v_pos0_min = __pyx_v_min0;
 
-              /* "src/splitPixel.pyx":205
+              /* "pyFAI/ext/splitPixel.pyx":205
  *                 if max0>pos0_max:
  *                     pos0_max = max0
  *                 if min0<pos0_min:             # <<<<<<<<<<<<<<
@@ -4144,7 +4146,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             }
 
-            /* "src/splitPixel.pyx":207
+            /* "pyFAI/ext/splitPixel.pyx":207
  *                 if min0<pos0_min:
  *                     pos0_min = min0
  *                 min1 = min(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
@@ -4174,7 +4176,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_min1 = __pyx_t_53;
 
-            /* "src/splitPixel.pyx":208
+            /* "pyFAI/ext/splitPixel.pyx":208
  *                     pos0_min = min0
  *                 min1 = min(a1, b1, c1, d1)
  *                 max1 = max(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
@@ -4204,7 +4206,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_max1 = __pyx_t_52;
 
-            /* "src/splitPixel.pyx":209
+            /* "pyFAI/ext/splitPixel.pyx":209
  *                 min1 = min(a1, b1, c1, d1)
  *                 max1 = max(a1, b1, c1, d1)
  *                 if max1>pos1_max:             # <<<<<<<<<<<<<<
@@ -4214,7 +4216,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_14 = ((__pyx_v_max1 > __pyx_v_pos1_max) != 0);
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":210
+              /* "pyFAI/ext/splitPixel.pyx":210
  *                 max1 = max(a1, b1, c1, d1)
  *                 if max1>pos1_max:
  *                     pos1_max = max1             # <<<<<<<<<<<<<<
@@ -4223,7 +4225,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               __pyx_v_pos1_max = __pyx_v_max1;
 
-              /* "src/splitPixel.pyx":209
+              /* "pyFAI/ext/splitPixel.pyx":209
  *                 min1 = min(a1, b1, c1, d1)
  *                 max1 = max(a1, b1, c1, d1)
  *                 if max1>pos1_max:             # <<<<<<<<<<<<<<
@@ -4232,7 +4234,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             }
 
-            /* "src/splitPixel.pyx":211
+            /* "pyFAI/ext/splitPixel.pyx":211
  *                 if max1>pos1_max:
  *                     pos1_max = max1
  *                 if min1<pos1_min:             # <<<<<<<<<<<<<<
@@ -4242,7 +4244,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_14 = ((__pyx_v_min1 < __pyx_v_pos1_min) != 0);
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":212
+              /* "pyFAI/ext/splitPixel.pyx":212
  *                     pos1_max = max1
  *                 if min1<pos1_min:
  *                     pos1_min = min1             # <<<<<<<<<<<<<<
@@ -4251,7 +4253,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               __pyx_v_pos1_min = __pyx_v_min1;
 
-              /* "src/splitPixel.pyx":211
+              /* "pyFAI/ext/splitPixel.pyx":211
  *                 if max1>pos1_max:
  *                     pos1_max = max1
  *                 if min1<pos1_min:             # <<<<<<<<<<<<<<
@@ -4262,7 +4264,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_L16_continue:;
           }
 
-          /* "src/splitPixel.pyx":214
+          /* "pyFAI/ext/splitPixel.pyx":214
  *                     pos1_min = min1
  * 
  *             pos0_maxin = pos0_max             # <<<<<<<<<<<<<<
@@ -4272,7 +4274,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_v_pos0_maxin = __pyx_v_pos0_max;
         }
 
-        /* "src/splitPixel.pyx":184
+        /* "pyFAI/ext/splitPixel.pyx":184
  *         pos0_maxin = max(pos0Range)
  *     else:
  *         with nogil:             # <<<<<<<<<<<<<<
@@ -4298,7 +4300,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   }
   __pyx_L5:;
 
-  /* "src/splitPixel.pyx":215
+  /* "pyFAI/ext/splitPixel.pyx":215
  * 
  *             pos0_maxin = pos0_max
  *     if pos0_min<0:             # <<<<<<<<<<<<<<
@@ -4308,7 +4310,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_14 = ((__pyx_v_pos0_min < 0.0) != 0);
   if (__pyx_t_14) {
 
-    /* "src/splitPixel.pyx":216
+    /* "pyFAI/ext/splitPixel.pyx":216
  *             pos0_maxin = pos0_max
  *     if pos0_min<0:
  *         pos0_min=0             # <<<<<<<<<<<<<<
@@ -4317,7 +4319,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_pos0_min = 0.0;
 
-    /* "src/splitPixel.pyx":215
+    /* "pyFAI/ext/splitPixel.pyx":215
  * 
  *             pos0_maxin = pos0_max
  *     if pos0_min<0:             # <<<<<<<<<<<<<<
@@ -4326,16 +4328,16 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
   }
 
-  /* "src/splitPixel.pyx":217
+  /* "pyFAI/ext/splitPixel.pyx":217
  *     if pos0_min<0:
  *         pos0_min=0
  *     pos0_max = pos0_maxin * EPS32             # <<<<<<<<<<<<<<
  * 
  *     if pos1Range is not None and len(pos1Range) > 1:
  */
-  __pyx_v_pos0_max = (__pyx_v_pos0_maxin * __pyx_v_3src_10splitPixel_EPS32);
+  __pyx_v_pos0_max = (__pyx_v_pos0_maxin * __pyx_v_5pyFAI_3ext_10splitPixel_EPS32);
 
-  /* "src/splitPixel.pyx":219
+  /* "pyFAI/ext/splitPixel.pyx":219
  *     pos0_max = pos0_maxin * EPS32
  * 
  *     if pos1Range is not None and len(pos1Range) > 1:             # <<<<<<<<<<<<<<
@@ -4355,7 +4357,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_L27_bool_binop_done:;
   if (__pyx_t_14) {
 
-    /* "src/splitPixel.pyx":220
+    /* "pyFAI/ext/splitPixel.pyx":220
  * 
  *     if pos1Range is not None and len(pos1Range) > 1:
  *         pos1_min = min(pos1Range)             # <<<<<<<<<<<<<<
@@ -4374,7 +4376,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_v_pos1_min = __pyx_t_52;
 
-    /* "src/splitPixel.pyx":221
+    /* "pyFAI/ext/splitPixel.pyx":221
  *     if pos1Range is not None and len(pos1Range) > 1:
  *         pos1_min = min(pos1Range)
  *         pos1_maxin = max(pos1Range)             # <<<<<<<<<<<<<<
@@ -4393,7 +4395,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_v_pos1_maxin = __pyx_t_52;
 
-    /* "src/splitPixel.pyx":222
+    /* "pyFAI/ext/splitPixel.pyx":222
  *         pos1_min = min(pos1Range)
  *         pos1_maxin = max(pos1Range)
  *         check_pos1 = True             # <<<<<<<<<<<<<<
@@ -4402,7 +4404,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_check_pos1 = 1;
 
-    /* "src/splitPixel.pyx":219
+    /* "pyFAI/ext/splitPixel.pyx":219
  *     pos0_max = pos0_maxin * EPS32
  * 
  *     if pos1Range is not None and len(pos1Range) > 1:             # <<<<<<<<<<<<<<
@@ -4412,7 +4414,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     goto __pyx_L26;
   }
 
-  /* "src/splitPixel.pyx":224
+  /* "pyFAI/ext/splitPixel.pyx":224
  *         check_pos1 = True
  *     else:
  *         if min1==max1==0:             # <<<<<<<<<<<<<<
@@ -4427,7 +4429,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __pyx_t_3 = (__pyx_t_14 != 0);
     if (__pyx_t_3) {
 
-      /* "src/splitPixel.pyx":225
+      /* "pyFAI/ext/splitPixel.pyx":225
  *     else:
  *         if min1==max1==0:
  *             pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
@@ -4461,7 +4463,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_v_pos1_min = __pyx_t_52;
 
-      /* "src/splitPixel.pyx":226
+      /* "pyFAI/ext/splitPixel.pyx":226
  *         if min1==max1==0:
  *             pos1_min = pos[:, :, 1].min()
  *             pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
@@ -4495,7 +4497,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_v_pos1_maxin = __pyx_t_52;
 
-      /* "src/splitPixel.pyx":224
+      /* "pyFAI/ext/splitPixel.pyx":224
  *         check_pos1 = True
  *     else:
  *         if min1==max1==0:             # <<<<<<<<<<<<<<
@@ -4506,16 +4508,16 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   }
   __pyx_L26:;
 
-  /* "src/splitPixel.pyx":227
+  /* "pyFAI/ext/splitPixel.pyx":227
  *             pos1_min = pos[:, :, 1].min()
  *             pos1_maxin = pos[:, :, 1].max()
  *     pos1_max = pos1_maxin * EPS32             # <<<<<<<<<<<<<<
  *     dpos = (pos0_max - pos0_min) / (<  double > (bins))
  * 
  */
-  __pyx_v_pos1_max = (__pyx_v_pos1_maxin * __pyx_v_3src_10splitPixel_EPS32);
+  __pyx_v_pos1_max = (__pyx_v_pos1_maxin * __pyx_v_5pyFAI_3ext_10splitPixel_EPS32);
 
-  /* "src/splitPixel.pyx":228
+  /* "pyFAI/ext/splitPixel.pyx":228
  *             pos1_maxin = pos[:, :, 1].max()
  *     pos1_max = pos1_maxin * EPS32
  *     dpos = (pos0_max - pos0_min) / (<  double > (bins))             # <<<<<<<<<<<<<<
@@ -4524,7 +4526,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
   __pyx_v_dpos = ((__pyx_v_pos0_max - __pyx_v_pos0_min) / ((double)__pyx_v_bins));
 
-  /* "src/splitPixel.pyx":230
+  /* "pyFAI/ext/splitPixel.pyx":230
  *     dpos = (pos0_max - pos0_min) / (<  double > (bins))
  * 
  *     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)             # <<<<<<<<<<<<<<
@@ -4575,7 +4577,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_v_outPos = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "src/splitPixel.pyx":232
+  /* "pyFAI/ext/splitPixel.pyx":232
  *     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
  * 
  *     if (dummy is not None) and (delta_dummy is not None):             # <<<<<<<<<<<<<<
@@ -4595,7 +4597,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_L31_bool_binop_done:;
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":233
+    /* "pyFAI/ext/splitPixel.pyx":233
  * 
  *     if (dummy is not None) and (delta_dummy is not None):
  *         check_dummy = True             # <<<<<<<<<<<<<<
@@ -4604,7 +4606,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_check_dummy = 1;
 
-    /* "src/splitPixel.pyx":234
+    /* "pyFAI/ext/splitPixel.pyx":234
  *     if (dummy is not None) and (delta_dummy is not None):
  *         check_dummy = True
  *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
@@ -4614,7 +4616,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __pyx_t_58 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_58 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_58;
 
-    /* "src/splitPixel.pyx":235
+    /* "pyFAI/ext/splitPixel.pyx":235
  *         check_dummy = True
  *         cdummy = float(dummy)
  *         cddummy = float(delta_dummy)             # <<<<<<<<<<<<<<
@@ -4624,7 +4626,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __pyx_t_58 = __Pyx_PyObject_AsDouble(__pyx_v_delta_dummy); if (unlikely(__pyx_t_58 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cddummy = __pyx_t_58;
 
-    /* "src/splitPixel.pyx":232
+    /* "pyFAI/ext/splitPixel.pyx":232
  *     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
  * 
  *     if (dummy is not None) and (delta_dummy is not None):             # <<<<<<<<<<<<<<
@@ -4634,7 +4636,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     goto __pyx_L30;
   }
 
-  /* "src/splitPixel.pyx":236
+  /* "pyFAI/ext/splitPixel.pyx":236
  *         cdummy = float(dummy)
  *         cddummy = float(delta_dummy)
  *     elif (dummy is not None):             # <<<<<<<<<<<<<<
@@ -4645,7 +4647,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_14 = (__pyx_t_3 != 0);
   if (__pyx_t_14) {
 
-    /* "src/splitPixel.pyx":237
+    /* "pyFAI/ext/splitPixel.pyx":237
  *         cddummy = float(delta_dummy)
  *     elif (dummy is not None):
  *         check_dummy = True             # <<<<<<<<<<<<<<
@@ -4654,7 +4656,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_check_dummy = 1;
 
-    /* "src/splitPixel.pyx":238
+    /* "pyFAI/ext/splitPixel.pyx":238
  *     elif (dummy is not None):
  *         check_dummy = True
  *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
@@ -4664,7 +4666,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __pyx_t_58 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_58 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_58;
 
-    /* "src/splitPixel.pyx":239
+    /* "pyFAI/ext/splitPixel.pyx":239
  *         check_dummy = True
  *         cdummy = float(dummy)
  *         cddummy = 0.0             # <<<<<<<<<<<<<<
@@ -4673,7 +4675,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_cddummy = 0.0;
 
-    /* "src/splitPixel.pyx":236
+    /* "pyFAI/ext/splitPixel.pyx":236
  *         cdummy = float(dummy)
  *         cddummy = float(delta_dummy)
  *     elif (dummy is not None):             # <<<<<<<<<<<<<<
@@ -4683,7 +4685,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     goto __pyx_L30;
   }
 
-  /* "src/splitPixel.pyx":241
+  /* "pyFAI/ext/splitPixel.pyx":241
  *         cddummy = 0.0
  *     else:
  *         check_dummy = False             # <<<<<<<<<<<<<<
@@ -4693,7 +4695,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   /*else*/ {
     __pyx_v_check_dummy = 0;
 
-    /* "src/splitPixel.pyx":242
+    /* "pyFAI/ext/splitPixel.pyx":242
  *     else:
  *         check_dummy = False
  *         cdummy = empty             # <<<<<<<<<<<<<<
@@ -4702,7 +4704,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_cdummy = __pyx_v_empty;
 
-    /* "src/splitPixel.pyx":243
+    /* "pyFAI/ext/splitPixel.pyx":243
  *         check_dummy = False
  *         cdummy = empty
  *         cddummy = 0.0             # <<<<<<<<<<<<<<
@@ -4713,7 +4715,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   }
   __pyx_L30:;
 
-  /* "src/splitPixel.pyx":245
+  /* "pyFAI/ext/splitPixel.pyx":245
  *         cddummy = 0.0
  * 
  *     if dark is not None:             # <<<<<<<<<<<<<<
@@ -4724,7 +4726,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_3 = (__pyx_t_14 != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":246
+    /* "pyFAI/ext/splitPixel.pyx":246
  * 
  *     if dark is not None:
  *         do_dark = True             # <<<<<<<<<<<<<<
@@ -4733,7 +4735,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_do_dark = 1;
 
-    /* "src/splitPixel.pyx":247
+    /* "pyFAI/ext/splitPixel.pyx":247
  *     if dark is not None:
  *         do_dark = True
  *         assert dark.size == size             # <<<<<<<<<<<<<<
@@ -4758,7 +4760,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     }
     #endif
 
-    /* "src/splitPixel.pyx":248
+    /* "pyFAI/ext/splitPixel.pyx":248
  *         do_dark = True
  *         assert dark.size == size
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -4809,14 +4811,14 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_57); __pyx_t_57 = 0;
-    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_data_t(__pyx_t_7);
+    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t(__pyx_t_7);
     if (unlikely(!__pyx_t_9.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_v_cdark = __pyx_t_9;
     __pyx_t_9.memview = NULL;
     __pyx_t_9.data = NULL;
 
-    /* "src/splitPixel.pyx":245
+    /* "pyFAI/ext/splitPixel.pyx":245
  *         cddummy = 0.0
  * 
  *     if dark is not None:             # <<<<<<<<<<<<<<
@@ -4825,7 +4827,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
   }
 
-  /* "src/splitPixel.pyx":249
+  /* "pyFAI/ext/splitPixel.pyx":249
  *         assert dark.size == size
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
  *     if flat is not None:             # <<<<<<<<<<<<<<
@@ -4836,7 +4838,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_14 = (__pyx_t_3 != 0);
   if (__pyx_t_14) {
 
-    /* "src/splitPixel.pyx":250
+    /* "pyFAI/ext/splitPixel.pyx":250
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
  *     if flat is not None:
  *         do_flat = True             # <<<<<<<<<<<<<<
@@ -4845,7 +4847,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_do_flat = 1;
 
-    /* "src/splitPixel.pyx":251
+    /* "pyFAI/ext/splitPixel.pyx":251
  *     if flat is not None:
  *         do_flat = True
  *         assert flat.size == size             # <<<<<<<<<<<<<<
@@ -4870,7 +4872,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     }
     #endif
 
-    /* "src/splitPixel.pyx":252
+    /* "pyFAI/ext/splitPixel.pyx":252
  *         do_flat = True
  *         assert flat.size == size
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -4921,14 +4923,14 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_57); __pyx_t_57 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_data_t(__pyx_t_1);
+    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t(__pyx_t_1);
     if (unlikely(!__pyx_t_9.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_cflat = __pyx_t_9;
     __pyx_t_9.memview = NULL;
     __pyx_t_9.data = NULL;
 
-    /* "src/splitPixel.pyx":249
+    /* "pyFAI/ext/splitPixel.pyx":249
  *         assert dark.size == size
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
  *     if flat is not None:             # <<<<<<<<<<<<<<
@@ -4937,7 +4939,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
   }
 
-  /* "src/splitPixel.pyx":253
+  /* "pyFAI/ext/splitPixel.pyx":253
  *         assert flat.size == size
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
  *     if polarization is not None:             # <<<<<<<<<<<<<<
@@ -4948,7 +4950,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_3 = (__pyx_t_14 != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":254
+    /* "pyFAI/ext/splitPixel.pyx":254
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
  *     if polarization is not None:
  *         do_polarization = True             # <<<<<<<<<<<<<<
@@ -4957,7 +4959,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_do_polarization = 1;
 
-    /* "src/splitPixel.pyx":255
+    /* "pyFAI/ext/splitPixel.pyx":255
  *     if polarization is not None:
  *         do_polarization = True
  *         assert polarization.size == size             # <<<<<<<<<<<<<<
@@ -4982,7 +4984,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     }
     #endif
 
-    /* "src/splitPixel.pyx":256
+    /* "pyFAI/ext/splitPixel.pyx":256
  *         do_polarization = True
  *         assert polarization.size == size
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -5033,14 +5035,14 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_data_t(__pyx_t_4);
+    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t(__pyx_t_4);
     if (unlikely(!__pyx_t_9.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 256; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_cpolarization = __pyx_t_9;
     __pyx_t_9.memview = NULL;
     __pyx_t_9.data = NULL;
 
-    /* "src/splitPixel.pyx":253
+    /* "pyFAI/ext/splitPixel.pyx":253
  *         assert flat.size == size
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
  *     if polarization is not None:             # <<<<<<<<<<<<<<
@@ -5049,7 +5051,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
   }
 
-  /* "src/splitPixel.pyx":257
+  /* "pyFAI/ext/splitPixel.pyx":257
  *         assert polarization.size == size
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  *     if solidangle is not None:             # <<<<<<<<<<<<<<
@@ -5060,7 +5062,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_14 = (__pyx_t_3 != 0);
   if (__pyx_t_14) {
 
-    /* "src/splitPixel.pyx":258
+    /* "pyFAI/ext/splitPixel.pyx":258
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  *     if solidangle is not None:
  *         do_solidangle = True             # <<<<<<<<<<<<<<
@@ -5069,7 +5071,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
     __pyx_v_do_solidangle = 1;
 
-    /* "src/splitPixel.pyx":259
+    /* "pyFAI/ext/splitPixel.pyx":259
  *     if solidangle is not None:
  *         do_solidangle = True
  *         assert solidangle.size == size             # <<<<<<<<<<<<<<
@@ -5094,7 +5096,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     }
     #endif
 
-    /* "src/splitPixel.pyx":260
+    /* "pyFAI/ext/splitPixel.pyx":260
  *         do_solidangle = True
  *         assert solidangle.size == size
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -5145,14 +5147,14 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_data_t(__pyx_t_57);
+    __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t(__pyx_t_57);
     if (unlikely(!__pyx_t_9.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 260; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_57); __pyx_t_57 = 0;
     __pyx_v_csolidangle = __pyx_t_9;
     __pyx_t_9.memview = NULL;
     __pyx_t_9.data = NULL;
 
-    /* "src/splitPixel.pyx":257
+    /* "pyFAI/ext/splitPixel.pyx":257
  *         assert polarization.size == size
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  *     if solidangle is not None:             # <<<<<<<<<<<<<<
@@ -5161,7 +5163,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
   }
 
-  /* "src/splitPixel.pyx":262
+  /* "pyFAI/ext/splitPixel.pyx":262
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -5175,7 +5177,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
       #endif
       /*try:*/ {
 
-        /* "src/splitPixel.pyx":263
+        /* "pyFAI/ext/splitPixel.pyx":263
  * 
  *     with nogil:
  *         for idx in range(size):             # <<<<<<<<<<<<<<
@@ -5186,7 +5188,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
         for (__pyx_t_19 = 0; __pyx_t_19 < __pyx_t_2; __pyx_t_19+=1) {
           __pyx_v_idx = __pyx_t_19;
 
-          /* "src/splitPixel.pyx":265
+          /* "pyFAI/ext/splitPixel.pyx":265
  *         for idx in range(size):
  * 
  *             if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -5206,7 +5208,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_L43_bool_binop_done:;
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":266
+            /* "pyFAI/ext/splitPixel.pyx":266
  * 
  *             if (check_mask) and (cmask[idx]):
  *                 continue             # <<<<<<<<<<<<<<
@@ -5215,7 +5217,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             goto __pyx_L40_continue;
 
-            /* "src/splitPixel.pyx":265
+            /* "pyFAI/ext/splitPixel.pyx":265
  *         for idx in range(size):
  * 
  *             if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -5224,7 +5226,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":268
+          /* "pyFAI/ext/splitPixel.pyx":268
  *                 continue
  * 
  *             data = cdata[idx]             # <<<<<<<<<<<<<<
@@ -5232,9 +5234,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  *                 continue
  */
           __pyx_t_60 = __pyx_v_idx;
-          __pyx_v_data = (*((__pyx_t_3src_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_60 * __pyx_v_cdata.strides[0]) )));
+          __pyx_v_data = (*((__pyx_t_5pyFAI_3ext_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_60 * __pyx_v_cdata.strides[0]) )));
 
-          /* "src/splitPixel.pyx":269
+          /* "pyFAI/ext/splitPixel.pyx":269
  * 
  *             data = cdata[idx]
  *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):             # <<<<<<<<<<<<<<
@@ -5270,7 +5272,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_L46_bool_binop_done:;
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":270
+            /* "pyFAI/ext/splitPixel.pyx":270
  *             data = cdata[idx]
  *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
  *                 continue             # <<<<<<<<<<<<<<
@@ -5279,7 +5281,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             goto __pyx_L40_continue;
 
-            /* "src/splitPixel.pyx":269
+            /* "pyFAI/ext/splitPixel.pyx":269
  * 
  *             data = cdata[idx]
  *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):             # <<<<<<<<<<<<<<
@@ -5288,7 +5290,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":274
+          /* "pyFAI/ext/splitPixel.pyx":274
  *             # a0, b0, c0 and d0 are in bin number (2theta, q or r)
  *             # a1, b1, c1 and d1 are in Chi angle in radians ...
  *             a0 = get_bin_number(cpos[idx, 0, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
@@ -5298,9 +5300,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_61 = __pyx_v_idx;
           __pyx_t_62 = 0;
           __pyx_t_63 = 0;
-          __pyx_v_a0 = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number((*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_61 * __pyx_v_cpos.strides[0]) ) + __pyx_t_62 * __pyx_v_cpos.strides[1]) ) + __pyx_t_63 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
+          __pyx_v_a0 = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number((*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_61 * __pyx_v_cpos.strides[0]) ) + __pyx_t_62 * __pyx_v_cpos.strides[1]) ) + __pyx_t_63 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
 
-          /* "src/splitPixel.pyx":275
+          /* "pyFAI/ext/splitPixel.pyx":275
  *             # a1, b1, c1 and d1 are in Chi angle in radians ...
  *             a0 = get_bin_number(cpos[idx, 0, 0], pos0_min, dpos)
  *             a1 = <  double > cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
@@ -5310,9 +5312,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_64 = __pyx_v_idx;
           __pyx_t_65 = 0;
           __pyx_t_66 = 1;
-          __pyx_v_a1 = ((double)(*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_64 * __pyx_v_cpos.strides[0]) ) + __pyx_t_65 * __pyx_v_cpos.strides[1]) ) + __pyx_t_66 * __pyx_v_cpos.strides[2]) ))));
+          __pyx_v_a1 = ((double)(*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_64 * __pyx_v_cpos.strides[0]) ) + __pyx_t_65 * __pyx_v_cpos.strides[1]) ) + __pyx_t_66 * __pyx_v_cpos.strides[2]) ))));
 
-          /* "src/splitPixel.pyx":276
+          /* "pyFAI/ext/splitPixel.pyx":276
  *             a0 = get_bin_number(cpos[idx, 0, 0], pos0_min, dpos)
  *             a1 = <  double > cpos[idx, 0, 1]
  *             b0 = get_bin_number(cpos[idx, 1, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
@@ -5322,9 +5324,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_67 = __pyx_v_idx;
           __pyx_t_68 = 1;
           __pyx_t_69 = 0;
-          __pyx_v_b0 = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number((*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_67 * __pyx_v_cpos.strides[0]) ) + __pyx_t_68 * __pyx_v_cpos.strides[1]) ) + __pyx_t_69 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
+          __pyx_v_b0 = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number((*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_67 * __pyx_v_cpos.strides[0]) ) + __pyx_t_68 * __pyx_v_cpos.strides[1]) ) + __pyx_t_69 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
 
-          /* "src/splitPixel.pyx":277
+          /* "pyFAI/ext/splitPixel.pyx":277
  *             a1 = <  double > cpos[idx, 0, 1]
  *             b0 = get_bin_number(cpos[idx, 1, 0], pos0_min, dpos)
  *             b1 = <  double > cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
@@ -5334,9 +5336,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_70 = __pyx_v_idx;
           __pyx_t_71 = 1;
           __pyx_t_72 = 1;
-          __pyx_v_b1 = ((double)(*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_70 * __pyx_v_cpos.strides[0]) ) + __pyx_t_71 * __pyx_v_cpos.strides[1]) ) + __pyx_t_72 * __pyx_v_cpos.strides[2]) ))));
+          __pyx_v_b1 = ((double)(*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_70 * __pyx_v_cpos.strides[0]) ) + __pyx_t_71 * __pyx_v_cpos.strides[1]) ) + __pyx_t_72 * __pyx_v_cpos.strides[2]) ))));
 
-          /* "src/splitPixel.pyx":278
+          /* "pyFAI/ext/splitPixel.pyx":278
  *             b0 = get_bin_number(cpos[idx, 1, 0], pos0_min, dpos)
  *             b1 = <  double > cpos[idx, 1, 1]
  *             c0 = get_bin_number(cpos[idx, 2, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
@@ -5346,9 +5348,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_73 = __pyx_v_idx;
           __pyx_t_74 = 2;
           __pyx_t_75 = 0;
-          __pyx_v_c0 = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number((*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_73 * __pyx_v_cpos.strides[0]) ) + __pyx_t_74 * __pyx_v_cpos.strides[1]) ) + __pyx_t_75 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
+          __pyx_v_c0 = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number((*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_73 * __pyx_v_cpos.strides[0]) ) + __pyx_t_74 * __pyx_v_cpos.strides[1]) ) + __pyx_t_75 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
 
-          /* "src/splitPixel.pyx":279
+          /* "pyFAI/ext/splitPixel.pyx":279
  *             b1 = <  double > cpos[idx, 1, 1]
  *             c0 = get_bin_number(cpos[idx, 2, 0], pos0_min, dpos)
  *             c1 = <  double > cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
@@ -5358,9 +5360,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_76 = __pyx_v_idx;
           __pyx_t_77 = 2;
           __pyx_t_78 = 1;
-          __pyx_v_c1 = ((double)(*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_76 * __pyx_v_cpos.strides[0]) ) + __pyx_t_77 * __pyx_v_cpos.strides[1]) ) + __pyx_t_78 * __pyx_v_cpos.strides[2]) ))));
+          __pyx_v_c1 = ((double)(*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_76 * __pyx_v_cpos.strides[0]) ) + __pyx_t_77 * __pyx_v_cpos.strides[1]) ) + __pyx_t_78 * __pyx_v_cpos.strides[2]) ))));
 
-          /* "src/splitPixel.pyx":280
+          /* "pyFAI/ext/splitPixel.pyx":280
  *             c0 = get_bin_number(cpos[idx, 2, 0], pos0_min, dpos)
  *             c1 = <  double > cpos[idx, 2, 1]
  *             d0 = get_bin_number(cpos[idx, 3, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
@@ -5370,9 +5372,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_79 = __pyx_v_idx;
           __pyx_t_80 = 3;
           __pyx_t_81 = 0;
-          __pyx_v_d0 = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number((*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_79 * __pyx_v_cpos.strides[0]) ) + __pyx_t_80 * __pyx_v_cpos.strides[1]) ) + __pyx_t_81 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
+          __pyx_v_d0 = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number((*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_79 * __pyx_v_cpos.strides[0]) ) + __pyx_t_80 * __pyx_v_cpos.strides[1]) ) + __pyx_t_81 * __pyx_v_cpos.strides[2]) ))), __pyx_v_pos0_min, __pyx_v_dpos);
 
-          /* "src/splitPixel.pyx":281
+          /* "pyFAI/ext/splitPixel.pyx":281
  *             c1 = <  double > cpos[idx, 2, 1]
  *             d0 = get_bin_number(cpos[idx, 3, 0], pos0_min, dpos)
  *             d1 = <  double > cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
@@ -5382,9 +5384,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_82 = __pyx_v_idx;
           __pyx_t_83 = 3;
           __pyx_t_84 = 1;
-          __pyx_v_d1 = ((double)(*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_82 * __pyx_v_cpos.strides[0]) ) + __pyx_t_83 * __pyx_v_cpos.strides[1]) ) + __pyx_t_84 * __pyx_v_cpos.strides[2]) ))));
+          __pyx_v_d1 = ((double)(*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_82 * __pyx_v_cpos.strides[0]) ) + __pyx_t_83 * __pyx_v_cpos.strides[1]) ) + __pyx_t_84 * __pyx_v_cpos.strides[2]) ))));
 
-          /* "src/splitPixel.pyx":282
+          /* "pyFAI/ext/splitPixel.pyx":282
  *             d0 = get_bin_number(cpos[idx, 3, 0], pos0_min, dpos)
  *             d1 = <  double > cpos[idx, 3, 1]
  *             min0 = min(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
@@ -5414,7 +5416,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           }
           __pyx_v_min0 = __pyx_t_18;
 
-          /* "src/splitPixel.pyx":283
+          /* "pyFAI/ext/splitPixel.pyx":283
  *             d1 = <  double > cpos[idx, 3, 1]
  *             min0 = min(a0, b0, c0, d0)
  *             max0 = max(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
@@ -5444,7 +5446,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           }
           __pyx_v_max0 = __pyx_t_55;
 
-          /* "src/splitPixel.pyx":285
+          /* "pyFAI/ext/splitPixel.pyx":285
  *             max0 = max(a0, b0, c0, d0)
  * 
  *             if (max0<0) or (min0 >=bins):             # <<<<<<<<<<<<<<
@@ -5462,7 +5464,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_L52_bool_binop_done:;
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":286
+            /* "pyFAI/ext/splitPixel.pyx":286
  * 
  *             if (max0<0) or (min0 >=bins):
  *                 continue             # <<<<<<<<<<<<<<
@@ -5471,7 +5473,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             goto __pyx_L40_continue;
 
-            /* "src/splitPixel.pyx":285
+            /* "pyFAI/ext/splitPixel.pyx":285
  *             max0 = max(a0, b0, c0, d0)
  * 
  *             if (max0<0) or (min0 >=bins):             # <<<<<<<<<<<<<<
@@ -5480,7 +5482,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":287
+          /* "pyFAI/ext/splitPixel.pyx":287
  *             if (max0<0) or (min0 >=bins):
  *                 continue
  *             if check_pos1:             # <<<<<<<<<<<<<<
@@ -5490,7 +5492,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_14 = (__pyx_v_check_pos1 != 0);
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":288
+            /* "pyFAI/ext/splitPixel.pyx":288
  *                 continue
  *             if check_pos1:
  *                 min1 = min(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
@@ -5520,7 +5522,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_min1 = __pyx_t_54;
 
-            /* "src/splitPixel.pyx":289
+            /* "pyFAI/ext/splitPixel.pyx":289
  *             if check_pos1:
  *                 min1 = min(a1, b1, c1, d1)
  *                 max1 = max(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
@@ -5550,7 +5552,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_max1 = __pyx_t_53;
 
-            /* "src/splitPixel.pyx":290
+            /* "pyFAI/ext/splitPixel.pyx":290
  *                 min1 = min(a1, b1, c1, d1)
  *                 max1 = max(a1, b1, c1, d1)
  *                 if (max1<pos1_min) or (min1 > pos1_maxin):             # <<<<<<<<<<<<<<
@@ -5568,7 +5570,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_L56_bool_binop_done:;
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":291
+              /* "pyFAI/ext/splitPixel.pyx":291
  *                 max1 = max(a1, b1, c1, d1)
  *                 if (max1<pos1_min) or (min1 > pos1_maxin):
  *                     continue             # <<<<<<<<<<<<<<
@@ -5577,7 +5579,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               goto __pyx_L40_continue;
 
-              /* "src/splitPixel.pyx":290
+              /* "pyFAI/ext/splitPixel.pyx":290
  *                 min1 = min(a1, b1, c1, d1)
  *                 max1 = max(a1, b1, c1, d1)
  *                 if (max1<pos1_min) or (min1 > pos1_maxin):             # <<<<<<<<<<<<<<
@@ -5586,7 +5588,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             }
 
-            /* "src/splitPixel.pyx":287
+            /* "pyFAI/ext/splitPixel.pyx":287
  *             if (max0<0) or (min0 >=bins):
  *                 continue
  *             if check_pos1:             # <<<<<<<<<<<<<<
@@ -5595,7 +5597,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":293
+          /* "pyFAI/ext/splitPixel.pyx":293
  *                     continue
  * 
  *             if do_dark:             # <<<<<<<<<<<<<<
@@ -5605,7 +5607,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_14 = (__pyx_v_do_dark != 0);
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":294
+            /* "pyFAI/ext/splitPixel.pyx":294
  * 
  *             if do_dark:
  *                 data -= cdark[idx]             # <<<<<<<<<<<<<<
@@ -5614,9 +5616,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             if (unlikely(!__pyx_v_cdark.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cdark"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 294; __pyx_clineno = __LINE__; goto __pyx_L38_error;} }
             __pyx_t_85 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data - (*((__pyx_t_3src_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cdark.data + __pyx_t_85 * __pyx_v_cdark.strides[0]) ))));
+            __pyx_v_data = (__pyx_v_data - (*((__pyx_t_5pyFAI_3ext_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cdark.data + __pyx_t_85 * __pyx_v_cdark.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":293
+            /* "pyFAI/ext/splitPixel.pyx":293
  *                     continue
  * 
  *             if do_dark:             # <<<<<<<<<<<<<<
@@ -5625,7 +5627,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":295
+          /* "pyFAI/ext/splitPixel.pyx":295
  *             if do_dark:
  *                 data -= cdark[idx]
  *             if do_flat:             # <<<<<<<<<<<<<<
@@ -5635,7 +5637,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_14 = (__pyx_v_do_flat != 0);
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":296
+            /* "pyFAI/ext/splitPixel.pyx":296
  *                 data -= cdark[idx]
  *             if do_flat:
  *                 data /= cflat[idx]             # <<<<<<<<<<<<<<
@@ -5644,9 +5646,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             if (unlikely(!__pyx_v_cflat.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cflat"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 296; __pyx_clineno = __LINE__; goto __pyx_L38_error;} }
             __pyx_t_86 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((__pyx_t_3src_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cflat.data + __pyx_t_86 * __pyx_v_cflat.strides[0]) ))));
+            __pyx_v_data = (__pyx_v_data / (*((__pyx_t_5pyFAI_3ext_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cflat.data + __pyx_t_86 * __pyx_v_cflat.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":295
+            /* "pyFAI/ext/splitPixel.pyx":295
  *             if do_dark:
  *                 data -= cdark[idx]
  *             if do_flat:             # <<<<<<<<<<<<<<
@@ -5655,7 +5657,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":297
+          /* "pyFAI/ext/splitPixel.pyx":297
  *             if do_flat:
  *                 data /= cflat[idx]
  *             if do_polarization:             # <<<<<<<<<<<<<<
@@ -5665,7 +5667,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_14 = (__pyx_v_do_polarization != 0);
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":298
+            /* "pyFAI/ext/splitPixel.pyx":298
  *                 data /= cflat[idx]
  *             if do_polarization:
  *                 data /= cpolarization[idx]             # <<<<<<<<<<<<<<
@@ -5674,9 +5676,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             if (unlikely(!__pyx_v_cpolarization.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cpolarization"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 298; __pyx_clineno = __LINE__; goto __pyx_L38_error;} }
             __pyx_t_87 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((__pyx_t_3src_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cpolarization.data + __pyx_t_87 * __pyx_v_cpolarization.strides[0]) ))));
+            __pyx_v_data = (__pyx_v_data / (*((__pyx_t_5pyFAI_3ext_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_cpolarization.data + __pyx_t_87 * __pyx_v_cpolarization.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":297
+            /* "pyFAI/ext/splitPixel.pyx":297
  *             if do_flat:
  *                 data /= cflat[idx]
  *             if do_polarization:             # <<<<<<<<<<<<<<
@@ -5685,7 +5687,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":299
+          /* "pyFAI/ext/splitPixel.pyx":299
  *             if do_polarization:
  *                 data /= cpolarization[idx]
  *             if do_solidangle:             # <<<<<<<<<<<<<<
@@ -5695,7 +5697,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_14 = (__pyx_v_do_solidangle != 0);
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":300
+            /* "pyFAI/ext/splitPixel.pyx":300
  *                 data /= cpolarization[idx]
  *             if do_solidangle:
  *                 data /= csolidangle[idx]             # <<<<<<<<<<<<<<
@@ -5704,9 +5706,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             if (unlikely(!__pyx_v_csolidangle.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("csolidangle"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 300; __pyx_clineno = __LINE__; goto __pyx_L38_error;} }
             __pyx_t_88 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((__pyx_t_3src_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_csolidangle.data + __pyx_t_88 * __pyx_v_csolidangle.strides[0]) ))));
+            __pyx_v_data = (__pyx_v_data / (*((__pyx_t_5pyFAI_3ext_10splitPixel_data_t *) ( /* dim=0 */ (__pyx_v_csolidangle.data + __pyx_t_88 * __pyx_v_csolidangle.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":299
+            /* "pyFAI/ext/splitPixel.pyx":299
  *             if do_polarization:
  *                 data /= cpolarization[idx]
  *             if do_solidangle:             # <<<<<<<<<<<<<<
@@ -5715,7 +5717,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           }
 
-          /* "src/splitPixel.pyx":302
+          /* "pyFAI/ext/splitPixel.pyx":302
  *                 data /= csolidangle[idx]
  * 
  *             bin0_min = < int > floor(min0)             # <<<<<<<<<<<<<<
@@ -5724,7 +5726,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           __pyx_v_bin0_min = ((int)floor(__pyx_v_min0));
 
-          /* "src/splitPixel.pyx":303
+          /* "pyFAI/ext/splitPixel.pyx":303
  * 
  *             bin0_min = < int > floor(min0)
  *             bin0_max = < int > floor(max0)             # <<<<<<<<<<<<<<
@@ -5733,7 +5735,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
           __pyx_v_bin0_max = ((int)floor(__pyx_v_max0));
 
-          /* "src/splitPixel.pyx":305
+          /* "pyFAI/ext/splitPixel.pyx":305
  *             bin0_max = < int > floor(max0)
  * 
  *             if bin0_min == bin0_max:             # <<<<<<<<<<<<<<
@@ -5743,7 +5745,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_14 = ((__pyx_v_bin0_min == __pyx_v_bin0_max) != 0);
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":307
+            /* "pyFAI/ext/splitPixel.pyx":307
  *             if bin0_min == bin0_max:
  *                 # All pixel is within a single bin
  *                 outCount[bin0_min] += 1.0             # <<<<<<<<<<<<<<
@@ -5753,7 +5755,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_89 = __pyx_v_bin0_min;
             *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_89, __pyx_pybuffernd_outCount.diminfo[0].strides) += 1.0;
 
-            /* "src/splitPixel.pyx":308
+            /* "pyFAI/ext/splitPixel.pyx":308
  *                 # All pixel is within a single bin
  *                 outCount[bin0_min] += 1.0
  *                 outData[bin0_min] += data             # <<<<<<<<<<<<<<
@@ -5763,7 +5765,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_90 = __pyx_v_bin0_min;
             *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_90, __pyx_pybuffernd_outData.diminfo[0].strides) += __pyx_v_data;
 
-            /* "src/splitPixel.pyx":305
+            /* "pyFAI/ext/splitPixel.pyx":305
  *             bin0_max = < int > floor(max0)
  * 
  *             if bin0_min == bin0_max:             # <<<<<<<<<<<<<<
@@ -5773,7 +5775,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             goto __pyx_L62;
           }
 
-          /* "src/splitPixel.pyx":312
+          /* "pyFAI/ext/splitPixel.pyx":312
  *     #        else we have pixel splitting.
  *             else:
  *                 bin0_min = max(0, bin0_min)             # <<<<<<<<<<<<<<
@@ -5790,7 +5792,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_bin0_min = __pyx_t_93;
 
-            /* "src/splitPixel.pyx":313
+            /* "pyFAI/ext/splitPixel.pyx":313
  *             else:
  *                 bin0_min = max(0, bin0_min)
  *                 bin0_max = min(bins, bin0_max + 1)             # <<<<<<<<<<<<<<
@@ -5806,16 +5808,16 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             }
             __pyx_v_bin0_max = __pyx_t_92;
 
-            /* "src/splitPixel.pyx":314
+            /* "pyFAI/ext/splitPixel.pyx":314
  *                 bin0_min = max(0, bin0_min)
  *                 bin0_max = min(bins, bin0_max + 1)
  *                 aera_pixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)             # <<<<<<<<<<<<<<
  *                 one_over_area = 1.0 / aera_pixel
  * 
  */
-            __pyx_v_aera_pixel = __pyx_f_3src_10splitPixel_area4(__pyx_v_a0, __pyx_v_a1, __pyx_v_b0, __pyx_v_b1, __pyx_v_c0, __pyx_v_c1, __pyx_v_d0, __pyx_v_d1);
+            __pyx_v_aera_pixel = __pyx_f_5pyFAI_3ext_10splitPixel_area4(__pyx_v_a0, __pyx_v_a1, __pyx_v_b0, __pyx_v_b1, __pyx_v_c0, __pyx_v_c1, __pyx_v_d0, __pyx_v_d1);
 
-            /* "src/splitPixel.pyx":315
+            /* "pyFAI/ext/splitPixel.pyx":315
  *                 bin0_max = min(bins, bin0_max + 1)
  *                 aera_pixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
  *                 one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
@@ -5824,43 +5826,43 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
 
-            /* "src/splitPixel.pyx":317
+            /* "pyFAI/ext/splitPixel.pyx":317
  *                 one_over_area = 1.0 / aera_pixel
  * 
  *                 integrate(buffer, bins, a0, a1, b0, b1) #A-B             # <<<<<<<<<<<<<<
  *                 integrate(buffer, bins, b0, b1, c0, c1) #B-C
  *                 integrate(buffer, bins, c0, c1, d0, d1) #C-D
  */
-            __pyx_f_3src_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_a0, __pyx_v_a1, __pyx_v_b0, __pyx_v_b1);
+            __pyx_f_5pyFAI_3ext_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_a0, __pyx_v_a1, __pyx_v_b0, __pyx_v_b1);
 
-            /* "src/splitPixel.pyx":318
+            /* "pyFAI/ext/splitPixel.pyx":318
  * 
  *                 integrate(buffer, bins, a0, a1, b0, b1) #A-B
  *                 integrate(buffer, bins, b0, b1, c0, c1) #B-C             # <<<<<<<<<<<<<<
  *                 integrate(buffer, bins, c0, c1, d0, d1) #C-D
  *                 integrate(buffer, bins, d0, d1, a0, a1) #D-A
  */
-            __pyx_f_3src_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_b0, __pyx_v_b1, __pyx_v_c0, __pyx_v_c1);
+            __pyx_f_5pyFAI_3ext_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_b0, __pyx_v_b1, __pyx_v_c0, __pyx_v_c1);
 
-            /* "src/splitPixel.pyx":319
+            /* "pyFAI/ext/splitPixel.pyx":319
  *                 integrate(buffer, bins, a0, a1, b0, b1) #A-B
  *                 integrate(buffer, bins, b0, b1, c0, c1) #B-C
  *                 integrate(buffer, bins, c0, c1, d0, d1) #C-D             # <<<<<<<<<<<<<<
  *                 integrate(buffer, bins, d0, d1, a0, a1) #D-A
  * 
  */
-            __pyx_f_3src_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_c0, __pyx_v_c1, __pyx_v_d0, __pyx_v_d1);
+            __pyx_f_5pyFAI_3ext_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_c0, __pyx_v_c1, __pyx_v_d0, __pyx_v_d1);
 
-            /* "src/splitPixel.pyx":320
+            /* "pyFAI/ext/splitPixel.pyx":320
  *                 integrate(buffer, bins, b0, b1, c0, c1) #B-C
  *                 integrate(buffer, bins, c0, c1, d0, d1) #C-D
  *                 integrate(buffer, bins, d0, d1, a0, a1) #D-A             # <<<<<<<<<<<<<<
  * 
  *                 #Distribute pixel area
  */
-            __pyx_f_3src_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_d0, __pyx_v_d1, __pyx_v_a0, __pyx_v_a1);
+            __pyx_f_5pyFAI_3ext_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_d0, __pyx_v_d1, __pyx_v_a0, __pyx_v_a1);
 
-            /* "src/splitPixel.pyx":323
+            /* "pyFAI/ext/splitPixel.pyx":323
  * 
  *                 #Distribute pixel area
  *                 sum_area = 0.0             # <<<<<<<<<<<<<<
@@ -5869,7 +5871,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             __pyx_v_sum_area = 0.0;
 
-            /* "src/splitPixel.pyx":324
+            /* "pyFAI/ext/splitPixel.pyx":324
  *                 #Distribute pixel area
  *                 sum_area = 0.0
  *                 for i in range(bin0_min, bin0_max):             # <<<<<<<<<<<<<<
@@ -5880,7 +5882,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             for (__pyx_t_94 = __pyx_v_bin0_min; __pyx_t_94 < __pyx_t_91; __pyx_t_94+=1) {
               __pyx_v_i = __pyx_t_94;
 
-              /* "src/splitPixel.pyx":325
+              /* "pyFAI/ext/splitPixel.pyx":325
  *                 sum_area = 0.0
  *                 for i in range(bin0_min, bin0_max):
  *                     sub_area = fabs(buffer[i])             # <<<<<<<<<<<<<<
@@ -5888,9 +5890,9 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  *                     sub_area = sub_area * one_over_area
  */
               __pyx_t_95 = __pyx_v_i;
-              __pyx_v_sub_area = fabs((*((__pyx_t_3src_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_95 * __pyx_v_buffer.strides[0]) ))));
+              __pyx_v_sub_area = fabs((*((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_95 * __pyx_v_buffer.strides[0]) ))));
 
-              /* "src/splitPixel.pyx":326
+              /* "pyFAI/ext/splitPixel.pyx":326
  *                 for i in range(bin0_min, bin0_max):
  *                     sub_area = fabs(buffer[i])
  *                     sum_area += sub_area             # <<<<<<<<<<<<<<
@@ -5899,7 +5901,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               __pyx_v_sum_area = (__pyx_v_sum_area + __pyx_v_sub_area);
 
-              /* "src/splitPixel.pyx":327
+              /* "pyFAI/ext/splitPixel.pyx":327
  *                     sub_area = fabs(buffer[i])
  *                     sum_area += sub_area
  *                     sub_area = sub_area * one_over_area             # <<<<<<<<<<<<<<
@@ -5908,7 +5910,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
               __pyx_v_sub_area = (__pyx_v_sub_area * __pyx_v_one_over_area);
 
-              /* "src/splitPixel.pyx":328
+              /* "pyFAI/ext/splitPixel.pyx":328
  *                     sum_area += sub_area
  *                     sub_area = sub_area * one_over_area
  *                     outCount[i] += sub_area             # <<<<<<<<<<<<<<
@@ -5918,7 +5920,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
               __pyx_t_96 = __pyx_v_i;
               *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_96, __pyx_pybuffernd_outCount.diminfo[0].strides) += __pyx_v_sub_area;
 
-              /* "src/splitPixel.pyx":329
+              /* "pyFAI/ext/splitPixel.pyx":329
  *                     sub_area = sub_area * one_over_area
  *                     outCount[i] += sub_area
  *                     outData[i] += sub_area * data             # <<<<<<<<<<<<<<
@@ -5929,7 +5931,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
               *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_97, __pyx_pybuffernd_outData.diminfo[0].strides) += (__pyx_v_sub_area * __pyx_v_data);
             }
 
-            /* "src/splitPixel.pyx":332
+            /* "pyFAI/ext/splitPixel.pyx":332
  * 
  *                 #check the total area:
  *                 if fabs(sum_area - aera_pixel) / aera_pixel>1e-6 and bin0_min != 0 and bin0_max != bins:             # <<<<<<<<<<<<<<
@@ -5953,7 +5955,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_L66_bool_binop_done:;
             if (__pyx_t_14) {
 
-              /* "src/splitPixel.pyx":333
+              /* "pyFAI/ext/splitPixel.pyx":333
  *                 #check the total area:
  *                 if fabs(sum_area - aera_pixel) / aera_pixel>1e-6 and bin0_min != 0 and bin0_max != bins:
  *                     with gil:             # <<<<<<<<<<<<<<
@@ -5966,7 +5968,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
                   #endif
                   /*try:*/ {
 
-                    /* "src/splitPixel.pyx":334
+                    /* "pyFAI/ext/splitPixel.pyx":334
  *                 if fabs(sum_area - aera_pixel) / aera_pixel>1e-6 and bin0_min != 0 and bin0_max != bins:
  *                     with gil:
  *                         print("area_pixel=%s area_sum=%s, Error= %s"%(aera_pixel,sum_area,(aera_pixel-sum_area)/aera_pixel))             # <<<<<<<<<<<<<<
@@ -5997,7 +5999,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
                     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
                   }
 
-                  /* "src/splitPixel.pyx":333
+                  /* "pyFAI/ext/splitPixel.pyx":333
  *                 #check the total area:
  *                 if fabs(sum_area - aera_pixel) / aera_pixel>1e-6 and bin0_min != 0 and bin0_max != bins:
  *                     with gil:             # <<<<<<<<<<<<<<
@@ -6021,7 +6023,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
                   }
               }
 
-              /* "src/splitPixel.pyx":332
+              /* "pyFAI/ext/splitPixel.pyx":332
  * 
  *                 #check the total area:
  *                 if fabs(sum_area - aera_pixel) / aera_pixel>1e-6 and bin0_min != 0 and bin0_max != bins:             # <<<<<<<<<<<<<<
@@ -6030,7 +6032,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
             }
 
-            /* "src/splitPixel.pyx":335
+            /* "pyFAI/ext/splitPixel.pyx":335
  *                     with gil:
  *                         print("area_pixel=%s area_sum=%s, Error= %s"%(aera_pixel,sum_area,(aera_pixel-sum_area)/aera_pixel))
  *                 buffer[bin0_min:bin0_max] = 0             # <<<<<<<<<<<<<<
@@ -6059,7 +6061,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
 }
 
 {
-                __pyx_t_3src_10splitPixel_position_t __pyx_temp_scalar = 0.0;
+                __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_temp_scalar = 0.0;
                 {
                     Py_ssize_t __pyx_temp_extent_0 = __pyx_t_98.shape[0];
                     Py_ssize_t __pyx_temp_stride_0 = __pyx_t_98.strides[0];
@@ -6067,7 +6069,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
                     Py_ssize_t __pyx_temp_idx_0;
                     __pyx_temp_pointer_0 = __pyx_t_98.data;
                     for (__pyx_temp_idx_0 = 0; __pyx_temp_idx_0 < __pyx_temp_extent_0; __pyx_temp_idx_0++) {
-                      *((__pyx_t_3src_10splitPixel_position_t *) __pyx_temp_pointer_0) = __pyx_temp_scalar;
+                      *((__pyx_t_5pyFAI_3ext_10splitPixel_position_t *) __pyx_temp_pointer_0) = __pyx_temp_scalar;
                       __pyx_temp_pointer_0 += __pyx_temp_stride_0;
                     }
                 }
@@ -6078,7 +6080,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_L40_continue:;
         }
 
-        /* "src/splitPixel.pyx":336
+        /* "pyFAI/ext/splitPixel.pyx":336
  *                         print("area_pixel=%s area_sum=%s, Error= %s"%(aera_pixel,sum_area,(aera_pixel-sum_area)/aera_pixel))
  *                 buffer[bin0_min:bin0_max] = 0
  *         for i in range(bins):             # <<<<<<<<<<<<<<
@@ -6089,7 +6091,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
         for (__pyx_t_19 = 0; __pyx_t_19 < __pyx_t_2; __pyx_t_19+=1) {
           __pyx_v_i = __pyx_t_19;
 
-          /* "src/splitPixel.pyx":337
+          /* "pyFAI/ext/splitPixel.pyx":337
  *                 buffer[bin0_min:bin0_max] = 0
  *         for i in range(bins):
  *             if outCount[i] > epsilon:             # <<<<<<<<<<<<<<
@@ -6100,7 +6102,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
           __pyx_t_14 = (((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_99, __pyx_pybuffernd_outCount.diminfo[0].strides)) > __pyx_v_epsilon) != 0);
           if (__pyx_t_14) {
 
-            /* "src/splitPixel.pyx":338
+            /* "pyFAI/ext/splitPixel.pyx":338
  *         for i in range(bins):
  *             if outCount[i] > epsilon:
  *                 outMerge[i] = outData[i] / outCount[i] / normalization_factor             # <<<<<<<<<<<<<<
@@ -6112,7 +6114,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             __pyx_t_102 = __pyx_v_i;
             *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_102, __pyx_pybuffernd_outMerge.diminfo[0].strides) = (((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_100, __pyx_pybuffernd_outData.diminfo[0].strides)) / (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_101, __pyx_pybuffernd_outCount.diminfo[0].strides))) / __pyx_v_normalization_factor);
 
-            /* "src/splitPixel.pyx":337
+            /* "pyFAI/ext/splitPixel.pyx":337
  *                 buffer[bin0_min:bin0_max] = 0
  *         for i in range(bins):
  *             if outCount[i] > epsilon:             # <<<<<<<<<<<<<<
@@ -6122,7 +6124,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
             goto __pyx_L76;
           }
 
-          /* "src/splitPixel.pyx":340
+          /* "pyFAI/ext/splitPixel.pyx":340
  *                 outMerge[i] = outData[i] / outCount[i] / normalization_factor
  *             else:
  *                 outMerge[i] = cdummy             # <<<<<<<<<<<<<<
@@ -6137,7 +6139,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
         }
       }
 
-      /* "src/splitPixel.pyx":262
+      /* "pyFAI/ext/splitPixel.pyx":262
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -6161,7 +6163,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
       }
   }
 
-  /* "src/splitPixel.pyx":342
+  /* "pyFAI/ext/splitPixel.pyx":342
  *                 outMerge[i] = cdummy
  * 
  *     return outPos, outMerge, outData, outCount             # <<<<<<<<<<<<<<
@@ -6187,7 +6189,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "src/splitPixel.pyx":106
+  /* "pyFAI/ext/splitPixel.pyx":106
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -6215,7 +6217,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outData.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("src.splitPixel.fullSplit1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyFAI.ext.splitPixel.fullSplit1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -6241,7 +6243,7 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
   return __pyx_r;
 }
 
-/* "src/splitPixel.pyx":352
+/* "pyFAI/ext/splitPixel.pyx":352
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -6250,10 +6252,10 @@ __pyx_t_13.strides[0] = __pyx_v_buffer.strides[0];
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_3src_10splitPixel_2fullSplit2D[] = "\n    Calculate 2D histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat-field image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64)with solid angle corrections\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
-static PyMethodDef __pyx_mdef_3src_10splitPixel_3fullSplit2D = {"fullSplit2D", (PyCFunction)__pyx_pw_3src_10splitPixel_3fullSplit2D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_10splitPixel_2fullSplit2D};
-static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_10splitPixel_2fullSplit2D[] = "\n    Calculate 2D histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat-field image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64)with solid angle corrections\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
+static PyMethodDef __pyx_mdef_5pyFAI_3ext_10splitPixel_3fullSplit2D = {"fullSplit2D", (PyCFunction)__pyx_pw_5pyFAI_3ext_10splitPixel_3fullSplit2D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_10splitPixel_2fullSplit2D};
+static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
   PyArrayObject *__pyx_v_weights = 0;
   PyObject *__pyx_v_bins = 0;
@@ -6278,7 +6280,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_pos,&__pyx_n_s_weights,&__pyx_n_s_bins,&__pyx_n_s_pos0Range,&__pyx_n_s_pos1Range,&__pyx_n_s_dummy,&__pyx_n_s_delta_dummy,&__pyx_n_s_mask,&__pyx_n_s_dark,&__pyx_n_s_flat,&__pyx_n_s_solidangle,&__pyx_n_s_polarization,&__pyx_n_s_empty,&__pyx_n_s_normalization_factor,0};
     PyObject* values[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    /* "src/splitPixel.pyx":355
+    /* "pyFAI/ext/splitPixel.pyx":355
  *                 numpy.ndarray weights not None,
  *                 bins not None,
  *                 pos0Range=None,             # <<<<<<<<<<<<<<
@@ -6287,7 +6289,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[3] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":356
+    /* "pyFAI/ext/splitPixel.pyx":356
  *                 bins not None,
  *                 pos0Range=None,
  *                 pos1Range=None,             # <<<<<<<<<<<<<<
@@ -6296,7 +6298,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[4] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":357
+    /* "pyFAI/ext/splitPixel.pyx":357
  *                 pos0Range=None,
  *                 pos1Range=None,
  *                 dummy=None,             # <<<<<<<<<<<<<<
@@ -6305,7 +6307,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[5] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":358
+    /* "pyFAI/ext/splitPixel.pyx":358
  *                 pos1Range=None,
  *                 dummy=None,
  *                 delta_dummy=None,             # <<<<<<<<<<<<<<
@@ -6314,7 +6316,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[6] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":359
+    /* "pyFAI/ext/splitPixel.pyx":359
  *                 dummy=None,
  *                 delta_dummy=None,
  *                 mask=None,             # <<<<<<<<<<<<<<
@@ -6323,7 +6325,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[7] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":360
+    /* "pyFAI/ext/splitPixel.pyx":360
  *                 delta_dummy=None,
  *                 mask=None,
  *                 dark=None,             # <<<<<<<<<<<<<<
@@ -6332,7 +6334,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[8] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":361
+    /* "pyFAI/ext/splitPixel.pyx":361
  *                 mask=None,
  *                 dark=None,
  *                 flat=None,             # <<<<<<<<<<<<<<
@@ -6341,7 +6343,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[9] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":362
+    /* "pyFAI/ext/splitPixel.pyx":362
  *                 dark=None,
  *                 flat=None,
  *                 solidangle=None,             # <<<<<<<<<<<<<<
@@ -6350,7 +6352,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
  */
     values[10] = ((PyObject *)Py_None);
 
-    /* "src/splitPixel.pyx":363
+    /* "pyFAI/ext/splitPixel.pyx":363
  *                 flat=None,
  *                 solidangle=None,
  *                 polarization=None,             # <<<<<<<<<<<<<<
@@ -6500,7 +6502,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("fullSplit2D", 0, 3, 14, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("src.splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyFAI.ext.splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
@@ -6509,9 +6511,9 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
   if (unlikely(((PyObject *)__pyx_v_bins) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "bins"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 354; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_3src_10splitPixel_2fullSplit2D(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_pos0Range, __pyx_v_pos1Range, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_mask, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization, __pyx_v_empty, __pyx_v_normalization_factor);
+  __pyx_r = __pyx_pf_5pyFAI_3ext_10splitPixel_2fullSplit2D(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_pos0Range, __pyx_v_pos1Range, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_mask, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization, __pyx_v_empty, __pyx_v_normalization_factor);
 
-  /* "src/splitPixel.pyx":352
+  /* "pyFAI/ext/splitPixel.pyx":352
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -6528,7 +6530,7 @@ static PyObject *__pyx_pw_3src_10splitPixel_3fullSplit2D(PyObject *__pyx_self, P
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor) {
+static PyObject *__pyx_pf_5pyFAI_3ext_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, float __pyx_v_empty, double __pyx_v_normalization_factor) {
   int __pyx_v_bins0;
   int __pyx_v_bins1;
   int __pyx_v_size;
@@ -6780,7 +6782,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_pybuffernd_edges1.data = NULL;
   __pyx_pybuffernd_edges1.rcbuffer = &__pyx_pybuffer_edges1;
 
-  /* "src/splitPixel.pyx":391
+  /* "pyFAI/ext/splitPixel.pyx":391
  *     """
  * 
  *     cdef int bins0 = 0, bins1 = 0, size = weights.size             # <<<<<<<<<<<<<<
@@ -6795,7 +6797,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_size = __pyx_t_2;
 
-  /* "src/splitPixel.pyx":392
+  /* "pyFAI/ext/splitPixel.pyx":392
  * 
  *     cdef int bins0 = 0, bins1 = 0, size = weights.size
  *     if pos.ndim > 3:  # create a view             # <<<<<<<<<<<<<<
@@ -6805,7 +6807,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_3 = ((__pyx_v_pos->nd > 3) != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":393
+    /* "pyFAI/ext/splitPixel.pyx":393
  *     cdef int bins0 = 0, bins1 = 0, size = weights.size
  *     if pos.ndim > 3:  # create a view
  *         pos = pos.reshape((-1, 4, 2))             # <<<<<<<<<<<<<<
@@ -6821,7 +6823,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_DECREF_SET(__pyx_v_pos, ((PyArrayObject *)__pyx_t_4));
     __pyx_t_4 = 0;
 
-    /* "src/splitPixel.pyx":392
+    /* "pyFAI/ext/splitPixel.pyx":392
  * 
  *     cdef int bins0 = 0, bins1 = 0, size = weights.size
  *     if pos.ndim > 3:  # create a view             # <<<<<<<<<<<<<<
@@ -6830,7 +6832,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":395
+  /* "pyFAI/ext/splitPixel.pyx":395
  *         pos = pos.reshape((-1, 4, 2))
  * 
  *     assert pos.shape[0] == size             # <<<<<<<<<<<<<<
@@ -6846,7 +6848,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   }
   #endif
 
-  /* "src/splitPixel.pyx":396
+  /* "pyFAI/ext/splitPixel.pyx":396
  * 
  *     assert pos.shape[0] == size
  *     assert pos.shape[1] == 4  # 4 corners             # <<<<<<<<<<<<<<
@@ -6862,7 +6864,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   }
   #endif
 
-  /* "src/splitPixel.pyx":397
+  /* "pyFAI/ext/splitPixel.pyx":397
  *     assert pos.shape[0] == size
  *     assert pos.shape[1] == 4  # 4 corners
  *     assert pos.shape[2] == 2  # tth and chi             # <<<<<<<<<<<<<<
@@ -6878,7 +6880,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   }
   #endif
 
-  /* "src/splitPixel.pyx":398
+  /* "pyFAI/ext/splitPixel.pyx":398
  *     assert pos.shape[1] == 4  # 4 corners
  *     assert pos.shape[2] == 2  # tth and chi
  *     assert pos.ndim == 3             # <<<<<<<<<<<<<<
@@ -6894,7 +6896,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   }
   #endif
 
-  /* "src/splitPixel.pyx":399
+  /* "pyFAI/ext/splitPixel.pyx":399
  *     assert pos.shape[2] == 2  # tth and chi
  *     assert pos.ndim == 3
  *     try:             # <<<<<<<<<<<<<<
@@ -6908,7 +6910,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_XGOTREF(__pyx_t_7);
     /*try:*/ {
 
-      /* "src/splitPixel.pyx":400
+      /* "pyFAI/ext/splitPixel.pyx":400
  *     assert pos.ndim == 3
  *     try:
  *         bins0, bins1 = tuple(bins)             # <<<<<<<<<<<<<<
@@ -6949,7 +6951,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
       __pyx_v_bins0 = __pyx_t_2;
       __pyx_v_bins1 = __pyx_t_9;
 
-      /* "src/splitPixel.pyx":399
+      /* "pyFAI/ext/splitPixel.pyx":399
  *     assert pos.shape[2] == 2  # tth and chi
  *     assert pos.ndim == 3
  *     try:             # <<<<<<<<<<<<<<
@@ -6966,7 +6968,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "src/splitPixel.pyx":401
+    /* "pyFAI/ext/splitPixel.pyx":401
  *     try:
  *         bins0, bins1 = tuple(bins)
  *     except:             # <<<<<<<<<<<<<<
@@ -6974,13 +6976,13 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  *     if bins0 <= 0:
  */
     /*except:*/ {
-      __Pyx_AddTraceback("src.splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("pyFAI.ext.splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
       if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_8, &__pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L6_except_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_GOTREF(__pyx_t_1);
 
-      /* "src/splitPixel.pyx":402
+      /* "pyFAI/ext/splitPixel.pyx":402
  *         bins0, bins1 = tuple(bins)
  *     except:
  *         bins0 = bins1 = < int > bins             # <<<<<<<<<<<<<<
@@ -6997,7 +6999,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     }
     __pyx_L6_except_error:;
 
-    /* "src/splitPixel.pyx":399
+    /* "pyFAI/ext/splitPixel.pyx":399
  *     assert pos.shape[2] == 2  # tth and chi
  *     assert pos.ndim == 3
  *     try:             # <<<<<<<<<<<<<<
@@ -7017,7 +7019,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_L11_try_end:;
   }
 
-  /* "src/splitPixel.pyx":403
+  /* "pyFAI/ext/splitPixel.pyx":403
  *     except:
  *         bins0 = bins1 = < int > bins
  *     if bins0 <= 0:             # <<<<<<<<<<<<<<
@@ -7027,7 +7029,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_3 = ((__pyx_v_bins0 <= 0) != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":404
+    /* "pyFAI/ext/splitPixel.pyx":404
  *         bins0 = bins1 = < int > bins
  *     if bins0 <= 0:
  *         bins0 = 1             # <<<<<<<<<<<<<<
@@ -7036,7 +7038,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_bins0 = 1;
 
-    /* "src/splitPixel.pyx":403
+    /* "pyFAI/ext/splitPixel.pyx":403
  *     except:
  *         bins0 = bins1 = < int > bins
  *     if bins0 <= 0:             # <<<<<<<<<<<<<<
@@ -7045,7 +7047,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":405
+  /* "pyFAI/ext/splitPixel.pyx":405
  *     if bins0 <= 0:
  *         bins0 = 1
  *     if bins1 <= 0:             # <<<<<<<<<<<<<<
@@ -7055,7 +7057,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_3 = ((__pyx_v_bins1 <= 0) != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":406
+    /* "pyFAI/ext/splitPixel.pyx":406
  *         bins0 = 1
  *     if bins1 <= 0:
  *         bins1 = 1             # <<<<<<<<<<<<<<
@@ -7064,7 +7066,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_bins1 = 1;
 
-    /* "src/splitPixel.pyx":405
+    /* "pyFAI/ext/splitPixel.pyx":405
  *     if bins0 <= 0:
  *         bins0 = 1
  *     if bins1 <= 0:             # <<<<<<<<<<<<<<
@@ -7073,7 +7075,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":408
+  /* "pyFAI/ext/splitPixel.pyx":408
  *         bins1 = 1
  *     cdef:
  *         numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)             # <<<<<<<<<<<<<<
@@ -7127,7 +7129,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_cpos = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "src/splitPixel.pyx":409
+  /* "pyFAI/ext/splitPixel.pyx":409
  *     cdef:
  *         numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()             # <<<<<<<<<<<<<<
@@ -7202,7 +7204,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_cdata = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "src/splitPixel.pyx":410
+  /* "pyFAI/ext/splitPixel.pyx":410
  *         numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -7259,7 +7261,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_outData = ((PyArrayObject *)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "src/splitPixel.pyx":411
+  /* "pyFAI/ext/splitPixel.pyx":411
  *         numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -7316,7 +7318,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_outCount = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "src/splitPixel.pyx":412
+  /* "pyFAI/ext/splitPixel.pyx":412
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -7373,7 +7375,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_outMerge = ((PyArrayObject *)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "src/splitPixel.pyx":413
+  /* "pyFAI/ext/splitPixel.pyx":413
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -7420,7 +7422,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_edges0 = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "src/splitPixel.pyx":414
+  /* "pyFAI/ext/splitPixel.pyx":414
  *         numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -7467,7 +7469,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_edges1 = ((PyArrayObject *)__pyx_t_11);
   __pyx_t_11 = 0;
 
-  /* "src/splitPixel.pyx":417
+  /* "pyFAI/ext/splitPixel.pyx":417
  *         numpy.int8_t[:] cmask
  *         double[:] cflat, cdark, cpolarization, csolidangle
  *         bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False             # <<<<<<<<<<<<<<
@@ -7481,7 +7483,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_do_polarization = 0;
   __pyx_v_do_solidangle = 0;
 
-  /* "src/splitPixel.pyx":418
+  /* "pyFAI/ext/splitPixel.pyx":418
  *         double[:] cflat, cdark, cpolarization, csolidangle
  *         bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
  *         double cdummy = 0, cddummy = 0, data = 0             # <<<<<<<<<<<<<<
@@ -7492,7 +7494,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_cddummy = 0.0;
   __pyx_v_data = 0.0;
 
-  /* "src/splitPixel.pyx":419
+  /* "pyFAI/ext/splitPixel.pyx":419
  *         bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
  *         double cdummy = 0, cddummy = 0, data = 0
  *         double min0 = 0, max0 = 0, min1 = 0, max1 = 0, deltaR = 0, deltaL = 0, deltaU = 0, deltaD = 0, one_over_area = 0             # <<<<<<<<<<<<<<
@@ -7509,7 +7511,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_deltaD = 0.0;
   __pyx_v_one_over_area = 0.0;
 
-  /* "src/splitPixel.pyx":420
+  /* "pyFAI/ext/splitPixel.pyx":420
  *         double cdummy = 0, cddummy = 0, data = 0
  *         double min0 = 0, max0 = 0, min1 = 0, max1 = 0, deltaR = 0, deltaL = 0, deltaU = 0, deltaD = 0, one_over_area = 0
  *         double pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0             # <<<<<<<<<<<<<<
@@ -7523,7 +7525,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_pos0_maxin = 0.0;
   __pyx_v_pos1_maxin = 0.0;
 
-  /* "src/splitPixel.pyx":421
+  /* "pyFAI/ext/splitPixel.pyx":421
  *         double min0 = 0, max0 = 0, min1 = 0, max1 = 0, deltaR = 0, deltaL = 0, deltaU = 0, deltaD = 0, one_over_area = 0
  *         double pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
  *         double aera_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0             # <<<<<<<<<<<<<<
@@ -7536,7 +7538,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_fbin1_min = 0.0;
   __pyx_v_fbin1_max = 0.0;
 
-  /* "src/splitPixel.pyx":422
+  /* "pyFAI/ext/splitPixel.pyx":422
  *         double pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
  *         double aera_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
  *         double a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0             # <<<<<<<<<<<<<<
@@ -7552,7 +7554,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_d0 = 0.0;
   __pyx_v_d1 = 0.0;
 
-  /* "src/splitPixel.pyx":423
+  /* "pyFAI/ext/splitPixel.pyx":423
  *         double aera_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
  *         double a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
  *         double epsilon = 1e-10             # <<<<<<<<<<<<<<
@@ -7561,7 +7563,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   __pyx_v_epsilon = 1e-10;
 
-  /* "src/splitPixel.pyx":424
+  /* "pyFAI/ext/splitPixel.pyx":424
  *         double a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
  *         double epsilon = 1e-10
  *         int bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0             # <<<<<<<<<<<<<<
@@ -7576,7 +7578,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_v_j = 0;
   __pyx_v_idx = 0;
 
-  /* "src/splitPixel.pyx":426
+  /* "pyFAI/ext/splitPixel.pyx":426
  *         int bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
  * 
  *     if pos0Range is not None and len(pos0Range) == 2:             # <<<<<<<<<<<<<<
@@ -7596,7 +7598,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_L17_bool_binop_done:;
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":427
+    /* "pyFAI/ext/splitPixel.pyx":427
  * 
  *     if pos0Range is not None and len(pos0Range) == 2:
  *         pos0_min = min(pos0Range)             # <<<<<<<<<<<<<<
@@ -7615,7 +7617,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_pos0_min = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":428
+    /* "pyFAI/ext/splitPixel.pyx":428
  *     if pos0Range is not None and len(pos0Range) == 2:
  *         pos0_min = min(pos0Range)
  *         pos0_maxin = max(pos0Range)             # <<<<<<<<<<<<<<
@@ -7634,7 +7636,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
     __pyx_v_pos0_maxin = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":426
+    /* "pyFAI/ext/splitPixel.pyx":426
  *         int bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
  * 
  *     if pos0Range is not None and len(pos0Range) == 2:             # <<<<<<<<<<<<<<
@@ -7644,7 +7646,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     goto __pyx_L16;
   }
 
-  /* "src/splitPixel.pyx":430
+  /* "pyFAI/ext/splitPixel.pyx":430
  *         pos0_maxin = max(pos0Range)
  *     else:
  *         pos0_min = pos[:, :, 0].min()             # <<<<<<<<<<<<<<
@@ -7679,7 +7681,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
     __pyx_v_pos0_min = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":431
+    /* "pyFAI/ext/splitPixel.pyx":431
  *     else:
  *         pos0_min = pos[:, :, 0].min()
  *         pos0_maxin = pos[:, :, 0].max()             # <<<<<<<<<<<<<<
@@ -7715,7 +7717,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   }
   __pyx_L16:;
 
-  /* "src/splitPixel.pyx":432
+  /* "pyFAI/ext/splitPixel.pyx":432
  *         pos0_min = pos[:, :, 0].min()
  *         pos0_maxin = pos[:, :, 0].max()
  *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)             # <<<<<<<<<<<<<<
@@ -7774,7 +7776,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_pos0_max = __pyx_t_23;
 
-  /* "src/splitPixel.pyx":434
+  /* "pyFAI/ext/splitPixel.pyx":434
  *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
  * 
  *     if pos1Range is not None and len(pos1Range) > 1:             # <<<<<<<<<<<<<<
@@ -7794,7 +7796,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_L20_bool_binop_done:;
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":435
+    /* "pyFAI/ext/splitPixel.pyx":435
  * 
  *     if pos1Range is not None and len(pos1Range) > 1:
  *         pos1_min = min(pos1Range)             # <<<<<<<<<<<<<<
@@ -7813,7 +7815,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_pos1_min = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":436
+    /* "pyFAI/ext/splitPixel.pyx":436
  *     if pos1Range is not None and len(pos1Range) > 1:
  *         pos1_min = min(pos1Range)
  *         pos1_maxin = max(pos1Range)             # <<<<<<<<<<<<<<
@@ -7832,7 +7834,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_pos1_maxin = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":434
+    /* "pyFAI/ext/splitPixel.pyx":434
  *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
  * 
  *     if pos1Range is not None and len(pos1Range) > 1:             # <<<<<<<<<<<<<<
@@ -7842,7 +7844,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     goto __pyx_L19;
   }
 
-  /* "src/splitPixel.pyx":438
+  /* "pyFAI/ext/splitPixel.pyx":438
  *         pos1_maxin = max(pos1Range)
  *     else:
  *         pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
@@ -7877,7 +7879,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_pos1_min = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":439
+    /* "pyFAI/ext/splitPixel.pyx":439
  *     else:
  *         pos1_min = pos[:, :, 1].min()
  *         pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
@@ -7913,7 +7915,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   }
   __pyx_L19:;
 
-  /* "src/splitPixel.pyx":440
+  /* "pyFAI/ext/splitPixel.pyx":440
  *         pos1_min = pos[:, :, 1].min()
  *         pos1_maxin = pos[:, :, 1].max()
  *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)             # <<<<<<<<<<<<<<
@@ -7972,7 +7974,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
   __pyx_v_pos1_max = __pyx_t_23;
 
-  /* "src/splitPixel.pyx":442
+  /* "pyFAI/ext/splitPixel.pyx":442
  *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
  * 
  *     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))             # <<<<<<<<<<<<<<
@@ -7981,7 +7983,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   __pyx_v_dpos0 = ((__pyx_v_pos0_max - __pyx_v_pos0_min) / ((double)__pyx_v_bins0));
 
-  /* "src/splitPixel.pyx":443
+  /* "pyFAI/ext/splitPixel.pyx":443
  * 
  *     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))
  *     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))             # <<<<<<<<<<<<<<
@@ -7990,7 +7992,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   __pyx_v_dpos1 = ((__pyx_v_pos1_max - __pyx_v_pos1_min) / ((double)__pyx_v_bins1));
 
-  /* "src/splitPixel.pyx":444
+  /* "pyFAI/ext/splitPixel.pyx":444
  *     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))
  *     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
  *     edges0 = numpy.linspace(pos0_min + 0.5 * dpos0, pos0_maxin - 0.5 * dpos0, bins0)             # <<<<<<<<<<<<<<
@@ -8060,7 +8062,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __Pyx_DECREF_SET(__pyx_v_edges0, ((PyArrayObject *)__pyx_t_10));
   __pyx_t_10 = 0;
 
-  /* "src/splitPixel.pyx":445
+  /* "pyFAI/ext/splitPixel.pyx":445
  *     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
  *     edges0 = numpy.linspace(pos0_min + 0.5 * dpos0, pos0_maxin - 0.5 * dpos0, bins0)
  *     edges1 = numpy.linspace(pos1_min + 0.5 * dpos1, pos1_maxin - 0.5 * dpos1, bins1)             # <<<<<<<<<<<<<<
@@ -8130,7 +8132,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __Pyx_DECREF_SET(__pyx_v_edges1, ((PyArrayObject *)__pyx_t_10));
   __pyx_t_10 = 0;
 
-  /* "src/splitPixel.pyx":447
+  /* "pyFAI/ext/splitPixel.pyx":447
  *     edges1 = numpy.linspace(pos1_min + 0.5 * dpos1, pos1_maxin - 0.5 * dpos1, bins1)
  * 
  *     if (dummy is not None) and (delta_dummy is not None):             # <<<<<<<<<<<<<<
@@ -8150,7 +8152,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_L23_bool_binop_done:;
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":448
+    /* "pyFAI/ext/splitPixel.pyx":448
  * 
  *     if (dummy is not None) and (delta_dummy is not None):
  *         check_dummy = True             # <<<<<<<<<<<<<<
@@ -8159,7 +8161,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_check_dummy = 1;
 
-    /* "src/splitPixel.pyx":449
+    /* "pyFAI/ext/splitPixel.pyx":449
  *     if (dummy is not None) and (delta_dummy is not None):
  *         check_dummy = True
  *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
@@ -8169,7 +8171,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_23 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_23 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 449; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":450
+    /* "pyFAI/ext/splitPixel.pyx":450
  *         check_dummy = True
  *         cdummy = float(dummy)
  *         cddummy = float(delta_dummy)             # <<<<<<<<<<<<<<
@@ -8179,7 +8181,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_23 = __Pyx_PyObject_AsDouble(__pyx_v_delta_dummy); if (unlikely(__pyx_t_23 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cddummy = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":447
+    /* "pyFAI/ext/splitPixel.pyx":447
  *     edges1 = numpy.linspace(pos1_min + 0.5 * dpos1, pos1_maxin - 0.5 * dpos1, bins1)
  * 
  *     if (dummy is not None) and (delta_dummy is not None):             # <<<<<<<<<<<<<<
@@ -8189,7 +8191,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     goto __pyx_L22;
   }
 
-  /* "src/splitPixel.pyx":451
+  /* "pyFAI/ext/splitPixel.pyx":451
  *         cdummy = float(dummy)
  *         cddummy = float(delta_dummy)
  *     elif (dummy is not None):             # <<<<<<<<<<<<<<
@@ -8200,7 +8202,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_20 = (__pyx_t_3 != 0);
   if (__pyx_t_20) {
 
-    /* "src/splitPixel.pyx":452
+    /* "pyFAI/ext/splitPixel.pyx":452
  *         cddummy = float(delta_dummy)
  *     elif (dummy is not None):
  *         check_dummy = True             # <<<<<<<<<<<<<<
@@ -8209,7 +8211,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_check_dummy = 1;
 
-    /* "src/splitPixel.pyx":453
+    /* "pyFAI/ext/splitPixel.pyx":453
  *     elif (dummy is not None):
  *         check_dummy = True
  *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
@@ -8219,7 +8221,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_23 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_23 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 453; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_23;
 
-    /* "src/splitPixel.pyx":454
+    /* "pyFAI/ext/splitPixel.pyx":454
  *         check_dummy = True
  *         cdummy = float(dummy)
  *         cddummy = 0.0             # <<<<<<<<<<<<<<
@@ -8228,7 +8230,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_cddummy = 0.0;
 
-    /* "src/splitPixel.pyx":451
+    /* "pyFAI/ext/splitPixel.pyx":451
  *         cdummy = float(dummy)
  *         cddummy = float(delta_dummy)
  *     elif (dummy is not None):             # <<<<<<<<<<<<<<
@@ -8238,7 +8240,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     goto __pyx_L22;
   }
 
-  /* "src/splitPixel.pyx":456
+  /* "pyFAI/ext/splitPixel.pyx":456
  *         cddummy = 0.0
  *     else:
  *         check_dummy = False             # <<<<<<<<<<<<<<
@@ -8248,7 +8250,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   /*else*/ {
     __pyx_v_check_dummy = 0;
 
-    /* "src/splitPixel.pyx":457
+    /* "pyFAI/ext/splitPixel.pyx":457
  *     else:
  *         check_dummy = False
  *         cdummy = <float> float(empty)             # <<<<<<<<<<<<<<
@@ -8257,7 +8259,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_cdummy = ((float)((double)__pyx_v_empty));
 
-    /* "src/splitPixel.pyx":458
+    /* "pyFAI/ext/splitPixel.pyx":458
  *         check_dummy = False
  *         cdummy = <float> float(empty)
  *         cddummy = 0.0             # <<<<<<<<<<<<<<
@@ -8268,7 +8270,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   }
   __pyx_L22:;
 
-  /* "src/splitPixel.pyx":460
+  /* "pyFAI/ext/splitPixel.pyx":460
  *         cddummy = 0.0
  * 
  *     if mask is not None:             # <<<<<<<<<<<<<<
@@ -8279,7 +8281,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_3 = (__pyx_t_20 != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":461
+    /* "pyFAI/ext/splitPixel.pyx":461
  * 
  *     if mask is not None:
  *         check_mask = True             # <<<<<<<<<<<<<<
@@ -8288,7 +8290,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_check_mask = 1;
 
-    /* "src/splitPixel.pyx":462
+    /* "pyFAI/ext/splitPixel.pyx":462
  *     if mask is not None:
  *         check_mask = True
  *         assert mask.size == size             # <<<<<<<<<<<<<<
@@ -8313,7 +8315,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     }
     #endif
 
-    /* "src/splitPixel.pyx":463
+    /* "pyFAI/ext/splitPixel.pyx":463
  *         check_mask = True
  *         assert mask.size == size
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)             # <<<<<<<<<<<<<<
@@ -8371,7 +8373,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_25.memview = NULL;
     __pyx_t_25.data = NULL;
 
-    /* "src/splitPixel.pyx":460
+    /* "pyFAI/ext/splitPixel.pyx":460
  *         cddummy = 0.0
  * 
  *     if mask is not None:             # <<<<<<<<<<<<<<
@@ -8380,7 +8382,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":464
+  /* "pyFAI/ext/splitPixel.pyx":464
  *         assert mask.size == size
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
  *     if dark is not None:             # <<<<<<<<<<<<<<
@@ -8391,7 +8393,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_20 = (__pyx_t_3 != 0);
   if (__pyx_t_20) {
 
-    /* "src/splitPixel.pyx":465
+    /* "pyFAI/ext/splitPixel.pyx":465
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
  *     if dark is not None:
  *         do_dark = True             # <<<<<<<<<<<<<<
@@ -8400,7 +8402,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_do_dark = 1;
 
-    /* "src/splitPixel.pyx":466
+    /* "pyFAI/ext/splitPixel.pyx":466
  *     if dark is not None:
  *         do_dark = True
  *         assert dark.size == size             # <<<<<<<<<<<<<<
@@ -8425,7 +8427,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     }
     #endif
 
-    /* "src/splitPixel.pyx":467
+    /* "pyFAI/ext/splitPixel.pyx":467
  *         do_dark = True
  *         assert dark.size == size
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -8483,7 +8485,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_26.memview = NULL;
     __pyx_t_26.data = NULL;
 
-    /* "src/splitPixel.pyx":464
+    /* "pyFAI/ext/splitPixel.pyx":464
  *         assert mask.size == size
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
  *     if dark is not None:             # <<<<<<<<<<<<<<
@@ -8492,7 +8494,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":468
+  /* "pyFAI/ext/splitPixel.pyx":468
  *         assert dark.size == size
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
  *     if flat is not None:             # <<<<<<<<<<<<<<
@@ -8503,7 +8505,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_3 = (__pyx_t_20 != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":469
+    /* "pyFAI/ext/splitPixel.pyx":469
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
  *     if flat is not None:
  *         do_flat = True             # <<<<<<<<<<<<<<
@@ -8512,7 +8514,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_do_flat = 1;
 
-    /* "src/splitPixel.pyx":470
+    /* "pyFAI/ext/splitPixel.pyx":470
  *     if flat is not None:
  *         do_flat = True
  *         assert flat.size == size             # <<<<<<<<<<<<<<
@@ -8537,7 +8539,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     }
     #endif
 
-    /* "src/splitPixel.pyx":471
+    /* "pyFAI/ext/splitPixel.pyx":471
  *         do_flat = True
  *         assert flat.size == size
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -8595,7 +8597,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_26.memview = NULL;
     __pyx_t_26.data = NULL;
 
-    /* "src/splitPixel.pyx":468
+    /* "pyFAI/ext/splitPixel.pyx":468
  *         assert dark.size == size
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
  *     if flat is not None:             # <<<<<<<<<<<<<<
@@ -8604,7 +8606,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":472
+  /* "pyFAI/ext/splitPixel.pyx":472
  *         assert flat.size == size
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
  *     if polarization is not None:             # <<<<<<<<<<<<<<
@@ -8615,7 +8617,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_20 = (__pyx_t_3 != 0);
   if (__pyx_t_20) {
 
-    /* "src/splitPixel.pyx":473
+    /* "pyFAI/ext/splitPixel.pyx":473
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
  *     if polarization is not None:
  *         do_polarization = True             # <<<<<<<<<<<<<<
@@ -8624,7 +8626,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_do_polarization = 1;
 
-    /* "src/splitPixel.pyx":474
+    /* "pyFAI/ext/splitPixel.pyx":474
  *     if polarization is not None:
  *         do_polarization = True
  *         assert polarization.size == size             # <<<<<<<<<<<<<<
@@ -8649,7 +8651,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     }
     #endif
 
-    /* "src/splitPixel.pyx":475
+    /* "pyFAI/ext/splitPixel.pyx":475
  *         do_polarization = True
  *         assert polarization.size == size
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -8707,7 +8709,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_26.memview = NULL;
     __pyx_t_26.data = NULL;
 
-    /* "src/splitPixel.pyx":472
+    /* "pyFAI/ext/splitPixel.pyx":472
  *         assert flat.size == size
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
  *     if polarization is not None:             # <<<<<<<<<<<<<<
@@ -8716,7 +8718,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":476
+  /* "pyFAI/ext/splitPixel.pyx":476
  *         assert polarization.size == size
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  *     if solidangle is not None:             # <<<<<<<<<<<<<<
@@ -8727,7 +8729,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_3 = (__pyx_t_20 != 0);
   if (__pyx_t_3) {
 
-    /* "src/splitPixel.pyx":477
+    /* "pyFAI/ext/splitPixel.pyx":477
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  *     if solidangle is not None:
  *         do_solidangle = True             # <<<<<<<<<<<<<<
@@ -8736,7 +8738,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
     __pyx_v_do_solidangle = 1;
 
-    /* "src/splitPixel.pyx":478
+    /* "pyFAI/ext/splitPixel.pyx":478
  *     if solidangle is not None:
  *         do_solidangle = True
  *         assert solidangle.size == size             # <<<<<<<<<<<<<<
@@ -8761,7 +8763,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     }
     #endif
 
-    /* "src/splitPixel.pyx":479
+    /* "pyFAI/ext/splitPixel.pyx":479
  *         do_solidangle = True
  *         assert solidangle.size == size
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -8819,7 +8821,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __pyx_t_26.memview = NULL;
     __pyx_t_26.data = NULL;
 
-    /* "src/splitPixel.pyx":476
+    /* "pyFAI/ext/splitPixel.pyx":476
  *         assert polarization.size == size
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  *     if solidangle is not None:             # <<<<<<<<<<<<<<
@@ -8828,7 +8830,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "src/splitPixel.pyx":481
+  /* "pyFAI/ext/splitPixel.pyx":481
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -8842,7 +8844,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
       #endif
       /*try:*/ {
 
-        /* "src/splitPixel.pyx":482
+        /* "pyFAI/ext/splitPixel.pyx":482
  * 
  *     with nogil:
  *         for idx in range(size):             # <<<<<<<<<<<<<<
@@ -8853,7 +8855,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
         for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_9; __pyx_t_2+=1) {
           __pyx_v_idx = __pyx_t_2;
 
-          /* "src/splitPixel.pyx":484
+          /* "pyFAI/ext/splitPixel.pyx":484
  *         for idx in range(size):
  * 
  *             if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -8873,7 +8875,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_L36_bool_binop_done:;
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":485
+            /* "pyFAI/ext/splitPixel.pyx":485
  * 
  *             if (check_mask) and (cmask[idx]):
  *                 continue             # <<<<<<<<<<<<<<
@@ -8882,7 +8884,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             goto __pyx_L33_continue;
 
-            /* "src/splitPixel.pyx":484
+            /* "pyFAI/ext/splitPixel.pyx":484
  *         for idx in range(size):
  * 
  *             if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
@@ -8891,7 +8893,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":487
+          /* "pyFAI/ext/splitPixel.pyx":487
  *                 continue
  * 
  *             data = cdata[idx]             # <<<<<<<<<<<<<<
@@ -8901,7 +8903,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_28 = __pyx_v_idx;
           __pyx_v_data = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cdata.rcbuffer->pybuffer.buf, __pyx_t_28, __pyx_pybuffernd_cdata.diminfo[0].strides));
 
-          /* "src/splitPixel.pyx":488
+          /* "pyFAI/ext/splitPixel.pyx":488
  * 
  *             data = cdata[idx]
  *             if check_dummy and ((cddummy == 0.0 and data == cdummy) or (cddummy != 0.0 and fabs(data - cdummy) <= cddummy)):             # <<<<<<<<<<<<<<
@@ -8937,7 +8939,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_L39_bool_binop_done:;
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":489
+            /* "pyFAI/ext/splitPixel.pyx":489
  *             data = cdata[idx]
  *             if check_dummy and ((cddummy == 0.0 and data == cdummy) or (cddummy != 0.0 and fabs(data - cdummy) <= cddummy)):
  *                 continue             # <<<<<<<<<<<<<<
@@ -8946,7 +8948,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             goto __pyx_L33_continue;
 
-            /* "src/splitPixel.pyx":488
+            /* "pyFAI/ext/splitPixel.pyx":488
  * 
  *             data = cdata[idx]
  *             if check_dummy and ((cddummy == 0.0 and data == cdummy) or (cddummy != 0.0 and fabs(data - cdummy) <= cddummy)):             # <<<<<<<<<<<<<<
@@ -8955,7 +8957,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":491
+          /* "pyFAI/ext/splitPixel.pyx":491
  *                 continue
  * 
  *             a0 = cpos[idx, 0, 0]             # <<<<<<<<<<<<<<
@@ -8967,7 +8969,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_31 = 0;
           __pyx_v_a0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_31, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":492
+          /* "pyFAI/ext/splitPixel.pyx":492
  * 
  *             a0 = cpos[idx, 0, 0]
  *             a1 = cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
@@ -8979,7 +8981,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_34 = 1;
           __pyx_v_a1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_33, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_34, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":493
+          /* "pyFAI/ext/splitPixel.pyx":493
  *             a0 = cpos[idx, 0, 0]
  *             a1 = cpos[idx, 0, 1]
  *             b0 = cpos[idx, 1, 0]             # <<<<<<<<<<<<<<
@@ -8991,7 +8993,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_37 = 0;
           __pyx_v_b0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_35, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_36, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_37, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":494
+          /* "pyFAI/ext/splitPixel.pyx":494
  *             a1 = cpos[idx, 0, 1]
  *             b0 = cpos[idx, 1, 0]
  *             b1 = cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
@@ -9003,7 +9005,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_40 = 1;
           __pyx_v_b1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_38, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_39, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_40, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":495
+          /* "pyFAI/ext/splitPixel.pyx":495
  *             b0 = cpos[idx, 1, 0]
  *             b1 = cpos[idx, 1, 1]
  *             c0 = cpos[idx, 2, 0]             # <<<<<<<<<<<<<<
@@ -9015,7 +9017,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_43 = 0;
           __pyx_v_c0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_41, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_42, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_43, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":496
+          /* "pyFAI/ext/splitPixel.pyx":496
  *             b1 = cpos[idx, 1, 1]
  *             c0 = cpos[idx, 2, 0]
  *             c1 = cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
@@ -9027,7 +9029,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_46 = 1;
           __pyx_v_c1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_44, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_45, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_46, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":497
+          /* "pyFAI/ext/splitPixel.pyx":497
  *             c0 = cpos[idx, 2, 0]
  *             c1 = cpos[idx, 2, 1]
  *             d0 = cpos[idx, 3, 0]             # <<<<<<<<<<<<<<
@@ -9039,7 +9041,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_49 = 0;
           __pyx_v_d0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_47, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_48, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_49, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":498
+          /* "pyFAI/ext/splitPixel.pyx":498
  *             c1 = cpos[idx, 2, 1]
  *             d0 = cpos[idx, 3, 0]
  *             d1 = cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
@@ -9051,7 +9053,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_52 = 1;
           __pyx_v_d1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_50, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_51, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_52, __pyx_pybuffernd_cpos.diminfo[2].strides));
 
-          /* "src/splitPixel.pyx":500
+          /* "pyFAI/ext/splitPixel.pyx":500
  *             d1 = cpos[idx, 3, 1]
  * 
  *             min0 = min(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
@@ -9081,7 +9083,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           }
           __pyx_v_min0 = __pyx_t_56;
 
-          /* "src/splitPixel.pyx":501
+          /* "pyFAI/ext/splitPixel.pyx":501
  * 
  *             min0 = min(a0, b0, c0, d0)
  *             max0 = max(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
@@ -9111,7 +9113,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           }
           __pyx_v_max0 = __pyx_t_55;
 
-          /* "src/splitPixel.pyx":502
+          /* "pyFAI/ext/splitPixel.pyx":502
  *             min0 = min(a0, b0, c0, d0)
  *             max0 = max(a0, b0, c0, d0)
  *             min1 = min(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
@@ -9141,7 +9143,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           }
           __pyx_v_min1 = __pyx_t_54;
 
-          /* "src/splitPixel.pyx":503
+          /* "pyFAI/ext/splitPixel.pyx":503
  *             max0 = max(a0, b0, c0, d0)
  *             min1 = min(a1, b1, c1, d1)
  *             max1 = max(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
@@ -9171,7 +9173,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           }
           __pyx_v_max1 = __pyx_t_53;
 
-          /* "src/splitPixel.pyx":505
+          /* "pyFAI/ext/splitPixel.pyx":505
  *             max1 = max(a1, b1, c1, d1)
  * 
  *             if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):             # <<<<<<<<<<<<<<
@@ -9201,7 +9203,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_L45_bool_binop_done:;
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":506
+            /* "pyFAI/ext/splitPixel.pyx":506
  * 
  *             if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
  *                     continue             # <<<<<<<<<<<<<<
@@ -9210,7 +9212,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             goto __pyx_L33_continue;
 
-            /* "src/splitPixel.pyx":505
+            /* "pyFAI/ext/splitPixel.pyx":505
  *             max1 = max(a1, b1, c1, d1)
  * 
  *             if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):             # <<<<<<<<<<<<<<
@@ -9219,7 +9221,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":508
+          /* "pyFAI/ext/splitPixel.pyx":508
  *                     continue
  * 
  *             if do_dark:             # <<<<<<<<<<<<<<
@@ -9229,7 +9231,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = (__pyx_v_do_dark != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":509
+            /* "pyFAI/ext/splitPixel.pyx":509
  * 
  *             if do_dark:
  *                 data -= cdark[idx]             # <<<<<<<<<<<<<<
@@ -9240,7 +9242,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_57 = __pyx_v_idx;
             __pyx_v_data = (__pyx_v_data - (*((double *) ( /* dim=0 */ (__pyx_v_cdark.data + __pyx_t_57 * __pyx_v_cdark.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":508
+            /* "pyFAI/ext/splitPixel.pyx":508
  *                     continue
  * 
  *             if do_dark:             # <<<<<<<<<<<<<<
@@ -9249,7 +9251,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":510
+          /* "pyFAI/ext/splitPixel.pyx":510
  *             if do_dark:
  *                 data -= cdark[idx]
  *             if do_flat:             # <<<<<<<<<<<<<<
@@ -9259,7 +9261,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = (__pyx_v_do_flat != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":511
+            /* "pyFAI/ext/splitPixel.pyx":511
  *                 data -= cdark[idx]
  *             if do_flat:
  *                 data /= cflat[idx]             # <<<<<<<<<<<<<<
@@ -9270,7 +9272,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_58 = __pyx_v_idx;
             __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cflat.data + __pyx_t_58 * __pyx_v_cflat.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":510
+            /* "pyFAI/ext/splitPixel.pyx":510
  *             if do_dark:
  *                 data -= cdark[idx]
  *             if do_flat:             # <<<<<<<<<<<<<<
@@ -9279,7 +9281,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":512
+          /* "pyFAI/ext/splitPixel.pyx":512
  *             if do_flat:
  *                 data /= cflat[idx]
  *             if do_polarization:             # <<<<<<<<<<<<<<
@@ -9289,7 +9291,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = (__pyx_v_do_polarization != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":513
+            /* "pyFAI/ext/splitPixel.pyx":513
  *                 data /= cflat[idx]
  *             if do_polarization:
  *                 data /= cpolarization[idx]             # <<<<<<<<<<<<<<
@@ -9300,7 +9302,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_59 = __pyx_v_idx;
             __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cpolarization.data + __pyx_t_59 * __pyx_v_cpolarization.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":512
+            /* "pyFAI/ext/splitPixel.pyx":512
  *             if do_flat:
  *                 data /= cflat[idx]
  *             if do_polarization:             # <<<<<<<<<<<<<<
@@ -9309,7 +9311,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":514
+          /* "pyFAI/ext/splitPixel.pyx":514
  *             if do_polarization:
  *                 data /= cpolarization[idx]
  *             if do_solidangle:             # <<<<<<<<<<<<<<
@@ -9319,7 +9321,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = (__pyx_v_do_solidangle != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":515
+            /* "pyFAI/ext/splitPixel.pyx":515
  *                 data /= cpolarization[idx]
  *             if do_solidangle:
  *                 data /= csolidangle[idx]             # <<<<<<<<<<<<<<
@@ -9330,7 +9332,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_60 = __pyx_v_idx;
             __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_csolidangle.data + __pyx_t_60 * __pyx_v_csolidangle.strides[0]) ))));
 
-            /* "src/splitPixel.pyx":514
+            /* "pyFAI/ext/splitPixel.pyx":514
  *             if do_polarization:
  *                 data /= cpolarization[idx]
  *             if do_solidangle:             # <<<<<<<<<<<<<<
@@ -9339,7 +9341,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":517
+          /* "pyFAI/ext/splitPixel.pyx":517
  *                 data /= csolidangle[idx]
  * 
  *             if min0 < pos0_min:             # <<<<<<<<<<<<<<
@@ -9349,7 +9351,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = ((__pyx_v_min0 < __pyx_v_pos0_min) != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":518
+            /* "pyFAI/ext/splitPixel.pyx":518
  * 
  *             if min0 < pos0_min:
  *                 data = data * (pos0_min - min0) / (max0 - min0)             # <<<<<<<<<<<<<<
@@ -9358,7 +9360,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_data = ((__pyx_v_data * (__pyx_v_pos0_min - __pyx_v_min0)) / (__pyx_v_max0 - __pyx_v_min0));
 
-            /* "src/splitPixel.pyx":519
+            /* "pyFAI/ext/splitPixel.pyx":519
  *             if min0 < pos0_min:
  *                 data = data * (pos0_min - min0) / (max0 - min0)
  *                 min0 = pos0_min             # <<<<<<<<<<<<<<
@@ -9367,7 +9369,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_min0 = __pyx_v_pos0_min;
 
-            /* "src/splitPixel.pyx":517
+            /* "pyFAI/ext/splitPixel.pyx":517
  *                 data /= csolidangle[idx]
  * 
  *             if min0 < pos0_min:             # <<<<<<<<<<<<<<
@@ -9376,7 +9378,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":520
+          /* "pyFAI/ext/splitPixel.pyx":520
  *                 data = data * (pos0_min - min0) / (max0 - min0)
  *                 min0 = pos0_min
  *             if min1 < pos1_min:             # <<<<<<<<<<<<<<
@@ -9386,7 +9388,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = ((__pyx_v_min1 < __pyx_v_pos1_min) != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":521
+            /* "pyFAI/ext/splitPixel.pyx":521
  *                 min0 = pos0_min
  *             if min1 < pos1_min:
  *                 data = data * (pos1_min - min1) / (max1 - min1)             # <<<<<<<<<<<<<<
@@ -9395,7 +9397,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_data = ((__pyx_v_data * (__pyx_v_pos1_min - __pyx_v_min1)) / (__pyx_v_max1 - __pyx_v_min1));
 
-            /* "src/splitPixel.pyx":522
+            /* "pyFAI/ext/splitPixel.pyx":522
  *             if min1 < pos1_min:
  *                 data = data * (pos1_min - min1) / (max1 - min1)
  *                 min1 = pos1_min             # <<<<<<<<<<<<<<
@@ -9404,7 +9406,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_min1 = __pyx_v_pos1_min;
 
-            /* "src/splitPixel.pyx":520
+            /* "pyFAI/ext/splitPixel.pyx":520
  *                 data = data * (pos0_min - min0) / (max0 - min0)
  *                 min0 = pos0_min
  *             if min1 < pos1_min:             # <<<<<<<<<<<<<<
@@ -9413,7 +9415,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":523
+          /* "pyFAI/ext/splitPixel.pyx":523
  *                 data = data * (pos1_min - min1) / (max1 - min1)
  *                 min1 = pos1_min
  *             if max0 > pos0_maxin:             # <<<<<<<<<<<<<<
@@ -9423,7 +9425,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = ((__pyx_v_max0 > __pyx_v_pos0_maxin) != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":524
+            /* "pyFAI/ext/splitPixel.pyx":524
  *                 min1 = pos1_min
  *             if max0 > pos0_maxin:
  *                 data = data * (max0 - pos0_maxin) / (max0 - min0)             # <<<<<<<<<<<<<<
@@ -9432,7 +9434,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_data = ((__pyx_v_data * (__pyx_v_max0 - __pyx_v_pos0_maxin)) / (__pyx_v_max0 - __pyx_v_min0));
 
-            /* "src/splitPixel.pyx":525
+            /* "pyFAI/ext/splitPixel.pyx":525
  *             if max0 > pos0_maxin:
  *                 data = data * (max0 - pos0_maxin) / (max0 - min0)
  *                 max0 = pos0_maxin             # <<<<<<<<<<<<<<
@@ -9441,7 +9443,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_max0 = __pyx_v_pos0_maxin;
 
-            /* "src/splitPixel.pyx":523
+            /* "pyFAI/ext/splitPixel.pyx":523
  *                 data = data * (pos1_min - min1) / (max1 - min1)
  *                 min1 = pos1_min
  *             if max0 > pos0_maxin:             # <<<<<<<<<<<<<<
@@ -9450,7 +9452,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":526
+          /* "pyFAI/ext/splitPixel.pyx":526
  *                 data = data * (max0 - pos0_maxin) / (max0 - min0)
  *                 max0 = pos0_maxin
  *             if max1 > pos1_maxin:             # <<<<<<<<<<<<<<
@@ -9460,7 +9462,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = ((__pyx_v_max1 > __pyx_v_pos1_maxin) != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":527
+            /* "pyFAI/ext/splitPixel.pyx":527
  *                 max0 = pos0_maxin
  *             if max1 > pos1_maxin:
  *                 data = data * (max1 - pos1_maxin) / (max1 - min1)             # <<<<<<<<<<<<<<
@@ -9469,7 +9471,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_data = ((__pyx_v_data * (__pyx_v_max1 - __pyx_v_pos1_maxin)) / (__pyx_v_max1 - __pyx_v_min1));
 
-            /* "src/splitPixel.pyx":528
+            /* "pyFAI/ext/splitPixel.pyx":528
  *             if max1 > pos1_maxin:
  *                 data = data * (max1 - pos1_maxin) / (max1 - min1)
  *                 max1 = pos1_maxin             # <<<<<<<<<<<<<<
@@ -9478,7 +9480,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
             __pyx_v_max1 = __pyx_v_pos1_maxin;
 
-            /* "src/splitPixel.pyx":526
+            /* "pyFAI/ext/splitPixel.pyx":526
  *                 data = data * (max0 - pos0_maxin) / (max0 - min0)
  *                 max0 = pos0_maxin
  *             if max1 > pos1_maxin:             # <<<<<<<<<<<<<<
@@ -9487,7 +9489,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":531
+          /* "pyFAI/ext/splitPixel.pyx":531
  * 
  * #                treat data for pixel on chi discontinuity
  *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):             # <<<<<<<<<<<<<<
@@ -9497,7 +9499,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = ((((__pyx_v_max1 - __pyx_v_min1) / __pyx_v_dpos1) > (__pyx_v_bins1 / 2.0)) != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":532
+            /* "pyFAI/ext/splitPixel.pyx":532
  * #                treat data for pixel on chi discontinuity
  *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):
  *                 if pos1_maxin - max1 > min1 - pos1_min:             # <<<<<<<<<<<<<<
@@ -9507,7 +9509,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_3 = (((__pyx_v_pos1_maxin - __pyx_v_max1) > (__pyx_v_min1 - __pyx_v_pos1_min)) != 0);
             if (__pyx_t_3) {
 
-              /* "src/splitPixel.pyx":533
+              /* "pyFAI/ext/splitPixel.pyx":533
  *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):
  *                 if pos1_maxin - max1 > min1 - pos1_min:
  *                     min1 = max1             # <<<<<<<<<<<<<<
@@ -9516,7 +9518,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_min1 = __pyx_v_max1;
 
-              /* "src/splitPixel.pyx":534
+              /* "pyFAI/ext/splitPixel.pyx":534
  *                 if pos1_maxin - max1 > min1 - pos1_min:
  *                     min1 = max1
  *                     max1 = pos1_maxin             # <<<<<<<<<<<<<<
@@ -9525,7 +9527,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_max1 = __pyx_v_pos1_maxin;
 
-              /* "src/splitPixel.pyx":532
+              /* "pyFAI/ext/splitPixel.pyx":532
  * #                treat data for pixel on chi discontinuity
  *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):
  *                 if pos1_maxin - max1 > min1 - pos1_min:             # <<<<<<<<<<<<<<
@@ -9535,7 +9537,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               goto __pyx_L58;
             }
 
-            /* "src/splitPixel.pyx":536
+            /* "pyFAI/ext/splitPixel.pyx":536
  *                     max1 = pos1_maxin
  *                 else:
  *                     max1 = min1             # <<<<<<<<<<<<<<
@@ -9545,7 +9547,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             /*else*/ {
               __pyx_v_max1 = __pyx_v_min1;
 
-              /* "src/splitPixel.pyx":537
+              /* "pyFAI/ext/splitPixel.pyx":537
  *                 else:
  *                     max1 = min1
  *                     min1 = pos1_min             # <<<<<<<<<<<<<<
@@ -9556,7 +9558,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             }
             __pyx_L58:;
 
-            /* "src/splitPixel.pyx":531
+            /* "pyFAI/ext/splitPixel.pyx":531
  * 
  * #                treat data for pixel on chi discontinuity
  *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):             # <<<<<<<<<<<<<<
@@ -9565,43 +9567,43 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           }
 
-          /* "src/splitPixel.pyx":539
+          /* "pyFAI/ext/splitPixel.pyx":539
  *                     min1 = pos1_min
  * 
  *             fbin0_min = get_bin_number(min0, pos0_min, dpos0)             # <<<<<<<<<<<<<<
  *             fbin0_max = get_bin_number(max0, pos0_min, dpos0)
  *             fbin1_min = get_bin_number(min1, pos1_min, dpos1)
  */
-          __pyx_v_fbin0_min = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number(__pyx_v_min0, __pyx_v_pos0_min, __pyx_v_dpos0);
+          __pyx_v_fbin0_min = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number(__pyx_v_min0, __pyx_v_pos0_min, __pyx_v_dpos0);
 
-          /* "src/splitPixel.pyx":540
+          /* "pyFAI/ext/splitPixel.pyx":540
  * 
  *             fbin0_min = get_bin_number(min0, pos0_min, dpos0)
  *             fbin0_max = get_bin_number(max0, pos0_min, dpos0)             # <<<<<<<<<<<<<<
  *             fbin1_min = get_bin_number(min1, pos1_min, dpos1)
  *             fbin1_max = get_bin_number(max1, pos1_min, dpos1)
  */
-          __pyx_v_fbin0_max = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number(__pyx_v_max0, __pyx_v_pos0_min, __pyx_v_dpos0);
+          __pyx_v_fbin0_max = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number(__pyx_v_max0, __pyx_v_pos0_min, __pyx_v_dpos0);
 
-          /* "src/splitPixel.pyx":541
+          /* "pyFAI/ext/splitPixel.pyx":541
  *             fbin0_min = get_bin_number(min0, pos0_min, dpos0)
  *             fbin0_max = get_bin_number(max0, pos0_min, dpos0)
  *             fbin1_min = get_bin_number(min1, pos1_min, dpos1)             # <<<<<<<<<<<<<<
  *             fbin1_max = get_bin_number(max1, pos1_min, dpos1)
  * 
  */
-          __pyx_v_fbin1_min = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number(__pyx_v_min1, __pyx_v_pos1_min, __pyx_v_dpos1);
+          __pyx_v_fbin1_min = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number(__pyx_v_min1, __pyx_v_pos1_min, __pyx_v_dpos1);
 
-          /* "src/splitPixel.pyx":542
+          /* "pyFAI/ext/splitPixel.pyx":542
  *             fbin0_max = get_bin_number(max0, pos0_min, dpos0)
  *             fbin1_min = get_bin_number(min1, pos1_min, dpos1)
  *             fbin1_max = get_bin_number(max1, pos1_min, dpos1)             # <<<<<<<<<<<<<<
  * 
  *             bin0_min = < int > fbin0_min
  */
-          __pyx_v_fbin1_max = __pyx_fuse_1__pyx_f_3src_10splitPixel_get_bin_number(__pyx_v_max1, __pyx_v_pos1_min, __pyx_v_dpos1);
+          __pyx_v_fbin1_max = __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin_number(__pyx_v_max1, __pyx_v_pos1_min, __pyx_v_dpos1);
 
-          /* "src/splitPixel.pyx":544
+          /* "pyFAI/ext/splitPixel.pyx":544
  *             fbin1_max = get_bin_number(max1, pos1_min, dpos1)
  * 
  *             bin0_min = < int > fbin0_min             # <<<<<<<<<<<<<<
@@ -9610,7 +9612,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           __pyx_v_bin0_min = ((int)__pyx_v_fbin0_min);
 
-          /* "src/splitPixel.pyx":545
+          /* "pyFAI/ext/splitPixel.pyx":545
  * 
  *             bin0_min = < int > fbin0_min
  *             bin0_max = < int > fbin0_max             # <<<<<<<<<<<<<<
@@ -9619,7 +9621,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           __pyx_v_bin0_max = ((int)__pyx_v_fbin0_max);
 
-          /* "src/splitPixel.pyx":546
+          /* "pyFAI/ext/splitPixel.pyx":546
  *             bin0_min = < int > fbin0_min
  *             bin0_max = < int > fbin0_max
  *             bin1_min = < int > fbin1_min             # <<<<<<<<<<<<<<
@@ -9628,7 +9630,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           __pyx_v_bin1_min = ((int)__pyx_v_fbin1_min);
 
-          /* "src/splitPixel.pyx":547
+          /* "pyFAI/ext/splitPixel.pyx":547
  *             bin0_max = < int > fbin0_max
  *             bin1_min = < int > fbin1_min
  *             bin1_max = < int > fbin1_max             # <<<<<<<<<<<<<<
@@ -9637,7 +9639,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
           __pyx_v_bin1_max = ((int)__pyx_v_fbin1_max);
 
-          /* "src/splitPixel.pyx":549
+          /* "pyFAI/ext/splitPixel.pyx":549
  *             bin1_max = < int > fbin1_max
  * 
  *             if bin0_min == bin0_max:             # <<<<<<<<<<<<<<
@@ -9647,7 +9649,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_t_3 = ((__pyx_v_bin0_min == __pyx_v_bin0_max) != 0);
           if (__pyx_t_3) {
 
-            /* "src/splitPixel.pyx":550
+            /* "pyFAI/ext/splitPixel.pyx":550
  * 
  *             if bin0_min == bin0_max:
  *                 if bin1_min == bin1_max:             # <<<<<<<<<<<<<<
@@ -9657,7 +9659,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_3 = ((__pyx_v_bin1_min == __pyx_v_bin1_max) != 0);
             if (__pyx_t_3) {
 
-              /* "src/splitPixel.pyx":552
+              /* "pyFAI/ext/splitPixel.pyx":552
  *                 if bin1_min == bin1_max:
  *                     # All pixel is within a single bin
  *                     outCount[bin0_min, bin1_min] += 1.0             # <<<<<<<<<<<<<<
@@ -9668,7 +9670,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_62 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_61, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_62, __pyx_pybuffernd_outCount.diminfo[1].strides) += 1.0;
 
-              /* "src/splitPixel.pyx":553
+              /* "pyFAI/ext/splitPixel.pyx":553
  *                     # All pixel is within a single bin
  *                     outCount[bin0_min, bin1_min] += 1.0
  *                     outData[bin0_min, bin1_min] += data             # <<<<<<<<<<<<<<
@@ -9679,7 +9681,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_64 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_63, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_64, __pyx_pybuffernd_outData.diminfo[1].strides) += __pyx_v_data;
 
-              /* "src/splitPixel.pyx":550
+              /* "pyFAI/ext/splitPixel.pyx":550
  * 
  *             if bin0_min == bin0_max:
  *                 if bin1_min == bin1_max:             # <<<<<<<<<<<<<<
@@ -9689,7 +9691,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               goto __pyx_L60;
             }
 
-            /* "src/splitPixel.pyx":556
+            /* "pyFAI/ext/splitPixel.pyx":556
  *                 else:
  *                     # spread on more than 2 bins
  *                     aera_pixel = fbin1_max - fbin1_min             # <<<<<<<<<<<<<<
@@ -9699,7 +9701,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             /*else*/ {
               __pyx_v_aera_pixel = (__pyx_v_fbin1_max - __pyx_v_fbin1_min);
 
-              /* "src/splitPixel.pyx":557
+              /* "pyFAI/ext/splitPixel.pyx":557
  *                     # spread on more than 2 bins
  *                     aera_pixel = fbin1_max - fbin1_min
  *                     deltaD = (< double > (bin1_min + 1)) - fbin1_min             # <<<<<<<<<<<<<<
@@ -9708,7 +9710,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaD = (((double)(__pyx_v_bin1_min + 1)) - __pyx_v_fbin1_min);
 
-              /* "src/splitPixel.pyx":558
+              /* "pyFAI/ext/splitPixel.pyx":558
  *                     aera_pixel = fbin1_max - fbin1_min
  *                     deltaD = (< double > (bin1_min + 1)) - fbin1_min
  *                     deltaU = fbin1_max - (< double > bin1_max)             # <<<<<<<<<<<<<<
@@ -9717,7 +9719,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaU = (__pyx_v_fbin1_max - ((double)__pyx_v_bin1_max));
 
-              /* "src/splitPixel.pyx":559
+              /* "pyFAI/ext/splitPixel.pyx":559
  *                     deltaD = (< double > (bin1_min + 1)) - fbin1_min
  *                     deltaU = fbin1_max - (< double > bin1_max)
  *                     one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
@@ -9726,7 +9728,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
 
-              /* "src/splitPixel.pyx":561
+              /* "pyFAI/ext/splitPixel.pyx":561
  *                     one_over_area = 1.0 / aera_pixel
  * 
  *                     outCount[bin0_min, bin1_min] += one_over_area * deltaD             # <<<<<<<<<<<<<<
@@ -9737,7 +9739,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_66 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_65, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_66, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaD);
 
-              /* "src/splitPixel.pyx":562
+              /* "pyFAI/ext/splitPixel.pyx":562
  * 
  *                     outCount[bin0_min, bin1_min] += one_over_area * deltaD
  *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaD             # <<<<<<<<<<<<<<
@@ -9748,7 +9750,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_68 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_67, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_68, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaD);
 
-              /* "src/splitPixel.pyx":564
+              /* "pyFAI/ext/splitPixel.pyx":564
  *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaD
  * 
  *                     outCount[bin0_min, bin1_max] += one_over_area * deltaU             # <<<<<<<<<<<<<<
@@ -9759,7 +9761,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_70 = __pyx_v_bin1_max;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_69, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_70, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaU);
 
-              /* "src/splitPixel.pyx":565
+              /* "pyFAI/ext/splitPixel.pyx":565
  * 
  *                     outCount[bin0_min, bin1_max] += one_over_area * deltaU
  *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaU             # <<<<<<<<<<<<<<
@@ -9770,7 +9772,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_72 = __pyx_v_bin1_max;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_71, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_72, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaU);
 
-              /* "src/splitPixel.pyx":567
+              /* "pyFAI/ext/splitPixel.pyx":567
  *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaU
  * #                    if bin1_min +1< bin1_max:
  *                     for j in range(bin1_min + 1, bin1_max):             # <<<<<<<<<<<<<<
@@ -9781,7 +9783,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               for (__pyx_t_74 = (__pyx_v_bin1_min + 1); __pyx_t_74 < __pyx_t_73; __pyx_t_74+=1) {
                 __pyx_v_j = __pyx_t_74;
 
-                /* "src/splitPixel.pyx":568
+                /* "pyFAI/ext/splitPixel.pyx":568
  * #                    if bin1_min +1< bin1_max:
  *                     for j in range(bin1_min + 1, bin1_max):
  *                             outCount[bin0_min, j] += one_over_area             # <<<<<<<<<<<<<<
@@ -9792,7 +9794,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_76 = __pyx_v_j;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_75, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_76, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
 
-                /* "src/splitPixel.pyx":569
+                /* "pyFAI/ext/splitPixel.pyx":569
  *                     for j in range(bin1_min + 1, bin1_max):
  *                             outCount[bin0_min, j] += one_over_area
  *                             outData[bin0_min, j] += data * one_over_area             # <<<<<<<<<<<<<<
@@ -9806,7 +9808,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             }
             __pyx_L60:;
 
-            /* "src/splitPixel.pyx":549
+            /* "pyFAI/ext/splitPixel.pyx":549
  *             bin1_max = < int > fbin1_max
  * 
  *             if bin0_min == bin0_max:             # <<<<<<<<<<<<<<
@@ -9816,7 +9818,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             goto __pyx_L59;
           }
 
-          /* "src/splitPixel.pyx":573
+          /* "pyFAI/ext/splitPixel.pyx":573
  *             else:
  *                 # spread on more than 2 bins in dim 0
  *                 if bin1_min == bin1_max:             # <<<<<<<<<<<<<<
@@ -9827,7 +9829,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_3 = ((__pyx_v_bin1_min == __pyx_v_bin1_max) != 0);
             if (__pyx_t_3) {
 
-              /* "src/splitPixel.pyx":575
+              /* "pyFAI/ext/splitPixel.pyx":575
  *                 if bin1_min == bin1_max:
  *                     # All pixel fall on 1 bins in dim 1
  *                     aera_pixel = fbin0_max - fbin0_min             # <<<<<<<<<<<<<<
@@ -9836,7 +9838,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_aera_pixel = (__pyx_v_fbin0_max - __pyx_v_fbin0_min);
 
-              /* "src/splitPixel.pyx":576
+              /* "pyFAI/ext/splitPixel.pyx":576
  *                     # All pixel fall on 1 bins in dim 1
  *                     aera_pixel = fbin0_max - fbin0_min
  *                     deltaL = (< double > (bin0_min + 1)) - fbin0_min             # <<<<<<<<<<<<<<
@@ -9845,7 +9847,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaL = (((double)(__pyx_v_bin0_min + 1)) - __pyx_v_fbin0_min);
 
-              /* "src/splitPixel.pyx":577
+              /* "pyFAI/ext/splitPixel.pyx":577
  *                     aera_pixel = fbin0_max - fbin0_min
  *                     deltaL = (< double > (bin0_min + 1)) - fbin0_min
  *                     one_over_area = deltaL / aera_pixel             # <<<<<<<<<<<<<<
@@ -9854,7 +9856,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_one_over_area = (__pyx_v_deltaL / __pyx_v_aera_pixel);
 
-              /* "src/splitPixel.pyx":578
+              /* "pyFAI/ext/splitPixel.pyx":578
  *                     deltaL = (< double > (bin0_min + 1)) - fbin0_min
  *                     one_over_area = deltaL / aera_pixel
  *                     outCount[bin0_min, bin1_min] += one_over_area             # <<<<<<<<<<<<<<
@@ -9865,7 +9867,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_80 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_79, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_80, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
 
-              /* "src/splitPixel.pyx":579
+              /* "pyFAI/ext/splitPixel.pyx":579
  *                     one_over_area = deltaL / aera_pixel
  *                     outCount[bin0_min, bin1_min] += one_over_area
  *                     outData[bin0_min, bin1_min] += data * one_over_area             # <<<<<<<<<<<<<<
@@ -9876,7 +9878,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_82 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_81, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_82, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
 
-              /* "src/splitPixel.pyx":580
+              /* "pyFAI/ext/splitPixel.pyx":580
  *                     outCount[bin0_min, bin1_min] += one_over_area
  *                     outData[bin0_min, bin1_min] += data * one_over_area
  *                     deltaR = fbin0_max - (< double > bin0_max)             # <<<<<<<<<<<<<<
@@ -9885,7 +9887,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaR = (__pyx_v_fbin0_max - ((double)__pyx_v_bin0_max));
 
-              /* "src/splitPixel.pyx":581
+              /* "pyFAI/ext/splitPixel.pyx":581
  *                     outData[bin0_min, bin1_min] += data * one_over_area
  *                     deltaR = fbin0_max - (< double > bin0_max)
  *                     one_over_area = deltaR / aera_pixel             # <<<<<<<<<<<<<<
@@ -9894,7 +9896,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_one_over_area = (__pyx_v_deltaR / __pyx_v_aera_pixel);
 
-              /* "src/splitPixel.pyx":582
+              /* "pyFAI/ext/splitPixel.pyx":582
  *                     deltaR = fbin0_max - (< double > bin0_max)
  *                     one_over_area = deltaR / aera_pixel
  *                     outCount[bin0_max, bin1_min] += one_over_area             # <<<<<<<<<<<<<<
@@ -9905,7 +9907,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_84 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_83, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_84, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
 
-              /* "src/splitPixel.pyx":583
+              /* "pyFAI/ext/splitPixel.pyx":583
  *                     one_over_area = deltaR / aera_pixel
  *                     outCount[bin0_max, bin1_min] += one_over_area
  *                     outData[bin0_max, bin1_min] += data * one_over_area             # <<<<<<<<<<<<<<
@@ -9916,7 +9918,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_86 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_85, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_86, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
 
-              /* "src/splitPixel.pyx":584
+              /* "pyFAI/ext/splitPixel.pyx":584
  *                     outCount[bin0_max, bin1_min] += one_over_area
  *                     outData[bin0_max, bin1_min] += data * one_over_area
  *                     one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
@@ -9925,7 +9927,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
 
-              /* "src/splitPixel.pyx":585
+              /* "pyFAI/ext/splitPixel.pyx":585
  *                     outData[bin0_max, bin1_min] += data * one_over_area
  *                     one_over_area = 1.0 / aera_pixel
  *                     for i in range(bin0_min + 1, bin0_max):             # <<<<<<<<<<<<<<
@@ -9936,7 +9938,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               for (__pyx_t_74 = (__pyx_v_bin0_min + 1); __pyx_t_74 < __pyx_t_73; __pyx_t_74+=1) {
                 __pyx_v_i = __pyx_t_74;
 
-                /* "src/splitPixel.pyx":586
+                /* "pyFAI/ext/splitPixel.pyx":586
  *                     one_over_area = 1.0 / aera_pixel
  *                     for i in range(bin0_min + 1, bin0_max):
  *                             outCount[i, bin1_min] += one_over_area             # <<<<<<<<<<<<<<
@@ -9947,7 +9949,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_88 = __pyx_v_bin1_min;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_87, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_88, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
 
-                /* "src/splitPixel.pyx":587
+                /* "pyFAI/ext/splitPixel.pyx":587
  *                     for i in range(bin0_min + 1, bin0_max):
  *                             outCount[i, bin1_min] += one_over_area
  *                             outData[i, bin1_min] += data * one_over_area             # <<<<<<<<<<<<<<
@@ -9959,7 +9961,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_89, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_90, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
               }
 
-              /* "src/splitPixel.pyx":573
+              /* "pyFAI/ext/splitPixel.pyx":573
  *             else:
  *                 # spread on more than 2 bins in dim 0
  *                 if bin1_min == bin1_max:             # <<<<<<<<<<<<<<
@@ -9969,7 +9971,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               goto __pyx_L63;
             }
 
-            /* "src/splitPixel.pyx":590
+            /* "pyFAI/ext/splitPixel.pyx":590
  *                 else:
  *                     # spread on n pix in dim0 and m pixel in dim1:
  *                     aera_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)             # <<<<<<<<<<<<<<
@@ -9979,7 +9981,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             /*else*/ {
               __pyx_v_aera_pixel = ((__pyx_v_fbin0_max - __pyx_v_fbin0_min) * (__pyx_v_fbin1_max - __pyx_v_fbin1_min));
 
-              /* "src/splitPixel.pyx":591
+              /* "pyFAI/ext/splitPixel.pyx":591
  *                     # spread on n pix in dim0 and m pixel in dim1:
  *                     aera_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
  *                     deltaL = (< double > (bin0_min + 1.0)) - fbin0_min             # <<<<<<<<<<<<<<
@@ -9988,7 +9990,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaL = (((double)(__pyx_v_bin0_min + 1.0)) - __pyx_v_fbin0_min);
 
-              /* "src/splitPixel.pyx":592
+              /* "pyFAI/ext/splitPixel.pyx":592
  *                     aera_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
  *                     deltaL = (< double > (bin0_min + 1.0)) - fbin0_min
  *                     deltaR = fbin0_max - (< double > bin0_max)             # <<<<<<<<<<<<<<
@@ -9997,7 +9999,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaR = (__pyx_v_fbin0_max - ((double)__pyx_v_bin0_max));
 
-              /* "src/splitPixel.pyx":593
+              /* "pyFAI/ext/splitPixel.pyx":593
  *                     deltaL = (< double > (bin0_min + 1.0)) - fbin0_min
  *                     deltaR = fbin0_max - (< double > bin0_max)
  *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min             # <<<<<<<<<<<<<<
@@ -10006,7 +10008,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaD = (((double)(__pyx_v_bin1_min + 1.0)) - __pyx_v_fbin1_min);
 
-              /* "src/splitPixel.pyx":594
+              /* "pyFAI/ext/splitPixel.pyx":594
  *                     deltaR = fbin0_max - (< double > bin0_max)
  *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min
  *                     deltaU = fbin1_max - (< double > bin1_max)             # <<<<<<<<<<<<<<
@@ -10015,7 +10017,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_deltaU = (__pyx_v_fbin1_max - ((double)__pyx_v_bin1_max));
 
-              /* "src/splitPixel.pyx":595
+              /* "pyFAI/ext/splitPixel.pyx":595
  *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min
  *                     deltaU = fbin1_max - (< double > bin1_max)
  *                     one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
@@ -10024,7 +10026,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
  */
               __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
 
-              /* "src/splitPixel.pyx":597
+              /* "pyFAI/ext/splitPixel.pyx":597
  *                     one_over_area = 1.0 / aera_pixel
  * 
  *                     outCount[bin0_min, bin1_min] += one_over_area * deltaL * deltaD             # <<<<<<<<<<<<<<
@@ -10035,7 +10037,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_92 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_91, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_92, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaL) * __pyx_v_deltaD);
 
-              /* "src/splitPixel.pyx":598
+              /* "pyFAI/ext/splitPixel.pyx":598
  * 
  *                     outCount[bin0_min, bin1_min] += one_over_area * deltaL * deltaD
  *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD             # <<<<<<<<<<<<<<
@@ -10046,7 +10048,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_94 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_93, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_94, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaL) * __pyx_v_deltaD);
 
-              /* "src/splitPixel.pyx":600
+              /* "pyFAI/ext/splitPixel.pyx":600
  *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD
  * 
  *                     outCount[bin0_min, bin1_max] += one_over_area * deltaL * deltaU             # <<<<<<<<<<<<<<
@@ -10057,7 +10059,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_96 = __pyx_v_bin1_max;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_95, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_96, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaL) * __pyx_v_deltaU);
 
-              /* "src/splitPixel.pyx":601
+              /* "pyFAI/ext/splitPixel.pyx":601
  * 
  *                     outCount[bin0_min, bin1_max] += one_over_area * deltaL * deltaU
  *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaL * deltaU             # <<<<<<<<<<<<<<
@@ -10068,7 +10070,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_98 = __pyx_v_bin1_max;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_97, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_98, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaL) * __pyx_v_deltaU);
 
-              /* "src/splitPixel.pyx":603
+              /* "pyFAI/ext/splitPixel.pyx":603
  *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaL * deltaU
  * 
  *                     outCount[bin0_max, bin1_min] += one_over_area * deltaR * deltaD             # <<<<<<<<<<<<<<
@@ -10079,7 +10081,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_100 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_99, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_100, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaR) * __pyx_v_deltaD);
 
-              /* "src/splitPixel.pyx":604
+              /* "pyFAI/ext/splitPixel.pyx":604
  * 
  *                     outCount[bin0_max, bin1_min] += one_over_area * deltaR * deltaD
  *                     outData[bin0_max, bin1_min] += data * one_over_area * deltaR * deltaD             # <<<<<<<<<<<<<<
@@ -10090,7 +10092,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_102 = __pyx_v_bin1_min;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_101, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_102, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaR) * __pyx_v_deltaD);
 
-              /* "src/splitPixel.pyx":606
+              /* "pyFAI/ext/splitPixel.pyx":606
  *                     outData[bin0_max, bin1_min] += data * one_over_area * deltaR * deltaD
  * 
  *                     outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU             # <<<<<<<<<<<<<<
@@ -10101,7 +10103,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_104 = __pyx_v_bin1_max;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_103, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_104, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaR) * __pyx_v_deltaU);
 
-              /* "src/splitPixel.pyx":607
+              /* "pyFAI/ext/splitPixel.pyx":607
  * 
  *                     outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU
  *                     outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU             # <<<<<<<<<<<<<<
@@ -10112,7 +10114,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_106 = __pyx_v_bin1_max;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_105, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_106, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaR) * __pyx_v_deltaU);
 
-              /* "src/splitPixel.pyx":608
+              /* "pyFAI/ext/splitPixel.pyx":608
  *                     outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU
  *                     outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU
  *                     for i in range(bin0_min + 1, bin0_max):             # <<<<<<<<<<<<<<
@@ -10123,7 +10125,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               for (__pyx_t_74 = (__pyx_v_bin0_min + 1); __pyx_t_74 < __pyx_t_73; __pyx_t_74+=1) {
                 __pyx_v_i = __pyx_t_74;
 
-                /* "src/splitPixel.pyx":609
+                /* "pyFAI/ext/splitPixel.pyx":609
  *                     outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU
  *                     for i in range(bin0_min + 1, bin0_max):
  *                             outCount[i, bin1_min] += one_over_area * deltaD             # <<<<<<<<<<<<<<
@@ -10134,7 +10136,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_108 = __pyx_v_bin1_min;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_107, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_108, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaD);
 
-                /* "src/splitPixel.pyx":610
+                /* "pyFAI/ext/splitPixel.pyx":610
  *                     for i in range(bin0_min + 1, bin0_max):
  *                             outCount[i, bin1_min] += one_over_area * deltaD
  *                             outData[i, bin1_min] += data * one_over_area * deltaD             # <<<<<<<<<<<<<<
@@ -10145,7 +10147,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_110 = __pyx_v_bin1_min;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_109, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_110, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaD);
 
-                /* "src/splitPixel.pyx":611
+                /* "pyFAI/ext/splitPixel.pyx":611
  *                             outCount[i, bin1_min] += one_over_area * deltaD
  *                             outData[i, bin1_min] += data * one_over_area * deltaD
  *                             for j in range(bin1_min + 1, bin1_max):             # <<<<<<<<<<<<<<
@@ -10156,7 +10158,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 for (__pyx_t_112 = (__pyx_v_bin1_min + 1); __pyx_t_112 < __pyx_t_111; __pyx_t_112+=1) {
                   __pyx_v_j = __pyx_t_112;
 
-                  /* "src/splitPixel.pyx":612
+                  /* "pyFAI/ext/splitPixel.pyx":612
  *                             outData[i, bin1_min] += data * one_over_area * deltaD
  *                             for j in range(bin1_min + 1, bin1_max):
  *                                 outCount[i, j] += one_over_area             # <<<<<<<<<<<<<<
@@ -10167,7 +10169,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                   __pyx_t_114 = __pyx_v_j;
                   *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_113, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_114, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
 
-                  /* "src/splitPixel.pyx":613
+                  /* "pyFAI/ext/splitPixel.pyx":613
  *                             for j in range(bin1_min + 1, bin1_max):
  *                                 outCount[i, j] += one_over_area
  *                                 outData[i, j] += data * one_over_area             # <<<<<<<<<<<<<<
@@ -10179,7 +10181,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                   *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_115, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_116, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
                 }
 
-                /* "src/splitPixel.pyx":614
+                /* "pyFAI/ext/splitPixel.pyx":614
  *                                 outCount[i, j] += one_over_area
  *                                 outData[i, j] += data * one_over_area
  *                             outCount[i, bin1_max] += one_over_area * deltaU             # <<<<<<<<<<<<<<
@@ -10190,7 +10192,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_118 = __pyx_v_bin1_max;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_117, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_118, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaU);
 
-                /* "src/splitPixel.pyx":615
+                /* "pyFAI/ext/splitPixel.pyx":615
  *                                 outData[i, j] += data * one_over_area
  *                             outCount[i, bin1_max] += one_over_area * deltaU
  *                             outData[i, bin1_max] += data * one_over_area * deltaU             # <<<<<<<<<<<<<<
@@ -10202,7 +10204,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_119, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_120, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaU);
               }
 
-              /* "src/splitPixel.pyx":616
+              /* "pyFAI/ext/splitPixel.pyx":616
  *                             outCount[i, bin1_max] += one_over_area * deltaU
  *                             outData[i, bin1_max] += data * one_over_area * deltaU
  *                     for j in range(bin1_min + 1, bin1_max):             # <<<<<<<<<<<<<<
@@ -10213,7 +10215,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               for (__pyx_t_74 = (__pyx_v_bin1_min + 1); __pyx_t_74 < __pyx_t_73; __pyx_t_74+=1) {
                 __pyx_v_j = __pyx_t_74;
 
-                /* "src/splitPixel.pyx":617
+                /* "pyFAI/ext/splitPixel.pyx":617
  *                             outData[i, bin1_max] += data * one_over_area * deltaU
  *                     for j in range(bin1_min + 1, bin1_max):
  *                             outCount[bin0_min, j] += one_over_area * deltaL             # <<<<<<<<<<<<<<
@@ -10224,7 +10226,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_122 = __pyx_v_j;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_121, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_122, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaL);
 
-                /* "src/splitPixel.pyx":618
+                /* "pyFAI/ext/splitPixel.pyx":618
  *                     for j in range(bin1_min + 1, bin1_max):
  *                             outCount[bin0_min, j] += one_over_area * deltaL
  *                             outData[bin0_min, j] += data * one_over_area * deltaL             # <<<<<<<<<<<<<<
@@ -10235,7 +10237,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_124 = __pyx_v_j;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_123, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_124, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaL);
 
-                /* "src/splitPixel.pyx":620
+                /* "pyFAI/ext/splitPixel.pyx":620
  *                             outData[bin0_min, j] += data * one_over_area * deltaL
  * 
  *                             outCount[bin0_max, j] += one_over_area * deltaR             # <<<<<<<<<<<<<<
@@ -10246,7 +10248,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
                 __pyx_t_126 = __pyx_v_j;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_125, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_126, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaR);
 
-                /* "src/splitPixel.pyx":621
+                /* "pyFAI/ext/splitPixel.pyx":621
  * 
  *                             outCount[bin0_max, j] += one_over_area * deltaR
  *                             outData[bin0_max, j] += data * one_over_area * deltaR             # <<<<<<<<<<<<<<
@@ -10264,7 +10266,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           __pyx_L33_continue:;
         }
 
-        /* "src/splitPixel.pyx":624
+        /* "pyFAI/ext/splitPixel.pyx":624
  * 
  *     # with nogil:
  *         for i in range(bins0):             # <<<<<<<<<<<<<<
@@ -10275,7 +10277,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
         for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_9; __pyx_t_2+=1) {
           __pyx_v_i = __pyx_t_2;
 
-          /* "src/splitPixel.pyx":625
+          /* "pyFAI/ext/splitPixel.pyx":625
  *     # with nogil:
  *         for i in range(bins0):
  *             for j in range(bins1):             # <<<<<<<<<<<<<<
@@ -10286,7 +10288,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
           for (__pyx_t_74 = 0; __pyx_t_74 < __pyx_t_73; __pyx_t_74+=1) {
             __pyx_v_j = __pyx_t_74;
 
-            /* "src/splitPixel.pyx":626
+            /* "pyFAI/ext/splitPixel.pyx":626
  *         for i in range(bins0):
  *             for j in range(bins1):
  *                 if outCount[i, j] > epsilon:             # <<<<<<<<<<<<<<
@@ -10298,7 +10300,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
             __pyx_t_3 = (((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_129, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_130, __pyx_pybuffernd_outCount.diminfo[1].strides)) > __pyx_v_epsilon) != 0);
             if (__pyx_t_3) {
 
-              /* "src/splitPixel.pyx":627
+              /* "pyFAI/ext/splitPixel.pyx":627
  *             for j in range(bins1):
  *                 if outCount[i, j] > epsilon:
  *                     outMerge[i, j] = outData[i, j] / outCount[i, j] / normalization_factor             # <<<<<<<<<<<<<<
@@ -10313,7 +10315,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               __pyx_t_136 = __pyx_v_j;
               *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_135, __pyx_pybuffernd_outMerge.diminfo[0].strides, __pyx_t_136, __pyx_pybuffernd_outMerge.diminfo[1].strides) = (((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_131, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_132, __pyx_pybuffernd_outData.diminfo[1].strides)) / (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_133, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_134, __pyx_pybuffernd_outCount.diminfo[1].strides))) / __pyx_v_normalization_factor);
 
-              /* "src/splitPixel.pyx":626
+              /* "pyFAI/ext/splitPixel.pyx":626
  *         for i in range(bins0):
  *             for j in range(bins1):
  *                 if outCount[i, j] > epsilon:             # <<<<<<<<<<<<<<
@@ -10323,7 +10325,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
               goto __pyx_L76;
             }
 
-            /* "src/splitPixel.pyx":629
+            /* "pyFAI/ext/splitPixel.pyx":629
  *                     outMerge[i, j] = outData[i, j] / outCount[i, j] / normalization_factor
  *                 else:
  *                     outMerge[i, j] = cdummy             # <<<<<<<<<<<<<<
@@ -10339,7 +10341,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
         }
       }
 
-      /* "src/splitPixel.pyx":481
+      /* "pyFAI/ext/splitPixel.pyx":481
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -10363,7 +10365,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
       }
   }
 
-  /* "src/splitPixel.pyx":630
+  /* "pyFAI/ext/splitPixel.pyx":630
  *                 else:
  *                     outMerge[i, j] = cdummy
  *     return outMerge.T, edges0, edges1, outData.T, outCount.T             # <<<<<<<<<<<<<<
@@ -10396,7 +10398,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   __pyx_t_8 = 0;
   goto __pyx_L0;
 
-  /* "src/splitPixel.pyx":352
+  /* "pyFAI/ext/splitPixel.pyx":352
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -10425,7 +10427,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outData.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("src.splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyFAI.ext.splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -10455,7 +10457,7 @@ static PyObject *__pyx_pf_3src_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject 
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":197
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":197
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -10505,7 +10507,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_GIVEREF(__pyx_v_info->obj);
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":203
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":203
  *             # of flags
  * 
  *             if info == NULL: return             # <<<<<<<<<<<<<<
@@ -10518,7 +10520,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L0;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":206
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":206
  * 
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -10527,7 +10529,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":207
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":207
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -10536,7 +10538,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":209
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":209
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)
  * 
  *             ndim = PyArray_NDIM(self)             # <<<<<<<<<<<<<<
@@ -10545,7 +10547,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_ndim = PyArray_NDIM(__pyx_v_self);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":211
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":211
  *             ndim = PyArray_NDIM(self)
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -10555,7 +10557,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":212
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":212
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 copy_shape = 1             # <<<<<<<<<<<<<<
@@ -10564,7 +10566,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_copy_shape = 1;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":211
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":211
  *             ndim = PyArray_NDIM(self)
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -10574,7 +10576,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L4;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":214
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":214
  *                 copy_shape = 1
  *             else:
  *                 copy_shape = 0             # <<<<<<<<<<<<<<
@@ -10586,7 +10588,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L4:;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":216
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":216
  *                 copy_shape = 0
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10600,7 +10602,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L6_bool_binop_done;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":217
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":217
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -10611,7 +10613,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = __pyx_t_2;
   __pyx_L6_bool_binop_done:;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":216
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":216
  *                 copy_shape = 0
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10620,7 +10622,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":218
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":218
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -10633,7 +10635,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":216
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":216
  *                 copy_shape = 0
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10642,7 +10644,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":220
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":220
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10656,7 +10658,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L9_bool_binop_done;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":221
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":221
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -10667,7 +10669,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = __pyx_t_2;
   __pyx_L9_bool_binop_done:;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":220
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":220
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10676,7 +10678,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":222
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":222
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -10689,7 +10691,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":220
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":220
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -10698,7 +10700,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":224
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":224
  *                 raise ValueError(u"ndarray is not Fortran contiguous")
  * 
  *             info.buf = PyArray_DATA(self)             # <<<<<<<<<<<<<<
@@ -10707,7 +10709,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->buf = PyArray_DATA(__pyx_v_self);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":225
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":225
  * 
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim             # <<<<<<<<<<<<<<
@@ -10716,7 +10718,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->ndim = __pyx_v_ndim;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":226
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":226
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim
  *             if copy_shape:             # <<<<<<<<<<<<<<
@@ -10726,7 +10728,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (__pyx_v_copy_shape != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":229
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":229
  *                 # Allocate new buffer for strides and shape info.
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)             # <<<<<<<<<<<<<<
@@ -10735,7 +10737,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)malloc((((sizeof(Py_ssize_t)) * ((size_t)__pyx_v_ndim)) * 2)));
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":230
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":230
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim             # <<<<<<<<<<<<<<
@@ -10744,7 +10746,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->shape = (__pyx_v_info->strides + __pyx_v_ndim);
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":231
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":231
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):             # <<<<<<<<<<<<<<
@@ -10755,7 +10757,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
       __pyx_v_i = __pyx_t_5;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":232
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":232
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]             # <<<<<<<<<<<<<<
@@ -10764,7 +10766,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
       (__pyx_v_info->strides[__pyx_v_i]) = (PyArray_STRIDES(__pyx_v_self)[__pyx_v_i]);
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":233
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":233
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]
  *                     info.shape[i] = PyArray_DIMS(self)[i]             # <<<<<<<<<<<<<<
@@ -10774,7 +10776,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       (__pyx_v_info->shape[__pyx_v_i]) = (PyArray_DIMS(__pyx_v_self)[__pyx_v_i]);
     }
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":226
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":226
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim
  *             if copy_shape:             # <<<<<<<<<<<<<<
@@ -10784,7 +10786,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L11;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":235
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":235
  *                     info.shape[i] = PyArray_DIMS(self)[i]
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)             # <<<<<<<<<<<<<<
@@ -10794,7 +10796,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   /*else*/ {
     __pyx_v_info->strides = ((Py_ssize_t *)PyArray_STRIDES(__pyx_v_self));
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":236
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":236
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)             # <<<<<<<<<<<<<<
@@ -10805,7 +10807,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L11:;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":237
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":237
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL             # <<<<<<<<<<<<<<
@@ -10814,7 +10816,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->suboffsets = NULL;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":238
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":238
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)             # <<<<<<<<<<<<<<
@@ -10823,7 +10825,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->itemsize = PyArray_ITEMSIZE(__pyx_v_self);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":239
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":239
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)
  *             info.readonly = not PyArray_ISWRITEABLE(self)             # <<<<<<<<<<<<<<
@@ -10832,7 +10834,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->readonly = (!(PyArray_ISWRITEABLE(__pyx_v_self) != 0));
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":242
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":242
  * 
  *             cdef int t
  *             cdef char* f = NULL             # <<<<<<<<<<<<<<
@@ -10841,7 +10843,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_f = NULL;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":243
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":243
  *             cdef int t
  *             cdef char* f = NULL
  *             cdef dtype descr = self.descr             # <<<<<<<<<<<<<<
@@ -10853,7 +10855,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_v_descr = ((PyArray_Descr *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":246
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":246
  *             cdef int offset
  * 
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)             # <<<<<<<<<<<<<<
@@ -10862,7 +10864,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_hasfields = PyDataType_HASFIELDS(__pyx_v_descr);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":248
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":248
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)
  * 
  *             if not hasfields and not copy_shape:             # <<<<<<<<<<<<<<
@@ -10880,7 +10882,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L15_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":250
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":250
  *             if not hasfields and not copy_shape:
  *                 # do not call releasebuffer
  *                 info.obj = None             # <<<<<<<<<<<<<<
@@ -10893,7 +10895,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_DECREF(__pyx_v_info->obj);
     __pyx_v_info->obj = Py_None;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":248
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":248
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)
  * 
  *             if not hasfields and not copy_shape:             # <<<<<<<<<<<<<<
@@ -10903,7 +10905,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L14;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":253
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":253
  *             else:
  *                 # need to call releasebuffer
  *                 info.obj = self             # <<<<<<<<<<<<<<
@@ -10919,7 +10921,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L14:;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":255
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":255
  *                 info.obj = self
  * 
  *             if not hasfields:             # <<<<<<<<<<<<<<
@@ -10929,7 +10931,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = ((!(__pyx_v_hasfields != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":256
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":256
  * 
  *             if not hasfields:
  *                 t = descr.type_num             # <<<<<<<<<<<<<<
@@ -10939,7 +10941,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_4 = __pyx_v_descr->type_num;
     __pyx_v_t = __pyx_t_4;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *             if not hasfields:
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -10959,7 +10961,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     }
     __pyx_L20_next_or:;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":258
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":258
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -10976,7 +10978,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_1 = __pyx_t_2;
     __pyx_L19_bool_binop_done:;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *             if not hasfields:
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -10985,7 +10987,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     if (__pyx_t_1) {
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":259
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":259
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -10998,7 +11000,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       {__pyx_filename = __pyx_f[1]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *             if not hasfields:
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -11007,7 +11009,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     }
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":260
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":260
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"             # <<<<<<<<<<<<<<
@@ -11019,7 +11021,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_b;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":261
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":261
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"             # <<<<<<<<<<<<<<
@@ -11030,7 +11032,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_B;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":262
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":262
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"             # <<<<<<<<<<<<<<
@@ -11041,7 +11043,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_h;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":263
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":263
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"             # <<<<<<<<<<<<<<
@@ -11052,7 +11054,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_H;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":264
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":264
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"             # <<<<<<<<<<<<<<
@@ -11063,7 +11065,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_i;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":265
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":265
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"             # <<<<<<<<<<<<<<
@@ -11074,7 +11076,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_I;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":266
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":266
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"             # <<<<<<<<<<<<<<
@@ -11085,7 +11087,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_l;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":267
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":267
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"             # <<<<<<<<<<<<<<
@@ -11096,7 +11098,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_L;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":268
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":268
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"             # <<<<<<<<<<<<<<
@@ -11107,7 +11109,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_q;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":269
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":269
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"             # <<<<<<<<<<<<<<
@@ -11118,7 +11120,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Q;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":270
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":270
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"             # <<<<<<<<<<<<<<
@@ -11129,7 +11131,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_f;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":271
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":271
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"             # <<<<<<<<<<<<<<
@@ -11140,7 +11142,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_d;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":272
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":272
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"             # <<<<<<<<<<<<<<
@@ -11151,7 +11153,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_g;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":273
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":273
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"             # <<<<<<<<<<<<<<
@@ -11162,7 +11164,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zf;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"             # <<<<<<<<<<<<<<
@@ -11173,7 +11175,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zd;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":275
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":275
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"             # <<<<<<<<<<<<<<
@@ -11184,7 +11186,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zg;
       break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":276
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":276
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -11196,7 +11198,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
       default:
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":278
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":278
  *                 elif t == NPY_OBJECT:      f = "O"
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -11222,7 +11224,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
     }
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":279
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":279
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f             # <<<<<<<<<<<<<<
@@ -11231,7 +11233,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = __pyx_v_f;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":280
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":280
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f
  *                 return             # <<<<<<<<<<<<<<
@@ -11241,7 +11243,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_r = 0;
     goto __pyx_L0;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":255
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":255
  *                 info.obj = self
  * 
  *             if not hasfields:             # <<<<<<<<<<<<<<
@@ -11250,7 +11252,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":282
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":282
  *                 return
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)             # <<<<<<<<<<<<<<
@@ -11260,7 +11262,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   /*else*/ {
     __pyx_v_info->format = ((char *)malloc(0xFF));
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":283
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":283
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment             # <<<<<<<<<<<<<<
@@ -11269,7 +11271,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     (__pyx_v_info->format[0]) = '^';
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":284
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":284
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0             # <<<<<<<<<<<<<<
@@ -11278,7 +11280,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_offset = 0;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":285
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":285
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0
  *                 f = _util_dtypestring(descr, info.format + 1,             # <<<<<<<<<<<<<<
@@ -11288,7 +11290,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_7 = __pyx_f_5numpy__util_dtypestring(__pyx_v_descr, (__pyx_v_info->format + 1), (__pyx_v_info->format + 0xFF), (&__pyx_v_offset)); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 285; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_f = __pyx_t_7;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                                       info.format + _buffer_format_string_len,
  *                                       &offset)
  *                 f[0] = c'\0' # Terminate format string             # <<<<<<<<<<<<<<
@@ -11298,7 +11300,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     (__pyx_v_f[0]) = '\x00';
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":197
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":197
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -11330,7 +11332,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":290
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":290
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -11354,7 +11356,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__releasebuffer__", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":291
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":291
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):             # <<<<<<<<<<<<<<
@@ -11364,7 +11366,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (PyArray_HASFIELDS(__pyx_v_self) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":292
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":292
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)             # <<<<<<<<<<<<<<
@@ -11373,7 +11375,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
     free(__pyx_v_info->format);
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":291
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":291
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):             # <<<<<<<<<<<<<<
@@ -11382,7 +11384,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":293
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":293
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -11392,7 +11394,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":294
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":294
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 stdlib.free(info.strides)             # <<<<<<<<<<<<<<
@@ -11401,7 +11403,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
     free(__pyx_v_info->strides);
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":293
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":293
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -11410,7 +11412,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
  */
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":290
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":290
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -11422,7 +11424,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":770
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":770
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -11439,7 +11441,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  * 
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
@@ -11453,7 +11455,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":770
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":770
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -11472,7 +11474,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":773
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":773
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -11489,7 +11491,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":774
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
@@ -11503,7 +11505,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":773
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":773
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -11522,7 +11524,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":776
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":776
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -11539,7 +11541,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":777
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
@@ -11553,7 +11555,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":776
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":776
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -11572,7 +11574,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":779
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":779
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -11589,7 +11591,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":780
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
@@ -11603,7 +11605,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":779
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":779
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -11622,7 +11624,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":782
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":782
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -11639,7 +11641,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":783
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
@@ -11653,7 +11655,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":782
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":782
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -11672,7 +11674,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":785
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":785
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -11704,7 +11706,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_util_dtypestring", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":790
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":790
  * 
  *     cdef dtype child
  *     cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -11713,7 +11715,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":791
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":791
  *     cdef dtype child
  *     cdef int endian_detector = 1
  *     cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -11722,7 +11724,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -11745,7 +11747,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_childname, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":795
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":795
  * 
  *     for childname in descr.names:
  *         fields = descr.fields[childname]             # <<<<<<<<<<<<<<
@@ -11762,7 +11764,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_fields, ((PyObject*)__pyx_t_3));
     __pyx_t_3 = 0;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":796
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":796
  *     for childname in descr.names:
  *         fields = descr.fields[childname]
  *         child, new_offset = fields             # <<<<<<<<<<<<<<
@@ -11801,7 +11803,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_new_offset, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":798
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":798
  *         child, new_offset = fields
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:             # <<<<<<<<<<<<<<
@@ -11818,7 +11820,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((((__pyx_v_end - __pyx_v_f) - ((int)__pyx_t_5)) < 15) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -11831,7 +11833,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":798
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":798
  *         child, new_offset = fields
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:             # <<<<<<<<<<<<<<
@@ -11840,7 +11842,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
     }
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":801
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -11860,7 +11862,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L8_next_or:;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":802
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":802
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -11877,7 +11879,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = __pyx_t_7;
     __pyx_L7_bool_binop_done:;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":801
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -11886,7 +11888,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
     if (__pyx_t_6) {
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -11899,7 +11901,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":801
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -11908,7 +11910,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
     }
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":813
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":813
  * 
  *         # Output padding bytes
  *         while offset[0] < new_offset:             # <<<<<<<<<<<<<<
@@ -11924,7 +11926,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (!__pyx_t_6) break;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":814
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":814
  *         # Output padding bytes
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte             # <<<<<<<<<<<<<<
@@ -11933,7 +11935,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       (__pyx_v_f[0]) = 0x78;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":815
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":815
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte
  *             f += 1             # <<<<<<<<<<<<<<
@@ -11942,7 +11944,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       __pyx_v_f = (__pyx_v_f + 1);
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":816
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":816
  *             f[0] = 120 # "x"; pad byte
  *             f += 1
  *             offset[0] += 1             # <<<<<<<<<<<<<<
@@ -11953,7 +11955,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + 1);
     }
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":818
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":818
  *             offset[0] += 1
  * 
  *         offset[0] += child.itemsize             # <<<<<<<<<<<<<<
@@ -11963,7 +11965,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_8 = 0;
     (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + __pyx_v_child->elsize);
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":820
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":820
  *         offset[0] += child.itemsize
  * 
  *         if not PyDataType_HASFIELDS(child):             # <<<<<<<<<<<<<<
@@ -11973,7 +11975,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((!(PyDataType_HASFIELDS(__pyx_v_child) != 0)) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":821
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":821
  * 
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num             # <<<<<<<<<<<<<<
@@ -11985,7 +11987,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_XDECREF_SET(__pyx_v_t, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":822
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":822
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num
  *             if end - f < 5:             # <<<<<<<<<<<<<<
@@ -11995,7 +11997,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __pyx_t_6 = (((__pyx_v_end - __pyx_v_f) < 5) != 0);
       if (__pyx_t_6) {
 
-        /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+        /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -12008,7 +12010,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-        /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":822
+        /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":822
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num
  *             if end - f < 5:             # <<<<<<<<<<<<<<
@@ -12017,7 +12019,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":826
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":826
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"             # <<<<<<<<<<<<<<
@@ -12035,7 +12037,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":827
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":827
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"             # <<<<<<<<<<<<<<
@@ -12053,7 +12055,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":828
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":828
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"             # <<<<<<<<<<<<<<
@@ -12071,7 +12073,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":829
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":829
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"             # <<<<<<<<<<<<<<
@@ -12089,7 +12091,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":830
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":830
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"             # <<<<<<<<<<<<<<
@@ -12107,7 +12109,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":831
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":831
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"             # <<<<<<<<<<<<<<
@@ -12125,7 +12127,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":832
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":832
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"             # <<<<<<<<<<<<<<
@@ -12143,7 +12145,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":833
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":833
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"             # <<<<<<<<<<<<<<
@@ -12161,7 +12163,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":834
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":834
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"             # <<<<<<<<<<<<<<
@@ -12179,7 +12181,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":835
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":835
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"             # <<<<<<<<<<<<<<
@@ -12197,7 +12199,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":836
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":836
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"             # <<<<<<<<<<<<<<
@@ -12215,7 +12217,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":837
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":837
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"             # <<<<<<<<<<<<<<
@@ -12233,7 +12235,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":838
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":838
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"             # <<<<<<<<<<<<<<
@@ -12251,7 +12253,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":839
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":839
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf             # <<<<<<<<<<<<<<
@@ -12271,7 +12273,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":840
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":840
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd             # <<<<<<<<<<<<<<
@@ -12291,7 +12293,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":841
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":841
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg             # <<<<<<<<<<<<<<
@@ -12311,7 +12313,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":842
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":842
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"             # <<<<<<<<<<<<<<
@@ -12329,7 +12331,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":844
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":844
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -12353,7 +12355,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       __pyx_L15:;
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":845
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":845
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *             f += 1             # <<<<<<<<<<<<<<
@@ -12362,7 +12364,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       __pyx_v_f = (__pyx_v_f + 1);
 
-      /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":820
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":820
  *         offset[0] += child.itemsize
  * 
  *         if not PyDataType_HASFIELDS(child):             # <<<<<<<<<<<<<<
@@ -12372,7 +12374,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       goto __pyx_L13;
     }
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":849
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":849
  *             # Cython ignores struct boundary information ("T{...}"),
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)             # <<<<<<<<<<<<<<
@@ -12385,7 +12387,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L13:;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -12395,7 +12397,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":850
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":850
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)
  *     return f             # <<<<<<<<<<<<<<
@@ -12405,7 +12407,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   __pyx_r = __pyx_v_f;
   goto __pyx_L0;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":785
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":785
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -12430,7 +12432,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   return __pyx_r;
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -12445,7 +12447,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":968
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":968
  * cdef inline void set_array_base(ndarray arr, object base):
  *      cdef PyObject* baseptr
  *      if base is None:             # <<<<<<<<<<<<<<
@@ -12456,7 +12458,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":969
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":969
  *      cdef PyObject* baseptr
  *      if base is None:
  *          baseptr = NULL             # <<<<<<<<<<<<<<
@@ -12465,7 +12467,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
     __pyx_v_baseptr = NULL;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":968
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":968
  * cdef inline void set_array_base(ndarray arr, object base):
  *      cdef PyObject* baseptr
  *      if base is None:             # <<<<<<<<<<<<<<
@@ -12475,7 +12477,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
     goto __pyx_L3;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":971
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":971
  *          baseptr = NULL
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!             # <<<<<<<<<<<<<<
@@ -12485,7 +12487,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   /*else*/ {
     Py_INCREF(__pyx_v_base);
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":972
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":972
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base             # <<<<<<<<<<<<<<
@@ -12496,7 +12498,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   __pyx_L3:;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":973
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":973
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)             # <<<<<<<<<<<<<<
@@ -12505,7 +12507,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   Py_XDECREF(__pyx_v_arr->base);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":974
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":974
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)
  *      arr.base = baseptr             # <<<<<<<<<<<<<<
@@ -12514,7 +12516,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   __pyx_v_arr->base = __pyx_v_baseptr;
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -12526,7 +12528,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -12540,7 +12542,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":977
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":977
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:             # <<<<<<<<<<<<<<
@@ -12550,7 +12552,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __pyx_t_1 = ((__pyx_v_arr->base == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":978
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":978
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:
  *         return None             # <<<<<<<<<<<<<<
@@ -12562,7 +12564,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     __pyx_r = Py_None;
     goto __pyx_L0;
 
-    /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":977
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":977
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:             # <<<<<<<<<<<<<<
@@ -12571,7 +12573,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  */
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":980
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":980
  *         return None
  *     else:
  *         return <object>arr.base             # <<<<<<<<<<<<<<
@@ -12583,7 +12585,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     goto __pyx_L0;
   }
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -24236,7 +24238,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "src.splitPixel.array", /*tp_name*/
+  "pyFAI.ext.splitPixel.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -24342,7 +24344,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "src.splitPixel.Enum", /*tp_name*/
+  "pyFAI.ext.splitPixel.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -24589,7 +24591,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "src.splitPixel.memoryview", /*tp_name*/
+  "pyFAI.ext.splitPixel.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -24714,7 +24716,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "src.splitPixel._memoryviewslice", /*tp_name*/
+  "pyFAI.ext.splitPixel._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -24801,13 +24803,14 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_07_04_2015, __pyx_k_07_04_2015, sizeof(__pyx_k_07_04_2015), 0, 0, 1, 0},
+  {&__pyx_kp_s_02_02_2016, __pyx_k_02_02_2016, sizeof(__pyx_k_02_02_2016), 0, 0, 1, 0},
   {&__pyx_kp_s_20141020, __pyx_k_20141020, sizeof(__pyx_k_20141020), 0, 0, 1, 0},
   {&__pyx_n_s_ASCII, __pyx_k_ASCII, sizeof(__pyx_k_ASCII), 0, 0, 1, 1},
   {&__pyx_kp_s_Buffer_view_does_not_expose_stri, __pyx_k_Buffer_view_does_not_expose_stri, sizeof(__pyx_k_Buffer_view_does_not_expose_stri), 0, 0, 1, 0},
   {&__pyx_kp_s_Calculates_histograms_of_pos0_t, __pyx_k_Calculates_histograms_of_pos0_t, sizeof(__pyx_k_Calculates_histograms_of_pos0_t), 0, 0, 1, 0},
   {&__pyx_kp_s_Can_only_create_a_buffer_that_is, __pyx_k_Can_only_create_a_buffer_that_is, sizeof(__pyx_k_Can_only_create_a_buffer_that_is), 0, 0, 1, 0},
   {&__pyx_kp_s_Cannot_index_with_type_s, __pyx_k_Cannot_index_with_type_s, sizeof(__pyx_k_Cannot_index_with_type_s), 0, 0, 1, 0},
+  {&__pyx_kp_s_Common_cdef_constants_and_functi, __pyx_k_Common_cdef_constants_and_functi, sizeof(__pyx_k_Common_cdef_constants_and_functi), 0, 0, 1, 0},
   {&__pyx_n_s_Ellipsis, __pyx_k_Ellipsis, sizeof(__pyx_k_Ellipsis), 0, 0, 1, 1},
   {&__pyx_kp_s_Empty_shape_tuple_for_cython_arr, __pyx_k_Empty_shape_tuple_for_cython_arr, sizeof(__pyx_k_Empty_shape_tuple_for_cython_arr), 0, 0, 1, 0},
   {&__pyx_kp_u_Format_string_allocated_too_shor, __pyx_k_Format_string_allocated_too_shor, sizeof(__pyx_k_Format_string_allocated_too_shor), 0, 1, 0, 0},
@@ -24919,7 +24922,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fullSplit1D, __pyx_k_fullSplit1D, sizeof(__pyx_k_fullSplit1D), 0, 0, 1, 1},
   {&__pyx_n_s_fullSplit2D, __pyx_k_fullSplit2D, sizeof(__pyx_k_fullSplit2D), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
-  {&__pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_k_home_jerome_workspace_pyFAI_src, sizeof(__pyx_k_home_jerome_workspace_pyFAI_src), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_jerome_workspace_pyFAI_pyF, __pyx_k_home_jerome_workspace_pyFAI_pyF, sizeof(__pyx_k_home_jerome_workspace_pyFAI_pyF), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_idx, __pyx_k_idx, sizeof(__pyx_k_idx), 0, 0, 1, 1},
@@ -24965,6 +24968,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_pos1_maxin, __pyx_k_pos1_maxin, sizeof(__pyx_k_pos1_maxin), 0, 0, 1, 1},
   {&__pyx_n_s_pos1_min, __pyx_k_pos1_min, sizeof(__pyx_k_pos1_min), 0, 0, 1, 1},
   {&__pyx_n_s_print, __pyx_k_print, sizeof(__pyx_k_print), 0, 0, 1, 1},
+  {&__pyx_n_s_pyFAI_ext_splitPixel, __pyx_k_pyFAI_ext_splitPixel, sizeof(__pyx_k_pyFAI_ext_splitPixel), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_getbuffer, __pyx_k_pyx_getbuffer, sizeof(__pyx_k_pyx_getbuffer), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_vtable, __pyx_k_pyx_vtable, sizeof(__pyx_k_pyx_vtable), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
@@ -24973,7 +24977,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_solidangle, __pyx_k_solidangle, sizeof(__pyx_k_solidangle), 0, 0, 1, 1},
-  {&__pyx_n_s_src_splitPixel, __pyx_k_src_splitPixel, sizeof(__pyx_k_src_splitPixel), 0, 0, 1, 1},
   {&__pyx_n_s_stable, __pyx_k_stable, sizeof(__pyx_k_stable), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_status, __pyx_k_status, sizeof(__pyx_k_status), 0, 0, 1, 1},
@@ -25015,7 +25018,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "src/splitPixel.pyx":147
+  /* "pyFAI/ext/splitPixel.pyx":147
  *     cdef int  size = weights.size
  *     if pos.ndim>3: #create a view
  *         pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
@@ -25029,7 +25032,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "src/splitPixel.pyx":225
+  /* "pyFAI/ext/splitPixel.pyx":225
  *     else:
  *         if min1==max1==0:
  *             pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
@@ -25046,7 +25049,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__5);
   __Pyx_GIVEREF(__pyx_tuple__5);
 
-  /* "src/splitPixel.pyx":226
+  /* "pyFAI/ext/splitPixel.pyx":226
  *         if min1==max1==0:
  *             pos1_min = pos[:, :, 1].min()
  *             pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
@@ -25063,7 +25066,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "src/splitPixel.pyx":393
+  /* "pyFAI/ext/splitPixel.pyx":393
  *     cdef int bins0 = 0, bins1 = 0, size = weights.size
  *     if pos.ndim > 3:  # create a view
  *         pos = pos.reshape((-1, 4, 2))             # <<<<<<<<<<<<<<
@@ -25077,7 +25080,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
 
-  /* "src/splitPixel.pyx":430
+  /* "pyFAI/ext/splitPixel.pyx":430
  *         pos0_maxin = max(pos0Range)
  *     else:
  *         pos0_min = pos[:, :, 0].min()             # <<<<<<<<<<<<<<
@@ -25094,7 +25097,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
 
-  /* "src/splitPixel.pyx":431
+  /* "pyFAI/ext/splitPixel.pyx":431
  *     else:
  *         pos0_min = pos[:, :, 0].min()
  *         pos0_maxin = pos[:, :, 0].max()             # <<<<<<<<<<<<<<
@@ -25111,7 +25114,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
-  /* "src/splitPixel.pyx":438
+  /* "pyFAI/ext/splitPixel.pyx":438
  *         pos1_maxin = max(pos1Range)
  *     else:
  *         pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
@@ -25128,7 +25131,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
 
-  /* "src/splitPixel.pyx":439
+  /* "pyFAI/ext/splitPixel.pyx":439
  *     else:
  *         pos1_min = pos[:, :, 1].min()
  *         pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
@@ -25145,7 +25148,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":218
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":218
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -25156,7 +25159,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__23);
   __Pyx_GIVEREF(__pyx_tuple__23);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":222
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":222
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -25167,7 +25170,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__24);
   __Pyx_GIVEREF(__pyx_tuple__24);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":259
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":259
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -25178,7 +25181,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__25);
   __Pyx_GIVEREF(__pyx_tuple__25);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -25189,7 +25192,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__26);
   __Pyx_GIVEREF(__pyx_tuple__26);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -25200,7 +25203,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__27);
   __Pyx_GIVEREF(__pyx_tuple__27);
 
-  /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -25357,7 +25360,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__41);
   __Pyx_GIVEREF(__pyx_tuple__41);
 
-  /* "src/splitPixel.pyx":106
+  /* "pyFAI/ext/splitPixel.pyx":106
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -25367,9 +25370,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__42 = PyTuple_Pack(72, __pyx_n_s_pos, __pyx_n_s_weights, __pyx_n_s_bins, __pyx_n_s_pos0Range, __pyx_n_s_pos1Range, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_mask, __pyx_n_s_dark, __pyx_n_s_flat, __pyx_n_s_solidangle, __pyx_n_s_polarization, __pyx_n_s_empty, __pyx_n_s_normalization_factor, __pyx_n_s_size, __pyx_n_s_cpos, __pyx_n_s_cdata, __pyx_n_s_outData, __pyx_n_s_outCount, __pyx_n_s_outMerge, __pyx_n_s_cmask, __pyx_n_s_cflat, __pyx_n_s_cdark, __pyx_n_s_cpolarization, __pyx_n_s_csolidangle, __pyx_n_s_buffer, __pyx_n_s_cdummy, __pyx_n_s_cddummy, __pyx_n_s_data, __pyx_n_s_deltaR, __pyx_n_s_deltaL, __pyx_n_s_one_over_area, __pyx_n_s_pos0_min, __pyx_n_s_pos0_max, __pyx_n_s_pos0_maxin, __pyx_n_s_pos1_min, __pyx_n_s_pos1_max, __pyx_n_s_pos1_maxin, __pyx_n_s_aera_pixel, __pyx_n_s_sum_area, __pyx_n_s_sub_area, __pyx_n_s_dpos, __pyx_n_s_fbin0_min, __pyx_n_s_fbin0_max, __pyx_n_s_a0, __pyx_n_s_b0, __pyx_n_s_c0, __pyx_n_s_d0, __pyx_n_s_max0, __pyx_n_s_min0, __pyx_n_s_a1, __pyx_n_s_b1, __pyx_n_s_c1, __pyx_n_s_d1, __pyx_n_s_max1, __pyx_n_s_min1, __pyx_n_s_epsilon, __pyx_n_s_check_pos1, __pyx_n_s_check_mask, __pyx_n_s_do_dummy, __pyx_n_s_do_dark, __pyx_n_s_do_flat, __pyx_n_s_do_polarization, __pyx_n_s_do_solidangle, __pyx_n_s_i, __pyx_n_s_b, __pyx_n_s_idx, __pyx_n_s_bin, __pyx_n_s_bin0_max, __pyx_n_s_bin0_min, __pyx_n_s_outPos, __pyx_n_s_check_dummy); if (unlikely(!__pyx_tuple__42)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__42);
   __Pyx_GIVEREF(__pyx_tuple__42);
-  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(14, 0, 72, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_fullSplit1D, 106, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(14, 0, 72, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_pyF, __pyx_n_s_fullSplit1D, 106, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/splitPixel.pyx":352
+  /* "pyFAI/ext/splitPixel.pyx":352
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
@@ -25379,7 +25382,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__44 = PyTuple_Pack(77, __pyx_n_s_pos, __pyx_n_s_weights, __pyx_n_s_bins, __pyx_n_s_pos0Range, __pyx_n_s_pos1Range, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_mask, __pyx_n_s_dark, __pyx_n_s_flat, __pyx_n_s_solidangle, __pyx_n_s_polarization, __pyx_n_s_empty, __pyx_n_s_normalization_factor, __pyx_n_s_bins0, __pyx_n_s_bins1, __pyx_n_s_size, __pyx_n_s_cpos, __pyx_n_s_cdata, __pyx_n_s_outData, __pyx_n_s_outCount, __pyx_n_s_outMerge, __pyx_n_s_edges0, __pyx_n_s_edges1, __pyx_n_s_cmask, __pyx_n_s_cflat, __pyx_n_s_cdark, __pyx_n_s_cpolarization, __pyx_n_s_csolidangle, __pyx_n_s_check_mask, __pyx_n_s_do_dummy, __pyx_n_s_do_dark, __pyx_n_s_do_flat, __pyx_n_s_do_polarization, __pyx_n_s_do_solidangle, __pyx_n_s_cdummy, __pyx_n_s_cddummy, __pyx_n_s_data, __pyx_n_s_min0, __pyx_n_s_max0, __pyx_n_s_min1, __pyx_n_s_max1, __pyx_n_s_deltaR, __pyx_n_s_deltaL, __pyx_n_s_deltaU, __pyx_n_s_deltaD, __pyx_n_s_one_over_area, __pyx_n_s_pos0_min, __pyx_n_s_pos0_max, __pyx_n_s_pos1_min, __pyx_n_s_pos1_max, __pyx_n_s_pos0_maxin, __pyx_n_s_pos1_maxin, __pyx_n_s_aera_pixel, __pyx_n_s_fbin0_min, __pyx_n_s_fbin0_max, __pyx_n_s_fbin1_min, __pyx_n_s_fbin1_max, __pyx_n_s_a0, __pyx_n_s_a1, __pyx_n_s_b0, __pyx_n_s_b1, __pyx_n_s_c0, __pyx_n_s_c1, __pyx_n_s_d0, __pyx_n_s_d1, __pyx_n_s_epsilon, __pyx_n_s_bin0_max, __pyx_n_s_bin0_min, __pyx_n_s_bin1_max, __pyx_n_s_bin1_min, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_idx, __pyx_n_s_dpos0, __pyx_n_s_dpos1, __pyx_n_s_check_dummy); if (unlikely(!__pyx_tuple__44)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__44);
   __Pyx_GIVEREF(__pyx_tuple__44);
-  __pyx_codeobj__45 = (PyObject*)__Pyx_PyCode_New(14, 0, 77, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__44, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_fullSplit2D, 352, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__45)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__45 = (PyObject*)__Pyx_PyCode_New(14, 0, 77, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__44, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_pyF, __pyx_n_s_fullSplit2D, 352, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__45)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":278
  *         return self.name
@@ -25528,14 +25531,14 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
-  if (__pyx_module_is_main_src__splitPixel) {
+  if (__pyx_module_is_main_pyFAI__ext__splitPixel) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    if (!PyDict_GetItemString(modules, "src.splitPixel")) {
-      if (unlikely(PyDict_SetItemString(modules, "src.splitPixel", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyDict_GetItemString(modules, "pyFAI.ext.splitPixel")) {
+      if (unlikely(PyDict_SetItemString(modules, "pyFAI.ext.splitPixel", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
   #endif
@@ -25599,7 +25602,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   if (__Pyx_patch_abc() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
 
-  /* "src/splitPixel.pyx":24
+  /* "pyFAI/ext/splitPixel.pyx":24
  * #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #
  * __doc__ = """             # <<<<<<<<<<<<<<
@@ -25608,7 +25611,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_doc, __pyx_kp_s_Calculates_histograms_of_pos0_t) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/splitPixel.pyx":30
+  /* "pyFAI/ext/splitPixel.pyx":30
  * Histogram (direct) implementation
  * """
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
@@ -25617,7 +25620,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/splitPixel.pyx":31
+  /* "pyFAI/ext/splitPixel.pyx":31
  * """
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
@@ -25626,7 +25629,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/splitPixel.pyx":32
+  /* "pyFAI/ext/splitPixel.pyx":32
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "20141020"             # <<<<<<<<<<<<<<
@@ -25635,7 +25638,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_20141020) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/splitPixel.pyx":33
+  /* "pyFAI/ext/splitPixel.pyx":33
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "20141020"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
@@ -25644,7 +25647,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/splitPixel.pyx":34
+  /* "pyFAI/ext/splitPixel.pyx":34
  * __date__ = "20141020"
  * __status__ = "stable"
  * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
@@ -25653,7 +25656,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/splitPixel.pyx":38
+  /* "pyFAI/ext/splitPixel.pyx":38
  * import cython
  * cimport numpy
  * import numpy             # <<<<<<<<<<<<<<
@@ -25665,52 +25668,60 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "src/regrid_common.pxi":27
- * Common cdef constants and functions for preprocessing
- * """
+  /* "pyFAI/ext/regrid_common.pxi":2
+ * # coding: utf-8
+ * __doc__ = """Common cdef constants and functions for preprocessing"""             # <<<<<<<<<<<<<<
+ * __author__ = "Jerome Kieffer"
+ * __contact__ = "Jerome.kieffer@esrf.fr"
+ */
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_doc, __pyx_kp_s_Common_cdef_constants_and_functi) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 2; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "pyFAI/ext/regrid_common.pxi":3
+ * # coding: utf-8
+ * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "07/04/2015"
+ * __date__ = "02/02/2016"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 3; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/regrid_common.pxi":28
- * """
+  /* "pyFAI/ext/regrid_common.pxi":4
+ * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "07/04/2015"
+ * __date__ = "02/02/2016"
  * __status__ = "stable"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 4; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/regrid_common.pxi":29
+  /* "pyFAI/ext/regrid_common.pxi":5
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "07/04/2015"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2016"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "GPLv3+"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_07_04_2015) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2016) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 5; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/regrid_common.pxi":30
+  /* "pyFAI/ext/regrid_common.pxi":6
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "07/04/2015"
+ * __date__ = "02/02/2016"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "GPLv3+"
  * 
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 6; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/regrid_common.pxi":31
- * __date__ = "07/04/2015"
+  /* "pyFAI/ext/regrid_common.pxi":7
+ * __date__ = "02/02/2016"
  * __status__ = "stable"
  * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
  * 
  * include "numpy_common.pxi"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 7; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "src/numpy_common.pxi":9
+  /* "pyFAI/ext/numpy_common.pxi":9
  *     void import_umath()
  * 
  * if FALSE:             # <<<<<<<<<<<<<<
@@ -25720,7 +25731,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   __pyx_t_2 = (0 != 0);
   if (__pyx_t_2) {
 
-    /* "src/numpy_common.pxi":10
+    /* "pyFAI/ext/numpy_common.pxi":10
  * 
  * if FALSE:
  *     import_array()             # <<<<<<<<<<<<<<
@@ -25728,14 +25739,14 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
     import_array();
 
-    /* "src/numpy_common.pxi":11
+    /* "pyFAI/ext/numpy_common.pxi":11
  * if FALSE:
  *     import_array()
  *     import_umath()             # <<<<<<<<<<<<<<
  */
     import_umath();
 
-    /* "src/numpy_common.pxi":9
+    /* "pyFAI/ext/numpy_common.pxi":9
  *     void import_umath()
  * 
  * if FALSE:             # <<<<<<<<<<<<<<
@@ -25744,69 +25755,69 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  */
   }
 
-  /* "src/regrid_common.pxi":37
+  /* "pyFAI/ext/regrid_common.pxi":13
  * import cython
  * cimport numpy
  * import numpy             # <<<<<<<<<<<<<<
  * from cython cimport floating
  * from libc.math cimport fabs, M_PI
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "src/regrid_common.pxi":41
+  /* "pyFAI/ext/regrid_common.pxi":17
  * from libc.math cimport fabs, M_PI
  * cdef:
  *     float pi = <float> M_PI             # <<<<<<<<<<<<<<
  *     float piover2 = <float> (pi * 0.5)
  *     float onef = <float> 1.0
  */
-  __pyx_v_3src_10splitPixel_pi = ((float)M_PI);
+  __pyx_v_5pyFAI_3ext_10splitPixel_pi = ((float)M_PI);
 
-  /* "src/regrid_common.pxi":42
+  /* "pyFAI/ext/regrid_common.pxi":18
  * cdef:
  *     float pi = <float> M_PI
  *     float piover2 = <float> (pi * 0.5)             # <<<<<<<<<<<<<<
  *     float onef = <float> 1.0
  *     float zerof = <float> 1.0
  */
-  __pyx_v_3src_10splitPixel_piover2 = ((float)(__pyx_v_3src_10splitPixel_pi * 0.5));
+  __pyx_v_5pyFAI_3ext_10splitPixel_piover2 = ((float)(__pyx_v_5pyFAI_3ext_10splitPixel_pi * 0.5));
 
-  /* "src/regrid_common.pxi":43
+  /* "pyFAI/ext/regrid_common.pxi":19
  *     float pi = <float> M_PI
  *     float piover2 = <float> (pi * 0.5)
  *     float onef = <float> 1.0             # <<<<<<<<<<<<<<
  *     float zerof = <float> 1.0
  *     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
  */
-  __pyx_v_3src_10splitPixel_onef = ((float)1.0);
+  __pyx_v_5pyFAI_3ext_10splitPixel_onef = ((float)1.0);
 
-  /* "src/regrid_common.pxi":44
+  /* "pyFAI/ext/regrid_common.pxi":20
  *     float piover2 = <float> (pi * 0.5)
  *     float onef = <float> 1.0
  *     float zerof = <float> 1.0             # <<<<<<<<<<<<<<
  *     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
  * 
  */
-  __pyx_v_3src_10splitPixel_zerof = ((float)1.0);
+  __pyx_v_5pyFAI_3ext_10splitPixel_zerof = ((float)1.0);
 
-  /* "src/regrid_common.pxi":45
+  /* "pyFAI/ext/regrid_common.pxi":21
  *     float onef = <float> 1.0
  *     float zerof = <float> 1.0
  *     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_finfo); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_finfo); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_float32); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_float32); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_3 = NULL;
@@ -25820,56 +25831,56 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
     }
   }
   if (!__pyx_t_3) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
-    __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_3); __pyx_t_3 = NULL;
     __Pyx_GIVEREF(__pyx_t_5);
     PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_5);
     __pyx_t_5 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_eps); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_eps); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyFloat_AddCObj(__pyx_float_1_0, __pyx_t_4, 1.0, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyFloat_AddCObj(__pyx_float_1_0, __pyx_t_4, 1.0, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_v_3src_10splitPixel_EPS32 = __pyx_t_7;
+  __pyx_v_5pyFAI_3ext_10splitPixel_EPS32 = __pyx_t_7;
 
-  /* "src/splitPixel.pyx":106
+  /* "pyFAI/ext/splitPixel.pyx":106
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
  *                 numpy.ndarray weights not None,
  *                 int bins=100,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_3src_10splitPixel_1fullSplit1D, NULL, __pyx_n_s_src_splitPixel); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_10splitPixel_1fullSplit1D, NULL, __pyx_n_s_pyFAI_ext_splitPixel); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_fullSplit1D, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "src/splitPixel.pyx":352
+  /* "pyFAI/ext/splitPixel.pyx":352
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
  *                 numpy.ndarray weights not None,
  *                 bins not None,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_3src_10splitPixel_3fullSplit2D, NULL, __pyx_n_s_src_splitPixel); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_10splitPixel_3fullSplit2D, NULL, __pyx_n_s_pyFAI_ext_splitPixel); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_fullSplit2D, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "src/splitPixel.pyx":1
+  /* "pyFAI/ext/splitPixel.pyx":1
  * #!/usr/bin/env python             # <<<<<<<<<<<<<<
  * # -*- coding: utf-8 -*-
  * #
@@ -26007,11 +26018,11 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   __Pyx_XDECREF(__pyx_t_6);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init src.splitPixel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init pyFAI.ext.splitPixel", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init src.splitPixel");
+    PyErr_SetString(PyExc_ImportError, "init pyFAI.ext.splitPixel");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -29629,7 +29640,7 @@ no_fail:
     return retval;
 }
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn___pyx_t_3src_10splitPixel_position_t(PyObject *obj) {
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
     int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
@@ -29640,7 +29651,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
                                                  PyBUF_RECORDS, 3,
-                                                 &__Pyx_TypeInfo_nn___pyx_t_3src_10splitPixel_position_t, stack,
+                                                 &__Pyx_TypeInfo_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
         goto __pyx_fail;
@@ -29651,7 +29662,7 @@ __pyx_fail:
     return result;
 }
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_data_t(PyObject *obj) {
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
     int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
@@ -29662,7 +29673,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn_
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
                                                  PyBUF_RECORDS, 1,
-                                                 &__Pyx_TypeInfo_nn___pyx_t_3src_10splitPixel_data_t, stack,
+                                                 &__Pyx_TypeInfo_nn___pyx_t_5pyFAI_3ext_10splitPixel_data_t, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
         goto __pyx_fail;
@@ -29673,7 +29684,7 @@ __pyx_fail:
     return result;
 }
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_3src_10splitPixel_position_t(PyObject *obj) {
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
     int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
@@ -29684,7 +29695,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn_
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
                                                  PyBUF_RECORDS, 1,
-                                                 &__Pyx_TypeInfo_nn___pyx_t_3src_10splitPixel_position_t, stack,
+                                                 &__Pyx_TypeInfo_nn___pyx_t_5pyFAI_3ext_10splitPixel_position_t, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
         goto __pyx_fail;

@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2016"
+__date__ = "02/02/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -197,7 +197,7 @@ ext_modules = [
     Extension('splitPixelFullLUT'),
     Extension('splitPixelFullLUT_double'),
     Extension('splitBBox'),
-    Extension('histogram', can_use_openmp=False),
+    Extension('histogram', can_use_openmp=True),
     Extension('splitBBoxLUT', can_use_openmp=True),
     Extension('splitBBoxCSR', can_use_openmp=True),
     Extension('splitPixelFullCSR', can_use_openmp=True),

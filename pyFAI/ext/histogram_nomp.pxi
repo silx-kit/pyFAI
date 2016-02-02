@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
@@ -21,24 +20,17 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-
+__doc__ = """Re-implementation of numpy histograms without OpenMP"""
 __author__ = "Jerome Kieffer"
-__date__ = "25/01/2016"
-__name__ = "histogram"
+__date__ = "02/02/2016"
 __license__ = "GPLv3+"
-__copyright__ = "2011-2014, ESRF"
+__copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import cython
-import numpy
-cimport numpy
-import sys
+from libc.math cimport floor
 import logging
 logger = logging.getLogger("pyFAI.histogram_nomp")
-from libc.math cimport floor
 
-include "regrid_common.pxi"
 
 @cython.cdivision(True)
 @cython.boundscheck(False)

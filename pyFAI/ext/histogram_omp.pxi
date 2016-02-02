@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
@@ -21,27 +20,22 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
 
+__doc__ = """Re-implementation of numpy histograms using OpenMP"""
 __author__ = "Jerome Kieffer"
-__date__ = "08/04/2015"
-__name__ = "histogram"
+__date__ = "02/02/2016"
 __license__ = "GPLv3+"
-__copyright__ = "2011-2014, ESRF"
+__copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
 from cython.parallel cimport prange
-import numpy
 from cython.view cimport array as cvarray
-cimport numpy
-import sys
-import logging
-logger = logging.getLogger("pyFAI.histogram_omp")
 from libc.math cimport floor
 from openmp cimport omp_set_num_threads, omp_get_max_threads, omp_get_thread_num
+import logging
+logger = logging.getLogger("pyFAI.histogram_omp")
 
-include "regrid_common.pxi"
 
 
 @cython.cdivision(True)
