@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/02/2016"
 __status__ = "production"
 
 import logging
@@ -57,7 +57,7 @@ try:
 except (ImportError, Exception):
     from .third_party import six
 try:
-    from . import relabel as _relabel
+    from .ext import relabel as _relabel
 except ImportError:
     _relabel = None
 try:
