@@ -9,7 +9,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "12/01/2016"
+__date__ = "02/02/2016"
 __license__ = "MIT"
 
 import distutils.util
@@ -30,7 +30,7 @@ except:
 else:
     importer = importlib.import_module
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.INFO)
 
@@ -274,6 +274,9 @@ else:
 logger.warning("Test %s %s from %s" % (PROJECT_NAME,
                                        PROJECT_VERSION,
                                        PROJECT_PATH))
+
+decorators = importer(PROJECT_NAME + ".decorators")
+decorators.depreclog.setLevel(logging.ERROR)
 
 test_suite = unittest.TestSuite()
 test_suite.addTest(

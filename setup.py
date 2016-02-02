@@ -412,12 +412,9 @@ class PyTest(Command):
         pass
 
     def run(self):
-        os.chdir("test")
-        errno = subprocess.call([sys.executable, 'test_all.py'])
+        errno = subprocess.call([sys.executable, 'run_tests.py', '-i'])
         if errno != 0:
             raise SystemExit(errno)
-        else:
-            os.chdir("..")
 cmdclass['test'] = PyTest
 
 # ################### #
