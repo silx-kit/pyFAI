@@ -27,11 +27,9 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "03/02/2016"
 __status__ = "stable"
-__doc__ = """
-Module containing the description of all detectors with a factory to instantiate them
-"""
+__doc__ = """Description of all detectors with a factory to instantiate them"""
 
 
 import logging
@@ -47,11 +45,11 @@ from .utils import binning, expand2d
 logger = logging.getLogger("pyFAI.detectors")
 
 try:
-    from .fastcrc import crc32
+    from .ext.fastcrc import crc32
 except ImportError:
     from zlib import crc32
 try:
-    from . import bilinear
+    from .ext import bilinear
 except ImportError:
      bilinear = None
 try:
@@ -59,9 +57,9 @@ try:
 except ImportError:
     fabio = None
 try:
-    from six import with_metaclass
-except ImportError:
     from .third_party.six import with_metaclass
+except ImportError:
+    from six import with_metaclass
 
 
 epsilon = 1e-6
