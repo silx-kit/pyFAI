@@ -15,6 +15,7 @@ __license__ = "MIT"
 import distutils.util
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -34,7 +35,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.INFO)
 
-logger.info("Python %s %s" % (sys.version, tuple.__itemsize__ * 8))
+print("Python %s %sbits" % (sys.version, tuple.__itemsize__ * 8))
 
 try:
     import numpy
@@ -71,6 +72,7 @@ except:
 else:
     print("Cython %s" % Cython.__version__)
 
+
 def get_project_name(root_dir):
     """Retrieve project name by running python setup.py --name in root_dir.
 
@@ -87,6 +89,7 @@ def get_project_name(root_dir):
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_NAME = get_project_name(PROJECT_DIR)
 logger.info('Project name: %s' % PROJECT_NAME)
+
 
 def _copy(infile, outfile):
     "link or copy file according to the OS. Nota those are HARD_LINKS"
