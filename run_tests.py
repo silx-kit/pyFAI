@@ -9,7 +9,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "02/02/2016"
+__date__ = "03/02/2016"
 __license__ = "MIT"
 
 import distutils.util
@@ -71,6 +71,40 @@ except:
 else:
     print("Cython %s" % Cython.__version__)
 
+def get_project_name(root_dir):
+    """Retrieve project name by running python setup.py --name in root_dir.
+
+    :param str root_dir: Directory where to run the command.
+    :return: The name of the project stored in root_dir
+    """
+    logger.debug("Getting project name in %s" % root_dir)
+    p = subprocess.Popen([sys.executable, "setup.py", "--name"],
+                         shell=False, cwd=root_dir, stdout=subprocess.PIPE)
+    name, stderr_data = p.communicate()
+    logger.debug("subprocess ended with rc= %s" % p.returncode)
+    return name.split()[-1].decode('ascii')
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_NAME = get_project_name(PROJECT_DIR)
+logger.info('Project name: %s' % PROJECT_NAME)
+
+def _copy(infile, outfile):
+    "link or copy file according to the OS. Nota those are HARD_LINKS"
+    if "link" in dir(os):
+        os.link(infile, outfile)
+    else:
+        shutil.copy(infile, outfile)
+
+def _copy_files(source, dest, extn):
+    """
+    copy all files with a given extension from source to destination
+    """
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
+    full_src = os.path.join(PROJECT_DIR, source)
+    for clf in os.listdir(full_src):
+        if clf.endswith(extn) and clf not in os.listdir(dest):
+            _copy(os.path.join(full_src, clf), os.path.join(dest, clf))
 
 class TestResult(unittest.TestResult):
     logger = logging.getLogger("memProf")
@@ -150,22 +184,9 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
     return os.linesep.join(res)
 
 
-def get_project_name(root_dir):
-    """Retrieve project name by running python setup.py --name in root_dir.
-
-    :param str root_dir: Directory where to run the command.
-    :return: The name of the project stored in root_dir
-    """
-    logger.debug("Getting project name in %s" % root_dir)
-    p = subprocess.Popen([sys.executable, "setup.py", "--name"],
-                         shell=False, cwd=root_dir, stdout=subprocess.PIPE)
-    name, stderr_data = p.communicate()
-    logger.debug("subprocess ended with rc= %s" % p.returncode)
-    return name.split()[-1].decode('ascii')
-
-
 def build_project(name, root_dir):
     """Run python setup.py build for the project.
+    and copy data files to run the tests
 
     Build directory can be modified by environment variables.
 
@@ -189,12 +210,12 @@ def build_project(name, root_dir):
     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                          shell=False, cwd=root_dir)
     logger.debug("subprocess ended with rc= %s" % p.wait())
+
+    _copy_files("openCL", os.path.join(home, PROJECT_NAME, "openCL"), ".cl")
+    _copy_files("gui", os.path.join(home, PROJECT_NAME, "gui"), ".ui")
+    _copy_files("calibration", os.path.join(home, PROJECT_NAME, "calibration"), ".D")
+
     return home
-
-
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_NAME = get_project_name(PROJECT_DIR)
-logger.info('Project name: %s' % PROJECT_NAME)
 
 
 try:
