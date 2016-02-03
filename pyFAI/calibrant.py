@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/11/2015"
+__date__ = "03/02/2016"
 __status__ = "production"
 
 
@@ -45,11 +45,12 @@ import os
 import logging
 import numpy
 import itertools
-from math import sin, asin, cos, sqrt, pi, ceil, floor
+from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
 logger = logging.getLogger("pyFAI.calibrant")
 epsilon = 1.0e-6  # for floating point comparison
+
 
 class Cell(object):
     """
@@ -58,7 +59,11 @@ class Cell(object):
     http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
     """
     lattices = ["cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"]
-    types = {"P":"Primitive", "I":"Body centered", "F":"Face centered", "C": "Side centered", "R": "Rhombohedral"}
+    types = {"P": "Primitive",
+             "I": "Body centered",
+             "F": "Face centered",
+             "C": "Side centered",
+             "R": "Rhombohedral"}
 
     def __init__(self, a=1, b=1, c=1, alpha=90, beta=90, gamma=90, lattice="triclinic", lattice_type="P"):
         """Constructor of the Cell class:
@@ -89,7 +94,6 @@ class Cell(object):
         self._type = "P"
         self.set_type(lattice_type)
 
-
     def __repr__(self, *args, **kwargs):
         return "%s %s cell a=%.4f b=%.4f c=%.4f alpha=%.3f beta=%.3f gamma=%.3f" % \
             (self.types[self.type], self.lattice, self.a, self.b, self.c, self.alpha, self.beta, self.gamma)
@@ -119,7 +123,7 @@ class Cell(object):
 
     @classmethod
     def orthorhombic(cls, a, b, c, lattice_type="P"):
-        """Factory for tetragonal lattices
+        """Factory for orthorhombic lattices
 
         @param a: unit cell length
         @param b: unit cell length
@@ -138,7 +142,7 @@ class Cell(object):
         """
         a = float(a)
         self = cls(a, a, float(c), 90, 90, 120,
-        lattice="hexagonal", lattice_type=lattice_type)
+                   lattice="hexagonal", lattice_type=lattice_type)
         return self
 
     @classmethod
@@ -191,6 +195,7 @@ class Cell(object):
 
     def get_type(self):
         return self._type
+
     def set_type(self, lattice_type):
         self._type = lattice_type if lattice_type in self.types else "P"
         self.selection_rules = [lambda h, k, l: not(h == 0 and k == 0 and l == 0)]
@@ -481,7 +486,7 @@ class Calibrant(object):
             if ai.detector.shape:
                 shape = ai.detector.shape
             elif ai.detector.max_shape:
-                 shape = ai.detector.max_shape
+                shape = ai.detector.max_shape
         if shape is None:
             raise RuntimeError("No shape available")
         tth = ai.twoThetaArray(shape)
@@ -499,7 +504,7 @@ class Calibrant(object):
             else:
                 signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2.0 * sigma2))
         res = ai.calcfrom1d(tth_1d, signal, shape=shape, mask=ai.mask,
-                   dim1_unit='2th_rad', correctSolidAngle=True)
+                            dim1_unit='2th_rad', correctSolidAngle=True)
         return res
 
 
@@ -547,7 +552,7 @@ class calibrant_factory(object):
         return list(self.all.keys())
 
     def values(self):
-        return [Calibrant(i) for i in  self.all.values()]
+        return [Calibrant(i) for i in self.all.values()]
 
     def items(self):
         return [(i, Calibrant(j)) for i, j in self.all.items()]
