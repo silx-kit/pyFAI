@@ -25,7 +25,6 @@
 
 __author__ = "Jerome Kieffer"
 __date__ = "08/04/2015"
-__name__ = "histogram"
 __license__ = "GPLv3+"
 __copyright__ = "2011-2014, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
