@@ -8,7 +8,7 @@ export PYBUILD_NAME=pyfai
 override_dh_clean:
 	dh_clean
 # remove the cython generated file to force rebuild
-	rm -f $(patsubst %.pyx,%.c,$(wildcard src/*.pyx))
+	rm -f $(patsubst %.pyx,%.c,$(wildcard pyFAI/ext/*.pyx))
 	rm -rf build/html
 	rm -rf *.egg-info
 
