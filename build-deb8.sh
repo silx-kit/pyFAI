@@ -28,8 +28,8 @@
 # Script that builds a debian package from this library 
 
 debian=$(grep -o '[0-9]*' /etc/issue)
-version=$(cd pyFAI-src ; python -c"import _version; print(_version.version)"; cd ..)
-strictversion=$(cd pyFAI-src ; python -c"import _version; print(_version.strictversion)"; cd ..) 
+version=$(python -c"import version; print(version.version)")
+strictversion=$(python -c"import version; print(version.strictversion)") 
 tarname=pyFAI_${strictversion}.orig.tar.gz
 if [ -d /usr/lib/ccache ];
 then 

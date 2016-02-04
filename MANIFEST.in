@@ -1,11 +1,11 @@
 graft doc
 recursive-include openCL *.cl *.h
-recursive-include pyFAI-src/ext  *.c *.h *.pyx *.pxd *.pxi
+recursive-include pyFAI/ext  *.c *.h *.pyx *.pxd *.pxi
 recursive-include benchmark *.py *.spline *.poni
-recursive-include pyFAI-src *.py
-recursive-exclude pyFAI-src *.pyc
-recursive-include test *.py *.json
-recursive-exclude test *.pyc
+recursive-include pyFAI *.py
+recursive-exclude pyFAI *.pyc
+recursive-include pyFAI/test *.py *.json
+recursive-exclude pyFAI/test *.pyc
 recursive-include gui *.ui
 recursive-include calibration *.D
 recursive-include dll *.dll
@@ -18,5 +18,3 @@ include README.txt
 include CHANGELOG.txt
 include TODO.txt
 recursive-include scripts *.py 
-recursive-include test *.py *.poni
-recursive-exclude test *.edf *.cbf *.tif
