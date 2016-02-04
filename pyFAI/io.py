@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "04/02/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -74,9 +74,6 @@ else:
         pass
 
 
-
-
-
 def get_isotime(forceTime=None):
     """
     @param forceTime: enforce a given time (current by default)
@@ -91,6 +88,7 @@ def get_isotime(forceTime=None):
     tz_h = localtime.tm_hour - gmtime.tm_hour
     tz_m = localtime.tm_min - gmtime.tm_min
     return "%s%+03i:%02i" % (time.strftime("%Y-%m-%dT%H:%M:%S", localtime), tz_h, tz_m)
+
 
 def from_isotime(text, use_tz=False):
     """
@@ -114,6 +112,7 @@ def from_isotime(text, use_tz=False):
         tz = 0
     return time.mktime(time.strptime(base, "%Y-%m-%dT%H:%M:%S")) + tz
 
+
 def is_hdf5(filename):
     """
     Check if a file is actually a HDF5 file
@@ -134,9 +133,10 @@ class Writer(object):
     Abstract class for writers.
     """
     CONFIG_ITEMS = ["filename", "dirname", "extension", "subdir", "hpath"]
+
     def __init__(self, filename=None, extension=None):
         """
-
+        Constructor of the class
         """
         self.filename = filename
         if os.path.exists(filename):
@@ -147,7 +147,6 @@ class Writer(object):
         self.extension = extension
         self.fai_cfg = {}
         self.lima_cfg = {}
-
 
     def __repr__(self):
         return "Generic writer on file %s" % (self.filename)
@@ -171,6 +170,7 @@ class Writer(object):
                         os.makedirs(dirname)
                     except Exception as err:
                         logger.info("Problem while creating directory %s: %s" % (dirname, err))
+
     def flush(self, *arg, **kwarg):
         """
         To be implemented
@@ -192,10 +192,10 @@ class Writer(object):
             if os.path.isfile(json_config):
                 config = json.load(open(json_config, "r"))
             else:
-                 config = json.loads(json_config)
+                config = json.loads(json_config)
         else:
             config = dict(json_config)
-        for k, v in  config.items():
+        for k, v in config.items():
             if k in self.CONFIG_ITEMS:
                 self.__setattr__(k, v)
 
@@ -203,10 +203,10 @@ class Writer(object):
 class HDF5Writer(Writer):
     """
     Class allowing to write HDF5 Files.
-
     """
     CONFIG = "pyFAI"
     DATASET_NAME = "data"
+
     def __init__(self, filename, hpath="data", fast_scan_width=None):
         """
         Constructor of an HDF5 writer:
@@ -286,7 +286,7 @@ class HDF5Writer(Writer):
             self.radial_values.attrs["interpretation"] = "scalar"
             self.radial_values.attrs["long name"] = "diffraction radial direction"
             if self.fast_scan_width:
-                self.fast_motor = self.group.require_dataset("fast", (self.fast_scan_width,) , numpy.float32)
+                self.fast_motor = self.group.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
                 self.fast_motor.attrs["long name"] = "Fast motor position"
                 self.fast_motor.attrs["interpretation"] = "scalar"
                 self.fast_motor.attrs["axis"] = "1"
@@ -313,9 +313,9 @@ class HDF5Writer(Writer):
             shape = list(chunk)
             if self.lima_cfg.get("number_of_frames", 0) > 0:
                 if self.fast_scan_width is not None:
-                    size[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
+                    shape[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
                 else:
-                    size[0] = self.lima_cfg["number_of_frames"]
+                    shape[0] = self.lima_cfg["number_of_frames"]
             dtype = self.lima_cfg.get("dtype") or self.fai_cfg.get("dtype")
             if dtype is None:
                 dtype = numpy.float32
@@ -449,7 +449,7 @@ class AsciiWriter(Writer):
                 headerLst.append("Detector: %s" % self.fai_cfg["detector"])
             if "splineFile" in self.fai_cfg:
                 headerLst.append("SplineFile: %s" % self.fai_cfg["splineFile"])
-            if  "pixel1" in self.fai_cfg:
+            if "pixel1" in self.fai_cfg:
                 headerLst.append("PixelSize: %.3e, %.3e m" % (self.fai_cfg["pixel1"], self.fai_cfg["pixel2"]))
             if "mask_file" in self.fai_cfg:
                 headerLst.append("MaskFile: %s" % (self.fai_cfg["mask_file"]))
@@ -492,13 +492,13 @@ class AsciiWriter(Writer):
             except Exception as error:
                 logger.info("Problem while creating directory %s: %s" % (self.directory, error))
 
-
     def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w") as f:
                 f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
+
 
 class FabioWriter(Writer):
     """
@@ -584,7 +584,6 @@ class FabioWriter(Writer):
             except Exception as error:
                 logger.info("Problem while creating directory %s: %s" % (self.directory, error))
 
-
     def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
@@ -645,12 +644,12 @@ class Nexus(object):
         @return: HDF5 group of NXclass == NXentry
         """
         for grp_name in self.h5:
-            if  grp_name == name:
+            if grp_name == name:
                 grp = self.h5[grp_name]
                 if isinstance(grp, h5py.Group) and \
-                    "start_time" in grp and  \
-                    "NX_class" in grp.attrs and \
-                    grp.attrs["NX_class"] == "NXentry" :
+                   ("start_time" in grp) and  \
+                   ("NX_class" in grp.attrs) and \
+                   (grp.attrs["NX_class"] == "NXentry"):
                         return grp
 
     def get_entries(self):
@@ -660,11 +659,11 @@ class Nexus(object):
         @return: list of HDF5 groups
         """
         entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
-                    for grp in self.h5
-                    if (isinstance(self.h5[grp], h5py.Group) and \
-                        "start_time" in self.h5[grp] and  \
-                        "NX_class" in self.h5[grp].attrs and \
-                        self.h5[grp].attrs["NX_class"] == "NXentry")]
+                   for grp in self.h5
+                   if isinstance(self.h5[grp], h5py.Group) and
+                      ("start_time" in self.h5[grp]) and
+                      ("NX_class" in self.h5[grp].attrs) and
+                      (self.h5[grp].attrs["NX_class"] == "NXentry")]
         entries.sort(key=lambda a: a[1], reverse=True)  # sort entries in decreasing time
         return [self.h5[i[0]] for i in entries]
 
@@ -743,7 +742,6 @@ class Nexus(object):
         det_grp = self.new_class(pyFAI_grp, name, "NXdetector")
         return det_grp
 
-
     def get_class(self, grp, class_type="NXcollection"):
         """
         return all sub-groups of the given type within a group
@@ -752,9 +750,9 @@ class Nexus(object):
         @param class_type: name of the NeXus class
         """
         coll = [grp[name] for name in grp
-               if (isinstance(grp[name], h5py.Group) and \
-                   "NX_class" in grp[name].attrs and \
-                   grp[name].attrs["NX_class"] == class_type)]
+                if isinstance(grp[name], h5py.Group) and
+                ("NX_class" in grp[name].attrs) and
+                (grp[name].attrs["NX_class"] == class_type)]
         return coll
 
     def get_data(self, grp, class_type="NXdata"):
@@ -765,9 +763,9 @@ class Nexus(object):
         @param class_type: name of the NeXus class
         """
         coll = [grp[name] for name in grp
-               if (isinstance(grp[name], h5py.Dataset) and \
-                   "NX_class" in grp[name].attrs and \
-                   grp[name].attrs["NX_class"] == class_type)]
+                if isinstance(grp[name], h5py.Dataset) and
+                ("NX_class" in grp[name].attrs) and
+                (grp[name].attrs["NX_class"] == class_type)]
         return coll
 
     def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None, overwrite=False):
@@ -785,7 +783,7 @@ class Nexus(object):
         if not toplevel:
             toplevel = self.h5[where]
         if isinstance(obj, h5py.Group):
-            if not name in toplevel:
+            if name not in toplevel:
                 grp = toplevel.require_group(name)
                 for k, v in obj.attrs.items():
                         grp.attrs[k] = v
@@ -800,4 +798,3 @@ class Nexus(object):
             toplevel[name] = obj.value
             for k, v in obj.attrs.items():
                 toplevel[name].attrs[k] = v
-

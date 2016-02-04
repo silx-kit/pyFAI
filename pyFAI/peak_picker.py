@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "04/02/2016"
 __status__ = "production"
 
 import os
@@ -46,23 +46,21 @@ except ImportError:  # mainly for tests
 if gui_utils and gui_utils.has_Qt:
     from .gui_utils import update_fig, maximize_fig, QtGui, matplotlib, pyplot, pylab
 import fabio
-from .utils import percentile
-from .ext.reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
 from .massif import Massif
+from .ext.reconstruct import reconstruct
 from .ext.watershed import InverseWatershed
 
 try:
-    import six
-except (ImportError, Exception):
     from .third_party import six
+except (ImportError, Exception):
+    import six
 
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
-if sys.version_info[0] >= 3:
-    raw_input = input
+
 
 ################################################################################
 # PeakPicker
@@ -148,8 +146,6 @@ class PeakPicker(object):
         if self._init_thread:
             self._init_thread.join()
 
-
-
     def _init_massif(self, sync=True):
         """
         Initialize PeakPicker for massif based detection
@@ -165,7 +161,6 @@ class PeakPicker(object):
         self._init_thread.start()
         if sync:
             self._init_thread.join()
-
 
     def _init_blob(self, sync=True):
         """
@@ -293,9 +288,9 @@ class PeakPicker(object):
             s2 -= 1
             self.ax.set_xlim(0, s2)
             self.ax.set_ylim(0, s1)
-            d1 = numpy.array([0, s1, s1 , 0 ])
+            d1 = numpy.array([0, s1, s1, 0 ])
             d2 = numpy.array([0, 0, s2, s2])
-            p1, p2, p3 = self.detector.calc_cartesian_positions(d1=d1, d2=d2)
+            p1, p2, _ = self.detector.calc_cartesian_positions(d1=d1, d2=d2)
             ax = self.fig.add_subplot(1, 1, 1,
                                       xbound=False,
                                       ybound=False,
@@ -385,10 +380,10 @@ class PeakPicker(object):
                 annot = self.ax.annotate(".", xy=(x[1], x[0]), weight="bold", size="large", color="black")
             else:
                 if gpt:
-                     annot = self.ax.annotate(gpt.label, xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
-                                              weight="bold", size="large", color="black",
-                                              arrowprops=dict(facecolor='white', edgecolor='white'),)
-                     gpt.annotate = annot
+                    annot = self.ax.annotate(gpt.label, xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
+                                             weight="bold", size="large", color="black",
+                                             arrowprops=dict(facecolor='white', edgecolor='white'),)
+                    gpt.annotate = annot
                 else:
                     annot = self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
                                              weight="bold", size="large", color="black",
@@ -434,7 +429,6 @@ class PeakPicker(object):
             else:
                 logger.warning("No peak found !!!")
 
-
         def append_more_points(event):
             " * Right-click + m (click+m):     find more points for current group"
             gpt = self.points.get(self.spinbox.value())
@@ -443,7 +437,7 @@ class PeakPicker(object):
                 return
             if gpt.plot:
                 if gpt.plot[0] in self.ax.lines:
-                      self.ax.lines.remove(gpt.plot[0])
+                    self.ax.lines.remove(gpt.plot[0])
 
             update_fig(self.fig)
             # need to annotate only if a new group:
@@ -465,7 +459,7 @@ class PeakPicker(object):
                 return
             if gpt.plot:
                 if gpt.plot[0] in self.ax.lines:
-                      self.ax.lines.remove(gpt.plot[0])
+                    self.ax.lines.remove(gpt.plot[0])
             update_fig(self.fig)
             newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
             if newpeak:
@@ -484,11 +478,11 @@ class PeakPicker(object):
                 return
 #            print("Remove group from ring %s label %s" % (ring, gpt.label))
             if gpt.annotate:
-                if gpt.annotate in  self.ax.texts:
+                if gpt.annotate in self.ax.texts:
                     self.ax.texts.remove(gpt.annotate)
             if gpt.plot:
                 if gpt.plot[0] in self.ax.lines:
-                      self.ax.lines.remove(gpt.plot[0])
+                    self.ax.lines.remove(gpt.plot[0])
             if len(gpt) > 0:
                 logger.info("Removing group #%2s containing %i points" % (gpt.label, len(gpt)))
             else:
@@ -505,11 +499,11 @@ class PeakPicker(object):
                 return
 #            print("Remove 1 point from group from ring %s label %s" % (ring, gpt.label))
             if gpt.annotate:
-                if gpt.annotate in  self.ax.texts:
+                if gpt.annotate in self.ax.texts:
                     self.ax.texts.remove(gpt.annotate)
             if gpt.plot:
                 if gpt.plot[0] in self.ax.lines:
-                      self.ax.lines.remove(gpt.plot[0])
+                    self.ax.lines.remove(gpt.plot[0])
             if len(gpt) > 1:
                 # delete single closest point from current group
                 x0 = event.xdata
@@ -551,7 +545,7 @@ class PeakPicker(object):
 
             elif (event.key == "1") and (event.button in [1, 2]):
                 erase_1_point(event)
-            elif (event.button == 2) or (event.button == 1  and event.key == "d"):
+            elif (event.button == 2) or (event.button == 1 and event.key == "d"):
                 erase_grp(event)
             else:
                 logger.info("Unknown combination: Button: %i, Key modifier: %s" % (event.button, event.key))
@@ -568,7 +562,7 @@ class PeakPicker(object):
                 logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
                 print(ALL_CALIBRANTS)
                 raise RuntimeError("Invalid calibrant")
-            raw_input("Please press enter when you are happy with your selection" + os.linesep)
+            six.moves.input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
             self.fig.canvas.mpl_disconnect(self.mpl_connectId)
             self.mpl_connectId = None
@@ -583,8 +577,6 @@ class PeakPicker(object):
             gui_utils.main_loop = True
             # MAIN LOOP
             pylab.show()
-
-
 
     def contour(self, data, cmap="autumn", linewidths=2, linestyles="dashed"):
         """
@@ -605,8 +597,8 @@ class PeakPicker(object):
             tth_max = data.max()
             tth_min = data.min()
             if self.points.calibrant:
-                angles = [ i for i in self.points.calibrant.get_2th()
-                          if i is not None and i >= tth_min and i <= tth_max]
+                angles = [i for i in self.points.calibrant.get_2th()
+                          if (i is not None) and (i >= tth_min) and (i <= tth_max)]
                 if not angles:
                     angles = None
             else:
@@ -616,7 +608,8 @@ class PeakPicker(object):
                 if not isinstance(cmap, matplotlib.colors.Colormap):
                     cmap = matplotlib.cm.get_cmap(cmap)
                 self.ct.contour(data, levels=angles, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
-                self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
+                self.ax.set_xlim(xlim)
+                self.ax.set_ylim(ylim)
                 print("Visually check that the overlaid dashed curve on the Debye-Sherrer rings of the image")
                 print("Check also for correct indexing of rings")
             except MemoryError:
@@ -647,7 +640,8 @@ class PeakPicker(object):
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
-                self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
+                self.ax.set_xlim(xlim)
+                self.ax.set_ylim(ylim)
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
             update_fig(self.fig)
@@ -657,7 +651,6 @@ class PeakPicker(object):
             self.fig.clear()
             self.fig = None
             gc.collect()
-
 
     def on_plus_pts_clicked(self, *args):
         """
@@ -695,6 +688,7 @@ class PeakPicker(object):
         if self.callback:
             self.callback(self.points.getWeightedList(self.data))
 
+
 ################################################################################
 # ControlPoints
 ################################################################################
@@ -709,7 +703,7 @@ class ControlPoints(object):
         if filename is not None:
             self.load(filename)
         have_spacing = False
-        for i in self.dSpacing :
+        for i in self.dSpacing:
             have_spacing = have_spacing or i
         if (not have_spacing) and (calibrant is not None):
             if isinstance(calibrant, Calibrant):
@@ -1001,7 +995,7 @@ class ControlPoints(object):
         lastRing = None
         lst = list(self._groups.keys())
         lst.sort(key=lambda item: self._groups[item].code)
-        for idx, lbl in enumerate(lst):
+        for lbl in lst:
             bOk = False
             gpt = self._groups[lbl]
             while not bOk:
@@ -1011,7 +1005,7 @@ class ControlPoints(object):
                     defaultRing = ring
                 elif lastRing is not None:
                     defaultRing = lastRing + 1
-                res = raw_input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
+                res = six.moves.input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
                 if res == "":
                     res = defaultRing
                 try:
@@ -1037,7 +1031,7 @@ class ControlPoints(object):
         This is probably not a good idea, but who knows !
         """
         with self._sem:
-            if value :
+            if value:
                 if self.calibrant is None:
                     self.calibrant = Calibrant()
                 self.calibrant.setWavelength_changeDs(value)

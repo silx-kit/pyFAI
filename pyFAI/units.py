@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "04/02/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -35,11 +35,12 @@ import numpy
 from numpy import pi
 
 try:
-    import six
-except (ImportError, Exception):
     from .third_party import six
+except (ImportError, Exception):
+    import six
 
 hc = 12.398419292004204
+
 
 class Enum(dict):
     """
@@ -55,6 +56,7 @@ class Enum(dict):
             return self["REPR"]
         else:
             return dict.__repr__(self, *args, **kwargs)
+
     # ensures hashability
     def __hash__(self):
         return self.__repr__().__hash__()
@@ -197,31 +199,32 @@ l_m = Enum(REPR="m",
            scale=1.,
            label=r"length $l$ ($m$)")
 l_mm = Enum(REPR="mm",
-           scale=1e3,
-           label=r"length $l$ ($mm$)")
+            scale=1e3,
+            label=r"length $l$ ($mm$)")
 l_cm = Enum(REPR="cm",
-           scale=1e2,
-           label=r"length $l$ ($cm$)")
+            scale=1e2,
+            label=r"length $l$ ($cm$)")
 l_um = Enum(REPR="micron",
-           scale=1e6,
-           label=r"length $l$ ($\mu m$)")
+            scale=1e6,
+            label=r"length $l$ ($\mu m$)")
 l_nm = Enum(REPR="nm",
-           scale=1e9,
-           label=r"length $l$ ($nm$)")
+            scale=1e9,
+            label=r"length $l$ ($nm$)")
 l_A = Enum(REPR="A",
            scale=1e10,
            label=r"length $l$ ($\AA$)")
 LENGTH_UNITS = (l_m, l_mm, l_cm, l_um, l_nm, l_A)
 
 A_deg = Enum(REPR="deg",
-           scale=180.0 / pi,
-           label=r"angle $\alpha$ ($^{o}$)")
+             scale=180.0 / pi,
+             label=r"angle $\alpha$ ($^{o}$)")
 
 A_rad = Enum(REPR="rad",
-           scale=1.0,
-           label=r"angle $\alpha$ ($rad$)")
+             scale=1.0,
+             label=r"angle $\alpha$ ($rad$)")
 
 ANGLE_UNITS = (A_deg, A_rad)
+
 
 def to_unit(obj, type_=RADIAL_UNITS):
     rad_unit = None

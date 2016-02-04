@@ -33,14 +33,20 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/12/2015"
+__date__ = "04/02/2016"
 __status__ = "production"
 
-import os, sys, time, logging, types, math
+import os
+import sys
+import time
+import logging
+import types
+import math
 try:
-    from argparse import ArgumentParser
-except ImportError:
     from .third_party.argparse import ArgumentParser
+except ImportError:
+    from argparse import ArgumentParser
+
 if sys.version_info[0] < 3:
     from urlparse import urlparse
 else:

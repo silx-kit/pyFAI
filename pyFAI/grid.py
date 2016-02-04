@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "04/02/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -38,12 +38,13 @@ import time
 from . import detectors
 from . import units
 try:
-    import six
-except ImportError:
     from .third_party import six
+except ImportError:
+    import six
 StringTypes = (six.binary_type, six.text_type)
-
+import fabio
 logger = logging.getLogger("pyFAI.grid")
+
 
 class Grid(object):
     """
@@ -58,7 +59,7 @@ class Grid(object):
         @param pitch: 2-tuple representing the grid spacing in (y, x) coordinates, in meter
         @param invert: set to true if the image of the grid has regular dark spots (instead of bright points) 
         """
-        if isinstance(detector, detectos.Detector):
+        if isinstance(detector, detectors.Detector):
             self.detector = detectors.detector_factory(detector)
         else:
             self.detector = detector

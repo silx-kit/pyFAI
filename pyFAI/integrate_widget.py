@@ -24,30 +24,24 @@
 #
 from __future__ import absolute_import, print_function, with_statement, division
 
-"""
-pyFAI-integrate
+__doc__ = """pyFAI-integrate
 
 A graphical tool (based on PyQt4) for performing azimuthal integration on series of files.
-
-
 """
 
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2015"
-__satus__ = "development"
+__date__ = "04/02/2016"
+__status__ = "development"
 
-import sys
 import logging
 import json
 import os
 import time
-import types
 import threading
 import math
-import weakref
 import os.path as op
 import numpy
 logging.basicConfig(level=logging.INFO)
@@ -62,14 +56,15 @@ from .io import HDF5Writer
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import RADIAL_UNITS, TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM
 try:
-    import six
-except ImportError:
     from .third_party import six
+except ImportError:
+    import six
 
 
 UIC = get_ui_file("integration.ui")
 
 FROM_PYMCA = "From PyMca"
+
 
 class Browser(QtGui.QMainWindow):
 

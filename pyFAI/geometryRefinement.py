@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "04/02/2016"
 __status__ = "development"
 
 import os
@@ -50,9 +50,6 @@ try:
     from scipy.optimize import curve_fit
 except ImportError:
     curve_fit = None
-
-
-from .decorators import timeit
 
 if os.name != "nt":
     WindowsError = RuntimeError

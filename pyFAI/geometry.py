@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "04/02/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -42,9 +42,9 @@ from . import detectors
 from . import units
 from .decorators import deprecated
 try:
-    import six
-except ImportError:
     from .third_party import six
+except ImportError:
+    import six
 StringTypes = (six.binary_type, six.text_type)
 
 logger = logging.getLogger("pyFAI.geometry")

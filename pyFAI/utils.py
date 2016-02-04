@@ -32,12 +32,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2016"
+__date__ = "04/02/2016"
 __status__ = "production"
 
 import logging
 import sys
-import types
 import os
 import glob
 import threading
@@ -48,14 +47,14 @@ import fabio
 if "version_info" in dir(fabio) and fabio.version_info >= (0, 2, 2):
     from fabio.nexus import exists
 else:
-    from os.path import  exists
+    from os.path import exists
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
 try:
-    import six
-except (ImportError, Exception):
     from .third_party import six
+except (ImportError, Exception):
+    import six
 try:
     from .ext import relabel as _relabel
 except ImportError:

@@ -26,29 +26,30 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "04/02/2016"
 __status__ = "production"
 
-import sys, os, threading
+import sys
+import os
+import threading
 from math import ceil, sqrt
 import logging
 logger = logging.getLogger("pyFAI.massif")
 import numpy
 import fabio
 from scipy.ndimage import label
-from scipy.ndimage.filters  import median_filter
+from scipy.ndimage.filters import median_filter
 
 from .ext.bilinear import Bilinear
 from .utils import gaussian_filter, binning, unBinning, relabel, is_far_from_group
 try:
-    import six
-except (ImportError, Exception):
     from .third_party import six
-
+except (ImportError, Exception):
+    import six
 
 if os.name != "nt":
     WindowsError = RuntimeError
-TARGET_SIZE = 1024
+
 
 
 ################################################################################
@@ -57,8 +58,10 @@ TARGET_SIZE = 1024
 
 class Massif(object):
     """
-    A massif is defined as an area around a peak, it is used to find neighbouring peaks
+    A massif is defined as an area around a peak, it is used to find neighboring peaks
     """
+    TARGET_SIZE = 1024
+
     def __init__(self, data=None):
         """
 
@@ -240,16 +243,16 @@ class Massif(object):
                     logger.info("Image size is %s", self.data.shape)
                     self.binning = []
                     for i in self.data.shape:
-                        if i % TARGET_SIZE == 0:
-                            self.binning.append(max(1, i // TARGET_SIZE))
+                        if i % self.TARGET_SIZE == 0:
+                            self.binning.append(max(1, i // self.TARGET_SIZE))
                         else:
-                            for j in range(i // TARGET_SIZE - 1, 0, -1):
+                            for j in range(i // self.TARGET_SIZE - 1, 0, -1):
                                 if i % j == 0:
                                     self.binning.append(max(1, j))
                                     break
                             else:
                                 self.binning.append(1)
-#                    self.binning = max([max(1, i // TARGET_SIZE) for i in self.data.shape])
+#                    self.binning = max([max(1, i // self.TARGET_SIZE) for i in self.data.shape])
                     logger.info("Binning size is %s", self.binning)
                     self._binned_data = binning(self.data, self.binning)
         return self._binned_data

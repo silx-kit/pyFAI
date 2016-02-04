@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2015"
+__date__ = "04/02/2016"
 __status__ = "production"
 
 import sys
@@ -116,6 +116,7 @@ else:
 
 main_loop = False
 
+
 def update_fig(fig=None):
     """
     Update a matplotlib figure with a Qt4 backend
@@ -130,6 +131,7 @@ def update_fig(fig=None):
                                                     fig.canvas.size()))
             if not main_loop:
                 QtCore.QCoreApplication.processEvents()
+
 
 class Event(object):
     "Dummy class for dummy things"
@@ -153,5 +155,5 @@ def maximize_fig(fig=None):
             try:
                 mng.resize(event)
             except TypeError:
-                 mng.resize(*win_shape)
+                mng.resize(*win_shape)
     update_fig(fig)

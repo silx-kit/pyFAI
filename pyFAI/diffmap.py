@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/12/2015"
+__date__ = "04/02/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module with GUI for diffraction mapping experiments"""
@@ -54,9 +54,9 @@ from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
 
 try:
-    from argparse import ArgumentParser
-except ImportError:
     from .third_party.argparse import ArgumentParser
+except ImportError:
+    from argparse import ArgumentParser
 
 if sys.version_info[0] < 3:
     bytes = str
@@ -277,16 +277,16 @@ If the number of files is too large, use double quotes like "*.edf" """
                 logger.warning("No such poni file %s" % options.poni)
         if options.fast is not None:
             self.npt_fast = int(options.fast)
-            config["fast_motor_points"]= self.npt_fast
+            config["fast_motor_points"] = self.npt_fast
         if options.slow is not None:
             self.npt_slow = int(options.slow)
-            config["slow_motor_points"]= self.npt_slow
+            config["slow_motor_points"] = self.npt_slow
         if options.npt_rad is not None:
             self.npt_rad = int(options.npt_rad)
-            config["ai"]["nbpt_rad"]= self.npt_rad,
+            config["ai"]["nbpt_rad"] = self.npt_rad,
         if options.offset is not None:
             self.offset = int(options.offset)
-            config["offset"]= self.offset,
+            config["offset"] = self.offset,
         else:
             self.offset = 0
         self.stats = options.stats

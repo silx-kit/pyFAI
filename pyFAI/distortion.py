@@ -27,11 +27,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "04/02/2016"
 __status__ = "development"
 
-import logging, threading
-import os, sys
+import logging
+import threading
+import os
+import sys
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
 logging.basicConfig(level=logging.INFO)
@@ -42,15 +44,13 @@ if ocl:
     from . import ocl_azim_lut, ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
-from .utils import timeit
+from .decorators import timeit
 try:
-    import six
-except ImportError:
     from .third_party import six
-import fabio
-
+except ImportError:
+    import six
 try:
-    from . import _distortion
+    from .ext import _distortion
 except ImportError:
     logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
     _distortion = None
