@@ -15,4 +15,5 @@ library and Python fluency.
    Calibrant/index
    multi-geometry
    MakeCalibrant/make_calibrant
-   
+   CCD_Calibration/CCD_calibration
+
