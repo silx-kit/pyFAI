@@ -181,8 +181,8 @@ peak-position.
 .. code:: python
 
     #Check that size is unchanged.
-    print(img.shape) 
-    print(cnv.shape) 
+    print(img.shape)
+    print(cnv.shape)
 
 
 .. parsed-literal::
@@ -279,7 +279,7 @@ is done on the log-scale of the intensity.
     iw.merge_singleton()
     all_regions = set(iw.regions.values())
     regions = [i for i in all_regions if i.size>mini]
-    
+
     print("Number of region segmented: %s"%len(all_regions))
     print("Number of large enough regions : %s"%len(regions))
 
@@ -423,7 +423,7 @@ this we calculate the distance\_matrix from any point to any other:
 
 .. code:: python
 
-    # Nota, pyFAI uses **C-coordinates** so they come out as (y,x) and not the usual (x,y). 
+    # Nota, pyFAI uses **C-coordinates** so they come out as (y,x) and not the usual (x,y).
     # This notation helps us to remind the order
     yx = numpy.array(ref_peaks)
 
@@ -466,13 +466,13 @@ and 110 pixel appart.
 
 .. code:: python
 
-    #We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west). 
+    #We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west).
     point_type = np.dtype([('center_y', float), ('center_x', float),
                             ('east_y', float), ('east_x', float),
                             ('west_y', float), ('west_x', float),
                             ('north_y', float), ('north_x', float),
                             ('south_y', float), ('south_x', float)])
-    
+
     neig = np.logical_and(dist>70.0, dist<110.0)
     valid = (neig.sum(axis=-1)==4).sum()
     print("There are %i control point with exactly 4 first neigbours"%valid)
@@ -488,7 +488,7 @@ and 110 pixel appart.
 
 .. code:: python
 
-    #Populate the structure: we use a loop as it loops only over 400 points 
+    #Populate the structure: we use a loop as it loops only over 400 points
     h=-1
     for i, center in enumerate(peaks_ref):
         if neig[i].sum()!=4: continue
@@ -515,7 +515,7 @@ prefer to take the peak the nearest to the centroid of all other peaks.
 .. code:: python
 
     #Select the initial guess for the center:
-    
+
     #Most intense peak:
     #m = max([i for i in regions], key=lambda i:i.maxi)
     #Cx, Cy = m.index%img.shape[-1],m.index//img.shape[-1]
@@ -523,20 +523,20 @@ prefer to take the peak the nearest to the centroid of all other peaks.
     Cx, Cy = 734, 1181 #beam center
     #Cx, Cy = tuple(i//2 for i in cnv.shape) #detector center
     print("The guessed center is at (%s, %s)"%(Cx, Cy))
-    
+
     #Get the nearest point from centroid:
     d2 = ((point["center_x"]-Cx)**2+(point["center_y"]-Cy)**2)
     best = d2.argmin()
     Op = point[best]
     Ox, Oy = Op["center_x"], Op["center_y"]
-    
+
     print("The center is at (%s, %s)"%(Ox, Oy))
-    #Calculate the average vector along the 4 main axes 
+    #Calculate the average vector along the 4 main axes
     Xx = (point[:]["east_x"] - point[:]["center_x"]).mean()
     Xy = (point[:]["east_y"] - point[:]["center_y"]).mean()
     Yx = (point[:]["north_x"] - point[:]["center_x"]).mean()
     Yy = (point[:]["north_y"] - point[:]["center_y"]).mean()
-    
+
     print("The X vector is is at (%s, %s)"%(Xx, Xy))
     print("The Y vector is is at (%s, %s)"%(Yx, Yy))
 
@@ -661,29 +661,29 @@ the peaks on the border with less than 4 neighbours.
     peaks_m = numpy.empty_like(peaks_ref)
     peaks_m[:,1] = peaks_ref[:,0]
     peaks_m[:,0] = peaks_ref[:,1]
-    
+
     #parameter set for optimization:
     P0 = [Ox, Oy, Xx, Yx, Xy, Yy]
-    
+
     P = numpy.array(P0)
-    
+
     def to_hole(P, pixels):
         "Translate pixel -> hole"
         T = numpy.atleast_2d(P[:2])
         R = P[2:].reshape((2,2))
-    
+
         #Transformation matrix from pixel to holes:
         hole = dot(numpy.linalg.inv(R), (pixels - T).T).T
         return hole
-    
+
     def to_pix(P, holes):
         "Translate hole -> pixel"
         T = numpy.atleast_2d(P[:2])
         R = P[2:].reshape((2,2))
-        #Transformation from index points (holes) to pixel coordinates: 
+        #Transformation from index points (holes) to pixel coordinates:
         pix = dot(R,holes.T).T + T
         return pix
-    
+
     def error(P):
         "Error function"
         hole_float = to_hole(P, peaks_m)
@@ -691,7 +691,7 @@ the peaks on the border with less than 4 neighbours.
         delta = hole_float-hole_int
         delta2 = (delta**2).sum()
         return delta2
-    
+
     print("Total inital error ", error(P), P0)
     holes = to_hole(P, peaks_m)
     print("Maximum initial error versus integrer: %s * pitch size (5mm)"%(abs(holes-holes.round()).max()))
@@ -798,7 +798,7 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
     #we use peaks_res instead of peaks_m to be in y,x coordinates, not x,y
     delta_x = griddata(peaks_ref, delta[:,0], (grid_x, grid_y), method='cubic')
     delta_y = griddata(peaks_ref, delta[:,1], (grid_x, grid_y), method='cubic')
-    
+
     figure(figsize=(12,5))
     subplot(1,2,1)
     imshow(delta_x,origin="lower", interpolation="nearest")
@@ -828,22 +828,22 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
     #From http://stackoverflow.com/questions/3662361/fill-in-missing-values-with-nearest-neighbour-in-python-numpy-masked-arrays
     def fill(data, invalid=None):
         """
-        Replace the value of invalid 'data' cells (indicated by 'invalid') 
+        Replace the value of invalid 'data' cells (indicated by 'invalid')
         by the value of the nearest valid data cell
-    
+
         Input:
             data:    numpy array of any dimension
             invalid: a binary array of same shape as 'data'. True cells set where data
                      value should be replaced.
                      If None (default), use: invalid  = np.isnan(data)
-    
-        Output: 
-            Return a filled array. 
+
+        Output:
+            Return a filled array.
         """
-    
-        if invalid is None: 
+
+        if invalid is None:
             invalid = numpy.isnan(data)
-    
+
         ind = ndimage.distance_transform_edt(invalid, return_distances=False, return_indices=True)
         return data[tuple(ind)]
 
@@ -920,7 +920,9 @@ Validation of the distortion correction
 .. image:: output_54_1.png
 
 
-# Conclusion This procedure describes how to measure the detector
+Conclusion
+==========
+This procedure describes how to measure the detector
 distortion and how to create a detector description file directly
 useable in pyFAI. Only the region inside the convex hull of the grid
 data-points is valid and the region of the detector which is not
