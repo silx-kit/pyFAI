@@ -265,17 +265,11 @@ class UtilsTest(object):
         if (sys.platform == "win32") and not script.endswith(".py"):
                 script += ".py"
         env = dict((str(k), str(v)) for k, v in os.environ.items())
-        if IN_SOURCES:
-            script_dir = os.path.join(os.path.dirname(cls.home),
-                "scripts-%i.%i" % (sys.version_info[0], sys.version_info[1]))
-            script_path = os.path.join(script_dir, script)
-            env["PYTHONPATH"] = os.pathsep.join([cls.home] + sys.path)
-        else:
-            env["PYTHONPATH"] = os.pathsep.join(sys.path)
-            for i in os.environ.get("PATH", "").split(os.pathsep):
-                script_path = os.path.join(i, script)
-                if os.path.exists(script_path):
-                    break
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
+        for i in os.environ.get("PATH", "").split(os.pathsep):
+            script_path = os.path.join(i, script)
+            if os.path.exists(script_path):
+                break
         return script_path, env
 
 
