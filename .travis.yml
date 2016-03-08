@@ -41,7 +41,7 @@ install:
   - "pip install --upgrade pip"
   - "pip install cython --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse"
   - "pip install --upgrade numpy --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse"
-  - "pip install --upgrade --trusted-host www.edna-site.org -r requirements_travis.txt"
+  - "pip install --upgrade --trusted-host www.edna-site.org -r ci/requirements_travis.txt"
   - "python info_platform.py"
   - "python setup.py build"
   - "python setup.py bdist_wheel"

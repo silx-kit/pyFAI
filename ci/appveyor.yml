@@ -49,7 +49,7 @@ install:
   - "%CMD_IN_ENV% pip install --user --upgrade  pip"
   - "%CMD_IN_ENV% pip install --trusted-host pypi.anaconda.org -i https://pypi.anaconda.org/carlkl/simple numpy scipy"
   - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -f http://www.edna-site.org/pub/wheelhouse pyparsing cython"
-  - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt"
+  - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -r ci/requirements_appveyor.txt"
   - "del pyFAI\\ext\\histogram.c"
   - "%CMD_IN_ENV% python setup.py build --no-openmp" #OpenMP is not available on python 3.4
   - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_msi"
