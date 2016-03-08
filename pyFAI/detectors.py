@@ -1029,8 +1029,8 @@ class Eiger(Detector):
         @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
 
-        @return: position in meter of the center of each pixels.
-        @rtype: ndarray
+        @return: p1, p2 position in meter of the center of each pixels.
+        @rtype: 2-tuple of numpy.ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.

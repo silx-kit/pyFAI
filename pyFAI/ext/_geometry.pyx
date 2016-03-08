@@ -118,10 +118,10 @@ cdef inline double f_chi(double p1, double p2, double L, double sinRot1, double 
     @param sinRot1,sinRot2,sinRot3: sine of the angles
     @param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
-    cdef double num = 1.0, den = 1.0
-    num = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-    den = p1 * cosRot2 * sinRot3 - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
-    return atan2(num, den)
+    cdef:
+        double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+        double t2 = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+    return atan2(t1, t2)
 
 
 @cython.cdivision(True)
@@ -458,5 +458,86 @@ def calc_cosa(double L,
 
     if pos1.ndim == 2:
         return out.reshape(pos1.shape[0], pos1.shape[1])
+    else:
+        return out
+
+
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+def calc_rad_azim(double L,
+                  double poni1,
+                  double poni2,
+                  double rot1,
+                  double rot2,
+                  double rot3,
+                  numpy.ndarray pos1 not None,
+                  numpy.ndarray pos2 not None,
+                  numpy.ndarray pos3=None,
+                  space="2th",
+                  wavelength=None):
+    """
+
+    raise KeyError when space is bad !
+    """
+    cdef ssize_t  size = pos1.size, i = 0
+    assert pos2.size == size
+    cdef:
+        double sinRot1 = sin(rot1)
+        double cosRot1 = cos(rot1)
+        double sinRot2 = sin(rot2)
+        double cosRot2 = cos(rot2)
+        double sinRot3 = sin(rot3)
+        double cosRot3 = cos(rot3)
+        int cspace = 0
+        double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
+        double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
+        double[::1] c3
+        numpy.ndarray[numpy.float32_t, ndim = 2] out = numpy.empty((size,2), dtype=numpy.float32)
+        double t1, t2, t3, fwavelength
+
+    if space == "2th":
+        cspace = 1
+    elif space == "q":
+        cspace = 2
+        if not wavelength:
+            raise ValueError("wavelength is needed for q calculation")
+        else:
+            fwavelength = float(wavelength)
+    elif space == "r":
+        cspace = 3
+    else:
+        raise KeyError("Not implemented space %s in cython"%space)
+
+    if pos3 is None:
+        for i in prange(size, nogil=True, schedule="static"):
+            t1 = f_t1(c1[i]-poni1, c2[i]-poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t2 = f_t2(c1[i]-poni1, c2[i]-poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t3 = f_t3(c1[i]-poni1, c2[i]-poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            if cspace==1:
+                out[i,0] = atan2(sqrt(t1 * t1 + t2 * t2), t3)
+            elif cspace==2:
+                out[i,0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
+            elif cspace==3:
+                out[i,0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+            out[i,1] = atan2(t1, t2)
+    else:
+        assert pos3.size == size
+        c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
+        for i in prange(size, nogil=True, schedule="static"):
+            t1 = f_t1(c1[i]-poni1, c2[i]-poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t2 = f_t2(c1[i]-poni1, c2[i]-poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t3 = f_t3(c1[i]-poni1, c2[i]-poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            if cspace==1:
+                out[i,0] = atan2(sqrt(t1 * t1 + t2 * t2), t3)
+            elif cspace==2:
+                out[i,0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
+            elif cspace==3:
+                out[i,0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+            out[i,1] = atan2(t1, t2)
+
+    if pos1.ndim == 3:
+        return out.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2], 2)
+    if pos1.ndim == 2:
+        return out.reshape(pos1.shape[0], pos1.shape[1], 2),
     else:
         return out

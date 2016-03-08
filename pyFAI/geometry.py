@@ -691,26 +691,39 @@ class Geometry(object):
         if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
             with self._sem:
                 if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
-                    if use_cython and space == "2th":
+                    if use_cython:
                         if self.detector.IS_CONTIGUOUS:
-                            pass
+                            d1 = expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+                            d2 = expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+                            p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
                         else:
-                            pass
-                        raise NotImplemented
-                        self._corner4Da = _geometry.towrite()
-                    elif use_cython and space == "q":
-                        raise NotImplemented
-                        self._corner4Da = _geometry.towrite()
-                    elif use_cython and space == "r":
-                        raise NotImplemented
-                        self._corner4Da = _geometry.towrite()
-                    elif use_cython and space == "log(q)":
-                        raise NotImplemented
-                        self._corner4Da = _geometry.towrite()
-                    elif use_cython and space == "d*2":
-                        raise NotImplemented
-                        self._corner4Da = _geometry.towrite()
-                    else:
+                            det_corners = self.detector.get_pixel_corners()
+                            p1 = det_corners[..., 1]
+                            p2 = det_corners[..., 2]
+                            p3 = det_corners[..., 0]
+                        try:
+                            res = _geometry.calc_rad_azim(self.dist, self.poni1, self.poni2,
+                                                          self.rot1, self.rot2, self.rot3,
+                                                          space, self._wavelength)
+                        except KeyError:
+                            logger.error("Invalid key for space: %s", space)
+                        else:
+                            if self.detector.IS_CONTIGUOUS:
+                                if bilinear:
+                                    print(res.shape)
+                                    corners = bilinear.convert_corner_2D_to_4D(2, res[..., 0], res[..., 1])
+                                else:
+                                    corners = numpy.zeros((shape[0], shape[1], 4, 2),
+                                                              dtype=numpy.float32)
+                                    corners[:, :, 0, :] = res[:-1, :-1, :]
+                                    corners[:, :, 1, :] = res[1:, :-1, :]
+                                    corners[:, :, 2, :] = res[1:, 1:, :]
+                                    corners[:, :, 3, :] = res[:-1, 1:, :]
+                            else:
+                                corners = res
+                            self._corner4Da = corners
+                    if self._corner4Da is None:
+                        # In case the fast-path is not implemented
                         pos = self.positionArray(shape, corners=True)
                         x = pos[..., 2]
                         y = pos[..., 1]
