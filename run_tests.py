@@ -236,7 +236,6 @@ def build_project(name, root_dir):
     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                          shell=False, cwd=root_dir)
     logger.debug("subprocess ended with rc= %s" % p.wait())
-    return home
 
     _copy_files("openCL", os.path.join(home, PROJECT_NAME, "openCL"), ".cl")
     _copy_files("gui", os.path.join(home, PROJECT_NAME, "gui"), ".ui")
