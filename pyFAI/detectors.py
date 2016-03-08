@@ -385,7 +385,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         @type d1: ndarray (1D or 2D)
         @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
-        @param center: retrieve the coordinate of the center of the pixel
+        @param center: retrieve the coordinate of the center of the pixel, unless gives one corner
         @param use_cython: set to False to test Python implementation
         @return: position in meter of the center of each pixels.
         @rtype: 3xndarray, the later being None if IS_FLAT
@@ -597,9 +597,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    d1 = expand2d(numpy.arange(self.shape[0] + 1.0) - 0.5, self.shape[1] + 1, False)
-                    d2 = expand2d(numpy.arange(self.shape[1] + 1.0) - 0.5, self.shape[0] + 1, True)
-                    p1, p2, p3 = self.calc_cartesian_positions(d1, d2)
+                    d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False)
+                    d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True)
+                    p1, p2, p3 = self.calc_cartesian_positions(d1, d2, center=False)
                     self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
                     self._pixel_corners[:, :, 0, 1] = p1[:-1, :-1]
                     self._pixel_corners[:, :, 0, 2] = p2[:-1, :-1]
@@ -857,7 +857,7 @@ class Pilatus(Detector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
-    def calc_cartesian_positions(self, d1=None, d2=None, use_cython=True):
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -874,10 +874,9 @@ class Pilatus(Detector):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if self.shape:
-            if (d1 is None) or (d2 is None):
-                d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
-                d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
+        if self.shape and ((d1 is None) or (d2 is None)):
+            d1 = expand2d(numpy.arange(self.shape[0]).astype(numpy.float32), self.shape[1], False)
+            d2 = expand2d(numpy.arange(self.shape[1]).astype(numpy.float32), self.shape[0], True)
 
         if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.
@@ -911,9 +910,13 @@ class Pilatus(Detector):
                 else:
                     logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
                     delta1 = delta2 = 0.
-        # For pilatus,
-        p1 = (self._pixel1 * (delta1 + 0.5 + d1))
-        p2 = (self._pixel2 * (delta2 + 0.5 + d2))
+        # For Pilatus,
+        if center:
+            # Account for the pixel center: pilatus detector are contiguous
+            delta1 += 0.5
+            delta2 += 0.5
+        p1 = (self._pixel1 * (delta1 + d1))
+        p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
 
 
@@ -1015,7 +1018,7 @@ class Eiger(Detector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
-    def calc_cartesian_positions(self, d1=None, d2=None, use_cython=True):
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -1069,9 +1072,13 @@ class Eiger(Detector):
                 else:
                     logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
                     delta1 = delta2 = 0.
-        # For pilatus,
-        p1 = (self._pixel1 * (delta1 + 0.5 + d1))
-        p2 = (self._pixel2 * (delta2 + 0.5 + d2))
+        if center:
+            # Eiger detectors images are re-built to be contiguous
+            delta1 += 0.5
+            delta2 += 0.5
+        # For Eiger,
+        p1 = (self._pixel1 * (delta1 + d1))
+        p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
 
 
@@ -1392,7 +1399,7 @@ class ImXPadS10(Detector):
 #                         self._pixel_corners[:, :, 3, 0] = p3[:-1, 1:]
         return self._pixel_corners
 
-    def calc_cartesian_positions(self, d1=None, d2=None, use_cython=True):
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -1413,14 +1420,23 @@ class ImXPadS10(Detector):
         edges1, edges2 = self.calc_pixels_edges()
 
         if (d1 is None) or (d2 is None):
-            # Take the center of each pixel
-            d1 = 0.5 * (edges1[:-1] + edges1[1:])
-            d2 = 0.5 * (edges2[:-1] + edges2[1:])
+            if center:
+                # Take the center of each pixel
+                d1 = 0.5 * (edges1[:-1] + edges1[1:])
+                d2 = 0.5 * (edges2[:-1] + edges2[1:])
+            else:
+                # take the lower corner
+                d1 = edges1[:-1]
+                d2 = edges2[:-1]
             p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
             p2 = numpy.outer(numpy.ones(self.shape[0]), d2)
         else:
-            p1 = numpy.interp(d1 + 0.5, numpy.arange(self.MAX_SHAPE[0] + 1), edges1, edges1[0], edges1[-1])
-            p2 = numpy.interp(d2 + 0.5, numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
+            if center:
+                # Not +=: do not mangle in place arrays
+                d1 = d1 + 0.5
+                d2 = d2 + 0.5
+            p1 = numpy.interp(d1 , numpy.arange(self.MAX_SHAPE[0] + 1), edges1, edges1[0], edges1[-1])
+            p2 = numpy.interp(d2 , numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
 

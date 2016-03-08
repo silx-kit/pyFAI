@@ -692,6 +692,10 @@ class Geometry(object):
             with self._sem:
                 if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
                     if use_cython and space == "2th":
+                        if self.detector.IS_CONTIGUOUS:
+                            pass
+                        else:
+                            pass
                         raise NotImplemented
                         self._corner4Da = _geometry.towrite()
                     elif use_cython and space == "q":
