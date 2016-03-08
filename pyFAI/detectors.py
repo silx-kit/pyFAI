@@ -93,6 +93,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
+    IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
 
     @classmethod
     def factory(cls, name, config=None):
@@ -1460,6 +1461,7 @@ class Xpad_flat(ImXPadS10):
     ImXPad detector with 8x7modules
     """
     MODULE_GAP = (3.57e-3, 0)  # in meter
+    IS_CONTIGUOUS = False
     force_pixel = True
     MAX_SHAPE = (960, 560)
     uniform_pixel = False
