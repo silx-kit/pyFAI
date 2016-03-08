@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "08/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -444,11 +444,15 @@ class Geometry(object):
             out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
         return out
 
-    def qArray(self, shape):
+    def qArray(self, shape=None):
         """
         Generate an array of the given shape with q(i,j) for all
         elements.
         """
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", detector)
         if self._qa is None:
             with self._sem:
                 if self._qa is None:
@@ -456,14 +460,18 @@ class Geometry(object):
                                                   dtype=numpy.float32)
         return self._qa
 
-    def rArray(self, shape):
-        """
-        Generate an array of the given shape with r(i,j) for all
-        elements; r in m.
+    def rArray(self, shape=None):
+        """Generate an array of the given shape with r(i,j) for all elements;
+        The radius r being  in meters.
 
-        @param shape: expected shape
+        @param shape: expected shape of the detector
         @return: 2d array of the given shape with radius in m from beam center on detector.
         """
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", detector)
+
         if self._ra is None:
             with self._sem:
                 if self._ra is None:
@@ -471,10 +479,13 @@ class Geometry(object):
                                                   dtype=numpy.float32)
         return self._ra
 
-    def rd2Array(self, shape):
-        """
-        Generate an array of the given shape with (d*(i,j))^2 for all
-        elements, d* in inverse nm
+    def rd2Array(self, shape=None):
+        """Generate an array of the given shape with (d*(i,j))^2 for all pixels.
+
+        d*^2 is the reciprocal spacing squared in inverse nm squared
+
+        @param shape: expected shape of the detector
+        @return:2d array of the given shape with reciprocal spacing squared
         """
         qArray = self.qArray(shape)
         if self._rd2a is None:
@@ -485,8 +496,9 @@ class Geometry(object):
 
 
     def qCornerFunct(self, d1, d2):
-        """
-        Calculate the q_vector for any pixel corner (in nm^-1)
+        """Calculate the q_vector for any pixel corner (in nm^-1)
+
+        @param shape: expected shape of the detector
         """
         return self.qFunction(d1 - 0.5, d2 - 0.5)
 
@@ -510,11 +522,19 @@ class Geometry(object):
         """
         return self.tth(d1 - 0.5, d2 - 0.5)
 
-    def twoThetaArray(self, shape):
+    def twoThetaArray(self, shape=None):
+        """Generate an array of two-theta(i,j) in radians for each pixel in detector
+
+        the 2theta array values are in radians
+
+        @param shape: shape of the detector
+        @return: array of 2theta position in radians
         """
-        Generate an array of the given shape with two-theta(i,j) for
-        all elements.
-        """
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", detector)
+
         if self._ttha is None:
             with self._sem:
                 if self._ttha is None:
@@ -584,18 +604,21 @@ class Geometry(object):
         """
         return self.chi(d1 - 0.5, d2 - 0.5)
 
-    def chiArray(self, shape):
-        """
-        Generate an array of the given shape with chi(i,j) (azimuthal
-        angle) for all elements.
+    def chiArray(self, shape=None):
+        """Generate an array of azimuthal angle chi(i,j) for all elements in the detector.
+
+        Azimuthal angles are in radians
 
         Nota: Refers to the pixel centers !
 
         @param shape: the shape of the chi array
-        @type shape: ndarray.shape
-        @return: the chi array
-        @rtype: ndarray
+        @return: the chi array as numpy.ndarray
         """
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", detector)
+
         if self._chia is None:
             self._chia = numpy.fromfunction(self.chi, shape,
                                             dtype=numpy.float32)
@@ -604,8 +627,7 @@ class Geometry(object):
         return self._chia
 
     def positionArray(self, shape=None, corners=False, dtype=numpy.float64):
-        """Generate an array for the pixel position
-        given the shape of the detector.
+        """Generate an array for the pixel position given the shape of the detector.
 
         if corners is False, the coordinates of the center of the pixel
         is returned in an array of shape: (shape[0], shape[1], 3)
@@ -624,8 +646,10 @@ class Geometry(object):
 
         Nota: this value is not cached and actually generated on demand (costly)
         """
+        shape = shape if shape is not None else self.detector.shape
         if shape is None:
-            shape = self.detector.shape
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", detector)
 
         pos = numpy.fromfunction(lambda d1, d2:
                                     self.calc_pos_zyx(None, d1, d2, corners=corners),
@@ -637,7 +661,7 @@ class Geometry(object):
             tpos[..., idx] = pos[idx]
         return tpos
 
-    def corner_array(self, shape, unit="2th", use_cython=False):
+    def corner_array(self, shape=None, unit="2th", use_cython=False):
         """
         Generate a 3D array of the given shape with (i,j) (radial
         angle 2th, azimuthal angle chi ) for all elements.
@@ -648,6 +672,11 @@ class Geometry(object):
            * dim3[0]: radial angle 2th
            * dim3[1]: azimuthal angle chi
         """
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", detector)
+
         if unit:
             unit = units.to_unit(unit)
             space = unit.REPR.split("_")[0]
@@ -697,7 +726,7 @@ class Geometry(object):
         return self._corner4Da
 
     @deprecated
-    def cornerArray(self, shape):
+    def cornerArray(self, shape=None):
         """Generate a 4D array of the given shape with (i,j) (radial
         angle 2th, azimuthal angle chi ) for all elements.
 
@@ -710,7 +739,7 @@ class Geometry(object):
         return self.corner_array(shape, unit=units.TTH_RAD)
 
     @deprecated
-    def cornerQArray(self, shape):
+    def cornerQArray(self, shape=None):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal
         angle) for all elements.
@@ -746,8 +775,9 @@ class Geometry(object):
 #                         corners[:, :, 3, 1] = chi[:-1, 1:]
 #                     self._corner4Dqa = corners
 #         return self._corner4Dqa
+
     @deprecated
-    def cornerRArray(self, shape):
+    def cornerRArray(self, shape=None):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal
         angle) for all elements.
@@ -785,7 +815,7 @@ class Geometry(object):
 #         return self._corner4Dra
 
 #     @deprecated
-    def cornerRd2Array(self, shape):
+    def cornerRd2Array(self, shape=None):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal
         angle) for all elements.
@@ -823,7 +853,7 @@ class Geometry(object):
 #                     self._corner4Drd2a = corners
 #         return self._corner4Drd2a
 
-    def delta2Theta(self, shape):
+    def delta2Theta(self, shape=None):
         """
         Generate a 3D array of the given shape with (i,j) with the max
         distance between the center and any corner in 2 theta
@@ -857,7 +887,7 @@ class Geometry(object):
 #                     self._dttha = delta.max(axis=2)
         return self._dttha
 
-    def deltaChi(self, shape):
+    def deltaChi(self, shape=None):
         """
         Generate a 3D array of the given shape with (i,j) with the max
         distance between the center and any corner in chi-angle (rad)
@@ -907,7 +937,7 @@ class Geometry(object):
                     self._dchia = delta.max(axis=-1)
         return self._dchia
 
-    def deltaQ(self, shape):
+    def deltaQ(self, shape=None):
         """
         Generate a 2D array of the given shape with (i,j) with the max
         distance between the center and any corner in q_vector unit
@@ -925,7 +955,7 @@ class Geometry(object):
                     self._dqa = delta.max(axis=-1)
         return self._dqa
 
-    def deltaR(self, shape):
+    def deltaR(self, shape=None):
         """
         Generate a 2D array of the given shape with (i,j) with the max
         distance between the center and any corner in radius unit (mm)
@@ -942,7 +972,7 @@ class Geometry(object):
                     self._dra = delta.max(axis=-1)
         return self._dra
 
-    def deltaRd2(self, shape):
+    def deltaRd2(self, shape=None):
         """
         Generate a 2D array of the given shape with (i,j) with the max
         distance between the center and any corner in unit: reciprocal spacing squarred (1/nm^2)
@@ -1043,7 +1073,7 @@ class Geometry(object):
 
         return dsa
 
-    def solidAngleArray(self, shape, order=3, absolute=False):
+    def solidAngleArray(self, shape=None, order=3, absolute=False):
         """Generate an array for the solid angle correction
         given the shape of the detector.
 
@@ -1469,6 +1499,7 @@ class Geometry(object):
         @return: 2D array with polarization correction array (intensity/polarisation)
 
         """
+        shape = shape if shape is not None else self.detector.shape
         if shape is None:
             for i in ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa", "_ra", "_dra"]:
                 ary = self.__getattribute__(i)
@@ -1518,6 +1549,8 @@ class Geometry(object):
         @param shape: shape of the array
         @return: actual
         """
+        shape = shape if shape is not None else self.detector.shape
+
         if t0 < 0 or t0 > 1:
             logger.error("Impossible value for normal transmission: %s" % t0)
             return
