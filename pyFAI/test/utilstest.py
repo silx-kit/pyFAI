@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,17 +25,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
+#
 from __future__ import print_function, division, absolute_import, with_statement
 __doc__ = "bunch of utility function/static classes to handle testing environment"
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "08/03/2016"
 
 PACKAGE = "pyFAI"
-SOURCES = PACKAGE + "-src"
 DATA_KEY = "PYFAI_DATA"
 
 if __name__ == "__main__":
@@ -44,6 +43,7 @@ if __name__ == "__main__":
 import os
 import imp
 import sys
+import getpass
 import subprocess
 import threading
 import distutils.util
@@ -61,13 +61,6 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
-IN_SOURCES = SOURCES in os.listdir(os.path.dirname(TEST_HOME))
-
-if IN_SOURCES:
-    os.environ[DATA_KEY] = os.path.dirname(TEST_HOME)
-
-import getpass
-login = getpass.getuser()
 
 
 def copy(infile, outfile):
@@ -89,70 +82,28 @@ class UtilsTest(object):
     recompiled = False
     reloaded = False
     name = PACKAGE
-
-    if IN_SOURCES:
-        image_home = os.path.join(TEST_HOME, "testimages")
-        if not os.path.isdir(image_home):
-            os.makedirs(image_home)
-        testimages = os.path.join(TEST_HOME, "all_testimages.json")
-        if os.path.exists(testimages):
-            with open(testimages) as f:
-                ALL_DOWNLOADED_FILES = set(json.load(f))
-        else:
-            ALL_DOWNLOADED_FILES = set()
-        platform = distutils.util.get_platform()
-        architecture = "lib.%s-%i.%i" % (platform,
-                                         sys.version_info[0], sys.version_info[1])
-
-        if os.environ.get("PYBUILD_NAME") == name:
-            # we are in the debian packaging way
-            home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
-        elif os.environ.get("BUILDPYTHONPATH"):
-            home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
-        else:
-            home = os.path.join(os.path.dirname(TEST_HOME),
-                                "build", architecture)
-        logger.info("%s Home is: %s" % (name, home))
-        if name in sys.modules:
-            logger.info("%s module was already loaded from  %s" % (name, sys.modules[name]))
-            pyFAI = None
-            sys.modules.pop(name)
-            for key in sys.modules.copy():
-                if key.startswith(name + "."):
-                    sys.modules.pop(key)
-        print(home)
-        if not os.path.isdir(home):
-            with sem:
-                if not os.path.isdir(home):
-                    logger.warning("Building pyFAI to %s" % home)
-                    p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                         shell=False, cwd=os.path.dirname(TEST_HOME))
-                    logger.info("subprocess ended with rc= %s" % p.wait())
-                    recompiled = True
-        logger.info("Loading %s" % name)
-        try:
-            pyFAI = imp.load_module(*((name,) + imp.find_module(name, [home])))
-        except Exception as error:
-            logger.warning("Unable to loading %s %s" % (name, error))
-            if "-r" not in sys.argv:
-                logger.warning("Remove build and start from scratch %s" % error)
-                sys.argv.append("-r")
-        else:
-            import pyFAI.decorators
-            pyFAI.decorators.depreclog.setLevel(logging.ERROR)
+    try:
+        pyFAI = __import__("%s.directories"%name)
+    except Exception as error:
+        logger.warning("Unable to loading %s %s" % (name, error))
+        image_home = None
     else:
-        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, login))
+        image_home = pyFAI.directories.testimages
+        pyFAI.depreclog.setLevel(logging.ERROR)
+
+    if image_home is None:
+        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, getpass.getuser()))
         if not os.path.exists(image_home):
             os.makedirs(image_home)
-        testimages = os.path.join(image_home, "all_testimages.json")
-        if os.path.exists(testimages):
-            with open(testimages) as f:
-                ALL_DOWNLOADED_FILES = set(json.load(f))
-        else:
-            ALL_DOWNLOADED_FILES = set()
 
-#     print("Call tempfile.mkdtemp(os.getlogin(), name) with %s %s" % (login, name))
-    tempdir = tempfile.mkdtemp(login, name)
+    testimages = os.path.join(image_home, "all_testimages.json")
+    if os.path.exists(testimages):
+        with open(testimages) as f:
+            ALL_DOWNLOADED_FILES = set(json.load(f))
+    else:
+        ALL_DOWNLOADED_FILES = set()
+
+    tempdir = tempfile.mkdtemp("_" + getpass.getuser(), name + "_")
 
     @classmethod
     def clean_up(cls):
@@ -160,18 +111,6 @@ class UtilsTest(object):
 
     @classmethod
     def deep_reload(cls):
-        if not IN_SOURCES:
-            cls.pyFAI = __import__(cls.name)
-            return cls.pyFAI
-        if cls.reloaded:
-            return cls.pyFAI
-        logger.info("Loading %s" % cls.name)
-        cls.pyFAI = None
-        pyFAI = None
-        sys.path.insert(0, cls.home)
-        for key in sys.modules.copy():
-            if key.startswith(cls.name):
-                sys.modules.pop(key)
         cls.pyFAI = __import__(cls.name)
         logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
         sys.modules[cls.name] = cls.pyFAI
@@ -183,25 +122,11 @@ class UtilsTest(object):
     @classmethod
     def forceBuild(cls, remove_first=True):
         """
-        force the recompilation of pyFAI
+        Force the recompilation of pyFAI
+
+        Nonesense, kept for legacy reasons
         """
-        if not IN_SOURCES:
-            return
-        if not cls.recompiled:
-            with cls.sem:
-                if not cls.recompiled:
-                    logger.info("Building %s to %s" % (cls.name, cls.home))
-                    if cls.name in sys.modules:
-                        logger.info("%s module was already loaded from  %s" % (cls.name, sys.modules[cls.name]))
-                        cls.pyFAI = None
-                        sys.modules.pop(cls.name)
-                    if remove_first:
-                        recursive_delete(cls.home)
-                    p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                         shell=False, cwd=os.path.dirname(TEST_HOME))
-                    logger.info("subprocess ended with rc= %s" % p.wait())
-                    cls.pyFAI = cls.deep_reload()
-                    cls.recompiled = True
+        return
 
     @classmethod
     def timeoutDuringDownload(cls, imagename=None):
@@ -228,11 +153,18 @@ class UtilsTest(object):
         """
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
-            with open(cls.testimages, "w") as fp:
-                json.dump(list(cls.ALL_DOWNLOADED_FILES), fp, indent=4)
-
+            image_list = list(cls.ALL_DOWNLOADED_FILES)
+            image_list.sort()
+            try:
+                with open(cls.testimages, "w") as fp:
+                    json.dump(image_list, fp, indent=4)
+            except IOError:
+                logger.debug("Unable to save JSON list")
         baseimage = os.path.basename(imagename)
         logger.info("UtilsTest.getimage('%s')" % baseimage)
+        if not os.path.exists(cls.image_home):
+            os.makedirs(cls.image_home)
+
         fullimagename = os.path.abspath(os.path.join(cls.image_home, baseimage))
         if not os.path.isfile(fullimagename):
             logger.info("Trying to download image %s, timeout set to %ss",
@@ -316,27 +248,13 @@ class UtilsTest(object):
         """
         small helper function that initialized the logger and returns it
         """
-        options = cls.get_options()
         dirname, basename = os.path.split(os.path.abspath(filename))
         basename = os.path.splitext(basename)[0]
-        force_build = False
-        force_remove = False
-        level = logging.WARN
-        if options.debug:
-            level = logging.DEBUG
-        elif options.info:
-            level = logging.INFO
-        if options.force:
-            force_build = True
-        if options.remove:
-            force_remove = True
-            force_build = True
+        level = logging.root.level
         mylogger = logging.getLogger(basename)
         logger.setLevel(level)
         mylogger.setLevel(level)
         mylogger.debug("tests loaded from file: %s" % basename)
-        if force_build:
-            UtilsTest.forceBuild(force_remove)
         return mylogger
 
     @classmethod

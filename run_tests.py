@@ -1,5 +1,28 @@
 #!/usr/bin/env python
 # coding: utf-8
+# /*##########################################################################
+#
+# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ###########################################################################*/
 """Run the tests of the project.
 
 This script expects a suite function in <project_package>.test,
@@ -9,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "03/02/2016"
+__date__ = "08/03/2016"
 __license__ = "MIT"
 
 import distutils.util
@@ -28,21 +51,17 @@ try:
     import importlib
 except:
     importer = __import__
+    old_importer = True
 else:
     importer = importlib.import_module
+    old_importer = False
+
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("run_tests")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
 
-print("Python %s %sbits" % (sys.version, tuple.__itemsize__ * 8))
-
-try:
-    import numpy
-except:
-    logger.warning("Numpy missing")
-else:
-    print("Numpy %s" % numpy.version.version)
+logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
 try:
     import scipy
@@ -86,6 +105,7 @@ def get_project_name(root_dir):
     logger.debug("subprocess ended with rc= %s" % p.returncode)
     return name.split()[-1].decode('ascii')
 
+
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_NAME = get_project_name(PROJECT_DIR)
 logger.info('Project name: %s' % PROJECT_NAME)
@@ -98,6 +118,7 @@ def _copy(infile, outfile):
     else:
         shutil.copy(infile, outfile)
 
+
 def _copy_files(source, dest, extn):
     """
     copy all files with a given extension from source to destination
@@ -108,6 +129,7 @@ def _copy_files(source, dest, extn):
     for clf in os.listdir(full_src):
         if clf.endswith(extn) and clf not in os.listdir(dest):
             _copy(os.path.join(full_src, clf), os.path.join(dest, clf))
+
 
 class TestResult(unittest.TestResult):
     logger = logging.getLogger("memProf")
@@ -128,6 +150,7 @@ class TestResult(unittest.TestResult):
             memusage = 0
         self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s" % (
                         time.time() - self.__time_start, memusage, test.id()))
+
 
 if sys.hexversion < 34013184:  # 2.7
     class ProfileTestRunner(unittest.TextTestRunner):
@@ -213,6 +236,7 @@ def build_project(name, root_dir):
     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                          shell=False, cwd=root_dir)
     logger.debug("subprocess ended with rc= %s" % p.wait())
+    return home
 
     _copy_files("openCL", os.path.join(home, PROJECT_NAME, "openCL"), ".cl")
     _copy_files("gui", os.path.join(home, PROJECT_NAME, "gui"), ".ui")
@@ -245,12 +269,15 @@ parser.add_argument("test_name", nargs='*',
         help="Test names to run (Default: %s)" % default_test_name)
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
+
+
 if options.verbose == 1:
     logging.root.setLevel(logging.INFO)
     logger.info("Set log level: INFO")
 elif options.verbose > 1:
     logging.root.setLevel(logging.DEBUG)
     logger.info("Set log level: DEBUG")
+
 
 if options.coverage:
     logger.info("Running test-coverage")
@@ -260,6 +287,7 @@ if options.coverage:
     except AttributeError:
         cov = coverage.coverage(omit=["*test*", "*third_party*", "*/setup.py"])
     cov.start()
+
 
 # Prevent importing from source directory
 if (os.path.dirname(os.path.abspath(__file__)) ==
@@ -274,9 +302,10 @@ if not options.insource:
         module = importer(PROJECT_NAME)
     except:
         logger.warning(
-            "%s missing, using built (i.e. not installed) version" % \
+            "%s missing, using built (i.e. not installed) version",
             PROJECT_NAME)
         options.insource = True
+
 if options.insource:
     build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
 
@@ -295,26 +324,46 @@ if options.memprofile:
 else:
     runner = unittest.TextTestRunner()
 
-logger.warning("Test %s %s from %s" % (PROJECT_NAME,
-                                       PROJECT_VERSION,
-                                       PROJECT_PATH))
+logger.warning("Test %s %s from %s",
+               PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH)
 
-decorators = importer(PROJECT_NAME + ".decorators")
-decorators.depreclog.setLevel(logging.ERROR)
+test_module_name = PROJECT_NAME + '.test'
+logger.info('Import %s', test_module_name)
+test_module = importer(test_module_name)
+utilstest = importer(test_module_name + ".utilstest")
+if old_importer:
+    test_module = getattr(test_module, "test")
+    print(dir(test_module))
+    utilstest = getattr(test_module, "utilstest")
+UtilsTest = getattr(utilstest, "UtilsTest")
+UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
+UtilsTest.testimages = os.path.join(PROJECT_DIR, "all_testimages.json")
 
 test_suite = unittest.TestSuite()
-test_suite.addTest(
-    unittest.defaultTestLoader.loadTestsFromNames(options.test_name))
+
+if not options.test_name:
+    # Do not use test loader to avoid cryptic exception
+    # when an error occur during import
+    project_test_suite = getattr(test_module, 'suite')
+    test_suite.addTest(project_test_suite())
+else:
+    test_suite.addTest(
+        unittest.defaultTestLoader.loadTestsFromNames(options.test_name))
+
 
 if runner.run(test_suite).wasSuccessful():
     logger.info("Test suite succeeded")
+    exit_status = 0
 else:
     logger.warning("Test suite failed")
+    exit_status = 1
 
 
 if options.coverage:
     cov.stop()
     cov.save()
     with open("coverage.rst", "w") as fn:
-        fn.write(report_rst(cov, "PyFAI", pyFAI.version, pyFAI.__path__[0]))
+        fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, pyFAI.__path__[0]))
     print(cov.report())
+
+sys.exit(exit_status)
