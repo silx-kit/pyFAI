@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "08/03/2016"
 
 
 import unittest
@@ -112,7 +112,7 @@ class TestSolidAngle(unittest.TestCase):
     def test_nonflat_center(self):
         """
         Test non flat detector cos(incidence) to be 1 (+/- 1%) when centered.
-        
+
         Aarhus is a curved detector of radius 0.3m
         """
         aarhus = detector_factory("Aarhus")
@@ -128,7 +128,7 @@ class TestSolidAngle(unittest.TestCase):
     def test_nonflat_outside(self):
         """
         Test non flat detector cos(incidence) to be !=1 when off-centered.
-        
+
         Aarhus is a curved detector of radius 0.3m, here we offset of 50%
         """
         aarhus = detector_factory("Aarhus")
@@ -145,7 +145,7 @@ class TestSolidAngle(unittest.TestCase):
     def test_nonflat_inside(self):
         """
         Test non flat detector cos(incidence) to be !=1 when off-centered.
-        
+
         Aarhus is a curved detector of radius 0.3m, here we offset of 50%
         """
         aarhus = detector_factory("Aarhus")
@@ -163,7 +163,7 @@ class TestSolidAngle(unittest.TestCase):
 class TestBug88SolidAngle(unittest.TestCase):
     """
     Test case for solid angle where data got modified inplace.
-    
+
     https://github.com/kif/pyFAI/issues/88
     """
 
@@ -256,6 +256,28 @@ class TestGeometry(ParameterisedTestCase):
         else:
             self.assertAlmostEquals(maxDelta, 0, 3, msg)
         logger.info(msg)
+
+    def testXYZFunctions(self):
+        func, statargs, varargs, kwds, expectedFail = self.param
+        kwds["pixel1"] = 1
+        kwds["pixel2"] = 1
+        g = geometry.Geometry(**kwds)
+        g.wavelength = 1e-10
+        t0 = time.time()
+        oldret = g.calc_pos_zyx(None, statargs[0], statargs[1], use_cython=False)
+        t1 = time.time()
+        newret = g.calc_pos_zyx(None, statargs[0], statargs[1], use_cython=True)
+        t2 = time.time()
+        logger.debug("TIMINGS\t meth: %s t=%.3fs\t meth: %s t=%.3fs" % (varargs[0], t1 - t0, varargs[1], t2 - t1))
+        for old, new in zip(oldret, newret):
+            maxDelta = abs(old - new).max()
+            msg = "geo=%s%s max delta=%.3f" % (g, os.linesep, maxDelta)
+            if expectedFail:
+                self.assertNotAlmostEquals(maxDelta, 0, 3, msg)
+            else:
+                self.assertAlmostEquals(maxDelta, 0, 3, msg)
+            logger.info(msg)
+
 
 size = 1024
 d1, d2 = numpy.mgrid[-size:size:32, -size:size:32]

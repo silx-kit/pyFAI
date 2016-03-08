@@ -216,9 +216,6 @@ class Geometry(object):
         self._drd2a = None
         self._corner4Da = None  # actual 4d corner array
         self._corner4Ds = None  # space for the corner array, 2th, q, r, ...
-#         self._corner4Dqa = None
-#         self._corner4Dra = None
-#         self._corner4Drd2a = None
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -299,10 +296,9 @@ class Geometry(object):
         p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
         return p1 - poni1, p2 - poni2, p3
 
-    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None, corners=False):
-        """
-        Allows you to calculate the position of a set of points in space in the
-        sample's centers referential.
+    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None, corners=False, use_cython=True):
+        """Calculate the position of a set of points in space in the sample's centers referential.
+
         This is usually used for calculating the pixel position in space.
 
 
@@ -329,21 +325,28 @@ class Geometry(object):
             p3 = tmp[..., 0]
         else:
             p1, p2, p3 = self._calc_cartesian_positions(d1, d2, param[1], param[2])
-        if p3 is not None:
-            L = L + p3
-        cosRot1 = cos(param[3])
-        cosRot2 = cos(param[4])
-        cosRot3 = cos(param[5])
-        sinRot1 = sin(param[3])
-        sinRot2 = sin(param[4])
-        sinRot3 = sin(param[5])
-        t1 = p1 * cosRot2 * cosRot3 + \
-            p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-            L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-        t2 = p1 * cosRot2 * sinRot3 + \
-            p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-            L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-        t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+
+        rot1 = param[3]
+        rot2 = param[4]
+        rot3 = param[5]
+        if use_cython and _geometry:
+            t1, t2, t3 = _geometry.calc_pos_zyx(L, rot1, rot2, rot3, p1, p2, p3)
+        else:
+            if p3 is not None:
+                L = L + p3
+            cosRot1 = cos(rot1)
+            cosRot2 = cos(rot2)
+            cosRot3 = cos(rot3)
+            sinRot1 = sin(rot1)
+            sinRot2 = sin(rot2)
+            sinRot3 = sin(rot3)
+            t1 = p1 * cosRot2 * cosRot3 + \
+                p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
+                L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+            t2 = p1 * cosRot2 * sinRot3 + \
+                p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
+                L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+            t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
         return (t3, t1, t2)
 
     def tth(self, d1, d2, param=None, path="cython"):
