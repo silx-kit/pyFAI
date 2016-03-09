@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2016"
+__date__ = "09/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -41,6 +41,7 @@ import types
 from . import detectors
 from . import units
 from .decorators import deprecated
+from .utils import expand2d
 try:
     from .third_party import six
 except ImportError:
@@ -455,7 +456,7 @@ class Geometry(object):
         shape = shape if shape is not None else self.detector.shape
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
-                         "neither in the detector: %s", detector)
+                         "neither in the detector: %s", self.detector)
         if self._qa is None:
             with self._sem:
                 if self._qa is None:
@@ -473,7 +474,7 @@ class Geometry(object):
         shape = shape if shape is not None else self.detector.shape
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
-                         "neither in the detector: %s", detector)
+                         "neither in the detector: %s", self.detector)
 
         if self._ra is None:
             with self._sem:
@@ -496,7 +497,6 @@ class Geometry(object):
                 if self._rd2a is None:
                     self._rd2a = (qArray / (2.0 * numpy.pi)) ** 2
         return self._rd2a
-
 
     def qCornerFunct(self, d1, d2):
         """Calculate the q_vector for any pixel corner (in nm^-1)
@@ -536,7 +536,7 @@ class Geometry(object):
         shape = shape if shape is not None else self.detector.shape
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
-                         "neither in the detector: %s", detector)
+                         "neither in the detector: %s", self.detector)
 
         if self._ttha is None:
             with self._sem:
@@ -620,7 +620,7 @@ class Geometry(object):
         shape = shape if shape is not None else self.detector.shape
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
-                         "neither in the detector: %s", detector)
+                         "neither in the detector: %s", self.detector)
 
         if self._chia is None:
             self._chia = numpy.fromfunction(self.chi, shape,
@@ -652,12 +652,11 @@ class Geometry(object):
         shape = shape if shape is not None else self.detector.shape
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
-                         "neither in the detector: %s", detector)
+                         "neither in the detector: %s", self.detector)
 
-        pos = numpy.fromfunction(lambda d1, d2:
-                                    self.calc_pos_zyx(None, d1, d2, corners=corners),
-                                shape,
-                                dtype=dtype)
+        pos = numpy.fromfunction(lambda d1, d2: self.calc_pos_zyx(None, d1, d2, corners=corners),
+                                 shape,
+                                 dtype=dtype)
         outshape = pos[0].shape + (3,)
         tpos = numpy.empty(outshape, dtype=dtype)
         for idx in range(3):
@@ -678,7 +677,7 @@ class Geometry(object):
         shape = shape if shape is not None else self.detector.shape
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
-                         "neither in the detector: %s", detector)
+                         "neither in the detector: %s", self.detector)
 
         if unit:
             unit = units.to_unit(unit)
@@ -691,6 +690,7 @@ class Geometry(object):
         if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
             with self._sem:
                 if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
+                    corners = None
                     if use_cython:
                         if self.detector.IS_CONTIGUOUS:
                             d1 = expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
@@ -704,6 +704,7 @@ class Geometry(object):
                         try:
                             res = _geometry.calc_rad_azim(self.dist, self.poni1, self.poni2,
                                                           self.rot1, self.rot2, self.rot3,
+                                                          p1, p2, p3,
                                                           space, self._wavelength)
                         except KeyError:
                             logger.error("Invalid key for space: %s", space)
@@ -714,34 +715,34 @@ class Geometry(object):
                                     corners = bilinear.convert_corner_2D_to_4D(2, res[..., 0], res[..., 1])
                                 else:
                                     corners = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                              dtype=numpy.float32)
+                                                          dtype=numpy.float32)
                                     corners[:, :, 0, :] = res[:-1, :-1, :]
                                     corners[:, :, 1, :] = res[1:, :-1, :]
                                     corners[:, :, 2, :] = res[1:, 1:, :]
                                     corners[:, :, 3, :] = res[:-1, 1:, :]
                             else:
                                 corners = res
-                            self._corner4Da = corners
-                    if self._corner4Da is None:
+
+                    if corners is None:
                         # In case the fast-path is not implemented
                         pos = self.positionArray(shape, corners=True)
                         x = pos[..., 2]
                         y = pos[..., 1]
                         z = pos[..., 0]
                         chi = numpy.arctan2(y, x)
-                        self._corner4Da = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                       dtype=numpy.float32)
+                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
+                                              dtype=numpy.float32)
                         if chi.shape[:2] == shape:
-                            self._corner4Da[..., 1] = chi
+                            corners[..., 1] = chi
                         else:
-                            self._corner4Da[:shape[0], :shape[1], :, 1] = chi[:shape[0], :shape[1], :]
+                            corners[:shape[0], :shape[1], :, 1] = chi[:shape[0], :shape[1], :]
                         if space is not None:
                             rad = unit.equation(x, y, z, self._wavelength)
                             if rad.shape[:2] == shape:
-                                self._corner4Da[..., 0] = rad
+                                corners[..., 0] = rad
                             else:
                                 self._corner4Da[:shape[0], :shape[1], :, 0] = rad[:shape[0], :shape[1], :]
-
+                    self._corner4Da = corners
                     self._corner4Ds = space
         return self._corner4Da
 
