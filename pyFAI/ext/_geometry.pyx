@@ -23,7 +23,7 @@
 #
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "08/03/2016"
+__date__ = "09/03/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -72,7 +72,7 @@ cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double 
     @param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
 
-    return  p1 * sinRot2 - p2 * cosRot2 * sinRot1 + p3 * cosRot1 * cosRot2
+    return p1 * sinRot2 - p2 * cosRot2 * sinRot1 + p3 * cosRot1 * cosRot2
 
 
 @cython.cdivision(True)
@@ -209,9 +209,9 @@ def calc_pos_zyx(double L, double rot1, double rot2, double rot3,
             t3[i] = f_t3(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 3:
-        return t1.reshape(pos1.shape[0], pos1.shape[1],pos1.shape[2]),\
-               t2.reshape(pos1.shape[0], pos1.shape[1],pos1.shape[2]),\
-               t3.reshape(pos1.shape[0], pos1.shape[1],pos1.shape[2])
+        return t1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
+               t2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
+               t3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
     if pos1.ndim == 2:
         return t1.reshape(pos1.shape[0], pos1.shape[1]),\
                t2.reshape(pos1.shape[0], pos1.shape[1]),\
@@ -492,7 +492,8 @@ def calc_rad_azim(double L,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float32_t, ndim = 2] out = numpy.empty((size,2), dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim = 2] out = numpy.empty((size, 2),
+                                                                   dtype=numpy.float32)
         double t1, t2, t3, fwavelength
 
     if space == "2th":
@@ -506,38 +507,38 @@ def calc_rad_azim(double L,
     elif space == "r":
         cspace = 3
     else:
-        raise KeyError("Not implemented space %s in cython"%space)
+        raise KeyError("Not implemented space %s in cython" % space)
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
-            t1 = f_t1(c1[i]-poni1, c2[i]-poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t2 = f_t2(c1[i]-poni1, c2[i]-poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t3 = f_t3(c1[i]-poni1, c2[i]-poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            if cspace==1:
-                out[i,0] = atan2(sqrt(t1 * t1 + t2 * t2), t3)
-            elif cspace==2:
-                out[i,0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
-            elif cspace==3:
-                out[i,0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
-            out[i,1] = atan2(t1, t2)
+            t1 = f_t1(c1[i] - poni1, c2[i] - poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t2 = f_t2(c1[i] - poni1, c2[i] - poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t3 = f_t3(c1[i] - poni1, c2[i] - poni2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            if cspace == 1:
+                out[i, 0] = atan2(sqrt(t1 * t1 + t2 * t2), t3)
+            elif cspace == 2:
+                out[i, 0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
+            elif cspace == 3:
+                out[i, 0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+            out[i, 1] = atan2(t1, t2)
     else:
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            t1 = f_t1(c1[i]-poni1, c2[i]-poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t2 = f_t2(c1[i]-poni1, c2[i]-poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t3 = f_t3(c1[i]-poni1, c2[i]-poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            if cspace==1:
-                out[i,0] = atan2(sqrt(t1 * t1 + t2 * t2), t3)
-            elif cspace==2:
-                out[i,0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
-            elif cspace==3:
-                out[i,0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
-            out[i,1] = atan2(t1, t2)
+            t1 = f_t1(c1[i] - poni1, c2[i] - poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t2 = f_t2(c1[i] - poni1, c2[i] - poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t3 = f_t3(c1[i] - poni1, c2[i] - poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            if cspace == 1:
+                out[i, 0] = atan2(sqrt(t1 * t1 + t2 * t2), t3)
+            elif cspace == 2:
+                out[i, 0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
+            elif cspace == 3:
+                out[i, 0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+            out[i, 1] = atan2(t1, t2)
 
     if pos1.ndim == 3:
         return out.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2], 2)
     if pos1.ndim == 2:
-        return out.reshape(pos1.shape[0], pos1.shape[1], 2),
+        return out.reshape(pos1.shape[0], pos1.shape[1], 2)
     else:
         return out
