@@ -156,8 +156,8 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
     """
     Wrapper for distutils' Extension
     """
-    if name.startswith("pyFAI.ext."):
-        name = name[10:]
+    if name.startswith(PROJECT + ".ext."):
+        name = name[len(PROJECT) + 5:]
     if source is None:
         source = name
     cython_c_ext = ".pyx" if USE_CYTHON else ".c"
@@ -168,9 +168,11 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
         include_dirs = set(kwargs.pop("include_dirs"))
         include_dirs.add(numpy.get_include())
         include_dirs.add(os.path.join(PROJECT, "ext"))
+        include_dirs.add(os.path.join(PROJECT, "ext", "include"))
         include_dirs = list(include_dirs)
     else:
-        include_dirs = [os.path.join(PROJECT, "ext"), numpy.get_include()]
+        include_dirs = [os.path.join(PROJECT, "ext", "include"), 
+                        os.path.join(PROJECT, "ext"), numpy.get_include()]
 
     if can_use_openmp and USE_OPENMP:
         extra_compile_args = set(kwargs.pop("extra_compile_args", []))
@@ -181,7 +183,7 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
         extra_link_args.add(USE_OPENMP)
         kwargs["extra_link_args"] = list(extra_link_args)
 
-    ext = _Extension(name="pyFAI.ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
+    ext = _Extension(name=PROJECT + ".ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
 
     if USE_CYTHON:
         cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
@@ -368,8 +370,8 @@ class sdist_debian(sdist):
         for rm in to_remove:
             self.filelist.exclude_pattern(pattern="*", anchor=False, prefix=rm)
         # this is for Cython files specifically
-        self.filelist.exclude_pattern(pattern="*.html", anchor=True, prefix="pyFAI/ext")
-        for pyxf in glob.glob("pyFAI/ext/*.pyx"):
+        self.filelist.exclude_pattern(pattern="*.html", anchor=True, prefix=PROJECT+"/ext")
+        for pyxf in glob.glob(PROJECT+"/ext/*.pyx"):
             cf = os.path.splitext(pyxf)[0] + ".c"
             if os.path.isfile(cf):
                 self.filelist.exclude_pattern(pattern=cf)
