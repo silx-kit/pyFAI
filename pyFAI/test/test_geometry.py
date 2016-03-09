@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2016"
+__date__ = "09/03/2016"
 
 
 import unittest
@@ -199,6 +199,7 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
     def test_corner(self):
         rd2 = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
         q = self.geo.cornerQArray(self.shape)[:, :, :, 0]
+        delta = rd2 - (q / (2 * numpy.pi)) ** 2
         self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2")
 
     def test_delta(self):
@@ -283,65 +284,65 @@ size = 1024
 d1, d2 = numpy.mgrid[-size:size:32, -size:size:32]
 
 TESTCASES = [
- ("tth", (d1, d2), ("cos", "tan"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
- ("tth", (d1, d2), ("cos", "tan"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
- ("tth", (d1, d2), ("tan", "cython"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
+     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
 
- ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
- ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
+     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
 
- ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
- ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
- ]
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
+     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
+     ]
 
 
 def suite():

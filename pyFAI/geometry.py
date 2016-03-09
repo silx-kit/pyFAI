@@ -36,7 +36,6 @@ import numpy
 import os
 import threading
 import time
-import types
 
 from . import detectors
 from . import units
@@ -258,10 +257,10 @@ class Geometry(object):
                       self._rot1, self._rot2, self._rot3]
         lstTxt = [self.detector.__repr__()]
         if self._wavelength:
-            lstTxt.append("Wavelength= %.6e%s" % \
+            lstTxt.append("Wavelength= %.6e%s" %
                           (self._wavelength * wl_unit.scale, wl_unit.REPR))
         lstTxt.append(("SampleDetDist= %.6e%s\tPONI= %.6e, %.6e%s\trot1=%.6f"
-                           "  rot2= %.6f  rot3= %.6f %s") % \
+                       "  rot2= %.6f  rot3= %.6f %s") %
                       (self._dist * dist_unit.scale, dist_unit.REPR, self._poni1 * dist_unit.scale,
                        self._poni2 * dist_unit.scale, dist_unit.REPR,
                       self._rot1 * ang_unit.scale, self._rot2 * ang_unit.scale,
@@ -404,7 +403,7 @@ class Geometry(object):
 
         if _geometry and path == "cython":
             p1, p2, p3 = self._calc_cartesian_positions(d1, d2,
-                                                      self._poni1, self.poni2)
+                                                        self._poni1, self.poni2)
             out = _geometry.calc_q(L=self._dist,
                                    rot1=self._rot1,
                                    rot2=self._rot2,
@@ -741,7 +740,7 @@ class Geometry(object):
                             if rad.shape[:2] == shape:
                                 corners[..., 0] = rad
                             else:
-                                self._corner4Da[:shape[0], :shape[1], :, 0] = rad[:shape[0], :shape[1], :]
+                                corners[:shape[0], :shape[1], :, 0] = rad[:shape[0], :shape[1], :]
                     self._corner4Da = corners
                     self._corner4Ds = space
         return self._corner4Da
@@ -1085,7 +1084,7 @@ class Geometry(object):
             sY = self.spline.splineFuncY(numpy.arange(max2) + 0.5,
                                          numpy.arange(max1 + 1))
             dX = sX[:, 1:] - sX[:, :-1]
-            dY = sY[1:, : ] - sY[:-1, :]
+            dY = sY[1:, :] - sY[:-1, :]
             ds = (dX + 1.0) * (dY + 1.0)
 
         if self._cosa is None:
@@ -1119,7 +1118,6 @@ class Geometry(object):
             return self._dssa * self.pixel1 * self.pixel2 / self._dist / self._dist
         else:
             return self._dssa
-
 
     def save(self, filename):
         """
@@ -1400,7 +1398,8 @@ class Geometry(object):
         self._rot1 = Rot_2 or 0
         self._rot2 = Rot_1 or 0
         self._rot3 = -(Rot_3 or 0)
-        if Rot_1  or Rot_2  or Rot_3 :
+        if Rot_1 or Rot_2 or Rot_3:
+            # TODO: one-day
             raise NotImplementedError("rotation axis not yet implemented for SPD")
         # and finally the wavelength
         if WaveLength:
@@ -1430,14 +1429,14 @@ class Geometry(object):
         """
         res = {"PSize_1": self.detector.pixel2,
                "PSize_2": self.detector.pixel1,
-               "BSize_1":self.detector.binning[1],
-               "BSize_2":self.detector.binning[0],
-               "splineFile":self.detector.splineFile,
+               "BSize_1": self.detector.binning[1],
+               "BSize_2": self.detector.binning[0],
+               "splineFile": self.detector.splineFile,
                "Rot_3": None,
                "Rot_2": None,
-               "Rot_1":None,
-               "Center_2" : self._poni1 / self.detector.pixel1,
-               "Center_1" : self._poni2 / self.detector.pixel2,
+               "Rot_1": None,
+               "Center_2": self._poni1 / self.detector.pixel1,
+               "Center_1": self._poni2 / self.detector.pixel2,
                "SampleDistance": self.dist
                }
         if self._wavelength:
@@ -1531,7 +1530,6 @@ class Geometry(object):
             raise RuntimeError(("You should provide a shape if the"
                                 " geometry is not yet initiallized"))
 
-
         if factor is None:
             return numpy.ones(shape, dtype=numpy.float32)
         else:
@@ -1539,9 +1537,9 @@ class Geometry(object):
 
         if self._polarization is not None:
             with self._sem:
-                if (factor == self._polarization_factor) \
-                    and (shape == self._polarization.shape)\
-                    and (axis_offset == self._polarization_axis_offset):
+                if ((factor == self._polarization_factor)
+                   and (shape == self._polarization.shape)
+                   and (axis_offset == self._polarization_axis_offset)):
                     return self._polarization
 
         tth = self.twoThetaArray(shape)
@@ -1578,7 +1576,7 @@ class Geometry(object):
 
         with self._sem:
             if (t0 == self._transmission_normal) \
-                and (shape is None \
+                and (shape is None
                      or (shape == self._transmission_corr.shape)):
                 return self._transmission_corr
 
@@ -1631,7 +1629,6 @@ class Geometry(object):
         self._transmission_crc = None
         self._cosa = None
 
-
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
                    dummy=0.0,
@@ -1660,7 +1657,7 @@ class Geometry(object):
         try:
             ttha = self.__getattribute__(dim1_unit.center)(shape)
         except:
-            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " + \
+            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
                                str(dim1_unit) + " not (yet?) Implemented")
         calcimage = numpy.interp(ttha.ravel(), tth, I)
         calcimage.shape = shape
@@ -1670,7 +1667,8 @@ class Geometry(object):
             if (polarization_factor is True) and (self._polarization is not None):
                 polarization = self._polarization
             else:
-                polarization = self.polarization(shape, factor, axis_offset=0)
+                polarization = self.polarization(shape, polarization_factor,
+                                                 axis_offset=0)
             assert polarization.shape == tuple(shape)
             calcimage *= polarization
         if flat is not None:
@@ -1702,12 +1700,12 @@ class Geometry(object):
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
-                      new._rot1, new._rot2, new._rot3]
+                     new._rot1, new._rot2, new._rot3]
         return new
-
 
     def __deepcopy__(self, memo):
         """return a deep copy of itself.
+        #TODO: check & correct 
         """
         new = self.__class__()
         new.detector = self.detector.__deepcopy__(memo)
@@ -1731,7 +1729,7 @@ class Geometry(object):
             else:
                 new.__setattr__(key, None)
         new.param = [new._dist, new._poni1, new._poni2,
-                      new._rot1, new._rot2, new._rot3]
+                     new._rot1, new._rot2, new._rot3]
         return new
 
 # ############################################
@@ -1829,10 +1827,9 @@ class Geometry(object):
             self._wavelength = float(value)
         self._qa = None
         self._dqa = None
-        if self._corner4Ds and ("d" in  self._corner4Ds or "q" in  self._corner4Ds):
+        if self._corner4Ds and ("d" in self._corner4Ds or "q" in self._corner4Ds):
             self._corner4Da = None
             self._corner4Ds = None
-
 
     def get_wavelength(self):
         if self._wavelength is None:

@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "09/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -95,7 +95,7 @@ def eq_q(x, y, z, wavelength):
     :param z: distance from sample along the beam
     :param wavelength: in meter
     """
-    return 4.0 * numpy.pi * 1e-9 * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
+    return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
 
 def eq_rd2(x, y, z, wavelength):
@@ -177,12 +177,12 @@ R = R_MM = Enum(REPR="r_mm",
                 equation=eq_r)
 
 R_M = Enum(REPR="r_m",
-            center="rArray",
-            corner="cornerRArray",
-            delta="deltaR",
-            scale=1,
-            label=r"Radius $r$ ($m$)",
-            equation=eq_r)
+                center="rArray",
+                corner="cornerRArray",
+                delta="deltaR",
+                scale=1,
+                label=r"Radius $r$ ($m$)",
+                equation=eq_r)
 
 LogQ = Enum(REPR="log(q)_m",
             # center="rArray",

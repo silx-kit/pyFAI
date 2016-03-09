@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "08/03/2016"
+__date__ = "09/03/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -86,14 +86,14 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                 print("f2= %s" % f2)
 
         if p1 >= dim1:
-            if p1>dim1:
+            if p1 > dim1:
                 with gil:
                     print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))
             p1 = dim1 - 1
             delta1 = d1[i] - p1
 
         if p2 >= dim2:
-            if p2>dim2:
+            if p2 > dim2:
                 with gil:
                     print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))
             p2 = dim2 - 1
@@ -134,9 +134,9 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
         return out1, out2, out3
 
 
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
 def convert_corner_2D_to_4D(int ndim,
                             floating[:, ::1] d1 not None,
                             floating[:, ::1] d2 not None,
