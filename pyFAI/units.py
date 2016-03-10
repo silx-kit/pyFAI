@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2016"
+__date__ = "10/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -236,6 +236,6 @@ def to_unit(obj, type_=RADIAL_UNITS):
     elif isinstance(obj, Enum):
         rad_unit = obj
     if rad_unit is None:
-        logger.error("Unable to recognize this type unit '%s' of type %s. "\
+        logger.error("Unable to recognize this type unit '%s' of type %s. "
                      "Valid units are %s" % (obj, type(obj), ", ".join([i.REPR for i in type_])))
     return rad_unit

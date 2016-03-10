@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2016"
+__date__ = "10/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -311,29 +311,32 @@ class Geometry(object):
                                             dim2=along fastest dimension
         """
         if param is None:
-            param = self.param
-        if (d1 is None) or (d2 is None):
+            dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3
+        else:
+            dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
+
+        if (not corners) and ((d1 is None) or (d2 is None)):
             raise RuntimeError("input corrdiate d1 and d2 are mandatory")
         if d0 is None:
-            L = param[0]
+            L = dist
         else:
-            L = param[0] + d0
+            L = dist + d0
         if corners:
             tmp = self.detector.get_pixel_corners()
-            p1 = tmp[..., 1] - param[1] if param else self.poni1
-            p2 = tmp[..., 2] - param[2] if param else self.poni2
+            p1 = tmp[..., 1]
+            p2 = tmp[..., 2]
             p3 = tmp[..., 0]
         else:
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, param[1], param[2])
-
-        rot1 = param[3]
-        rot2 = param[4]
-        rot3 = param[5]
+            p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
         if use_cython and _geometry:
-            t1, t2, t3 = _geometry.calc_pos_zyx(L, rot1, rot2, rot3, p1, p2, p3)
+            t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3)
         else:
+            p1 = p1 - poni1
+            p2 = p2 - poni2
+            # we make copies
             if p3 is not None:
                 L = L + p3
+
             cosRot1 = cos(rot1)
             cosRot2 = cos(rot2)
             cosRot3 = cos(rot3)
@@ -341,11 +344,11 @@ class Geometry(object):
             sinRot2 = sin(rot2)
             sinRot3 = sin(rot3)
             t1 = p1 * cosRot2 * cosRot3 + \
-                p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-                L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
+                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
             t2 = p1 * cosRot2 * sinRot3 + \
-                p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-                L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
+                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
             t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
         return (t3, t1, t2)
 
@@ -360,18 +363,20 @@ class Geometry(object):
         @type d2: scalar or array of scalar
         @param path: can be "cos", "tan" or "cython"
         @return: 2theta in radians
-        @rtype: floar or array of floats.
+        @rtype: float or array of floats.
         """
 
         if path == "cython" and _geometry:
             if param is None:
-                param = self.param
-
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, param[1], param[2])
-            tmp = _geometry.calc_tth(L=param[0],
-                                     rot1=param[3],
-                                     rot2=param[4],
-                                     rot3=param[5],
+                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
+                                self._poni2, self._rot1, self._rot2, self._rot3
+            else:
+                dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
+            tmp = _geometry.calc_tth(L=dist,
+                                     rot1=rot1,
+                                     rot2=rot2,
+                                     rot3=rot3,
                                      pos1=p1,
                                      pos2=p2,
                                      pos3=p3)
@@ -402,27 +407,32 @@ class Geometry(object):
                                 " without knowing wavelength !!!"))
 
         if _geometry and path == "cython":
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2,
-                                                        self._poni1, self.poni2)
-            out = _geometry.calc_q(L=self._dist,
-                                   rot1=self._rot1,
-                                   rot2=self._rot2,
-                                   rot3=self._rot3,
+            if param is None:
+                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
+                                self._poni2, self._rot1, self._rot2, self._rot3
+            else:
+                dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
+
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
+            out = _geometry.calc_q(L=dist,
+                                   rot1=rot1,
+                                   rot2=rot2,
+                                   rot3=rot3,
                                    pos1=p1,
                                    pos2=p2,
                                    pos3=p3,
                                    wavelength=self.wavelength)
         else:
             out = 4.0e-9 * numpy.pi / self.wavelength * \
-                numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2.0)
+                numpy.sin(self.tth(d1=d1, d2=d2, param=param, path=path) / 2.0)
         return out
 
-    def rFunction(self, d1, d2, param=None, path="numpy"):
+    def rFunction(self, d1, d2, param=None, path="cython"):
         """
         Calculates the radius value for the center of a given pixel
         (or set of pixels) in m
-
-        r = direct_distance  * tan( 2theta )
+        
+          r = distance to the incident beam 
 
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
@@ -431,20 +441,29 @@ class Geometry(object):
         @return: r in in m
         @rtype: float or array of floats.
         """
-        cosTilt = cos(self._rot1) * cos(self._rot2)
-        directDist = self._dist / cosTilt  # in m
 
         if _geometry and path == "cython":
-            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self.poni2)
-            out = _geometry.calc_r(L=self._dist,
-                                   rot1=self._rot1,
-                                   rot2=self._rot2,
-                                   rot3=self._rot3,
+            if param is None:
+                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
+                                self._poni2, self._rot1, self._rot2, self._rot3
+            else:
+                dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
+
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
+            out = _geometry.calc_r(L=dist,
+                                   rot1=rot1,
+                                   rot2=rot2,
+                                   rot3=rot3,
                                    pos1=p1,
                                    pos2=p2,
                                    pos3=p3)
         else:
-            out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
+            # Before 03/2016 it was the distance at beam-center
+            # cosTilt = cos(self._rot1) * cos(self._rot2)
+            # directDist = self._dist / cosTilt  # in m
+            # out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
+            _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
+            out = numpy.sqrt(t1 * t1 + t2 * t2)
         return out
 
     def qArray(self, shape=None):
@@ -497,6 +516,7 @@ class Geometry(object):
                     self._rd2a = (qArray / (2.0 * numpy.pi)) ** 2
         return self._rd2a
 
+    @deprecated
     def qCornerFunct(self, d1, d2):
         """Calculate the q_vector for any pixel corner (in nm^-1)
 
@@ -504,12 +524,14 @@ class Geometry(object):
         """
         return self.qFunction(d1 - 0.5, d2 - 0.5)
 
+    @deprecated
     def rCornerFunct(self, d1, d2):
         """
         Calculate the radius array for any pixel corner (in m)
         """
         return self.rFunction(d1 - 0.5, d2 - 0.5)
 
+    @deprecated
     def tth_corner(self, d1, d2):
         """
         Calculates the 2theta value for the corner of a given pixel
@@ -662,7 +684,7 @@ class Geometry(object):
             tpos[..., idx] = pos[idx]
         return tpos
 
-    def corner_array(self, shape=None, unit="2th", use_cython=False):
+    def corner_array(self, shape=None, unit="2th", use_cython=True):
         """
         Generate a 3D array of the given shape with (i,j) (radial
         angle 2th, azimuthal angle chi ) for all elements.
@@ -670,7 +692,7 @@ class Geometry(object):
         @param shape: expected shape
         @type shape: 2-tuple of integer
         @return: 3d array with shape=(*shape,4,2) the two elements are:
-           * dim3[0]: radial angle 2th
+           * dim3[0]: radial angle 2th, q, r, ...
            * dim3[1]: azimuthal angle chi
         """
         shape = shape if shape is not None else self.detector.shape
@@ -706,12 +728,14 @@ class Geometry(object):
                                                           p1, p2, p3,
                                                           space, self._wavelength)
                         except KeyError:
-                            logger.error("Invalid key for space: %s", space)
+                            logger.warning("No fast path for space: %s", space)
                         else:
                             if self.detector.IS_CONTIGUOUS:
                                 if bilinear:
-                                    print(res.shape)
-                                    corners = bilinear.convert_corner_2D_to_4D(2, res[..., 0], res[..., 1])
+                                    # convert_corner_2D_to_4D needs contiguous arrays as input
+                                    radi = numpy.ascontiguousarray(res[..., 0], numpy.float32)
+                                    azim = numpy.ascontiguousarray(res[..., 1], numpy.float32)
+                                    corners = bilinear.convert_corner_2D_to_4D(2, radi, azim)
                                 else:
                                     corners = numpy.zeros((shape[0], shape[1], 4, 2),
                                                           dtype=numpy.float32)

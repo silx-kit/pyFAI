@@ -35,19 +35,22 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2016"
+__date__ = "10/03/2016"
 
 
 import unittest
 import os
 import sys
+import random
 import time
 import numpy
-from .utilstest import UtilsTest, getLogger
+import itertools
+from .utilstest import UtilsTest, getLogger, ParameterisedTestCase
 logger = getLogger(__file__)
 
 from .. import geometry
 from .. import AzimuthalIntegrator
+from .. import units
 from ..detectors import detector_factory
 import fabio
 
@@ -200,7 +203,7 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         rd2 = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
         q = self.geo.cornerQArray(self.shape)[:, :, :, 0]
         delta = rd2 - (q / (2 * numpy.pi)) ** 2
-        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2")
+        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
 
     def test_delta(self):
 
@@ -213,136 +216,117 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         self.assert_(numpy.allclose(drd2, delta2, atol=1e-5), "delta rd2 = (q/2pi)**2")
 
 
-class ParameterisedTestCase(unittest.TestCase):
-    """ TestCase classes that want to be parameterised should
-        inherit from this class.
-        From Eli Bendersky's website
-        http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases/
+class ParamFastPath(ParameterisedTestCase):
+    """Test the consistency of the geometry calculation using the Python and the 
+    Cython path.
     """
-    def __init__(self, methodName='runTest', param=None):
-        super(ParameterisedTestCase, self).__init__(methodName)
-        self.param = param
+    detectors = ("Pilatus300k", "Xpad_flat")
+    number_of_geometries = 2
+    epsilon = 3e-7
+    geometries = []
+    for i in range(number_of_geometries):
+        geo = {"dist": 0.01 + random.random(),
+               "poni1": random.random() - 0.5,
+               "poni2": random.random() - 0.5,
+               "rot1": random.random() - 0.5,
+               "rot2": random.random() - 0.5,
+               "rot3": random.random() - 0.5,
+               "wavelength": 1e-10}
+        for det in detectors:
+            dico = geo.copy()
+            dico["detector"] = det
+            geometries.append(dico)
+    dunits = dict((u.REPR.split("_")[0], u) for u in units.RADIAL_UNITS)
+    TESTSPACE = itertools.product(geometries, dunits.values())
 
-    @staticmethod
-    def parameterise(testcase_klass, param=None):
-        """ Create a suite containing all tests taken from the given
-            subclass, passing them the parameter 'param'.
+    def test_corner_array(self):
+        """test pyFAI.geometry.corner_array with full detectors
         """
-        testloader = unittest.TestLoader()
-        testnames = testloader.getTestCaseNames(testcase_klass)
-        suite = unittest.TestSuite()
-        for name in testnames:
-            suite.addTest(testcase_klass(name, param=param))
-        return suite
+        data, space = self.param
+        geo = geometry.Geometry(**data)
+        t00 = time.time()
+        py_res = geo.corner_array(unit=space, use_cython=False)
+        t01 = time.time()
+        geo.reset()
+        t10 = time.time()
+        cy_res = geo.corner_array(unit=space, use_cython=True)
+        t11 = time.time()
+        delta = abs(py_res - cy_res).max()
+        logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta:%s",
+                       space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / (t11 - t10), delta)
+        self.assert_(numpy.allclose(py_res, cy_res), "data:%s, space: %s" % (data, space))
 
-
-class TestGeometry(ParameterisedTestCase):
-
-    def testGeometryFunctions(self):
-        func, statargs, varargs, kwds, expectedFail = self.param
-        kwds["pixel1"] = 1
-        kwds["pixel2"] = 1
-        g = geometry.Geometry(**kwds)
-        g.wavelength = 1e-10
+    def test_XYZ(self):
+        """Test the calc_pos_zyx with full detectors"""
+        kwds = self.param
+        geo = geometry.Geometry(**kwds)
         t0 = time.time()
-        oldret = getattr(g, func)(*statargs, path=varargs[0])
+        py_res = geo.calc_pos_zyx(corners=True, use_cython=False)
         t1 = time.time()
-        newret = getattr(g, func)(*statargs, path=varargs[1])
+        cy_res = geo.calc_pos_zyx(corners=True, use_cython=True)
         t2 = time.time()
-        logger.debug("TIMINGS\t meth: %s t=%.3fs\t meth: %s t=%.3fs" % (varargs[0], t1 - t0, varargs[1], t2 - t1))
-        maxDelta = abs(oldret - newret).max()
-        msg = "geo=%s%s max delta=%.3f" % (g, os.linesep, maxDelta)
-        if expectedFail:
-            self.assertNotAlmostEquals(maxDelta, 0, 3, msg)
-        else:
-            self.assertAlmostEquals(maxDelta, 0, 3, msg)
-        logger.info(msg)
+        delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
+        logger.info("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s", kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / (t2 - t1), delta)
+        msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
+        self.assert_(numpy.alltrue(delta.max() < self.epsilon), msg)
+        logger.debug(msg)
 
-    def testXYZFunctions(self):
-        func, statargs, varargs, kwds, expectedFail = self.param
-        kwds["pixel1"] = 1
-        kwds["pixel2"] = 1
-        g = geometry.Geometry(**kwds)
-        g.wavelength = 1e-10
+
+class ParamTestGeometry(ParameterisedTestCase):
+    size = 1024
+    d1, d2 = numpy.mgrid[-size:size:32, -size:size:32]
+    functions = [("tth", ("cos", "tan")),
+                 ("tth", ("tan", "cython")),
+                 ("tth", ("cos", "tan")),
+                 ("tth", ("tan", "cython")),
+                 ("qFunction", ("numpy", "cython")),
+                 ("rFunction", ("numpy", "cython"))]
+    pixels = {"pixel1": 1,
+              "pixel2": 1,
+              "wavelength": 1e-10}
+    geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
+                  {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
+                  {'dist': 1, 'rot1':-.2, 'rot2': 1, 'rot3':-.1},
+                  {'dist': 1, 'rot1':-1, 'rot2':-.2, 'rot3': 1},
+                  {'dist': 1, 'rot1': 1, 'rot2': 5, 'rot3': .4},
+                  {'dist': 1, 'rot1':-1.2, 'rot2': 1, 'rot3': 1},
+                  {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1},
+                  ]
+    for g in geometries:
+        g.update(pixels)
+
+    TESTCASES_FUNCT = [(k[0], k[1], g) for k, g in itertools.product(functions, geometries)]
+    TESTCASES_XYZ = itertools.product((False,), geometries)
+
+    def test_geometry_functions(self):
+        "test functions like tth, qFunct, rfunction, ... fake detectors"
+        func, varargs, kwds = self.param
+        geo = geometry.Geometry(**kwds)
         t0 = time.time()
-        oldret = g.calc_pos_zyx(None, statargs[0], statargs[1], use_cython=False)
+        oldret = getattr(geo, func)(self.d1, self.d2, path=varargs[0])
         t1 = time.time()
-        newret = g.calc_pos_zyx(None, statargs[0], statargs[1], use_cython=True)
+        newret = getattr(geo, func)(self.d1, self.d2, path=varargs[1])
         t2 = time.time()
-        logger.debug("TIMINGS\t meth: %s t=%.3fs\t meth: %s t=%.3fs" % (varargs[0], t1 - t0, varargs[1], t2 - t1))
-        for old, new in zip(oldret, newret):
-            maxDelta = abs(old - new).max()
-            msg = "geo=%s%s max delta=%.3f" % (g, os.linesep, maxDelta)
-            if expectedFail:
-                self.assertNotAlmostEquals(maxDelta, 0, 3, msg)
-            else:
-                self.assertAlmostEquals(maxDelta, 0, 3, msg)
-            logger.info(msg)
+        delta = abs(oldret - newret).max()
+        logger.info("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s", func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / (t2 - t1), delta)
+        msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
+        self.assertAlmostEquals(delta, 0, 3, msg)
+        logger.debug(msg)
 
-
-size = 1024
-d1, d2 = numpy.mgrid[-size:size:32, -size:size:32]
-
-TESTCASES = [
-     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("cos", "tan"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
-     ("tth", (d1, d2), ("tan", "cython"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-
-     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
-     ("qFunction", (d1, d2), ("cython", "tan"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2': 1, 'rot3': 1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':-.2, 'rot3': 1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2': 1, 'rot3': 1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1, 'rot1': 3, 'rot2': 0, 'rot3': 0}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2': 1, 'rot3': 3}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2': 1, 'rot3':-.1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-3, 'rot2':-.2, 'rot3': 1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1': 1, 'rot2': 5, 'rot3': .4}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2': 1.6, 'rot3': 1}, False),
-     ("rFunction", (d1, d2), ("cython", "numpy"), {'dist': 1e10, 'rot1': 0, 'rot2': 0, 'rot3': 0}, False),
-     ]
+    def test_XYZ(self):
+        """Test the calc_pos_zyx with fake detectors"""
+        corners, kwds = self.param
+        geo = geometry.Geometry(**kwds)
+        t0 = time.time()
+        py_res = geo.calc_pos_zyx(None, self.d1, self.d2, corners=corners, use_cython=False)
+        t1 = time.time()
+        cy_res = geo.calc_pos_zyx(None, self.d1, self.d2, corners=corners, use_cython=True)
+        t2 = time.time()
+        delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
+        logger.info("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s", corners, t1 - t0, t2 - t1, (t1 - t0) / (t2 - t1), delta)
+        msg = "delta=%s, geo= \n%s" % (delta, geo)
+        self.assert_(numpy.alltrue(delta.max() < 1e-10), msg)
+        logger.debug(msg)
 
 
 def suite():
@@ -356,9 +340,15 @@ def suite():
     testsuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
     testsuite.addTest(TestRecprocalSpacingSquarred("test_delta"))
 
-    for param in TESTCASES:
-        testsuite.addTest(ParameterisedTestCase.parameterise(
-                TestGeometry, param))
+    for param in ParamTestGeometry.TESTCASES_FUNCT:
+        testsuite.addTest(ParameterisedTestCase.parameterise(ParamTestGeometry, "test_geometry_functions", param))
+    for param in ParamTestGeometry.TESTCASES_XYZ:
+        testsuite.addTest(ParameterisedTestCase.parameterise(ParamTestGeometry, "test_XYZ", param))
+
+    for param in ParamFastPath.geometries:
+        testsuite.addTest(ParameterisedTestCase.parameterise(ParamFastPath, "test_XYZ", param))
+    for param in ParamFastPath.TESTSPACE:
+        testsuite.addTest(ParameterisedTestCase.parameterise(ParamFastPath, "test_corner_array", param))
 
     return testsuite
 

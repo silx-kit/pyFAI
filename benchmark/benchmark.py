@@ -40,8 +40,11 @@ import numpy
 import fabio
 import os.path as op
 import logging
-sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
-import utilstest
+
+# To use use the locally build version of PyFAI, use ../bootstrap.py
+
+import pyFAI
+from pyFAI.test import utilstest
 
 try:
     from rfoo.utils import rconsole
@@ -49,8 +52,6 @@ try:
 except ImportError:
     print("No socket opened for debugging -> please install rfoo")
 
-# We use the locally build version of PyFAI
-pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 from pyFAI.gui_utils import pylab, update_fig
 

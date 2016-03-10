@@ -23,7 +23,7 @@
 #
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "09/03/2016"
+__date__ = "10/03/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -137,8 +137,10 @@ cdef inline double f_r(double p1, double p2, double L, double sinRot1, double co
     cdef:
         double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
         double t2 = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-        double t3 = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-    return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+        #double t3 = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+    return sqrt(t1 * t1 + t2 * t2)
+    #Changed 10/03/2016 ... the radius is in the pixel position. 
+    #return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2) 
 
 
 @cython.cdivision(True)
@@ -160,13 +162,16 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calc_pos_zyx(double L, double rot1, double rot2, double rot3,
+def calc_pos_zyx(double L, double poni1, double poni2, 
+                 double rot1, double rot2, double rot3,
                  numpy.ndarray pos1 not None,
                  numpy.ndarray pos2 not None,
                  numpy.ndarray pos3=None):
     """Calculate the 3D coordinates in the sample's referential
 
     @param L: distance sample - PONI
+    @param poni1: PONI coordinate along y axis
+    @param poni2: PONI coordinate along x axis
     @param rot1: angle1
     @param rot2: angle2
     @param rot3: angle3
@@ -184,6 +189,7 @@ def calc_pos_zyx(double L, double rot1, double rot2, double rot3,
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
         ssize_t  size = pos1.size, i = 0
+        double p1, p2, p3
     assert pos2.size == size
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
@@ -197,27 +203,33 @@ def calc_pos_zyx(double L, double rot1, double rot2, double rot3,
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
-            t1[i] = f_t1(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t2[i] = f_t2(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t3[i] = f_t3(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            p1 = c1[i]
+            p2 = c2[i]
+            t1[i] = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t2[i] = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t3[i] = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            t1[i] = f_t1(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t2[i] = f_t2(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-            t3[i] = f_t3(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            p1 = c1[i] - poni1 
+            p2 = c2[i] - poni2
+            p3 = c3[i] + L
+            t1[i] = f_t1(p1, p2, p3, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t2[i] = f_t2(p1, p2, p3, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            t3[i] = f_t3(p1, p2, p3, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 3:
-        return t1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               t2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               t3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
+        return t3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
+               t1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
+               t2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
+               
     if pos1.ndim == 2:
-        return t1.reshape(pos1.shape[0], pos1.shape[1]),\
-               t2.reshape(pos1.shape[0], pos1.shape[1]),\
-               t3.reshape(pos1.shape[0], pos1.shape[1])
+        return t3.reshape(pos1.shape[0], pos1.shape[1]),\
+               t1.reshape(pos1.shape[0], pos1.shape[1]),\
+               t2.reshape(pos1.shape[0], pos1.shape[1])
     else:
-        return t1, t2, t3
+        return t3, t1, t2
 
 
 @cython.boundscheck(False)
@@ -462,8 +474,8 @@ def calc_cosa(double L,
         return out
 
 
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def calc_rad_azim(double L,
                   double poni1,
                   double poni2,
@@ -519,7 +531,7 @@ def calc_rad_azim(double L,
             elif cspace == 2:
                 out[i, 0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
             elif cspace == 3:
-                out[i, 0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+                out[i, 0] = sqrt(t1 * t1 + t2 * t2)
             out[i, 1] = atan2(t1, t2)
     else:
         assert pos3.size == size
@@ -533,7 +545,7 @@ def calc_rad_azim(double L,
             elif cspace == 2:
                 out[i, 0] = 4.0e-9 * M_PI / fwavelength * sin(atan2(sqrt(t1 * t1 + t2 * t2), t3) / 2.0)
             elif cspace == 3:
-                out[i, 0] = L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+                out[i, 0] = sqrt(t1 * t1 + t2 * t2)
             out[i, 1] = atan2(t1, t2)
 
     if pos1.ndim == 3:

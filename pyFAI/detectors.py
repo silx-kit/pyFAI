@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2016"
+__date__ = "10/03/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -445,22 +445,22 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 # points C and D are on the same dim2 (X), they differ in dim1 (Y)
 
                 p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
-                   + B1 * delta1 * (1.0 - delta2) \
-                   + C1 * delta1 * delta2 \
-                   + D1 * (1.0 - delta1) * delta2
+                    + B1 * delta1 * (1.0 - delta2) \
+                    + C1 * delta1 * delta2 \
+                    + D1 * (1.0 - delta1) * delta2
                 p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
-                   + B2 * delta1 * (1.0 - delta2) \
-                   + C2 * delta1 * delta2 \
-                   + D2 * (1.0 - delta1) * delta2
+                    + B2 * delta1 * (1.0 - delta2) \
+                    + C2 * delta1 * delta2 \
+                    + D2 * (1.0 - delta1) * delta2
                 if not self.IS_FLAT:
                     A0 = pixels[:, :, 0, 0]
                     B0 = pixels[:, :, 1, 0]
                     C0 = pixels[:, :, 2, 0]
                     D0 = pixels[:, :, 3, 0]
                     p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
-                       + B0 * delta1 * (1.0 - delta2) \
-                       + C0 * delta1 * delta2 \
-                       + D0 * (1.0 - delta1) * delta2
+                        + B0 * delta1 * (1.0 - delta2) \
+                        + C0 * delta1 * delta2 \
+                        + D0 * (1.0 - delta1) * delta2
             return p1, p2, p3
 
         elif self.spline is not None:

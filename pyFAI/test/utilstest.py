@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/03/2016"
+__date__ = "10/03/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -47,6 +47,7 @@ import getpass
 import subprocess
 import threading
 import distutils.util
+import unittest
 import logging
 try:  # Python3
     from urllib.request import urlopen, ProxyHandler, build_opener
@@ -83,7 +84,7 @@ class UtilsTest(object):
     reloaded = False
     name = PACKAGE
     try:
-        pyFAI = __import__("%s.directories"%name)
+        pyFAI = __import__("%s.directories" % name)
     except Exception as error:
         logger.warning("Unable to loading %s %s" % (name, error))
         image_home = None
@@ -370,3 +371,29 @@ def diff_crv(ref, obt, comment=""):
         from pyFAI.utils import input
         input()
 
+
+class ParameterisedTestCase(unittest.TestCase):
+    """ TestCase classes that want to be parameterised should
+        inherit from this class.
+        From Eli Bendersky's website
+        http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases/
+    """
+    def __init__(self, methodName='runTest', param=None):
+        super(ParameterisedTestCase, self).__init__(methodName)
+        self.param = param
+
+    @staticmethod
+    def parameterise(testcase_klass, testcase_method=None, param=None):
+        """ Create a suite containing all tests taken from the given
+            subclass, passing them the parameter 'param'.
+        """
+        testloader = unittest.TestLoader()
+        testnames = testloader.getTestCaseNames(testcase_klass)
+        suite = unittest.TestSuite()
+
+        if testcase_method:
+            suite.addTest(testcase_klass(testcase_method, param=param))
+        else:
+            for name in testnames:
+                suite.addTest(testcase_klass(name, param=param))
+        return suite
