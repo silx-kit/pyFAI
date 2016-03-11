@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "11/03/2016"
 
 import os
 import sys
@@ -122,11 +122,18 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(ref["radial"] - obt["radial"]).max(), 0, "Bin position is the same")
         self.assertEqual(abs(ref["azimuthal"] - obt["azimuthal"]).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
-        delta = abs(obt["I"] * 1e6 - ref["I"])[obt["count"] >= 1e-6]  # restrict on valid pixel
+        mask = obt["count"] <= 1e-6  # restrict on valid pixel
+        mask[:, 0:2] = True
+        delta = abs(obt["I"] * 1e6 - ref["I"])
         delta_cnt = abs(obt["count"] - ref["count"])
         delta_sum = abs(obt["sum"] * 1e6 - ref["sum"])
+        delta[mask] = 0
+        delta_cnt[mask] = 0
+        delta_sum[mask] = 0
         if delta.max() > 0:
-            logger.warning("TestMultiGeometry.test_integrate2d gave intensity difference of %s" % delta.max())
+            logger.warning("TestMultiGeometry.test_integrate2d gave difference "
+                           "of intensity: %s, count: %s cum: %s",
+                           delta.max(), delta_cnt.max(), delta_sum.max())
             if logger.level <= logging.DEBUG:
                 from matplotlib import pyplot as plt
                 f = plt.figure()
