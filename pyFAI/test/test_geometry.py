@@ -54,6 +54,11 @@ from .. import units
 from ..detectors import detector_factory
 import fabio
 
+if sys.platform == "win32":
+    timer = time.clock
+else:
+    timer = time.time
+
 
 class TestSolidAngle(unittest.TestCase):
     """
@@ -217,7 +222,7 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
 
 
 class ParamFastPath(ParameterisedTestCase):
-    """Test the consistency of the geometry calculation using the Python and the 
+    """Test the consistency of the geometry calculation using the Python and the
     Cython path.
     """
     detectors = ("Pilatus300k", "Xpad_flat")
@@ -252,13 +257,13 @@ class ParamFastPath(ParameterisedTestCase):
         """
         data, space = self.param
         geo = geometry.Geometry(**data)
-        t00 = time.time()
+        t00 = timer()
         py_res = geo.corner_array(unit=space, use_cython=False)
-        t01 = time.time()
+        t01 = timer()
         geo.reset()
-        t10 = time.time()
+        t10 = timer()
         cy_res = geo.corner_array(unit=space, use_cython=True)
-        t11 = time.time()
+        t11 = timer()
         delta = abs(py_res - cy_res).max()
         logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta:%s",
                     space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / (t11 - t10), delta)
@@ -268,11 +273,11 @@ class ParamFastPath(ParameterisedTestCase):
         """Test the calc_pos_zyx with full detectors"""
         kwds = self.param
         geo = geometry.Geometry(**kwds)
-        t0 = time.time()
+        t0 = timer()
         py_res = geo.calc_pos_zyx(corners=True, use_cython=False)
-        t1 = time.time()
+        t1 = timer()
         cy_res = geo.calc_pos_zyx(corners=True, use_cython=True)
-        t2 = time.time()
+        t2 = timer()
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
         logger.info("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s", kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / (t2 - t1), delta)
         msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
@@ -310,11 +315,11 @@ class ParamTestGeometry(ParameterisedTestCase):
         "test functions like tth, qFunct, rfunction, ... fake detectors"
         func, varargs, kwds = self.param
         geo = geometry.Geometry(**kwds)
-        t0 = time.time()
+        t0 = timer()
         oldret = getattr(geo, func)(self.d1, self.d2, path=varargs[0])
-        t1 = time.time()
+        t1 = timer()
         newret = getattr(geo, func)(self.d1, self.d2, path=varargs[1])
-        t2 = time.time()
+        t2 = timer()
         delta = abs(oldret - newret).max()
         logger.info("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s", func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / (t2 - t1), delta)
         msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
@@ -325,11 +330,11 @@ class ParamTestGeometry(ParameterisedTestCase):
         """Test the calc_pos_zyx with fake detectors"""
         corners, kwds = self.param
         geo = geometry.Geometry(**kwds)
-        t0 = time.time()
+        t0 = timer()
         py_res = geo.calc_pos_zyx(None, self.d1, self.d2, corners=corners, use_cython=False)
-        t1 = time.time()
+        t1 = timer()
         cy_res = geo.calc_pos_zyx(None, self.d1, self.d2, corners=corners, use_cython=True)
-        t2 = time.time()
+        t2 = timer()
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
         logger.info("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s", corners, t1 - t0, t2 - t1, (t1 - t0) / (t2 - t1), delta)
         msg = "delta=%s, geo= \n%s" % (delta, geo)
