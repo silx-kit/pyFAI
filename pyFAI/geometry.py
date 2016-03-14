@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2016"
+__date__ = "14/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -431,8 +431,8 @@ class Geometry(object):
         """
         Calculates the radius value for the center of a given pixel
         (or set of pixels) in m
-        
-          r = distance to the incident beam 
+
+          r = distance to the incident beam
 
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
@@ -902,6 +902,40 @@ class Geometry(object):
         corners = self.corner_array(shape, unit=units.RecD2_NM)
         delta = abs(corners[..., 0] - numpy.atleast_3d(center)).max(axis=-1)
         return delta
+
+    def array_from_unit(self, shape, typ="center", unit=units.TTH):
+        """
+        Generate an array of position in different dimentions (R, Q,
+        2Theta)
+
+        @param shape: shape of the expected array
+        @type shape: ndarray.shape
+        @param typ: "center", "corner" or "delta"
+        @type typ: str
+        @param unit: can be Q, TTH, R for now
+        @type unit: pyFAI.units.Enum
+
+        @return: R, Q or 2Theta array depending on unit
+        @rtype: ndarray
+        """
+        if not typ in ("center", "corner", "delta"):
+            logger.warning("Unknown type of array %s,"
+                           " defaulting to 'center'" % typ)
+            typ = "center"
+        unit = units.to_unit(unit)
+        meth_name = unit[typ]
+        if meth_name in dir(Geometry):
+            #fast path may be available
+            out = Geometry.__dict__[meth_name](self, shape)
+        else:
+            #fast path is definitely not available, use the generic formula
+            if typ == "center":
+                out = TODO
+            elif typ == "corner":
+                out = self.corner_array(shape, unit)
+            else: # typ == "delta":
+                out = TODO
+        return out
 
     def cosIncidance(self, d1, d2, path="cython"):
         """
@@ -1603,7 +1637,7 @@ class Geometry(object):
 
     def __deepcopy__(self, memo):
         """return a deep copy of itself.
-        #TODO: check & correct 
+        #TODO: check & correct
         """
         new = self.__class__()
         new.detector = self.detector.__deepcopy__(memo)

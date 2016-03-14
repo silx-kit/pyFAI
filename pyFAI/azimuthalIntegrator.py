@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2016"
+__date__ = "14/03/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2115,28 +2115,6 @@ class AzimuthalIntegrator(Geometry):
 
     xrpd2 = xrpd2_splitBBox
 
-    def array_from_unit(self, shape, typ="center", unit=units.TTH):
-        """
-        Generate an array of position in different dimentions (R, Q,
-        2Theta)
-
-        @param shape: shape of the expected array
-        @type shape: ndarray.shape
-        @param typ: "center", "corner" or "delta"
-        @type typ: str
-        @param unit: can be Q, TTH, R for now
-        @type unit: pyFAI.units.Enum
-
-        @return: R, Q or 2Theta array depending on unit
-        @rtype: ndarray
-        """
-        if not typ in ("center", "corner", "delta"):
-            logger.warning("Unknown type of array %s,"
-                           " defaulting to 'center'" % typ)
-            typ = "center"
-        unit = units.to_unit(unit)
-        out = Geometry.__dict__[unit[typ]](self, shape)
-        return out
 
     def integrate1d(self, data, npt, filename=None,
                     correctSolidAngle=True,
