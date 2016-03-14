@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2016"
+__date__ = "14/03/2016"
 
 
 import unittest
@@ -338,7 +338,7 @@ class ParamTestGeometry(ParameterisedTestCase):
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
         logger.info("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s", corners, t1 - t0, t2 - t1, (t1 - t0) / (t2 - t1), delta)
         msg = "delta=%s, geo= \n%s" % (delta, geo)
-        self.assert_(numpy.alltrue(delta.max() < 1e-10), msg)
+        self.assert_(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
         logger.debug(msg)
 
 
