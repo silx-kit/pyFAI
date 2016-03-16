@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2016"
+__date__ = "14/03/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -83,6 +83,7 @@ class UtilsTest(object):
     recompiled = False
     reloaded = False
     name = PACKAGE
+    script_dir = None
     try:
         pyFAI = __import__("%s.directories" % name)
     except Exception as error:
@@ -238,10 +239,7 @@ class UtilsTest(object):
                                 help="remove existing build and force the build of the library",
                                 default=False, action="store_true")
             parser.add_argument(dest="args", type=str, nargs='*')
-            if IN_SOURCES:
-                cls.options = parser.parse_args()
-            else:
-                cls.options = parser.parse_args([])
+            cls.options = parser.parse_args([])
         return cls.options
 
     @classmethod
@@ -267,10 +265,15 @@ class UtilsTest(object):
                 script += ".py"
         env = dict((str(k), str(v)) for k, v in os.environ.items())
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
-        for i in os.environ.get("PATH", "").split(os.pathsep):
+        paths = os.environ.get("PATH", "").split(os.pathsep)
+        if cls.script_dir is not None:
+            paths.insert(0, cls.script_dir)
+        for i in paths:
             script_path = os.path.join(i, script)
             if os.path.exists(script_path):
                 break
+        else:
+            logger.warning("No scipt %s found in path: %s", script, paths)
         return script_path, env
 
 

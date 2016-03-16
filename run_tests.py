@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "08/03/2016"
+__date__ = "14/03/2016"
 __license__ = "MIT"
 
 import distutils.util
@@ -247,7 +247,7 @@ def build_project(name, root_dir):
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+    from third_party.argparse import ArgumentParser
 parser = ArgumentParser(description='Run the tests.')
 
 parser.add_argument("-i", "--insource",
@@ -337,6 +337,7 @@ if old_importer:
 UtilsTest = getattr(utilstest, "UtilsTest")
 UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
 UtilsTest.testimages = os.path.join(PROJECT_DIR, "all_testimages.json")
+UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
 
 test_suite = unittest.TestSuite()
 
