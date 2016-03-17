@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2016"
+__date__ = "16/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -201,6 +201,7 @@ class Geometry(object):
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
+        self._cached_array = {}
         self._ttha = None
         self._dttha = None
         self._dssa = None
@@ -818,6 +819,99 @@ class Geometry(object):
         """
         return self.corner_array(shape, unit=units.RecD2_NM)
 
+    def center_array(self, shape=None, unit="2th"):
+        """
+        Generate a 2D array of the given shape with (i,j) (radial
+        angle ) for all elements.
+
+        @param shape: expected shape
+        @type shape: 2-tuple of integer
+        @return: 3d array with shape=(*shape,4,2) the two elements are:
+           * dim3[0]: radial angle 2th, q, r, ...
+           * dim3[1]: azimuthal angle chi
+        """
+        space_name_map = {  # space -> array name
+                           "2th": "_ttha",
+                           "chi":"_chia",
+                           "q":"_qa",
+                           "r":"_ra",
+                           "d*2":"_rd2a"}
+
+        unit = units.to_unit(unit)
+        space = unit.REPR.split("_")[0]
+        ary = None
+        if (space in space_name_map):
+            ary = self.__getattribute__(space_name_map[space])
+        elif space in self._cached_array:
+            ary = self._cached_array[space]
+
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", self.detector)
+
+        if (ary is not None) and (ary.shape == shape):
+            return ary
+
+        pos = self.positionArray(shape, corners=False)
+        x = pos[..., 2]
+        y = pos[..., 1]
+        z = pos[..., 0]
+        ary = unit.equation(x, y, z, self.wavelength)
+
+        if (space in space_name_map):
+            self.__setattr__(space_name_map[space], ary)
+        else:
+            self._cached_array[space] = ary
+
+        return ary
+
+    def delta_array(self, shape=None, unit="2th"):
+        """
+        Generate a 2D array of the given shape with (i,j) (delta-radial
+        angle) for all elements.
+
+        @param shape: expected shape
+        @type shape: 2-tuple of integer
+        @return: 3d array with shape=(*shape,4,2) the two elements are:
+           * dim3[0]: radial angle 2th, q, r, ...
+           * dim3[1]: azimuthal angle chi
+        """
+        space_name_map = {  # space -> array name
+                           "2th": "_dttha",
+                           "chi":"_dchia",
+                           "q":"_dqa",
+                           "r":"_dra",
+                           "d*2":"_drd2a"}
+
+        unit = units.to_unit(unit)
+        space = unit.REPR.split("_")[0]
+        ary = None
+        if (space in space_name_map):
+            ary = self.__getattribute__(space_name_map[space])
+        elif "delta_" + space in self._cached_array:
+            ary = self._cached_array["delta_" + space]
+
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", self.detector)
+
+        if (ary is not None) and (ary.shape == shape):
+            return ary
+        center = self.center_array(shape, unit=unit)
+        corners = self.corner_array(shape, unit=unit)
+        delta = abs(corners[..., 0] - numpy.atleast_3d(center))
+        ary = delta.max(axis=-1)
+
+        if (space in space_name_map):
+            self.__setattr__(space_name_map[space], ary)
+        else:
+            self._cached_array["delta_" + space] = ary
+
+        return ary
+
+
     def delta2Theta(self, shape=None):
         """
         Generate a 3D array of the given shape with (i,j) with the max
@@ -903,7 +997,7 @@ class Geometry(object):
         delta = abs(corners[..., 0] - numpy.atleast_3d(center)).max(axis=-1)
         return delta
 
-    def array_from_unit(self, shape, typ="center", unit=units.TTH):
+    def array_from_unit(self, shape=None, typ="center", unit=units.TTH):
         """
         Generate an array of position in different dimentions (R, Q,
         2Theta)
@@ -918,23 +1012,28 @@ class Geometry(object):
         @return: R, Q or 2Theta array depending on unit
         @rtype: ndarray
         """
+        shape = shape if shape is not None else self.detector.shape
+        if shape is None:
+            logger.error("Shape is neither specified in the method call, "
+                         "neither in the detector: %s", self.detector)
+
         if not typ in ("center", "corner", "delta"):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
         unit = units.to_unit(unit)
-        meth_name = unit[typ]
-        if meth_name in dir(Geometry):
+        meth_name = unit.get(typ)
+        if meth_name and meth_name in dir(Geometry):
             #fast path may be available
             out = Geometry.__dict__[meth_name](self, shape)
         else:
             #fast path is definitely not available, use the generic formula
             if typ == "center":
-                out = TODO
+                out = self.center_array(shape, unit)
             elif typ == "corner":
                 out = self.corner_array(shape, unit)
             else: # typ == "delta":
-                out = TODO
+                out = self.delta_array(shape, unit)
         return out
 
     def cosIncidance(self, d1, d2, path="cython"):
@@ -1551,15 +1650,13 @@ class Geometry(object):
         self._drd2a = None
         self._corner4Da = None
         self._corner4Ds = None
-#         self._corner4Dqa = None
-#         self._corner4Dra = None
-#         self._corner4Drd2a = None
         self._polarization = None
         self._polarization_factor = None
         self._transmission_normal = None
         self._transmission_corr = None
         self._transmission_crc = None
         self._cosa = None
+        self._cached_array = {}
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
