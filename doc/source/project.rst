@@ -42,18 +42,41 @@ via pull-requests.
 Getting help
 ------------
 
-A mailing list: pyfai@esrf.fr is publicly available.
-To subscribe, send an email to sympa@esrf.fr with "subscribe pyfai" as subject.
-On this mailing list, you will have information about release of the software, new features available and meet
-experts to help you solve issues related to azimuthal integration.
-This mailing list is archived and can be consulted at:
-`http://www.edna-site.org/lurker <http://www.edna-site.org/lurker/list/pyfai.en.html>`_
+A mailing list: pyfai@esrf.fr is publicly available, it is the best place to ask
+your questions: the author and many advanced users are there and willing to help you.
+To subscribe to this mailing list, send an email to
+`sympa@esrf.fr with "subscribe pyfai" as subject <mailto:sympa@esrf.fr?Subject=subscribe%20pyfai>`_.
 
+On this mailing list, you will have information about release of the software,
+new features available and meet experts to help you solve issues related to
+azimuthal integration and diffraction in general.
+It also provides a knowledge-base of most frequently asked question which needs
+to be integrated into this documentation.
+
+The volume of email on the list remains low, so you can subscribe without being too much spammed.
+As the mailing list is archived, and can be consulted at:
+`http://www.edna-site.org/lurker <http://www.edna-site.org/lurker/list/pyfai.en.html>`_,
+you can also check the volume of the list.
+
+If you think you are facing a bug, the best is to
+`create a new issue on the GitHub page <https://github.com/kif/pyFAI/issues>`_
+(you will need a GitHub account for that).
+
+Direct contact with authors is discouraged:
+pyFAI is open source software that we develop to aid the research
+community in doing what they do best.
+While we do enjoy doing this, we
+would not be able to dream of spending nearly as much time with
+pyFAI as we do if it wasn't for your support.
+Interest of the scientific community (via a lively mailing list) and citation in
+scientific publication for our `software <http://dx.doi.org/10.1107/S1600576715004306>`_
+is one of the main criterion for ESRF when deciding if they should
+continue funding development.
 
 Run dependencies
 ----------------
 
-* Python version 2.6, 2.7 3.2 or newer
+* Python version 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
 * NumPy
 * SciPy
 * Matplotlib
