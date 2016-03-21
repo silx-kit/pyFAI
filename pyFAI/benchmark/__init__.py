@@ -175,7 +175,7 @@ data = fabio.open(r"%s").data
             fn = datasets[param]
             poni = PONIS[param]
             setup = self.setup_1d % (poni, fn)
-            exec setup
+            exec(setup)
             res = eval(self.stmt_1d % ("splitBBox"))
             self.reference_1d[param] = res
             del ai, data
@@ -222,7 +222,7 @@ data = fabio.open(r"%s").data
             poni = PONIS[param]
             setup = self.setup_1d % (poni, fn)
             stmt = self.stmt_1d % method
-            exec setup
+            exec(setup)
             size = data.size / 1.0e6
             if size > self.max_size:
                 continue
@@ -323,7 +323,7 @@ data = fabio.open(r"%s").data
             poni = PONIS[param]
             setup = self.setup_2d % (poni, fn)
             stmt = self.stmt_2d % method
-            exec setup
+            exec(setup)
             size = data.size / 1.0e6
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size, N))
             try:
