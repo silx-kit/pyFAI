@@ -79,9 +79,9 @@ class Bench(object):
     ENDC = '\033[0m'
     LABELS = {"splitBBox": "CPU_serial",
               "lut": "CPU_LUT_OpenMP",
-              "lut_ocl": "%s_LUT_OpenCL",
+              "lut_ocl": "LUT",
               "csr": "CPU_CSR_OpenMP",
-              "csr_ocl": "%s_CSR_OpenCL",
+              "csr_ocl": "CSR",
               }
 
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg", max_size=None):
@@ -201,8 +201,13 @@ data = fabio.open(r"%s").data
             else:
                 platformid, deviceid = opencl["platformid"], opencl["deviceid"]
             devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
-            print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
-            label = "1D_" + (self.LABELS[method] % devicetype)
+            platform = str(ocl.platforms[platformid]).split()[0]
+            if devicetype == "CPU":
+                device = (str(ocl.platforms[platformid].devices[deviceid]).split("@")[0]).split()[-1]
+            else:
+                device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
+            print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
+            label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
             memory_error = (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError)
         else:
@@ -294,9 +299,15 @@ data = fabio.open(r"%s").data
                     return
                 platformid, deviceid = opencl["platformid"], opencl["deviceid"] = platdev
             devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
-            print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
+            platform = str(ocl.platforms[platformid]).split()[0]
+            if devicetype == "CPU":
+                device = (str(ocl.platforms[platformid].devices[deviceid]).split("@")[0]).split()[-1]
+            else:
+                device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
+
+            print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            label = "2D_%s_parallel_OpenCL" % devicetype
+            label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             memory_error = (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError)
 
         else:
