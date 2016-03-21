@@ -138,8 +138,12 @@ data = fabio.open(r"%s").data
     def get_gpu(self, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
         if ocl is None:
             return "NoGPU"
-        ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
-        return ctx.devices[0].name
+        try:
+            ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
+        except:
+            return "NoGPU"
+        else:
+            return ctx.devices[0].name
 
     def get_mem(self):
         """
@@ -523,8 +527,8 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
     size = property(get_size)
 
 
-def run(number=10, repeat=1, memprof=False, max_size=1000,
-        do_1d=True, do_2d=False, devices="all"):
+def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
+                  do_1d=True, do_2d=False, devices="all"):
     """
     :param number: Measure timimg over number of executions
     :param repeat: number of measurement, takes the best of them
@@ -569,7 +573,7 @@ def run(number=10, repeat=1, memprof=False, max_size=1000,
 
     bench.ax.set_ylim(0.5, 500)
 
-
+run = run_benchmark
 if __name__ == "__main__":
     try:
         from argparse import ArgumentParser
@@ -626,8 +630,9 @@ if __name__ == "__main__":
         devices += "gpu,"
     if options.opencl_acc:
         devices += "acc,"
-    run(number=options.number, repeat=options.repeat, memprof=options.memprof, max_size=options.size,
-              do_1d=options.onedim, do_2d=options.twodim, devices=devices)
+    run_benchmark(number=options.number, repeat=options.repeat,
+                  memprof=options.memprof, max_size=options.size,
+                  do_1d=options.onedim, do_2d=options.twodim, devices=devices)
 
     pylab.ion()
     raw_input("Enter to quit")
