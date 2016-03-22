@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "22/03/2016"
 __status__ = "development"
 
 import logging
@@ -46,7 +46,7 @@ import os.path as op
 import numpy
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.integrate_widget")
-from .gui_utils import QtCore, QtGui, uic, SIGNAL, QtWebKit
+from .gui_utils import QtCore, QtGui, uic, QtWebKit
 
 import fabio
 from .detectors import ALL_DETECTORS, detector_factory
@@ -166,9 +166,9 @@ class AIWidget(QtGui.QWidget):
         self.cancelButton.clicked.connect(self.die)
         self.resetButton.clicked.connect(self.restore)
 
-        self.connect(self.detector, SIGNAL("currentIndexChanged(int)"), self.detector_changed)
+        self.detector.currentIndexChanged.connect(self.detector_changed)
         self.do_OpenCL.clicked.connect(self.openCL_changed)
-        self.connect(self.platform, SIGNAL("currentIndexChanged(int)"), self.platform_changed)
+        self.platform.currentIndexChanged.connect(self.platform_changed)
         self.set_validators()
         self.assign_unit()
         self.restore(self.json_file)
@@ -425,7 +425,7 @@ class AIWidget(QtGui.QWidget):
 
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
-        
+
         @return: dict with all information.
         """
         to_save = { "poni": str_(self.poni.text()).strip(),
@@ -507,7 +507,7 @@ class AIWidget(QtGui.QWidget):
         self.set_config(data)
 
     def set_config(self, dico):
-        """Setup the widget from its description 
+        """Setup the widget from its description
 
         @param dico: dictionary with description of the widget
         @type dico: dict
@@ -674,9 +674,9 @@ class AIWidget(QtGui.QWidget):
     def make_ai(config):
         """Create an Azimuthal integrator from the configuration
         Static method !
-        
+
         @param config: dict with all parameters
-        @return: configured (but uninitialized) AzimuthalIntgrator 
+        @return: configured (but uninitialized) AzimuthalIntgrator
         """
         poni = config.get("poni")
         if poni and op.isfile(poni):
