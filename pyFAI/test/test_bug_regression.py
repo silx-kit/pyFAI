@@ -161,7 +161,7 @@ class TestBug232(unittest.TestCase):
         self.assertNotEqual(id(ai.detector), id(ai3.detector), "deepcopy arrays are different after copy")
 
 
-class TestBug172(unittest.TestCase):
+class TestBug174(unittest.TestCase):
     """
     wavelength change not taken into account (memoization error)
     """
@@ -186,7 +186,7 @@ def suite():
     testsuite.addTest(TestBug170("test_bug170"))
     testsuite.addTest(TestBug211("test_quantile"))
     testsuite.addTest(TestBug232("test"))
-    testsuite.addTest(TestBug172("test"))
+    testsuite.addTest(TestBug174("test"))
     return testsuite
 
 
