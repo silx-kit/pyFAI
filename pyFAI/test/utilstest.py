@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2016"
+__date__ = "22/03/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -78,7 +78,8 @@ class UtilsTest(object):
     """
     options = None
     timeout = 60  # timeout in seconds for downloading images
-    url_base = "http://forge.epn-campus.eu/attachments/download"
+    # url_base = "http://forge.epn-campus.eu/attachments/download"
+    url_base = "http://ftp.edna-site.org/pyFAI/testimages"
     sem = threading.Semaphore()
     recompiled = False
     reloaded = False
@@ -163,6 +164,7 @@ class UtilsTest(object):
             except IOError:
                 logger.debug("Unable to save JSON list")
         baseimage = os.path.basename(imagename)
+        imagename = baseimage
         logger.info("UtilsTest.getimage('%s')" % baseimage)
         if not os.path.exists(cls.image_home):
             os.makedirs(cls.image_home)
