@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2016"
+__date__ = "22/03/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1724,7 +1724,7 @@ class Geometry(object):
                      "_corner4Ds"]
         array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
                  "_ra", "_dra", "_rd2a", "_drd2a",
-                 "_corner4Da",  # "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
+                 "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1747,7 +1747,7 @@ class Geometry(object):
                      "_corner4Ds"]
         array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
                  "_ra", "_dra", "_rd2a", "_drd2a",
-                 "_corner4Da",  # "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
+                 "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1848,17 +1848,27 @@ class Geometry(object):
     rot3 = property(get_rot3, set_rot3)
 
     def set_wavelength(self, value):
+        old_wl = self._wavelength
         if isinstance(value, float):
             self._wavelength = value
         elif isinstance(value, (tuple, list)):
             self._wavelength = float(value[0])
         else:
             self._wavelength = float(value)
-        self._qa = None
-        self._dqa = None
-        if self._corner4Ds and ("d" in self._corner4Ds or "q" in self._corner4Ds):
-            self._corner4Da = None
-            self._corner4Ds = None
+        qa = dqa = corner4Da = corner4Ds = None
+        if old_wl and self._wavelength:
+            if self._qa is not None:
+                qa = self._qa * old_wl / self._wavelength
+            if self._corner4Ds and ("d" in self._corner4Ds or "q" in self._corner4Ds):
+                corner4Da = self._corner4Da.copy()
+                corner4Da[..., 0] = self._corner4Da[..., 0] * old_wl / self._wavelength
+                corner4Ds = self._corner4Ds
+        self.reset()
+        # restore updated values
+        self._dqa = dqa
+        self._qa = qa
+        self._corner4Da = corner4Da
+        self._corner4Ds = corner4Ds
 
     def get_wavelength(self):
         if self._wavelength is None:

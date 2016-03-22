@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2016"
+__date__ = "22/03/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2122,7 +2122,7 @@ class AzimuthalIntegrator(Geometry):
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
-                    method="lut", unit=units.Q, safe=True, normalization_factor=1.0,
+                    method="csr", unit=units.Q, safe=True, normalization_factor=1.0,
                     block_size=32, profile=False, all=False):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default

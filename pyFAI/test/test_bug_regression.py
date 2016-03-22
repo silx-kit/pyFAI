@@ -172,12 +172,13 @@ class TestBug172(unittest.TestCase):
         wl2 = 2e-10
         ai.wavelength = wl1
         q1, i1 = ai.integrate1d(data, 1000)
-        # ai.reset()
+#         ai.reset()
         ai.wavelength = wl2
         q2, i2 = ai.integrate1d(data, 1000)
         dq = (abs(q1 - q2).max())
         di = (abs(i1 - i2).max())
-        self.assertGreater(dq, 3, "Q-scale difference should be around 3.7, got %s" % dq)
+#         print(dq)
+        self.assertAlmostEqual(dq, 3.79, 2, "Q-scale difference should be around 3.8, got %s" % dq)
 
 
 def suite():
