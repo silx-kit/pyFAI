@@ -13,7 +13,7 @@ example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "10/12/2015"
+__date__ = "26/03/2016"
 
 
 import sys
@@ -73,6 +73,13 @@ def _copy_files(source, dest, extn):
         if clf.endswith(extn) and clf not in os.listdir(dest):
             _copy(os.path.join(full_src, clf), os.path.join(dest, clf))
 
+if sys.version_info[0] >= 3:  # Python3
+    def execfile(fullpath):
+        "Python3 implementation for execfile"
+        with open(fullpath) as f:
+            code = compile(f.read(), fullpath, 'exec')
+            exec(code)
+
 
 def runfile(fname):
     try:
@@ -89,14 +96,15 @@ SCRIPTSPATH = os.path.join(home,
                            'build', _distutils_scripts_name())
 LIBPATH = (os.path.join(home,
                        'build', _distutils_dir_name('lib')))
-
-if (not os.path.isdir(SCRIPTSPATH)) or (not os.path.isdir(LIBPATH)):
-    build = subprocess.Popen([sys.executable, "setup.py", "build"],
-                     shell=False, cwd=os.path.dirname(__file__))
-    logger.info("Build process ended with rc= %s" % build.wait())
+cwd = os.getcwd()
+os.chdir(home)
+build = subprocess.Popen([sys.executable, "setup.py", "build"],
+                shell=False, cwd=os.path.dirname(os.path.abspath(__file__)))
+logger.info("Build process ended with rc= %s" % build.wait())
 _copy_files("openCL", os.path.join(LIBPATH, TARGET, "openCL"), ".cl")
 _copy_files("gui", os.path.join(LIBPATH, TARGET, "gui"), ".ui")
 _copy_files("calibration", os.path.join(LIBPATH, TARGET, "calibration"), ".D")
+os.chdir(cwd)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -107,10 +115,6 @@ if __name__ == "__main__":
     else:
         script = sys.argv[1]
 
-    cwd = os.getcwd()
-    os.chdir(home)
-    subprocess.call([sys.executable, "setup.py", "build"])
-    os.chdir(cwd)
     if script:
         logger.info("Executing %s from source checkout" % (script))
     else:
