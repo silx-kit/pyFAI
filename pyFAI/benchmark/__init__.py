@@ -1,9 +1,7 @@
 #!/usr/bin/python
 # coding: utf-8
-# author: Jérôme Kieffer
 #
-#    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +21,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-"""
-Benchmark for Azimuthal integration of PyFAI
-"""
 from __future__ import print_function, division
+
+
+__doc__ = "Benchmark for Azimuthal integration of PyFAI"
+__author__ = "Jérôme Kieffer"
+__date__ = "22/03/2016"
+__license__ = "MIT"
+__copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
+
 
 import json
 import sys
@@ -42,20 +44,22 @@ import os.path as op
 import logging
 
 # To use use the locally build version of PyFAI, use ../bootstrap.py
-
-import pyFAI
+try:
+    from .. import load
+except:
+    from pyFAI import pyFAI
 from ..test import utilstest
-from .. import opencl
-ocl = opencl.ocl
+from ..opencl import pyopencl, ocl
+
 from ..gui_utils import pylab, update_fig
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
-datasets = {"Fairchild.poni": utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
-            "halfccd.poni": utilstest.UtilsTest.getimage("1882/halfccd.edf"),
-            "Frelon2k.poni": utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
-            "Pilatus6M.poni": utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
-            "Pilatus1M.poni": utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
-            "Mar3450.poni": utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
+datasets = {"Fairchild.poni": "1880/Fairchild.edf",
+            "halfccd.poni": "1882/halfccd.edf",
+            "Frelon2k.poni": "1881/Frelon2k.edf",
+            "Pilatus6M.poni": "1884/Pilatus6M.cbf",
+            "Pilatus1M.poni": "1883/Pilatus1M.edf",
+            "Mar3450.poni": "2201/LaB6_260210.mar3450"
             }
 PONIS = {
 "Pilatus6M.poni": {'dist': 0.3, 'poni2': 0.2115772, 'poni1': 0.225406, 'detector': 'Pilatus6M'},
@@ -172,7 +176,7 @@ data = fabio.open(r"%s").data
 
     def get_ref(self, param):
         if param not in self.reference_1d:
-            fn = datasets[param]
+            fn = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
             setup = self.setup_1d % (poni, fn)
             exec(setup)
@@ -209,7 +213,7 @@ data = fabio.open(r"%s").data
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             label = ("1D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            memory_error = (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError)
+            memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
             label = "1D_" + self.LABELS[method]
@@ -218,7 +222,7 @@ data = fabio.open(r"%s").data
         first = True
         for param in ds_list:
             self.update_mp()
-            fn = datasets[param]
+            fn = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
             setup = self.setup_1d % (poni, fn)
             stmt = self.stmt_1d % method
@@ -308,7 +312,7 @@ data = fabio.open(r"%s").data
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
             label = ("2D %s %s %s %s" % (devicetype, self.LABELS[method], platform, device)).replace(" ", "_")
-            memory_error = (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError)
+            memory_error = (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError)
 
         else:
             print("Working on processor: %s" % self.get_cpu())
@@ -319,7 +323,7 @@ data = fabio.open(r"%s").data
         first = True
         for param in ds_list:
             self.update_mp()
-            fn = datasets[param]
+            fn = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
             setup = self.setup_2d % (poni, fn)
             stmt = self.stmt_2d % method
@@ -372,8 +376,8 @@ data = fabio.open(r"%s").data
         first = True
         for param in ds_list:
             self.update_mp()
-            fn = datasets[param]
-            ai = pyFAI.load(param)
+            fn = utilstest.UtilsTest.getimage(datasets[param])
+            ai = load(param)
             data = fabio.open(fn).data
             size = data.size
             N = min(data.shape)
@@ -543,7 +547,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     """
     :param number: Measure timimg over number of executions
     :param repeat: number of measurement, takes the best of them
-     
+
     """
     print("Averaging over %i repetitions (best of %s)." % (number, repeat))
     bench = Bench(number, repeat, memprof, max_size=max_size)

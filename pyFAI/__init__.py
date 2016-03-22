@@ -26,7 +26,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "31/01/2016"
+__date__ = "22/03/2016"
 
 import sys
 import logging
@@ -71,4 +71,6 @@ def benchmarks():
     """
     Run the benchmarks
     """
-    raise NotImplementedError
+    from . import benchmark
+    res = benchmark.run()
+    return res
