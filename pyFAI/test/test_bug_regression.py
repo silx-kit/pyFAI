@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "22/03/2016"
 
 import sys
 import os
@@ -161,11 +161,31 @@ class TestBug232(unittest.TestCase):
         self.assertNotEqual(id(ai.detector), id(ai3.detector), "deepcopy arrays are different after copy")
 
 
+class TestBug172(unittest.TestCase):
+    """
+    wavelength change not taken into account (memoization error)
+    """
+    def test(self):
+        ai = load(UtilsTest.getimage("1893/Pilatus1M.poni"))
+        data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
+        wl1 = 1e-10
+        wl2 = 2e-10
+        ai.wavelength = wl1
+        q1, i1 = ai.integrate1d(data, 1000)
+        # ai.reset()
+        ai.wavelength = wl2
+        q2, i2 = ai.integrate1d(data, 1000)
+        dq = (abs(q1 - q2).max())
+        di = (abs(i1 - i2).max())
+        self.assertGreater(dq, 3, "Q-scale difference should be around 3.7, got %s" % dq)
+
+
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestBug170("test_bug170"))
     testsuite.addTest(TestBug211("test_quantile"))
     testsuite.addTest(TestBug232("test"))
+    testsuite.addTest(TestBug172("test"))
     return testsuite
 
 
