@@ -1290,6 +1290,7 @@ class Geometry(object):
             self._oversampling = None
             if self.splineFile:
                 self.detector.set_splineFile(self.splineFile)
+        return self
 
     def getFit2D(self):
         """
@@ -1387,6 +1388,7 @@ class Geometry(object):
             self._rot2 = rot2
             self._rot3 = rot3
             self.reset()
+            return self
 
     def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot_3=0,
                PSize_1=None, PSize_2=None, splineFile=None, BSize_1=1, BSize_2=1,
@@ -1436,6 +1438,7 @@ class Geometry(object):
         if WaveLength:
             self.wavelength = float(WaveLength)
         self.reset()
+        return self
 
     def getSPD(self):
         """
