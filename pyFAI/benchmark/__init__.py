@@ -51,7 +51,12 @@ except:
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
 
-from ..gui_utils import pylab, update_fig
+try:
+    from ..gui_utils import pylab, update_fig
+except:
+    pylab = None
+    def update_fig(*ag, **kwarg):
+        pass
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
 datasets = {"Fairchild.poni": "1880/Fairchild.edf",
@@ -438,7 +443,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
         if self.fig:
             print("Already initialized")
             return
-        if (sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ):
+        if pylab and (sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ):
             self.fig = pylab.figure()
             self.fig.show()
             self.ax = self.fig.add_subplot(1, 1, 1)
@@ -506,26 +511,26 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             return
         self.memory_profile[0].append(time.time() - self.starttime)
         self.memory_profile[1].append(self.get_mem())
-        if not self.fig_mp:
-            self.fig_mp = pylab.figure()
-            self.fig_mp.show()
-            self.ax_mp = self.fig_mp.add_subplot(1, 1, 1)
-            self.ax_mp.set_autoscale_on(False)
-            self.ax_mp.set_xlabel("Run time (s)")
-            self.ax_mp.set_xlim(0, 100)
-            self.ax_mp.set_ylim(0, 2 ** 10)
-            self.ax_mp.set_ylabel("Memory occupancy (MB)")
-            self.ax_mp.set_title("Memory leak hunter")
-            self.plot_mp = self.ax_mp.plot(*self.memory_profile)[0]
-        else:
-            self.plot_mp.set_data(*self.memory_profile)
-            tmax = self.memory_profile[0][-1]
-            mmax = max(self.memory_profile[1])
-            if tmax > self.ax_mp.get_xlim()[-1]:
-                self.ax_mp.set_xlim(0, tmax)
-            if mmax > self.ax_mp.get_ylim()[-1]:
-                self.ax_mp.set_ylim(0, mmax)
-
+        if pylab:
+            if not self.fig_mp:
+                self.fig_mp = pylab.figure()
+                self.fig_mp.show()
+                self.ax_mp = self.fig_mp.add_subplot(1, 1, 1)
+                self.ax_mp.set_autoscale_on(False)
+                self.ax_mp.set_xlabel("Run time (s)")
+                self.ax_mp.set_xlim(0, 100)
+                self.ax_mp.set_ylim(0, 2 ** 10)
+                self.ax_mp.set_ylabel("Memory occupancy (MB)")
+                self.ax_mp.set_title("Memory leak hunter")
+                self.plot_mp = self.ax_mp.plot(*self.memory_profile)[0]
+            else:
+                self.plot_mp.set_data(*self.memory_profile)
+                tmax = self.memory_profile[0][-1]
+                mmax = max(self.memory_profile[1])
+                if tmax > self.ax_mp.get_xlim()[-1]:
+                    self.ax_mp.set_xlim(0, tmax)
+                if mmax > self.ax_mp.get_ylim()[-1]:
+                    self.ax_mp.set_ylim(0, mmax)
         if self.fig_mp.canvas:
             update_fig(self.fig_mp)
 
