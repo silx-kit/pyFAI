@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2016"
+__date__ = "22/03/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -920,13 +920,12 @@ class Pilatus(Detector):
         return p1, p2, None
 
 
+
 class Pilatus100k(Pilatus):
     """
     Pilatus 100k detector
     """
     MAX_SHAPE = 195, 487
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus100k, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Pilatus200k(Pilatus):
@@ -934,8 +933,6 @@ class Pilatus200k(Pilatus):
     Pilatus 200k detector
     """
     MAX_SHAPE = (407, 487)
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus200k, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Pilatus300k(Pilatus):
@@ -943,8 +940,6 @@ class Pilatus300k(Pilatus):
     Pilatus 300k detector
     """
     MAX_SHAPE = (619, 487)
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus300k, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Pilatus300kw(Pilatus):
@@ -952,8 +947,6 @@ class Pilatus300kw(Pilatus):
     Pilatus 300k-wide detector
     """
     MAX_SHAPE = (195, 1475)
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus300kw, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Pilatus1M(Pilatus):
@@ -961,8 +954,6 @@ class Pilatus1M(Pilatus):
     Pilatus 1M detector
     """
     MAX_SHAPE = (1043, 981)
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus1M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Pilatus2M(Pilatus):
@@ -971,8 +962,6 @@ class Pilatus2M(Pilatus):
     """
 
     MAX_SHAPE = 1679, 1475
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus2M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 class Pilatus6M(Pilatus):
@@ -983,6 +972,61 @@ class Pilatus6M(Pilatus):
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
+
+class PilatusCdTe(Pilatus):
+    """
+    Pilatus CdTe detector: Like the Pilatus with an extra 3 pixel in the middle
+    of every module (vertically)
+    """
+    def calc_mask(self):
+        """
+        Returns a generic mask for Pilatus detectors...
+        """
+        if self.max_shape is None:
+            raise NotImplementedError("Generic Pilatus detector does not know "
+                                      "its max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        # workinng in dim0 = Y
+        for i in range(self.MODULE_SIZE[0], self.max_shape[0],
+                       self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+            mask[i: i + self.MODULE_GAP[0], :] = 1
+        # workinng in dim1 = X
+        for i in range(self.MODULE_SIZE[1], self.max_shape[1],
+                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+            mask[:, i: i + self.MODULE_GAP[1]] = 1
+        # Small gaps in the middle of the module
+        for i in range(self.MODULE_SIZE[1] // 2, self.max_shape[1],
+                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+            mask[:, i - 1: i + 2] = 1
+
+        return mask
+
+class PilatusCdTe300k(PilatusCdTe):
+    """
+    Pilatus CdTe 300k detector
+    """
+    MAX_SHAPE = (619, 487)
+
+
+class PilatusCdTe300kw(PilatusCdTe):
+    """
+    Pilatus CdTe 300k-wide detector
+    """
+    MAX_SHAPE = (195, 1475)
+
+
+class PilatusCdTe1M(PilatusCdTe):
+    """
+    Pilatus CdTe 1M detector
+    """
+    MAX_SHAPE = (1043, 981)
+
+
+class PilatusCdTe2M(PilatusCdTe):
+    """
+    Pilatus CdTe 2M detector
+    """
+    MAX_SHAPE = 1679, 1475
 
 class Eiger(Detector):
     """
@@ -1087,8 +1131,6 @@ class Eiger1M(Eiger):
     Eiger 1M detector
     """
     MAX_SHAPE = (1065, 1030)
-    def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class Eiger4M(Eiger):
@@ -1096,8 +1138,6 @@ class Eiger4M(Eiger):
     Eiger 4M detector
     """
     MAX_SHAPE = (2167, 2070)
-    def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class Eiger9M(Eiger):
@@ -1105,8 +1145,6 @@ class Eiger9M(Eiger):
     Eiger 9M detector
     """
     MAX_SHAPE = (3269, 3110)
-    def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class Eiger16M(Eiger):
@@ -1114,8 +1152,6 @@ class Eiger16M(Eiger):
     Eiger 16M detector
     """
     MAX_SHAPE = (4371, 4150)
-    def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class Fairchild(Detector):
