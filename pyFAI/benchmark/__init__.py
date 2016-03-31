@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "22/03/2016"
+__date__ = "31/03/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -212,7 +212,10 @@ data = fabio.open(r"%s").data
             devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
             platform = str(ocl.platforms[platformid]).split()[0]
             if devicetype == "CPU":
-                device = (str(ocl.platforms[platformid].devices[deviceid]).split("@")[0]).split()[-1]
+                cpu_name = (str(ocl.platforms[platformid].devices[deviceid]).split("@")[0]).split()
+                device = ""
+                while cpu_name and len(device)<5:
+                    device = device + " " + cpu_name.pop()
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
