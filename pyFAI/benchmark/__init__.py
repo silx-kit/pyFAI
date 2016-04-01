@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "31/03/2016"
+__date__ = "01/04/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -58,7 +58,15 @@ except:
     def update_fig(*ag, **kwarg):
         pass
 
-ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
+
+ds_list = ["Pilatus1M.poni",
+           "halfccd.poni",
+           "Frelon2k.poni",
+           "Pilatus6M.poni",
+           "Mar3450.poni",
+           "Fairchild.poni"]
+
+
 datasets = {"Fairchild.poni": "1880/Fairchild.edf",
             "halfccd.poni": "1882/halfccd.edf",
             "Frelon2k.poni": "1881/Frelon2k.edf",
@@ -66,6 +74,7 @@ datasets = {"Fairchild.poni": "1880/Fairchild.edf",
             "Pilatus1M.poni": "1883/Pilatus1M.edf",
             "Mar3450.poni": "2201/LaB6_260210.mar3450"
             }
+
 PONIS = {
 "Pilatus6M.poni": {'dist': 0.3, 'poni2': 0.2115772, 'poni1': 0.225406, 'detector': 'Pilatus6M'},
 "Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1':-0.506766875792, 'rot3':-1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
@@ -214,8 +223,8 @@ data = fabio.open(r"%s").data
             if devicetype == "CPU":
                 cpu_name = (str(ocl.platforms[platformid].devices[deviceid]).split("@")[0]).split()
                 device = ""
-                while cpu_name and len(device)<5:
-                    device = device + " " + cpu_name.pop()
+                while cpu_name and len(device) < 5:
+                    device = cpu_name.pop() + "" + device
             else:
                 device = ' '.join(str(ocl.platforms[platformid].devices[deviceid]).split())
             print("Working on device: %s platform: %s device: %s" % (devicetype, platform, device))
@@ -596,7 +605,10 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
 
     bench.ax.set_ylim(0.5, 500)
 
+
 run = run_benchmark
+
+
 if __name__ == "__main__":
     try:
         from argparse import ArgumentParser
