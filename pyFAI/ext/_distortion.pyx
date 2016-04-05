@@ -24,8 +24,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "28/01/2016"
-__copyright__ = "2011-2015, ESRF"
+__date__ = "05/04/2016"
+__copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -47,9 +47,9 @@ from ..detectors import detector_factory
 from ..utils import expand2d
 from ..decorators import timeit
 try:
-    import six
+    from ..third_party import six
 except ImportError:
-    from .third_party import six
+    import six
 import fabio
 
 cdef struct lut_point:
@@ -808,11 +808,11 @@ def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=Non
         float A0, A1, B0, B1, C0, C1, D0, D1
         bint do_mask = mask is None
     shape0, shape1 = shape
-    
+
     if do_mask:
         assert mask.shape[0] == shape0
         assert mask.shape[1] == shape1
-        
+
     with nogil:
         for i in range(shape0):
             for j in range(shape1):
@@ -839,7 +839,7 @@ def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=Non
 @cython.wraparound(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size, 
+def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """
     @param pos: 4D position array
@@ -849,7 +849,7 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
     @param mask: arry with bad pixels marked as True
     @return: look-up table
     """
-    cdef: 
+    cdef:
         int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
         int offset0, offset1, box_size0, box_size1, size, k
         numpy.int32_t idx = 0
@@ -953,7 +953,7 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
 @cython.wraparound(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size, 
+def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """
     @param pos: 4D position array
@@ -1089,7 +1089,7 @@ def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_du
         float[:] lout, lin
         bint do_dummy = dummy is not None
     if do_dummy:
-        cdummy = dummy  
+        cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
     shape0, shape1 = shape
@@ -1107,7 +1107,7 @@ def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_du
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
     for i in prange(lshape0, nogil=True, schedule="static"):
-        sum = 0.0    
+        sum = 0.0
         error = 0.0  # Implement Kahan summation
         for j in range(lshape1):
             idx = LUT[i, j].idx
@@ -1152,7 +1152,7 @@ def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):
         bint do_dummy = dummy is not None
 
     if do_dummy:
-        cdummy = dummy 
+        cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
 
@@ -1183,7 +1183,7 @@ def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):
                 with gil:
                     logger.warning("Accessing %i >= %i !!!" % (idx, size))
                     continue
-            value = lin[idx] 
+            value = lin[idx]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
             y = value * coef - error

@@ -404,6 +404,30 @@ class sdist_debian(sdist):
 cmdclass['debian_src'] = sdist_debian
 
 
+class TestData(Command):
+    """
+    Tailor made tarball with test data
+    """
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        datafiles = download_images()
+        arch = op.join("dist", PROJECT + "-testimages.tar.gz")
+        print("Building testdata tarball in %s" % arch)
+        if os.path.exists(arch):
+            os.unlink(arch)
+        import tarfile
+        with tarfile.open(name=arch, mode='w:gz') as tarball:
+            for afile in datafiles:
+                tarball.add(os.path.join("testimages", afile), afile)
+cmdclass['testimages'] = TestData
+
 class PyTest(Command):
     user_options = []
 

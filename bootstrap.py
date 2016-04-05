@@ -13,7 +13,7 @@ example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "26/03/2016"
+__date__ = "31/03/2016"
 
 
 import sys
@@ -84,7 +84,8 @@ if sys.version_info[0] >= 3:  # Python3
 def runfile(fname):
     try:
         execfile(fname)
-    except SyntaxError:
+    except SyntaxError as error:
+        print(error)
         env = os.environ.copy()
         env.update({"PYTHONPATH": LIBPATH + os.pathsep + os.environ.get("PYTHONPATH", ""),
                     "PATH": SCRIPTSPATH + os.pathsep + os.environ.get("PATH", "")})
