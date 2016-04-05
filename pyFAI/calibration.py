@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/03/2016"
+__date__ = "05/04/2016"
 __status__ = "production"
 
 import os
@@ -1145,7 +1145,7 @@ class AbstractCalibration(object):
         t2 = time.time()
         self.geoRef.chiArray(self.peakPicker.shape)
         t2a = time.time()
-        self.geoRef.cornerArray(self.peakPicker.shape)
+        self.geoRef.self.corner_array(self.peakPicker.shape, "2th_deg")
         t2b = time.time()
         if self.gui:
             if self.fig_integrate is None:
