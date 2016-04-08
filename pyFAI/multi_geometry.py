@@ -3,6 +3,8 @@
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
+#    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, Grenoble, France
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -29,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "08/04/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
