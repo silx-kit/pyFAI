@@ -5,13 +5,13 @@ Files-Excluded: third_party
                 dll
 
 Files: *
-Copyright: 2011-2014 European Synchrotron Radiation Facility
-           Jerome Kieffer (jerome.kieffer@esrf.fr)
+Copyright: 2011-2016 European Synchrotron Radiation Facility
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2012 Jerome Kieffer <jerome.kieffer@esrf.fr>
-	   2013-2015 Picca Frédéric-Emmanuel <picca@debian.org>
+Copyright: 2012-2014 Jerome Kieffer <jerome.kieffer@esrf.fr>
+	       2013-2016 Picca Frédéric-Emmanuel <picca@debian.org>
+	       2015-2016 European Synchrotron Radiation Facility
 License: GPL-3.0+
 
 Files: openCL/bitonic.cl
@@ -21,8 +21,21 @@ License: public-domain
 
 Files: src/marchingsquares.pyx
 Copyright: 2012, Almar Klein
-	   2014, Jerome Kieffer
+	       2015-2016 European Synchrotron Radiation Facility
 License: BSD-3
+
+Files: version.py
+       pyFAI/multi_geometry.py
+       pyFAI/orderedset.py
+       pyFAI/tree.py
+       pyFAI/diffmap_widget.py
+       pyFAI/diffmap.py
+       pyFAI/ocl_sort.py
+       pyFAI/decorators.py
+       run_tests.py
+Copyright: 2015-2016 European Synchrotron Radiation Facility
+License: MIT/X11 (BSD like)
+ 
 
 License: BSD-3
  Redistribution and use in source and binary forms, with or without
@@ -70,3 +83,22 @@ License: GPL-3.0+
 License: public-domain
  You can use this free for any purpose. It's in the public domain. It
  has no warranty
+
+License: MIT/X11 (BSD like)
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
