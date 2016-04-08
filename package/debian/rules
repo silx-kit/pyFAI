@@ -7,7 +7,6 @@ export PYBUILD_NAME=pyfai
 
 override_dh_clean:
 	dh_clean
-# remove the cython generated file to force rebuild
 	rm -f $(patsubst %.pyx,%.c,$(wildcard pyFAI/ext/*.pyx))
 	rm -rf build/html
 	rm -rf *.egg-info
@@ -15,22 +14,43 @@ override_dh_clean:
 override_dh_auto_build:
 	dh_auto_build
 	PYBUILD_SYSTEM=custom \
-	PYBUILD_BUILD_ARGS="PYTHONPATH={build_dir} http_proxy='localhost' sphinx-build -N -bhtml doc/source build/html" dh_auto_build  # H
+	PYBUILD_BUILD_ARGS="PYTHONPATH={build_dir} http_proxy='localhost' sphinx-build -N -bhtml doc/source build/html" dh_auto_build 
+
+# unactive test for now
+#override_dh_auto_test:
+#	PYBUILD_SYSTEM=custom \
+#	PYBUILD_TEST_ARGS="PYTHONPATH={build_dir} FABIO_TESTIMAGES=testimages {interpreter} ./run_tests.py" dh_auto_test
 
 override_dh_install:
 	dh_numpy
 	dh_numpy3
-	dh_install
-# move the scripts into fabio-viewer
+
+	# move the scripts to right package
 	dh_install -p pyfai debian/python-pyfai/usr/bin usr/
-# remove all scripts installed by pybuild
+	# remove all scripts installed by pybuild
 	rm -rf debian/python-pyfai/usr/bin
 	rm -rf debian/python-pyfai-dbg/usr/bin
 	rm -rf debian/python3-pyfai/usr/bin
 	rm -rf debian/python3-pyfai-dbg/usr/bin
 
-override_dh_auto_test:
-#	dh_auto_test -- -s custom --test-args="env PYTHONPATH={build_dir} {interpreter} test/test_all.py"
+	# remove all py/pyc/egg-info files from dbg packages
+	find debian/python-pyfai-dbg/usr -name "*.ui" -type f -delete
+	find debian/python-pyfai-dbg/usr -name "*.D" -type f -delete
+	find debian/python-pyfai-dbg/usr -name "*.cl" -type f -delete
+	find debian/python-pyfai-dbg/usr -name "*.py" -type f -delete
+	find debian/python-pyfai-dbg/usr -name "*.pyc" -type f -delete
+	find debian/python-pyfai-dbg/usr -path '*/*.egg-info/*' -delete
+	find debian/python-pyfai-dbg/usr -name "*.egg-info" -type d -empty -delete
+	find debian/python3-pyfai-dbg/usr -name "*.ui" -type f -delete
+	find debian/python3-pyfai-dbg/usr -name "*.D" -type f -delete
+	find debian/python3-pyfai-dbg/usr -name "*.cl" -type f -delete
+	find debian/python3-pyfai-dbg/usr -name "*.py" -type f -delete
+	find debian/python3-pyfai-dbg/usr -name "*.pyc" -type f -delete
+	find debian/python3-pyfai-dbg/usr -path '*/*.egg-info/*' -delete
+	find debian/python3-pyfai-dbg/usr -name "*.egg-info" -type d  -empty -delete
+
+	#Finally install stuff
+	dh_install
 
 override_dh_installman:
 	dh_installman -p pyfai doc/*.1
