@@ -8,7 +8,7 @@ Main development website: https://github.com/kif/pyFAI
 pyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
 It is based on histogramming of the 2theta/Q positions of each (center of)
-pixel weighted by the intensity of each pixel, but parallel version use a
+pixel weighted by the intensity of each pixel, but parallel version uses a
 SparseMatrix-DenseVector multiplication.
 Neighboring output bins get also a contribution of pixels next to the border
 thanks to pixel splitting.
@@ -26,9 +26,16 @@ References:
 * Benchmarks and optimization procedure is described in the proceedings of EuroSciPy2014:
   http://conference.scipy.org/category/euroscipy.html (accepted)
 
-
 Installation
 ------------
+
+As most Python packages, pyFAI is available via PIP::
+
+   pip install silx [--user]
+
+Provide the *--user* to perform an installation local to your user.
+Under UNIX, you may have to run the command via *sudo* to gain root access an
+perform a system wide installation.
 
 The latest release of pyFAI can be downloaded from
 `Github<https://github.com/pyFAI/pyFAI/archive/master.zip>`_.
@@ -51,6 +58,7 @@ Build it & test it::
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
 you may have to setup a proxy configuration like this::
+
    export http_proxy=http://proxy.site.org:3128
    python setup.py build test
 
@@ -68,7 +76,7 @@ installed version)::
     pip install . --upgrade --user
 
 The newest development version can also be obtained by checking out from the git
-repository.::
+repository::
 
     git clone https://github.com/kif/pyFAI.git
     cd pyFAI
@@ -92,7 +100,7 @@ Documentation
 
 Documentation can be build using this command and Sphinx (installed on your computer)::
 
-    python setup.py build_doc
+    python setup.py build build_doc
 
 
 Dependencies
@@ -112,14 +120,19 @@ For full functionality of pyFAI the following modules need to be installed.
 
 Those dependencies can simply be installed by::
 
-  pip install -r requirements.txt
+   pip install -r requirements.txt
+
 
 Ubuntu and Debian Like linux distributions:
 -------------------------------------------
 
 To use pyFAI on Ubuntu/Debian the needed python modules
-can be installed either through the Synaptic Package Manager (found in System -> Administration)
-or using apt-get on from the command line in a terminal.
+can be installed either through the Synaptic Package Manager
+(found in System -> Administration)
+or using apt-get on from the command line in a terminal::
+
+   sudo apt-get install pyfai
+
 The extra ubuntu packages needed are:
 
     * python-numpy
@@ -138,15 +151,15 @@ using apt-get these can be installed as::
 MacOSX
 ------
 
-You are advised to build pyFAI with the GCC compiler, clang (<3.5) laking the
-support of OpenMP.
-If you use Xcode5, append the "--no-openmp" option to deactivate multithreading
+You are advised to build pyFAI with the GCC compiler, as the compiler provided
+by Apple with XCode (a derivative of clang) lakes the support of OpenMP.
+If you use Xcode5 or newer, append the "--no-openmp" option to deactivate multithreading
 in binary modules.
 You will also need *cython* to re-generate the C-files and delete *src/histogram.c*
 before running::
 
-    pip install cython
-    rm src/histogram.c
+    pip install cython --user --upgrade
+    rm pyFAI/ext/histogram.c
     python setup.py build --no-openmp
 
 
@@ -155,13 +168,13 @@ Windows
 
 Under 32 bits windows, pyFAI can be built using The MinGW compiler. Unfortunately,
 pyFAI will be limited to small images as the memory consumption, limited to 2GB
-under windows, easy easily reached. The VisualStudio C++ compiler works as well.
+under windows, is easily reached.
 With 64 bits windows, the Visual Studio C++ compiler is the only one known to
 work correctly.
 
 Dependencies for windows have been regrouped in our wheelhouse, just use::
 
-  pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt
+   pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt
 
 Getting help
 ------------
