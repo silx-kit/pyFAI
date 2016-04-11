@@ -65,15 +65,15 @@ This command may request your password to gain root-access::
 If you prefer a local installation (only you will have access to the
 installed version)::
 
-    python setup.py install --user
+    pip install . --upgrade --user
 
 The newest development version can also be obtained by checking out from the git
 repository.::
 
-    git clone https://github.com/pyFAI/pyFAI.git
+    git clone https://github.com/kif/pyFAI.git
     cd pyFAI
     python setup.py build bdist_wheel
-    sudo pip install .
+    sudo pip install . --upgrade
 
 If you want pyFAI to make use of your graphic card, please install
 `pyopencl <http://mathema.tician.de/software/pyopencl>`_
@@ -98,7 +98,8 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 2.6, 2.7, 3.2, 3.3, 3.4 and 3.5.
+Python 2.7, 3.4 and 3.5 are well tested.
+Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
 For full functionality of pyFAI the following modules need to be installed.
 
     * numpy 		- 	http://www.numpy.org

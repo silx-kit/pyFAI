@@ -264,8 +264,8 @@ parser.add_argument("-v", "--verbose", default=0,
                     help="Increase verbosity")
 default_test_name = "%s.test.suite" % PROJECT_NAME
 parser.add_argument("test_name", nargs='*',
-        default=(default_test_name,),
-        help="Test names to run (Default: %s)" % default_test_name)
+                    default=(default_test_name,),
+                    help="Test names to run (Default: %s)" % default_test_name)
 options = parser.parse_args()
 sys.argv = [sys.argv[0]]
 
