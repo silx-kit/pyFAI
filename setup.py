@@ -21,16 +21,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import with_statement, print_function
-"""
-Setup script for python Fast Azimuthal Integration
-"""
+from __future__ import print_function, division, with_statement, absolute_import
 
+__doc__ = "Setup script for python Fast Azimuthal Integration"
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/03/2016"
+__date__ = "11/04/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -274,11 +272,22 @@ def download_images():
     """
     Download all test images and
     """
-    test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    test_dir = os.path.join(root_dir, PROJECT, "test")
     sys.path.insert(0, test_dir)
     from utilstest import UtilsTest
-    UtilsTest.download_images()
-    return list(UtilsTest.ALL_DOWNLOADED_FILES)
+    image_home = os.path.join(root_dir, "testimages")
+    testimages = os.path.join(root_dir, "all_testimages.json")
+    UtilsTest.image_home = image_home
+    UtilsTest.testimages = testimages
+    if os.path.exists(testimages):
+        import json
+        with open(testimages) as f:
+            all_files = set(json.load(f))
+    else:
+        raise(RuntimeError("Please run 'python setup.py build test' to download all images"))
+    return list(all_files)
+
 
 installDir = PROJECT
 
@@ -361,7 +370,6 @@ class sdist_debian(sdist):
     Tailor made sdist for debian
     * remove auto-generated doc
     * remove cython generated .c files
-    * add image files from test/testimages/*
     """
     def prune_file_list(self):
         sdist.prune_file_list(self)
@@ -370,8 +378,8 @@ class sdist_debian(sdist):
         for rm in to_remove:
             self.filelist.exclude_pattern(pattern="*", anchor=False, prefix=rm)
         # this is for Cython files specifically
-        self.filelist.exclude_pattern(pattern="*.html", anchor=True, prefix=PROJECT + "/ext")
-        for pyxf in glob.glob(PROJECT + "/ext/*.pyx"):
+        self.filelist.exclude_pattern(pattern="*.html", anchor=True, prefix=PROJECT + "ext")
+        for pyxf in glob.glob(PROJECT + "ext/*.pyx"):
             cf = os.path.splitext(pyxf)[0] + ".c"
             if os.path.isfile(cf):
                 self.filelist.exclude_pattern(pattern=cf)
@@ -383,6 +391,7 @@ class sdist_debian(sdist):
 #                                       prefix="test/testimages")
 
     def make_distribution(self):
+        self.prune_file_list()
         sdist.make_distribution(self)
         dest = self.archive_files[0]
         dirname, basename = os.path.split(dest)
@@ -418,8 +427,11 @@ class TestData(Command):
 
     def run(self):
         datafiles = download_images()
-        arch = op.join("dist", PROJECT + "-testimages.tar.gz")
+        dist = "dist"
+        arch = os.path.join(dist, PROJECT + "-testimages.tar.gz")
         print("Building testdata tarball in %s" % arch)
+        if not os.path.isdir(dist):
+            os.mkdir(dist)
         if os.path.exists(arch):
             os.unlink(arch)
         import tarfile
@@ -427,6 +439,7 @@ class TestData(Command):
             for afile in datafiles:
                 tarball.add(os.path.join("testimages", afile), afile)
 cmdclass['testimages'] = TestData
+
 
 class PyTest(Command):
     user_options = []
@@ -438,6 +451,7 @@ class PyTest(Command):
         pass
 
     def run(self):
+        import subprocess
         errno = subprocess.call([sys.executable, 'run_tests.py', '-i'])
         if errno != 0:
             raise SystemExit(errno)

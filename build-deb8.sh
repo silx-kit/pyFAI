@@ -37,6 +37,8 @@ if [ -d /usr/lib/ccache ];
 then
    export PATH=/usr/lib/ccache:$PATH
 fi
+
+
 python setup.py debian_src
 cp -f dist/${tarname} package
 
@@ -47,7 +49,8 @@ fi
 
 cd package
 tar -xzf ${tarname}
-newname=${project}_${strictversion}.orig.tar.gz
+deb_name=$(echo "$project" | tr '[:upper:]' '[:lower:]')
+newname=${deb_name}_${strictversion}.orig.tar.gz
 directory=${project}-${strictversion}
 echo tarname $tarname newname $newname
 if [ $tarname != $newname ]
@@ -61,9 +64,9 @@ fi
 
 if [ -f ${project}-testimages.tar.gz ]
 then
-  if [ ! -h  python-${project}_${strictversion}.orig-testimages.tar.gz ]
+  if [ ! -h  ${deb_name}_${strictversion}.orig-testimages.tar.gz ]
   then
-    ln -s ${project}-testimages.tar.gz python-${project}_${strictversion}.orig-testimages.tar.gz
+    ln -s ${project}-testimages.tar.gz ${deb_name}_${strictversion}.orig-testimages.tar.gz
   fi
 fi
 

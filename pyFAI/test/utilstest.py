@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2016"
+__date__ = "11/04/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -154,6 +154,7 @@ class UtilsTest(object):
         For the RedMine forge, the filename contains a directory name that is removed
         @return: full path of the locally saved file
         """
+        imagename = os.path.basename(imagename)
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
             image_list = list(cls.ALL_DOWNLOADED_FILES)
@@ -163,13 +164,11 @@ class UtilsTest(object):
                     json.dump(image_list, fp, indent=4)
             except IOError:
                 logger.debug("Unable to save JSON list")
-        baseimage = os.path.basename(imagename)
-        imagename = baseimage
-        logger.info("UtilsTest.getimage('%s')" % baseimage)
+        logger.info("UtilsTest.getimage('%s')" % imagename)
         if not os.path.exists(cls.image_home):
             os.makedirs(cls.image_home)
 
-        fullimagename = os.path.abspath(os.path.join(cls.image_home, baseimage))
+        fullimagename = os.path.abspath(os.path.join(cls.image_home, imagename))
         if not os.path.isfile(fullimagename):
             logger.info("Trying to download image %s, timeout set to %ss",
                         imagename, cls.timeout)
@@ -188,7 +187,7 @@ class UtilsTest(object):
             logger.info("wget %s/%s" % (cls.url_base, imagename))
             data = opener("%s/%s" % (cls.url_base, imagename),
                           data=None, timeout=cls.timeout).read()
-            logger.info("Image %s successfully downloaded." % baseimage)
+            logger.info("Image %s successfully downloaded." % imagename)
 
             try:
                 with open(fullimagename, "wb") as outfile:
