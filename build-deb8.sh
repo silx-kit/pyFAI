@@ -32,6 +32,7 @@ debian=$(grep -o '[0-9]*' /etc/issue)
 version=$(python -c"import version; print(version.version)")
 strictversion=$(python -c"import version; print(version.strictversion)")
 tarname=${project}_${strictversion}.orig.tar.gz
+deb_name=$(echo "$project" | tr '[:upper:]' '[:lower:]')
 
 if [ -d /usr/lib/ccache ];
 then
@@ -49,7 +50,6 @@ fi
 
 cd package
 tar -xzf ${tarname}
-deb_name=$(echo "$project" | tr '[:upper:]' '[:lower:]')
 newname=${deb_name}_${strictversion}.orig.tar.gz
 directory=${project}-${strictversion}
 echo tarname $tarname newname $newname
@@ -75,14 +75,14 @@ cp -r ../debian .
 cp ../../copyright debian
 
 #handle test images
-if [ -f ../python-${project}_${strictversion}.orig-testimages.tar.gz ]
+if [ -f ../${deb_name}_${strictversion}.orig-testimages.tar.gz ]
 then
   if [ ! -d testimages ]
   then
     mkdir testimages
   fi
   cd testimages
-  tar -xzf  ../../python-${project}_${strictversion}.orig-testimages.tar.gz
+  tar -xzf  ../../${deb_name}_${strictversion}.orig-testimages.tar.gz
   cd ..
 else
   # Disable to skip tests during build
