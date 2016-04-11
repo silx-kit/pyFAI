@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/04/2016"
+__date__ = "11/04/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1051,14 +1051,6 @@ class AzimuthalIntegrator(Geometry):
         else:
             assert mask.shape == shape
 
-#         if pos0 is not None:
-#             print("pos0", pos0.shape)
-#         if dpos0 is not None:
-#             print("dpos0", dpos0.shape)
-#         if pos1 is not None:
-#             print("pos1", pos1.shape)
-#         if dpos1 is not None:
-#             print(dpos1, dpos1.shape)
         if int2d:
             return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
                                             bins=npt,
@@ -1944,7 +1936,6 @@ class AzimuthalIntegrator(Geometry):
             polarization = None
         else:
             polarization = self.polarization(data.shape, polarization_factor)
-#         print(tth.shape, dtth.shape, chi.shape, dchi.shape)
         I, bins2Th, binsChi, _, _ = splitBBox.histoBBox2d(weights=data,
                                                           pos0=tth,
                                                           delta_pos0=dtth,
