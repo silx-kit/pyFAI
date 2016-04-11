@@ -25,23 +25,21 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "29/01/2016"
+__date__ = "11/04/2016"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os, gc, logging
+import gc
+import logging
 import threading
-import hashlib
 import numpy
 from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
-from .ext.splitBBoxLUT import HistoBBox1d
 from .utils import concatenate_cl_kernel, calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 logger = logging.getLogger("pyFAI.ocl_azim_csr")
-
 
 
 class OCL_CSR_Integrator(object):
@@ -81,7 +79,11 @@ class OCL_CSR_Integrator(object):
 
         if not checksum:
             checksum = calc_checksum(self._data)
-        self.on_device = {"data":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
+        self.on_device = {"data": checksum,
+                          "dark": None,
+                          "flat": None,
+                          "polarization": None,
+                          "solidangle": None}
         self._cl_kernel_args = {}
         self._cl_mem = {}
         self.events = []
@@ -115,21 +117,50 @@ class OCL_CSR_Integrator(object):
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
-        if self.profile: self.events.append(("copy Coefficient data", ev))
+        if self.profile:
+            self.events.append(("copy Coefficient data", ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], self._indices)
-        if self.profile: self.events.append(("copy Row Index data", ev))
+        if self.profile:
+            self.events.append(("copy Row Index data", ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
-        if self.profile: self.events.append(("copy Column Pointer data", ev))
+        if self.profile:
+            self.events.append(("copy Column Pointer data", ev))
 
     def __del__(self):
-        """
-        Destructor: release all buffers
+        """Destructor: release all buffers
         """
         self._free_kernels()
         self._free_buffers()
         self._queue = None
         self.ctx = None
         gc.collect()
+
+    def __copy__(self):
+        """Shallow copy of the object
+        
+        :return: copy of the object
+        """
+        return self.__class__((self._data, self._indices, self._indptr),
+                              self.size, block_size=self.BLOCK_SIZE,
+                              platformid=self.platform.id,
+                              deviceid=self.device.id,
+                              checksum=self.on_device.get("data"),
+                              profile=self.profile, empty=self.empty)
+
+    def __deepcopy__(self, memo=None):
+        """deep copy of the object
+        
+        :return: deepcopy of the object
+        """
+        new_obj = self.__class__((self._data.copy(), self._indices.copy(), self._indptr.copy()),
+                                 self.size, block_size=self.BLOCK_SIZE,
+                                 platformid=self.platform.id,
+                                 deviceid=self.device.id,
+                                 checksum=self.on_device.get("data"),
+                                 profile=self.profile, empty=self.empty)
+        if memo is not None:
+            memo[id(self)] = new_obj
+        return new_obj
 
     def _allocate_buffers(self):
         """
