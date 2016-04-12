@@ -203,12 +203,12 @@ class Geometry(object):
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
         self._cached_array = {}  # dict for caching all arrays
 #         self._ttha = None -> self._cached_array.get("2th_center")
-        self._dttha = None
+#         self._dttha = None -> self._cached_array.get("2th_delta")
         self._dssa = None
         self._dssa_crc = None  # checksum associated with _dssa
         self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
         # self._chia = None # self._cached_array.get("q_center")
-        self._dchia = None
+#         self._dchia = None -> self._cached_array.get("chi_delta")
         # self._qa = None # -> self._cached_array.get("q_center")
         self._dqa = None
 #         self._ra = None -> self._cached_array.get("r_center")
@@ -499,7 +499,7 @@ class Geometry(object):
 
         if self._cached_array.get("r_center") is None:
             with self._sem:
-                if self._ra is None:
+                if self._cached_array.get("r_center") is None:
                     self._cached_array["r_center"] = numpy.fromfunction(self.rFunction, shape,
                                                                         dtype=numpy.float32)
         return self._cached_array.get("r_center")
@@ -883,19 +883,20 @@ class Geometry(object):
            * dim3[1]: azimuthal angle chi
         """
         space_name_map = {  # space -> array name
-                           "2th": "_dttha",
-                           "chi":"_dchia",
-                           "q":"_dqa",
-                           "r":"_dra",
-                           "d*2":"_drd2a"}
+                           # "2th_delta": "_dttha",
+#                            "chi_delta":"_dchia",
+                           "q_delta":"_dqa",
+                           "r_delta":"_dra",
+                           "d*2_delta":"_drd2a"
+                           }
 
         unit = units.to_unit(unit)
-        space = unit.REPR.split("_")[0]
+        space = unit.REPR.split("_")[0] + "_delta"
         ary = None
         if (space in space_name_map):
             ary = self.__getattribute__(space_name_map[space])
-        elif "delta_" + space in self._cached_array:
-            ary = self._cached_array["delta_" + space]
+        else:
+            ary = self._cached_array.get(space)
 
         shape = self.get_shape(shape)
         if shape is None:
@@ -912,7 +913,7 @@ class Geometry(object):
         if (space in space_name_map):
             self.__setattr__(space_name_map[space], ary)
         else:
-            self._cached_array["delta_" + space] = ary
+            self._cached_array[space] = ary
 
         return ary
 
@@ -925,14 +926,14 @@ class Geometry(object):
         @return: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
         """
 
-        if self._dttha is None:
+        if self._cached_array.get("2th_delta") is None:
             center = self.twoThetaArray(shape)
             corners = self.corner_array(shape, unit=units.TTH)
             with self._sem:
-                if self._dttha is None:
+                if self._cached_array.get("2th_delta") is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._dttha = delta.max(axis=-1)
-        return self._dttha
+                    self._cached_array["2th_delta"] = delta.max(axis=-1)
+        return self._cached_array["2th_delta"]
 
     def deltaChi(self, shape=None):
         """
@@ -942,16 +943,16 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
         """
-        if self._dchia is None:
+        if self._cached_array.get("chi_delta") is None:
             center = numpy.atleast_3d(self.chiArray(shape))
             corner = self.corner_array(shape, None)
             with self._sem:
-                if self._dchia is None:
+                if self._cached_array.get("chi_delta") is None:
                     twoPi = 2.0 * numpy.pi
                     delta = numpy.minimum(((corner[:, :, :, 1] - center) % twoPi),
                                           ((center - corner[:, :, :, 1]) % twoPi))
-                    self._dchia = delta.max(axis=-1)
-        return self._dchia
+                    self._cached_array["chi_delta"] = delta.max(axis=-1)
+        return self._cached_array["chi_delta"]
 
     def deltaQ(self, shape=None):
         """
@@ -1632,10 +1633,10 @@ class Geometry(object):
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         # self._ttha = None
-        self._dttha = None
+#         self._dttha = None
         self._dssa = None
         # self._chia = None
-        self._dchia = None
+#         self._dchia = None
         # self._qa = None
         self._dqa = None
 #         self._ra = None
@@ -1716,11 +1717,11 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      "_corner4Ds"]
-        array = ["_dttha", "_dssa", "_dchia", "_dqa",
+        array = [ "_dssa", "_dqa",
                  "_dra", "_drd2a",
                  "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
-        # "_ttha""_qa",, "_chia"_ra",, "_rd2a"
+        # "_ttha""_qa",, "_chia"_ra",, "_rd2a""_dttha",, "_dchia"
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
@@ -1738,11 +1739,11 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      "_corner4Ds"]
-        array = ["_dttha", "_dssa", "_dchia", "_dqa",
+        array = [ "_dssa", "_dqa",
                   "_dra", "_drd2a",
                  "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
-                # "_ttha", "_qa", "_chia""_ra",, "_rd2a"
+                # "_ttha", "_qa", "_chia""_ra",, "_rd2a""_dttha",, "_dchia"
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -1920,7 +1921,7 @@ class Geometry(object):
         logger.error("You are not allowed to modify chi array")
 
     def del_chia(self):
-        self._chia = None
+        self._cached_array["chi_center"] = None
     chia = property(get_chia, set_chia, del_chia, "chi array in cache")
 
     def get_dssa(self):
@@ -1931,18 +1932,27 @@ class Geometry(object):
 
     def del_dssa(self):
         self._dssa = None
-
     dssa = property(get_dssa, set_dssa, del_dssa, "solid angle array in cache")
 
     def get_qa(self):
-        return self._cached_array["q_center"]
+        return self._cached_array.get("q_center")
 
     def set_qa(self, _):
         logger.error("You are not allowed to modify Q array")
 
     def del_qa(self):
-        self._qa = None
+        self._cached_array["q_center"] = None
     qa = property(get_qa, set_qa, del_qa, "Q array in cache")
+
+    def get_ra(self):
+        return self._cached_array.get("r_center")
+
+    def set_ra(self, _):
+        logger.error("You are not allowed to modify R array")
+
+    def del_ra(self):
+        self.self._cached_array["r_center"] = None
+    ra = property(get_ra, set_ra, del_ra, "R array in cache")
 
     def get_pixel1(self):
         return self.detector.pixel1

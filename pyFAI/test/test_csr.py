@@ -78,12 +78,12 @@ class ParameterisedTestCase(unittest.TestCase):
         return suite
 
 
-class TestOpenclCSR(ParameterisedTestCase):
+class ParamOpenclCSR(ParameterisedTestCase):
 
     def test_csr(self):
         workgroup_size = self.param
-        out_ref = splitBBox.histoBBox1d(data, ai.ttha, ai._dttha, bins=N)
-        csr = splitBBoxCSR.HistoBBox1d(ai.ttha, ai._dttha, bins=N, unit="2th_deg")
+        out_ref = splitBBox.histoBBox1d(data, ai.ttha, ai._cached_array["2th_delta"], bins=N)
+        csr = splitBBoxCSR.HistoBBox1d(ai.ttha, ai._cached_array["2th_delta"], bins=N, unit="2th_deg")
         if not opencl.ocl:
             skip = True
         else:
@@ -141,7 +141,7 @@ def suite():
     if opencl.ocl:
         for param in TESTCASES:
             testsuite.addTest(ParameterisedTestCase.parameterise(
-                    TestOpenclCSR, param))
+                    ParamOpenclCSR, param))
     # if no opencl: no test
 #    testsuite.addTest(Test_CSR("test_2d_splitbbox"))
 #    testsuite.addTest(Test_CSR("test_2d_nosplit"))

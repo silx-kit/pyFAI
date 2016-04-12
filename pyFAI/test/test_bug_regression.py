@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2016"
+__date__ = "12/04/2016"
 
 import sys
 import os
@@ -153,11 +153,11 @@ class TestBug232(unittest.TestCase):
         import copy
         ai2 = copy.copy(ai)
         self.assertNotEqual(id(ai), id(ai2), "copy instances are different")
-        self.assertEqual(id(ai._ra), id(ai2._ra), "copy arrays are the same after copy")
+        self.assertEqual(id(ai.ra), id(ai2.ra), "copy arrays are the same after copy")
         self.assertEqual(id(ai.detector), id(ai2.detector), "copy detector are the same after copy")
         ai3 = copy.deepcopy(ai)
         self.assertNotEqual(id(ai), id(ai3), "deepcopy instances are different")
-        self.assertNotEqual(id(ai._ra), id(ai3._ra), "deepcopy arrays are different after copy")
+        self.assertNotEqual(id(ai.ra), id(ai3.ra), "deepcopy arrays are different after copy")
         self.assertNotEqual(id(ai.detector), id(ai3.detector), "deepcopy arrays are different after copy")
 
 
