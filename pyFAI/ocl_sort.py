@@ -205,7 +205,7 @@ class Separator(object):
             if isinstance(data, pyopencl.array.Array):
                 wg = min(32, self.max_workgroup_size)
                 size = ((self.npt_height * self.npt_width) + wg - 1) & ~(wg - 1)
-                evt = prg.copy_pad(queue, (size,), (ws,), data.data, self._cl_mem["input_data"].data, data.size, self._cl_mem["input_data"].size, dummy)
+                evt = self._cl_program.copy_pad(self._queue, (size,), (wg,), data.data, self._cl_mem["input_data"].data, data.size, self._cl_mem["input_data"].size, dummy)
                 events.append(("copy_pad", evt))
             else:
                 data_big = numpy.zeros((self.npt_height, self.npt_width), dtype=numpy.float32) + dummy

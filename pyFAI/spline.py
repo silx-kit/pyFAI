@@ -87,9 +87,9 @@ class Spline(object):
         self.ySplineKnotsX = []
         self.ySplineKnotsY = []
         self.ySplineCoeff = []
-        self.pixelSize = None
-        self.grid = None
-        self.filename = None
+        self.pixelSize = None #2-tuple of float
+        self.grid = None #
+        self.filename = None #string
         if filename is not None:
             self.read(filename)
 
@@ -107,6 +107,47 @@ class Spline(object):
                                                                      len(self.ySplineKnotsY),
                                                                      len(self.ySplineCoeff)))
         return os.linesep.join(lst)
+
+    def __copy__(self):
+        """@return: Shallow copy of the spline"""
+        unmutable =  "splineOrder", "lenStrFloat","xmin","ymin","xmax","ymax","filename","pixelSize","grid"
+        arrays = "xDispArray","yDispArray"
+        lists = "xSplineKnotsX","xSplineKnotsY","xSplineCoeff","ySplineKnotsX","ySplineKnotsY","ySplineCoeff"
+        new = self.__class__()
+        for key in unmutable+arrays+lists:
+            new.__setattr__(key, self.__getattribute__(key))
+        return new
+
+    def __deepcopy__(self, memo=None):
+        """@return: deep copy of the spline"""
+        unmutable =  "splineOrder", "lenStrFloat","xmin","ymin","xmax","ymax","filename","pixelSize","grid"
+        arrays = "xDispArray","yDispArray"
+        lists = "xSplineKnotsX","xSplineKnotsY","xSplineCoeff","ySplineKnotsX","ySplineKnotsY","ySplineCoeff"
+        
+        if memo is None:
+            memo = {}
+        new = self.__class__()
+        memo[id(self)] = new
+        for key in unmutable:
+            old_value = self.__getattribute__(key)
+            memo[id(old_value)] = old_value
+            new.__setattr__(key, old_value)
+        for key in arrays:
+            old_value = self.__getattribute__(key)
+            if (old_value is None) or (old_value is False):
+                new_value = old_value
+            elif "copy" in dir(old_value):
+                new_value = old_value.copy()
+            else:
+                new_value = 1 * old_value
+            memo[id(old_value)] = new_value
+            new.__setattr__(key, new_value)
+        for key in lists:
+            old_value = self.__getattribute__(key)
+            new_value = old_value[:]
+            memo[id(old_value)] = new_value
+            new.__setattr__(key, new_value)
+        return new
 
     def zeros(self, xmin=0.0, ymin=0.0, xmax=2048.0, ymax=2048.0,
               pixSize=None):

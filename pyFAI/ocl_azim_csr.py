@@ -152,14 +152,19 @@ class OCL_CSR_Integrator(object):
         
         :return: deepcopy of the object
         """
-        new_obj = self.__class__((self._data.copy(), self._indices.copy(), self._indptr.copy()),
-                                 self.size, block_size=self.BLOCK_SIZE,
+        if memo is None:
+            memo = {}
+        new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
+        memo[id(self._data)] = new_csr[0]
+        memo[id(self._indices)] = new_csr[1]
+        memo[id(self._indptr)] = new_csr[2]
+        new_obj = self.__class__(new_csr, self.size, 
+                                 block_size=self.BLOCK_SIZE,
                                  platformid=self.platform.id,
                                  deviceid=self.device.id,
                                  checksum=self.on_device.get("data"),
                                  profile=self.profile, empty=self.empty)
-        if memo is not None:
-            memo[id(self)] = new_obj
+        memo[id(self)] = new_obj
         return new_obj
 
     def _allocate_buffers(self):

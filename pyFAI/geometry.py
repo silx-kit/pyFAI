@@ -1735,13 +1735,8 @@ class Geometry(object):
                      new._rot1, new._rot2, new._rot3]
         return new
 
-    def __deepcopy__(self, memo):
-        """return a deep copy of itself.
-        #TODO: check & correct
-        """
-        new = self.__class__()
-        new.detector = self.detector.__deepcopy__(memo)
-        # transfer numerical values:
+    def __deepcopy__(self, memo=None):
+        """@return: a deep copy of itself."""
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
@@ -1752,8 +1747,18 @@ class Geometry(object):
                  "_ra", "_dra", "_rd2a", "_drd2a",
                  "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
+
+        if memo is None:
+            memo = {}
+        new = self.__class__()
+        memo[id(self)] = new
+        new_det = self.detector.__deepcopy__(memo)
+        new.detector = new_det
+        
         for key in numerical:
-            new.__setattr__(key, self.__getattribute__(key))
+            old_value = self.__getattribute__(key)
+            memo[id(old_value)] = old_value
+            new.__setattr__(key, old_value)
         for key in array:
             value = self.__getattribute__(key)
             if value is not None:

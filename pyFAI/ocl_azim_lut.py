@@ -27,9 +27,9 @@ __date__ = "29/01/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os, gc, logging
+import gc
+import logging
 import threading
-import hashlib
 import numpy
 from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .ext.splitBBoxLUT import HistoBBox1d
@@ -68,7 +68,7 @@ class OCL_LUT_Integrator(object):
         self.empty = empty or 0.0
 
         if not checksum:
-            checksum = crc32(self._lut)
+            checksum = calc_checksum(self._lut)
         self.on_device = {"lut":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
         self._cl_kernel_args = {}
         self._cl_mem = {}
@@ -118,6 +118,36 @@ class OCL_LUT_Integrator(object):
         self._queue = None
         self.ctx = None
         gc.collect()
+
+    def __copy__(self):
+        """Shallow copy of the object
+        
+        :return: copy of the object
+        """
+        return self.__class__(self._lut, self.size, 
+                              block_size=self.BLOCK_SIZE,
+                              platformid=self.platform.id,
+                              deviceid=self.device.id,
+                              checksum=self.on_device.get("lut"),
+                              profile=self.profile, empty=self.empty)
+
+    def __deepcopy__(self, memo=None):
+        """deep copy of the object
+        
+        :return: deepcopy of the object
+        """
+        if memo is None:
+            memo = {}
+        new_lut = self._lut.copy()
+        memo[id(self._lut)] = new_lut
+        new_obj = self.__class__(new_lut, self.size, 
+                                 block_size=self.BLOCK_SIZE,
+                                 platformid=self.platform.id,
+                                 deviceid=self.device.id,
+                                 checksum=self.on_device.get("lut"),
+                                 profile=self.profile, empty=self.empty)
+        memo[id(self)] = new_obj
+        return new_obj
 
     def _allocate_buffers(self):
         """

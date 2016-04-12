@@ -172,32 +172,38 @@ class Detector(with_metaclass(DetectorMeta, object)):
             (self.name, self.splineFile, self._pixel1, self._pixel2)
 
     def __copy__(self):
-        "@return a shallow copy of itself"
+        "@return: a shallow copy of itself"
+        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
+        mutable = ['_mask', '_dx', '_dy', 'flat', 'dark']
         new = self.__class__()
-        numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
-        array = ['_mask', '_dx', '_dy', 'flat', 'dark']
-        for key in numerical + array:
+        for key in unmutable + mutable:
             new.__setattr__(key, self.__getattribute__(key))
         if self._splineFile:
             new.set_splineFile(self._splineFile)
         return new
 
-    def __deepcopy__(self, memo):
-        "@return a deep copy of itself"
+    def __deepcopy__(self, memo=None):
+        "@return: a deep copy of itself"
+        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
+        mutable = ['_mask', '_dx', '_dy', 'flat', 'dark']
+        if memo is None:
+            memo = {}
         new = self.__class__()
-        numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
-        for key in numerical:
-            new.__setattr__(key, self.__getattribute__(key))
-        array = ['_mask', '_dx', '_dy', 'flat', 'dark']
-        for key in array:
+        memo[id(self)] = new
+        for key in unmutable:
+            old = self.__getattribute__(key)
+            memo[id(old)] = old
+            new.__setattr__(key, old)
+        for key in mutable:
             value = self.__getattribute__(key)
             if (value is None) or (value is False):
-                new.__setattr__(key, value)
+                new_value = value
             elif "copy" in dir(value):
-                new.__setattr__(key, value.copy())
+                new_value = value.copy()
             else:
-                new.__setattr__(key, 1 * value)
-
+                new_value = 1 * value
+            memo[id(value)] = new_value
+            new.__setattr__(key, new_value)
         if self._splineFile:
             new.set_splineFile(self._splineFile)
         return new

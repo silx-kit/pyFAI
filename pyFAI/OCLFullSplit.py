@@ -162,7 +162,7 @@ class OCLFullSplit1d(object):
                 kernel_file = utils.get_cl_file(kernel_name)
         else:
             kernel_file = str(kernel_file)
-        kernel_src = utils.read_cl_file(kernel_src)
+        kernel_src = utils.read_cl_file(kernel_file)
         compile_options = "-D BINS=%i -D POS_SIZE=%i -D SIZE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
                           (self.bins, self.pos_size, self.size, self.workgroup_size, numpy.finfo(numpy.float32).eps)
         logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
