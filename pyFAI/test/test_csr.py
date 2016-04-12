@@ -82,8 +82,8 @@ class TestOpenclCSR(ParameterisedTestCase):
 
     def test_csr(self):
         workgroup_size = self.param
-        out_ref = splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=N)
-        csr = splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg")
+        out_ref = splitBBox.histoBBox1d(data, ai.ttha, ai._dttha, bins=N)
+        csr = splitBBoxCSR.HistoBBox1d(ai.ttha, ai._dttha, bins=N, unit="2th_deg")
         if not opencl.ocl:
             skip = True
         else:

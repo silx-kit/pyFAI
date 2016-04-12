@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2016"
+__date__ = "12/04/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -201,19 +201,19 @@ class Geometry(object):
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
-        self._cached_array = {}
-        self._ttha = None
+        self._cached_array = {}  # dict for caching all arrays
+#         self._ttha = None -> self._cached_array.get("2th_center")
         self._dttha = None
         self._dssa = None
         self._dssa_crc = None  # checksum associated with _dssa
         self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
-        self._chia = None
+        # self._chia = None # self._cached_array.get("q_center")
         self._dchia = None
-        self._qa = None
+        # self._qa = None # -> self._cached_array.get("q_center")
         self._dqa = None
-        self._ra = None
+#         self._ra = None -> self._cached_array.get("r_center")
         self._dra = None
-        self._rd2a = None
+#         self._rd2a = None -> self._cached_array.get("d*2_center")
         self._drd2a = None
         self._corner4Da = None  # actual 4d corner array
         self._corner4Ds = None  # space for the corner array, 2th, q, r, ...
@@ -472,16 +472,18 @@ class Geometry(object):
         Generate an array of the given shape with q(i,j) for all
         elements.
         """
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
-        if self._qa is None:
+        if self._cached_array.get("q_center") is None:
             with self._sem:
-                if self._qa is None:
-                    self._qa = numpy.fromfunction(self.qFunction, shape,
-                                                  dtype=numpy.float32)
-        return self._qa
+                if self._cached_array.get("q_center") is None:
+                    qa = numpy.fromfunction(self.qFunction, shape,
+                                            dtype=numpy.float32)
+                    self._cached_array["q_center"] = qa
+
+        return self._cached_array["q_center"]
 
     def rArray(self, shape=None):
         """Generate an array of the given shape with r(i,j) for all elements;
@@ -490,17 +492,17 @@ class Geometry(object):
         @param shape: expected shape of the detector
         @return: 2d array of the given shape with radius in m from beam center on detector.
         """
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
 
-        if self._ra is None:
+        if self._cached_array.get("r_center") is None:
             with self._sem:
                 if self._ra is None:
-                    self._ra = numpy.fromfunction(self.rFunction, shape,
-                                                  dtype=numpy.float32)
-        return self._ra
+                    self._cached_array["r_center"] = numpy.fromfunction(self.rFunction, shape,
+                                                                        dtype=numpy.float32)
+        return self._cached_array.get("r_center")
 
     def rd2Array(self, shape=None):
         """Generate an array of the given shape with (d*(i,j))^2 for all pixels.
@@ -511,11 +513,11 @@ class Geometry(object):
         @return:2d array of the given shape with reciprocal spacing squared
         """
         qArray = self.qArray(shape)
-        if self._rd2a is None:
+        if self._cached_array.get("d*2_center") is None:
             with self._sem:
-                if self._rd2a is None:
-                    self._rd2a = (qArray / (2.0 * numpy.pi)) ** 2
-        return self._rd2a
+                if self._cached_array.get("d*2_center") is None:
+                    self._cached_array["d*2_center"] = (qArray / (2.0 * numpy.pi)) ** 2
+        return self._cached_array["d*2_center"]
 
     @deprecated
     def qCornerFunct(self, d1, d2):
@@ -555,18 +557,19 @@ class Geometry(object):
         @param shape: shape of the detector
         @return: array of 2theta position in radians
         """
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
 
-        if self._ttha is None:
+        if self._cached_array.get("2th_center") is None:
             with self._sem:
-                if self._ttha is None:
-                    self._ttha = numpy.fromfunction(self.tth,
-                                                    shape,
-                                                    dtype=numpy.float32)
-        return self._ttha
+                if self._cached_array.get("2th_center") is None:
+                    ttha = numpy.fromfunction(self.tth,
+                                              shape,
+                                              dtype=numpy.float32)
+                    self._cached_array["2th_center"] = ttha
+        return self._cached_array["2th_center"]
 
     def chi(self, d1, d2, path="cython"):
         """
@@ -639,17 +642,18 @@ class Geometry(object):
         @param shape: the shape of the chi array
         @return: the chi array as numpy.ndarray
         """
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
 
-        if self._chia is None:
-            self._chia = numpy.fromfunction(self.chi, shape,
-                                            dtype=numpy.float32)
+        if self._cached_array.get("chi_center") is None:
+            chia = numpy.fromfunction(self.chi, shape,
+                                      dtype=numpy.float32)
             if not self.chiDiscAtPi:
-                self._chia = self._chia % (2.0 * numpy.pi)
-        return self._chia
+                chia = chia % (2.0 * numpy.pi)
+            self._cached_array["chi_center"] = chia
+        return self._cached_array["chi_center"]
 
     def positionArray(self, shape=None, corners=False, dtype=numpy.float64):
         """Generate an array for the pixel position given the shape of the detector.
@@ -671,7 +675,7 @@ class Geometry(object):
 
         Nota: this value is not cached and actually generated on demand (costly)
         """
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
@@ -696,7 +700,7 @@ class Geometry(object):
            * dim3[0]: radial angle 2th, q, r, ...
            * dim3[1]: azimuthal angle chi
         """
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
@@ -831,21 +835,22 @@ class Geometry(object):
            * dim3[1]: azimuthal angle chi
         """
         space_name_map = {  # space -> array name
-                           "2th": "_ttha",
-                           "chi":"_chia",
-                           "q":"_qa",
-                           "r":"_ra",
-                           "d*2":"_rd2a"}
+                           # "2th_center": "_ttha",
+                           # "chi_center":"_chia",
+                           # "q_center":"_qa",
+                           # "r_center": "_ra",
+                           # "d*2_center": "_rd2a"
+                           }
 
         unit = units.to_unit(unit)
-        space = unit.REPR.split("_")[0]
+        space = unit.REPR.split("_")[0] + "_center"
         ary = None
         if (space in space_name_map):
             ary = self.__getattribute__(space_name_map[space])
         elif space in self._cached_array:
             ary = self._cached_array[space]
 
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
@@ -892,7 +897,7 @@ class Geometry(object):
         elif "delta_" + space in self._cached_array:
             ary = self._cached_array["delta_" + space]
 
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
@@ -910,7 +915,6 @@ class Geometry(object):
             self._cached_array["delta_" + space] = ary
 
         return ary
-
 
     def delta2Theta(self, shape=None):
         """
@@ -1012,7 +1016,7 @@ class Geometry(object):
         @return: R, Q or 2Theta array depending on unit
         @rtype: ndarray
         """
-        shape = shape if shape is not None else self.detector.shape
+        shape = self.get_shape(shape)
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
@@ -1024,15 +1028,15 @@ class Geometry(object):
         unit = units.to_unit(unit)
         meth_name = unit.get(typ)
         if meth_name and meth_name in dir(Geometry):
-            #fast path may be available
+            # fast path may be available
             out = Geometry.__dict__[meth_name](self, shape)
         else:
-            #fast path is definitely not available, use the generic formula
+            # fast path is definitely not available, use the generic formula
             if typ == "center":
                 out = self.center_array(shape, unit)
             elif typ == "corner":
                 out = self.corner_array(shape, unit)
-            else: # typ == "delta":
+            else:  # typ == "delta":
                 out = self.delta_array(shape, unit)
         return out
 
@@ -1486,7 +1490,7 @@ class Geometry(object):
         """
         with self._sem:
             self.chiDiscAtPi = False
-            self._chia = None
+            self._cached_array["chi_center"] = None
             self._corner4Da = None
             self._corner4Ds = None
 #             self._corner4Dqa = None
@@ -1500,13 +1504,14 @@ class Geometry(object):
         """
         with self._sem:
             self.chiDiscAtPi = True
-            self._chia = None
+            self._cached_array["chi_center"] = None
             self._corner4Da = None
             self._corner4Ds = None
 #             self._corner4Dqa = None
 #             self._corner4Dra = None
 #             self._corner4Drd2a = None
 
+    @deprecated
     def setOversampling(self, iOversampling):
         """
         set the oversampling factor
@@ -1517,10 +1522,10 @@ class Geometry(object):
             lastOversampling = float(self._oversampling)
 
         self._oversampling = iOversampling
-        self._ttha = None
+        self._cached_arrays["2th_center"] = None
+        self._cached_arrays["q_center"] = None
         self._dssa = None
-        self._chia = None
-        self._qa = None
+        self._cached_array["chi_center"] = None
 
         self.pixel1 /= self._oversampling / lastOversampling
         self.pixel2 /= self._oversampling / lastOversampling
@@ -1553,13 +1558,7 @@ class Geometry(object):
         @return: 2D array with polarization correction array (intensity/polarisation)
 
         """
-        shape = shape if shape is not None else self.detector.shape
-        if shape is None:
-            for i in ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa", "_ra", "_dra"]:
-                ary = self.__getattribute__(i)
-                if ary is not None:
-                    shape = ary.shape
-                    break
+        shape = self.get_shape(shape)
         if shape is None:
             raise RuntimeError(("You should provide a shape if the"
                                 " geometry is not yet initiallized"))
@@ -1602,8 +1601,7 @@ class Geometry(object):
         @param shape: shape of the array
         @return: actual
         """
-        shape = shape if shape is not None else self.detector.shape
-
+        shape = self.get_shape(shape)
         if t0 < 0 or t0 > 1:
             logger.error("Impossible value for normal transmission: %s" % t0)
             return
@@ -1614,13 +1612,6 @@ class Geometry(object):
                      or (shape == self._transmission_corr.shape)):
                 return self._transmission_corr
 
-        if self._cosa is None:
-            if shape is None:
-                for i in ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa", "_ra", "_dra"]:
-                    ary = self.__getattribute__(i)
-                    if ary is not None:
-                        shape = ary.shape
-                        break
             if shape is None:
                 raise RuntimeError(("You should provide a shape if the"
                                     " geometry is not yet initiallized"))
@@ -1640,16 +1631,16 @@ class Geometry(object):
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
-        self._ttha = None
+        # self._ttha = None
         self._dttha = None
         self._dssa = None
-        self._chia = None
+        # self._chia = None
         self._dchia = None
-        self._qa = None
+        # self._qa = None
         self._dqa = None
-        self._ra = None
+#         self._ra = None
         self._dra = None
-        self._rd2a = None
+#         self._rd2a = None
         self._drd2a = None
         self._corner4Da = None
         self._corner4Ds = None
@@ -1677,7 +1668,7 @@ class Geometry(object):
         @param dummy: value for masked pixels
         @param polarization_factor: set to true to use previously used value
         @param dark: dark current correction
-        @param flat: faltfield corrction
+        @param flat: flatfield corrction
         @return: 2D image reconstructed
 
         """
@@ -1715,7 +1706,7 @@ class Geometry(object):
         return calcimage
 
     def __copy__(self):
-        """return a shallow copy of itself.
+        """@return a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
         # transfer numerical values:
@@ -1725,36 +1716,40 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      "_corner4Ds"]
-        array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
-                 "_ra", "_dra", "_rd2a", "_drd2a",
+        array = ["_dttha", "_dssa", "_dchia", "_dqa",
+                 "_dra", "_drd2a",
                  "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
+        # "_ttha""_qa",, "_chia"_ra",, "_rd2a"
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
+        new._cached_array = self._cached_array.copy()
         return new
 
     def __deepcopy__(self, memo=None):
-        """@return: a deep copy of itself."""
+        """deep copy
+        @param memo: dict with modified objects
+        @return: a deep copy of itself."""
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      "_corner4Ds"]
-        array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
-                 "_ra", "_dra", "_rd2a", "_drd2a",
+        array = ["_dttha", "_dssa", "_dchia", "_dqa",
+                  "_dra", "_drd2a",
                  "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
-
+                # "_ttha", "_qa", "_chia""_ra",, "_rd2a"
         if memo is None:
             memo = {}
         new = self.__class__()
         memo[id(self)] = new
         new_det = self.detector.__deepcopy__(memo)
         new.detector = new_det
-        
+
         for key in numerical:
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
@@ -1765,13 +1760,35 @@ class Geometry(object):
                 new.__setattr__(key, 1 * value)
             else:
                 new.__setattr__(key, None)
-        new.param = [new._dist, new._poni1, new._poni2,
+        new_param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
+        memo[id(self.param)] = new_param
+        new.param = new_param
+        cached = {}
+        memo[id(self._cached_array)] = cached
+        for key, old_value in self._cached_array.items():
+            if "copy" in dir(old_value):
+                new_value = old_value.copy()
+                memo[id(old_value)] = new_value
+        new._cached_array = cached
         return new
 
 # ############################################
 # Accessors and public properties of the class
 # ############################################
+    def get_shape(self, shape=None):
+        """Guess what is the best shape ....
+        @param shape: force this value (2-tuple of int)
+        @return: 2-tuple of int
+        """
+        if shape is None:
+            shape = self.detector.shape
+        if shape is None:
+            for ary in self._cached_array.values():
+                if ary is not None:
+                    shape = ary.shape[:2]
+                    break
+        return shape
 
     def set_dist(self, value):
         if isinstance(value, float):
@@ -1865,8 +1882,8 @@ class Geometry(object):
             self._wavelength = float(value)
         qa = dqa = corner4Da = corner4Ds = None
         if old_wl and self._wavelength:
-            if self._qa is not None:
-                qa = self._qa * old_wl / self._wavelength
+            if self._cached_array.get("q_center") is not None:
+                qa = self._cached_array["q_center"] * old_wl / self._wavelength
             if self._corner4Ds and ("d" in self._corner4Ds or "q" in self._corner4Ds):
                 corner4Da = self._corner4Da.copy()
                 corner4Da[..., 0] = self._corner4Da[..., 0] * old_wl / self._wavelength
@@ -1874,7 +1891,7 @@ class Geometry(object):
         self.reset()
         # restore updated values
         self._dqa = dqa
-        self._qa = qa
+        self._cached_array["q_center"] = qa
         self._corner4Da = corner4Da
         self._corner4Ds = corner4Ds
 
@@ -1887,25 +1904,23 @@ class Geometry(object):
     wavelength = property(get_wavelength, set_wavelength)
 
     def get_ttha(self):
-        return self._ttha
+        return self._cached_array.get("2th_center")
 
     def set_ttha(self, _):
         logger.error("You are not allowed to modify 2theta array")
 
     def del_ttha(self):
-        self._ttha = None
-
+        self._cached_array["2th_center"] = None
     ttha = property(get_ttha, set_ttha, del_ttha, "2theta array in cache")
 
     def get_chia(self):
-        return self._chia
+        return self._cached_array.get("chi_center")
 
     def set_chia(self, _):
         logger.error("You are not allowed to modify chi array")
 
     def del_chia(self):
         self._chia = None
-
     chia = property(get_chia, set_chia, del_chia, "chi array in cache")
 
     def get_dssa(self):
@@ -1920,14 +1935,13 @@ class Geometry(object):
     dssa = property(get_dssa, set_dssa, del_dssa, "solid angle array in cache")
 
     def get_qa(self):
-        return self._qa
+        return self._cached_array["q_center"]
 
     def set_qa(self, _):
         logger.error("You are not allowed to modify Q array")
 
     def del_qa(self):
         self._qa = None
-
     qa = property(get_qa, set_qa, del_qa, "Q array in cache")
 
     def get_pixel1(self):

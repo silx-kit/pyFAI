@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "12/04/2016"
 
 
 import unittest
@@ -62,7 +62,7 @@ class TestSparseBBox(unittest.TestCase):
         self.ai = load(UtilsTest.getimage("1893/Pilatus1M.poni"))
         self.data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
         self.ref = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="splitBBox")[1]
-        self.cython = splitBBox.histoBBox1d(self.data, self.ai._ttha, self.ai._dttha, bins=self.N)
+        self.cython = splitBBox.histoBBox1d(self.data, self.ai.ttha, self.ai._dttha, bins=self.N)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

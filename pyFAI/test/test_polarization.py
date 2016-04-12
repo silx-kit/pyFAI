@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "12/04/2016"
 
 
 import unittest
@@ -60,8 +60,8 @@ class TestPolarization(unittest.TestCase):
         self.tth = numpy.sqrt(self.rotY ** 2 + self.rotX ** 2)
         chi = numpy.arctan2(self.rotY, self.rotX)
         self.ai = AzimuthalIntegrator(dist=1, pixel1=0.1, pixel2=0.1)
-        self.ai._ttha = self.tth
-        self.ai._chia = chi
+        self.ai._cached_array["2th_center"] = self.tth
+        self.ai._cached_array["chi_center"] = chi
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
