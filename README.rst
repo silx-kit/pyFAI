@@ -42,7 +42,7 @@ The latest release of pyFAI can be downloaded from
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
-    unzip master.zip
+    unzip pyFAI-master.zip
 
 As developement is also done on Github,
 `development branch is also available <https://github.com/kif/pyFAI/archive/master.zip>`_
