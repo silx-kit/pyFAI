@@ -9,7 +9,7 @@ lxml
 Pillow
 h5py
 fabio
-scipy
+#scipy
 matplotlib
 #mako
 #pyopencl
