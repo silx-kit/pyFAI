@@ -202,19 +202,9 @@ class Geometry(object):
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
         self._cached_array = {}  # dict for caching all arrays
-#         self._ttha = None -> self._cached_array.get("2th_center")
-#         self._dttha = None -> self._cached_array.get("2th_delta")
         self._dssa = None
         self._dssa_crc = None  # checksum associated with _dssa
         self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
-        # self._chia = None # self._cached_array.get("q_center")
-#         self._dchia = None -> self._cached_array.get("chi_delta")
-        # self._qa = None # -> self._cached_array.get("q_center")
-        self._dqa = None
-#         self._ra = None -> self._cached_array.get("r_center")
-        self._dra = None
-#         self._rd2a = None -> self._cached_array.get("d*2_center")
-        self._drd2a = None
         self._corner4Da = None  # actual 4d corner array
         self._corner4Ds = None  # space for the corner array, 2th, q, r, ...
         self._wavelength = wavelength
@@ -882,21 +872,10 @@ class Geometry(object):
            * dim3[0]: radial angle 2th, q, r, ...
            * dim3[1]: azimuthal angle chi
         """
-        space_name_map = {  # space -> array name
-                           # "2th_delta": "_dttha",
-#                            "chi_delta":"_dchia",
-                           "q_delta":"_dqa",
-                           "r_delta":"_dra",
-                           "d*2_delta":"_drd2a"
-                           }
 
         unit = units.to_unit(unit)
         space = unit.REPR.split("_")[0] + "_delta"
-        ary = None
-        if (space in space_name_map):
-            ary = self.__getattribute__(space_name_map[space])
-        else:
-            ary = self._cached_array.get(space)
+        ary = self._cached_array.get(space)
 
         shape = self.get_shape(shape)
         if shape is None:
@@ -909,12 +888,7 @@ class Geometry(object):
         corners = self.corner_array(shape, unit=unit)
         delta = abs(corners[..., 0] - numpy.atleast_3d(center))
         ary = delta.max(axis=-1)
-
-        if (space in space_name_map):
-            self.__setattr__(space_name_map[space], ary)
-        else:
-            self._cached_array[space] = ary
-
+        self._cached_array[space] = ary
         return ary
 
     def delta2Theta(self, shape=None):
@@ -963,14 +937,14 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        if self._dqa is None:
+        if self._cached_array.get("q_delta") is None:
             center = self.qArray(shape)
             corners = self.corner_array(shape, unit=units.Q)
             with self._sem:
-                if self._dqa is None:
+                if self._cached_array.get("q_delta") is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._dqa = delta.max(axis=-1)
-        return self._dqa
+                    self._cached_array["q_delta"] = delta.max(axis=-1)
+        return self._cached_array["q_delta"]
 
     def deltaR(self, shape=None):
         """
@@ -980,14 +954,14 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        if self._dra is None:
+        if self._cached_array.get("r_delta") is None:
             center = self.rArray(shape)
             corners = self.corner_array(shape, unit=units.R)
             with self._sem:
-                if self._dra is None:
+                if self._cached_array.get("r_delta") is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._dra = delta.max(axis=-1)
-        return self._dra
+                    self._cached_array["r_delta"] = delta.max(axis=-1)
+        return self._cached_array["r_delta"]
 
     def deltaRd2(self, shape=None):
         """
@@ -997,10 +971,14 @@ class Geometry(object):
         @param shape: The shape of the detector array: 2-tuple of integer
         @return: array 2D containing the max delta (d*)^2 between a pixel center and any corner in reciprocal spacing squarred (1/nm^2)
         """
-        center = self.rd2Array(shape)
-        corners = self.corner_array(shape, unit=units.RecD2_NM)
-        delta = abs(corners[..., 0] - numpy.atleast_3d(center)).max(axis=-1)
-        return delta
+        if self._cached_array.get("d*2_delta") is None:
+            center = self.center_array(shape, unit=units.RecD2_NM)
+            corners = self.corner_array(shape, unit=units.RecD2_NM)
+            with self._sem:
+                if self._cached_array.get("d*2_delta") is None:
+                    delta = abs(corners[..., 0] - numpy.atleast_3d(center))
+                    self._cached_array["d*2_delta"] = delta.max(axis=-1)
+        return self._cached_array.get("d*2_delta")
 
     def array_from_unit(self, shape=None, typ="center", unit=units.TTH):
         """
@@ -1632,17 +1610,7 @@ class Geometry(object):
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
-        # self._ttha = None
-#         self._dttha = None
         self._dssa = None
-        # self._chia = None
-#         self._dchia = None
-        # self._qa = None
-        self._dqa = None
-#         self._ra = None
-        self._dra = None
-#         self._rd2a = None
-        self._drd2a = None
         self._corner4Da = None
         self._corner4Ds = None
         self._polarization = None
@@ -1717,11 +1685,9 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      "_corner4Ds"]
-        array = [ "_dssa", "_dqa",
-                 "_dra", "_drd2a",
+        array = [ "_dssa",
                  "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
-        # "_ttha""_qa",, "_chia"_ra",, "_rd2a""_dttha",, "_dchia"
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
@@ -1739,11 +1705,9 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      "_corner4Ds"]
-        array = [ "_dssa", "_dqa",
-                  "_dra", "_drd2a",
+        array = [ "_dssa",
                  "_corner4Da",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
-                # "_ttha", "_qa", "_chia""_ra",, "_rd2a""_dttha",, "_dchia"
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -1891,7 +1855,7 @@ class Geometry(object):
                 corner4Ds = self._corner4Ds
         self.reset()
         # restore updated values
-        self._dqa = dqa
+        self._cached_array["q_delta"] = dqa
         self._cached_array["q_center"] = qa
         self._corner4Da = corner4Da
         self._corner4Ds = corner4Ds
