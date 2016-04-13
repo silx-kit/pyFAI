@@ -31,14 +31,14 @@ Installation
 
 As most Python packages, pyFAI is available via PIP::
 
-   pip install silx [--user]
+   pip install pyFAI [--user]
 
 Provide the *--user* to perform an installation local to your user.
 Under UNIX, you may have to run the command via *sudo* to gain root access an
 perform a system wide installation.
 
 The latest release of pyFAI can be downloaded from
-`Github<https://github.com/pyFAI/pyFAI/archive/master.zip>`_.
+`Github <https://github.com/pyFAI/pyFAI/archive/master.zip>`_ .
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
