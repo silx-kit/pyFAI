@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/10/2015
+:Date: 27/04/2015
 :Keywords: Installation procedure on MacOSX
 :Target: System administrators
 
@@ -40,7 +40,7 @@ Get the sources from Github:
 About OpenMP
 ............
 
-OpenMP is a way to write multithreaded code, running on multiple processors
+OpenMP is a way to write multi-threaded code, running on multiple processors
 simultaneously.
 PyFAI makes heavy use of OpenMP, but there is an issue with recent versions of
 MacOSX (>v10.6) where the default compiler of Apple, *Xcode*, dropped the
@@ -48,15 +48,15 @@ support for OpenMP.
 
 There are two ways to compile pyFAI on MacOSX:
 
-* Using Xcode and de-activating OpenMP
+* Using *Xcode* and de-activating OpenMP in pyFAI
 * Using another compiler which supports OpenMP
 
 Using Xcode
 ...........
 
-To build pyFAI from sources, an compiler is needed.
+To build pyFAI from sources, any C-compiler is needed.
 On an *Apple* computer, the default compiler is
-`Xcode <https://developer.apple.com/xcode/>`_, and it is availbe for free on
+`Xcode <https://developer.apple.com/xcode/>`_, and it is available for free on
 the **AppStore**.
 As pyFAI has by default OpenMP activated, and it needs to be de-activated,
 one needs to regenerate all Cython files without OpenMP.
@@ -65,6 +65,7 @@ one needs to regenerate all Cython files without OpenMP.
 
     cd pyFAI
     sudo pip install cython --upgrade
+    rm pyFAI/ext/*.c
     python setup.py build --no-openmp
     sudo pip install . --upgrade
 
