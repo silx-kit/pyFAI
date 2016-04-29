@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2016"
+__date__ = "28/04/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -143,7 +143,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel1 = float(pixel1)
         if pixel2:
             self._pixel2 = float(pixel2)
-        if "MAX_SHAPE" in dir(self.__class__):
+        if (max_shape is None) and ("MAX_SHAPE" in dir(self.__class__)):
             self.max_shape = tuple(self.MAX_SHAPE)
         else:
             self.max_shape = max_shape
@@ -641,6 +641,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         with io.Nexus(filename, "+") as nxs:
             det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
             det_grp["IS_FLAT"] = self.IS_FLAT
+            det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
             det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
             if self.max_shape is not None:
                 det_grp["max_shape"] = numpy.array(self.max_shape, dtype=numpy.int32)
@@ -724,6 +725,8 @@ class NexusDetector(Detector):
             self.aliases = [name.replace("_", " "), det_grp.name]
             if "IS_FLAT" in det_grp:
                 self.IS_FLAT = det_grp["IS_FLAT"].value
+            if "IS_CONTIGUOUS" in det_grp:
+                self.IS_CONTIGUOUS = det_grp["IS_CONTIGUOUS"].value
             if "flat" in det_grp:
                 self.flat = det_grp["flat"].value
             if "pixel_size" in det_grp:
@@ -790,8 +793,13 @@ class Pilatus(Detector):
     MODULE_GAP = (17, 7)
     force_pixel = True
 
-    def __init__(self, pixel1=172e-6, pixel2=172e-6, x_offset_file=None, y_offset_file=None):
-        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=172e-6, pixel2=172e-6, max_shape=None, module_size=None,
+                 x_offset_file=None, y_offset_file=None):
+        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
+            self.module_size = tuple(self.MODULE_SIZE)
+        else:
+            self.module_size = module_size
         self.x_offset_file = x_offset_file
         self.y_offset_file = y_offset_file
         if self.x_offset_file and self.y_offset_file:
@@ -854,12 +862,12 @@ class Pilatus(Detector):
                                       "its max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
-        for i in range(self.MODULE_SIZE[0], self.max_shape[0],
-                       self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+        for i in range(self.module_size[0], self.max_shape[0],
+                       self.module_size[0] + self.MODULE_GAP[0]):
             mask[i: i + self.MODULE_GAP[0], :] = 1
         # workinng in dim1 = X
-        for i in range(self.MODULE_SIZE[1], self.max_shape[1],
-                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+        for i in range(self.module_size[1], self.max_shape[1],
+                       self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
@@ -931,7 +939,7 @@ class Pilatus100k(Pilatus):
     """
     Pilatus 100k detector
     """
-    MAX_SHAPE = 195, 487
+    MAX_SHAPE = (195, 487)
 
 
 class Pilatus200k(Pilatus):
@@ -993,16 +1001,16 @@ class PilatusCdTe(Pilatus):
                                       "its max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
-        for i in range(self.MODULE_SIZE[0], self.max_shape[0],
-                       self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+        for i in range(self.module_size[0], self.max_shape[0],
+                       self.module_size[0] + self.MODULE_GAP[0]):
             mask[i: i + self.MODULE_GAP[0], :] = 1
         # workinng in dim1 = X
-        for i in range(self.MODULE_SIZE[1], self.max_shape[1],
-                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+        for i in range(self.module_size[1], self.max_shape[1],
+                       self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         # Small gaps in the middle of the module
-        for i in range(self.MODULE_SIZE[1] // 2, self.max_shape[1],
-                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+        for i in range(self.module_size[1] // 2, self.max_shape[1],
+                       self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i - 1: i + 2] = 1
 
         return mask
@@ -1042,8 +1050,12 @@ class Eiger(Detector):
     MODULE_GAP = (37, 10)
     force_pixel = True
 
-    def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=75e-6, pixel2=75e-6, max_shape=None, module_size=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
+        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
+            self.module_size = tuple(self.MODULE_SIZE)
+        else:
+            self.module_size = module_size
         self.offset1 = self.offset2 = None
 
     def __repr__(self):
@@ -1059,12 +1071,12 @@ class Eiger(Detector):
                                       "the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
-        for i in range(self.MODULE_SIZE[0], self.max_shape[0],
-                       self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+        for i in range(self.module_size[0], self.max_shape[0],
+                       self.module_size[0] + self.MODULE_GAP[0]):
             mask[i: i + self.MODULE_GAP[0], :] = 1
         # workinng in dim1 = X
-        for i in range(self.MODULE_SIZE[1], self.max_shape[1],
-                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+        for i in range(self.module_size[1], self.max_shape[1],
+                       self.module_size[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
@@ -1284,8 +1296,8 @@ class Mar345(Detector):
     aliases = ["MAR 345", "Mar3450"]
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
         Detector.__init__(self, pixel1, pixel2)
-        self.max_shape = (int(self.MAX_SHAPE[0] * 100e-6 / self.pixel1),
-                          int(self.MAX_SHAPE[1] * 100e-6 / self.pixel2))
+        self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
+                          int(self.max_shape[1] * 100e-6 / self.pixel2))
         self.shape = self.max_shape
 #        self.mode = 1
 
@@ -1358,9 +1370,13 @@ class ImXPadS10(Detector):
 #         size[-1] = 1.0
         return pixel_size * size
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
+        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
+            self.module_size = tuple(self.MODULE_SIZE)
+        else:
+            self.module_size = module_size
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1371,10 +1387,10 @@ class ImXPadS10(Detector):
         Calculate the position of the pixel edges
         """
         if self._pixel_edges is None:
-            pixel_size1 = self._calc_pixels_size(self.MAX_SHAPE[0], self.MODULE_SIZE[0], self.PIXEL_SIZE[0])
-            pixel_size2 = self._calc_pixels_size(self.MAX_SHAPE[1], self.MODULE_SIZE[1], self.PIXEL_SIZE[1])
-            pixel_edges1 = numpy.zeros(self.MAX_SHAPE[0] + 1)
-            pixel_edges2 = numpy.zeros(self.MAX_SHAPE[1] + 1)
+            pixel_size1 = self._calc_pixels_size(self.max_shape[0], self.module_size[0], self.PIXEL_SIZE[0])
+            pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self.PIXEL_SIZE[1])
+            pixel_edges1 = numpy.zeros(self.max_shape[0] + 1)
+            pixel_edges2 = numpy.zeros(self.max_shape[1] + 1)
             pixel_edges1[1:] = numpy.cumsum(pixel_size1)
             pixel_edges2[1:] = numpy.cumsum(pixel_size2)
             self._pixel_edges = pixel_edges1, pixel_edges2
@@ -1386,11 +1402,11 @@ class ImXPadS10(Detector):
         """
         dims = []
         for dim in [0, 1]:
-            pos = numpy.zeros(self.MAX_SHAPE[dim], dtype=numpy.int8)
-            n = self.MAX_SHAPE[dim] // self.MODULE_SIZE[dim]
+            pos = numpy.zeros(self.max_shape[dim], dtype=numpy.int8)
+            n = self.max_shape[dim] // self.module_size[dim]
             for i in range(1, n):
-                pos[i * self.MODULE_SIZE[dim] - 1] = 1
-                pos[i * self.MODULE_SIZE[dim]] = 1
+                pos[i * self.module_size[dim] - 1] = 1
+                pos[i * self.module_size[dim]] = 1
             pos[0] = 1
             pos[-1] = 1
             dims.append(pos)
@@ -1477,8 +1493,8 @@ class ImXPadS10(Detector):
                 # Not +=: do not mangle in place arrays
                 d1 = d1 + 0.5
                 d2 = d2 + 0.5
-            p1 = numpy.interp(d1 , numpy.arange(self.MAX_SHAPE[0] + 1), edges1, edges1[0], edges1[-1])
-            p2 = numpy.interp(d2 , numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
+            p1 = numpy.interp(d1 , numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
+            p2 = numpy.interp(d2 , numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
 
@@ -1528,9 +1544,14 @@ class Xpad_flat(ImXPadS10):
     PIXEL_SIZE = (130e-6, 130e-6)
     BORDER_PIXEL_SIZE_RELATIVE = 2.5
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
+        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2, max_shape=max_shape)
         self._pixel_corners = None
+        if (module_size is None) and ("MODULE_SIZE" in dir(self.__class__)):
+            self.module_size = tuple(self.MODULE_SIZE)
+        else:
+            self.module_size = module_size
+
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1542,10 +1563,11 @@ class Xpad_flat(ImXPadS10):
         """
         if self._pixel_edges is None:
             # all pixel have the same size along the vertical axis, some pixels are larger along the horizontal one
-            pixel_size1 = numpy.ones(self.MAX_SHAPE[0]) * self.PIXEL_SIZE[0]
-            pixel_size2 = self._calc_pixels_size(self.MAX_SHAPE[1], self.MODULE_SIZE[1], self.PIXEL_SIZE[1])
-            pixel_edges1 = numpy.zeros(self.MAX_SHAPE[0] + 1)
-            pixel_edges2 = numpy.zeros(self.MAX_SHAPE[1] + 1)
+            PIXEL_SIZE = (self._pixel1, self.pixel2)
+            pixel_size1 = numpy.ones(self.max_shape[0]) * self._pixel1
+            pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self._pixel2)
+            pixel_edges1 = numpy.zeros(self.max_shape[0] + 1)
+            pixel_edges2 = numpy.zeros(self.max_shape[1] + 1)
             pixel_edges1[1:] = numpy.cumsum(pixel_size1)
             pixel_edges2[1:] = numpy.cumsum(pixel_size2)
             self._pixel_edges = pixel_edges1, pixel_edges2
@@ -1563,13 +1585,13 @@ class Xpad_flat(ImXPadS10):
                                       " know the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
-        for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
+        for i in range(0, self.max_shape[0], self.module_size[0]):
             mask[i, :] = 1
-            mask[i + self.MODULE_SIZE[0] - 1, :] = 1
+            mask[i + self.module_size[0] - 1, :] = 1
         # workinng in dim1 = X
-        for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
+        for i in range(0, self.max_shape[1], self.module_size[1]):
             mask[:, i ] = 1
-            mask[:, i + self.MODULE_SIZE[1] - 1] = 1
+            mask[:, i + self.module_size[1] - 1] = 1
         return mask
 
 
@@ -1649,8 +1671,8 @@ class Xpad_flat(ImXPadS10):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    pixel_size1 = self._calc_pixels_size(self.MAX_SHAPE[0], self.MODULE_SIZE[0], self.PIXEL_SIZE[0])
-                    pixel_size2 = self._calc_pixels_size(self.MAX_SHAPE[1], self.MODULE_SIZE[1], self.PIXEL_SIZE[1])
+                    pixel_size1 = self._calc_pixels_size(self.max_shape[0], self.module_size[0], self._pixel1)
+                    pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self._pixel2)
                     # half pixel offset
                     pixel_center1 = pixel_size1 / 2.0  # half pixel offset
                     pixel_center2 = pixel_size2 / 2.0
@@ -1658,12 +1680,12 @@ class Xpad_flat(ImXPadS10):
                     pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
                     pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
                     # gaps
-                    for i in range(self.MAX_SHAPE[0] // self.MODULE_SIZE[0]):
-                        pixel_center1[i * self.MODULE_SIZE[0]:
-                           (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
-                    for i in range(self.MAX_SHAPE[1] // self.MODULE_SIZE[1]):
-                        pixel_center2[i * self.MODULE_SIZE[1]:
-                           (i + 1) * self.MODULE_SIZE[1]] += i * self.MODULE_GAP[1]
+                    for i in range(self.max_shape[0] // self.module_size[0]):
+                        pixel_center1[i * self.module_size[0]:
+                           (i + 1) * self.module_size[0]] += i * self.MODULE_GAP[0]
+                    for i in range(self.max_shape[1] // self.module_size[1]):
+                        pixel_center2[i * self.module_size[1]:
+                           (i + 1) * self.module_size[1]] += i * self.MODULE_GAP[1]
 
                     pixel_center1.shape = -1, 1
                     pixel_center1.strides = pixel_center1.strides[0], 0
@@ -1704,7 +1726,7 @@ class Perkin(Detector):
         super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
-            self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
+            self.shape = tuple(s // b for s, b in zip(self.max_shape, self._binning))
         else:
             self.shape = (2048, 2048)
             self._binning = (2, 2)
@@ -1728,7 +1750,7 @@ class Rayonix(Detector):
             if p == pixel2:
                 binning[1] = b
         self._binning = tuple(binning)
-        self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, binning))
+        self.shape = tuple(s // b for s, b in zip(self.max_shape, binning))
 
     def get_binning(self):
         return self._binning
@@ -1771,8 +1793,8 @@ class Rayonix(Detector):
             shape = data.shape
         else:
             shape = tuple(data[:2])
-        bin1 = self.MAX_SHAPE[0] // shape[0]
-        bin2 = self.MAX_SHAPE[1] // shape[1]
+        bin1 = self.max_shape[0] // shape[0]
+        bin2 = self.max_shape[1] // shape[1]
         self._binning = (bin1, bin2)
         self.shape = shape
         self.max_shape = shape

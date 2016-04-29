@@ -67,7 +67,8 @@ one needs to regenerate all Cython files without OpenMP.
     sudo pip install cython --upgrade
     rm pyFAI/ext/*.c
     python setup.py build --no-openmp
-    sudo pip install . --upgrade
+    python setup.py bdist_wheel
+    sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI 
 
 Using **gcc** or **clang**
 ..........................
@@ -81,8 +82,8 @@ As gcc & clang support OpenMP, there is no need to re-generate the cython files.
 
     cd pyFAI
     CC=gcc python setup.py build --openmp
-    sudo pip install . --upgrade
-
+    python setup.py bdist_wheel
+    sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI 
 
 
 **Nota:** The usage of "python setup.py install" is now deprecated.
