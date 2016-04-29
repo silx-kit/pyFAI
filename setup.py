@@ -534,8 +534,8 @@ def get_version():
 
 def get_readme():
     dirname = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(dirname, "README.rst"), "r") as fp:
-        long_description = fp.read()
+    with open(os.path.join(dirname, "README.rst"), "rb") as fp:
+        long_description = fp.read().decode("utf-8")
     return long_description
 
 
