@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/04/2016"
+__date__ = "29/04/2016"
 __status__ = "production"
 
 import os
@@ -630,7 +630,7 @@ class AbstractCalibration(object):
         self.peakPicker.init(method, False)
         if self.geoRef:
             self.ai.setPyFAI(**self.geoRef.getPyFAI())
-        tth = numpy.array([ i for i in self.calibrant.get_2th() if i is not None])
+        tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
         tth_min = numpy.zeros_like(tth)
         tth_max = numpy.zeros_like(tth)
@@ -647,7 +647,7 @@ class AbstractCalibration(object):
             chia = self.geoRef.get_chia()
             if (ttha is None) or (ttha.shape != self.peakPicker.data.shape):
                 ttha = self.geoRef.twoThetaArray(self.peakPicker.data.shape)
-            if (chia is  None) or (chia.shape != self.peakPicker.data.shape):
+            if (chia is None) or (chia.shape != self.peakPicker.data.shape):
                 chia = self.geoRef.chiArray(self.peakPicker.data.shape)
         else:
             ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
@@ -680,7 +680,7 @@ class AbstractCalibration(object):
                     size2 = mask2.sum()
                 # length of the arc:
                 points = isocontour(ttha, tth[i]).round().astype(int)
-                seeds = set((i[1], i[0]) for i in points)
+                seeds = set((i[1], i[0]) for i in points if mask2[i[1], i[0]])
                 # max number of points: 360 points for a full circle
                 azimuthal = chia[points[:, 1].clip(0, self.peakPicker.data.shape[0]), points[:, 0].clip(0, self.peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
@@ -690,7 +690,7 @@ class AbstractCalibration(object):
                 dist_min = len(seeds) / 2.0 / keep
                 # why 3.0, why not ?
 
-                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "\
+                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "
                             "searching for %i pts out of %i with I>%.1f, dmin=%.1f" %
                             (i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min))
                 res = self.peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
@@ -700,7 +700,6 @@ class AbstractCalibration(object):
             self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
         else:
             self.data = self.peakPicker.points.getList()
-
 
     def refine(self):
         """
@@ -1145,7 +1144,7 @@ class AbstractCalibration(object):
         t2 = time.time()
         self.geoRef.chiArray(self.peakPicker.shape)
         t2a = time.time()
-        self.geoRef.self.corner_array(self.peakPicker.shape, "2th_deg")
+        self.geoRef.corner_array(self.peakPicker.shape, "2th_deg")
         t2b = time.time()
         if self.gui:
             if self.fig_integrate is None:
@@ -1153,7 +1152,6 @@ class AbstractCalibration(object):
                 self.ax_xrpd_1d = self.fig_integrate.add_subplot(1, 2, 1)
                 self.ax_xrpd_2d = self.fig_integrate.add_subplot(1, 2, 2)
             else:
-#                self.fig_integrate.clf()
                 self.ax_xrpd_1d.cla()
                 self.ax_xrpd_2d.cla()
                 update_fig(self.fig_integrate)
@@ -1177,12 +1175,12 @@ class AbstractCalibration(object):
                                        all=True)
         t5 = time.time()
         logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
-                                " * two theta array generation %.3fs" % (t1 - t0),
-                                " * diff Solid Angle           %.3fs" % (t2 - t1),
-                                " * chi array generation       %.3fs" % (t2a - t2),
-                                " * corner coordinate array    %.3fs" % (t2b - t2a),
-                                " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
-                                " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
+                            " * two theta array generation %.3fs" % (t1 - t0),
+                            " * diff Solid Angle           %.3fs" % (t2 - t1),
+                            " * chi array generation       %.3fs" % (t2a - t2),
+                            " * corner coordinate array    %.3fs" % (t2b - t2a),
+                            " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
+                            " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
 
         if self.gui:
             self.ax_xrpd_1d.plot(res1["radial"], res1["I"])
@@ -1384,6 +1382,7 @@ class AbstractCalibration(object):
 # Calibration
 ################################################################################
 
+
 class Calibration(AbstractCalibration):
     """
     class doing the calibration of frames
@@ -1454,7 +1453,6 @@ decrease the value if arcs are mixed together.""", default=None)
         self.parser.add_argument("-p", "--pixel", dest="pixel",
                       help="size of the pixel in micron", default=None)
 
-
         (options, _) = self.analyse_options()
         # Analyse remaining aruments and options
         self.reconstruct = options.reconstruct
@@ -1502,8 +1500,8 @@ decrease the value if arcs are mixed together.""", default=None)
         Tries to initialise the GeometryRefinement (dist, poni, rot)
         Returns a dictionary of key value pairs
         """
-        defaults = { "dist" : 0.1, "poni1" : 0.0, "poni2" : 0.0,
-                        "rot1" : 0.0, "rot2" : 0.0, "rot3" : 0.0 }
+        defaults = {"dist": 0.1, "poni1": 0.0, "poni2": 0.0,
+                    "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
         if self.detector:
             try:
                 p1, p2, p3 = self.detector.calc_cartesian_positions()
@@ -1560,15 +1558,17 @@ decrease the value if arcs are mixed together.""", default=None)
                 except Exception as err:
                     logger.warning(err)
                 else:
-                    logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" %
+                    logger.warning("Overwriting wavelength from PONI file (%s) "
+                                   "with the one from command line (%s)" %
                                     (old_wl, self.wavelength))
                 self.geoRef.wavelength = self.wavelength
             if self.detector:
                 gr_det = str(self.geoRef.detector)
                 nw_det = str(self.detector)
                 if gr_det != nw_det:
-                    logger.warning("Overwriting detector from PONI file: %s%s with the one from command line %s%s" %
-                                    (os.linesep, gr_det, os.linesep, nw_det))
+                    logger.warning("Overwriting detector from PONI file: %s%s "
+                                   "with the one from command line %s%s" %
+                                   (os.linesep, gr_det, os.linesep, nw_det))
                     self.geoRef.detector = self.detector
 
         # Third attempt
