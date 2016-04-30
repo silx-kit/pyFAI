@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "01/04/2016"
+__date__ = "30/04/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -604,6 +604,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     bench.update_mp()
 
     bench.ax.set_ylim(0.5, 500)
+    return bench.results
 
 
 run = run_benchmark
