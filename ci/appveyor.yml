@@ -56,7 +56,7 @@ install:
   # Install the generated wheel package to test it
   - "%CMD_IN_ENV% pip install --pre --no-index --find-links dist/ pyFAI"
 
-# Not a .NET project, we build fabio in the install step instead
+# Not a .NET project, we build pyFAI in the install step instead
 build: false
 
 test_script:
