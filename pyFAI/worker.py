@@ -28,11 +28,9 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2015"
+__date__ = "02/05/2016"
 __status__ = "development"
-__doc__ = """
-
-This module contains the Worker class:
+__doc__ = """This module contains the Worker class:
 
 A tool able to perform azimuthal integration with:
 additional saving capabilities like
@@ -88,7 +86,8 @@ Here are the valid keys:
 
 """
 
-import threading, os
+import threading
+import os
 import logging
 logger = logging.getLogger("pyFAI.worker")
 import numpy
@@ -99,6 +98,7 @@ from .distortion import Distortion
 from . import units
 import json
 # from .io import h5py, HDF5Writer
+
 
 class Worker(object):
     def __init__(self, azimuthalIntgrator=None,
@@ -153,17 +153,17 @@ class Worker(object):
         pretty print of myself
         """
         lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
-                "Input image shape: %s" % list(self.shape),
-                "Number of points in radial direction: %s" % self.nbpt_rad,
-                "Number of points in azimuthal direction: %s" % self.nbpt_azim,
-                "Unit in radial dimension: %s" % self.unit.REPR,
-                "Correct for solid angle: %s" % self.correct_solid_angle,
-                "Polarization factor: %s" % self.polarization,
-                "Dark current image: %s" % self.dark_current_image,
-                "Flat field image: %s" % self.flat_field_image,
-                "Mask image: %s" % self.mask_image,
-                "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
-                "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
+                  "Input image shape: %s" % list(self.shape),
+                  "Number of points in radial direction: %s" % self.nbpt_rad,
+                  "Number of points in azimuthal direction: %s" % self.nbpt_azim,
+                  "Unit in radial dimension: %s" % self.unit.REPR,
+                  "Correct for solid angle: %s" % self.correct_solid_angle,
+                  "Polarization factor: %s" % self.polarization,
+                  "Dark current image: %s" % self.dark_current_image,
+                  "Flat field image: %s" % self.flat_field_image,
+                  "Mask image: %s" % self.mask_image,
+                  "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
+                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -191,7 +191,7 @@ class Worker(object):
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data) :
+    def process(self, data):
         """
         Process a frame
         #TODO:
@@ -214,7 +214,6 @@ class Worker(object):
                  "correctSolidAngle": self.correct_solid_angle,
                  }
 
-
         if self.do_2D():
             kwarg["npt_rad"] = self.nbpt_rad
             kwarg["npt_azim"] = self.nbpt_azim
@@ -236,7 +235,6 @@ class Worker(object):
             kwarg["error_model"] = None
 
         try:
-#         if 1:
             if self.do_2D():
                 rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
             else:
@@ -320,12 +318,10 @@ class Worker(object):
         self.ai.rot2 = config.get("rot2", 0)
         self.ai.rot3 = config.get("rot3", 0)
 
-
         if config.get("chi_discontinuity_at_0"):
             self.ai.setChiDiscAtZero()
         else:
             self.ai.setChiDiscAtPi()
-
 
         mask_file = config.get("mask_file")
         do_mask = config.get("do_mask")
@@ -362,21 +358,22 @@ class Worker(object):
 
     def set_unit(self, value):
         self._unit = units.to_unit(value)
+
     def get_unit(self):
         return self._unit
     unit = property(get_unit, set_unit)
 
     def get_config(self):
         """return configuration as a dictionary"""
-        config = {"unit":str(self.unit)}
+        config = {"unit": str(self.unit)}
         for key in ["dist", "poni1", "poni2", "rot1", "rot3", "rot2", "pixel1", "pixel2", "splineFile", "wavelength"]:
             try:
                 config[key] = self.ai.__getattribute__(key)
             except:
                 pass
-        for key in ["nbpt_azim", "nbpt_rad", "polarization", "dummy", "delta_dummy", "correct_solid_angle", "dark_current_image", "flat_field_image", "mask_image",
-                  "do_poisson", "shape", "method"
-                  ]:
+        for key in ["nbpt_azim", "nbpt_rad", "polarization", "dummy", "delta_dummy",
+                    "correct_solid_angle", "dark_current_image", "flat_field_image",
+                    "mask_image", "do_poisson", "shape", "method"]:
             try:
                 config[key] = self.__getattribute__(key)
             except:
@@ -423,7 +420,6 @@ class Worker(object):
         if not filename:
             filename = self.config_file
 
-
     def warmup(self, sync=False):
         """
         Process a dummy image to ensure everything is initialized
@@ -441,6 +437,7 @@ class Worker(object):
     def get_normalization_factor(self):
         with self._sem:
             return self._normalization_factor
+
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
@@ -500,7 +497,7 @@ class PixelwiseWorker(object):
                 self.mask = numpy.logical_or((data == self.dummy), self.mask)
             else:
                 self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
-                                        self.mask)
+                                             self.mask)
             do_mask = True
         else:
             do_mask = (self.mask is not False)

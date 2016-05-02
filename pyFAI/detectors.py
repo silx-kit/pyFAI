@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/04/2016"
+__date__ = "02/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -518,6 +518,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
                     if self._mask is not None:
                         self._mask_crc = crc32(self._mask)
         return self._mask
+
     def set_mask(self, mask):
         with self._sem:
             self._mask = mask
@@ -526,6 +527,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             else:
                 self._mask_crc = None
     mask = property(get_mask, set_mask)
+
     def set_maskfile(self, maskfile):
         if fabio:
             with self._sem:
@@ -542,6 +544,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def get_pixel1(self):
         return self._pixel1
+
     def set_pixel1(self, value):
         if isinstance(value, float):
             value = value
@@ -559,6 +562,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def get_pixel2(self):
         return self._pixel2
+
     def set_pixel2(self, value):
         if isinstance(value, float):
             value = value
@@ -568,7 +572,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             value = float(value)
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
-            if self.force_pixel and  (err > epsilon):
+            if self.force_pixel and (err > epsilon):
                 logger.warning("Enforcing pixel size 2 for a detector %s" %
                                self.__class__.__name__)
         self._pixel2 = value

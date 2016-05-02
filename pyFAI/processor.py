@@ -40,6 +40,7 @@ from . import azimuthalIntegratory
 from .detectors import detector_factory
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 
+
 class Processor(object):
     """
     This class can be set-up from a configuration file to define an azimuthal integrator

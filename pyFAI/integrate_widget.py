@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/03/2016"
+__date__ = "02/05/2016"
 __status__ = "development"
 
 import logging
@@ -128,6 +128,7 @@ class AIWidget(QtGui.QWidget):
     """
     """
     URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
+
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=None):
         self.units = {}
         self.ai = AzimuthalIntegrator()
@@ -194,7 +195,6 @@ class AIWidget(QtGui.QWidget):
             else:
                 logger.debug("Unit unknown to GUI %s" % unit)
 
-
     def set_validators(self):
         """
         Set all validators for text entries
@@ -225,7 +225,6 @@ class AIWidget(QtGui.QWidget):
         # done at widget level
 #        self.polarization_factor.setValidator(QtGui.QDoubleValidator(-1, 1, 3))
 
-
     def proceed(self):
         with self._sem:
             out = None
@@ -237,7 +236,7 @@ class AIWidget(QtGui.QWidget):
             kwarg = {"unit": TTH_DEG,
                      "dummy": None,
                      "delta_dummy": None,
-                     "polarization_factor":None,
+                     "polarization_factor": None,
                      "filename": None,
                      "safe": False,
                      }
@@ -264,14 +263,8 @@ class AIWidget(QtGui.QWidget):
 
             nbpt_rad = str(self.nbpt_rad.text()).strip()
             if not nbpt_rad:
-#                mb = QtGui.QMessageBox()
-#                mb.setText("You must provide the number of output radial bins !")
-#
-#                icon=QtGui.QMessageBox.Warning, buttons=QtGui.QMessageBox.Warning)
-#
-#                msgBox.exec_()
                 ret = QtGui.QMessageBox.warning(self, "PyFAI integrate",
-                                          "You must provide the number of output radial bins !",)
+                                                "You must provide the number of output radial bins !",)
                 return {}
                 # raise RuntimeError("The number of output point is undefined !")
             kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
@@ -306,7 +299,7 @@ class AIWidget(QtGui.QWidget):
             else:
                 kwarg["error_model"] = None
             logger.info("Parameters for integration:%s%s" % (os.linesep,
-                            os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
+                        os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
             logger.debug("processing %s" % self.input_data)
             start_time = time.time()
@@ -340,25 +333,25 @@ class AIWidget(QtGui.QWidget):
                     if self.fast_dim:
                         if "npt_azim" in kwarg:
                             ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      maxshape=(None, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]))
+                                                     dtype=numpy.float32,
+                                                     chunks=(1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
+                                                     maxshape=(None, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
                             ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, self.fast_dim, kwarg["npt_rad"]),
-                                                      maxshape=(None, self.fast_dim, kwarg["npt_rad"]))
+                                                     dtype=numpy.float32,
+                                                     chunks=(1, self.fast_dim, kwarg["npt_rad"]),
+                                                     maxshape=(None, self.fast_dim, kwarg["npt_rad"]))
                     else:
                         if "npt_azim" in kwarg:
                             ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                      maxshape=(None, kwarg["npt_azim"], kwarg["npt_rad"]))
+                                                     dtype=numpy.float32,
+                                                     chunks=(1, kwarg["npt_azim"], kwarg["npt_rad"]),
+                                                     maxshape=(None, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
                             ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_rad"]),
-                                                      dtype=numpy.float32,
-                                                      chunks=(1, kwarg["npt_rad"]),
-                                                      maxshape=(None, kwarg["npt_rad"]))
+                                                     dtype=numpy.float32,
+                                                     chunks=(1, kwarg["npt_rad"]),
+                                                     maxshape=(None, kwarg["npt_rad"]))
 
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
@@ -428,42 +421,42 @@ class AIWidget(QtGui.QWidget):
 
         @return: dict with all information.
         """
-        to_save = { "poni": str_(self.poni.text()).strip(),
-                    "detector": str_(self.detector.currentText()).lower(),
-                    "wavelength":self._float("wavelength", None),
-                    "splineFile":str_(self.splineFile.text()).strip(),
-                    "pixel1": self._float("pixel1", None),
-                    "pixel2":self._float("pixel2", None),
-                    "dist":self._float("dist", None),
-                    "poni1":self._float("poni1", None),
-                    "poni2":self._float("poni2", None),
-                    "rot1":self._float("rot1", None),
-                    "rot2":self._float("rot2", None),
-                    "rot3":self._float("rot3", None),
-                    "do_dummy": bool(self.do_dummy.isChecked()),
-                    "do_mask":  bool(self.do_mask.isChecked()),
-                    "do_dark": bool(self.do_dark.isChecked()),
-                    "do_flat": bool(self.do_flat.isChecked()),
-                    "do_polarization":bool(self.do_polarization.isChecked()),
-                    "val_dummy":self._float("val_dummy", None),
-                    "delta_dummy":self._float("delta_dummy", None),
-                    "mask_file":str_(self.mask_file.text()).strip(),
-                    "dark_current":str_(self.dark_current.text()).strip(),
-                    "flat_field":str_(self.flat_field.text()).strip(),
-                    "polarization_factor":float_(self.polarization_factor.value()),
-                    "nbpt_rad":int_(self.nbpt_rad.text()),
-                    "do_2D":bool(self.do_2D.isChecked()),
-                    "nbpt_azim":int_(self.nbpt_azim.text()),
-                    "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
-                    "do_solid_angle": bool(self.do_solid_angle.isChecked()),
-                    "do_radial_range": bool(self.do_radial_range.isChecked()),
-                    "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
-                    "do_poisson": bool(self.do_poisson.isChecked()),
-                    "radial_range_min":self._float("radial_range_min", None),
-                    "radial_range_max":self._float("radial_range_max", None),
-                    "azimuth_range_min":self._float("azimuth_range_min", None),
-                    "azimuth_range_max":self._float("azimuth_range_max", None),
-                    "do_OpenCL": bool(self.do_OpenCL.isChecked())
+        to_save = {"poni": str_(self.poni.text()).strip(),
+                   "detector": str_(self.detector.currentText()).lower(),
+                   "wavelength": self._float("wavelength", None),
+                   "splineFile": str_(self.splineFile.text()).strip(),
+                   "pixel1": self._float("pixel1", None),
+                   "pixel2": self._float("pixel2", None),
+                   "dist": self._float("dist", None),
+                   "poni1": self._float("poni1", None),
+                   "poni2": self._float("poni2", None),
+                   "rot1": self._float("rot1", None),
+                   "rot2": self._float("rot2", None),
+                   "rot3": self._float("rot3", None),
+                   "do_dummy": bool(self.do_dummy.isChecked()),
+                   "do_mask": bool(self.do_mask.isChecked()),
+                   "do_dark": bool(self.do_dark.isChecked()),
+                   "do_flat": bool(self.do_flat.isChecked()),
+                   "do_polarization": bool(self.do_polarization.isChecked()),
+                   "val_dummy": self._float("val_dummy", None),
+                   "delta_dummy": self._float("delta_dummy", None),
+                   "mask_file": str_(self.mask_file.text()).strip(),
+                   "dark_current": str_(self.dark_current.text()).strip(),
+                   "flat_field": str_(self.flat_field.text()).strip(),
+                   "polarization_factor": float_(self.polarization_factor.value()),
+                   "nbpt_rad": int_(self.nbpt_rad.text()),
+                   "do_2D": bool(self.do_2D.isChecked()),
+                   "nbpt_azim": int_(self.nbpt_azim.text()),
+                   "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
+                   "do_solid_angle": bool(self.do_solid_angle.isChecked()),
+                   "do_radial_range": bool(self.do_radial_range.isChecked()),
+                   "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
+                   "do_poisson": bool(self.do_poisson.isChecked()),
+                   "radial_range_min": self._float("radial_range_min", None),
+                   "radial_range_max": self._float("radial_range_max", None),
+                   "azimuth_range_min": self._float("azimuth_range_min", None),
+                   "azimuth_range_max": self._float("azimuth_range_max", None),
+                   "do_OpenCL": bool(self.do_OpenCL.isChecked())
                    }
         for unit, widget in self.units.items():
             if widget is not None and widget.isChecked():
@@ -512,43 +505,43 @@ class AIWidget(QtGui.QWidget):
         @param dico: dictionary with description of the widget
         @type dico: dict
         """
-        setup_data = {  "poni": self.poni.setText,
+        setup_data = {"poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
-                        "wavelength":lambda a:self.wavelength.setText(str_(a)),
-                        "splineFile":lambda a:self.splineFile.setText(str_(a)),
-                        "pixel1":lambda a: self.pixel1.setText(str_(a)),
-                        "pixel2":lambda a:self.pixel2.setText(str_(a)),
-                        "dist":lambda a:self.dist.setText(str_(a)),
-                        "poni1":lambda a:self.poni1.setText(str_(a)),
-                        "poni2":lambda a:self.poni2.setText(str_(a)),
-                        "rot1":lambda a:self.rot1.setText(str_(a)),
-                        "rot2":lambda a:self.rot2.setText(str_(a)),
-                        "rot3":lambda a:self.rot3.setText(str_(a)),
-                        "do_dummy": self.do_dummy.setChecked,
-                        "do_dark": self.do_dark.setChecked,
-                        "do_flat": self.do_flat.setChecked,
-                        "do_polarization": self.do_polarization.setChecked,
-                        "val_dummy":lambda a: self.val_dummy.setText(str_(a)),
-                        "delta_dummy":lambda a: self.delta_dummy.setText(str_(a)),
-                        "do_mask":  self.do_mask.setChecked,
-                        "mask_file":lambda a:self.mask_file.setText(str_(a)),
-                        "dark_current":lambda a:self.dark_current.setText(str_(a)),
-                        "flat_field":lambda a:self.flat_field.setText(str_(a)),
-                        "polarization_factor":self.polarization_factor.setValue,
-                        "nbpt_rad":lambda a:self.nbpt_rad.setText(str_(a)),
-                        "do_2D":self.do_2D.setChecked,
-                        "nbpt_azim":lambda a:self.nbpt_azim.setText(str_(a)),
-                        "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
-                        "do_radial_range": self.do_radial_range.setChecked,
-                        "do_azimuthal_range": self.do_azimuthal_range.setChecked,
-                        "do_poisson": self.do_poisson.setChecked,
-                        "radial_range_min":lambda a:self.radial_range_min.setText(str_(a)),
-                        "radial_range_max":lambda a:self.radial_range_max.setText(str_(a)),
-                        "azimuth_range_min":lambda a:self.azimuth_range_min.setText(str_(a)),
-                        "azimuth_range_max":lambda a:self.azimuth_range_max.setText(str_(a)),
-                        "do_solid_angle": self.do_solid_angle.setChecked,
-                        "do_OpenCL": self.do_OpenCL.setChecked
-                   }
+                      "wavelength": lambda a: self.wavelength.setText(str_(a)),
+                      "splineFile": lambda a: self.splineFile.setText(str_(a)),
+                      "pixel1": lambda a: self.pixel1.setText(str_(a)),
+                      "pixel2": lambda a: self.pixel2.setText(str_(a)),
+                      "dist": lambda a: self.dist.setText(str_(a)),
+                      "poni1": lambda a: self.poni1.setText(str_(a)),
+                      "poni2": lambda a: self.poni2.setText(str_(a)),
+                      "rot1": lambda a: self.rot1.setText(str_(a)),
+                      "rot2": lambda a: self.rot2.setText(str_(a)),
+                      "rot3": lambda a: self.rot3.setText(str_(a)),
+                      "do_dummy": self.do_dummy.setChecked,
+                      "do_dark": self.do_dark.setChecked,
+                      "do_flat": self.do_flat.setChecked,
+                      "do_polarization": self.do_polarization.setChecked,
+                      "val_dummy": lambda a: self.val_dummy.setText(str_(a)),
+                      "delta_dummy": lambda a: self.delta_dummy.setText(str_(a)),
+                      "do_mask": self.do_mask.setChecked,
+                      "mask_file": lambda a: self.mask_file.setText(str_(a)),
+                      "dark_current": lambda a: self.dark_current.setText(str_(a)),
+                      "flat_field": lambda a: self.flat_field.setText(str_(a)),
+                      "polarization_factor": self.polarization_factor.setValue,
+                      "nbpt_rad": lambda a: self.nbpt_rad.setText(str_(a)),
+                      "do_2D": self.do_2D.setChecked,
+                      "nbpt_azim": lambda a: self.nbpt_azim.setText(str_(a)),
+                      "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
+                      "do_radial_range": self.do_radial_range.setChecked,
+                      "do_azimuthal_range": self.do_azimuthal_range.setChecked,
+                      "do_poisson": self.do_poisson.setChecked,
+                      "radial_range_min": lambda a: self.radial_range_min.setText(str_(a)),
+                      "radial_range_max": lambda a: self.radial_range_max.setText(str_(a)),
+                      "azimuth_range_min": lambda a: self.azimuth_range_min.setText(str_(a)),
+                      "azimuth_range_max": lambda a: self.azimuth_range_max.setText(str_(a)),
+                      "do_solid_angle": self.do_solid_angle.setChecked,
+                      "do_OpenCL": self.do_OpenCL.setChecked
+                     }
         for key, value in setup_data.items():
             if key in dico and (value is not None):
                 value(dico[key])
