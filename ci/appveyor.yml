@@ -2,19 +2,11 @@
 # Windows
 # https://ci.appveyor.com/project/kif/pyFAI
 
+os: Visual Studio 2015
+
 environment:
   global:
-    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-    # /E:ON and /V:ON options are not enabled in the batch script intepreter
-    # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\run_with_env.cmd"
-#    WHEELHOUSE_UPLOADER_USERNAME: fabio-appveyor
-#    WHEELHOUSE_UPLOADER_SECRET:
-#      secure: plop
-
-    # Make sure we don't download large datasets when running the test on
-    # continuous integration platform
-#    SKLEARN_SKIP_NETWORK_TESTS: 1
 
   matrix:
     # see https://www.appveyor.com/docs/installed-software#python
