@@ -27,13 +27,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "02/05/2016"
 __status__ = "development"
 
 import logging
 import threading
 import os
-import sys
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
 logging.basicConfig(level=logging.INFO)
@@ -74,14 +73,18 @@ class Distortion(object):
             self.detector = detectors.detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
-        if "shape" in dir(self.detector):
-            self.shape = self.detector.shape
-            if shape is not None and self.shape != shape:
-                logger.warning("unconsistency in detector geometry, got %s and expected %s" % (shape, self.shape))
-                self.shape = shape
+        if shape is not None:
+            self.shape = tuple([int(i) for i in shape])
         else:
-            self.shape = shape
-        self.shape = tuple([int(i) for i in self.shape])
+            inshape = self.detector.shape
+            corner_pos = self.self.detector.get_pixel_corners()
+            corner_pos.shape = (-1, 3)
+            pos0_min, pos1_min, pos2_min = corner_pos.min(axis=0)
+            pos0_max, pos1_max, pos2_max = corner_pos.max(axis=0)
+            # z is coord 0
+
+            self.out_shape = (int(ceil((pos1_max - pos1_min) / self.detector.pixel1)),
+                              int(ceil((pos2_max - pos2_min) / self.detector.pixel2)))
         self._sem = threading.Semaphore()
 
         self.bin_size = None
@@ -229,7 +232,7 @@ class Distortion(object):
                         else:
                             self.lut = _distortion.calc_CSR(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta0, self.delta1))
                     else:
-                        lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.max_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
+                        lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.max_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
                         lut[:, :, :].idx = 0
                         lut[:, :, :].coef = 0.0
                         outMax = numpy.zeros(self.shape, dtype=numpy.uint32)
@@ -263,7 +266,6 @@ class Distortion(object):
                                             continue
                                         val = quad.get_box(ms, ns)
                                         if val <= 0:
-                #                            print("Val ", val, i, j, idx, ms, ns, ml, nl
                                             continue
                                         k = outMax[ml, nl]
                                         lut[ml, nl, k].idx = idx
@@ -390,14 +392,19 @@ class Quad(object):
 
     def get_idx(self, i, j):
         pass
+
     def get_box(self, i, j):
         return self.box[i, j]
+
     def get_offset0(self):
         return self.offset0
+
     def get_offset1(self):
         return self.offset1
+
     def get_box_size0(self):
         return self.box_size0
+
     def get_box_size1(self):
         return self.box_size1
 
@@ -439,7 +446,7 @@ class Quad(object):
             if self.C0 == self.B0:
                 self.pBC = numpy.inf
             else:
-                 self.pBC = (self.C1 - self.B1) / (self.C0 - self.B0)
+                self.pBC = (self.C1 - self.B1) / (self.C0 - self.B0)
             if self.D0 == self.C0:
                 self.pCD = numpy.inf
             else:
@@ -453,35 +460,38 @@ class Quad(object):
             self.cCD = self.C1 - self.pCD * self.C0
             self.cDA = self.D1 - self.pDA * self.D0
 
-
     def calc_area_AB(self, I1, I2):
         if numpy.isfinite(self.pAB):
             return 0.5 * (I2 - I1) * (self.pAB * (I2 + I1) + 2 * self.cAB)
         else:
             return 0
+
     def calc_area_BC(self, J1, J2):
         if numpy.isfinite(self.pBC):
             return 0.5 * (J2 - J1) * (self.pBC * (J1 + J2) + 2 * self.cBC)
         else:
             return 0
+
     def calc_area_CD(self, K1, K2):
         if numpy.isfinite(self.pCD):
             return 0.5 * (K2 - K1) * (self.pCD * (K2 + K1) + 2 * self.cCD)
         else:
             return 0
     def calc_area_DA(self, L1, L2):
+
         if numpy.isfinite(self.pDA):
             return 0.5 * (L2 - L1) * (self.pDA * (L1 + L2) + 2 * self.cDA)
         else:
             return 0
+
     def calc_area_old(self):
         if self.area is None:
             if self.pAB is None:
                 self.init_slope()
-            self.area = -self.calc_area_AB(self.A0, self.B0) - \
-               self.calc_area_BC(self.B0, self.C0) - \
-               self.calc_area_CD(self.C0, self.D0) - \
-               self.calc_area_DA(self.D0, self.A0)
+            self.area = -(self.calc_area_AB(self.A0, self.B0) +
+                          self.calc_area_BC(self.B0, self.C0) +
+                          self.calc_area_CD(self.C0, self.D0) +
+                          self.calc_area_DA(self.D0, self.A0))
         return self.area
 
     def calc_area_vectorial(self):
@@ -589,7 +599,7 @@ class Quad(object):
                             self.box[int(floor(P)), h] += sign * dA
                             AA -= dA
                             h += 1
-        elif    start > stop:  # negative contribution. Nota is start=stop: no contribution
+        elif start > stop:  # negative contribution. Nota is start=stop: no contribution
             P = floor(start)
             if stop > P:  # start and stop are in the same unit
                 A = calc_area(start, stop)
@@ -618,7 +628,7 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[int(floor(P)) , h] += sign * dA
+                            self.box[int(floor(P)), h] += sign * dA
                             AA -= dA
                             h += 1
                 # subsection P1->Pn
@@ -655,7 +665,6 @@ class Quad(object):
 
 
 def test():
-    import numpy
     buffer = numpy.empty((20, 20), dtype=numpy.float32)
     Q = Quad(buffer)
     Q.reinit(7.5, 6.5, 2.5, 5.5, 3.5, 1.5, 8.5, 1.5)
@@ -669,7 +678,7 @@ def test():
     print(Q)
 #    print(Q.get_box().sum()
     print(buffer.sum())
-    print("#"*50)
+    print("#" * 50)
 
     Q.reinit(8.5, 1.5, 3.5, 1.5, 2.5, 5.5, 7.5, 6.5)
     Q.init_slope()
@@ -696,9 +705,9 @@ def test():
 #    print(Q.get_box().sum()
     print(Q.calc_area())
 
-    print("#"*50)
+    print("#" * 50)
 
-    import fabio, numpy
+    import fabio
 #    workin on 256x256
 #    x, y = numpy.ogrid[:256, :256]
 #    grid = numpy.logical_or(x % 10 == 0, y % 10 == 0) + numpy.ones((256, 256), numpy.float32)
@@ -724,7 +733,7 @@ def test():
     out = dis.correct(grid)
     fabio.edfimage.edfimage(data=out.astype("float32")).write("test_correct.edf")
 
-    print("*"*50)
+    print("*" * 50)
 
 #    x, y = numpy.ogrid[:2048, :2048]
 #    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
