@@ -67,7 +67,8 @@ install:
   # Install the build dependencies of the project. If some dependencies contain
   # compiled extensions and are not provided as pre-built wheel packages,
   # pip will build them from source using the MSVC compiler matching the
-  # target Python version and architecture  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse numpy cython"
+  # target Python version and architecture  
+  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse numpy cython"
   - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse pyparsing scipy"
   - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -r ci/requirements_appveyor.txt "
   - "del pyFAI\\ext\\histogram.c"
