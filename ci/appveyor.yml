@@ -17,20 +17,17 @@ environment:
 #    SKLEARN_SKIP_NETWORK_TESTS: 1
 
   matrix:
-#    - PYTHON: "C:\\Python27"
-#      PYTHON_VERSION: "2.7.10"
-#      PYTHON_ARCH: "32"
-
+    # see https://www.appveyor.com/docs/installed-software#python
     - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.10"
+      PYTHON_VERSION: "2.7.11"
       PYTHON_ARCH: "64"
-
-#    - PYTHON: "C:\\Python34"
-#      PYTHON_VERSION: "3.4.3"
-#      PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python34-x64"
       PYTHON_VERSION: "3.4.3"
+      PYTHON_ARCH: "64"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "64"
 
 
@@ -47,9 +44,10 @@ install:
   #pip install -i https://pypi.anaconda.org/carlkl/simple scipy
   #Upgrade pip version
   - "%CMD_IN_ENV% pip install --user --upgrade  pip"
-  - "%CMD_IN_ENV% pip install --trusted-host pypi.anaconda.org -i https://pypi.anaconda.org/carlkl/simple numpy scipy"
-  - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse pyparsing cython"
-  - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org --upgrade -r ci/requirements_appveyor.txt "
+  #- "%CMD_IN_ENV% pip install --trusted-host pypi.anaconda.org -i https://pypi.anaconda.org/carlkl/simple numpy scipy"
+  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse numpy cython"
+  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse pyparsing scipy"
+  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -r ci/requirements_appveyor.txt "
   - "del pyFAI\\ext\\histogram.c"
   - "%CMD_IN_ENV% python setup.py build --no-openmp" #OpenMP is not available on python 3.4
   - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_msi"
