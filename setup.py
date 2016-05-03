@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2016"
+__date__ = "03/05/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -204,7 +204,7 @@ ext_modules = [
     Extension('relabel'),
     Extension("bilinear", can_use_openmp=True),
     Extension('_distortion', can_use_openmp=True),
-    Extension('_distortionCSR', can_use_openmp=True),
+#     Extension('_distortionCSR', can_use_openmp=True),
     Extension('_bispev', can_use_openmp=True),
     Extension('_convolution', can_use_openmp=True),
     Extension('_blob'),

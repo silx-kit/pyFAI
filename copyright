@@ -32,6 +32,9 @@ Files: version.py
        pyFAI/diffmap.py
        pyFAI/ocl_sort.py
        pyFAI/decorators.py
+       pyFAI/distortion.py
+       pyFAI/ext/_distortion.py
+       pyFAI/test/test_distortion.py
        run_tests.py
 Copyright: 2015-2016 European Synchrotron Radiation Facility
 License: MIT/X11 (BSD like)

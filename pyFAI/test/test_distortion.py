@@ -4,27 +4,27 @@
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
 from __future__ import absolute_import, division, print_function
 
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "03/05/2016"
 
 
 import unittest
@@ -42,7 +42,7 @@ import fabio
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 from .. import detectors
-from ..ext import _distortion
+from .. import distortion
 
 
 class TestHalfCCD(unittest.TestCase):
@@ -57,13 +57,21 @@ class TestHalfCCD(unittest.TestCase):
         self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
         self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
         self.det = detectors.FReLoN(self.splineFile)
-        self.dis = _distortion.Distortion(self.det)
+        self.dis = distortion.Distortion(self.det, self.det.shape, resize=False,
+                                         mask=numpy.zeros(self.det.shape, "int8"))
         self.fit2d = fabio.open(self.fit2dFile).data
         self.raw = fabio.open(self.halfFrelon).data
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
         self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = None
+
+    def test_size(self):
+        self.dis.reset(prepare=False)
+        ny = self.dis.calc_size(False)
+        self.dis.reset(prepare)
+        cy = self.dis.calc_size(True)
+        self.assertEqual(abs(ny - cy).max(), 0, "equivalence of the cython and numpy model")
 
     def test_vs_fit2d(self):
         """
@@ -93,6 +101,7 @@ class TestHalfCCD(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(TestHalfCCD("test_size"))
     testsuite.addTest(TestHalfCCD("test_vs_fit2d"))
 #    testsuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
 #    testsuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))

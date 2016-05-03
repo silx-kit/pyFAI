@@ -4,30 +4,33 @@
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright 2013-2016 (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+
 from __future__ import absolute_import, print_function, division, with_statement
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2016"
+__date__ = "03/05/2016"
 __status__ = "development"
 
 import logging
@@ -61,38 +64,45 @@ class Distortion(object):
 
     New version compatible both with CSR and LUT...
     """
-    def __init__(self, detector="detector", shape=None, method="LUT", device=None, workgroup=8):
+    def __init__(self, detector="detector", shape=None, resize=False, empty=0,
+                 mask=None, method="LUT", device=None, workgroup=8):
         """
         @param detector: detector instance or detector name
         @param shape: shape of the output image
+        @param resize: allow the output shape to be different from the input shape
+        @param empty: value to be given for empty bins
         @param method: "lut" or "csr", the former is faster
         @param device: Name of the device: None for OpenMP, "cpu" or "gpu" or the id of the OpenCL device a 2-tuple of integer
         @param workgroup: workgroup size for CSR on OpenCL
         """
+        self._shape_out = None
         if isinstance(detector, six.string_types):
             self.detector = detectors.detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
-        if shape is not None:
-            self.shape = tuple([int(i) for i in shape])
+        self.shape_in = self.detector.shape
+        if mask is not None:
+            self.mask = numpy.ascontiguousarray(mask, numpy.int8)
         else:
-            inshape = self.detector.shape
-            corner_pos = self.self.detector.get_pixel_corners()
-            corner_pos.shape = (-1, 3)
-            pos0_min, pos1_min, pos2_min = corner_pos.min(axis=0)
-            pos0_max, pos1_max, pos2_max = corner_pos.max(axis=0)
-            # z is coord 0
+            self.mask = numpy.ascontiguousarray(self.detector.mask, numpy.int8)
+        self.resize = resize
+        if shape is not None:
+            self._shape_out = tuple([int(i) for i in shape])
+        elif not self.resize:
+            if self.detector.shape is not None:
+                self._shape_out = self.detector.shape
+            else:
+                raise RuntimeError("You need to provide either the detector or its shape")
 
-            self.out_shape = (int(ceil((pos1_max - pos1_min) / self.detector.pixel1)),
-                              int(ceil((pos2_max - pos2_min) / self.detector.pixel2)))
         self._sem = threading.Semaphore()
-
         self.bin_size = None
         self.max_size = None
         self.pos = None
         self.lut = None
-        self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
+        self.delta1 = self.delta2 = None  # max size of an pixel on a regular grid ...
+        self.offset1 = self.offset2 = 0  # position of the first bin
         self.integrator = None
+        self.empty = empty  # "dummy" value for empty bins
         if not method:
             self.method = "lut"
         else:
@@ -107,19 +117,21 @@ class Distortion(object):
         return os.linesep.join(["Distortion correction %s on device %s for detector shape %s:" % (self.method, self.device, self.shape),
                                 self.detector.__repr__()])
 
-    def reset(self, method=None, device=None, workgroup=None):
+    def reset(self, method=None, device=None, workgroup=None, prepare=True):
         """
         reset the distortion correction and re-calculate the look-up table
 
         @param method: can be "lut" or "csr", "lut" looks faster
         @param device: can be None, "cpu" or "gpu" or the id as a 2-tuple of integer
         @param worgroup: enforce the workgroup size for CSR.
+        @param prepare: set to false to only reset and not re-initialize
         """
         with self._sem:
             self.max_size = None
             self.pos = None
             self.lut = None
-            self.delta0 = self.delta1 = None
+            self.delta1 = self.delta2 = None
+            self.offset1 = self.offset2 = 0
             self.integrator = None
             if method is not None:
                 self.method = method.lower()
@@ -127,38 +139,73 @@ class Distortion(object):
                 self.device = device
             if workgroup is not None:
                 self.workgroup = int(workgroup)
+        if prepare:
+            self.calc_init()
 
-        self.calc_init()
+    @property
+    def shape_out(self):
+        """
+        Calculate/cache the output shape
+        
+        @return output shape 
+        """
+        if self._shape_out is None:
+            self.calc_pos()
+        return self._shape_out
 
     @timeit
     def calc_pos(self):
+        """Calculate the pixel position on the regular grid
+        
+        @return: pixel corner positions (in pixel units) on the regular grid 
+        @rtyep: ndarray of shape (nrow, ncol, 4, 2)
+        """
         if self.delta1 is None:
             with self._sem:
                 if self.delta1 is None:
-                    pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
-                    d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float64), numpy.ones(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-                    d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-                    pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)[:2]
-                    pos_corners[:, :, 0] /= self.detector.pixel1
-                    pos_corners[:, :, 1] /= self.detector.pixel2
-                    pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
-                    pos[:, :, 0, :] = pos_corners[:-1, :-1]
-                    pos[:, :, 1, :] = pos_corners[:-1, 1: ]
-                    pos[:, :, 2, :] = pos_corners[1: , 1: ]
-                    pos[:, :, 3, :] = pos_corners[1: , :-1]
-                    self.pos = pos
-                    self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
-                    self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
+                    pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2])
+                    # make it a 4D array
+                    pixel_size.shape = 1, 1, 1, 2
+                    pixel_size.strides = 0, 0, 0, pixel_size.strides[-1]
+                    self.pos = self.detector.get_pixel_corners()[..., 1:] / pixel_size
+                    if self._shape_out is None:
+                        # if defined, it is probably because resize=False
+                        corner_pos = self.pos.view()
+                        corner_pos.shape = -1, 2
+                        pos1_min, pos2_min = corner_pos.min(axis=0)
+                        pos1_max, pos2_max = corner_pos.max(axis=0)
+                        self._shape_out = (int(ceil(pos1_max - pos1_min)),
+                                           int(ceil(pos2_max - pos2_min)))
+                        self.offset1, self.offset2 = pos1_min, pos2_min
+                    pixel_delta = self.pos.view()
+                    pixel_delta.shape = -1, 4, 2
+                    self.delta1, self.delta2 = (pixel_delta.max(axis=1) - pixel_delta.min(axis=1)).max(axis=0)
+#                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
+#                     d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float64), numpy.ones(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
+#                     d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
+#                     pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)[:2]
+#                     pos_corners[:, :, 0] /= self.detector.pixel1
+#                     pos_corners[:, :, 1] /= self.detector.pixel2
+#                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
+#                     pos[:, :, 0, :] = pos_corners[:-1, :-1]
+#                     pos[:, :, 1, :] = pos_corners[:-1, 1: ]
+#                     pos[:, :, 2, :] = pos_corners[1: , 1: ]
+#                     pos[:, :, 3, :] = pos_corners[1: , :-1]
+#                     self.pos = pos
+#                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
+#                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
         return self.pos
 
     @timeit
-    def calc_size(self):
-        """
+    def calc_size(self, use_cython=True):
+        """Calculate the number of pixels falling into every single bin and 
+        
+        @return: max of pixel falling into a single bin
+        
         Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
         the physical location of pixels should go from:
         [-17.48634 : 1027.0543, -22.768829 : 2028.3689]
         We chose to discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity
-
         """
         if self.pos is None:
             pos = self.calc_pos()
@@ -167,32 +214,33 @@ class Distortion(object):
         if self.max_size is None:
             with self._sem:
                 if self.max_size is None:
-                    if _distortion:
-                        self.bin_size = _distortion.calc_size(self.pos, self.shape, self.detector.mask)
+                    if _distortion and use_cython:
+                        self.bin_size = _distortion.calc_size(self.pos, self._shape_out, self.mask, (self.offset1, self.offset2))
                     else:
-                        mask = self.detector.mask
-                        pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
-                        pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
-                        pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
-                        pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
-                        self.bin_size = numpy.zeros(self.shape, dtype=numpy.int32)
-                        max0 = 0
-                        max1 = 0
-                        for i in range(self.shape[0]):
-                            for j in range(self.shape[1]):
+                        mask = self.mask
+                        pos0min = (numpy.floor(pos[:, :, :, 0].min(axis=-1) - self.offset1).astype(numpy.int32)).clip(0, self._shape_out[0])
+                        pos1min = (numpy.floor(pos[:, :, :, 1].min(axis=-1) - self.offset2).astype(numpy.int32)).clip(0, self._shape_out[1])
+                        pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1) - self.offset1 + 1).astype(numpy.int32)).clip(0, self._shape_out[0])
+                        pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1) - self.offset2 + 1).astype(numpy.int32)).clip(0, self._shape_out[1])
+                        self.bin_size = numpy.zeros(self._shape_out, dtype=numpy.int32)
+#                         max0 = 0
+#                         max1 = 0
+                        for i in range(self.shape_in[0]):
+                            for j in range(self.shape_in[1]):
                                 if (mask is not None) and mask[i, j]:
                                     continue
-                                if (pos0max[i, j] - pos0min[i, j]) > max0:
-                                    old = max0
-                                    max0 = pos0max[i, j] - pos0min[i, j]
-                                    logger.debug(old, "new max0", max0, i, j)
-                                if (pos1max[i, j] - pos1min[i, j]) > max1:
-                                    old = max1
-                                    max1 = pos1max[i, j] - pos1min[i, j]
-                                    logger.debug(old, "new max1", max1, i, j)
+#                                 if (pos0max[i, j] - pos0min[i, j]) > max0:
+#                                     old = max0
+#                                     max0 = pos0max[i, j] - pos0min[i, j]
+#                                     logger.debug(old, "new max0", max0, i, j)
+#                                 if (pos1max[i, j] - pos1min[i, j]) > max1:
+#                                     old = max1
+#                                     max1 = pos1max[i, j] - pos1min[i, j]
+#                                     logger.debug(old, "new max1", max1, i, j)
 
                                 self.bin_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
                     self.max_size = self.bin_size.max()
+        return self.bin_size
 
     def calc_init(self):
         """
@@ -228,16 +276,16 @@ class Distortion(object):
                     mask = self.detector.mask
                     if _distortion:
                         if self.method == "lut":
-                            self.lut = _distortion.calc_LUT(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta0, self.delta1))
+                            self.lut = _distortion.calc_LUT(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
                         else:
-                            self.lut = _distortion.calc_CSR(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta0, self.delta1))
+                            self.lut = _distortion.calc_CSR(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
                     else:
                         lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.max_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
                         lut[:, :, :].idx = 0
                         lut[:, :, :].coef = 0.0
                         outMax = numpy.zeros(self.shape, dtype=numpy.uint32)
                         idx = 0
-                        buffer = numpy.empty((self.delta0, self.delta1))
+                        buffer = numpy.empty((self.delta1, self.delta2))
                         quad = Quad(buffer)
                         for i in range(self.shape[0]):
                             for j in range(self.shape[1]):
@@ -477,6 +525,7 @@ class Quad(object):
             return 0.5 * (K2 - K1) * (self.pCD * (K2 + K1) + 2 * self.cCD)
         else:
             return 0
+
     def calc_area_DA(self, L1, L2):
 
         if numpy.isfinite(self.pDA):
