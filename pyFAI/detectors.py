@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2016"
+__date__ = "03/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -708,7 +708,6 @@ class NexusDetector(Detector):
         if filename is not None:
             self.load(filename)
 
-
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._filename, self._pixel1, self._pixel2)
@@ -938,7 +937,6 @@ class Pilatus(Detector):
         return p1, p2, None
 
 
-
 class Pilatus100k(Pilatus):
     """
     Pilatus 100k detector
@@ -987,6 +985,7 @@ class Pilatus6M(Pilatus):
     Pilatus 6M detector
     """
     MAX_SHAPE = (2527, 2463)
+
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
@@ -1019,6 +1018,7 @@ class PilatusCdTe(Pilatus):
 
         return mask
 
+
 class PilatusCdTe300k(PilatusCdTe):
     """
     Pilatus CdTe 300k detector
@@ -1045,6 +1045,7 @@ class PilatusCdTe2M(PilatusCdTe):
     Pilatus CdTe 2M detector
     """
     MAX_SHAPE = 1679, 1475
+
 
 class Eiger(Detector):
     """
@@ -1184,6 +1185,7 @@ class Fairchild(Detector):
     uniform_pixel = True
     aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
     MAX_SHAPE = (4096, 4096)
+
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -1200,6 +1202,7 @@ class Titan(Detector):
     MAX_SHAPE = (2048, 2048)
     aliases = ["Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
     uniform_pixel = True
+
     def __init__(self, pixel1=60e-6, pixel2=60e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -1215,6 +1218,7 @@ class Dexela2923(Detector):
     force_pixel = True
     aliases = ["Dexela 2923"]
     MAX_SHAPE = (3888, 3072)
+
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
@@ -1269,6 +1273,7 @@ class Basler(Detector):
     force_pixel = True
     aliases = ["aca1300"]
     MAX_SHAPE = (966, 1296)
+
     def __init__(self, pixel=3.75e-6):
         super(Basler, self).__init__(pixel1=pixel, pixel2=pixel)
 
@@ -1288,16 +1293,17 @@ class Mar345(Detector):
     force_pixel = True
     MAX_SHAPE = (3450, 3450)
     # Valid image width with corresponding pixel size
-    VALID_SIZE = {2300:150e-6,
-                  2000:150e-6,
-                  1600:150e-6,
-                  1200:150e-6,
-                  3450:100e-6,
-                  3000:100e-6,
-                  2400:100e-6,
-                  1800:100e-6}
+    VALID_SIZE = {2300: 150e-6,
+                  2000: 150e-6,
+                  1600: 150e-6,
+                  1200: 150e-6,
+                  3450: 100e-6,
+                  3000: 100e-6,
+                  2400: 100e-6,
+                  1800: 100e-6}
 
     aliases = ["MAR 345", "Mar3450"]
+
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
         Detector.__init__(self, pixel1, pixel2)
         self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
@@ -1556,7 +1562,6 @@ class Xpad_flat(ImXPadS10):
         else:
             self.module_size = module_size
 
-
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
                 (self.name, self.pixel1, self.pixel2)
@@ -1567,7 +1572,6 @@ class Xpad_flat(ImXPadS10):
         """
         if self._pixel_edges is None:
             # all pixel have the same size along the vertical axis, some pixels are larger along the horizontal one
-            PIXEL_SIZE = (self._pixel1, self.pixel2)
             pixel_size1 = numpy.ones(self.max_shape[0]) * self._pixel1
             pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self._pixel2)
             pixel_edges1 = numpy.zeros(self.max_shape[0] + 1)
@@ -1576,7 +1580,6 @@ class Xpad_flat(ImXPadS10):
             pixel_edges2[1:] = numpy.cumsum(pixel_size2)
             self._pixel_edges = pixel_edges1, pixel_edges2
         return self._pixel_edges
-
 
     def calc_mask(self):
         """
@@ -1597,7 +1600,6 @@ class Xpad_flat(ImXPadS10):
             mask[:, i ] = 1
             mask[:, i + self.module_size[1] - 1] = 1
         return mask
-
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -1650,14 +1652,14 @@ class Xpad_flat(ImXPadS10):
             # points A and B are on the same dim2 (X), they differ in dim1
             # p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
             p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
-               + B1 * delta1 * (1.0 - delta2) \
-               + C1 * delta1 * delta2 \
-               + D1 * (1.0 - delta1) * delta2
+                + B1 * delta1 * (1.0 - delta2) \
+                + C1 * delta1 * delta2 \
+                + D1 * (1.0 - delta1) * delta2
             p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
-               + B2 * delta1 * (1.0 - delta2) \
-               + C2 * delta1 * delta2 \
-               + D2 * (1.0 - delta1) * delta2
-           # To ensure numerical consitency with cython procedure.
+                + B2 * delta1 * (1.0 - delta2) \
+                + C2 * delta1 * delta2 \
+                + D2 * (1.0 - delta1) * delta2
+            # To ensure numerical consitency with cython procedure.
             p1 = p1.astype(numpy.float32)
             p2 = p2.astype(numpy.float32)
         return p1, p2, None
@@ -1686,10 +1688,10 @@ class Xpad_flat(ImXPadS10):
                     # gaps
                     for i in range(self.max_shape[0] // self.module_size[0]):
                         pixel_center1[i * self.module_size[0]:
-                           (i + 1) * self.module_size[0]] += i * self.MODULE_GAP[0]
+                                      (i + 1) * self.module_size[0]] += i * self.MODULE_GAP[0]
                     for i in range(self.max_shape[1] // self.module_size[1]):
                         pixel_center2[i * self.module_size[1]:
-                           (i + 1) * self.module_size[1]] += i * self.MODULE_GAP[1]
+                                      (i + 1) * self.module_size[1]] += i * self.MODULE_GAP[1]
 
                     pixel_center1.shape = -1, 1
                     pixel_center1.strides = pixel_center1.strides[0], 0
@@ -1743,7 +1745,7 @@ class Perkin(Detector):
 class Rayonix(Detector):
     force_pixel = True
     BINNED_PIXEL_SIZE = {1: 32e-6}
-    MAX_SHAPE = (4096 , 4096)
+    MAX_SHAPE = (4096, 4096)
 
     def __init__(self, pixel1=32e-6, pixel2=32e-6):
         super(Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2)
@@ -1824,7 +1826,7 @@ class Rayonix133(Rayonix):
                          4: 128e-6,
                          8: 256e-6,
                          }
-    MAX_SHAPE = (4096 , 4096)
+    MAX_SHAPE = (4096, 4096)
     aliases = ["MAR133"]
 
     def __init__(self, pixel1=64e-6, pixel2=64e-6):
@@ -1850,7 +1852,7 @@ class RayonixSx165(Rayonix):
                          4: 158e-6,
                          8: 316e-6,
                          }
-    MAX_SHAPE = (4096 , 4096)
+    MAX_SHAPE = (4096, 4096)
     aliases = ["MAR165", "Rayonix Sx165"]
     force_pixel = True
 
@@ -1877,7 +1879,7 @@ class RayonixSx200(Rayonix):
                          4: 192e-6,
                          8: 384e-6,
                          }
-    MAX_SHAPE = (4096 , 4096)
+    MAX_SHAPE = (4096, 4096)
     aliases = ["Rayonix sx200"]
 
     def __init__(self, pixel1=48e-6, pixel2=48e-6):
@@ -1890,14 +1892,14 @@ class RayonixLx170(Rayonix):
 
     Nota: this is the same for lx170hs
     """
-    BINNED_PIXEL_SIZE = {1:  44.2708e-6,
-                         2:  88.5417e-6,
+    BINNED_PIXEL_SIZE = {1: 44.2708e-6,
+                         2: 88.5417e-6,
                          3: 132.8125e-6,
                          4: 177.0833e-6,
                          5: 221.3542e-6,
                          6: 265.625e-6,
                          8: 354.1667e-6,
-                         10:442.7083e-6
+                         10: 442.7083e-6
                          }
     MAX_SHAPE = (1920, 3840)
     force_pixel = True
@@ -1913,14 +1915,14 @@ class RayonixMx170(Rayonix):
 
     Nota: this is the same for mx170hs
     """
-    BINNED_PIXEL_SIZE = {1:  44.2708e-6,
-                         2:  88.5417e-6,
+    BINNED_PIXEL_SIZE = {1: 44.2708e-6,
+                         2: 88.5417e-6,
                          3: 132.8125e-6,
                          4: 177.0833e-6,
                          5: 221.3542e-6,
                          6: 265.625e-6,
                          8: 354.1667e-6,
-                         10:442.7083e-6
+                         10: 442.7083e-6
                          }
     MAX_SHAPE = (3840, 3840)
     aliases = ["Rayonix mx170"]
@@ -1935,14 +1937,14 @@ class RayonixLx255(Rayonix):
 
     Nota: this detector is also called lx255hs
     """
-    BINNED_PIXEL_SIZE = {1:  44.2708e-6,
-                         2:  88.5417e-6,
+    BINNED_PIXEL_SIZE = {1: 44.2708e-6,
+                         2: 88.5417e-6,
                          3: 132.8125e-6,
                          4: 177.0833e-6,
                          5: 221.3542e-6,
                          6: 265.625e-6,
                          8: 354.1667e-6,
-                         10:442.7083e-6
+                         10: 442.7083e-6
                          }
     MAX_SHAPE = (1920 , 5760)
     aliases = [ "Rayonix lx225"]
@@ -1959,8 +1961,8 @@ class RayonixMx225(Rayonix):
     Personnal communication from M. Blum
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:  36.621e-6,
-                         2:  73.242e-6,
+    BINNED_PIXEL_SIZE = {1: 36.621e-6,
+                         2: 73.242e-6,
                          3: 109.971e-6,
                          4: 146.484e-6,
                          8: 292.969e-6
@@ -1979,8 +1981,8 @@ class RayonixMx225hs(Rayonix):
     Pixel size from a personnal communication from M. Blum
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:  39.0625e-6,
-                         2:  78.125e-6,
+    BINNED_PIXEL_SIZE = {1: 39.0625e-6,
+                         2: 78.125e-6,
                          3: 117.1875e-6,
                          4: 156.25e-6,
                          5: 195.3125e-6,
@@ -1988,8 +1990,9 @@ class RayonixMx225hs(Rayonix):
                          8: 312.5e-6,
                          10:390.625e-6,
                          }
-    MAX_SHAPE = (5760 , 5760)
+    MAX_SHAPE = (5760, 5760)
     aliases = ["Rayonix mx225hs"]
+
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2001,8 +2004,8 @@ class RayonixMx300(Rayonix):
     Pixel size from a personnal communication from M. Blum
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:  36.621e-6,
-                         2:  73.242e-6,
+    BINNED_PIXEL_SIZE = {1: 36.621e-6,
+                         2: 73.242e-6,
                          3: 109.971e-6,
                          4: 146.484e-6,
                          8: 292.969e-6
@@ -2021,13 +2024,13 @@ class RayonixMx300hs(Rayonix):
     Pixel size from a personnal communication from M. Blum
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:   39.0625e-6,
-                         2:   78.125e-6,
-                         3:  117.1875e-6,
-                         4:  156.25e-6,
-                         5:  195.3125e-6,
-                         6:  234.3750e-6,
-                         8:  312.5e-6,
+    BINNED_PIXEL_SIZE = {1: 39.0625e-6,
+                         2: 78.125e-6,
+                         3: 117.1875e-6,
+                         4: 156.25e-6,
+                         5: 195.3125e-6,
+                         6: 234.3750e-6,
+                         8: 312.5e-6,
                          10: 390.625e-6
                          }
     MAX_SHAPE = (7680, 7680)
@@ -2044,16 +2047,16 @@ class RayonixMx340hs(Rayonix):
     Pixel size from a personnal communication from M. Blum
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:   44.2708e-6,
-                         2:   88.5417e-6,
-                         3:  132.8125e-6,
-                         4:  177.0833e-6,
-                         5:  221.3542e-6,
-                         6:  265.625e-6,
-                         8:  354.1667e-6,
+    BINNED_PIXEL_SIZE = {1: 44.2708e-6,
+                         2: 88.5417e-6,
+                         3: 132.8125e-6,
+                         4: 177.0833e-6,
+                         5: 221.3542e-6,
+                         6: 265.625e-6,
+                         8: 354.1667e-6,
                          10: 442.7083e-6
                          }
-    MAX_SHAPE = (7680 , 7680)
+    MAX_SHAPE = (7680, 7680)
     aliases = ["Rayonix mx340hs"]
 
     def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6):
@@ -2066,16 +2069,16 @@ class RayonixSx30hs(Rayonix):
 
     Pixel size from a personnal communication from M. Blum
     """
-    BINNED_PIXEL_SIZE = {1:  15.625e-6,
-                         2:  31.25e-6,
-                         3:  46.875e-6,
-                         4:  62.5e-6,
-                         5:  78.125e-6,
-                         6:  93.75e-6,
+    BINNED_PIXEL_SIZE = {1: 15.625e-6,
+                         2: 31.25e-6,
+                         3: 46.875e-6,
+                         4: 62.5e-6,
+                         5: 78.125e-6,
+                         6: 93.75e-6,
                          8: 125.0e-6,
-                         10:156.25e-6
+                         10: 156.25e-6
                          }
-    MAX_SHAPE = (1920 , 1920)
+    MAX_SHAPE = (1920, 1920)
     aliases = ["Rayonix Sx30hs"]
 
     def __init__(self, pixel1=15.625e-6, pixel2=15.625e-6):
@@ -2088,17 +2091,18 @@ class RayonixSx85hs(Rayonix):
 
     Pixel size from a personnal communication from M. Blum
     """
-    BINNED_PIXEL_SIZE = {1:   44.2708e-6,
-                         2:   88.5417e-6,
-                         3:   132.8125e-6,
-                         4:   177.0833e-6,
-                         5:   221.3542e-6,
-                         6:   265.625e-6,
-                         8:   354.1667e-6,
-                         10:  442.7083e-6
+    BINNED_PIXEL_SIZE = {1: 44.2708e-6,
+                         2: 88.5417e-6,
+                         3: 132.8125e-6,
+                         4: 177.0833e-6,
+                         5: 221.3542e-6,
+                         6: 265.625e-6,
+                         8: 354.1667e-6,
+                         10: 442.7083e-6
                          }
-    MAX_SHAPE = (1920 , 1920)
+    MAX_SHAPE = (1920, 1920)
     aliases = ["Rayonix Sx85hs"]
+
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2109,17 +2113,18 @@ class RayonixMx425hs(Rayonix):
 
     Pixel size from a personnal communication from M. Blum
     """
-    BINNED_PIXEL_SIZE = {1:   44.2708e-6,
-                         2:   88.5417e-6,
-                         3:   132.8125e-6,
-                         4:   177.0833e-6,
-                         5:   221.3542e-6,
-                         6:   265.625e-6,
-                         8:   354.1667e-6,
-                         10:  442.7083e-6
+    BINNED_PIXEL_SIZE = {1: 44.2708e-6,
+                         2: 88.5417e-6,
+                         3: 132.8125e-6,
+                         4: 177.0833e-6,
+                         5: 221.3542e-6,
+                         6: 265.625e-6,
+                         8: 354.1667e-6,
+                         10: 442.7083e-6
                          }
-    MAX_SHAPE = (9600 , 9600)
+    MAX_SHAPE = (9600, 9600)
     aliases = ["Rayonix mx425hs"]
+
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2130,14 +2135,15 @@ class RayonixMx325(Rayonix):
 
     Pixel size from a personnal communication from M. Blum
     """
-    BINNED_PIXEL_SIZE = {1:  39.673e-6,
-                         2:  79.346e-6,
+    BINNED_PIXEL_SIZE = {1: 39.673e-6,
+                         2: 79.346e-6,
                          3: 119.135e-6,
                          4: 158.691e-6,
                          8: 317.383e-6
                          }
-    MAX_SHAPE = (8192 , 8192)
+    MAX_SHAPE = (8192, 8192)
     aliases = ["Rayonix mx325"]
+
     def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2152,8 +2158,9 @@ class ADSC_Q315(Detector):
     Question: how are the gaps handled ?
     """
     force_pixel = True
-    MAX_SHAPE = (6144 , 6144)
+    MAX_SHAPE = (6144, 6144)
     aliases = ["Quantum 315"]
+
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2168,8 +2175,9 @@ class ADSC_Q210(Detector):
     Question: how are the gaps handled ?
     """
     force_pixel = True
-    MAX_SHAPE = (4096 , 4096)
+    MAX_SHAPE = (4096, 4096)
     aliases = ["Quantum 210"]
+
     def __init__(self, pixel1=51e-6, pixel2=51e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2184,8 +2192,9 @@ class ADSC_Q270(Detector):
     Question: how are the gaps handled ?
     """
     force_pixel = True
-    MAX_SHAPE = (4168 , 4168)
+    MAX_SHAPE = (4168, 4168)
     aliases = ["Quantum 270"]
+
     def __init__(self, pixel1=64.8e-6, pixel2=64.8e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2200,8 +2209,9 @@ class ADSC_Q4(Detector):
     Question: how are the gaps handled ?
     """
     force_pixel = True
-    MAX_SHAPE = (2304 , 2304)
+    MAX_SHAPE = (2304, 2304)
     aliases = ["Quantum 4"]
+
     def __init__(self, pixel1=82e-6, pixel2=82e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2215,8 +2225,9 @@ class HF_130K(Detector):
 
     """
     force_pixel = True
-    MAX_SHAPE = (256 , 512)
+    MAX_SHAPE = (256, 512)
     aliases = ["HF-130k"]
+
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2231,8 +2242,9 @@ class HF_262k(Detector):
     Nota: gaps between modules is not known/described
     """
     force_pixel = True
-    MAX_SHAPE = (512 , 512)
+    MAX_SHAPE = (512, 512)
     aliases = ["HF-262k"]
+
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2247,8 +2259,9 @@ class HF_1M(Detector):
     Nota: gaps between modules is not known/described
     """
     force_pixel = True
-    MAX_SHAPE = (1024 , 1024)
+    MAX_SHAPE = (1024, 1024)
     aliases = ["HF-1M"]
+
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2262,8 +2275,9 @@ class HF_2M(Detector):
     Nota: gaps between modules is not known/described
     """
     force_pixel = True
-    MAX_SHAPE = (1536 , 1536)
+    MAX_SHAPE = (1536, 1536)
     aliases = ["HF-2.4M"]
+
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2278,6 +2292,7 @@ class HF_4M(Detector):
     force_pixel = True
     MAX_SHAPE = (2048 , 2048)
     aliases = ["HF-4M"]
+
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2291,8 +2306,9 @@ class HF_9M(Detector):
 
     """
     force_pixel = True
-    MAX_SHAPE = (3072 , 3072)
+    MAX_SHAPE = (3072, 3072)
     aliases = ["HF-9.4M"]
+
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -2311,14 +2327,14 @@ class Aarhus(Detector):
     TODO: update cython code for 3d detectors
     use expand2d instead of outer product with ones
     """
-    MAX_SHAPE = (1000 , 16000)
+    MAX_SHAPE = (1000, 16000)
     IS_FLAT = False
     force_pixel = True
+
     def __init__(self, pixel1=25e-6, pixel2=25e-6, radius=0.3):
         Detector.__init__(self, pixel1, pixel2)
         self.radius = radius
         self._pixel_corners = None
-
 
     def get_pixel_corners(self, use_cython=True):
         """
@@ -2400,7 +2416,6 @@ class Aarhus(Detector):
             p2.shape = d2.shape
             p3.shape = d2.shape
         else:
-#         if True:
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
             delta1 = d1 - i1
@@ -2438,17 +2453,17 @@ class Aarhus(Detector):
             # points A and B are on the same dim2 (X), they differ in dim1 (Y)
             # points C and D are on the same dim2 (X), they differ in dim1 (
             p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
-               + B1 * delta1 * (1.0 - delta2) \
-               + C1 * delta1 * delta2 \
-               + D1 * (1.0 - delta1) * delta2
+                + B1 * delta1 * (1.0 - delta2) \
+                + C1 * delta1 * delta2 \
+                + D1 * (1.0 - delta1) * delta2
             p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
-               + B2 * delta1 * (1.0 - delta2) \
-               + C2 * delta1 * delta2 \
-               + D2 * (1.0 - delta1) * delta2
+                + B2 * delta1 * (1.0 - delta2) \
+                + C2 * delta1 * delta2 \
+                + D2 * (1.0 - delta1) * delta2
             p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
-               + B0 * delta1 * (1.0 - delta2) \
-               + C0 * delta1 * delta2 \
-               + D0 * (1.0 - delta1) * delta2
+                + B0 * delta1 * (1.0 - delta2) \
+                + C0 * delta1 * delta2 \
+                + D0 * (1.0 - delta1) * delta2
             # To ensure numerical consitency with cython procedure.
             p1 = p1.astype(numpy.float32)
             p2 = p2.astype(numpy.float32)
