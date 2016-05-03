@@ -24,7 +24,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "05/04/2016"
+__date__ = "03/05/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -642,6 +642,9 @@ class Distortion(object):
             with self._sem:
                 if self.LUT is None:
                     pos = self.pos
+                    if (self.lut_size == 0): #fix 271
+                        raise RuntimeError("The look-up table has dimension (0) which is a non-sense."
+                                           + "Did you mask out all pixel or is your image out of the geometry range ?")
                     lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
                     size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_point)
                     memset(&lut[0, 0, 0], 0, size)
@@ -863,8 +866,11 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
         assert shape1 == mask.shape[1]
     delta0, delta1 = max_pixel_size
     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
-    outMax[:, :] =0
+    outMax[:, :] = 0
     cdef float[:, :] buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    if (size == 0): #fix 271
+            raise RuntimeError("The look-up table has dimension 0 which is a non-sense."
+                               + "Did you mask out all pixel or is your image out of the geometry range ?")
     lut = view.array(shape=(shape0, shape1, size), itemsize=sizeof(lut_point), format="if")
     lut_total_size = shape0 * shape1 * size * sizeof(lut_point)
     memset(&lut[0, 0, 0], 0, lut_total_size)
