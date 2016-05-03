@@ -284,8 +284,12 @@ class HistoBBox1d(object):
                 if memsize < lut_nbytes:
                     raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" %
                                       (bins, lut_size, lut_nbytes, memsize))
-
+                    
         # else hope we have enough memory
+        if (bins == 0) or (lut_size == 0): 
+            #fix 271
+            raise RuntimeError("The look-up table has dimension (%s,%s) which is a non-sense."%(bins, lut_size)
+                               + "Did you mask out all pixel or is your image out of the geometry range ?")
         lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_point), format="if")
         memset(&lut[0,0], 0, lut_nbytes)
 
@@ -351,7 +355,7 @@ class HistoBBox1d(object):
         there is an issue with python2.6 and ref counting"""
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:,:] lut = self._lut
+        cdef lut_point[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         cdef numpy.ndarray[numpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
