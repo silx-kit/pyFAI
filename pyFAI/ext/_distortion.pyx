@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/05/2016"
+__date__ = "04/05/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -216,19 +216,70 @@ cdef inline void integrate(float[:, :] box, float start, float stop, float slope
                         AA -= dA
                         h += 1
 
+
 ################################################################################
 # Functions used in python classes from PyFAI.distortion
 ################################################################################
 
-
+def calc_pos(floating[:, :, :, ::1] pixel_corners not None, 
+             shape_out=None, 
+             float pixel1, float pixel2,
+             offset=None):
+    """Calculate the pixel boundary position on the regular grid
+    
+    @param pixel_corners: pixel corner coordinate as detector.get_pixel_corner
+    @param shape: requested output shape. If None, it is calculated
+    @param pixel1, pixel2: pixel size along row and column coordinates 
+    @return: pos, delta1, delta2. shape_out
+    """
+    cdef: 
+        numpy.ndarray[numpy.float32_t, ndim = 4] pos
+        int i, j, k, dim0, dim1
+        bint do_shape = (shape_out is None)
+        float BIG = <float> sys.maxsize
+        float min0, min1, max0, max1, delta0, delta1
+        float all_min0, all_max0, all_max1
+    shape_in = pixel_corners[:2]
+    pos = numpy.zeros((dim0, dim1, 4, 2), dtype=numpy.float32)
+    
+    delat0 = 0.0
+    delta1 = 0.0
+    all_min0 = BIG
+    all_min0 = BIG
+    all_max0 = 0.0
+    all_max1 = 0.0
+    for i in range(dim0):
+        for j in range(dim1):
+            min0 = BIG
+            min1 = BIG
+            max0 = 0
+            max1 = 0
+            for k range(4):
+                p0 = pixel_corners[i, j, k, 1] / pixel1
+                p1 = pixel_corners[i, j, k, 2] / pixel2
+                pos[i, j, k, 0] += p0
+                pos[i, j, k, 1] += p1
+                min0 = min(min0, p0)
+                min1 = min(min1, p1)
+                max0 = max(max0, p0)
+                max1 = max(max1, p1)
+            delta0 = max(delta0, max0 - min0)
+            delta1 = max(delta1, max1 - min1)   
+            if do_shape:
+                all_min0 = min(all_min0, min0)
+                all_min1 = min(all_min1, min1)
+                all_max0 = max(all_max0, max0)
+                all_max1 = max(all_max1, max1) 
+                    
+    return pos, delta0, delta1, (all_max0 - all_min0, all_max1 - all_min1) if do_shape else shape_out
+ 
 @cython.wraparound(False)
 @cython.boundscheck(False)
 def calc_size(floating[:, :, :, ::1] pos not None, 
               shape, 
               numpy.int8_t[:, ::1] mask=None,
               offset=None):
-    """
-    Calculate the number of items per output pixel
+    """Calculate the number of items per output pixel
 
     @param pos: 4D array with position in space
     @param shape: shape of the output array

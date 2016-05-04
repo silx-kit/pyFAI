@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2016"
+__date__ = "04/05/2016"
 
 
 import unittest
@@ -99,9 +99,36 @@ class TestHalfCCD(unittest.TestCase):
         self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
 
+class TestImplementations(unittest.TestCase):
+    """Ensure equivalence of implementation between numpy & Cython"""
+    halfFrelon = "1464/LaB6_0020.edf"
+    splineFile = "1461/halfccd.spline"
+
+    def setUp(self):
+        """Download files"""
+        self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
+        self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
+        self.det = detectors.FReLoN(self.splineFile)
+        self.det.binning = 5, 8  # larger binning makes python loops faster
+        self.dis = distortion.Distortion(self.det, self.det.shape, resize=False,
+                                         mask=numpy.zeros(self.det.shape, "int8"))
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = None
+
+    def test_size(self):
+        self.dis.reset(prepare=False)
+        ny = self.dis.calc_size(False)
+        self.dis.reset(prepare=False)
+        cy = self.dis.calc_size(True)
+        delta = abs(ny - cy).sum()
+        self.assertEqual(delta, 0, "equivalence of the cython and numpy model, summed error=%s" % delta)
+
+
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestHalfCCD("test_size"))
+    testsuite.addTest(TestImplementations("test_size"))
     testsuite.addTest(TestHalfCCD("test_vs_fit2d"))
 #    testsuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
 #    testsuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))

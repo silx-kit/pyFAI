@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2016"
+__date__ = "04/05/2016"
 __status__ = "development"
 
 import logging
@@ -154,8 +154,8 @@ class Distortion(object):
         return self._shape_out
 
     @timeit
-    def calc_pos(self):
-        """Calculate the pixel position on the regular grid
+    def calc_pos(self, use_cython=False):
+        """Calculate the pixel boundary postion on the regular grid
         
         @return: pixel corner positions (in pixel units) on the regular grid 
         @rtyep: ndarray of shape (nrow, ncol, 4, 2)
@@ -163,7 +163,9 @@ class Distortion(object):
         if self.delta1 is None:
             with self._sem:
                 if self.delta1 is None:
-                    pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2])
+                    # TODO: implement equivalent in Cython
+
+                    pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2], dtype=numpy.float32)
                     # make it a 4D array
                     pixel_size.shape = 1, 1, 1, 2
                     pixel_size.strides = 0, 0, 0, pixel_size.strides[-1]
