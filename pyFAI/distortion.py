@@ -164,7 +164,11 @@ class Distortion(object):
             with self._sem:
                 if self.delta1 is None:
                     # TODO: implement equivalent in Cython
-
+                    if _distortion and use_cython:
+                        self.pos, self.delta1, self.delta2, shape_out, offset = _distortion.calc_pos(self.detector.get_pixel_corners(), self.detector.pixel1, self.detector.pixel2, self._shape_out)
+                        self.offset1, self.offset2 = offset
+                        if self._shape_out is None:
+                            self._shape_out = shape_out
                     pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2], dtype=numpy.float32)
                     # make it a 4D array
                     pixel_size.shape = 1, 1, 1, 2

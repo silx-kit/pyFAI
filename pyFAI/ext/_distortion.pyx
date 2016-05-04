@@ -222,8 +222,7 @@ cdef inline void integrate(float[:, :] box, float start, float stop, float slope
 ################################################################################
 
 def calc_pos(floating[:, :, :, ::1] pixel_corners not None, 
-             shape_out=None, 
-             float pixel1, float pixel2,
+             float pixel1, float pixel2, shape_out=None
              offset=None):
     """Calculate the pixel boundary position on the regular grid
     
@@ -254,7 +253,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
             min1 = BIG
             max0 = 0
             max1 = 0
-            for k range(4):
+            for k in range(4):
                 p0 = pixel_corners[i, j, k, 1] / pixel1
                 p1 = pixel_corners[i, j, k, 2] / pixel2
                 pos[i, j, k, 0] += p0

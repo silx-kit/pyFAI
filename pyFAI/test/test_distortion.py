@@ -117,26 +117,28 @@ class TestImplementations(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = None
 
+    def test_calc_pos(self):
+        self.dis.reset(prepare=False)
+        ny = self.dis.calc_pos(False)
+        self.dis.reset(prepare=False)
+        cy = self.dis.calc_pos(True)
+        delta = abs(ny - cy).max()
+        self.assertEqual(delta, 0, "calc_pos: equivalence of the cython and numpy model, max error=%s" % delta)
+
     def test_size(self):
         self.dis.reset(prepare=False)
         ny = self.dis.calc_size(False)
         self.dis.reset(prepare=False)
         cy = self.dis.calc_size(True)
         delta = abs(ny - cy).sum()
-        self.assertEqual(delta, 0, "equivalence of the cython and numpy model, summed error=%s" % delta)
+        self.assertEqual(delta, 0, "calc_size: equivalence of the cython and numpy model, summed error=%s" % delta)
 
 
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(TestImplementations("test_calc_pos"))
     testsuite.addTest(TestImplementations("test_size"))
     testsuite.addTest(TestHalfCCD("test_vs_fit2d"))
-#    testsuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
-#    testsuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))
-#    testsuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))
-#    testsuite.addTest(test_flatimage("test_splitPixel"))
-#    testsuite.addTest(test_flatimage("test_splitBBox"))
-# This test is known to be broken ...
-#    testsuite.addTest(test_saxs("test_mask"))
 
     return testsuite
 
