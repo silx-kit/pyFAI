@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2016"
+__date__ = "09/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -554,7 +554,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             value = float(value)
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
-            if self.force_pixel and  (err > epsilon):
+            if self.force_pixel and (err > epsilon):
                 logger.warning("Enforcing pixel size 1 for a detector %s" %
                                self.__class__.__name__)
         self._pixel1 = value
@@ -1333,7 +1333,7 @@ class Mar345(Detector):
 
         dim1, dim2 = shape
         self._pixel1 = self.VALID_SIZE[dim1]
-        self._pixel2 = self.VALID_SIZE[dim1]
+        self._pixel2 = self.VALID_SIZE[dim2]
         self.max_shape = shape
         self.shape = shape
         self._binning = (1, 1)
@@ -1503,8 +1503,8 @@ class ImXPadS10(Detector):
                 # Not +=: do not mangle in place arrays
                 d1 = d1 + 0.5
                 d2 = d2 + 0.5
-            p1 = numpy.interp(d1 , numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
-            p2 = numpy.interp(d2 , numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
+            p1 = numpy.interp(d1, numpy.arange(self.max_shape[0] + 1), edges1, edges1[0], edges1[-1])
+            p2 = numpy.interp(d2, numpy.arange(self.max_shape[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
 
@@ -1597,7 +1597,7 @@ class Xpad_flat(ImXPadS10):
             mask[i + self.module_size[0] - 1, :] = 1
         # workinng in dim1 = X
         for i in range(0, self.max_shape[1], self.module_size[1]):
-            mask[:, i ] = 1
+            mask[:, i] = 1
             mask[:, i + self.module_size[1] - 1] = 1
         return mask
 
@@ -1630,7 +1630,7 @@ class Xpad_flat(ImXPadS10):
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if bilinear and use_cython:
-            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1, p2, _ = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:
@@ -1946,8 +1946,8 @@ class RayonixLx255(Rayonix):
                          8: 354.1667e-6,
                          10: 442.7083e-6
                          }
-    MAX_SHAPE = (1920 , 5760)
-    aliases = [ "Rayonix lx225"]
+    MAX_SHAPE = (1920, 5760)
+    aliases = ["Rayonix lx255", "Rayonix lx255hs"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1988,7 +1988,7 @@ class RayonixMx225hs(Rayonix):
                          5: 195.3125e-6,
                          6: 234.3750e-6,
                          8: 312.5e-6,
-                         10:390.625e-6,
+                         10: 390.625e-6,
                          }
     MAX_SHAPE = (5760, 5760)
     aliases = ["Rayonix mx225hs"]
@@ -2265,6 +2265,7 @@ class HF_1M(Detector):
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
+
 class HF_2M(Detector):
     """
     ADSC HF-1M 3x6 modules
@@ -2290,7 +2291,7 @@ class HF_4M(Detector):
     http://www.adsc-xray.com/products/pixel-array-detectors/hf-4m/
     """
     force_pixel = True
-    MAX_SHAPE = (2048 , 2048)
+    MAX_SHAPE = (2048, 2048)
     aliases = ["HF-4M"]
 
     def __init__(self, pixel1=150e-6, pixel2=150e-6):
