@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "04/05/2016"
+__date__ = "09/05/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -222,23 +222,25 @@ cdef inline void integrate(float[:, :] box, float start, float stop, float slope
 ################################################################################
 
 def calc_pos(floating[:, :, :, ::1] pixel_corners not None, 
-             float pixel1, float pixel2, shape_out=None
-             offset=None):
+             float pixel1, float pixel2, shape_out=None):
     """Calculate the pixel boundary position on the regular grid
     
     @param pixel_corners: pixel corner coordinate as detector.get_pixel_corner
     @param shape: requested output shape. If None, it is calculated
     @param pixel1, pixel2: pixel size along row and column coordinates 
-    @return: pos, delta1, delta2. shape_out
+    @return: pos, delta1, delta2, shape_out, offset 
     """
     cdef: 
         numpy.ndarray[numpy.float32_t, ndim = 4] pos
-        int i, j, k, dim0, dim1
+        int i, j, k, dim0, dim1, nb_corners
         bint do_shape = (shape_out is None)
         float BIG = <float> sys.maxsize
         float min0, min1, max0, max1, delta0, delta1
         float all_min0, all_max0, all_max1
-    shape_in = pixel_corners[:2]
+        
+    dim0 = pixel_corners.shape[0]
+    dim1 = pixel_corners.shape[1]
+    nb_corners = pixel_corners.shape[2]
     pos = numpy.zeros((dim0, dim1, 4, 2), dtype=numpy.float32)
     
     delat0 = 0.0
@@ -253,7 +255,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
             min1 = BIG
             max0 = 0
             max1 = 0
-            for k in range(4):
+            for k in range(nb_corners):
                 p0 = pixel_corners[i, j, k, 1] / pixel1
                 p1 = pixel_corners[i, j, k, 2] / pixel2
                 pos[i, j, k, 0] += p0
@@ -270,7 +272,10 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
                 all_max0 = max(all_max0, max0)
                 all_max1 = max(all_max1, max1) 
                     
-    return pos, delta0, delta1, (all_max0 - all_min0, all_max1 - all_min1) if do_shape else shape_out
+    return pos, delta0, delta1, \
+        (all_max0 - all_min0, all_max1 - all_min1) if do_shape else shape_out, \
+        (all_min0, all_min1) if do_shape else (0, 0)
+ 
  
 @cython.wraparound(False)
 @cython.boundscheck(False)
@@ -448,7 +453,8 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
 @cython.cdivision(True)
 def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
-    """
+    """Calculate the Look-up table as CSR format
+    
     @param pos: 4D position array
     @param shape: output shape
     @param bin_size: number of input element per output element (as numpy array)
@@ -562,6 +568,131 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                 idx += 1
     return (data, indices, indptr)
 
+
+def calc_openmp(float[:, :, :, :] pos not None, 
+                shape, 
+                max_pixel_size,
+                numpy.int8_t[:, :] mask=None,
+                format="csr",
+                int bins_per_pixel=8):
+    """Calculate the look-up table (or CSR) using OpenMP 
+     
+    @param pos: 4D position array
+    @param shape: output shape
+    @param bin_size: number of input element per output element (as numpy array)
+    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    @param format: can be "CSR" or "LUT"
+    @param bins_per_pixel: average splitting factor (number of pixels per bin)
+    @return: look-up table in CSR/LUT format
+    """
+    cdef:
+        int shape_in0, shape_in1, shape_out0, shape_out1 
+        int i, j, k, ms, ml, ns, nl, delta0, delta1
+        int i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1
+        int large_size, counter, bin_number
+         
+    shape_out0, shape_out1 = shape
+    delta0, delta1 = max_pixel_size
+    bins = shape_out0 * shape_out1
+    large_size = bins * bins_per_pixel
+    shape_in0 = pos.shape[0]
+    shape_in1 = pos.shape[1] 
+    cdef:
+        int idx = 0, tmp_index
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+        int[::1] indptr, indices, idx_bin, idx_pixel
+        numpy.float32_t[::1] data
+        int[:, :] outMax 
+        float[:, :] buffer
+        bint do_mask = mask is not None
+ 
+    if do_mask:
+        assert shape_in0 == mask.shape[0]
+        assert shape_in1 == mask.shape[1]
+    indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
+ 
+     
+#     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
+    buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    with nogil:
+        # i,j, idx are indices of the raw image uncorrected
+        idx = 0  # pixel index
+        counter = 0  # bin index
+        for i in range(shape_in0):
+            for j in range(shape_in1):
+                if do_mask and mask[i, j]:
+                    continue
+#                 buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+                buffer[:, :] = 0.0
+                A0 = pos[i, j, 0, 0]
+                A1 = pos[i, j, 0, 1]
+                B0 = pos[i, j, 1, 0]
+                B1 = pos[i, j, 1, 1]
+                C0 = pos[i, j, 2, 0]
+                C1 = pos[i, j, 2, 1]
+                D0 = pos[i, j, 3, 0]
+                D1 = pos[i, j, 3, 1]
+                offset0 = (<int> floor(min(A0, B0, C0, D0)))
+                offset1 = (<int> floor(min(A1, B1, C1, D1)))
+                box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
+                box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
+                A0 -= <float> offset0
+                A1 -= <float> offset1
+                B0 -= <float> offset0
+                B1 -= <float> offset1
+                C0 -= <float> offset0
+                C1 -= <float> offset1
+                D0 -= <float> offset0
+                D1 -= <float> offset1
+                if B0 != A0:
+                    pAB = (B1 - A1) / (B0 - A0)
+                    cAB = A1 - pAB * A0
+                else:
+                    pAB = cAB = 0.0
+                if C0 != B0:
+                    pBC = (C1 - B1) / (C0 - B0)
+                    cBC = B1 - pBC * B0
+                else:
+                    pBC = cBC = 0.0
+                if D0 != C0:
+                    pCD = (D1 - C1) / (D0 - C0)
+                    cCD = C1 - pCD * C0
+                else:
+                    pCD = cCD = 0.0
+                if A0 != D0:
+                    pDA = (A1 - D1) / (A0 - D0)
+                    cDA = D1 - pDA * D0
+                else:
+                    pDA = cDA = 0.0
+                integrate(buffer, B0, A0, pAB, cAB)
+                integrate(buffer, A0, D0, pDA, cDA)
+                integrate(buffer, D0, C0, pCD, cCD)
+                integrate(buffer, C0, B0, pBC, cBC)
+                area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
+                for ms in range(box_size0):
+                    ml = ms + offset0
+                    if ml < 0 or ml >= shape_out1:
+                        continue
+                    for ns in range(box_size1):
+                        # ms,ns are indexes of the corrected image in short form, ml & nl are the same
+                        nl = ns + offset1
+                        if nl < 0 or nl >= shape_out1:
+                            continue
+                        value = buffer[ms, ns] / area
+                        if value <= 0:
+                            continue
+                        counter += 1 
+                        idx_pixel[counter] += idx
+                        bin_number = ml * shape_out1 + nl
+                        idx_bin[counter] += bin_number
+                        data[counter] += value
+                        indptr[bin_number] += 1
+                idx += 1
+        #TODO: convert into LUT or CSR
+        
+    return (data, indices, indptr)
+     
+    
 
 @cython.wraparound(False)
 @cython.boundscheck(False)

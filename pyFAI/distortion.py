@@ -154,7 +154,7 @@ class Distortion(object):
         return self._shape_out
 
     @timeit
-    def calc_pos(self, use_cython=False):
+    def calc_pos(self, use_cython=True):
         """Calculate the pixel boundary postion on the regular grid
         
         @return: pixel corner positions (in pixel units) on the regular grid 
@@ -166,8 +166,8 @@ class Distortion(object):
                     # TODO: implement equivalent in Cython
                     if _distortion and use_cython:
                         self.pos, self.delta1, self.delta2, shape_out, offset = _distortion.calc_pos(self.detector.get_pixel_corners(), self.detector.pixel1, self.detector.pixel2, self._shape_out)
-                        self.offset1, self.offset2 = offset
                         if self._shape_out is None:
+                            self.offset1, self.offset2 = offset
                             self._shape_out = shape_out
                     pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2], dtype=numpy.float32)
                     # make it a 4D array
@@ -186,20 +186,6 @@ class Distortion(object):
                     pixel_delta = self.pos.view()
                     pixel_delta.shape = -1, 4, 2
                     self.delta1, self.delta2 = (pixel_delta.max(axis=1) - pixel_delta.min(axis=1)).max(axis=0)
-#                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
-#                     d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float64), numpy.ones(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-#                     d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-#                     pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)[:2]
-#                     pos_corners[:, :, 0] /= self.detector.pixel1
-#                     pos_corners[:, :, 1] /= self.detector.pixel2
-#                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
-#                     pos[:, :, 0, :] = pos_corners[:-1, :-1]
-#                     pos[:, :, 1, :] = pos_corners[:-1, 1: ]
-#                     pos[:, :, 2, :] = pos_corners[1: , 1: ]
-#                     pos[:, :, 3, :] = pos_corners[1: , :-1]
-#                     self.pos = pos
-#                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
-#                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
         return self.pos
 
     @timeit
