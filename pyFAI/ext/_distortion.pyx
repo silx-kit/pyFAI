@@ -257,13 +257,13 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
              float pixel1, float pixel2, shape_out=None):
     """Calculate the pixel boundary position on the regular grid
 
-    @param pixel_corners: pixel corner coordinate as detector.get_pixel_corner
+    @param pixel_corners: pixel corner coordinate as detector.get_pixel_corner()
     @param shape: requested output shape. If None, it is calculated
     @param pixel1, pixel2: pixel size along row and column coordinates
     @return: pos, delta1, delta2, shape_out, offset
     """
     cdef:
-        numpy.ndarray[numpy.float32_t, ndim = 4] pos
+        float[:, :, :, ::1] pos
         int i, j, k, dim0, dim1, nb_corners
         bint do_shape = (shape_out is None)
         float BIG = <float> sys.maxsize
@@ -304,7 +304,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
                 all_max0 = max(all_max0, max0)
                 all_max1 = max(all_max1, max1)
 
-    return pos, delta0, delta1, \
+    return numpy.asarray(pos), delta0, delta1, \
         (all_max0 - all_min0, all_max1 - all_min1) if do_shape else shape_out, \
         (all_min0, all_min1) if do_shape else (0, 0)
 
