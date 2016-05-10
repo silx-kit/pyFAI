@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/05/2016"
+__date__ = "10/05/2016"
 
 
 import unittest
@@ -57,10 +57,12 @@ class TestHalfCCD(unittest.TestCase):
         self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
         self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
         self.det = detectors.FReLoN(self.splineFile)
-        self.dis = distortion.Distortion(self.det, self.det.shape, resize=False,
-                                         mask=numpy.zeros(self.det.shape, "int8"))
         self.fit2d = fabio.open(self.fit2dFile).data
-        self.raw = fabio.open(self.halfFrelon).data
+        img = fabio.open(self.halfFrelon).data
+        self.dis = distortion.Distortion(self.det, img.shape, resize=False,
+                                         mask=numpy.zeros(self.det.shape, "int8"))
+        self.raw = numpy.zeros(self.det.shape)
+        self.raw[:-1, :] = img
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -69,19 +71,17 @@ class TestHalfCCD(unittest.TestCase):
     def test_size(self):
         self.dis.reset(prepare=False)
         ny = self.dis.calc_size(False)
-        self.dis.reset(prepare)
+        self.dis.reset(prepare=False)
         cy = self.dis.calc_size(True)
         self.assertEqual(abs(ny - cy).max(), 0, "equivalence of the cython and numpy model")
 
-    def test_vs_fit2d(self):
+    def test_lut_vs_fit2d(self):
         """
         Compare spline correction vs fit2d's code
 
         precision at 1e-3 : 90% of pixels
         """
-        size = self.dis.calc_LUT_size()
-        mem = size.max() * self.raw.nbytes * 4 / 2.0 ** 20
-        logger.info("Memory expected for LUT: %.3f MBytes", mem)
+        self.dis.reset(method="lut", prepare=False)
         try:
             self.dis.calc_LUT()
         except MemoryError as error:
@@ -89,6 +89,31 @@ class TestHalfCCD(unittest.TestCase):
             return
         cor = self.dis.correct(self.raw)
         delta = abs(cor - self.fit2d)
+        print("Delta", delta.max(), delta.mean())
+        mask = numpy.where(self.fit2d == 0)
+        denom = self.fit2d.copy()
+        denom[mask] = 1
+        ratio = delta / denom
+        ratio[mask] = 0
+        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
+        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+
+    def test_csr_vs_fit2d(self):
+        """
+        Compare spline correction vs fit2d's code
+
+        precision at 1e-3 : 90% of pixels
+        """
+        self.dis.reset(method="csr", prepare=False)
+        try:
+            self.dis.calc_LUT()
+        except MemoryError as error:
+            logger.warning("TestHalfCCD.test_vs_fit2d failed because of MemoryError. This test tries to allocate %.3fMBytes and failed with %s", mem, error)
+            return
+        cor = self.dis.correct(self.raw)
+        delta = abs(cor - self.fit2d)
+        print("Delta", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
         denom = self.fit2d.copy()
         denom[mask] = 1
@@ -138,9 +163,11 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestImplementations("test_calc_pos"))
     testsuite.addTest(TestImplementations("test_size"))
-    testsuite.addTest(TestHalfCCD("test_vs_fit2d"))
-
+#     testsuite.addTest(TestHalfCCD("test_size")) #slow
+    testsuite.addTest(TestHalfCCD("test_lut_vs_fit2d"))
+    testsuite.addTest(TestHalfCCD("test_csr_vs_fit2d"))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

@@ -36,7 +36,7 @@ import cython
 cimport numpy
 import numpy
 from cython cimport view, floating
-from cython.parallel import prange
+from cython.parallel import prange#, threadlocal
 from cpython.ref cimport PyObject, Py_XDECREF
 from libc.string cimport memset, memcpy
 from libc.math cimport floor, ceil, fabs
@@ -61,6 +61,7 @@ cdef struct lut_point:
     numpy.float32_t coef
 
 dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
+
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
 
@@ -78,8 +79,8 @@ cpdef inline int clip(int value, int min_val, int max_val) nogil:
         return value
 
 
-cdef inline int _floor_min4(float a, float b, float c, float d) nogil:
-    "return <int> floor(min(a,b,c,d))"
+cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
+    "return floor(min(a,b,c,d))"
     cdef float res
     if (b < a):
       res = b
@@ -92,8 +93,8 @@ cdef inline int _floor_min4(float a, float b, float c, float d) nogil:
     return <int>floor(res)
 
 
-cdef inline int _ceil_max4(float a, float b, float c, float d) nogil:
-    "return <int> ceil(max(a,b,c,d))"
+cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
+    "return  ceil(max(a,b,c,d))"
     cdef float res
     if (b > a):
       res = b
@@ -103,7 +104,7 @@ cdef inline int _ceil_max4(float a, float b, float c, float d) nogil:
       res = c
     if (d > res):
       res = d
-    return <int>ceil(res)
+    return ceil(res)
 
 
 @cython.wraparound(False)
@@ -327,14 +328,18 @@ def calc_size(floating[:, :, :, ::1] pos not None,
         numpy.ndarray[numpy.int32_t, ndim = 2] lut_size = numpy.zeros(shape, dtype=numpy.int32)
         float A0, A1, B0, B1, C0, C1, D0, D1, offset0, offset1
         bint do_mask = mask is not None
-
+        numpy.int8_t[:, ::1] cmask
     shape_in0, shape_in1 = pos.shape[0], pos.shape[1]
     shape_out0, shape_out1 = shape
 
-    if do_mask and ((mask.shape[0] != shape_in0) or (mask.shape[1] != shape_in1)):
-        err = 'Mismatch between shape of detector (%s, %s) and shape of mask (%s, %s)' % (shape_in0, shape_in1, mask.shape[0], mask.shape[1])
-        logger.error(err)
-        raise RuntimeError(err)
+    if do_mask:
+
+        if ((mask.shape[0] != shape_in0) or (mask.shape[1] != shape_in1)):
+            err = 'Mismatch between shape of detector (%s, %s) and shape of mask (%s, %s)' % (shape_in0, shape_in1, mask.shape[0], mask.shape[1])
+            logger.error(err)
+            raise RuntimeError(err)
+        else:
+            cmask = numpy.ascontiguousarray(mask, dtype=numpy.uint8)
 
     if offset is not None:
         offset0, offset1 = offset
@@ -342,7 +347,7 @@ def calc_size(floating[:, :, :, ::1] pos not None,
     with nogil:
         for i in range(shape_in0):
             for j in range(shape_in1):
-                if do_mask and mask[i, j]:
+                if do_mask and cmask[i, j]:
                     continue
                 A0 = pos[i, j, 0, 0] - offset0
                 A1 = pos[i, j, 0, 1] - offset1
@@ -614,9 +619,9 @@ def calc_openmp(float[:, :, :, :] pos not None,
         int shape_in0, shape_in1, shape_out0, shape_out1, size_in
         int i, j, k, ms, ml, ns, nl, delta0, delta1
         int i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1
-        int large_size, counter, bin_number
+        int large_size, counter, bin_number, local_counter
         int idx
-
+    format = format.lower()
     shape_out0, shape_out1 = shape
     delta0, delta1 = max_pixel_size
     bins = shape_out0 * shape_out1
@@ -626,11 +631,12 @@ def calc_openmp(float[:, :, :, :] pos not None,
     size_in = shape_in0 * shape_in1
     cdef:
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+        float foffset0, foffset1
         int[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
         float[::1] data, large_data
         float[:, ::1] buffer
         bint do_mask = mask is not None
-
+        lut_point[:, :] lut
     if do_mask:
         assert shape_in0 == mask.shape[0]
         assert shape_in1 == mask.shape[1]
@@ -663,18 +669,20 @@ def calc_openmp(float[:, :, :, :] pos not None,
             C1 = pos[i, j, 2, 1]
             D0 = pos[i, j, 3, 0]
             D1 = pos[i, j, 3, 1]
-            offset0 = _floor_min4(A0, B0, C0, D0)
-            offset1 = _floor_min4(A1, B1, C1, D1)
-            box_size0 = _ceil_max4(A0, B0, C0, D0) - offset0
-            box_size1 = _ceil_max4(A1, B1, C1, D1) - offset1
-            A0 -= <float> offset0
-            A1 -= <float> offset1
-            B0 -= <float> offset0
-            B1 -= <float> offset1
-            C0 -= <float> offset0
-            C1 -= <float> offset1
-            D0 -= <float> offset0
-            D1 -= <float> offset1
+            foffset0 = _floor_min4(A0, B0, C0, D0)
+            foffset1 = _floor_min4(A1, B1, C1, D1)
+            offset0 = <int> foffset0
+            offset1 = <int> foffset1
+            box_size0 = (<int> _ceil_max4(A0, B0, C0, D0)) - offset0
+            box_size1 = (<int> _ceil_max4(A1, B1, C1, D1)) - offset1
+            A0 = A0 - foffset0
+            A1 = A1 - foffset1
+            B0 = B0 - foffset0
+            B1 = B1 - foffset1
+            C0 = C0 - foffset0
+            C1 = C1 - foffset1
+            D0 = D0 - foffset0
+            D1 = D1 - foffset1
             if B0 != A0:
                 pAB = (B1 - A1) / (B0 - A0)
                 cAB = A1 - pAB * A0
@@ -727,7 +735,8 @@ def calc_openmp(float[:, :, :, :] pos not None,
     t1 = time.time()
     #TODO: convert into LUT or CSR
     print(counter, counter/size_in, bins_per_pixel)
-    if format.lower() == "csr":
+
+    if format == "csr":
         indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
         print(numpy.asarray(pixel_count),(numpy.asarray(pixel_count).cumsum()), bins)
         #cumsum
@@ -737,14 +746,13 @@ def calc_openmp(float[:, :, :, :] pos not None,
             j += pixel_count[i]
         indptr[bins] = j
         #indptr[1:] = numpy.asarray(pixel_count).cumsum(dtype=numpy.int32)
-        print(numpy.asarray(indptr))
         pixel_count[:] = 0
         lut_size = indptr[bins]
         indices = numpy.zeros(shape=lut_size, dtype=numpy.int32)
         data = numpy.zeros(shape=lut_size, dtype=numpy.float32)
 
         logger.info("CSR matrix: %.3f MByte; Max source pixel in target: %i, average splitting: %.2f",
-                    (indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6, lut_size, (1.0*lut_size/bins))
+                    (indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6, lut_size, (1.0 * counter / bins))
 
         for idx in range(counter+1):
             bin_number = idx_bin[idx]
@@ -752,12 +760,26 @@ def calc_openmp(float[:, :, :, :] pos not None,
             pixel_count[bin_number] +=1
             indices[i] = idx_pixel[idx]
             data[i] = large_data[idx]
-        lut = (numpy.asarray(data), numpy.asarray(indices), numpy.asarray(indptr))
+        res = (numpy.asarray(data), numpy.asarray(indices), numpy.asarray(indptr))
+    elif format == "lut":
+        lut_size = numpy.asarray(pixel_count).max()
+        lut = numpy.recarray(shape=(bins,lut_size), dtype=dtype_lut)
+        memset(&lut[0, 0], 0, lut.nbytes)
+        pixel_count[:] = 0
+        logger.info("LUT matrix: %.3f MByte; Max source pixel in target: %i, average splitting: %.2f",
+                    (lut.nbytes) / 1.0e6, lut_size, (1.0 * counter / bins))
+        for idx in range(counter+1):
+            bin_number = idx_bin[idx]
+            i = pixel_count[bin_number]
+            lut[bin_number, i].idx = idx_pixel[idx]
+            lut[bin_number, i].coef = large_data[idx]
+            pixel_count[bin_number] +=1
+        res = numpy.asarray(lut)
     else:
-        raise RuntimeError("Not implemented")
+        raise RuntimeError("Unimplemented sparse matrix format: %s", format)
     t2=time.time()
     print("timing", t1-t0, t2-t2)
-    return lut
+    return res
 
 
 

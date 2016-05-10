@@ -1,8 +1,8 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2016"
+__date__ = "10/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -1232,7 +1232,6 @@ class FReLoN(Detector):
     FReLoN detector:
     The spline is mandatory to correct for geometric distortion of the taper
 
-    TODO: create automatically a mask that removes pixels out of the "valid reagion"
     """
     def __init__(self, splineFile=None):
         super(FReLoN, self).__init__(splineFile=splineFile)
