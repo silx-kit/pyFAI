@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/05/2016"
+__date__ = "11/05/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -659,7 +659,7 @@ def calc_openmp(float[:, :, :, :] pos not None,
             j = idx % shape_in1
             if do_mask and mask[i, j]:
                 continue
-            idx = i * shape_in1 + j # pixel index
+            idx = i * shape_in1 + j  # pixel index
             buffer[:, :] = 0.0
             A0 = pos[i, j, 0, 0]
             A1 = pos[i, j, 0, 1]
@@ -733,19 +733,18 @@ def calc_openmp(float[:, :, :, :] pos not None,
                     idx_bin[counter] += bin_number
                     large_data[counter] += value
     t1 = time.time()
-    #TODO: convert into LUT or CSR
-    print(counter, counter/size_in, bins_per_pixel)
+    print("number of elements: %s, average per bin %.3f allocated max: %s" % 
+          (counter, counter / size_in, bins_per_pixel))
 
     if format == "csr":
         indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
-        print(numpy.asarray(pixel_count),(numpy.asarray(pixel_count).cumsum()), bins)
-        #cumsum
+        # cumsum
         j = 0
         for i in range(bins):
             indptr[i] = j
             j += pixel_count[i]
         indptr[bins] = j
-        #indptr[1:] = numpy.asarray(pixel_count).cumsum(dtype=numpy.int32)
+        # indptr[1:] = numpy.asarray(pixel_count).cumsum(dtype=numpy.int32)
         pixel_count[:] = 0
         lut_size = indptr[bins]
         indices = numpy.zeros(shape=lut_size, dtype=numpy.int32)
@@ -754,21 +753,21 @@ def calc_openmp(float[:, :, :, :] pos not None,
         logger.info("CSR matrix: %.3f MByte; Max source pixel in target: %i, average splitting: %.2f",
                     (indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6, lut_size, (1.0 * counter / bins))
 
-        for idx in range(counter+1):
+        for idx in range(counter + 1):
             bin_number = idx_bin[idx]
-            i = indptr[bin_number]+pixel_count[bin_number]
-            pixel_count[bin_number] +=1
+            i = indptr[bin_number] + pixel_count[bin_number]
+            pixel_count[bin_number] += 1
             indices[i] = idx_pixel[idx]
             data[i] = large_data[idx]
         res = (numpy.asarray(data), numpy.asarray(indices), numpy.asarray(indptr))
     elif format == "lut":
         lut_size = numpy.asarray(pixel_count).max()
-        lut = numpy.recarray(shape=(bins,lut_size), dtype=dtype_lut)
+        lut = numpy.recarray(shape=(bins, lut_size), dtype=dtype_lut)
         memset(&lut[0, 0], 0, lut.nbytes)
         pixel_count[:] = 0
         logger.info("LUT matrix: %.3f MByte; Max source pixel in target: %i, average splitting: %.2f",
                     (lut.nbytes) / 1.0e6, lut_size, (1.0 * counter / bins))
-        for idx in range(counter+1):
+        for idx in range(counter + 1):
             bin_number = idx_bin[idx]
             i = pixel_count[bin_number]
             lut[bin_number, i].idx = idx_pixel[idx]
@@ -777,10 +776,9 @@ def calc_openmp(float[:, :, :, :] pos not None,
         res = numpy.asarray(lut)
     else:
         raise RuntimeError("Unimplemented sparse matrix format: %s", format)
-    t2=time.time()
-    print("timing", t1-t0, t2-t2)
+    t2 = time.time()
+    print("timing", t1 - t0, t2 - t2)
     return res
-
 
 
 @cython.wraparound(False)
@@ -978,3 +976,267 @@ def uncorrect_CSR(image, shape, LUT):
             if coef > 0:
                 lout[indices[j]] += val * coef
     return out, mask
+
+###########################################################################
+# Deprecated but used to give correct results in the case of spline
+###########################################################################
+
+
+class Distortion(object):
+    """
+
+    This class applies a distortion correction on an image.
+
+    It is also able to apply an inversion of the correction.
+
+    """
+    def __init__(self, detector="detector", shape=None):
+        """
+        @param detector: detector instance or detector name
+        """
+        if isinstance(detector, six.string_types):
+            self.detector = detector_factory(detector)
+        else:  # we assume it is a Detector instance
+            self.detector = detector
+        if shape:
+            self.shape = shape
+        elif "max_shape" in dir(self.detector):
+            self.shape = self.detector.max_shape
+        self.shape = tuple([int(i) for i in self.shape])
+        self._sem = threading.Semaphore()
+        self.lut_size = None
+        self.pos = None
+        self.LUT = None
+        self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
+
+    def __repr__(self):
+        return os.linesep.join(["Distortion correction for detector:",
+                                self.detector.__repr__()])
+
+    def calc_pos(self):
+        if self.pos is None:
+            with self._sem:
+                if self.pos is None:
+                    pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
+                    d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False) - 0.5
+                    d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True) - 0.5
+                    p = self.detector.calc_cartesian_positions(d1, d2)
+                    if p[-1] is not None:
+                        logger.warning("makes little sense to correct for distortion non-flat detectors: %s",
+                                       self.detector)
+                    pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]
+                    pos_corners[:, :, 0] /= self.detector.pixel1
+                    pos_corners[:, :, 1] /= self.detector.pixel2
+                    pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
+                    pos[:, :, 0, :] = pos_corners[:-1, :-1]
+                    pos[:, :, 1, :] = pos_corners[:-1, 1:]
+                    pos[:, :, 2, :] = pos_corners[1:, 1:]
+                    pos[:, :, 3, :] = pos_corners[1:, :-1]
+                    self.pos = pos
+                    self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
+                    self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
+        return self.pos
+
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    def calc_LUT_size(self):
+        """
+        Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
+        the physical location of pixels should go from:
+        [-17.48634 : 1027.0543, -22.768829 : 2028.3689]
+        We chose to discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity
+
+        We keep self.pos: pos_corners will not be compatible with systems showing non adjacent pixels (like some xpads)
+
+        """
+        cdef int i, j, k, l, shape0, shape1
+        cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos
+        cdef int[:, :] pos0min, pos1min, pos0max, pos1max
+        cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
+        if self.pos is None:
+            pos = self.calc_pos()
+        else:
+            pos = self.pos
+        if self.lut_size is None:
+            with self._sem:
+                if self.lut_size is None:
+                    shape0, shape1 = self.shape
+                    pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
+                    pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
+                    pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
+                    pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
+                    lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
+                    with nogil:
+                        for i in range(shape0):
+                            for j in range(shape1):
+                                for k in range(pos0min[i, j], pos0max[i, j]):
+                                    for l in range(pos1min[i, j], pos1max[i, j]):
+                                        lut_size[k, l] += 1
+                    self.lut_size = lut_size.max()
+                    return lut_size
+
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    @cython.cdivision(True)
+    def calc_LUT(self):
+        cdef:
+            int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
+            int offset0, offset1, box_size0, box_size1
+            numpy.int32_t k, idx = 0
+            float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+            float[:, :, :, :] pos
+            numpy.ndarray[lut_point, ndim = 3] lut
+            numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
+            float[:, :] buffer
+        shape0, shape1 = self.shape
+
+        if self.lut_size is None:
+            self.calc_LUT_size()
+        if self.LUT is None:
+            with self._sem:
+                if self.LUT is None:
+                    pos = self.pos
+                    lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
+                    size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_point)
+                    memset(&lut[0, 0, 0], 0, size)
+                    logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
+                    buffer = numpy.empty((self.delta0, self.delta1), dtype=numpy.float32)
+                    buffer_size = self.delta0 * self.delta1 * sizeof(float)
+                    logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], self.lut_size))
+                    with nogil:
+                        # i,j, idx are indexes of the raw image uncorrected
+                        for i in range(shape0):
+                            for j in range(shape1):
+                                # reinit of buffer
+                                buffer[:, :] = 0
+                                A0 = pos[i, j, 0, 0]
+                                A1 = pos[i, j, 0, 1]
+                                B0 = pos[i, j, 1, 0]
+                                B1 = pos[i, j, 1, 1]
+                                C0 = pos[i, j, 2, 0]
+                                C1 = pos[i, j, 2, 1]
+                                D0 = pos[i, j, 3, 0]
+                                D1 = pos[i, j, 3, 1]
+                                offset0 = (<int> floor(min(A0, B0, C0, D0)))
+                                offset1 = (<int> floor(min(A1, B1, C1, D1)))
+                                box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
+                                box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
+                                A0 -= <float> offset0
+                                A1 -= <float> offset1
+                                B0 -= <float> offset0
+                                B1 -= <float> offset1
+                                C0 -= <float> offset0
+                                C1 -= <float> offset1
+                                D0 -= <float> offset0
+                                D1 -= <float> offset1
+                                if B0 != A0:
+                                    pAB = (B1 - A1) / (B0 - A0)
+                                    cAB = A1 - pAB * A0
+                                else:
+                                    pAB = cAB = 0.0
+                                if C0 != B0:
+                                    pBC = (C1 - B1) / (C0 - B0)
+                                    cBC = B1 - pBC * B0
+                                else:
+                                    pBC = cBC = 0.0
+                                if D0 != C0:
+                                    pCD = (D1 - C1) / (D0 - C0)
+                                    cCD = C1 - pCD * C0
+                                else:
+                                    pCD = cCD = 0.0
+                                if A0 != D0:
+                                    pDA = (A1 - D1) / (A0 - D0)
+                                    cDA = D1 - pDA * D0
+                                else:
+                                    pDA = cDA = 0.0
+                                integrate(buffer, B0, A0, pAB, cAB)
+                                integrate(buffer, A0, D0, pDA, cDA)
+                                integrate(buffer, D0, C0, pCD, cCD)
+                                integrate(buffer, C0, B0, pBC, cBC)
+                                area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
+                                for ms in range(box_size0):
+                                    ml = ms + offset0
+                                    if ml < 0 or ml >= shape0:
+                                        continue
+                                    for ns in range(box_size1):
+                                        # ms,ns are indexes of the corrected image in short form, ml & nl are the same
+                                        nl = ns + offset1
+                                        if nl < 0 or nl >= shape1:
+                                            continue
+                                        value = buffer[ms, ns] / area
+                                        if value <= 0:
+                                            continue
+                                        k = outMax[ml, nl]
+                                        lut[ml, nl, k].idx = idx
+                                        lut[ml, nl, k].coef = value
+                                        outMax[ml, nl] = k + 1
+                                idx += 1
+                    self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)
+
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    def correct(self, image):
+        """
+        Correct an image based on the look-up table calculated ...
+
+        @param image: 2D-array with the image
+        @return: corrected 2D image
+        """
+        cdef:
+            int i, j, lshape0, lshape1, idx, size
+            float coef
+            lut_point[:, :] LUT
+            float[:] lout, lin
+        if self.LUT is None:
+            self.calc_LUT()
+        LUT = self.LUT
+        lshape0 = LUT.shape[0]
+        lshape1 = LUT.shape[1]
+        img_shape = image.shape
+        if (img_shape[0] < self.shape[0]) or (img_shape[1] < self.shape[1]):
+            new_image = numpy.zeros(self.shape, dtype=numpy.float32)
+            new_image[:img_shape[0], :img_shape[1]] = image
+            image = new_image
+            logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], self.shape[1], self.shape[0]))
+
+        out = numpy.zeros(self.shape, dtype=numpy.float32)
+        lout = out.ravel()
+        lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
+        size = lin.size
+        for i in prange(lshape0, nogil=True, schedule="static"):
+            for j in range(lshape1):
+                idx = LUT[i, j].idx
+                coef = LUT[i, j].coef
+                if coef <= 0:
+                    continue
+                if idx >= size:
+                    with gil:
+                        logger.warning("Accessing %i >= %i !!!" % (idx, size))
+                        continue
+                lout[i] += lin[idx] * coef
+        return out[:img_shape[0], :img_shape[1]]
+
+    @timeit
+    def uncorrect(self, image):
+        """
+        Take an image which has been corrected and transform it into it's raw (with loss of information)
+
+        @param image: 2D-array with the image
+        @return: uncorrected 2D image and a mask (pixels in raw image
+        """
+        if self.LUT is None:
+            self.calc_LUT()
+        out = numpy.zeros(self.shape, dtype=numpy.float32)
+        mask = numpy.zeros(self.shape, dtype=numpy.int8)
+        lmask = mask.ravel()
+        lout = out.ravel()
+        lin = image.ravel()
+        tot = self.LUT.coef.sum(axis=-1)
+        for idx in range(self.LUT.shape[0]):
+            t = tot[idx]
+            if t <= 0:
+                lmask[idx] = 1
+                continue
+            val = lin[idx] / t
+            lout[self.LUT[idx].idx] += val * self.LUT[idx].coef
+        return out, mask
