@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2016"
+__date__ = "11/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -500,9 +500,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
         return p1, p2, None
 
     def calc_mask(self):
-        """
+        """Method calculating the mask for a given detector
+        
         Detectors with gaps should overwrite this method with
         something actually calculating the mask!
+        
+        @return: the mask with valid pixel to 0 
+        @rtype: numpy ndarray of int8 or None
         """
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
         return None
@@ -516,6 +520,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 if self._mask is False:
                     self._mask = self.calc_mask()  # gets None in worse cases
                     if self._mask is not None:
+                        self._mask = numpy.ascontiguousarray(self._mask, numpy.int8)
                         self._mask_crc = crc32(self._mask)
         return self._mask
 
@@ -1260,7 +1265,7 @@ class FReLoN(Detector):
         p2 = dX + d2
         below_min = numpy.logical_or((p2 < self.spline.xmin), (p1 < self.spline.ymin))
         above_max = numpy.logical_or((p2 > self.spline.xmax), (p1 > self.spline.ymax))
-        mask = numpy.logical_or(below_min, above_max)
+        mask = numpy.logical_or(below_min, above_max).astype(numpy.int8)
         return mask
 
 
@@ -1314,7 +1319,7 @@ class Mar345(Detector):
         c = [i // 2 for i in self.shape]
         x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
-        return mask
+        return mask.astype(numpy.int8)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1410,7 +1415,7 @@ class ImXPadS10(Detector):
         Calculate the mask
         """
         dims = []
-        for dim in [0, 1]:
+        for dim in (0, 1):
             pos = numpy.zeros(self.max_shape[dim], dtype=numpy.int8)
             n = self.max_shape[dim] // self.module_size[dim]
             for i in range(1, n):
@@ -1418,14 +1423,10 @@ class ImXPadS10(Detector):
                 pos[i * self.module_size[dim]] = 1
             pos[0] = 1
             pos[-1] = 1
-            dims.append(pos)
-        # This is just an "outer sum"
-        dim1, dim2 = dims
-        dim1.shape = -1, 1
-        dim1.strides = dim1.strides[0], 0
-        dim2.shape = 1, -1
-        dim2.strides = 0, dim2.strides[-1]
-        return (dim1 + dim2) > 0
+            dims.append(numpy.atleast_2d(pos))
+        # This is just an "outer_or"
+        mask = numpy.logical_or(dims[0].T, dims[1])
+        return mask.astype(numpy.int8)
 
     def get_pixel_corners(self):
         """
@@ -1835,8 +1836,8 @@ class Rayonix133(Rayonix):
         """Circular mask"""
         c = [i // 2 for i in self.shape]
         x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
-        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
-        return mask
+        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0] ** 2)
+        return mask.astype(numpy.int8)
 
 
 class RayonixSx165(Rayonix):
@@ -1862,8 +1863,8 @@ class RayonixSx165(Rayonix):
         """Circular mask"""
         c = [i // 2 for i in self.shape]
         x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
-        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
-        return mask
+        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0] ** 2)
+        return mask.astype(numpy.int8)
 
 
 class RayonixSx200(Rayonix):
