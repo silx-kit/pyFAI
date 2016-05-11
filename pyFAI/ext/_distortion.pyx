@@ -339,7 +339,7 @@ def calc_size(floating[:, :, :, ::1] pos not None,
             logger.error(err)
             raise RuntimeError(err)
         else:
-            cmask = numpy.ascontiguousarray(mask, dtype=numpy.uint8)
+            cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
 
     if offset is not None:
         offset0, offset1 = offset
@@ -1172,6 +1172,7 @@ class Distortion(object):
                                         outMax[ml, nl] = k + 1
                                 idx += 1
                     self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)
+        return self.LUT
 
     @cython.wraparound(False)
     @cython.boundscheck(False)

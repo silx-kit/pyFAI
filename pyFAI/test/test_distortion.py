@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2013-2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2016"
+__date__ = "11/05/2016"
 
 
 import unittest
@@ -43,6 +43,7 @@ from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 from .. import detectors
 from .. import distortion
+from ..ext import _distortion
 
 
 class TestHalfCCD(unittest.TestCase):
@@ -58,11 +59,12 @@ class TestHalfCCD(unittest.TestCase):
         self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
         self.det = detectors.FReLoN(self.splineFile)
         self.fit2d = fabio.open(self.fit2dFile).data
-        img = fabio.open(self.halfFrelon).data
-        self.dis = distortion.Distortion(self.det, img.shape, resize=False,
+        self.ref = _distortion.Distortion(self.det)
+        self.raw = fabio.open(self.halfFrelon).data
+        self.dis = distortion.Distortion(self.det, self.raw.shape, resize=False,
                                          mask=numpy.zeros(self.det.shape, "int8"))
-        self.raw = numpy.zeros(self.det.shape)
-        self.raw[:-1, :] = img
+        self.larger = numpy.zeros(self.det.shape)
+        self.larger[:-1, :] = self.raw
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -75,19 +77,18 @@ class TestHalfCCD(unittest.TestCase):
         cy = self.dis.calc_size(True)
         self.assertEqual(abs(ny - cy).max(), 0, "equivalence of the cython and numpy model")
 
-    def test_lut_vs_fit2d(self):
-        """
-        Compare spline correction vs fit2d's code
+    def test_ref_vs_fit2d(self):
+        """Compare reference spline correction vs fit2d's code
 
         precision at 1e-3 : 90% of pixels
         """
-        self.dis.reset(method="lut", prepare=False)
+        # self.dis.reset(method="lut", prepare=False)
         try:
-            self.dis.calc_LUT()
+            self.ref.calc_LUT()
         except MemoryError as error:
-            logger.warning("TestHalfCCD.test_vs_fit2d failed because of MemoryError. This test tries to allocate %.3fMBytes and failed with %s", mem, error)
+            logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
-        cor = self.dis.correct(self.raw)
+        cor = self.ref.correct(self.raw)
         delta = abs(cor - self.fit2d)
         print("Delta", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
@@ -109,7 +110,7 @@ class TestHalfCCD(unittest.TestCase):
         try:
             self.dis.calc_LUT()
         except MemoryError as error:
-            logger.warning("TestHalfCCD.test_vs_fit2d failed because of MemoryError. This test tries to allocate %.3fMBytes and failed with %s", mem, error)
+            logger.warning("TestHalfCCD.test_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
         cor = self.dis.correct(self.raw)
         delta = abs(cor - self.fit2d)
@@ -164,8 +165,8 @@ def suite():
     testsuite.addTest(TestImplementations("test_calc_pos"))
     testsuite.addTest(TestImplementations("test_size"))
 #     testsuite.addTest(TestHalfCCD("test_size")) #slow
-    testsuite.addTest(TestHalfCCD("test_lut_vs_fit2d"))
-    testsuite.addTest(TestHalfCCD("test_csr_vs_fit2d"))
+    testsuite.addTest(TestHalfCCD("test_ref_vs_fit2d"))
+#     testsuite.addTest(TestHalfCCD("test_csr_vs_fit2d"))
     return testsuite
 
 
