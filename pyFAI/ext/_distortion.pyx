@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "11/05/2016"
+__date__ = "12/05/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -83,13 +83,13 @@ cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
     "return floor(min(a,b,c,d))"
     cdef float res
     if (b < a):
-      res = b
+        res = b
     else:
-      res = a
+        res = a
     if (c < res):
-      res = c
+        res = c
     if (d < res):
-      res = d
+        res = d
     return <int>floor(res)
 
 
@@ -97,13 +97,13 @@ cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
     "return  ceil(max(a,b,c,d))"
     cdef float res
     if (b > a):
-      res = b
+        res = b
     else:
-      res = a
+        res = a
     if (c > res):
-      res = c
+        res = c
     if (d > res):
-      res = d
+        res = d
     return ceil(res)
 
 
@@ -253,6 +253,9 @@ cdef inline void integrate(float[:, :] box, float start, float stop, float slope
 # Functions used in python classes from PyFAI.distortion
 ################################################################################
 
+@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.cdivision(True)
 def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
              float pixel1, float pixel2, shape_out=None):
     """Calculate the pixel boundary position on the regular grid
@@ -268,41 +271,45 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
         bint do_shape = (shape_out is None)
         float BIG = <float> sys.maxsize
         float min0, min1, max0, max1, delta0, delta1
-        float all_min0, all_max0, all_max1
+        float all_min0, all_max0, all_max1, all_min1
+        float p0, p1
+    
+    if (pixel1 == 0.0) or (pixel2 == 0):
+        raise RuntimeError("Pixel size cannot be null -> Zero division error") 
 
     dim0 = pixel_corners.shape[0]
     dim1 = pixel_corners.shape[1]
     nb_corners = pixel_corners.shape[2]
     pos = numpy.zeros((dim0, dim1, 4, 2), dtype=numpy.float32)
-
-    delta0 = 0.0
-    delta1 = 0.0
-    all_min0 = BIG
-    all_min0 = BIG
-    all_max0 = 0.0
-    all_max1 = 0.0
-    for i in range(dim0):
-        for j in range(dim1):
-            min0 = BIG
-            min1 = BIG
-            max0 = 0
-            max1 = 0
-            for k in range(nb_corners):
-                p0 = pixel_corners[i, j, k, 1] / pixel1
-                p1 = pixel_corners[i, j, k, 2] / pixel2
-                pos[i, j, k, 0] += p0
-                pos[i, j, k, 1] += p1
-                min0 = min(min0, p0)
-                min1 = min(min1, p1)
-                max0 = max(max0, p0)
-                max1 = max(max1, p1)
-            delta0 = max(delta0, max0 - min0)
-            delta1 = max(delta1, max1 - min1)
-            if do_shape:
-                all_min0 = min(all_min0, min0)
-                all_min1 = min(all_min1, min1)
-                all_max0 = max(all_max0, max0)
-                all_max1 = max(all_max1, max1)
+    with nogil:
+        delta0 = 0.0
+        delta1 = 0.0
+        all_min0 = BIG
+        all_min0 = BIG
+        all_max0 = 0.0
+        all_max1 = 0.0
+        for i in range(dim0):
+            for j in range(dim1):
+                min0 = BIG
+                min1 = BIG
+                max0 = 0
+                max1 = 0
+                for k in range(nb_corners):
+                    p0 = pixel_corners[i, j, k, 1] / pixel1
+                    p1 = pixel_corners[i, j, k, 2] / pixel2
+                    pos[i, j, k, 0] += p0
+                    pos[i, j, k, 1] += p1
+                    min0 = min(min0, p0)
+                    min1 = min(min1, p1)
+                    max0 = max(max0, p0)
+                    max1 = max(max1, p1)
+                delta0 = max(delta0, max0 - min0)
+                delta1 = max(delta1, max1 - min1)
+                if do_shape:
+                    all_min0 = min(all_min0, min0)
+                    all_min1 = min(all_min1, min1)
+                    all_max0 = max(all_max0, max0)
+                    all_max1 = max(all_max1, max1)
 
     return numpy.asarray(pos), delta0, delta1, \
         (all_max0 - all_min0, all_max1 - all_min1) if do_shape else shape_out, \
@@ -452,6 +459,7 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                     cDA = D1 - pDA * D0
                 else:
                     pDA = cDA = 0.0
+                #Not ABCD is trigonometric order
                 integrate(buffer, B0, A0, pAB, cAB)
                 integrate(buffer, A0, D0, pDA, cDA)
                 integrate(buffer, D0, C0, pCD, cCD)
