@@ -90,7 +90,7 @@ cdef inline float _floor_min4(float a, float b, float c, float d) nogil:
         res = c
     if (d < res):
         res = d
-    return <int>floor(res)
+    return floor(res)
 
 
 cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
@@ -527,12 +527,14 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
     @param bin_size: number of input element per output element (as numpy array)
     @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
     @return: look-up table in CSR format: 3-tuple of array"""
-    cdef int i, j, k, ms, ml, ns, nl, shape0, shape1, delta0, delta1, bins, lut_size, offset0, offset1, box_size0, box_size1
+    cdef: 
+        int shape0, shape1, delta0, delta1, bins
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
     bins = shape0 * shape1
     cdef:
-        numpy.int32_t idx = 0, tmp_index
+        int i, j, k, ms, ml, ns, nl, idx = 0, tmp_index, err_cnt=0
+        int lut_size, offset0, offset1, box_size0, box_size1
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
         float area, value, foffset0, foffset1
         numpy.ndarray[numpy.int32_t, ndim = 1] indptr, indices
@@ -556,7 +558,7 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
 
     logger.info("CSR matrix: %.3f MByte" % ((indices.nbytes + data.nbytes + indptr.nbytes) / 1.0e6))
-    buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
     with nogil:
         # i,j, idx are indices of the raw image uncorrected
@@ -625,6 +627,15 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                         value = buffer[ms, ns] / area
                         if value <= 0:
                             continue
+                        if value < -0.0001 or value > 1.0001:
+                            # here we print pathological cases for debugging
+                            if err_cnt < 1000:
+                                with gil:
+                                    print(i, j, ms, box_size0, ns, box_size1, buffer[ms, ns], area, value, buffer[0, 0], buffer[0, 1], buffer[1, 0], buffer[1, 1])
+                                    print(" A0=%s; A1=%s; B0=%s; B1=%s; C0=%s; C1=%s; D0=%s; D1=%s" % (A0, A1, B0, B1, C0, C1, D0, D1))
+                                err_cnt += 1
+                            continue
+
                         k = outMax[ml, nl]
                         tmp_index = indptr[ml * shape1 + nl]
                         indices[tmp_index + k] = idx
@@ -653,11 +664,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
     @return: look-up table in CSR/LUT format
     """
     cdef:
-        int shape_in0, shape_in1, shape_out0, shape_out1, size_in
-        int i, j, k, ms, ml, ns, nl, delta0, delta1
-        int i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1
-        int large_size, counter, bin_number
-        int idx
+        int shape_in0, shape_in1, shape_out0, shape_out1, size_in, delta0, delta1, bins, large_size
     format = format.lower()
     shape_out0, shape_out1 = shape
     delta0, delta1 = max_pixel_size
@@ -667,6 +674,10 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
     shape_in1 = pos.shape[1]
     size_in = shape_in0 * shape_in1
     cdef:
+        int i, j, k, ms, ml, ns, nl
+        int i0, i1, lut_size, offset0, offset1, box_size0, box_size1
+        int counter, bin_number
+        int idx, err_cnt=0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
         float area, value, foffset0, foffset1
         int[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
@@ -756,14 +767,23 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                     if nl < 0 or nl >= shape_out1:
                         continue
                     value = buffer[ms, ns] / area
-                    if value <= 0:
+                    if value == 0:
+                        continue
+                    if value < -0.0001 or value > 1.0001:
+                        # here we print pathological cases for debugging
+                        if err_cnt < 1000:
+                            with gil:
+                                print(i, j, ms, box_size0, ns, box_size1, buffer[ms, ns], area, value, buffer[0, 0], buffer[0, 1], buffer[1, 0], buffer[1, 1])
+                                print(" A0=%s; A1=%s; B0=%s; B1=%s; C0=%s; C1=%s; D0=%s; D1=%s" % (A0, A1, B0, B1, C0, C1, D0, D1))
+                            err_cnt += 1
                         continue
 
                     bin_number = ml * shape_out1 + nl
-                    with gil: #Use the gil to perform an atomic operation
-                        counter += 1
-                        pixel_count[bin_number] += 1
-                        if counter >= large_size:
+#                     with gil: #Use the gil to perform an atomic operation
+                    counter += 1
+                    pixel_count[bin_number] += 1
+                    if counter >= large_size:
+                        with gil:
                             raise RuntimeError("Provided temporary space for storage is not enough. " +
                                                "Please increase bins_per_pixel=%s. "%bins_per_pixel +
                                                "The suggested value is %i or greater."%ceil(1.1*bins_per_pixel*size_in/idx))

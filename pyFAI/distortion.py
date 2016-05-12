@@ -153,7 +153,6 @@ class Distortion(object):
             self.calc_pos()
         return self._shape_out
 
-    @timeit
     def calc_pos(self, use_cython=True):
         """Calculate the pixel boundary position on the regular grid
 
@@ -189,7 +188,6 @@ class Distortion(object):
                         self.delta1, self.delta2 = ((numpy.ceil(pixel_delta.max(axis=1)) - numpy.floor(pixel_delta.min(axis=1))).max(axis=0)).astype(int)
         return self.pos
 
-    @timeit
     def calc_size(self, use_cython=True):
         """Calculate the number of pixels falling into every single bin and
 
@@ -255,8 +253,7 @@ class Distortion(object):
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup)
 
-    @timeit
-    def calc_LUT(self):
+    def calc_LUT(self, use_common=False):
         if self.pos is None:
             self.calc_pos()
 
@@ -267,11 +264,13 @@ class Distortion(object):
                 if self.lut is None:
                     mask = self.mask
                     if _distortion:
-#                         self.lut = _distortion.calc_openmp(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method)
-                        if self.method == "lut":
-                            self.lut = _distortion.calc_LUT(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
+                        if use_common:
+                            self.lut = _distortion.calc_openmp(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method)
                         else:
-                            self.lut = _distortion.calc_CSR(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
+                            if self.method == "lut":
+                                self.lut = _distortion.calc_LUT(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
+                            else:
+                                self.lut = _distortion.calc_CSR(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
                     else:
                         lut = numpy.recarray(shape=(self._shape_out[0], self._shape_out[1], self.max_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
                         lut[:, :, :].idx = 0
