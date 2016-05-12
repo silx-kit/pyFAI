@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/05/2016"
+__date__ = "12/05/2016"
 __status__ = "development"
 
 import logging
@@ -155,7 +155,7 @@ class Distortion(object):
 
     @timeit
     def calc_pos(self, use_cython=True):
-        """Calculate the pixel boundary postion on the regular grid
+        """Calculate the pixel boundary position on the regular grid
 
         @return: pixel corner positions (in pixel units) on the regular grid
         @rtyep: ndarray of shape (nrow, ncol, 4, 2)
@@ -169,23 +169,24 @@ class Distortion(object):
                         if self._shape_out is None:
                             self.offset1, self.offset2 = offset
                             self._shape_out = shape_out
-                    pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2], dtype=numpy.float32)
-                    # make it a 4D array
-                    pixel_size.shape = 1, 1, 1, 2
-                    pixel_size.strides = 0, 0, 0, pixel_size.strides[-1]
-                    self.pos = self.detector.get_pixel_corners()[..., 1:] / pixel_size
-                    if self._shape_out is None:
-                        # if defined, it is probably because resize=False
-                        corner_pos = self.pos.view()
-                        corner_pos.shape = -1, 2
-                        pos1_min, pos2_min = corner_pos.min(axis=0)
-                        pos1_max, pos2_max = corner_pos.max(axis=0)
-                        self._shape_out = (int(ceil(pos1_max - pos1_min)),
-                                           int(ceil(pos2_max - pos2_min)))
-                        self.offset1, self.offset2 = pos1_min, pos2_min
-                    pixel_delta = self.pos.view()
-                    pixel_delta.shape = -1, 4, 2
-                    self.delta1, self.delta2 = (pixel_delta.max(axis=1) - pixel_delta.min(axis=1)).max(axis=0)
+                    else:
+                        pixel_size = numpy.array([self.detector.pixel1, self.detector.pixel2], dtype=numpy.float32)
+                        # make it a 4D array
+                        pixel_size.shape = 1, 1, 1, 2
+                        pixel_size.strides = 0, 0, 0, pixel_size.strides[-1]
+                        self.pos = self.detector.get_pixel_corners()[..., 1:] / pixel_size
+                        if self._shape_out is None:
+                            # if defined, it is probably because resize=False
+                            corner_pos = self.pos.view()
+                            corner_pos.shape = -1, 2
+                            pos1_min, pos2_min = corner_pos.min(axis=0)
+                            pos1_max, pos2_max = corner_pos.max(axis=0)
+                            self._shape_out = (int(ceil(pos1_max - pos1_min)),
+                                               int(ceil(pos2_max - pos2_min)))
+                            self.offset1, self.offset2 = pos1_min, pos2_min
+                        pixel_delta = self.pos.view()
+                        pixel_delta.shape = -1, 4, 2
+                        self.delta1, self.delta2 = ((numpy.ceil(pixel_delta.max(axis=1)) - numpy.floor(pixel_delta.min(axis=1))).max(axis=0)).astype(int)
         return self.pos
 
     @timeit

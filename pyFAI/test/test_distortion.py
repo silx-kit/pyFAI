@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/05/2016"
+__date__ = "12/05/2016"
 
 
 import unittest
@@ -61,8 +61,7 @@ class TestHalfCCD(unittest.TestCase):
         self.fit2d = fabio.open(self.fit2dFile).data
         self.ref = _distortion.Distortion(self.det)
         self.raw = fabio.open(self.halfFrelon).data
-        self.dis = distortion.Distortion(self.det, self.raw.shape, resize=False,
-                                         mask=numpy.zeros(self.det.shape, "int8"))
+        self.dis = distortion.Distortion(self.det)
         self.larger = numpy.zeros(self.det.shape)
         self.larger[:-1, :] = self.raw
 
@@ -70,12 +69,45 @@ class TestHalfCCD(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = None
 
-    def test_size(self):
+    def test_pos_lut(self):
+        """
+        Compare position from _distortion.Distortion and distortion.Distortion.
+        Nota the points, named ABCD have a different layout in those implementations:
+        _distortion.Distortion:  B C   distortion.Distortion: D C  
+                                 A B                          A B
+        So we compare only the position of A and C.
+        
+        """
         self.dis.reset(prepare=False)
-        ny = self.dis.calc_size(False)
+        onp = self.dis.calc_pos(use_cython=False)[:, :, ::2, :]
+        self.assertEqual(self.dis.delta1, 3)
+        self.assertEqual(self.dis.delta2, 3)
+
         self.dis.reset(prepare=False)
-        cy = self.dis.calc_size(True)
-        self.assertEqual(abs(ny - cy).max(), 0, "equivalence of the cython and numpy model")
+        ocy = self.dis.calc_pos(use_cython=True)[:, :, ::2, :]
+        ref = self.ref.calc_pos()[:, :, ::2, :]
+        self.assertEqual(abs(onp - ocy).max(), 0, "Numpy and cython implementation are equivalent")
+        self.assertLess(abs(ocy - ref).max(), 1e-3,
+                        "equivalence of the _distortion and distortion Distortion classes at 1 per 1000 of a pixel")
+        self.assertEqual(self.dis.delta1, 3)
+        self.assertEqual(self.dis.delta2, 3)
+        self.assertEqual(self.ref.delta0, 3)
+        self.assertEqual(self.ref.delta1, 3)
+
+#         print("dis", self.dis.delta1, self.dis.delta2)
+#         print("ref", self.ref.delta0, self.ref.delta1)
+#         raw_input("enteer")
+        self.dis.calc_LUT()
+        self.ref.calc_LUT()
+        delta = (self.dis.lut["idx"] - self.ref.LUT["idx"])
+        bad = 1.0 * self.dis.lut.size / (delta == 0).sum() - 1
+        self.assertLess(bad, 1e-2,
+                        "same index position < 1%% error, got %s" % bad)
+        ref_pixel_size = self.ref.LUT["coef"].sum(axis=-1)
+        obt_pixel_size = self.dis.lut["coef"].sum(axis=-1)
+        delta = abs(ref_pixel_size - obt_pixel_size).max()
+        self.assertLess(delta, 1e-3,
+                        "Same pixel size at 0.1%%, got %s" % delta)
 
     def test_ref_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -89,30 +121,6 @@ class TestHalfCCD(unittest.TestCase):
             logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
             return
         cor = self.ref.correct(self.raw)
-        delta = abs(cor - self.fit2d)
-        print("Delta", delta.max(), delta.mean())
-        mask = numpy.where(self.fit2d == 0)
-        denom = self.fit2d.copy()
-        denom[mask] = 1
-        ratio = delta / denom
-        ratio[mask] = 0
-        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
-
-    def test_csr_vs_fit2d(self):
-        """
-        Compare spline correction vs fit2d's code
-
-        precision at 1e-3 : 90% of pixels
-        """
-        self.dis.reset(method="csr", prepare=False)
-        try:
-            self.dis.calc_LUT()
-        except MemoryError as error:
-            logger.warning("TestHalfCCD.test_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
-            return
-        cor = self.dis.correct(self.raw)
         delta = abs(cor - self.fit2d)
         print("Delta", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
@@ -164,7 +172,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestImplementations("test_calc_pos"))
     testsuite.addTest(TestImplementations("test_size"))
-#     testsuite.addTest(TestHalfCCD("test_size")) #slow
+    testsuite.addTest(TestHalfCCD("test_pos_lut"))
     testsuite.addTest(TestHalfCCD("test_ref_vs_fit2d"))
 #     testsuite.addTest(TestHalfCCD("test_csr_vs_fit2d"))
     return testsuite
