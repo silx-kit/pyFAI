@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/05/2016"
+__date__ = "13/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -713,6 +713,7 @@ class NexusDetector(Detector):
         if filename is not None:
             self.load(filename)
 
+
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._filename, self._pixel1, self._pixel2)
@@ -940,6 +941,7 @@ class Pilatus(Detector):
         p1 = (self._pixel1 * (delta1 + d1))
         p2 = (self._pixel2 * (delta2 + d2))
         return p1, p2, None
+
 
 
 class Pilatus100k(Pilatus):
@@ -1237,6 +1239,7 @@ class FReLoN(Detector):
     FReLoN detector:
     The spline is mandatory to correct for geometric distortion of the taper
 
+    TODO: create automatically a mask that removes pixels out of the "valid reagion"
     """
     def __init__(self, splineFile=None):
         super(FReLoN, self).__init__(splineFile=splineFile)
@@ -1562,6 +1565,7 @@ class Xpad_flat(ImXPadS10):
         else:
             self.module_size = module_size
 
+
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
                 (self.name, self.pixel1, self.pixel2)
@@ -1580,6 +1584,7 @@ class Xpad_flat(ImXPadS10):
             pixel_edges2[1:] = numpy.cumsum(pixel_size2)
             self._pixel_edges = pixel_edges1, pixel_edges2
         return self._pixel_edges
+
 
     def calc_mask(self):
         """
@@ -1600,6 +1605,7 @@ class Xpad_flat(ImXPadS10):
             mask[:, i] = 1
             mask[:, i + self.module_size[1] - 1] = 1
         return mask
+
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -1630,7 +1636,7 @@ class Xpad_flat(ImXPadS10):
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if bilinear and use_cython:
-            p1, p2, _ = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:
@@ -2470,6 +2476,55 @@ class Aarhus(Detector):
             p2 = p2.astype(numpy.float32)
             p3 = p3.astype(numpy.float32)
         return p1, p2, p3
+
+
+class PIXIUM(Detector):
+     """PIXIUM 4700 detector
+
+     High energy X ray diffraction using the Pixium 4700 flat panel detector
+     J E Daniels, M Drakopoulos, et al.; Journal of Synchrotron Radiation 16(Pt 4):463-8 · August 2009
+     """
+     aliases = ["Pixium 4700 detector", "Thales Electronics"]
+     force_pixel = True
+     MAX_SHAPE = (1910, 2480)
+     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 154e-6
+
+     def __init__(self, pixel1=154e-6, pixel2=154e-6):
+         super(PIXIUM, self).__init__(pixel1=pixel1, pixel2=pixel2)
+         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
+             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
+             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
+         else:
+             self.shape = (1240, 955)
+             self._binning = (2, 2)
+
+     def __repr__(self):
+         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+             (self.name, self._pixel1, self._pixel2)
+
+
+class Apex2(Detector):
+     """BrukerApex2 detector
+
+     Actually a derivative from the Fairchild detector with higher binning
+     """
+     aliases = ["ApexII", "Bruker"]
+     force_pixel = True
+     MAX_SHAPE = (1024, 1024)
+     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 60e-6
+
+     def __init__(self, pixel1=60e-6, pixel2=60e-6):
+         super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2)
+         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
+             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
+             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
+         else:
+             self.shape = (512, 512)
+             self._binning = (2, 2)
+
+     def __repr__(self):
+         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+             (self.name, self._pixel1, self._pixel2)
 
 
 ALL_DETECTORS = Detector.registry

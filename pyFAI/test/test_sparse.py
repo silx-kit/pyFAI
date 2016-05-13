@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/04/2016"
+__date__ = "13/05/2016"
 
 
 import unittest
@@ -47,6 +47,7 @@ from .. import load
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..ext import splitBBoxLUT
+from ..ext import sparse_utils
 import fabio
 
 
@@ -90,10 +91,50 @@ class TestSparseBBox(unittest.TestCase):
             self.assert_(numpy.allclose(obt, ref))
 
 
+class TestSparseUtils(unittest.TestCase):
+    def test_conversion(self):
+        dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
+        shape = 99, 101
+        thres = 0.99
+        nnz = 0
+
+        # Ensures there is at least one non zero element
+        while nnz == 0:
+            dense = numpy.random.random(shape).astype("float32")
+            mask = dense > 0.90
+            loc = numpy.where(mask)
+            nnz = len(loc[0])
+        idx = loc[0] * shape[-1] + loc[1]
+        nnzpr = numpy.bincount(loc[0], minlength=shape[0])
+        lut_shape = (shape[0], nnzpr.max())
+        lut_ref = numpy.zeros(lut_shape, dtype_lut)
+        for i in range(shape[0]):
+            id_ = numpy.where(loc[0] == i)[0]
+            for j, k in enumerate(id_):
+                lut_ref[i, j]["idx"] = i * shape[-1] + loc[1][k]
+                lut_ref[i, j]["coef"] = dense[i, loc[1][k]]
+
+        idptr = numpy.zeros(shape[0] + 1, int)
+        idptr[1:] = nnzpr.cumsum()
+        assert nnz == idptr[-1]
+        # self.assertEqual(nnz, idptr[-1], "number of data is consitent")
+        csr_ref = (dense[loc], idx, idptr)
+
+        lut_out = sparse_utils.CSR_to_LUT(*csr_ref)
+        self.assert_(numpy.allclose(lut_out["coef"], lut_ref["coef"]), "coef are the same in LUT")
+        self.assert_(numpy.allclose(lut_out["idx"], lut_ref["idx"]), "idx are the same in LUT")
+
+        csr_out = sparse_utils.LUT_to_CSR(lut_ref)
+        self.assert_(numpy.allclose(csr_out[2], csr_ref[2]), "idpts are the same in CSR")
+        self.assert_(numpy.allclose(csr_out[1], csr_ref[1]), "coef are the same in CSR")
+        self.assert_(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
+
+
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestSparseBBox("test_LUT"))
     testsuite.addTest(TestSparseBBox("test_CSR"))
+    testsuite.addTest(TestSparseUtils("test_conversion"))
     return testsuite
 
 

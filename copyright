@@ -35,10 +35,12 @@ Files: version.py
        pyFAI/distortion.py
        pyFAI/ext/_distortion.py
        pyFAI/test/test_distortion.py
+       pyFAI/ext/sparse_utils.pyx
+       pyFAI/ext/*.pxi
        run_tests.py
 Copyright: 2015-2016 European Synchrotron Radiation Facility
 License: MIT/X11 (BSD like)
- 
+
 
 License: BSD-3
  Redistribution and use in source and binary forms, with or without

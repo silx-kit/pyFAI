@@ -56,11 +56,7 @@ except ImportError:
     import six
 import fabio
 
-cdef struct lut_point:
-    numpy.int32_t idx
-    numpy.float32_t coef
-
-dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
+include "sparse_common.pxi"
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
@@ -68,6 +64,7 @@ cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1
 cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+
 
 cpdef inline int clip(int value, int min_val, int max_val) nogil:
     "Limits the value to bounds"
@@ -479,6 +476,7 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
                 integrate(buffer, C0, B0, pBC, cBC)
                 integrate(buffer, D0, C0, pCD, cCD)
                 integrate(buffer, A0, D0, pDA, cDA)
+
                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
 
                 for ms in range(box_size0):
@@ -493,7 +491,7 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
                         value = buffer[ms, ns] / area
                         if value == 0:
                             continue
-                        if value < -0.0001 or value > 1.0001:
+                        if value < 0 or value > 1.0001:
                             # here we print pathological cases for debugging
                             if err_cnt < 1000:
                                 with gil:
@@ -627,7 +625,7 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                         value = buffer[ms, ns] / area
                         if value <= 0:
                             continue
-                        if value < -0.0001 or value > 1.0001:
+                        if value < 0 or value > 1.0001:
                             # here we print pathological cases for debugging
                             if err_cnt < 1000:
                                 with gil:
@@ -914,7 +912,7 @@ def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):
     """
     cdef:
         int i, j, idx, size, bins
-        float coef, error, sum, y, t, value, cdummy, cdelta_dummy
+        float coef, tmp, error, sum, y, t, value, cdummy, cdelta_dummy
         float[:] lout, lin, data
         numpy.int32_t[:] indices, indptr
         bint do_dummy = dummy is not None
