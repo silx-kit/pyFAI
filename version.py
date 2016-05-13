@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/03/2016"
+__date__ = "13/05/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -63,7 +63,7 @@ Thus 2.1.0a3 is hexversion 0x020100a3.
 """
 __all__ = ["date", "version_info", "strictversion", "hexversion"]
 
-RELEASE_LEVEL_VALUE = { "dev": 0,
+RELEASE_LEVEL_VALUE = {"dev": 0,
                        "alpha": 10,
                        "beta": 11,
                        "gamma": 11,
@@ -74,7 +74,7 @@ MAJOR = 0
 MINOR = 12
 MICRO = 0
 RELEV = "dev"  # <16
-SERIAL = 4  # <16
+SERIAL = 5  # <16
 
 date = __date__
 
