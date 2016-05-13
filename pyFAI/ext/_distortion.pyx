@@ -24,7 +24,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "05/04/2016"
+__date__ = "13/05/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -52,17 +52,15 @@ except ImportError:
     import six
 import fabio
 
-cdef struct lut_point:
-    numpy.int32_t idx
-    numpy.float32_t coef
+include "sparse_common.pxi"
 
-dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
 
 cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+
 
 cpdef inline int clip(int value, int min_val, int max_val) nogil:
     "Limits the value to bounds"
