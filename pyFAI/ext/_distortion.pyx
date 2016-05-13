@@ -301,9 +301,10 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
                     all_max0 = max0 if max0 > all_max0 else all_max0
                     all_max1 = max1 if max1 > all_max1 else all_max1
 
-    return numpy.asarray(pos), int(delta0), int(delta1), \
+    res = numpy.asarray(pos), int(delta0), int(delta1), \
         (int(ceil(all_max0 - all_min0)), int(ceil(all_max1 - all_min1))) if do_shape else shape_out, \
-        (all_min0, all_min1) if do_shape else (0.0, 0.0)
+        (float(all_min0), float(all_min1)) if do_shape else (0.0, 0.0)
+    return res
 
 
 @cython.wraparound(False)
