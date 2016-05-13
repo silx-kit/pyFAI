@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2016"
+__date__ = "13/05/2016"
 __status__ = "development"
 
 import logging
@@ -223,8 +223,7 @@ class Distortion(object):
         return self.bin_size
 
     def calc_init(self):
-        """
-        initialize all arrays
+        """Initialize all arrays
         """
         self.calc_pos()
         self.calc_size()
@@ -253,11 +252,16 @@ class Distortion(object):
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup)
 
+#     @timeit
     def calc_LUT(self, use_common=False):
+        """Calculate the Look-up table 
+        
+        @return: look up table either in CSR or LUT format depending on serl.method
+        """
         if self.pos is None:
             self.calc_pos()
 
-        if self.max_size is None:
+        if self.max_size is None and not use_common:
             self.calc_size()
         if self.lut is None:
             with self._sem:
@@ -314,6 +318,7 @@ class Distortion(object):
                                 idx += 1
                         lut.shape = (self._shape_out[0] * self._shape_out[1]), self.max_size
                         self.lut = lut
+        return self.lut
 
     def correct(self, image, dummy=None, delta_dummy=None):
         """

@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "12/05/2016"
+__date__ = "13/05/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -39,7 +39,7 @@ from cython cimport view, floating
 from cython.parallel import prange#, threadlocal
 from cpython.ref cimport PyObject, Py_XDECREF
 from libc.string cimport memset, memcpy
-from libc.math cimport floor, ceil, fabs
+from libc.math cimport floor, ceil, fabs, copysign
 import logging
 import threading
 import types
@@ -114,135 +114,128 @@ cdef inline void integrate(float[:, ::1] box, float start, float stop, float slo
     """
     cdef:
         int i, h = 0
-        float P, dP, A, AA, dA, sign
+        float P, dP, segment_area, abs_area, dA
+        #, sign
     if start < stop:  # positive contribution
         P = ceil(start)
         dP = P - start
         if P > stop:  # start and stop are in the same unit
-            A = calc_area(start, stop, slope, intercept)
-            if A != 0.0:
-                AA = fabs(A)
-                sign = A / AA
+            segment_area = calc_area(start, stop, slope, intercept)
+            if segment_area != 0.0:
+                abs_area = fabs(segment_area)
                 dA = (stop - start)  # always positive
                 h = 0
-                while AA > 0:
-                    if dA > AA:
-                        dA = AA
-                        AA = -1
-                    box[(<int> floor(start)), h] += sign * dA
-                    AA -= dA
+                while abs_area > 0:
+                    if dA > abs_area:
+                        dA = abs_area
+                        abs_area = -1
+                    box[(<int> start), h] += copysign(dA, segment_area)
+                    abs_area -= dA
                     h += 1
         else:
             if dP > 0:
-                A = calc_area(start, P, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
+                segment_area = calc_area(start, P, slope, intercept)
+                if segment_area != 0.0:
+                    abs_area = fabs(segment_area)
                     h = 0
                     dA = dP
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        box[(<int> floor(P)) - 1, h] += sign * dA
-                        AA -= dA
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<int> P) - 1, h] += copysign(dA, segment_area)
+                        abs_area -= dA
                         h += 1
             # subsection P1->Pn
             for i in range((<int> floor(P)), (<int> floor(stop))):
-                A = calc_area(i, i + 1, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
-
+                segment_area = calc_area(i, i + 1, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
                     h = 0
                     dA = 1.0
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        box[i , h] += sign * dA
-                        AA -= dA
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[i , h] += copysign(dA, segment_area)
+                        abs_area -= dA
                         h += 1
             # Section Pn->B
             P = floor(stop)
             dP = stop - P
             if dP > 0:
-                A = calc_area(P, stop, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
+                segment_area = calc_area(P, stop, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
                     h = 0
                     dA = fabs(dP)
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        box[(<int> floor(P)), h] += sign * dA
-                        AA -= dA
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<int> P), h] += copysign(dA, segment_area)
+                        abs_area -= dA
                         h += 1
     elif start > stop:  # negative contribution. Nota if start==stop: no contribution
         P = floor(start)
         if stop > P:  # start and stop are in the same unit
-            A = calc_area(start, stop, slope, intercept)
-            if A != 0:
-                AA = fabs(A)
-                sign = A / AA
+            segment_area = calc_area(start, stop, slope, intercept)
+            if segment_area != 0:
+                abs_area = fabs(segment_area)
+#                 sign = segment_area / abs_area
                 dA = (start - stop)  # always positive
                 h = 0
-                while AA > 0:
-                    if dA > AA:
-                        dA = AA
-                        AA = -1
-                    box[(<int> floor(start)), h] += sign * dA
-                    AA -= dA
+                while abs_area > 0:
+                    if dA > abs_area:
+                        dA = abs_area
+                        abs_area = -1
+                    box[(<int> start), h] += copysign(dA, segment_area)
+                    abs_area -= dA
                     h += 1
         else:
             dP = P - start
             if dP < 0:
-                A = calc_area(start, P, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
+                segment_area = calc_area(start, P, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
                     h = 0
                     dA = fabs(dP)
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        box[(<int> floor(P)) , h] += sign * dA
-                        AA -= dA
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<int> P) , h] += copysign(dA, segment_area)
+                        abs_area -= dA
                         h += 1
             # subsection P1->Pn
             for i in range((<int> start), (<int> ceil(stop)), -1):
-                A = calc_area(i, i - 1, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
+                segment_area = calc_area(i, i - 1, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
                     h = 0
                     dA = 1
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        box[i - 1, h] += sign * dA
-                        AA -= dA
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[i - 1, h] += copysign(dA, segment_area)
+                        abs_area -= dA
                         h += 1
             # Section Pn->B
             P = ceil(stop)
             dP = stop - P
             if dP < 0:
-                A = calc_area(P, stop, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
+                segment_area = calc_area(P, stop, slope, intercept)
+                if segment_area != 0:
+                    abs_area = fabs(segment_area)
                     h = 0
                     dA = fabs(dP)
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        box[(<int> floor(stop)), h] += sign * dA
-                        AA -= dA
+                    while abs_area > 0:
+                        if dA > abs_area:
+                            dA = abs_area
+                            abs_area = -1
+                        box[(<int> stop), h] += copysign(dA, segment_area)
+                        abs_area -= dA
                         h += 1
 
 
@@ -310,7 +303,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
 
     return numpy.asarray(pos), int(delta0), int(delta1), \
         (int(ceil(all_max0 - all_min0)), int(ceil(all_max1 - all_min1))) if do_shape else shape_out, \
-        (all_min0, all_min1) if do_shape else (0, 0)
+        (all_min0, all_min1) if do_shape else (0.0, 0.0)
 
 
 @cython.wraparound(False)
@@ -580,6 +573,14 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                 offset1 = (<int> foffset1)
                 box_size0 = (<int> _ceil_max4(A0, B0, C0, D0)) - offset0
                 box_size1 = (<int> _ceil_max4(A1, B1, C1, D1)) - offset1
+
+                if (box_size0 > delta0) or (box_size1 > delta1):
+                    # Increase size of the buffer
+                    delta0 = offset0 if offset0 > delta0 else delta0
+                    delta1 = offset1 if offset1 > delta1 else delta1
+                    with gil: 
+                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+
                 A0 -= foffset0
                 A1 -= foffset1
                 B0 -= foffset0
@@ -623,9 +624,9 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                         if nl < 0 or nl >= shape1:
                             continue
                         value = buffer[ms, ns] / area
-                        if value <= 0:
+                        if value == 0.0:
                             continue
-                        if value < 0 or value > 1.0001:
+                        if value < 0.0 or value > 1.0001:
                             # here we print pathological cases for debugging
                             if err_cnt < 1000:
                                 with gil:
@@ -697,7 +698,6 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
 
     buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     counter = -1  # bin index
-    t0 = time.time()
     with nogil:
         # i, j, idx are indices of the raw image uncorrected
         for idx in range(size_in):
@@ -721,6 +721,13 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
             offset1 = <int> foffset1
             box_size0 = (<int> _ceil_max4(A0, B0, C0, D0)) - offset0
             box_size1 = (<int> _ceil_max4(A1, B1, C1, D1)) - offset1
+            if (box_size0 > delta0) or (box_size1 > delta1):
+                # Increase size of the buffer
+                delta0 = offset0 if offset0 > delta0 else delta0
+                delta1 = offset1 if offset1 > delta1 else delta1
+                with gil: 
+                    buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+
             A0 = A0 - foffset0
             A1 = A1 - foffset1
             B0 = B0 - foffset0
@@ -765,9 +772,9 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                     if nl < 0 or nl >= shape_out1:
                         continue
                     value = buffer[ms, ns] / area
-                    if value == 0:
+                    if value == 0.0:
                         continue
-                    if value < -0.0001 or value > 1.0001:
+                    if value < 0.0 or value > 1.0001:
                         # here we print pathological cases for debugging
                         if err_cnt < 1000:
                             with gil:
@@ -788,9 +795,8 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                     idx_pixel[counter] += idx
                     idx_bin[counter] += bin_number
                     large_data[counter] += value
-    t1 = time.time()
-    print("number of elements: %s, average per bin %.3f allocated max: %s" % 
-          (counter, counter / size_in, bins_per_pixel))
+    logger.info("number of elements: %s, average per bin %.3f allocated max: %s", 
+                counter, counter / size_in, bins_per_pixel)
 
     if format == "csr":
         indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
@@ -818,8 +824,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
         res = (numpy.asarray(data), numpy.asarray(indices), numpy.asarray(indptr))
     elif format == "lut":
         lut_size = numpy.asarray(pixel_count).max()
-        lut = numpy.recarray(shape=(bins, lut_size), dtype=dtype_lut)
-        memset(&lut[0, 0], 0, lut.nbytes)
+        lut = numpy.zeros(shape=(bins, lut_size), dtype=dtype_lut)
         pixel_count[:] = 0
         logger.info("LUT matrix: %.3f MByte; Max source pixel in target: %i, average splitting: %.2f",
                     (lut.nbytes) / 1.0e6, lut_size, (1.0 * counter / bins))
@@ -832,8 +837,6 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
         res = numpy.asarray(lut)
     else:
         raise RuntimeError("Unimplemented sparse matrix format: %s", format)
-    t2 = time.time()
-    print("timing", t1 - t0, t2 - t2)
     return res
 
 

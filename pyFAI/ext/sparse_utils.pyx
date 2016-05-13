@@ -61,9 +61,9 @@ def LUT_to_CSR(lut):
         for i in range(nrow):
             indptr[i] = nelt
             for j in range(ncol):
-                point = lut_[i,j]
+                point = lut_[i, j]
                 if point.coef <= 0.0:
-                    break
+                    continue
                 else:
                     data[nelt] = point.coef
                     indices[nelt] = point.idx
@@ -86,23 +86,27 @@ def CSR_to_LUT(data, indices, indptr):
         int nrow, ncol
 
     nrow = indptr.size - 1
-    ncol = (indptr[1:]-indptr[:-1]).max()
+    ncol = (indptr[1:] - indptr[:-1]).max()
     assert nrow > 0
-    assert ncol>0
+    assert ncol > 0
 
     cdef:
         float[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)
         int[::1]  indices_ = numpy.ascontiguousarray(indices, dtype=numpy.int32)
         int[::1] indptr_ = numpy.ascontiguousarray(indptr, dtype=numpy.int32)
-        lut_point[:,::1] lut = numpy.zeros((nrow, ncol), dtype=dtype_lut)
+        lut_point[:, ::1] lut = numpy.zeros((nrow, ncol), dtype=dtype_lut)
         lut_point point
         int i, j, nelt
+        float coef
     with nogil:
         for i in range(nrow):
             nelt = 0
-            for j in range(indptr_[i], indptr_[i+1]):
+            for j in range(indptr_[i], indptr_[i + 1]):
+                coef = data_[j]
+                if coef <= 0.0:
+                    continue
+                point.coef = coef
                 point.idx = indices_[j]
-                point.coef = data_[j]
                 lut[i, nelt] = point
                 nelt += 1
     return numpy.asarray(lut)

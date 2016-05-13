@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2016"
+__date__ = "13/05/2016"
 
 
 import unittest
@@ -44,6 +44,7 @@ logger = getLogger(__file__)
 from .. import detectors
 from .. import distortion
 from ..ext import _distortion
+from ..ext import sparse_utils
 
 
 class TestHalfCCD(unittest.TestCase):
@@ -94,9 +95,6 @@ class TestHalfCCD(unittest.TestCase):
         self.assertEqual(self.ref.delta0, 3)
         self.assertEqual(self.ref.delta1, 3)
 
-#         print("dis", self.dis.delta1, self.dis.delta2)
-#         print("ref", self.ref.delta0, self.ref.delta1)
-#         raw_input("enteer")
         self.dis.calc_LUT()
         self.ref.calc_LUT()
         delta = (self.dis.lut["idx"] - self.ref.LUT["idx"])
@@ -122,7 +120,53 @@ class TestHalfCCD(unittest.TestCase):
             return
         cor = self.ref.correct(self.raw)
         delta = abs(cor - self.fit2d)
-        print("Delta", delta.max(), delta.mean())
+        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
+        mask = numpy.where(self.fit2d == 0)
+        denom = self.fit2d.copy()
+        denom[mask] = 1
+        ratio = delta / denom
+        ratio[mask] = 0
+        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
+        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+
+    def test_lut_vs_fit2d(self):
+        """Compare reference spline correction vs fit2d's code
+
+        precision at 1e-3 : 90% of pixels
+        """
+        self.dis.reset(method="lut", prepare=False)
+        try:
+            self.dis.calc_LUT()
+        except MemoryError as error:
+            logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
+            return
+        cor = self.dis.correct(self.raw)[:-1, :]
+        delta = abs(cor - self.fit2d)
+        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
+        mask = numpy.where(self.fit2d == 0)
+        denom = self.fit2d.copy()
+        denom[mask] = 1
+        ratio = delta / denom
+        ratio[mask] = 0
+        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
+        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+
+    def test_csr_vs_fit2d(self):
+        """Compare reference spline correction vs fit2d's code
+
+        precision at 1e-3 : 90% of pixels
+        """
+        self.dis.reset(method="csr", prepare=False)
+        try:
+            self.dis.calc_LUT()
+        except MemoryError as error:
+            logger.warning("TestHalfCCD.test_ref_vs_fit2d failed because of MemoryError. This test tries to allocate a lot of memory and failed with %s", error)
+            return
+        cor = self.dis.correct(self.raw)[:-1, :]
+        delta = abs(cor - self.fit2d)
+        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
         mask = numpy.where(self.fit2d == 0)
         denom = self.fit2d.copy()
         denom[mask] = 1
@@ -167,14 +211,47 @@ class TestImplementations(unittest.TestCase):
         delta = abs(ny - cy).sum()
         self.assertEqual(delta, 0, "calc_size: equivalence of the cython and numpy model, summed error=%s" % delta)
 
+    def test_lut(self):
+        self.dis.reset(method="LUT", prepare=False)
+        lut1 = self.dis.calc_LUT(False)
+        csr1 = sparse_utils.LUT_to_CSR(lut1)
+
+        self.dis.reset(method="lut", prepare=False)
+        lut2 = self.dis.calc_LUT(True)
+        csr2 = sparse_utils.LUT_to_CSR(lut2)
+
+        self.dis.reset(method="csr", prepare=False)
+        csr3 = self.dis.calc_LUT(True)
+        self.dis.reset(method="csr", prepare=False)
+        csr4 = self.dis.calc_LUT(False)
+        csr4 = sparse_utils.LUT_to_CSR(sparse_utils.CSR_to_LUT(*csr4))
+
+        self.assertEqual(csr1[2].size, csr2[2].size, "right shape 1-2")
+        self.assertEqual(csr1[2].size, csr3[2].size, "right shape 1-3")
+        self.assertEqual(csr1[2].size, csr4[2].size, "right shape 1-4")
+
+        self.assert_(numpy.allclose(csr1[2], csr2[2]), "same indptr 1-2")
+        self.assert_(numpy.allclose(csr1[2], csr3[2]), "same indptr 1-3")
+        self.assert_(numpy.allclose(csr1[2], csr4[2]), "same indptr 1-4")
+
+        self.assert_(numpy.allclose(csr1[1], csr2[1]), "same indices1-2")
+        self.assert_(numpy.allclose(csr1[1], csr3[1]), "same indices1-3")
+        self.assert_(numpy.allclose(csr1[1], csr4[1]), "same indices1-4")
+
+        self.assert_(numpy.allclose(csr1[0], csr2[0], atol=2e-7), "same data 1-2")
+        self.assert_(numpy.allclose(csr1[0], csr3[0], atol=2e-7), "same data 1-3")
+        self.assert_(numpy.allclose(csr1[0], csr4[0], atol=2e-7), "same data 1-4")
+
 
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestImplementations("test_calc_pos"))
     testsuite.addTest(TestImplementations("test_size"))
+    testsuite.addTest(TestImplementations("test_lut"))
     testsuite.addTest(TestHalfCCD("test_pos_lut"))
     testsuite.addTest(TestHalfCCD("test_ref_vs_fit2d"))
-#     testsuite.addTest(TestHalfCCD("test_csr_vs_fit2d"))
+    testsuite.addTest(TestHalfCCD("test_lut_vs_fit2d"))
+    testsuite.addTest(TestHalfCCD("test_csr_vs_fit2d"))
     return testsuite
 
 
