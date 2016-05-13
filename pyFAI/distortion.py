@@ -253,7 +253,7 @@ class Distortion(object):
                                                                       block_size=self.workgroup)
 
 #     @timeit
-    def calc_LUT(self, use_common=False):
+    def calc_LUT(self, use_common=True):
         """Calculate the Look-up table 
         
         @return: look up table either in CSR or LUT format depending on serl.method
@@ -346,14 +346,14 @@ class Distortion(object):
                 self.calc_LUT()
             if self.method == "lut":
                 if _distortion is not None:
-                    out = _distortion.correct_LUT(image, self._shape_out, self.lut,
+                    out = _distortion.correct_LUT(image, self.shape_in, self._shape_out, self.lut,
                                                   dummy=dummy, delta_dummy=delta_dummy)
                 else:
                     big = image.ravel().take(self.lut.idx) * self.lut.coef
                     out = big.sum(axis=-1)
             elif self.method == "csr":
                 if _distortion is not None:
-                    out = _distortion.correct_CSR(image, self._shape_out, self.lut,
+                    out = _distortion.correct_CSR(image, self.shape_in, self._shape_out, self.lut,
                                                   dummy=dummy, delta_dummy=delta_dummy)
                 else:
                     big = self.lut[0] * image.ravel().take(self.lut[1])

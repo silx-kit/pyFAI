@@ -68,7 +68,7 @@ class TestHalfCCD(unittest.TestCase):
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = None
+        self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = self.ref = None
 
     def test_pos_lut(self):
         """
@@ -95,7 +95,7 @@ class TestHalfCCD(unittest.TestCase):
         self.assertEqual(self.ref.delta0, 3)
         self.assertEqual(self.ref.delta1, 3)
 
-        self.dis.calc_LUT()
+        self.dis.calc_LUT(False)
         self.ref.calc_LUT()
         delta = (self.dis.lut["idx"] - self.ref.LUT["idx"])
         bad = 1.0 * self.dis.lut.size / (delta == 0).sum() - 1
