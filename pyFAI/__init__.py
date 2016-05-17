@@ -26,7 +26,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "22/03/2016"
+__date__ = "17/05/2016"
 
 import sys
 import logging
@@ -46,9 +46,11 @@ if sys.version_info < (2, 6):
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
 
 from . import ext
+from .detectors import Detector
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .decorators import depreclog
 load = AzimuthalIntegrator.sload
+detector_factory = Detector.factory
 
 
 def tests(deprecation=False):
