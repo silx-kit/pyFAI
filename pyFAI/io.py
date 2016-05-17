@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "17/05/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -602,6 +602,7 @@ class Nexus(object):
 
     #TODO: make it thread-safe !!!
     """
+
     def __init__(self, filename, mode="r"):
         """
         Constructor
@@ -649,7 +650,7 @@ class Nexus(object):
                 if isinstance(grp, h5py.Group) and \
                    ("start_time" in grp) and  \
                    ("NX_class" in grp.attrs) and \
-                   (grp.attrs["NX_class"] == "NXentry"):
+                   (grp.attrs["NX_class"].decode() == "NXentry"):
                         return grp
 
     def get_entries(self):
@@ -663,7 +664,7 @@ class Nexus(object):
                    if isinstance(self.h5[grp], h5py.Group) and
                       ("start_time" in self.h5[grp]) and
                       ("NX_class" in self.h5[grp].attrs) and
-                      (self.h5[grp].attrs["NX_class"] == "NXentry")]
+                      (self.h5[grp].attrs["NX_class"].decode() == "NXentry")]
         entries.sort(key=lambda a: a[1], reverse=True)  # sort entries in decreasing time
         return [self.h5[i[0]] for i in entries]
 
@@ -752,7 +753,7 @@ class Nexus(object):
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Group) and
                 ("NX_class" in grp[name].attrs) and
-                (grp[name].attrs["NX_class"] == class_type)]
+                (grp[name].attrs["NX_class"].decode() == class_type)]
         return coll
 
     def get_data(self, grp, class_type="NXdata"):
@@ -765,7 +766,7 @@ class Nexus(object):
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Dataset) and
                 ("NX_class" in grp[name].attrs) and
-                (grp[name].attrs["NX_class"] == class_type)]
+                (grp[name].attrs["NX_class"].decode() == class_type)]
         return coll
 
     def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None, overwrite=False):

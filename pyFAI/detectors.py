@@ -713,7 +713,6 @@ class NexusDetector(Detector):
         if filename is not None:
             self.load(filename)
 
-
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._filename, self._pixel1, self._pixel2)
@@ -730,6 +729,8 @@ class NexusDetector(Detector):
             raise RuntimeError("H5py module is missing")
         with io.Nexus(filename, "r") as nxs:
             det_grp = nxs.find_detector()
+            if not det_grp:
+                raise RuntimeError("No detector definition in this file %s" % filename)
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
             if "IS_FLAT" in det_grp:
