@@ -463,7 +463,7 @@ the WOS@D2AM as it has not (yet) been fully validated and may contain
 some errors in the pixel positionning.
 
 Conclusion
-==========
+----------
 
 PyFAI provides a very comprehensive list of detector definition,
 versatile enough to address most area detector on the market, and a
