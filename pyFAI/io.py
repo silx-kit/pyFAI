@@ -1,42 +1,43 @@
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
-#    Project: Fast Azimuthal Integration
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 
 
 from __future__ import absolute_import, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2016"
-__status__ = "beta"
+__date__ = "18/05/2016"
+__status__ = "production"
 __docformat__ = 'restructuredtext'
-__doc__ = """
-
-Module for "high-performance" writing in either 1D with Ascii , or 2D with FabIO
-or even nD with n varying from  2 to 4 using HDF5
+__doc__ = """Module for "high-performance" writing in either 1D with Ascii , 
+or 2D with FabIO or even nD with n varying from  2 to 4 using HDF5
 
 Stand-alone module which tries to offer interface to HDF5 via H5Py and
 capabilities to write EDF or other formats using fabio.
@@ -262,9 +263,9 @@ class HDF5Writer(Writer):
                 logger.error("No h5py library, no chance")
                 raise RuntimeError("No h5py library, no chance")
             self.group = self.hdf5.require_group(self.hpath)
-            self.group.attrs["NX_class"] = "NXentry"
+            self.group.attrs["NX_class"] = numpy.string_("NXentry")
             self.pyFAI_grp = self.hdf5.require_group(posixpath.join(self.hpath, self.CONFIG))
-            self.pyFAI_grp.attrs["desc"] = "PyFAI worker configuration"
+            self.pyFAI_grp.attrs["desc"] = numpy.string_("PyFAI worker configuration")
             for key, value in self.fai_cfg.items():
                 if value is None:
                     continue
@@ -278,32 +279,32 @@ class HDF5Writer(Writer):
             self.radial_values = self.group.require_dataset(rad_name, (self.fai_cfg["nbpt_rad"],), numpy.float32)
             if self.fai_cfg.get("nbpt_azim", 0) > 1:
                 self.azimuthal_values = self.group.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
-                self.azimuthal_values.attrs["unit"] = "deg"
-                self.azimuthal_values.attrs["interpretation"] = "scalar"
-                self.azimuthal_values.attrs["long name"] = "Azimuthal angle"
+                self.azimuthal_values.attrs["unit"] = numpy.string_("deg")
+                self.azimuthal_values.attrs["interpretation"] = numpy.string_("scalar")
+                self.azimuthal_values.attrs["long name"] = numpy.string_("Azimuthal angle")
 
-            self.radial_values.attrs["unit"] = rad_unit
-            self.radial_values.attrs["interpretation"] = "scalar"
-            self.radial_values.attrs["long name"] = "diffraction radial direction"
+            self.radial_values.attrs["unit"] = numpy.string_(rad_unit)
+            self.radial_values.attrs["interpretation"] = numpy.string_("scalar")
+            self.radial_values.attrs["long name"] = numpy.string_("diffraction radial direction")
             if self.fast_scan_width:
                 self.fast_motor = self.group.require_dataset("fast", (self.fast_scan_width,), numpy.float32)
-                self.fast_motor.attrs["long name"] = "Fast motor position"
-                self.fast_motor.attrs["interpretation"] = "scalar"
-                self.fast_motor.attrs["axis"] = "1"
-                self.radial_values.attrs["axis"] = "2"
+                self.fast_motor.attrs["long name"] = numpy.string_("Fast motor position")
+                self.fast_motor.attrs["interpretation"] = numpy.string_("scalar")
+                self.fast_motor.attrs["axis"] = numpy.string_("1")
+                self.radial_values.attrs["axis"] = numpy.string_("2")
                 if self.azimuthal_values is not None:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 4
-                    self.azimuthal_values.attrs["axis"] = "3"
+                    self.azimuthal_values.attrs["axis"] = numpy.string_("3")
                 else:
                     chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
             else:
-                self.radial_values.attrs["axis"] = "1"
+                self.radial_values.attrs["axis"] = numpy.string_("1")
                 if self.azimuthal_values is not None:
                     chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
-                    self.azimuthal_values.attrs["axis"] = "2"
+                    self.azimuthal_values.attrs["axis"] = numpy.string_("2")
                 else:
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
@@ -324,10 +325,10 @@ class HDF5Writer(Writer):
             self.dataset = self.group.require_dataset(self.DATASET_NAME, shape, dtype=dtype, chunks=chunk,
                                                       maxshape=(None,) + chunk[1:])
             if self.fai_cfg.get("nbpt_azim", 0) > 1:
-                self.dataset.attrs["interpretation"] = "image"
+                self.dataset.attrs["interpretation"] = numpy.string_("image")
             else:
-                self.dataset.attrs["interpretation"] = "spectrum"
-            self.dataset.attrs["signal"] = "1"
+                self.dataset.attrs["interpretation"] = numpy.string_("spectrum")
+            self.dataset.attrs["signal"] = numpy.string_("1")
             self.chunk = chunk
             self.shape = chunk
             name = "Mapping " if self.fast_scan_width else "Scanning "
@@ -649,8 +650,7 @@ class Nexus(object):
                 grp = self.h5[grp_name]
                 if isinstance(grp, h5py.Group) and \
                    ("start_time" in grp) and  \
-                   ("NX_class" in grp.attrs) and \
-                   (grp.attrs["NX_class"].decode() == "NXentry"):
+                   self.get_attr(grp, "NX_class") == "NXentry":
                         return grp
 
     def get_entries(self):
@@ -662,9 +662,8 @@ class Nexus(object):
         entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
                    for grp in self.h5
                    if isinstance(self.h5[grp], h5py.Group) and
-                      ("start_time" in self.h5[grp]) and
-                      ("NX_class" in self.h5[grp].attrs) and
-                      (self.h5[grp].attrs["NX_class"].decode() == "NXentry")]
+                   ("start_time" in self.h5[grp]) and
+                   self.get_attr(self.h5[grp], "NX_class") == "NXentry"]
         entries.sort(key=lambda a: a[1], reverse=True)  # sort entries in decreasing time
         return [self.h5[i[0]] for i in entries]
 
@@ -696,7 +695,7 @@ class Nexus(object):
         """
         nb_entries = len(self.get_entries())
         entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
-        entry_grp.attrs["NX_class"] = "NXentry"
+        entry_grp.attrs["NX_class"] = numpy.string_("NXentry")
         entry_grp["title"] = numpy.string_(title)
         entry_grp["program_name"] = numpy.string_(program_name)
         if force_time:
@@ -725,7 +724,7 @@ class Nexus(object):
         @return: subgroup created
         """
         sub = grp.require_group(name)
-        sub.attrs["NX_class"] = class_type
+        sub.attrs["NX_class"] = numpy.string_(class_type)
         return sub
 
     def new_detector(self, name="detector", entry="entry", subentry="pyFAI"):
@@ -739,7 +738,7 @@ class Nexus(object):
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
         pyFAI_grp["definition_local"] = numpy.string_("pyFAI")
-        pyFAI_grp["definition_local"].attrs["version"] = version
+        pyFAI_grp["definition_local"].attrs["version"] = numpy.string_(version)
         det_grp = self.new_class(pyFAI_grp, name, "NXdetector")
         return det_grp
 
@@ -752,8 +751,7 @@ class Nexus(object):
         """
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Group) and
-                ("NX_class" in grp[name].attrs) and
-                (grp[name].attrs["NX_class"].decode() == class_type)]
+                self.get_attr(grp[name], "NX_class") == class_type]
         return coll
 
     def get_data(self, grp, class_type="NXdata"):
@@ -765,8 +763,7 @@ class Nexus(object):
         """
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Dataset) and
-                ("NX_class" in grp[name].attrs) and
-                (grp[name].attrs["NX_class"].decode() == class_type)]
+                self.get_attr(grp[name], "NX_class") == class_type]
         return coll
 
     def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None, overwrite=False):
@@ -799,3 +796,23 @@ class Nexus(object):
             toplevel[name] = obj.value
             for k, v in obj.attrs.items():
                 toplevel[name].attrs[k] = v
+
+    @classmethod
+    def get_attr(cls, dset, name, default=None):
+        """Return the attribute of the dataset
+        
+        Handles the ascii -> unicode issue in python3 #275
+        
+        @param dset: a HDF5 dataset (or a group)
+        @param name: name of the attribute
+        @param default: default value to be returned
+        @return: attribute value decoded in python3 or default 
+        """
+        dec = default
+        if name in dset.attrs:
+            raw = dset.attrs[name]
+            if (sys.version_info[0] > 2) and ("decode" in dir(raw)):
+                dec = raw.decode()
+            else:
+                dec = raw
+        return dec

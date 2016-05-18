@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2016"
+__date__ = "18/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -94,6 +94,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
+    API_VERSION = "1.0"
 
     @classmethod
     def factory(cls, name, config=None):
@@ -649,6 +650,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
         with io.Nexus(filename, "+") as nxs:
             det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
+            det_grp["API_VERSION"] = numpy.string_(self.API_VERSION)
             det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
             det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)

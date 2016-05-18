@@ -33,6 +33,7 @@ Files: version.py
        pyFAI/ocl_sort.py
        pyFAI/decorators.py
        pyFAI/distortion.py
+       pyFAI/io.py
        pyFAI/ext/_distortion.py
        pyFAI/test/test_distortion.py
        pyFAI/ext/sparse_utils.pyx
