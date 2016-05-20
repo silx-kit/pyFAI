@@ -1,11 +1,12 @@
 
-Distortion correction
-=====================
+Detector distortion corrections
+===============================
 
 This tutorial shows how to correct images for spatial distortion. Some
-examples of the tutorial rely on files available in
+tutorial examples rely on files available in
 http://www.silx.org/pub/pyFAI/testimages/ and will be downloaded during
-this tutorial. The minimum version of pyFAI is 0.12.0 (currently dev5)
+this tutorial. The requiered minimum version of pyFAI is 0.12.0
+(currently dev5)
 
 Detector definitions
 --------------------
@@ -94,23 +95,26 @@ the pixel positions in Cartesian coordinates.
     Detector Xpad S540 flat	 PixelSize= 1.300e-04, 1.300e-04 m
 
 
-Defining a detector from a spline-file
+Defining a detector from a spline file
 --------------------------------------
 
 For optically coupled CCD detectors, the geometrical distortion is often
 described by a two-dimensional cubic spline (as in FIT2D) which can be
-imported into the detector instance and used to calculate the actual
-pixel position in space (and masked pixels).
+imported into the relevant detector instance and used to calculate the
+actual pixel position in space (and masked pixels).
 
-At ESRF, mainly FReLoN detectors [J.-C. Labiche, ESRF Newsletter 25, 41
-(1996)] are used with spline-file distortion. Let's download such file
-and create a detector from it.
+At the ESRF, mainly FReLoN detectors [J.-C. Labiche, ESRF Newsletter 25,
+41 (1996)] are used with spline files describing the distortion of the
+fiber optic taper.
+
+Let's download such a file and create a detector from it.
 
 .. code:: python
 
+    import os, sys
+    os.environ["http_proxy"] = "http://proxy.esrf.fr:3128"
     def download(url):
         """download the file given in URL and return its local path"""
-        import os, sys
         if sys.version_info[0]<3:
             from urllib2 import urlopen, ProxyHandler, build_opener
         else:
@@ -146,17 +150,18 @@ and create a detector from it.
     Shape: 1025, 2048
 
 
-*Note:* the unusual shape of this detector. This is probably a human
+*Note* the unusual shape of this detector. This is probably a human
 error when calibrating the detector distortion in FIT2D.
 
 Visualizing the mask
 ~~~~~~~~~~~~~~~~~~~~
 
-Every detector contains its mask, defining pixels which are invalid. For
-spline-files defined detectors, all pixels having an offset such as the
-pixel falls out of the detector are considered as invalid.
+Every detector object contains a mask attribute, defining pixels which
+are invalid. For FReLoN detector (a spline-files-defined detectors), all
+pixels having an offset such that the pixel falls out of the initial
+detector are considered as invalid.
 
-Masked pixel have non-null values and an be displayed as such:
+Masked pixel have non-null values can be displayed like this:
 
 .. code:: python
 
@@ -173,7 +178,7 @@ Masked pixel have non-null values and an be displayed as such:
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f9e1c90eda0>
+    <matplotlib.image.AxesImage at 0x7f2304a8cd68>
 
 
 
@@ -187,7 +192,7 @@ Detector definition files as NeXus files
 Any detector object in pyFAI can be saved into an HDF5 file following
 the NeXus convention [Könnecke et al., 2015, J. Appl. Cryst. 48,
 301-305.]. Detector objects can subsequently be restored from disk,
-making complex detector definitions that are less error prone.
+making complex detector definitions less error prone.
 
 .. code:: python
 
@@ -210,8 +215,8 @@ making complex detector definitions that are less error prone.
 
 Pixels of an area detector are saved as a four-dimensional dataset: i.e.
 a two-dimensional array of vertices pointing to every corner of each
-pixel, generating an array of shape (Ny, Nx, Nc, 3), where Nx and Ny are
-the dimensions of the detector, Nc is the number of corners of each
+pixel, generating an array of dimension (Ny, Nx, Nc, 3), where Nx and Ny
+are the dimensions of the detector, Nc is the number of corners of each
 pixel, usually four, and the last entry contains the coordinates of the
 vertex itself (in the order: Z, Y, X).
 
@@ -231,13 +236,15 @@ presented a bit later in this tutorial.
     Size of Nexus-file: 21451707
 
 
+The HDF5 file is indeed much larger than the spline file.
+
 Modify a detector and saving
 ----------------------------
 
 One may want to define a new mask (or flat-field) for its detector and
-save the mask with the detecor defnition. Here we create a copy of the
-detector and reset its mask to enable all pixels in the detector and
-save this new detector into another file.
+save the mask with the detector definition. Here, we create a copy of
+the detector and reset its mask to enable all pixels in the detector and
+save the new detector instance into another file.
 
 .. code:: python
 
@@ -255,24 +262,23 @@ save this new detector into another file.
     No pixels are masked 0
 
 
-Wrap up
-~~~~~~~
+**Wrap up**
 
 In this section we have seen how detectors are defined in pyFAI, how
-they can be created, either from the list of parametrized ones, or from
-spline-files, or from NeXus detector files. We have also seen how to
-save and subsequently restore this detector again, preserving the
+they can be created, either from the list of the parametrized ones, or
+from spline files, or from NeXus detector files. We have also seen how
+to save and subsequently restore a detector instance, preserving the
 modifications made.
 
 Distortion correction
 ---------------------
 
 Once the position of every single pixel in space is known, one can
-benefit from the regridding engine of pyFAI adapted to image-distortion.
-The *pyFAI.distortion.Distortion* class is the equivalent of the
-*pyFAI.AzimuthalIntegrator* for distortion. Provided with a detector
-definition it enables the correction of a set of images by using the
-same kind of look-up tables as for azimuthal integration.
+benefit from the regridding engine of pyFAI adapted to image distortion
+correction tasks. The *pyFAI.distortion.Distortion* class is the
+equivalent of the *pyFAI.AzimuthalIntegrator* for distortion. Provided
+with a detector definition, it enables the correction of a set of images
+by using the same kind of look-up tables as for azimuthal integration.
 
 .. code:: python
 
@@ -290,7 +296,7 @@ same kind of look-up tables as for azimuthal integration.
 FReLoN detector
 ~~~~~~~~~~~~~~~
 
-First load the image to be corrected, than correct it for for
+First load the image to be corrected, then correct it for geometric
 distortion.
 
 .. code:: python
@@ -318,7 +324,7 @@ distortion.
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f9e135ba6d8>
+    <matplotlib.image.AxesImage at 0x7f22fb6d48d0>
 
 
 
@@ -326,18 +332,19 @@ distortion.
 .. image:: output_17_2.png
 
 
-**Nota:** in this case the image size (1024 lines) does not fit the
-detector number of lines (1025) hence pyFAI complains about it. Here
+**Nota:** in this case the image size (1024 lines) does not match the
+detector's number of lines (1025) hence pyFAI complains about it. Here,
 pyFAI patched the image on an empty image of the right size so that the
-processing can occure.
+processing can occur.
 
-In this example, the size of the pixels and the shape of the detector is
-preserved, discarding all pixels falling outside the grid of the
-detector.
+In this example, the size of the pixels and the shape of the detector
+are preserved, discarding all pixels falling outside the detector's
+grid.
 
-If one wants all pixels to be conserved by allowing the output array to
-be larger to accomodate all pixel, just enable the "resize" option in
-the constructor of *Distortion*:
+One may want all pixels' intensity to be preserved in the
+transformation. By allowing the output array to be large enough to
+accomodate all pixels, the total intensity can be kept. For this, just
+enable the "resize" option in the constructor of *Distortion*:
 
 .. code:: python
 
@@ -368,7 +375,7 @@ Example of Pixel-detectors:
 XPad Flat detector
 ^^^^^^^^^^^^^^^^^^
 
-There has been a striking example in the cover-image of this article
+There is a striking example in the cover image of this article:
 http://scripts.iucr.org/cgi-bin/paper?S1600576715004306 where a detector
 made of multiple modules is *eating up* some rings. The first example
 will be about the regeneration of an "eyes friendly" version of this
@@ -416,8 +423,8 @@ This is a new **WAXS opened for SAXS** pixel detector from ImXPad
 to create a hole to accomodate a flight-tube which gathers the SAXS
 photons to a second detector further away.
 
-The detector definition for this specific detector has directly been
-done using the metrology informations from the manufacturer and saved as
+The detector definition for this specific detector has directly been put
+down using the metrology informations from the manufacturer and saved as
 a NeXus detector definition file.
 
 .. code:: python
@@ -460,24 +467,23 @@ a NeXus detector definition file.
 
 **Nota:** Do not use this detector definition file to process data from
 the WOS@D2AM as it has not (yet) been fully validated and may contain
-some errors in the pixel positionning.
+some errors in the pixel positioning.
 
 Conclusion
 ----------
 
-PyFAI provides a very comprehensive list of detector definition,
-versatile enough to address most area detector on the market, and a
-powerful regridding engine. Both combined tgeather into the distrortion
-correction tool which ensures the conservation of the signal during the
-transformation (the number of photon counted is preserved during the
-transformation)
+PyFAI provides a very comprehensive list of detector definitions, is
+versatile enough to address most area detectors on the market, and
+features a powerful regridding engine, both combined together into the
+distortion correction tool which ensures the conservation of the signal
+during the transformation (the number of photons counted is preserved
+during the transformation)
 
-Distortion correction should no be used for pre-processing images prior
-to azimuthal integration as it does a re-binning of the image which
-induces a broadening of the signal. The AzimuthalIntegrator object
-performs this together with integration, it has hence a better
-precision.
+Distortion correction should not be used for pre-processing images prior
+to azimuthal integration as it re-bins the image, thus induces a
+broadening of the peaks. The AzimuthalIntegrator object performs all
+this together with integration, it has hence a better precision.
 
-This tutorial did not answer to the question *how to calibrate the
+This tutorial did not answer the question *how to calibrate the
 distortion of a given detector ?* which is addressed in another tutorial
 called **detector calibration**.
