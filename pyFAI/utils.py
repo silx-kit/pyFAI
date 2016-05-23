@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "23/05/2016"
 __status__ = "production"
 
 import logging
@@ -135,6 +135,7 @@ def float_(val):
         f = None
     return f
 
+
 def int_(val):
     """
     Convert anything to an int ... or None if not applicable
@@ -144,6 +145,7 @@ def int_(val):
     except ValueError:
         f = None
     return f
+
 
 def str_(val):
     """
@@ -176,6 +178,7 @@ def expand2d(vect, size2, vertical=True):
     @param vertical: if False,
     """
     size1 = vect.size
+    size2 = int(size2)
     if vertical:
         out = numpy.empty((size2, size1), vect.dtype)
         q = vect.reshape(1, -1)
