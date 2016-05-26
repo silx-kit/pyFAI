@@ -8,10 +8,9 @@ try:
 except:
     from sysconfig import get_config_vars
 config = get_config_vars("CONFIG_ARGS")
-print(config)
-if config:
+try:
     print("Config :" + " ".join(config))
-else:
+except:
     print("Config : None")
 print("")
 print("Numpy %s" % numpy.version.version)
