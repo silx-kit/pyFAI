@@ -36,9 +36,6 @@ install:
     # Add Python to PATH
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
-    # Upgrade distribution modules
-    - python -m pip install --upgrade pip
-    - "pip install --upgrade setuptools"
 
     # Install virtualenv
     - "pip install virtualenv"
@@ -49,8 +46,10 @@ build_script:
     - "virtualenv --clear %VENV_BUILD_DIR%"
     - "%VENV_BUILD_DIR%\\Scripts\\activate.bat"
 
-    # Install buils dependencies
-    - "pip install wheel pip setuptools --upgrade"
+    # Upgrade distribution modules
+    - python -m pip install --upgrade pip
+    - "pip install --upgrade setuptools wheel"
+    # Install build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy cython --upgrade"
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ pyparsing scipy --upgrade"
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
