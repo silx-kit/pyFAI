@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "11/04/2016"
+__date__ = "26/05/2016"
 __license__ = "MIT"
 
 import distutils.util
@@ -64,11 +64,17 @@ logger.setLevel(logging.WARNING)
 logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
 try:
+    import numpy
+except:
+    logger.warning("numpy missing")
+else:
+    print("numpy %s from %s" % (numpy.version.version, numpy.__path__))
+try:
     import scipy
 except:
     logger.warning("Scipy missing")
 else:
-    print("Scipy %s" % scipy.version.version)
+    print("Scipy %s from %s" % (scipy.version.version, scipy.__path__))
 
 try:
     import fabio
