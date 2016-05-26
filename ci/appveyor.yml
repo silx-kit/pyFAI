@@ -74,10 +74,6 @@ build_script:
     - "%VENV_BUILD_DIR%\\Scripts\\deactivate.bat"
     - "rmdir %VENV_BUILD_DIR% /s /q"
 
-
-# Not a .NET project, we build pyFAI in the install step instead
-build: false
-
 test_script:
     # Create test virtualenv
     - "virtualenv --clear %VENV_TEST_DIR%"
