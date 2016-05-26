@@ -1014,7 +1014,7 @@ def _get_data_path(filename):
             return real_filename
     else:
         raise RuntimeError("Can not find the [%s] resource, "
-                        " something went wrong !!!" % (real_filename,))
+                           "something went wrong !!!" % (real_filename,))
 
 
 def get_calibration_dir():
