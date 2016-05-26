@@ -1,102 +1,101 @@
 # AppVeyor.com is a Continuous Integration service to build and run tests Windows
 # https://ci.appveyor.com/project/kif/pyFAI
 
+os:
+    - Visual Studio 2015
+
+cache:
+    - '%LOCALAPPDATA%\pip\Cache'
+
+# fetch repository as zip archive
+shallow_clone: true
+
 environment:
-  global:
-    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\ci\\run_with_env.cmd"
+    global:
+        WIN_SDK_ROOT: "C:\\Program Files\\Microsoft SDKs\\Windows"
+        VENV_BUILD_DIR: "venv_build"
+        VENV_TEST_DIR: "venv_test"
 
-  matrix:
-    # see https://www.appveyor.com/docs/installed-software#python
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.11"
-      PYTHON_ARCH: "64"
+    matrix:
+        # Python 2.7
+        - PYTHON_DIR: "C:\\Python27-x64"
+          PYTHON_VERSION: "2.7.11"
+          PYTHON_ARCH: "64"
 
-    - PYTHON: "C:\\Python34-x64"
-      PYTHON_VERSION: "3.4.3"
-      PYTHON_ARCH: "64"
+        # Python 3.4
+        - PYTHON_DIR: "C:\\Python27-x64"
+          PYTHON_VERSION: "3.4.3"
+          PYTHON_ARCH: "64"
 
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.0"
-      PYTHON_ARCH: "64"
-
+        # Python 3.5
+        - PYTHON_DIR: "C:\\Python35-x64"
+          PYTHON_VERSION: "3.5.0"
+          PYTHON_ARCH: "64"
 
 install:
-  # If there is a newer build queued for the same PR, cancel this one.
-  # The AppVeyor 'rollout builds' option is supposed to serve the same
-  # purpose but it is problematic because it tends to cancel builds pushed
-  # directly to master instead of just PR builds (or the converse).
-  # credits: JuliaLang developers.
-  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
-        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
-        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
-          throw "There are newer queued builds for this pull request, failing early." }
-  - ECHO "Filesystem root:"
-  - ps: "ls \"C:/\""
+    # Add Python to PATH
+    - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
-  - ECHO "Installed SDKs:"
-  - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
+    # Upgrade distribution modules
+    # Disabled as pip uprade fails
+    # - "pip install --upgrade setuptools"
+    # - "pip install --upgrade pip"
 
-  # Install Python (from the official .msi of http://python.org) and pip when
-  # not already installed.
-  - ps: if (-not(Test-Path($env:PYTHON))) { & appveyor\install.ps1 }
+    # Install virtualenv
+    - "pip install virtualenv"
+    - "virtualenv --version"
 
-  # Prepend newly installed Python to the PATH of this build (this cannot be
-  # done from inside the powershell script as it would require to restart
-  # the parent CMD process).
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+build_script:
+    # Create build virtualenv
+    - "virtualenv --clear %VENV_BUILD_DIR%"
+    - "%VENV_BUILD_DIR%\\Scripts\\activate.bat"
 
-  # Check that we have the expected version and architecture for Python
-  - "python --version"
-  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+    # Install buils dependencies
+    - "pip install wheel"
+    - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy cython"
+    - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ pyparsing scipy"
+    - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt"
 
-  # Upgrade to the latest version of pip to avoid it displaying warnings
-  # about it being out of date.
-  - "pip install --disable-pip-version-check --user --upgrade pip"
+    # Print Python info
+    - "python ci\\info_platform.py"
+    - "pip freeze"
 
-  # Install the build dependencies of the project. If some dependencies contain
-  # compiled extensions and are not provided as pre-built wheel packages,
-  # pip will build them from source using the MSVC compiler matching the
-  # target Python version and architecture  
-  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse numpy cython"
-  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -f http://www.edna-site.org/pub/wheelhouse pyparsing scipy"
-  - "%CMD_IN_ENV% pip install --user --trusted-host www.edna-site.org --upgrade -r ci/requirements_appveyor.txt "
-  - "del pyFAI\\ext\\histogram.c"
-  - "%CMD_IN_ENV% python setup.py build --no-openmp" 
-  # OpenMP is not available on python 3.4
-  - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_msi"
-  - ps: "ls dist"
+    # Build
+    - "del pyFAI\\ext\\histogram.c"
+    # OpenMP is not available on python 3.4
+    - python setup.py build --no-openmp" 
+    - python setup.py test" 
+    - "python setup.py bdist_wheel bdist_msi"
+    - ps: "ls dist"
+    # Install the generated wheel package to test it
+    - "pip install --pre --no-index --find-links dist/ pyFAI"
 
-  # Install the generated wheel package to test it
-  - "%CMD_IN_ENV% pip install --pre --no-index --find-links dist/ pyFAI"
+  # Leave build virtualenv
+    - "%VENV_BUILD_DIR%\\Scripts\\deactivate.bat"
+    - "rmdir %VENV_BUILD_DIR% /s /q"
+
 
 # Not a .NET project, we build pyFAI in the install step instead
 build: false
 
 test_script:
-  # Change to a non-source folder to make sure we run the tests on the
-  # installed library.
-  - "%CMD_IN_ENV% python -c \"import os; print(os.environ)\" "
-  - "%CMD_IN_ENV% python setup.py test"
-  - "mkdir empty_folder"
-  - "cd empty_folder"
-  - "python ../run_tests.py"
+    # Create test virtualenv
+    - "virtualenv --clear %VENV_TEST_DIR%"
+    - "%VENV_TEST_DIR%\\Scripts\\activate.bat"
 
-  # Move back to the project folder
-  - "cd .."
+    # Install the generated wheel package to test it
+    - "pip install --pre --find-links dist/ --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ pyFAI"
+
+    # Print Python info
+    - "python ci\\info_platform.py"
+    - "pip freeze"
+
+    - "python run_tests.py"
+
+    # Leave test virtualenv
+    - "%VENV_TEST_DIR%\\Scripts\\deactivate.bat"
+    - "rmdir %VENV_TEST_DIR% /s /q"
 
 artifacts:
-  # Archive the generated wheel package in the ci.appveyor.com build report.
-  - path: dist\*
-
-#on_success:
-#  # Upload the generated wheel package to Rackspace
-#  # On Windows, Apache Libcloud cannot find a standard CA cert bundle so we
-#  # disable the ssl checks.
-#  - "python -m wheelhouse_uploader upload --no-ssl-check --local-folder=dist sklearn-windows-wheels"
-
-#notifications:
-#  - provider: Webhook
-#    url: https://webhooks.gitter.im/e/0dc8e57cd38105aeb1b4
-#    on_build_success: false
-#    on_build_failure: True
-
+    # Archive the generated wheel package in the ci.appveyor.com build report.
+    - path: dist\*
