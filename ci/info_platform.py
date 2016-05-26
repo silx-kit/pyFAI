@@ -8,6 +8,7 @@ try:
 except:
     from sysconfig import get_config_vars
 config = get_config_vars("CONFIG_ARGS")
+print(config)
 if config:
     print("Config :" + " ".join(config))
 else:
