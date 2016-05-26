@@ -7,7 +7,11 @@ try:
     from distutils.sysconfig import get_config_vars
 except:
     from sysconfig import get_config_vars
-print("Config " + " ".join(get_config_vars("CONFIG_ARGS")))
+config = get_config_vars("CONFIG_ARGS")
+if config:
+    print("Config :" + " ".join(config))
+else:
+    print("Config : None")
 print("")
 print("Numpy %s" % numpy.version.version)
 print("      include %s" % numpy.get_include())
