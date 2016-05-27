@@ -35,7 +35,7 @@ import numpy
 logger = logging.getLogger("pyFAI.refinment2D")
 
 #from utils import timeit
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from .azimuthalIntegrator import AzimuthalIntegrator
 from PyMca import SGModule
 
 

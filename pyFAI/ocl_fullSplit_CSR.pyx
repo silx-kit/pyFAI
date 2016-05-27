@@ -40,7 +40,7 @@ cdef struct lut_point:
     numpy.float32_t coef
 dtype_lut=numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
 try:
-    from fastcrc import crc32
+    from .ext.fastcrc import crc32
 except:
     from zlib import crc32
 cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)

@@ -44,7 +44,7 @@ import threading
 import numpy
 import gc
 from .utils import concatenate_cl_kernel
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from .opencl import ocl, pyopencl, release_cl_buffers
 if pyopencl:
     mf = pyopencl.mem_flags
     import pyopencl.array
@@ -295,7 +295,7 @@ class Separator(object):
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
-        sorted = self.sort_vertical(data, dummy)
+        _sorted = self.sort_vertical(data, dummy)
         wg = min(32, self.max_workgroup_size)
         ws = (self.npt_width + wg - 1) & ~(wg - 1)
         with self._sem:
@@ -319,7 +319,7 @@ class Separator(object):
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
-        sorted = self.sort_horizontal(data, dummy)
+        _sorted = self.sort_horizontal(data, dummy)
         wg = min(32, self.max_workgroup_size)
         ws = (self.npt_height + wg - 1) & ~(wg - 1)
         with self._sem:
@@ -336,8 +336,6 @@ class Separator(object):
         If we are in debugging mode, prints out all timing for every single OpenCL call
         """
         t = 0.0
-        orient = 0.0
-        descr = 0.0
         if self.profile:
             for e in self.events:
                 if "__len__" in dir(e) and len(e) >= 2:

@@ -363,7 +363,7 @@ class Distortion(object):
                         out[i] = big[indptr[i]:indptr[i + 1]].sum()
         try:
             out.shape = self._shape_out
-        except ValueError as err:
+        except ValueError as _err:
             logger.error("Requested in_shape=%s out_shape=%s and " % (self.shape_in, self.shape_out))
             raise
         return out

@@ -3,6 +3,9 @@
 # Downloaded
 /testimages
 
+# Generated
+/package
+
 # Packages
 *.egg
 *.egg-info
