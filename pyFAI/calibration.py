@@ -852,7 +852,7 @@ class AbstractCalibration(object):
                 pts_per_deg = self.PTS_PER_DEG
                 if len(words) >= 2:
                     try:
-                       max_rings = int(words[1])
+                        max_rings = int(words[1])
                     except Exception:
                         logger.warning("specify the number of rings to extract")
                         max_rings = None

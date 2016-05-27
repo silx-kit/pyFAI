@@ -74,7 +74,7 @@ def image_test():
 def make_gaussian(im, sigma, xc, yc):
     size = int(8 * sigma + 1)
     if size % 2 == 0 :
-           size += 1
+        size += 1
     x = numpy.arange(0, size, 1, float)
     y = x[:, numpy.newaxis] * 4
     x0 = y0 = size // 2
