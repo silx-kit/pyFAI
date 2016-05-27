@@ -50,9 +50,9 @@ from collections import namedtuple
 DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))
 
 try:
-    from ._tree import TreeItem
+    from .ext._tree import TreeItem
 except:
-    logger.ERROR("pyFAI._tree did not import")
+    logger.ERROR("pyFAI.ext._tree did not import")
     class TreeItem(object):
         """
         Node of a tree ... Needs synchronization with Cython code
