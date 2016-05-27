@@ -403,7 +403,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         print("Initialization of the Azimuthal Integrator using method %s" % self.method)
         # enforce initialization of azimuthal integrator
         print(self.ai)
-        tth, I = self.ai.integrate1d(data, self.npt_rad,
+        tth, _I = self.ai.integrate1d(data, self.npt_rad,
                                      method=self.method, unit=self.unit)
         if self.dataset is None:
             self.makeHDF5()
@@ -489,7 +489,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         elif pos.index < 0 or pos.rot < 0 or pos.trans < 0:
             return
 
-        tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
+        _tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
                                      method=self.method, unit=self.unit)
         self.dataset[pos.rot, pos.trans, :] = I
 

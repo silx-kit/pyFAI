@@ -693,7 +693,7 @@ class AbstractCalibration(object):
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "
                             "searching for %i pts out of %i with I>%.1f, dmin=%.1f" %
                             (i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min))
-                res = self.peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
+                _res = self.peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
         self.peakPicker.points.save(self.basename + ".npt")
         if self.weighted:
@@ -753,7 +753,7 @@ class AbstractCalibration(object):
                             fig2 = pylab.plt.figure()
                             sp = fig2.add_subplot(111)
                             im = sp.imshow(dsa, origin="lower")
-                            cbar = fig2.colorbar(im)  # Add color bar
+                            _cbar = fig2.colorbar(im)  # Add color bar
                             sp.set_title("Pixels solid-angle (relative to PONI)")
                         else:
                             im.set_array(dsa)
@@ -1138,9 +1138,9 @@ class AbstractCalibration(object):
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
         t0 = time.time()
-        tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
+        _tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
         t1 = time.time()
-        dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
+        _dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
         t2 = time.time()
         self.geoRef.chiArray(self.peakPicker.shape)
         t2a = time.time()
@@ -1344,7 +1344,7 @@ class AbstractCalibration(object):
         elif how == "center":
             self.ai.dist = 0.1
             try:
-                p1, p2, p3 = self.detector.calc_cartesian_positions()
+                p1, p2, _p3 = self.detector.calc_cartesian_positions()
                 self.ai.poni1 = p1.max() / 2.0
                 self.ai.poni2 = p2.max() / 2.0
             except Exception as err:
@@ -1504,7 +1504,7 @@ decrease the value if arcs are mixed together.""", default=None)
                     "rot1": 0.0, "rot2": 0.0, "rot3": 0.0}
         if self.detector:
             try:
-                p1, p2, p3 = self.detector.calc_cartesian_positions()
+                p1, p2, _p3 = self.detector.calc_cartesian_positions()
                 defaults["poni1"] = p1.max() / 2.
                 defaults["poni2"] = p2.max() / 2.
             except Exception as err:
@@ -2156,7 +2156,7 @@ class MultiCalib(object):
                          ("rot1", rot1), ("rot2", rot2), ("rot3", rot3),
                          ("direct", direct), ("tilt", tilt), ("trp", trp),
                          ("centerX", centerX), ("centerY", centerY)]:
-            slope, intercept, r, two, stderr = linregress(x, elt)
+            slope, intercept, r, _two, stderr = linregress(x, elt)
 
             print("%s = %s * dist_mm + %s \t R= %s\t stderr= %s" % (name, slope, intercept, r, stderr))
 

@@ -282,10 +282,6 @@ class BlobDetection(object):
         @param n_5: use 5 points instead of 3 in y and x to determinate if a point is a maximum
 
         """
-        x = []
-        y = []
-        dx = []
-        dy = []
         if not self.sigmas:
             self._calc_sigma()
         if self.do_mask and (self.cur_mask is None):
@@ -299,7 +295,7 @@ class BlobDetection(object):
 
         idx = 0
         i = 0
-        for sigma_abs, sigma_rel in self.sigmas:
+        for _sigma_abs, sigma_rel in self.sigmas:
 #             if self.already_blurred != [] and i < 3:
 #                 sigma_rel = 0
 #                 if i > 0 : previous = self.already_blurred[i-1]
@@ -326,7 +322,7 @@ class BlobDetection(object):
 
         if refine:
             if "startswith" in dir(refine) and refine.startswith("SG"):
-                kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
+                kpx, kpy, kps,_delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
                 l = kpx.size
                 peak_val = self.dogs[(numpy.around(kps).astype(int),
                                       numpy.around(kpy).astype(int),
@@ -461,10 +457,7 @@ class BlobDetection(object):
         k2x = []
         k2y = []
         sigmas = []
-        i = 0
         kds = []
-        kdx = []
-        kdy = []
 
         # Hessian patch 3 ordre 2
         SGX0Y0 = [-0.11111111 , 0.22222222 , -0.11111111 , 0.22222222 , 0.55555556 , 0.22222222 , -0.11111111 , 0.22222222 , -0.11111111]
@@ -541,7 +534,6 @@ class BlobDetection(object):
 
         """
         import pylab
-        i = 0
         j = 0
         vals = []
         vects = []
