@@ -376,7 +376,6 @@ class HDF5Writer(Writer):
         logger.debug("In write, index %s" % index)
         radial = None
         azimuthal = None
-        error = None
         if isinstance(data, numpy.ndarray):
             I = data
         elif isinstance(data, (list, tuple)):
@@ -387,7 +386,7 @@ class HDF5Writer(Writer):
                 if data[0].ndim == 2:
                     I, radial, azimuthal = data
                 else:
-                    radial, I, error = data
+                    radial, I, _error = data
         with self._sem:
             if self.dataset is None:
                 logger.warning("Writer not initialized !")

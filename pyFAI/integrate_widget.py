@@ -143,7 +143,7 @@ class AIWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
-        except AttributeError as error:
+        except AttributeError as _error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.all_detectors = list(ALL_DETECTORS.keys())
@@ -263,7 +263,7 @@ class AIWidget(QtGui.QWidget):
 
             nbpt_rad = str(self.nbpt_rad.text()).strip()
             if not nbpt_rad:
-                ret = QtGui.QMessageBox.warning(self, "PyFAI integrate",
+                _ret = QtGui.QMessageBox.warning(self, "PyFAI integrate",
                                                 "You must provide the number of output radial bins !",)
                 return {}
                 # raise RuntimeError("The number of output point is undefined !")
@@ -332,23 +332,23 @@ class AIWidget(QtGui.QWidget):
                     hdf5 = h5py.File(self.output_path)
                     if self.fast_dim:
                         if "npt_azim" in kwarg:
-                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
+                            _ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
                                                      dtype=numpy.float32,
                                                      chunks=(1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
                                                      maxshape=(None, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
-                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_rad"]),
+                            _ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_rad"]),
                                                      dtype=numpy.float32,
                                                      chunks=(1, self.fast_dim, kwarg["npt_rad"]),
                                                      maxshape=(None, self.fast_dim, kwarg["npt_rad"]))
                     else:
                         if "npt_azim" in kwarg:
-                            ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_azim"], kwarg["npt_rad"]),
+                            _ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_azim"], kwarg["npt_rad"]),
                                                      dtype=numpy.float32,
                                                      chunks=(1, kwarg["npt_azim"], kwarg["npt_rad"]),
                                                      maxshape=(None, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
-                            ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_rad"]),
+                            _ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_rad"]),
                                                      dtype=numpy.float32,
                                                      chunks=(1, kwarg["npt_rad"]),
                                                      maxshape=(None, kwarg["npt_rad"]))
@@ -382,8 +382,6 @@ class AIWidget(QtGui.QWidget):
                         writer.init(config)
                         for i in range(fab_img.nframes):
                             kwarg["data"] = fab_img.getframe(i).data
-                            radial = None
-                            azimuthal = None
                             if "npt_azim" in kwarg:
                                 res = self.ai.integrate2d(**kwarg)
                             else:

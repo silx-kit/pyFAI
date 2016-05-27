@@ -490,8 +490,8 @@ class PixelwiseWorker(object):
         @param normalization: normalization factor
         @return processed data
         """
-        shape = data.shape
-        #       ^^^^   this is why data is mandatory !
+        _shape = data.shape
+        #        ^^^^   this is why data is mandatory !
         if self.dummy is not None:
             if self.delta_dummy is None:
                 self.mask = numpy.logical_or((data == self.dummy), self.mask)
@@ -570,8 +570,8 @@ class DistortionWorker(object):
         @param normalization: normalization factor
         @return processed data
         """
-        shape = data.shape
-        #       ^^^^   this is why data is mandatory !
+        _shape = data.shape
+        #        ^^^^   this is why data is mandatory !
         if self.dummy is not None:
             if self.delta_dummy is None:
                 self.mask = numpy.logical_or((data == self.dummy), self.mask)

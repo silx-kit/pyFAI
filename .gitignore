@@ -1,5 +1,10 @@
 *.py[co]
 
+# Downloaded
+/testimages
+
+# Generated
+/package
 
 # Packages
 *.egg

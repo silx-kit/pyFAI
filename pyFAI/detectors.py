@@ -1639,7 +1639,7 @@ class Xpad_flat(ImXPadS10):
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if bilinear and use_cython:
-            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1, p2, _p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:

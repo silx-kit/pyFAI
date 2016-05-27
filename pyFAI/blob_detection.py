@@ -74,7 +74,7 @@ def image_test():
 def make_gaussian(im, sigma, xc, yc):
     size = int(8 * sigma + 1)
     if size % 2 == 0 :
-           size += 1
+        size += 1
     x = numpy.arange(0, size, 1, float)
     y = x[:, numpy.newaxis] * 4
     x0 = y0 = size // 2
@@ -247,13 +247,6 @@ class BlobDetection(object):
                 grow = (mx * mx + my * my) <= grow * grow
             self.grow = grow
 
-
-    def __repr__(self):
-        lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
-        lststr.append("Sigmas: input=%.3f \t init=%.3f, dest=%.3f over %i blurs/octave" % (self.cur_sigma, self.init_sigma, self.dest_sigma, self.scale_per_octave))
-        lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
-        return os.linesep.join(lststr)
-
     def _initial_blur(self):
         """
         Blur the original image to achieve the requested level of blur init_sigma
@@ -289,10 +282,6 @@ class BlobDetection(object):
         @param n_5: use 5 points instead of 3 in y and x to determinate if a point is a maximum
 
         """
-        x = []
-        y = []
-        dx = []
-        dy = []
         if not self.sigmas:
             self._calc_sigma()
         if self.do_mask and (self.cur_mask is None):
@@ -306,7 +295,7 @@ class BlobDetection(object):
 
         idx = 0
         i = 0
-        for sigma_abs, sigma_rel in self.sigmas:
+        for _sigma_abs, sigma_rel in self.sigmas:
 #             if self.already_blurred != [] and i < 3:
 #                 sigma_rel = 0
 #                 if i > 0 : previous = self.already_blurred[i-1]
@@ -333,7 +322,7 @@ class BlobDetection(object):
 
         if refine:
             if "startswith" in dir(refine) and refine.startswith("SG"):
-                kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
+                kpx, kpy, kps,_delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
                 l = kpx.size
                 peak_val = self.dogs[(numpy.around(kps).astype(int),
                                       numpy.around(kpy).astype(int),
@@ -468,10 +457,7 @@ class BlobDetection(object):
         k2x = []
         k2y = []
         sigmas = []
-        i = 0
         kds = []
-        kdx = []
-        kdy = []
 
         # Hessian patch 3 ordre 2
         SGX0Y0 = [-0.11111111 , 0.22222222 , -0.11111111 , 0.22222222 , 0.55555556 , 0.22222222 , -0.11111111 , 0.22222222 , -0.11111111]
@@ -548,7 +534,6 @@ class BlobDetection(object):
 
         """
         import pylab
-        i = 0
         j = 0
         vals = []
         vects = []
