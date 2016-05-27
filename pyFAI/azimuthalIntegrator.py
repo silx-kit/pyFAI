@@ -3541,8 +3541,9 @@ class AzimuthalIntegrator(Geometry):
 
     def get_empty(self):
         return self._empty
+
     def set_empty(self, value):
-        self._empty = float(empty)
+        self._empty = float(value)
         # propagate empty values to integrators
         for integrator in (self._ocl_integrator, self._ocl_lut_integr,
                            self._ocl_csr_integr, self._lut_integrator, self._csr_integrator):
