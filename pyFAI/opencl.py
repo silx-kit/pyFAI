@@ -323,11 +323,11 @@ class OpenCL(object):
             ctx = pyopencl.create_some_context(interactive=False)
         return ctx
 
-    def device_from_context(self, ctx):
+    def device_from_context(self, context):
         """
         Retrieves the Device from the context
         
-        @param ctx: OpenCL context
+        @param context: OpenCL context
         @return: instance of Device  
         """
         odevice = context.devices[0]
