@@ -454,6 +454,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         @return: std_dev, confidence
         """
         if not curve_fit:
+            import scipy
             logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s" % scipy.version.version)
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
