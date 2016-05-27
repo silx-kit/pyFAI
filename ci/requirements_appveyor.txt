@@ -1,15 +1,15 @@
 #List of dependencies used by pyFAI.
 # PIP installs them from pre-compiled wheels, optimized for AppVeyor-CI Python environment.
---find-links http://www.edna-site.org/pub/wheelhouse
+--find-links http://www.silx.org/pub/wheelhouse
 
 wheel
 numpy
-Cython
+#Cython
 lxml
 Pillow
 h5py
 fabio
-#scipy
+scipy
 matplotlib
 #mako
 #pyopencl
