@@ -40,7 +40,7 @@ else:
     raise ImportError("pyopencl is not installed")
 
 try:
-    from .fastcrc import crc32
+    from .ext.fastcrc import crc32
 except:
     from zlib import crc32
 logger = logging.getLogger("pyFAI.ocl_azim_csr")

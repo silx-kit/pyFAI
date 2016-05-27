@@ -34,14 +34,14 @@ import logging
 import threading
 import numpy
 from .opencl import ocl, pyopencl
-from .splitBBoxLUT import HistoBBox1d
+from .ext.splitBBoxLUT import HistoBBox1d
 from . import utils
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 try:
-    from .fastcrc import crc32
+    from .ext.fastcrc import crc32
 except:
     from zlib import crc32
 logger = logging.getLogger("pyFAI.OCLFullSplit")
