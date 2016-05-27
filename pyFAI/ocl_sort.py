@@ -44,7 +44,7 @@ import threading
 import numpy
 import gc
 from .utils import concatenate_cl_kernel
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from .opencl import ocl, pyopencl, release_cl_buffers
 if pyopencl:
     mf = pyopencl.mem_flags
     import pyopencl.array

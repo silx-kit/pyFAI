@@ -29,9 +29,9 @@ __date__ = "04/04/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os, gc, logging
+import gc
+import logging
 import threading
-import hashlib
 import numpy
 from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .splitBBoxLUT import HistoBBox1d
