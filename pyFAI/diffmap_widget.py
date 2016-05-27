@@ -248,11 +248,19 @@ class DiffMapWidget(QtGui.QWidget):
         Called when addFiles clicked: opens a file-brower and populates the 
         listFiles object
         """
+        filters = [
+            # "NeXuS files (*.nxs)"
+            # "HDF5 files (*.h5)"
+            # "HDF5 files (*.hdf5)"
+            "EDF image files (*.edf)",
+            "TIFF image files (*.tif)",
+            "CBF files (*.cbf)",
+            "MarCCD image files (*.mccd)",
+            "Any file (*)"]
         fnames = QtGui.QFileDialog.getOpenFileNames(self,
                          "Select one or more diffraction image files",
                          QtCore.QDir.currentPath(),
-                         filter=self.tr("EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
-                         # filter=self.tr("NeXuS files (*.nxs);;HDF5 files (*.h5);;HDF5 files (*.hdf5);;EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
+                         filter=self.tr(";;".join(filters)))
         for i in fnames:
             self.list_dataset.append(DataSet(str_(i), None, None, None))
 
