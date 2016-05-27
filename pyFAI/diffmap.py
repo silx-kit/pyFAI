@@ -209,6 +209,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         options = parser.parse_args()
         args = options.args
         if (options.config is not None) and os.path.exists(options.config):
+            import json
             with open(options.config, "r") as fd:
                 config = json.loads(fd.read())
         else:
