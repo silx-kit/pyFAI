@@ -247,13 +247,6 @@ class BlobDetection(object):
                 grow = (mx * mx + my * my) <= grow * grow
             self.grow = grow
 
-
-    def __repr__(self):
-        lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
-        lststr.append("Sigmas: input=%.3f \t init=%.3f, dest=%.3f over %i blurs/octave" % (self.cur_sigma, self.init_sigma, self.dest_sigma, self.scale_per_octave))
-        lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
-        return os.linesep.join(lststr)
-
     def _initial_blur(self):
         """
         Blur the original image to achieve the requested level of blur init_sigma
