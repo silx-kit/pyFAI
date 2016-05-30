@@ -33,10 +33,14 @@ __docformat__ = 'restructuredtext'
 import os
 import logging
 import types
-from threading import Semaphore
+import json
+import numpy
+import threading
 import fabio
 logger = logging.getLogger("pyFAI.processor")
-from . import azimuthalIntegratory
+from . import azimuthalIntegrator
+from . import units
+from .utils import float_, int_
 from .detectors import detector_factory
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 
@@ -159,7 +163,7 @@ class Processor(object):
             self.nbpt_azim = 1
         if config.get("nbpt_rad"):
             self.nbpt_rad = int(config.get("nbpt_rad"))
-        self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
+        self.unit = units.to_unit(config.get("unit", units.TTH_DEG))
         self.do_poisson = config.get("do_poisson")
         if config.get("do_polarization"):
             self.polarization = config.get("polarization")

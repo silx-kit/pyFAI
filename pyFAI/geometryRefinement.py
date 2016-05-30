@@ -107,7 +107,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                 if calibrant in ALL_CALIBRANTS:
                     self.calibrant = ALL_CALIBRANTS[calibrant]
                 else:
-                     self.calibrant = Calibrant(filename=calibrant)
+                    self.calibrant = Calibrant(filename=calibrant)
             else:
                 self.calibrant = Calibrant(calibrant)
 
@@ -277,22 +277,22 @@ class GeometryRefinement(AzimuthalIntegrator):
                 bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
         self.param = numpy.array(param)
         if self.data.shape[-1] == 3:
-           pos0 = self.data[:, 0]
-           pos1 = self.data[:, 1]
-           ring = self.data[:, 2].astype(numpy.int32)
-           weight = None
-           newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
+            pos0 = self.data[:, 0]
+            pos1 = self.data[:, 1]
+            ring = self.data[:, 2].astype(numpy.int32)
+            weight = None
+            newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
                               args=(pos0, pos1, ring),
                               bounds=bounds,
                               acc=1.0e-12,
                               iprint=(logger.getEffectiveLevel() <= logging.INFO))
 
         elif self.data.shape[-1] == 4:
-           pos0 = self.data[:, 0]
-           pos1 = self.data[:, 1]
-           ring = self.data[:, 2].astype(numpy.int32)
-           weight = self.data[:, 3]
-           newParam = fmin_slsqp(self.residu2_weighted, self.param, iter=maxiter,
+            pos0 = self.data[:, 0]
+            pos1 = self.data[:, 1]
+            ring = self.data[:, 2].astype(numpy.int32)
+            weight = self.data[:, 3]
+            newParam = fmin_slsqp(self.residu2_weighted, self.param, iter=maxiter,
                               args=(pos0, pos1, ring, weight),
                               bounds=bounds,
                               acc=1.0e-12,
@@ -333,11 +333,11 @@ class GeometryRefinement(AzimuthalIntegrator):
         param[-1] = 1e10 * param[-1]
         self.param = numpy.array(param)
         if self.data.shape[-1] == 3:
-           pos0 = self.data[:, 0]
-           pos1 = self.data[:, 1]
-           ring = self.data[:, 2].astype(numpy.int32)
-           weight = None
-           newParam = fmin_slsqp(self.residu2_wavelength,
+            pos0 = self.data[:, 0]
+            pos1 = self.data[:, 1]
+            ring = self.data[:, 2].astype(numpy.int32)
+            weight = None
+            newParam = fmin_slsqp(self.residu2_wavelength,
                                  self.param, iter=maxiter,
                                  args=(pos0, pos1, ring),
                                  bounds=bounds,
@@ -345,11 +345,11 @@ class GeometryRefinement(AzimuthalIntegrator):
                                  iprint=(logger.getEffectiveLevel() <= logging.INFO))
 
         elif self.data.shape[-1] == 4:
-           pos0 = self.data[:, 0]
-           pos1 = self.data[:, 1]
-           ring = self.data[:, 2].astype(numpy.int32)
-           weight = self.data[:, 3]
-           newParam = fmin_slsqp(self.residu2_wavelength_weighted,
+            pos0 = self.data[:, 0]
+            pos1 = self.data[:, 1]
+            ring = self.data[:, 2].astype(numpy.int32)
+            weight = self.data[:, 3]
+            newParam = fmin_slsqp(self.residu2_wavelength_weighted,
                                  self.param, iter=maxiter,
                                  args=(pos0, pos1, ring, weight),
                                  bounds=bounds,
@@ -454,6 +454,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         @return: std_dev, confidence
         """
         if not curve_fit:
+            import scipy
             logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s" % scipy.version.version)
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]

@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2016"
+__date__ = "27/05/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -502,11 +502,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def calc_mask(self):
         """Method calculating the mask for a given detector
-        
+
         Detectors with gaps should overwrite this method with
         something actually calculating the mask!
-        
-        @return: the mask with valid pixel to 0 
+
+        @return: the mask with valid pixel to 0
         @rtype: numpy ndarray of int8 or None
         """
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
@@ -1639,7 +1639,7 @@ class Xpad_flat(ImXPadS10):
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if bilinear and use_cython:
-            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1, p2, _p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:
@@ -2528,6 +2528,17 @@ class Apex2(Detector):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
+
+
+class RaspberryPi(Detector):
+    """5 Mpix detector from Raspberry Pi
+
+    """
+    aliases = ["Raspberry", "Pi"]
+    force_pixel = True
+    MAX_SHAPE = (1944, 2592)
+    def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6):
+        super(RaspberryPi, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 ALL_DETECTORS = Detector.registry

@@ -211,7 +211,7 @@ class OpenCL(object):
                 elif devtype == "CPU":
                     flop_core = FLOP_PER_CORE.get(devtype, 1)
                 else:
-                     flop_core = 1
+                    flop_core = 1
                 workgroup = device.max_work_group_size
                 if (devtype == "CPU") and (pypl.vendor == "Apple"):
                     logger.info("For Apple's OpenCL on CPU: enforce max_work_goup_size=1")

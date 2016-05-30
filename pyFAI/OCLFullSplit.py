@@ -29,19 +29,19 @@ __date__ = "01/11/2015"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os, gc, logging
+import os
+import logging
 import threading
-import hashlib
 import numpy
 from .opencl import ocl, pyopencl
-from .splitBBoxLUT import HistoBBox1d
+from .ext.splitBBoxLUT import HistoBBox1d
 from . import utils
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 try:
-    from .fastcrc import crc32
+    from .ext.fastcrc import crc32
 except:
     from zlib import crc32
 logger = logging.getLogger("pyFAI.OCLFullSplit")

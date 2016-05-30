@@ -32,11 +32,8 @@ __docformat__ = 'restructuredtext'
 
 import logging
 import numpy
-import os
-import time
 
 from . import detectors
-from . import units
 try:
     from .third_party import six
 except ImportError:

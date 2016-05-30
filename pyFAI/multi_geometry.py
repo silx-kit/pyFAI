@@ -35,21 +35,14 @@ __date__ = "08/04/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
-import os
 import logging
 logger = logging.getLogger("pyFAI.multi_geometry")
-from math import pi
 from .azimuthalIntegrator import AzimuthalIntegrator
 from . import units
-from . import utils
-from .utils import StringTypes, EPS32
-from .decorators import deprecated
-import fabio
+from .utils import EPS32
 import threading
 import numpy
-from numpy import rad2deg
 error = None
-from math import pi
 
 
 class MultiGeometry(object):

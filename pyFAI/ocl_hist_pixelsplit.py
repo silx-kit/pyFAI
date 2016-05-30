@@ -29,9 +29,9 @@ __date__ = "04/04/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os, gc, logging
+import gc
+import logging
 import threading
-import hashlib
 import numpy
 from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .splitBBoxLUT import HistoBBox1d
@@ -42,7 +42,7 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 try:
-    from .fastcrc import crc32
+    from .ext.fastcrc import crc32
 except:
     from zlib import crc32
 logger = logging.getLogger("pyFAI.ocl_azim_csr")
