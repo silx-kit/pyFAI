@@ -108,7 +108,6 @@ class DiffMap(object):
         self.nxs = None
         self.experiment_title = "Diffraction Mapping"
 
-
     def __repr__(self):
         return "%s experiment with ntp_slow: %s ntp_fast: %s, npt_diff: %s" % \
             (self.experiment_title, self.npt_slow, self.npt_fast, self.npt_rad)
@@ -132,7 +131,6 @@ class DiffMap(object):
                 res.append(cur)
                 cur = ""
         return tuple(int(i) for i in res)
-
 
     def parse(self, with_config=False):
         """
@@ -210,7 +208,6 @@ If the number of files is too large, use double quotes like "*.edf" """
         options = parser.parse_args()
         args = options.args
         if (options.config is not None) and os.path.exists(options.config):
-            import json
             with open(options.config, "r") as fd:
                 config = json.loads(fd.read())
         else:
@@ -406,7 +403,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         # enforce initialization of azimuthal integrator
         print(self.ai)
         tth, _I = self.ai.integrate1d(data, self.npt_rad,
-                                     method=self.method, unit=self.unit)
+                                      method=self.method, unit=self.unit)
         if self.dataset is None:
             self.makeHDF5()
         space, unit = str(self.unit).split("_")
@@ -492,9 +489,8 @@ If the number of files is too large, use double quotes like "*.edf" """
             return
 
         _tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
-                                     method=self.method, unit=self.unit)
+                                      method=self.method, unit=self.unit)
         self.dataset[pos.rot, pos.trans, :] = I
-
 
     def process(self):
         if self.dataset is None:
