@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "30/05/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module with GUI for diffraction mapping experiments"""
@@ -47,6 +47,7 @@ import logging
 logger = logging.getLogger("pyFAI.diffmap")
 import numpy
 import fabio
+import json
 
 from .opencl import ocl
 from .units import to_unit
