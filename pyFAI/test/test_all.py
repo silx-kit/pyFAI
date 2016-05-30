@@ -72,6 +72,7 @@ from . import test_bug_regression
 from . import test_watershed
 from . import test_multi_geometry
 from . import test_ocl_sort
+from . import test_worker
 
 
 def suite():
@@ -106,6 +107,7 @@ def suite():
     testsuite.addTest(test_watershed.suite())
     testsuite.addTest(test_multi_geometry.suite())
     testsuite.addTest(test_ocl_sort.suite())
+    testsuite.addTest(test_worker.suite())
     return testsuite
 
 
