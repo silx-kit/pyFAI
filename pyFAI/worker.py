@@ -240,6 +240,7 @@ class Worker(object):
             else:
                 rData = self.ai.integrate1d(**kwarg)
                 self.radial = rData[0]
+                self.azimuthal = None
                 rData = numpy.vstack(rData).T
 
         except Exception as err:
