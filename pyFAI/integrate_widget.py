@@ -54,7 +54,7 @@ from .opencl import ocl
 from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
 from .azimuthalIntegrator import AzimuthalIntegrator
-from .units import RADIAL_UNITS, TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM
+from .units import RADIAL_UNITS, TTH_DEG
 try:
     from .third_party import six
 except ImportError:
