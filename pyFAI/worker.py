@@ -217,18 +217,18 @@ class Worker(object):
         if self.do_2D():
             kwarg["npt_rad"] = self.nbpt_rad
             kwarg["npt_azim"] = self.nbpt_azim
-            if "filename" in kwarg:
-                if self.extension:
-                    kwarg["filename"] += self.extension
-                else:
-                    kwarg["filename"] += ".azim"
+            # if "filename" in kwarg:
+            #    if self.extension:
+            #        kwarg["filename"] += self.extension
+            #    else:
+            #        kwarg["filename"] += ".azim"
         else:
             kwarg["npt"] = self.nbpt_rad
-            if "filename" in kwarg:
-                if self.extension:
-                    kwarg["filename"] += self.extension
-                else:
-                    kwarg["filename"] += ".xy"
+            # if "filename" in kwarg:
+            #    if self.extension:
+            #        kwarg["filename"] += self.extension
+            #    else:
+            #        kwarg["filename"] += ".xy"
         if self.do_poisson:
             kwarg["error_model"] = "poisson"
         else:
