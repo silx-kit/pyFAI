@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012, Almar Klein
-# Copyright (C) 2014, Jerome Kieffer (European Synchrotron Radiation Facility)
+# Copyright (C) 2014-2016, European Synchrotron Radiation Facility
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -30,13 +30,13 @@ Cythonized version of the marching square function for "isocontour" plot
 """
 __authors__ = ["Almar Klein", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/01/2016"
+__date__ = "31/05/2016"
 __status__ = "stable"
 __license__ = "BSD-3 clauses"
 
 # Cython specific imports
 
-import numpy 
+import numpy
 cimport numpy
 import cython
 from libc.math cimport M_PI, sin, floor, fabs
@@ -52,17 +52,17 @@ cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
                                                     [1, 0, 3, 0, 0],  # Case 1
                                                     [1, 0, 1, 0, 0],  # Case 2
                                                     [1, 1, 3, 0, 0],  # Case 3
-                             
+
                                                     [1, 1, 2, 0, 0],  # Case 4
                                                     [2, 0, 1, 2, 3],  # Case 5 > ambiguous
                                                     [1, 0, 2, 0, 0],  # Case 6
                                                     [1, 2, 3, 0, 0],  # Case 7
-                             
+
                                                     [1, 2, 3, 0, 0],  # Case 8
                                                     [1, 0, 2, 0, 0],  # Case 9
                                                     [2, 0, 3, 1, 2],  # Case 10 > ambiguous
                                                     [1, 1, 2, 0, 0],  # Case 11
-                            
+
                                                     [1, 1, 3, 0, 0],  # Case 12
                                                     [1, 0, 1, 0, 0],  # Case 13
                                                     [1, 0, 3, 0, 0],  # Case 14
@@ -74,8 +74,8 @@ cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
 @cython.wraparound(False)
 @cython.cdivision(True)
 def marching_squares(float[:, :] img, double isovalue,
-                     numpy.int8_t[:, :] cellToEdge, 
-                     numpy.int8_t[:, :] edgeToRelativePosX, 
+                     numpy.int8_t[:, :] cellToEdge,
+                     numpy.int8_t[:, :] edgeToRelativePosX,
                      numpy.int8_t[:, :] edgeToRelativePosY):
     cdef:
         int dim_y = img.shape[0]
@@ -87,7 +87,7 @@ def marching_squares(float[:, :] img, double isovalue,
     with nogil:
         for y in range(dim_y - 1):
             for x in range(dim_x - 1):
-    
+
                 # Calculate index.
                 index = 0
                 if img[y, x] > isovalue:
@@ -98,13 +98,13 @@ def marching_squares(float[:, :] img, double isovalue,
                     index += 4
                 if img[y + 1, x] > isovalue:
                     index += 8
-    
+
                 # Resolve ambiguity
                 if index == 5 or index == 10:
                     # Calculate value of cell center (i.e. average of corners)
-                    tmpf = 0.25 * (img[y, x] + 
+                    tmpf = 0.25 * (img[y, x] +
                                    img[y, x + 1] +
-                                   img[y + 1, x] + 
+                                   img[y + 1, x] +
                                    img[y + 1, x + 1])
                     # If below isovalue, swap
                     if tmpf <= isovalue:
@@ -112,7 +112,7 @@ def marching_squares(float[:, :] img, double isovalue,
                             index = 10
                         else:
                             index = 5
-    
+
                 # For each edge ...
                 for i in range(cellToEdge[index, 0]):
                     # For both ends of the edge ...
@@ -127,11 +127,11 @@ def marching_squares(float[:, :] img, double isovalue,
                         tmpf2 = 1.0 / (epsilon + fabs(img[y + dy2, x + dx2] - isovalue))
                         # Apply a kind of center-of-mass method
                         fx, fy, ff = 0.0, 0.0, 0.0
-                        fx += <double> dx1 * tmpf1; 
-                        fy += <double>dy1 * tmpf1;  
+                        fx += <double> dx1 * tmpf1;
+                        fy += <double>dy1 * tmpf1;
                         ff += tmpf1
-                        fx += <double> dx2 * tmpf2; 
-                        fy += <double> dy2 * tmpf2;  
+                        fx += <double> dx2 * tmpf2;
+                        fy += <double> dy2 * tmpf2;
                         ff += tmpf2
                         #
                         fx /= ff
@@ -155,16 +155,16 @@ def sort_edges(edges):
         float[:, :] dist2 = cvarray(shape=(size, size), itemsize=sizeof(float), format="f")
         float d
         int i, j, index = 0, current = 0
-        float[:, :]edges_ = numpy.ascontiguousarray(edges, numpy.float32)      
+        float[:, :]edges_ = numpy.ascontiguousarray(edges, numpy.float32)
     dist2[:, :] = 0
     pos[:] = 0
-    
+
     with nogil:
         # initialize the distance (squared) array:
         for i in range(size):
             remaining[i] = i
             for j in range(i + 1, size):
-                d = (edges_[i, 0] - edges_[j, 0]) ** 2 + (edges_[i, 1] - edges_[j, 1]) ** 2 
+                d = (edges_[i, 0] - edges_[j, 0]) ** 2 + (edges_[i, 1] - edges_[j, 1]) ** 2
                 dist2[i, j] = d
                 dist2[j, i] = d
         # set element in remaining to -1 when already transfered
@@ -181,7 +181,7 @@ def sort_edges(edges):
                     index = remaining[j]
                     d = dist2[index, current]
                     continue
-                elif dist2[j, current] < d:    
+                elif dist2[j, current] < d:
                     index = j
                     d = dist2[current, index]
             pos[i] = index
@@ -198,7 +198,7 @@ def isocontour(img, isovalue=None, sorted=False):
 
     @param img: 2D array representing the image
     @param isovalue: the value for which the iso_contour shall be calculated
-    @param sorted: perform a sorting of the points to have them contiguous ? 
+    @param sorted: perform a sorting of the points to have them contiguous ?
 
     Returns a pointset in which each two subsequent points form a line
     piece. This van be best visualized using "vv.plot(result, ls='+')".

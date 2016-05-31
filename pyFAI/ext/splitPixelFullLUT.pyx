@@ -1,36 +1,34 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "31/05/2016"
+__status__ = "stable"
+__license__ = "MIT"
 import cython
 import os
 import sys
@@ -117,7 +115,7 @@ class HistoLUT1dFullSplit(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 empty=None): 
+                 empty=None):
         """
         @param pos: 3D or 4D array with the coordinates of each pixel point
         @param bins: number of output bins, 100 by default
@@ -522,7 +520,7 @@ class HistoLUT1dFullSplit(object):
                 cddummy = <float>float(delta_dummy)
         else:
             cdummy = <float> float(self.empty)
-            
+
         if flat is not None:
             do_flat = True
             assert flat.size == size
@@ -1118,12 +1116,12 @@ class HistoLUT2dFullSplit(object):
 
                             elif tmp_i is 1 or tmp_i is 2 or tmp_i is 3:
                                 ###################################################
-                                #  Sutherland-Hodgman polygon clipping algorithm  # 
+                                #  Sutherland-Hodgman polygon clipping algorithm  #
                                 ###################################################
                                 #
                                 #  ...adjusted to utilise the peculiarities of our problem
                                 #
-                                
+
                                 A.i = A0
                                 A.j = A1
                                 B.i = B0

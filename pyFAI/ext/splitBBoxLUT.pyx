@@ -1,10 +1,9 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -22,17 +21,16 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__doc__ = """
-Calculates histograms of pos0 (tth) weighted by Intensity
+__doc__ = """Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "22/102014"
+__date__ = "31/05/2016"
 __status__ = "stable"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 import cython
 import os
 import sys
@@ -284,9 +282,9 @@ class HistoBBox1d(object):
                 if memsize < lut_nbytes:
                     raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" %
                                       (bins, lut_size, lut_nbytes, memsize))
-                    
+
         # else hope we have enough memory
-        if (bins == 0) or (lut_size == 0): 
+        if (bins == 0) or (lut_size == 0):
             #fix 271
             raise RuntimeError("The look-up table has dimension (%s,%s) which is a non-sense."%(bins, lut_size)
                                + "Did you mask out all pixel or is your image out of the geometry range ?")

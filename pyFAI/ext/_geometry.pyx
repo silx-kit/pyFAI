@@ -8,22 +8,27 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 __author__ = "Jerome Kieffer"
-__license__ = "GPLv3+"
-__date__ = "10/03/2016"
+__license__ = "MIT"
+__date__ = "31/05/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -139,8 +144,8 @@ cdef inline double f_r(double p1, double p2, double L, double sinRot1, double co
         double t2 = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
         #double t3 = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     return sqrt(t1 * t1 + t2 * t2)
-    #Changed 10/03/2016 ... the radius is in the pixel position. 
-    #return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2) 
+    #Changed 10/03/2016 ... the radius is in the pixel position.
+    #return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
 
 
 @cython.cdivision(True)
@@ -162,7 +167,7 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calc_pos_zyx(double L, double poni1, double poni2, 
+def calc_pos_zyx(double L, double poni1, double poni2,
                  double rot1, double rot2, double rot3,
                  numpy.ndarray pos1 not None,
                  numpy.ndarray pos2 not None,
@@ -212,7 +217,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            p1 = c1[i] - poni1 
+            p1 = c1[i] - poni1
             p2 = c2[i] - poni2
             p3 = c3[i] + L
             t1[i] = f_t1(p1, p2, p3, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -223,7 +228,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
         return t3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
                t1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
                t2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
-               
+
     if pos1.ndim == 2:
         return t3.reshape(pos1.shape[0], pos1.shape[1]),\
                t1.reshape(pos1.shape[0], pos1.shape[1]),\

@@ -24,21 +24,74 @@ Copyright: 2012, Almar Klein
 	       2015-2016 European Synchrotron Radiation Facility
 License: BSD-3
 
-Files: version.py
-       pyFAI/multi_geometry.py
-       pyFAI/orderedset.py
-       pyFAI/tree.py
-       pyFAI/diffmap_widget.py
-       pyFAI/diffmap.py
-       pyFAI/ocl_sort.py
-       pyFAI/decorators.py
-       pyFAI/distortion.py
-       pyFAI/io.py
-       pyFAI/ext/_distortion.py
-       pyFAI/test/test_distortion.py
-       pyFAI/ext/sparse_utils.pyx
-       pyFAI/ext/*.pxi
-       run_tests.py
+
+Files: doc/source/mathjax.py
+Copyright: 2007-2013 by the Sphinx team
+License: BSD-3
+
+Files:  version.py
+        pyFAI/io.py
+        pyFAI/diffmap_widget.py
+        pyFAI/diffmap.py
+        pyFAI/decorators.py
+        pyFAI/distortion.py
+        pyFAI/tree.py
+        pyFAI/orderedset.py
+        pyFAI/multi_geometry.py
+        pyFAI/ocl_sort.py
+        pyFAI/ext/splitPixelFull.pyx
+        pyFAI/ext/morphology.pyx
+        pyFAI/ext/_geometry.pyx
+        pyFAI/ext/_tree.pyx
+        pyFAI/ext/_convolution.pyx
+        pyFAI/ext/_distortion.pyx
+        pyFAI/ext/splitBBox.pyx
+        pyFAI/ext/fastcrc.pyx
+        pyFAI/ext/splitPixelFullLUT.pyx
+        pyFAI/ext/sparse_utils.pyx
+        pyFAI/ext/splitPixelFullLUT_double.pyx
+        pyFAI/ext/splitPixel.pyx
+        pyFAI/ext/reconstruct.pyx
+        pyFAI/ext/splitBBoxCSR.pyx
+        pyFAI/ext/bilinear.pyx
+        pyFAI/ext/splitPixelFullCSR.pyx
+        pyFAI/ext/histogram.pyx
+        pyFAI/ext/*.pxi
+        pyFAI/ext/src/*
+        pyFAI/benchmark/*
+        pyFAI/test/test_mask.py
+        pyFAI/test/test_integrate.py
+        pyFAI/test/test_dummy.py
+        pyFAI/test/test_openCL.py
+        pyFAI/test/test_distortion.py
+        pyFAI/test/test_multi_geometry.py
+        pyFAI/test/utilstest.py
+        pyFAI/test/test_sparse.py
+        pyFAI/test/__init__.py
+        pyFAI/test/test_split_pixel.py
+        pyFAI/test/test_polarization.py
+        pyFAI/test/test_all.py
+        pyFAI/test/test_utils.py
+        pyFAI/test/test_bug_regression.py
+        pyFAI/test/test_watershed.py
+        pyFAI/test/test_io.py
+        pyFAI/test/test_bispev.py
+        pyFAI/test/test_histogram.py
+        pyFAI/test/test_marchingsquares.py
+        pyFAI/test/test_ocl_sort.py
+        pyFAI/test/test_calibrant.py
+        pyFAI/test/test_bilinear.py
+        pyFAI/test/test_saxs.py
+        pyFAI/test/test_peak_picking.py
+        pyFAI/test/test_flat.py
+        pyFAI/test/test_geometry.py
+        pyFAI/test/test_csr.py
+        pyFAI/test/test_export.py
+        pyFAI/test/test_convolution.py
+        pyFAI/test/test_geometry_refinement.py
+        pyFAI/test/test_blob_detection.py
+        pyFAI/test/test_azimuthal_integrator.py
+        run_tests.py
 Copyright: 2015-2016 European Synchrotron Radiation Facility
 License: MIT/X11 (BSD like)
 

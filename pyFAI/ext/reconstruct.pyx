@@ -1,34 +1,37 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2014-2016 European Synchrotron Radiation Facility,  France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-# 
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-# 
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
-__doc__ = """
-Cython module to reconstruct the masked values of an image"""
+
+__doc__ = """Cython module to reconstruct the masked values of an image"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20140401"
+__date__ = "31/05/2016"
 __status__ = "stable"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 
 
 import cython
@@ -45,11 +48,11 @@ cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef inline float processPoint(float[:, :] data, 
-                               numpy.int8_t[:, :] mask, 
+cdef inline float processPoint(float[:, :] data,
+                               numpy.int8_t[:, :] mask,
                                size_t p0,
-                               size_t p1, 
-                               size_t d0, 
+                               size_t p1,
+                               size_t d0,
                                size_t d1)nogil:
     cdef:
         size_t dist = 0, i = 0
@@ -102,16 +105,16 @@ cdef inline float processPoint(float[:, :] data,
 def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None, delta_dummy=None):
     """
     reconstruct missing part of an image (tries to be continuous)
-    
-    @param data: the input image 
+
+    @param data: the input image
     @parma mask: where data should be reconstructed.
     @param dummy: value of the dummy (masked out) data
     @param delta_dummy: precision for dummy values
-    
+
     @return: reconstructed image.
     """
     assert data.ndim == 2
-    cdef: 
+    cdef:
         ssize_t d0 = data.shape[0]
         ssize_t d1 = data.shape[1]
         float[:, :] cdata
