@@ -1,6 +1,6 @@
 Author: Jérôme Kieffer
 
-Date: 05/02/2015
+Date: 31/05/2015
 
 Keywords: Other software related to pyFAI
 
@@ -24,6 +24,11 @@ The X-ray Fluorescence Toolkit provides convenient tools for
 HDF5 file browsing and mask drawing.
 It has been described in `doi:10.1016/j.sab.2006.12.002 <http://www.sciencedirect.com/science/article/pii/S0584854706003764>`_
 
+Silx
+....
+
+`The silx toolkit <https://github.com/silx-kit/silx>`_  is currently onging development.
+Future releases of pyFAI will use its input/output and graphical visualization capabilities
 
 Program using pyFAI as a library
 --------------------------------
@@ -36,10 +41,11 @@ Developed for the SNBL and Dubble beamlines by Vadim DIADKIN and available from 
 Dahu
 ....
 
-Dahu is a lightweight plugin based framework available from this `git repository <https://github.com/kif/UPBL09a>`_.
+Dahu is a lightweight plugin based framework available from this
+`git repository <https://github.com/kif/UPBL09a>`_.
 Lighter then EDNA, it is technically a JSON-RPC server over Tango.
-Used on TRUSAXS beamline at ESRF (ID02), dahu uses pyFAI to process data
-up to the kHz range.
+Used on TRUSAXS beamline at ESRF (ID02), ID15 and ID31,
+dahu uses pyFAI to process data up to the kHz range.
 
 Dioptas
 .......
@@ -98,14 +104,23 @@ The server is running 24x7 with a processing frequency from 0.1 to 10 Hz.
 
 LImA
 ....
-The Library for Image Acquisition is used at many European synchrotrons
-to control various types of camera.
-A pyFAI plugin is available to integrate images on the fly without saving them.
+The `Library for Image Acquisition <https://github.com/esrf-bliss/Lima>`_,
+developped at the European synchrotron is used worldwide to control any types of
+cameras.
+A pyFAI plugin has been written to integrate images on the fly without saving them.
+(no more tested).
 
 
 NanoPeakCell
 ............
-TODO ... Developed at IBS (Grenoble) by N. Coquelle
+NanoPeakCell (NPC) is a python-software intended to pre-process your serial
+crystallography raw-data into ready-to-be-inedexed images with CrystFEL,
+cctbx.xfel and nXDS.
+NPC is able to process data recorded at SACLA and LCLS XFELS, as well as data
+recorded at any synchrotron beamline.
+A graphical interface is deployed to visualize your raw and pre-processed data.
+
+Developed at `IBS (Grenoble) by N. Coquelle <https://github.com/coquellen/NanoPeakCell>`_
 
 pygix
 .....
@@ -125,12 +140,16 @@ pyFAI's regrouping functions.
 
 PySAXS
 ......
-TODO ... Developed at CEA by O. Taché
+Python for Small Angle X-ray Scattering data acquisition, treatment and computation
+of model SAXS intensities.
+
+Developed at CEA Saclay by O. Taché and available on `PyPI <https://pypi.python.org/pypi/pySAXS>`_.
 
 xPDFsuite
 .........
 
-Developed by the Billinge Group, this commercial software is described in `arXiv 1402.3163 (2014) <http://arxiv.org/abs/1402.3163>`_
+Developed by the Billinge Group, this commercial software is described in 
+`arXiv 1402.3163 (2014) <http://arxiv.org/abs/1402.3163>`_
 
 xPDFsuite is an application that facilitates the workflow of atomic pair
 distribution function analysis of x-ray diffraction measurements from
@@ -141,6 +160,6 @@ full-featured interactive graphical user interface (GUI) with 3D and 3D
 graphics for plotting data and it  incorporates a number of powerful
 packages for integrating 2D powder diffraction images, analyzing the
 curves to obtain PDFs and then tools for assessing the data and modeling
-it.  It is available from diffpy.org <http://diffpy.org>.
+it.  It is available from `diffpy.org <http://diffpy.org>`_.
 
 
