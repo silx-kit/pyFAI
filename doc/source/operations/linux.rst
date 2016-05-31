@@ -6,7 +6,8 @@
 Installation procedure on Linux
 ===============================
 
-We cover first Debian-like distribution, then a generic recipie is given.
+We cover first Debian-like distribution, then a generic recipie for all other
+version is given.
 
 Installation procedure on Debian/Ubuntu
 ---------------------------------------
@@ -20,6 +21,9 @@ To install the package provided by the distribution, use:
 
    sudo apt-get install pyfai
 
+The issue with distribution based installation is the obsolescence of the version
+available.
+
 Debian7 and Ubuntu 12.04
 ........................
 
@@ -30,13 +34,38 @@ You will be prompted for your password to gain root access in order to be able t
 .. code::
 
    sudo apt-get install python-stdeb cython python-fabio
-   ./build-deb.sh
+   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   unzip master.zip
+   cd pyFAI-master
+   ./build-deb7.sh
 
 Debian8 and newer
 .................
 
 Thanks to the work of Frédéric-Emmanuel Picca, the debian package of pyFAI
-provides a pretty good template.
+provides a pretty good template which allows continuous builds.
+
+From silx repository
+++++++++++++++++++++
+
+You can automatically install the latest nightly built of pyFAI with:
+
+.. code::
+
+   wget http://www.silx.org/pub/debian/silx.list
+   wget http://www.silx.org/pub/debian/silx.pref
+   sudo mv silx.list /etc/apt/sources.list.d/
+   sudo mv silx.pref /etc/apt/preferences.d/
+   sudo apt-get update
+   sudo apt-get install -t jessie-backports pyfai
+
+**Nota:** The nightly built packages are not signed, hence you will be prompted
+to install non-signed packages.
+
+Build from sources
+++++++++++++++++++
+
+One can also built from sources:
 
 .. code::
 
@@ -49,15 +78,18 @@ provides a pretty good template.
    python3-matplotlib-dbg python3-numpy python3-numpy-dbg python3-pyqt4 python3-pyqt4-dbg \
    python3-scipy python3-scipy-dbg python3-sphinx python3-sphinxcontrib.programoutput \
    python3-tk python3-tk-dbg
+   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   unzip master.zip
+   cd pyFAI-master
+   ./build-deb8.sh
 
-   ./build-debian-full.sh
 
 The first line is really long and defines all the dependence tree for building
 *debian* package, including debug and documentation.
 The build procedure last for a few minutes and you will be prompted for your
 password in order to install the freshly built packages.
-The *deb-*files, available in the *package* directory are backports of the debian9
-version for your local install.
+The *deb-*files, available in the *package* directory are backports for your local
+installation.
 
 Installation procedure on other linux distibution
 -------------------------------------------------

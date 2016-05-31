@@ -26,7 +26,7 @@ Dependencies
 
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
-* Python: version 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
+* Python: version 2.7, 3.4 and 3.5. Support for 2.6, 3.2 and 3.3 has been dropped in v0.12
 * NumPy: version 1.4 or newer
 * SciPy: version 0.7 or newer
 * Matplotlib: verson 0.99 or newer
@@ -45,10 +45,13 @@ by may impair performances or prevent tools from properly working:
 Build dependencies:
 -------------------
 
-In addition to the run dependencies, pyFAI needs a C compiler.
+In addition to the run dependencies, pyFAI needs a C compiler to build extensions.
 
-C files are generated from cython_ source and distributed. Cython is only needed for developing new binary modules.
-If you want to generate your own C files, make sure your local Cython version supports memory-views (available from Cython v0.17 and newer).
+C files are generated from cython_ source and distributed.
+The distibuted version correspond to OpenMP version.
+Non-OpenMP version needs to be built from cython source code (especially on MacOSX).
+If you want to generate your own C files, make sure your local Cython version
+is suficiently recent (>0.20).
 
 Building procedure
 ------------------

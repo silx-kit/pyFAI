@@ -1,4 +1,5 @@
-=================
+Project
+=======
 
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
@@ -219,7 +220,7 @@ List of contributors in code
 
     $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 05/2015:
+As of 06/2015:
  * Jérôme Kieffer (ESRF)
  * Aurore Deschildre (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
@@ -249,7 +250,9 @@ List of supporters
 
 * LinkSCEEM project: porting to OpenCL
 * ESRF ID11: Provided manpower in 2012 and 2013 and beamtime
-* ESRF ID13: Provided manpower in 2012, 2013, 2014, 2015 and beamtime
+* ESRF ID13: Provided manpower in 2012, 2013, 2014, 2015, 2016 and beamtime
 * ESRF ID29: provided manpower in 2013 (MX-calibrate)
-* ESRF ID02: provided manpower 2014
-* ESRF ID15: provide manpower 2015
+* ESRF ID02: provided manpower 2014, 2016
+* ESRF ID15: provide manpower 2015, 2016
+* ESRF ID21: provide manpower 2015, 2016
+* ESRF ID31: provide manpower 2016
