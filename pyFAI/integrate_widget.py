@@ -774,7 +774,7 @@ class AIWidget(QtGui.QWidget):
             else:
                 method = "csr_ocl"
         else:
-            if self.input_data and len(self.input_data) > 5:
+            if self.input_data is not None and len(self.input_data) > 5:
                 method = "csr"
             else:
                 method = "splitbbox"
