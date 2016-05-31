@@ -18,7 +18,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
 .. toctree::
    :maxdepth: 1
 
-   SimpleDiffraction/introduction
+   Introduction/introduction
    Distortion/Distortion
    Calibrant/index
    multi-geometry
