@@ -1,3 +1,10 @@
+:Author: Jérôme Kieffer
+:Date: 31/05/2016
+:Keywords: manpage
+:Target: Scientists
+
+.. _manpage:
+
 pyFAI scripts manual
 ====================
 

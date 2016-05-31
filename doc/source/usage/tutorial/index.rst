@@ -16,8 +16,9 @@ The subsequent tutorials are more in depth explanation and require
 a good Python fluency and to a certain extent, of the pyFAI library.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   SimpleDiffraction/introduction
    Distortion/Distortion
    Calibrant/index
    multi-geometry

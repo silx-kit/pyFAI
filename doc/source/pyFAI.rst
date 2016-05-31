@@ -116,9 +116,12 @@ A new Graphical interface based on Qt called *pyFAI-integrate* is now available,
 offers all options possible for azimuthal integration (dark/flat/polarization,
 ....) in addition to a finer tuning for the computing device selection (CPU/GPU).
 
-Finally a specialized tool called diff_tomo is available to reduce a mapping of 2D images
-into a 3D volume (math:`x, y, 2\theta` for mapping or math:`rot, trans, 2\theta` for tomography)
+Finally couple of specialized tool called diff_tomo and diff_map are available to
+reduce a 2D/3D-mapping experiment of 2D images into a 3D volume
+(:math:`x, y, 2\theta` for mapping or :math:`rot, trans, 2\theta` for tomography)
 
+There are cookbooks on these scripts in :ref:`cookbook` and their complete
+manual pages are available in the :ref:`manpage` section.
 
 Python library
 ..............
@@ -133,18 +136,25 @@ integrated before being plotted.
    :align: center
    :alt: image
 
+The :ref:`tutorial` section makes heavy use of *ipython*, now  *jupyter*
+to process data using pyFAI.
+The first tutorial also explains a bit how Python and Jupyter works to be
+able to perform basic processing efficiently with pyFAI.
+
+
 Regrouping mechanism
 --------------------
 
-In pyFAI, regrouping is performed using a histogram-like algorithm. Each
-pixel of the image is associated to its polar coordinates
+In pyFAI, regrouping is performed using a histogram-like algorithm.
+Each pixel of the image is associated to its polar coordinates
 :math:`(2\theta , \chi )` or :math:`(q, \chi )`, then a pair of
 histograms versus :math:`2\theta` (or :math:`q`) are built, one non
 weighted for measuring the number of pixels falling in each bin and
 another weighted by pixel intensities (after dark-current subtraction,
-and corrections for flat-field, solid-angle and polarization). The
-division of the weighted histogram by the number of pixels per bin gives
-the diffraction pattern. :math:`2D` regrouping (called *caking* in
+and corrections for flat-field, solid-angle and polarization).
+The division of the weighted histogram by the number of pixels per bin gives
+the average signal over the given corona which provides the diffraction pattern.
+:math:`2D` regrouping (called *caking* in
 FIT2D) is obtained in the same way using two-dimensional histograms over
 radial (:math:`2\theta` or :math:`q`) and azimuthal angles
 (:math:`\chi`).
@@ -175,7 +185,6 @@ To simplify
 calculations, this was initially done by abstracting the pixel shape
 with a bounding box that circumscribes the pixel. In an effort to better
 the quality of the results this method was dropped in favoor of a full
-
 pixel splitting scheme that actually uses the actual pixel geometry
 for its calculations.
 
@@ -200,9 +209,9 @@ Parallel implementation
 The method based on histograms works well on a single processor but runs
 into problems requiring so called "atomic operations" when run in parallel.
 Processing pixels in the input data order causes write access conflicts which
-become less efficient with the increase of number of computing units (need of atomic_operation)_.
+become less efficient with the increase of number of computing units (need of atomic_operation_).
 This is the main limit of the method exposed previously;
-especially on GPU where hundreds of threads are executed simultaneously.
+especially on GPU where thousands of threads are executed simultaneously.
 
 .. _atomic_operation: http://en.wikipedia.org/wiki/Atomic_operation
 
