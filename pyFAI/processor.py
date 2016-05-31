@@ -26,8 +26,8 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/11/2015"
-__status__ = "developement"
+__date__ = "31/05/2016"
+__status__ = "DEPRECATED -> see worker"
 __docformat__ = 'restructuredtext'
 
 import os
