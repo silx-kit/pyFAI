@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/10/2015
+:Date: 31/05/2015
 :Keywords: Installation procedure
 :Target: System administrators under windows
 
@@ -22,12 +22,12 @@ Unlike on Unix computers, Python is not available by default on Windows computer
 We recommend you to install the 64 bit version of `Python <http://python.org>`_,
 preferably the latest 64 bits version from the
 `2.7 series <https://www.python.org/downloads/release/python-2710/>`_.
-Any version between 2.6, 2.7, 3.2, 3.3, 3.4 and 3.5 is tested but 2.7 is the
-mostly used one.
+But Python 3.4 and 3.5 are also very good candidates.
+Python 2.6, 3.2 and 3.3 are no more supported since pyFAI v0.12.
 
 The 64 bits version is strongly advised if your hardware and operating system
 supports it, as the 32 bits versions is
-limited to 2 GB of memory, hence unable to treat large images (4096 x 4096).
+limited to 2 GB of memory, hence unable to treat large images (like 4096 x 4096).
 The test suite is not passing on Windows 32 bits due to the limited amount of
 memory available to the Python process,
 nevertheless, pyFAI is running on Winodws 32 bits (but not as well).
@@ -114,9 +114,11 @@ Most of the dependencies are available via PIP:
 
 Note that numpy/scipy/matplotlib are already installed in most "Scientific Python distribution"
 
-If one of the dependency is not available as a Wheel (i.e. binary package) but only as a source package, a compiler will be required.
-In this case, see the next paragraph
-The generalization of Wheel packages should help and the installation of binary modules should become easier.
+If one of the dependency is not available as a Wheel (i.e. binary package) but
+only as a source package, a compiler will be required.
+In this case, see the next paragraph.
+The generalization of Wheel packages should help and the installation of binary
+modules should become easier.
 
 **Nota:** This requires a network access and correct proxy settings.
 At ESRF, please get in contact with the hotline (24-24) to retrive those information.
@@ -144,6 +146,12 @@ To install them, download the wheels and use PIP:
 
     pip install numpy*.whl
 
+Alternatively, you can use the wheelhouse of the silx project:
+
+.. code::
+
+   pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy scipy matplotlib fabio PyQt4
+
 Install pyFAI via PIP
 ---------------------
 
@@ -168,8 +176,10 @@ http://aka.ms/vcpython27
 To upgrade the C-code in pyFAI, one needs in addition Cython:
 
 .. code::
-   pip install cython --upgrade
 
+   pip install cython --upgrade
+   python setup.py bdist_wheel
+   pip install --pre --no-index --find-links dist/ pyFAI
 
 Troubleshooting
 ===============

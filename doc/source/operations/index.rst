@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/10/2015
+:Date: 31/05/2016
 :Keywords: Installation procedure
 :Target: System administrators
 
@@ -11,7 +11,7 @@ Installation of Python Fast Azimuthal Integration library
 Abstract
 --------
 
-Installation procedure for all operating sytems
+Installation procedure for all main operating sytems
 
 Hardware requirement
 --------------------
@@ -19,14 +19,15 @@ Hardware requirement
 PyFAI has been tested on various hardware: i386, x86_64, PPC64le, ARM.
 The main constrain may be the memory requirement: 2GB of memory is a minimal requirement to run the tests.
 The program may run with less but "MemoryError" are expected (appearing sometimes as segmentation faults).
-As a consequence, a 64-bits operating system is strongly advised.
+As a consequence, a 64-bits operating system with enough memory is strongly advised.
 
 Dependencies
 ------------
 
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
-* Python: version 2.7, 3.4 and 3.5. Support for 2.6, 3.2 and 3.3 has been dropped in v0.12
+* Python: version 2.7, 3.4 and 3.5.
+  Support for 2.6, 3.2 and 3.3 has been dropped in v0.12
 * NumPy: version 1.4 or newer
 * SciPy: version 0.7 or newer
 * Matplotlib: verson 0.99 or newer
@@ -89,11 +90,6 @@ PyFAI comes with a test suite to ensure all core functionalities are working as 
 You may have to set the environment variable *http_proxy* and *https_proxy*
 according to the networking environment you are in.
 Specifically at ESRF, please phone the hotline at 24-24 to get those information.
-
-.. toctree::
-   :maxdepth: 2
-
-   project
 
 Environment variables
 ---------------------

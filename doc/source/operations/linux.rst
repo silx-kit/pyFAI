@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/10/2015
+:Date: 31/05/2015
 :Keywords: Installation procedure on Linux
 :Target: System administrators
 
@@ -98,17 +98,21 @@ If your distribution does not provide you pyFAI packages, using the **PIP** way
 is advised, via wheels packages. First install *pip* and *wheel*:
 
 .. code::
+
     wget https://bootstrap.pypa.io/get-pip.py
     sudo python get-pip.py
-    sudo pip install wheel
+    sudo pip install pyFAI
 
-Then you can install pyFAI the usual way:
+Or you can install pyFAI from the sources:
 
 .. code::
 
-    python setup.py build test
-    sudo pip install . --upgrade
+   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   unzip master.zip
+   cd pyFAI-master
+   python setup.py build test
+   sudo pip install . --upgrade
 
 **Nota:** The usage of "python setup.py install" is now deprecated.
 It causes much more trouble as there is no installed file tracking,
-hence no way to de-install properly a package.
+hence no way to de-install properly the package.

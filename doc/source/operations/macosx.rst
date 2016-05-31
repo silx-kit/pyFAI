@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/04/2015
+:Date: 31/05/2015
 :Keywords: Installation procedure on MacOSX
 :Target: System administrators
 
@@ -18,6 +18,7 @@ MacOSX provides by default Python2.7 with Numpy which is a good basis.
     sudo pip install scipy --upgrade
     sudo pip install fabio --upgrade
     sudo pip install h5py --upgrade
+    sudo pip install cython --upgrade
     sudo pip install pyFAI --upgrade
 
 If you get an error about the local "UTF-8", try to:
@@ -35,7 +36,10 @@ Get the sources from Github:
 
 .. code::
 
-   git clone https://github.com/kif/pyFAI.git
+   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   unzip master.zip
+   cd pyFAI-master
+
 
 About OpenMP
 ............
@@ -54,7 +58,7 @@ There are two ways to compile pyFAI on MacOSX:
 Using Xcode
 ...........
 
-To build pyFAI from sources, any C-compiler is needed.
+To build pyFAI from sources, a C-compiler is needed.
 On an *Apple* computer, the default compiler is
 `Xcode <https://developer.apple.com/xcode/>`_, and it is available for free on
 the **AppStore**.
@@ -63,12 +67,11 @@ one needs to regenerate all Cython files without OpenMP.
 
 .. code::
 
-    cd pyFAI
     sudo pip install cython --upgrade
     rm pyFAI/ext/*.c
     python setup.py build --no-openmp
     python setup.py bdist_wheel
-    sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI 
+    sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI
 
 Using **gcc** or **clang**
 ..........................
@@ -80,10 +83,9 @@ As gcc & clang support OpenMP, there is no need to re-generate the cython files.
 
 .. code::
 
-    cd pyFAI
     CC=gcc python setup.py build --openmp
     python setup.py bdist_wheel
-    sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI 
+    sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI
 
 
 **Nota:** The usage of "python setup.py install" is now deprecated.
