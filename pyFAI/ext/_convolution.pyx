@@ -5,29 +5,33 @@
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:   Pierre Paleo <pierre.paleo@gmail.com>   
+#    Principal author:   Pierre Paleo <pierre.paleo@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-# 
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-# 
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 """Implementation of a separable 2D convolution"""
 __authors__ = ["Pierre Paleo", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/10/2014"
+__date__ = "31/05/2016"
 __status__ = "stable"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 import cython
 import numpy
 cimport numpy
@@ -49,7 +53,7 @@ def horizontal_convolution(float[:, :] img, float[:] filter):
     cdef:
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
-        int x, y, pos, fIndex, newpos, c 
+        int x, y, pos, fIndex, newpos, c
         float sum, err, val, tmp
         numpy.ndarray[numpy.float32_t, ndim = 2] output
 
@@ -76,8 +80,8 @@ def horizontal_convolution(float[:, :] img, float[:] filter):
                 # implement Kahan summation
                 val = img[y, newpos] * filter[fIndex] - err
                 tmp = sum + val
-                err = (tmp - sum) - val 
-                sum = tmp  
+                err = (tmp - sum) - val
+                sum = tmp
             output[y, x] += sum
     return output
 
@@ -97,7 +101,7 @@ def vertical_convolution(float[:, :] img, float[:] filter):
     cdef:
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
-        int x, y, pos, fIndex, newpos, c 
+        int x, y, pos, fIndex, newpos, c
         float sum, err, val, tmp
         numpy.ndarray[numpy.float32_t, ndim=2] output
 
@@ -124,8 +128,8 @@ def vertical_convolution(float[:, :] img, float[:] filter):
                 # implement Kahan summation
                 val = img[newpos, x] * filter[fIndex] - err
                 tmp = sum + val
-                err = (tmp - sum) - val 
-                sum = tmp  
+                err = (tmp - sum) - val
+                sum = tmp
             output[y, x] += sum
     return output
 
@@ -156,9 +160,9 @@ def gaussian(sigma, width=None):
 def gaussian_filter(img, sigma):
     """
     Performs a gaussian bluring using a gaussian kernel.
-    
+
     @param img: input image
-    @param sigma: 
+    @param sigma:
     """
     raw = numpy.ascontiguousarray(img, dtype=numpy.float32)
     gauss = gaussian(sigma).astype(numpy.float32)
