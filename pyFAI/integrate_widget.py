@@ -307,7 +307,7 @@ class AIWidget(QtGui.QWidget):
                 logger.warning("No input data to process")
                 return
 
-            elif "ndim" in dir(self.input_data) and (self.input_data.ndim == 3):
+            elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
                 # We have a numpy array of dim3
                 if "npt_azim" in kwarg:
                     out = numpy.zeros((self.input_data.shape[0], kwarg["npt_azim"], kwarg["npt_rad"]), dtype=numpy.float32)
