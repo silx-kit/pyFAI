@@ -32,7 +32,7 @@ Azimuthal integration tools:
  * diff_tomo: diffraction tomography tool (command line only)
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    pyFAI-average
    drawMask_pymca
