@@ -557,7 +557,6 @@ class AIWidget(QtGui.QWidget):
 
     def select_ponifile(self):
         ponifile = QtGui.QFileDialog.getOpenFileName()
-        self.poni.setText(ponifile)
         self.set_ponifile(str_(ponifile))
 
     def select_splinefile(self):
@@ -596,6 +595,9 @@ class AIWidget(QtGui.QWidget):
     def set_ponifile(self, ponifile=None):
         if ponifile is None:
             ponifile = str_(self.poni.text())
+        else:
+            if self.poni.text() != ponifile:
+                self.poni.setText(ponifile)
 #         try:
 #             str(ponifile)
 #         except UnicodeError:
