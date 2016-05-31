@@ -1,3 +1,8 @@
+:Author: Jérôme Kieffer
+:Date: 31/05/2016
+:Keywords: generic description of the calibration procedure
+:Target: General audiance
+
 The determination of the geometry of the experimental setup for the diffraction pattern
 of a reference sample is called calibration in pyFAI.
 A geometry setup is composed of a detector, the six refined parameters like the distance
@@ -5,10 +10,10 @@ and fixed parameters like the wavelength (or the energy of the beam), they are a
 saved together into a text files named ".poni" (as a reference to the point of
 normal incidence) which is subsequently used for processing the experiment.
 
- The program *pyFAI-calib* helps calibrating
+The program **pyFAI-calib** is used for calibrating
 the experimental setup using a constrained least squares optimization on
-the Debye-Scherrer rings of a reference sample (:math:`LaB_6`, silver
-behenate, …) and saves the results into a *.poni* file.
+the Debye-Scherrer rings of a reference sample (:math:`LaB_6`, :math:`CeO_2`, silver
+behenate :math:`AgBh`, …) and saves the results into a *.poni* file.
 Alternatively, geometries calibrated using fit2d\  can be
 imported into pyFAI, including geometric distortions (i.e. optical-fiber
 tapers distortion) described as *spline-files*.

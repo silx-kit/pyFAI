@@ -6,28 +6,44 @@
 Fast Azimuthal Integration using Python
 =======================================
 
-PyFAI A Python libary for high performance azimuthal integration which can use on GPU,
-which was presented at EuroScipy 2014: `the video is online <https://www.youtube.com/watch?v=QSlo_Nyzeig>`_
+PyFAI is a python libary for azimuthal integration of diffraction data acquired
+with 2D detectors, providing high performance thanks to GPU computing.
+Most concepts have been presented at EuroScipy 2014 in this
+`video <https://www.youtube.com/watch?v=QSlo_Nyzeig>`_
 as well as the `proceedings <http://arxiv.org/abs/1412.6367>`_.
 
-This document starts with a general descriptions of the pyFAI library in the first chapter.
-This first chapter contains an introduction to pyFAI, what it is, what it aims at and how it works
-(for scientists). Especially, geometry, calibration, azimuthal integration algorithms are described
+The documentation starts with a general descriptions of the pyFAI library.
+This first chapter contains an introduction to pyFAI, what it is, what it aims at
+and how it works (from the scientists point of view).
+Especially, geometry, calibration, azimuthal integration algorithms are described
 and pixel splitting schemes are explained.
 
-Follows cookbook, tutorials on how to use pyFAI scripts, then the manual pages of all scripts.
-Those are programs to be launched at the
-command line allowing the treatment of a  diffraction experiment without knowing anything about Python.
+Follows cookbook and tutorials on how to use pyFAI:
+Cookbooks focus on how to use pyFAI using the various graphical interfaces or
+from scripts on the command linee.
+Tutorials use the *Jupyter* notebook (formerly ipython) and present the Python interface.
+The first tutorial start with a quick general introduction of the notebooks,
+how to process data in the general case, subsequent tutorials are more advanced
+and require already a good knowledge both in Python and pyFAI..
+After the tutorials, all manual pages of pyFAI programs, both graphical interfaces
+and scripts are described in the documentation.
 
-The design of the programming interface is then exposed before a comprehensive description of most modules contained in pyFAI.
-Some minor submodules as well as the documentation of the Cython sub-modules are not included for concision purposes.
-The last chapter is an appendix giving some figures about the project and its management.
+The design of the programming interface (API) is then exposed before a
+comprehensive description of most modules contained in pyFAI.
+Some minor submodules as well as the documentation of the Cython sub-modules are
+not included for concision purposes.
 
-Installation procedures for Windows, MacOSX and Linux operating systems are then described.
-Finally other programs/projects relying on pyFAI are presented and the project is summarized from a developer's point of view.
+Installation procedures for Windows, MacOSX and Linux operating systems are then
+described.
+
+Finally other programs/projects relying on pyFAI are presented and the project is
+summarized from a developer's point of view.
+
+In appendix there are some figures about the project and its management and a list
+of publication on pyFAI.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
 
    pyFAI
@@ -40,6 +56,7 @@ Finally other programs/projects relying on pyFAI are presented and the project i
    ecosystem
    project
    changelog
+   publications
    biblio
 
 Indices and tables

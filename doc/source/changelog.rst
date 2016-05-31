@@ -1,3 +1,7 @@
+:Author: Jérôme Kieffer
+:Date: 31/05/2015
+:Keywords: changelog
+
 ChangeLog of Versions
 =====================
 

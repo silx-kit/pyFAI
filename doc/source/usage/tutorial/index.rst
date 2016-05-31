@@ -1,13 +1,19 @@
 :Author: Jérôme Kieffer
-:Date: 18/05/2016
+:Date: 31/05/2016
 :Keywords: Tutorials
-:Target: Advanced users
+:Target: Advanced users tutorials using jupyter notebooks
+
+.. _tutorials:
 
 Tutorials
 =========
 
-Tutorials are more in depth explanation. They require a good Python fluency and to a certain extent,
-of the pyFAI library.
+Tutorials explain the Python interface of *pyFAI* and use the jupyter notebook
+interface, formerly known as ipython notebooks.
+The two first tutorials are an introduction to the usage of pyFAI from Python for
+diffraction data reduction.
+The subsequent tutorials are more in depth explanation and require
+a good Python fluency and to a certain extent, of the pyFAI library.
 
 .. toctree::
    :maxdepth: 2

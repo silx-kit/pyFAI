@@ -1,3 +1,6 @@
+:Author: Jérôme Kieffer
+:Date: 31/05/2015
+:Keywords: list of references
 
 .. [SRI2012] PyFAI, a versatile library for azimuthal regrouping
    J. Kieffer & D. Karkoulis

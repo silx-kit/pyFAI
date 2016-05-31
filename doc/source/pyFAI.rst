@@ -1,3 +1,7 @@
+:Author: Jérôme Kieffer
+:Date: 31/05/2016
+:Keywords: generic description of the software
+:Target: General audiance
 General introduction to PyFAI
 =============================
 
@@ -39,7 +43,8 @@ transformation from cartesian space :math:`(x,y)` to polar space
 :math:`(2\theta, \chi )`, both local and total intensities are conserved
 in order to obtain accurate quantitative results. Technical details on
 how this integration is implemented and how it has been ported to native
-code and parallelized on graphic cards are discussed in this paper.
+code and parallelized on graphic cards are quickly presented but you can refer
+to this `publications <http://arxiv.org/abs/1412.6367>`_ for further details.
 
 Introduction
 ------------
@@ -83,7 +88,7 @@ Geometry
 
    geometry
 
-calibration
+Calibration
 ...........
 
 .. toctree::
@@ -254,11 +259,9 @@ the additional capability to work on multiple detector simultaneously.
 Related Work
 ------------
 
-We report here scientific software which are using pyFAI for azimuthal integration:
-
-* "Dioptas" is a graphical user interface for calibrating and processing high pressure Xray diffraction experiment, developped by Clemens Perscher (APS, USA).
-* "NanoPeakCell" allows the pre-treatement of serial crystallography written by Nicolas Coquelle (IBS, France)
-* "Dpdak" is an open source tool for (online) analyzing large sequences of small angle scattering data [Dpdak]_
+There are many projects which are already relying on pyFAI: Dioptas, NanoPeakCell,
+Dpdak, PySAXS, xPDFSuite ... There is a list of :ref:`ecosystem` on the ecosystem
+page.
 
 Conclusion
 ----------

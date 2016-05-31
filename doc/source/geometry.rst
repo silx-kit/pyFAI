@@ -1,8 +1,14 @@
+:Author: Jérôme Kieffer
+:Date: 31/05/2016
+:Keywords: generic description of the geometry
+:Target: General audiance
+
 PyFAI uses a 6-parameter geometry definition similar, while not rigorously
 identical to SPD:
 One distance, 2 coordinates to define the point of normal incidence and 3 rotations
 around the main axis; these parameters are saved in text files usually
 with the *.poni* extension.
+In addition, the *poni-file* may contain the wavelength and the detector definition.
 
 Image representation in Python
 ------------------------------
@@ -29,12 +35,12 @@ This is why, if one considers the pixel at position (x,y), its value can be retr
 (note the order y,x, this is not a bug!).
 We usually refer the *x* axis as the fast dimension (because pixels are adjacent) and the *y* axis
 as the slow axis (as pixel are appart from each other by a line length).
-More information on how numpy array are stored can be found at:
-https://github.com/numpy/numpy/blob/master/doc/source/reference/arrays.ndarray.rst
+More information on how `numpy array are stored can be found at here <https://github.com/numpy/numpy/blob/master/doc/source/reference/arrays.ndarray.rst>`_
 
 Like most scientific packages, the origin of the image is considered
-to be at the lower-left corner of the image to have the polar angle growing from 0 along the x axis to 90 deg along the y axis.
-This is why we pass the *origin="lower"* option to imshow.
+to be at the **lower-left corner** of the image to have the polar angle growing
+from 0 along the x axis to 90 deg along the y axis.
+This is why we pass the *origin="lower"* option to *imshow* (from the matplotlib library).
 Axis 1 and 2 on the image (like in poni1 & poni2)
 refer to the slow and fast dimension of the image, so usually to the y and x axis
 (and not the opposite)
@@ -46,10 +52,11 @@ There are two (main) conventions when representing images:
 
 * In imaging application, one can can replace the camera by the eye, the camera looks at the scene. In this convention, the origin is usually at the top of the image.
 * In diffraction application, the observer is situated at the sample position and looks
-at the detector, hence on the other side of the detector.
-Because we measure (signed) angles, the origin is ideally situated at the lower left of the image.
+  at the detector, hence on the other side of the detector.
 
+Because we measure (signed) angles, the origin is ideally situated at the lower left of the image.
 PyFAI being a diffraction application, it uses the later description.
+Changing the point of view behind the detector changes the sign of the azimuthal angle.
 
 Default geometry in pyFAI
 -------------------------
@@ -63,7 +70,7 @@ In the (most common) case of *transmission diffraction setup* on synchrotrons (l
 * Axis 3 (i.e. *z*) being horizontal, along the transmitted beam
 
 Axis 3 is built in such a way to be orthogonal and (1,2,3) is a direct orientation.
-This makes the sample position at z<0.
+This makes the sample position negative (at z<0).
 
 
 Detector position

@@ -1,8 +1,6 @@
-Author: Jérôme Kieffer
-
-Date: 31/05/2015
-
-Keywords: Other software related to pyFAI
+:Author: Jérôme Kieffer
+:Date: 31/05/2015
+:Keywords: Other software related to pyFAI
 
 PyFAI Ecosystem
 ===============
@@ -10,11 +8,14 @@ PyFAI Ecosystem
 Software pyFAI is relying on
 ----------------------------
 
+PyFAI is relying on the full Python scientific stack which includes [NumPy]_,
+[SciPy]_, [Matplotlib]_, [PyOpenCL]_ but also on some ESRF-developped code:
+
 FabIO
 .....
 
 PyFAI is using FabIO everywhere access to a 2D images is needed.
-The fabio_viewer is also a lightweight convenient viewer for diffraction images.
+The *fabio_viewer* is also a lightweight convenient viewer for diffraction images.
 It has been described in `doi:10.1107/S0021889813000150 <http://journals.iucr.org/j/issues/2013/02/00/kk5124/>`_
 
 PyMca
@@ -29,6 +30,8 @@ Silx
 
 `The silx toolkit <https://github.com/silx-kit/silx>`_  is currently onging development.
 Future releases of pyFAI will use its input/output and graphical visualization capabilities
+
+.. _ecosystem:
 
 Program using pyFAI as a library
 --------------------------------
@@ -148,7 +151,7 @@ Developed at CEA Saclay by O. Taché and available on `PyPI <https://pypi.python
 xPDFsuite
 .........
 
-Developed by the Billinge Group, this commercial software is described in 
+Developed by the Billinge Group, this commercial software is described in
 `arXiv 1402.3163 (2014) <http://arxiv.org/abs/1402.3163>`_
 
 xPDFsuite is an application that facilitates the workflow of atomic pair

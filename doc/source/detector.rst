@@ -1,22 +1,33 @@
+:Author: Jérôme Kieffer
+:Date: 31/05/2016
+:Keywords: detector
+:Target: General audiance
 Simple detector
 ===============
 
 Like most other diffraction processing packages, pyFAI allows the definition of
 2D detectors with a constant pixel size and recoded in S.I..
-Typical pixel size are 50e-6 m and will be used as example in the numerical application.
+Typical pixel size are 50e-6 m (50 microns) and will be used as example in the
+numerical application.
 
-Pixels of the detector are indexed from the *origin* located at the *lower left corner*.
-The pixel center is located at half integer index:
-* pixel 0 goes from position 0 to 50e-6 and is centered at 25e-6.
-* pixel 1 goes from position 50e-6 to 100e-6 and is centered at 75e-6m
+Pixels of the detector are indexed from the *origin* located at the **lower left corner**.
+The pixel's center is located at half integer index:
+
+* pixel 0 goes from position 0 m to 50e-6m and is centered at 25e-6 m.
+* pixel 1 goes from position 50e-6 m to 100e-6 m and is centered at 75e-6 m
+
+**Nota**:
+Most of the time you will need to pass the optional argument *origin="lower"* to
+matplotlib imshow function when displaying the image to avoid confusion
 
 Complex detectors
 =================
 
 The *simple detector* approach reaches its limits
-with several detector types, such as multi-module and fiber optic taper coupled detectors.
+with several detector types, such as multi-module and fiber optic taper coupled
+detectors (most CCDs).
 Large area pixel detectors are often composed of smaller modules (i.e. Pilatus
-from Dectris, Maxipix from ESRF,...).
+from Dectris, Maxipix from ESRF, ...).
 
 By construction, such detectors exhibit gaps between modules along with
 pixels of various sizes within a single module, hence they require specific
@@ -32,7 +43,7 @@ Detectors classes
 -----------------
 They are used to define families of detectors.
 In order to take the specificities of each detector into account, pyFAI
-contains about 40 detector class definitions (and twice a much with aliases)
+contains about 55 detector class definitions (and twice a much with aliases)
 which contain a mask (invalid pixels,
 gaps, ...) and a method to calculate the pixel positions in Cartesian
 coordinates. Available detectors can be printed using:
@@ -61,8 +72,8 @@ entry contains the coordinates of the vertex itself (z,y,x).
 This kind of definitions, while relying on large description files,
 can address some of the most complex detector layouts:
 
-* hexagonal pixels (i.e. Pixirad detectors)
-* curved/bent imaging plates (i.e. Rigaku)
+* hexagonal pixels (i.e. Pixirad detectors, still under development)
+* curved/bent imaging plates (i.e. Rigaku, Aarhus detector)
 * pixel detectors with tiled modular (i.e. Xpad detectors from ImXpad)
 * semi-cylindrical pixel detectors (i.e. Pilatus12M from Dectris).
 
@@ -81,4 +92,17 @@ Using the *detector2nexus* script to convert a complex detector definition
 a single NeXus detector definition together with the mask:
 
   detector2nexus -s halfccd.spline -o halfccd.h5
+
+Conclusion
+==========
+
+Detector definition in pyFAI is very versatile.
+Fortunately, most detectors are already described, making the usage transparent
+for most users.
+There are a couple of :ref:`tutorials` on detector definition which will help
+you understanding the mechanisme :
+
+* Distortion which explains how to correct images for geometric distortion
+* CCD-calibration which explains how to calibrate a detector for geometric
+  distortion.
 
