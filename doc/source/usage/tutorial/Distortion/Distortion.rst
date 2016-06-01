@@ -112,7 +112,7 @@ Let's download such a file and create a detector from it.
 .. code:: python
 
     import os, sys
-    os.environ["http_proxy"] = "http://proxy.esrf.fr:3128"
+    os.environ["http_proxy"] = "http://proxy.site.com:3128"
     def download(url):
         """download the file given in URL and return its local path"""
         if sys.version_info[0]<3:
