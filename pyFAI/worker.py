@@ -418,6 +418,20 @@ class Worker(object):
         return self._unit
     unit = property(get_unit, set_unit)
 
+    def set_error_model(self, value):
+        if value == "poisson":
+            self.do_poisson = True
+        elif value is None or value == "":
+            self.do_poisson = False
+        else:
+            raise RuntimeError("Unsupported error model '%s'" % value)
+
+    def get_error_model(self):
+        if self.do_poisson:
+            return "poisson"
+        return None
+    error_model = property(get_error_model, set_error_model)
+
     def get_config(self):
         """return configuration as a dictionary"""
         config = {"unit": str(self.unit)}
