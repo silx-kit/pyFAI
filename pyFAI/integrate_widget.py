@@ -226,6 +226,80 @@ class AIWidget(QtGui.QWidget):
         # done at widget level
 #        self.polarization_factor.setValidator(QtGui.QDoubleValidator(-1, 1, 3))
 
+    def __get_unit(self):
+        for unit, widget in self.units.items():
+            if widget is not None and widget.isChecked():
+                return unit
+        logger.warning("Undefined unit !!! falling back on 2th_deg")
+        return TTH_DEG
+
+    def __get_correct_solid_angle(self):
+        return bool(self.do_solid_angle.isChecked())
+
+    def __get_dummy(self):
+        if bool(self.do_dummy.isChecked()):
+            return float_(self.val_dummy.text())
+        else:
+            return None
+
+    def __get_delta_dummy(self):
+        if not bool(self.do_dummy.isChecked()):
+            return None
+        delta_dummy = str(self.delta_dummy.text())
+        if delta_dummy:
+            return float(delta_dummy)
+        else:
+            return None
+
+    def __get_polarization_factor(self):
+        if bool(self.do_polarization.isChecked()):
+            return float(self.polarization_factor.value())
+        else:
+            return None
+
+    def __get_radial_range(self):
+        if not self.do_radial_range.isChecked():
+            return None
+        try:
+            rad_min = float_(self.radial_range_min.text())
+            rad_max = float_(self.radial_range_max.text())
+        except ValueError as error:
+            logger.error("error in parsing radial range: %s" % error)
+            return None
+        result = (rad_min, rad_max)
+        if result == (None, None):
+            result = None
+        return None
+
+    def __get_azimuth_range(self):
+        if not self.do_azimuthal_range.isChecked():
+            return None
+        try:
+            azim_min = float_(self.azimuth_range_min.text())
+            azim_max = float_(self.azimuth_range_max.text())
+        except ValueError as error:
+            logger.error("error in parsing azimuthal range: %s" % error)
+            return None
+        result = (azim_min, azim_max)
+        if result == (None, None):
+            result = None
+        return result
+
+    def __get_error_model(self):
+        if self.do_poisson.isChecked():
+            return "poisson"
+        else:
+            return None
+
+    def __get_nbpt_rad(self):
+        nbpt_rad = str(self.nbpt_rad.text()).strip()
+        if not nbpt_rad:
+            return None
+        return int(nbpt_rad)
+
+    def __get_nbpt_azim(self):
+        return int(str(self.nbpt_azim.text()).strip())
+
     def proceed(self):
         with self._sem:
             out = None
@@ -233,72 +307,32 @@ class AIWidget(QtGui.QWidget):
             logger.debug("Let's work a bit")
             ai = worker.make_ai(config)
 
-    #        Default Keyword arguments
-            kwarg = {"unit": TTH_DEG,
-                     "dummy": None,
-                     "delta_dummy": None,
-                     "polarization_factor": None,
-                     "filename": None,
-                     "safe": False,
-                     }
-            for unit, widget in self.units.items():
-                if widget is not None and widget.isChecked():
-                    kwarg["unit"] = unit
-                    break
-            else:
-                logger.warning("Undefined unit !!! falling back on 2th_deg")
+            # Default Keyword arguments
+            kwarg = {
+                "unit": self.__get_unit(),
+                "dummy": self.__get_dummy(),
+                "delta_dummy": self.__get_delta_dummy(),
+                "polarization_factor": self.__get_polarization_factor(),
+                "filename": None,
+                "safe": False,
+                "correctSolidAngle": self.__get_correct_solid_angle(),
+                "error_model": self.__get_error_model(),
+                "method": self.get_method(),
+                "npt_rad": self.__get_nbpt_rad(),
+             }
 
-            kwarg["correctSolidAngle"] = bool(self.do_solid_angle.isChecked())
-
-            if bool(self.do_dummy.isChecked()):
-                kwarg["dummy"] = float_(self.val_dummy.text())
-                delta_dummy = str(self.delta_dummy.text())
-                if delta_dummy:
-                    kwarg["delta_dummy"] = float(delta_dummy)
-                else:
-                    kwarg["delta_dummy"] = None
-            if bool(self.do_polarization.isChecked()):
-                kwarg["polarization_factor"] = float(self.polarization_factor.value())
-            else:
-                kwarg["polarization_factor"] = None
-
-            nbpt_rad = str(self.nbpt_rad.text()).strip()
-            if not nbpt_rad:
-                _ret = QtGui.QMessageBox.warning(self, "PyFAI integrate",
-                                                "You must provide the number of output radial bins !",)
+            if kwarg["npt_rad"] is None:
+                message = "You must provide the number of output radial bins !"
+                QtGui.QMessageBox.warning(self, "PyFAI integrate", message)
                 return {}
-                # raise RuntimeError("The number of output point is undefined !")
-            kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
+
             if self.do_2D.isChecked():
-                kwarg["npt_azim"] = int(str(self.nbpt_azim.text()).strip())
-
-            kwarg["method"] = self.get_method()
-
+                kwarg["npt_azim"] = self.__get_nbpt_azim()
             if self.do_radial_range.isChecked():
-                try:
-                    rad_min = float_(self.radial_range_min.text())
-                    rad_max = float_(self.radial_range_max.text())
-                except ValueError as error:
-                    logger.error("error in parsing radial range: %s" % error)
-                else:
-                    kwarg["radial_range"] = (rad_min, rad_max)
-                if kwarg["radial_range"] == (None, None):
-                    kwarg["radial_range"] = None
-
+                kwarg["radial_range"] = self.__get_radial_range()
             if self.do_azimuthal_range.isChecked():
-                try:
-                    azim_min = float_(self.azimuth_range_min.text())
-                    azim_max = float_(self.azimuth_range_max.text())
-                except ValueError as error:
-                    logger.error("error in parsing azimuthal range: %s" % error)
-                else:
-                    kwarg["azimuth_range"] = (azim_min, azim_max)
-                if kwarg["azimuth_range"] == (None, None):
-                    kwarg["azimuth_range"] = None
-            if self.do_poisson.isChecked():
-                kwarg["error_model"] = "poisson"
-            else:
-                kwarg["error_model"] = None
+                kwarg["azimuth_range"] = self.__get_azimuth_range()
+
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                         os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
