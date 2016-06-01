@@ -49,6 +49,7 @@ logger = logging.getLogger("pyFAI.integrate_widget")
 from .gui_utils import QtCore, QtGui, uic, QtWebKit
 
 import fabio
+from . import worker
 from .detectors import ALL_DETECTORS, detector_factory
 from .opencl import ocl
 from .utils import float_, int_, str_, get_ui_file
@@ -230,7 +231,7 @@ class AIWidget(QtGui.QWidget):
             out = None
             config = self.dump()
             logger.debug("Let's work a bit")
-            ai = self.make_ai(config)
+            ai = worker.make_ai(config)
 
     #        Default Keyword arguments
             kwarg = {"unit": TTH_DEG,
@@ -642,68 +643,6 @@ class AIWidget(QtGui.QWidget):
             except ValueError:
                 logger.error("Unable to convert %s to float: %s" % (kw, txtval))
         return fval
-
-    @staticmethod
-    def make_ai(config):
-        """Create an Azimuthal integrator from the configuration
-        Static method !
-
-        @param config: dict with all parameters
-        @return: configured (but uninitialized) AzimuthalIntgrator
-        """
-        poni = config.get("poni")
-        if poni and op.isfile(poni):
-            ai = AzimuthalIntegrator.sload(poni)
-        detector = config.get("detector", None)
-        if detector:
-            ai.detector = detector_factory(detector)
-
-        wavelength = config.get("wavelength", 0)
-        if wavelength:
-            if wavelength <= 0 or wavelength > 1e-6:
-                logger.warning("Wavelength is in meter ... unlikely value %s" % wavelength)
-            ai.wavelength = wavelength
-
-        splinefile = config.get("splineFile")
-        if splinefile and op.isfile(splinefile):
-            ai.detector.splineFile = splinefile
-
-        for key in ("pixel1", "pixel2", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
-            value = config.get(key)
-            if value is not None:
-                ai.__setattr__(key, value)
-        if config.get("chi_discontinuity_at_0"):
-            ai.setChiDiscAtZero()
-
-        mask_file = config.get("mask_file")
-        if mask_file and config.get("do_mask"):
-            if op.exists(mask_file):
-                try:
-                    mask = fabio.open(mask_file).data
-                except Exception as error:
-                    logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
-                else:
-                    ai.mask = mask
-#            elif mask_file==FROM_PYMCA:
-#                ai.mask = mask
-
-        dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
-                      if op.isfile(i.strip())]
-        if dark_files and config.get("do_dark"):
-            ai.set_darkfiles(dark_files)
-
-        flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
-                      if op.isfile(i.strip())]
-        if flat_files and config.get("do_flat"):
-            ai.set_flatfiles(flat_files)
-
-        return ai
-
-    def set_ai(self):
-        """Setup the AzimuthalIntegrator
-        """
-        config = self.dump()
-        self.ai = self.make_ai(config)
 
     def detector_changed(self):
         logger.debug("detector_changed")

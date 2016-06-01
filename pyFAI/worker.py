@@ -87,7 +87,7 @@ Here are the valid keys:
 """
 
 import threading
-import os
+import os.path
 import logging
 logger = logging.getLogger("pyFAI.worker")
 import numpy
@@ -98,6 +98,60 @@ from .distortion import Distortion
 from . import units
 import json
 # from .io import h5py, HDF5Writer
+
+
+def make_ai(config):
+    """Create an Azimuthal integrator from the configuration
+    Static method !
+
+    @param config: dict with all parameters
+    @return: configured (but uninitialized) AzimuthalIntgrator
+    """
+    poni = config.get("poni")
+    if poni and os.path.isfile(poni):
+        ai = AzimuthalIntegrator.sload(poni)
+    detector = config.get("detector", None)
+    if detector:
+        ai.detector = detector_factory(detector)
+
+    wavelength = config.get("wavelength", 0)
+    if wavelength:
+        if wavelength <= 0 or wavelength > 1e-6:
+            logger.warning("Wavelength is in meter ... unlikely value %s" % wavelength)
+        ai.wavelength = wavelength
+
+    splinefile = config.get("splineFile")
+    if splinefile and os.path.isfile(splinefile):
+        ai.detector.splineFile = splinefile
+
+    for key in ("pixel1", "pixel2", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
+        value = config.get(key)
+        if value is not None:
+            ai.__setattr__(key, value)
+    if config.get("chi_discontinuity_at_0"):
+        ai.setChiDiscAtZero()
+
+    mask_file = config.get("mask_file")
+    if mask_file and config.get("do_mask"):
+        if os.path.exists(mask_file):
+            try:
+                mask = fabio.open(mask_file).data
+            except Exception as error:
+                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+            else:
+                ai.mask = mask
+
+    dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
+                  if os.path.isfile(i.strip())]
+    if dark_files and config.get("do_dark"):
+        ai.set_darkfiles(dark_files)
+
+    flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
+                  if os.path.isfile(i.strip())]
+    if flat_files and config.get("do_flat"):
+        ai.set_flatfiles(flat_files)
+
+    return ai
 
 
 class Worker(object):
