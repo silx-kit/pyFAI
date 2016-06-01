@@ -201,6 +201,8 @@ class Worker(object):
         self.method = "lut"
         self.radial = None
         self.azimuthal = None
+        self.radial_range = None
+        self.azimuth_range = None
 
     def __repr__(self):
         """
@@ -217,7 +219,9 @@ class Worker(object):
                   "Flat field image: %s" % self.flat_field_image,
                   "Mask image: %s" % self.mask_image,
                   "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
-                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
+                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension),
+                  "Radial range: %s" % self.radial_range,
+                  "Azimuth range: %s" % self.azimuth_range]
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -287,6 +291,12 @@ class Worker(object):
             kwarg["error_model"] = "poisson"
         else:
             kwarg["error_model"] = None
+
+        if self.radial_range is not None:
+            kwarg["radial_range"] = self.radial_range
+
+        if self.azimuth_range is not None:
+            kwarg["azimuth_range"] = self.azimuth_range
 
         try:
             if self.do_2D():
