@@ -131,7 +131,6 @@ class AIWidget(QtGui.QWidget):
 
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
         self.units = {}
-        self.ai = AzimuthalIntegrator()
         self.input_data = input_data
         self.output_path = output_path
         self.output_format = output_format
@@ -231,7 +230,7 @@ class AIWidget(QtGui.QWidget):
             out = None
             config = self.dump()
             logger.debug("Let's work a bit")
-            self.set_ai()
+            ai = self.make_ai(config)
 
     #        Default Keyword arguments
             kwarg = {"unit": TTH_DEG,
@@ -315,7 +314,7 @@ class AIWidget(QtGui.QWidget):
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
-                        out[i] = self.ai.integrate2d(**kwarg)[0]
+                        out[i] = ai.integrate2d(**kwarg)[0]
 
                 else:
                     if "npt_rad" in kwarg:  # convert npt_rad -> npt
@@ -324,7 +323,7 @@ class AIWidget(QtGui.QWidget):
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
-                        out[i] = self.ai.integrate1d(**kwarg)[1]
+                        out[i] = ai.integrate1d(**kwarg)[1]
 
             elif "__len__" in dir(self.input_data):
                 out = []
@@ -384,20 +383,20 @@ class AIWidget(QtGui.QWidget):
                         for i in range(fab_img.nframes):
                             kwarg["data"] = fab_img.getframe(i).data
                             if "npt_azim" in kwarg:
-                                res = self.ai.integrate2d(**kwarg)
+                                res = ai.integrate2d(**kwarg)
                             else:
                                 if "npt_rad" in kwarg:  # convert npt_rad -> npt
                                     kwarg["npt"] = kwarg.pop("npt_rad")
-                                res = self.ai.integrate1d(**kwarg)
+                                res = ai.integrate1d(**kwarg)
                             writer.write(res, index=i)
                         writer.close()
                     else:
                         if kwarg.get("npt_azim"):
-                            res = self.ai.integrate2d(**kwarg)
+                            res = ai.integrate2d(**kwarg)
                         else:
                             if "npt_rad" in kwarg:  # convert npt_rad -> npt
                                 kwarg["npt"] = kwarg.pop("npt_rad")
-                            res = self.ai.integrate1d(**kwarg)
+                            res = ai.integrate1d(**kwarg)
                     out.append(res)
 
                     #TODO manage HDF5 stuff !!!
@@ -567,10 +566,11 @@ class AIWidget(QtGui.QWidget):
         splinefile = str_(QtGui.QFileDialog.getOpenFileName())
         if splinefile:
             try:
-                self.ai.detector.set_splineFile(splinefile)
-                self.pixel1.setText(str(self.ai.pixel1))
-                self.pixel2.setText(str(self.ai.pixel2))
-                self.splineFile.setText(self.ai.detector.splineFile or "")
+                ai = AzimuthalIntegrator()
+                ai.detector.set_splineFile(splinefile)
+                self.pixel1.setText(str(ai.pixel1))
+                self.pixel2.setText(str(ai.pixel2))
+                self.splineFile.setText(ai.detector.splineFile or "")
             except Exception as error:
                 logger.error("failed %s on %s" % (error, splinefile))
 
@@ -607,21 +607,22 @@ class AIWidget(QtGui.QWidget):
 #             ponifile = ponifile.encode("utf8")
 #         print(ponifile, type(ponifile))
         try:
-            self.ai = AzimuthalIntegrator.sload(ponifile)
+            ai = AzimuthalIntegrator.sload(ponifile)
         except Exception as error:
+            ai = AzimuthalIntegrator()
             logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
             return
-        self.pixel1.setText(str_(self.ai.pixel1))
-        self.pixel2.setText(str_(self.ai.pixel2))
-        self.dist.setText(str_(self.ai.dist))
-        self.poni1.setText(str_(self.ai.poni1))
-        self.poni2.setText(str_(self.ai.poni2))
-        self.rot1.setText(str_(self.ai.rot1))
-        self.rot2.setText(str_(self.ai.rot2))
-        self.rot3.setText(str_(self.ai.rot3))
-        self.splineFile.setText(str_(self.ai.detector.splineFile))
-        self.wavelength.setText(str_(self.ai._wavelength))
-        name = self.ai.detector.name.lower()
+        self.pixel1.setText(str_(ai.pixel1))
+        self.pixel2.setText(str_(ai.pixel2))
+        self.dist.setText(str_(ai.dist))
+        self.poni1.setText(str_(ai.poni1))
+        self.poni2.setText(str_(ai.poni2))
+        self.rot1.setText(str_(ai.rot1))
+        self.rot2.setText(str_(ai.rot2))
+        self.rot3.setText(str_(ai.rot3))
+        self.splineFile.setText(str_(ai.detector.splineFile))
+        self.wavelength.setText(str_(ai._wavelength))
+        name = ai.detector.name.lower()
         if name in self.all_detectors:
             self.detector.setCurrentIndex(self.all_detectors.index(name))
         else:
@@ -631,30 +632,6 @@ class AIWidget(QtGui.QWidget):
         self.input_data = stack
         self.name = stack_name
     setStackDataObject = set_input_data
-
-    def setSelectionMask(self, mask=None):
-        """
-        PyMca Plugin specific
-
-        @param mask: 2D array with the masked region
-
-        """
-        if (mask is not None) and (mask.sum() > 0):
-            self.ai.mask = mask
-            self.do_mask.setChecked(True)
-            self.mask_file.setText(FROM_PYMCA)
-
-    def setBackgroundImage(self, dark=None):
-        """
-        PyMca Plugin specific
-
-        @param dark: 2D array with the dark-current
-
-        """
-        if (dark is not None) and (dark.sum() > 0):
-            self.ai.darkcurrent = dark
-            self.do_dark.setChecked(True)
-            self.dark_current.setText(FROM_PYMCA)
 
     def _float(self, kw, default=0):
         fval = default
@@ -744,7 +721,6 @@ class AIWidget(QtGui.QWidget):
                 self.pixel2.setText(str(inst.pixel2))
             else:
                 logger.warning("No such spline file %s" % splineFile)
-        self.ai.detector = inst
 
     def openCL_changed(self):
         logger.debug("do_OpenCL")
