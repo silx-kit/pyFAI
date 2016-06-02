@@ -268,9 +268,11 @@ class Worker(object):
                  # "filename": None,
                  "safe": True,
                  "data": data,
-                 "normalization_factor":monitor,
                  "correctSolidAngle": self.correct_solid_angle,
                  }
+
+        if monitor is not None:
+            kwarg["normalization_factor"] = monitor
 
         if self.do_2D():
             kwarg["npt_rad"] = self.nbpt_rad

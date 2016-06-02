@@ -108,7 +108,6 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai_args["polarization_factor"], worker.polarization)
         self.assertEquals(ai_args["safe"], True)
         self.assertEquals(ai_args["data"], data)
-        self.assertIn("normalization_factor", ai_args)
         self.assertEquals(ai_args["correctSolidAngle"], worker.correct_solid_angle)
         self.assertEquals(ai_args["npt"], worker.nbpt_rad)
 
@@ -145,7 +144,6 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai_args["polarization_factor"], worker.polarization)
         self.assertEquals(ai_args["safe"], True)
         self.assertEquals(ai_args["data"], data)
-        self.assertIn("normalization_factor", ai_args)
         self.assertEquals(ai_args["correctSolidAngle"], worker.correct_solid_angle)
         self.assertEquals(ai_args["npt_rad"], worker.nbpt_rad)
         self.assertEquals(ai_args["npt_azim"], worker.nbpt_azim)
