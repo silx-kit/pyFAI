@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2016"
+__date__ = "02/06/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -946,7 +946,6 @@ class Pilatus(Detector):
         return p1, p2, None
 
 
-
 class Pilatus100k(Pilatus):
     """
     Pilatus 100k detector
@@ -1568,7 +1567,6 @@ class Xpad_flat(ImXPadS10):
         else:
             self.module_size = module_size
 
-
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
                 (self.name, self.pixel1, self.pixel2)
@@ -1587,7 +1585,6 @@ class Xpad_flat(ImXPadS10):
             pixel_edges2[1:] = numpy.cumsum(pixel_size2)
             self._pixel_edges = pixel_edges1, pixel_edges2
         return self._pixel_edges
-
 
     def calc_mask(self):
         """
@@ -1608,7 +1605,6 @@ class Xpad_flat(ImXPadS10):
             mask[:, i] = 1
             mask[:, i + self.module_size[1] - 1] = 1
         return mask
-
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
@@ -2481,7 +2477,7 @@ class Aarhus(Detector):
         return p1, p2, p3
 
 
-class PIXIUM(Detector):
+class Pixium(Detector):
     """PIXIUM 4700 detector
 
     High energy X ray diffraction using the Pixium 4700 flat panel detector
@@ -2492,14 +2488,14 @@ class PIXIUM(Detector):
     MAX_SHAPE = (1910, 2480)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 154e-6
 
-    def __init__(self, pixel1=154e-6, pixel2=154e-6):
-        super(PIXIUM, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=308e-6, pixel2=308e-6):
+        """Defaults to 2x2 binning
+        """
+        super(Pixium, self).__init__(pixel1=pixel1, pixel2=pixel2)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
-            self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
+            self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
+                             int(round(pixel2 / self.DEFAULT_PIXEL2)))
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
-        else:
-            self.shape = (1240, 955)
-            self._binning = (2, 2)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -2516,14 +2512,14 @@ class Apex2(Detector):
     MAX_SHAPE = (1024, 1024)
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 60e-6
 
-    def __init__(self, pixel1=60e-6, pixel2=60e-6):
+    def __init__(self, pixel1=120e-6, pixel2=120e-6):
+        """Defaults to 2x2 binning
+        """
         super(Apex2, self).__init__(pixel1=pixel1, pixel2=pixel2)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
-            self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
+            self._binning = (int(round(pixel1 / self.DEFAULT_PIXEL1)),
+                             int(round(pixel2 / self.DEFAULT_PIXEL2)))
             self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
-        else:
-            self.shape = (512, 512)
-            self._binning = (2, 2)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -2537,6 +2533,7 @@ class RaspberryPi(Detector):
     aliases = ["Raspberry", "Pi"]
     force_pixel = True
     MAX_SHAPE = (1944, 2592)
+
     def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6):
         super(RaspberryPi, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
