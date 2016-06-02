@@ -355,6 +355,7 @@ class AIWidget(QtGui.QWidget):
                     w.correct_solid_angle = self.__get_correct_solid_angle()
                     w.error_model = self.__get_error_model()
                     w.method = self.get_method()
+                    w.is_safe = False
                     if self.do_2D.isChecked():
                         w.nbpt_azim = self.__get_nbpt_azim()
                     else:

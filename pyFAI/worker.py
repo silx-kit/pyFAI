@@ -203,6 +203,7 @@ class Worker(object):
         self.azimuthal = None
         self.radial_range = None
         self.azimuth_range = None
+        self.is_safe = True
 
     def __repr__(self):
         """
@@ -266,7 +267,7 @@ class Worker(object):
                  "method": self.method,
                  "polarization_factor":self.polarization,
                  # "filename": None,
-                 "safe": True,
+                 "safe": self.is_safe,
                  "data": data,
                  "correctSolidAngle": self.correct_solid_angle,
                  }
