@@ -44,12 +44,11 @@ from .utilstest import getLogger
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from PyQt4 import Qt
+from ..gui_utils import QtGui
 from ..integrate_widget import AIWidget
 from .utilstest import UtilsTest
 
 logger = getLogger(__file__)
-
 
 class AIWidgetMocked():
 
@@ -60,7 +59,12 @@ class TestAIWidget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.app = Qt.QApplication([])
+        if QtGui is not None:
+            cls.app = QtGui.QApplication([])
+
+    def setUp(self):
+        if QtGui is None:
+            self.skipTest("Qt is not available")
 
     @classmethod
     def tearDownClass(cls):
