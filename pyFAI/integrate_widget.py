@@ -344,21 +344,41 @@ class AIWidget(QtGui.QWidget):
 
             elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
                 # We have a numpy array of dim3
-                if "npt_azim" in kwarg:
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt_azim"], kwarg["npt_rad"]), dtype=numpy.float32)
-                    for i in range(self.input_data.shape[0]):
-                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        kwarg["data"] = self.input_data[i]
-                        out[i] = ai.integrate2d(**kwarg)[0]
+                w = worker.Worker(azimuthalIntgrator=ai)
+                try:
+                    w.nbpt_rad = self.__get_nbpt_rad()
+                    w.unit = self.__get_unit()
+                    w.dummy = self.__get_dummy()
+                    w.delta_dummy = self.__get_delta_dummy()
+                    w.polarization_factor = self.__get_polarization_factor()
+                    # NOTE: previous implementation was using safe=False, the worker use safe=True
+                    w.correct_solid_angle = self.__get_correct_solid_angle()
+                    w.error_model = self.__get_error_model()
+                    w.method = self.get_method()
+                    if self.do_2D.isChecked():
+                        w.nbpt_azim = self.__get_nbpt_azim()
+                    else:
+                        w.nbpt_azim = 1
+                    w.radial_range = self.__get_radial_range()
+                    w.azimuth_range = self.__get_azimuth_range()
+                except RuntimeError as e:
+                    QtGui.QMessageBox.warning(self, "PyFAI integrate", e.message + ". Action aboreded.")
+                    return {}
 
-                else:
-                    if "npt_rad" in kwarg:  # convert npt_rad -> npt
-                            kwarg["npt"] = kwarg.pop("npt_rad")
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt"]), dtype=numpy.float32)
+                if self.do_2D.isChecked():
+                    out = numpy.zeros((self.input_data.shape[0], w.nbpt_azim, w.nbpt_rad), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        kwarg["data"] = self.input_data[i]
-                        out[i] = ai.integrate1d(**kwarg)[1]
+                        data = self.input_data[i]
+                        out[i] = w.process(data)
+                else:
+                    out = numpy.zeros((self.input_data.shape[0], w.nbpt_rad), dtype=numpy.float32)
+                    for i in range(self.input_data.shape[0]):
+                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
+                        data = self.input_data[i]
+                        result = w.process(data)
+                        result = result.T[1]
+                        out[i] = result
 
             elif "__len__" in dir(self.input_data):
                 out = []
