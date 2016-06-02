@@ -49,12 +49,13 @@ logger = logging.getLogger("pyFAI.integrate_widget")
 from .gui_utils import QtCore, QtGui, uic, QtWebKit
 
 import fabio
+from . import worker
 from .detectors import ALL_DETECTORS, detector_factory
 from .opencl import ocl
 from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
 from .azimuthalIntegrator import AzimuthalIntegrator
-from .units import RADIAL_UNITS, TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM
+from .units import RADIAL_UNITS, TTH_DEG
 try:
     from .third_party import six
 except ImportError:
@@ -129,9 +130,8 @@ class AIWidget(QtGui.QWidget):
     """
     URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
 
-    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=None):
+    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
         self.units = {}
-        self.ai = AzimuthalIntegrator()
         self.input_data = input_data
         self.output_path = output_path
         self.output_format = output_format
@@ -139,7 +139,7 @@ class AIWidget(QtGui.QWidget):
         self.fast_dim = fast_dim
         self.name = None
         self._sem = threading.Semaphore()
-        self.json_file = json_file or ".azimint.json"
+        self.json_file = json_file
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
@@ -172,7 +172,8 @@ class AIWidget(QtGui.QWidget):
         self.platform.currentIndexChanged.connect(self.platform_changed)
         self.set_validators()
         self.assign_unit()
-        self.restore(self.json_file)
+        if self.json_file is not None:
+            self.restore(self.json_file)
         self.progressBar.setValue(0)
         self.hdf5_path = None
 
@@ -225,79 +226,113 @@ class AIWidget(QtGui.QWidget):
         # done at widget level
 #        self.polarization_factor.setValidator(QtGui.QDoubleValidator(-1, 1, 3))
 
+    def __get_unit(self):
+        for unit, widget in self.units.items():
+            if widget is not None and widget.isChecked():
+                return unit
+        logger.warning("Undefined unit !!! falling back on 2th_deg")
+        return TTH_DEG
+
+    def __get_correct_solid_angle(self):
+        return bool(self.do_solid_angle.isChecked())
+
+    def __get_dummy(self):
+        if bool(self.do_dummy.isChecked()):
+            return float_(self.val_dummy.text())
+        else:
+            return None
+
+    def __get_delta_dummy(self):
+        if not bool(self.do_dummy.isChecked()):
+            return None
+        delta_dummy = str(self.delta_dummy.text())
+        if delta_dummy:
+            return float(delta_dummy)
+        else:
+            return None
+
+    def __get_polarization_factor(self):
+        if bool(self.do_polarization.isChecked()):
+            return float(self.polarization_factor.value())
+        else:
+            return None
+
+    def __get_radial_range(self):
+        if not self.do_radial_range.isChecked():
+            return None
+        try:
+            rad_min = float_(self.radial_range_min.text())
+            rad_max = float_(self.radial_range_max.text())
+        except ValueError as error:
+            logger.error("error in parsing radial range: %s" % error)
+            return None
+        result = (rad_min, rad_max)
+        if result == (None, None):
+            result = None
+        return None
+
+    def __get_azimuth_range(self):
+        if not self.do_azimuthal_range.isChecked():
+            return None
+        try:
+            azim_min = float_(self.azimuth_range_min.text())
+            azim_max = float_(self.azimuth_range_max.text())
+        except ValueError as error:
+            logger.error("error in parsing azimuthal range: %s" % error)
+            return None
+        result = (azim_min, azim_max)
+        if result == (None, None):
+            result = None
+        return result
+
+    def __get_error_model(self):
+        if self.do_poisson.isChecked():
+            return "poisson"
+        else:
+            return None
+
+    def __get_nbpt_rad(self):
+        nbpt_rad = str(self.nbpt_rad.text()).strip()
+        if not nbpt_rad:
+            return None
+        return int(nbpt_rad)
+
+    def __get_nbpt_azim(self):
+        return int(str(self.nbpt_azim.text()).strip())
+
     def proceed(self):
         with self._sem:
             out = None
             config = self.dump()
             logger.debug("Let's work a bit")
-            self.set_ai()
+            ai = worker.make_ai(config)
 
-    #        Default Keyword arguments
-            kwarg = {"unit": TTH_DEG,
-                     "dummy": None,
-                     "delta_dummy": None,
-                     "polarization_factor": None,
-                     "filename": None,
-                     "safe": False,
-                     }
-            for unit, widget in self.units.items():
-                if widget is not None and widget.isChecked():
-                    kwarg["unit"] = unit
-                    break
-            else:
-                logger.warning("Undefined unit !!! falling back on 2th_deg")
+            # Default Keyword arguments
+            kwarg = {
+                "unit": self.__get_unit(),
+                "dummy": self.__get_dummy(),
+                "delta_dummy": self.__get_delta_dummy(),
+                "polarization_factor": self.__get_polarization_factor(),
+                "filename": None,
+                "safe": False,
+                "correctSolidAngle": self.__get_correct_solid_angle(),
+                "error_model": self.__get_error_model(),
+                "method": self.get_method(),
+                "npt_rad": self.__get_nbpt_rad(),
+             }
 
-            kwarg["correctSolidAngle"] = bool(self.do_solid_angle.isChecked())
-
-            if bool(self.do_dummy.isChecked()):
-                kwarg["dummy"] = float_(self.val_dummy.text())
-                delta_dummy = str(self.delta_dummy.text())
-                if delta_dummy:
-                    kwarg["delta_dummy"] = float(delta_dummy)
-                else:
-                    kwarg["delta_dummy"] = None
-            if bool(self.do_polarization.isChecked()):
-                kwarg["polarization_factor"] = float(self.polarization_factor.value())
-            else:
-                kwarg["polarization_factor"] = None
-
-            nbpt_rad = str(self.nbpt_rad.text()).strip()
-            if not nbpt_rad:
-                _ret = QtGui.QMessageBox.warning(self, "PyFAI integrate",
-                                                "You must provide the number of output radial bins !",)
+            if kwarg["npt_rad"] is None:
+                message = "You must provide the number of output radial bins !"
+                QtGui.QMessageBox.warning(self, "PyFAI integrate", message)
                 return {}
-                # raise RuntimeError("The number of output point is undefined !")
-            kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
+
             if self.do_2D.isChecked():
-                kwarg["npt_azim"] = int(str(self.nbpt_azim.text()).strip())
-
-            kwarg["method"] = self.get_method()
-
+                kwarg["npt_azim"] = self.__get_nbpt_azim()
             if self.do_radial_range.isChecked():
-                try:
-                    rad_min = float_(self.radial_range_min.text())
-                    rad_max = float_(self.radial_range_max.text())
-                except ValueError as error:
-                    logger.error("error in parsing radial range: %s" % error)
-                else:
-                    kwarg["radial_range"] = (rad_min, rad_max)
-                if kwarg["radial_range"] == (None, None):
-                    kwarg["radial_range"] = None
-
+                kwarg["radial_range"] = self.__get_radial_range()
             if self.do_azimuthal_range.isChecked():
-                try:
-                    azim_min = float_(self.azimuth_range_min.text())
-                    azim_max = float_(self.azimuth_range_max.text())
-                except ValueError as error:
-                    logger.error("error in parsing azimuthal range: %s" % error)
-                else:
-                    kwarg["azimuth_range"] = (azim_min, azim_max)
-                if kwarg["azimuth_range"] == (None, None):
-                    kwarg["azimuth_range"] = None
-            if self.do_poisson.isChecked():
-                kwarg["error_model"] = "poisson"
-            else:
-                kwarg["error_model"] = None
+                kwarg["azimuth_range"] = self.__get_azimuth_range()
+
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                         os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
@@ -307,23 +342,44 @@ class AIWidget(QtGui.QWidget):
                 logger.warning("No input data to process")
                 return
 
-            elif "ndim" in dir(self.input_data) and (self.input_data.ndim == 3):
+            elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
                 # We have a numpy array of dim3
-                if "npt_azim" in kwarg:
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt_azim"], kwarg["npt_rad"]), dtype=numpy.float32)
-                    for i in range(self.input_data.shape[0]):
-                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        kwarg["data"] = self.input_data[i]
-                        out[i] = self.ai.integrate2d(**kwarg)[0]
+                w = worker.Worker(azimuthalIntgrator=ai)
+                try:
+                    w.nbpt_rad = self.__get_nbpt_rad()
+                    w.unit = self.__get_unit()
+                    w.dummy = self.__get_dummy()
+                    w.delta_dummy = self.__get_delta_dummy()
+                    w.polarization_factor = self.__get_polarization_factor()
+                    # NOTE: previous implementation was using safe=False, the worker use safe=True
+                    w.correct_solid_angle = self.__get_correct_solid_angle()
+                    w.error_model = self.__get_error_model()
+                    w.method = self.get_method()
+                    w.is_safe = False
+                    if self.do_2D.isChecked():
+                        w.nbpt_azim = self.__get_nbpt_azim()
+                    else:
+                        w.nbpt_azim = 1
+                    w.radial_range = self.__get_radial_range()
+                    w.azimuth_range = self.__get_azimuth_range()
+                except RuntimeError as e:
+                    QtGui.QMessageBox.warning(self, "PyFAI integrate", e.message + ". Action aboreded.")
+                    return {}
 
-                else:
-                    if "npt_rad" in kwarg:  # convert npt_rad -> npt
-                            kwarg["npt"] = kwarg.pop("npt_rad")
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt"]), dtype=numpy.float32)
+                if self.do_2D.isChecked():
+                    out = numpy.zeros((self.input_data.shape[0], w.nbpt_azim, w.nbpt_rad), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                        kwarg["data"] = self.input_data[i]
-                        out[i] = self.ai.integrate1d(**kwarg)[1]
+                        data = self.input_data[i]
+                        out[i] = w.process(data)
+                else:
+                    out = numpy.zeros((self.input_data.shape[0], w.nbpt_rad), dtype=numpy.float32)
+                    for i in range(self.input_data.shape[0]):
+                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
+                        data = self.input_data[i]
+                        result = w.process(data)
+                        result = result.T[1]
+                        out[i] = result
 
             elif "__len__" in dir(self.input_data):
                 out = []
@@ -383,20 +439,20 @@ class AIWidget(QtGui.QWidget):
                         for i in range(fab_img.nframes):
                             kwarg["data"] = fab_img.getframe(i).data
                             if "npt_azim" in kwarg:
-                                res = self.ai.integrate2d(**kwarg)
+                                res = ai.integrate2d(**kwarg)
                             else:
                                 if "npt_rad" in kwarg:  # convert npt_rad -> npt
                                     kwarg["npt"] = kwarg.pop("npt_rad")
-                                res = self.ai.integrate1d(**kwarg)
+                                res = ai.integrate1d(**kwarg)
                             writer.write(res, index=i)
                         writer.close()
                     else:
                         if kwarg.get("npt_azim"):
-                            res = self.ai.integrate2d(**kwarg)
+                            res = ai.integrate2d(**kwarg)
                         else:
                             if "npt_rad" in kwarg:  # convert npt_rad -> npt
                                 kwarg["npt"] = kwarg.pop("npt_rad")
-                            res = self.ai.integrate1d(**kwarg)
+                            res = ai.integrate1d(**kwarg)
                     out.append(res)
 
                     #TODO manage HDF5 stuff !!!
@@ -464,7 +520,7 @@ class AIWidget(QtGui.QWidget):
             logger.info("Undefined unit !!!")
         return to_save
 
-    def dump(self, filename=".azimint.json"):
+    def dump(self, filename=None):
         """
         Dump the status of the current widget to a file in JSON
 
@@ -472,9 +528,11 @@ class AIWidget(QtGui.QWidget):
         @type filename: string
         @return: dict with configuration
         """
-        logger.info("Dump to %s" % filename)
         to_save = self.get_config()
+        if filename is None:
+            filename = self.json_file
         if filename is not None:
+            logger.info("Dump to %s" % filename)
             try:
                 with open(filename, "w") as myFile:
                     json.dump(to_save, myFile, indent=4)
@@ -557,7 +615,6 @@ class AIWidget(QtGui.QWidget):
 
     def select_ponifile(self):
         ponifile = QtGui.QFileDialog.getOpenFileName()
-        self.poni.setText(ponifile)
         self.set_ponifile(str_(ponifile))
 
     def select_splinefile(self):
@@ -565,10 +622,11 @@ class AIWidget(QtGui.QWidget):
         splinefile = str_(QtGui.QFileDialog.getOpenFileName())
         if splinefile:
             try:
-                self.ai.detector.set_splineFile(splinefile)
-                self.pixel1.setText(str(self.ai.pixel1))
-                self.pixel2.setText(str(self.ai.pixel2))
-                self.splineFile.setText(self.ai.detector.splineFile or "")
+                ai = AzimuthalIntegrator()
+                ai.detector.set_splineFile(splinefile)
+                self.pixel1.setText(str(ai.pixel1))
+                self.pixel2.setText(str(ai.pixel2))
+                self.splineFile.setText(ai.detector.splineFile or "")
             except Exception as error:
                 logger.error("failed %s on %s" % (error, splinefile))
 
@@ -596,27 +654,31 @@ class AIWidget(QtGui.QWidget):
     def set_ponifile(self, ponifile=None):
         if ponifile is None:
             ponifile = str_(self.poni.text())
+        else:
+            if self.poni.text() != ponifile:
+                self.poni.setText(ponifile)
 #         try:
 #             str(ponifile)
 #         except UnicodeError:
 #             ponifile = ponifile.encode("utf8")
 #         print(ponifile, type(ponifile))
         try:
-            self.ai = AzimuthalIntegrator.sload(ponifile)
+            ai = AzimuthalIntegrator.sload(ponifile)
         except Exception as error:
+            ai = AzimuthalIntegrator()
             logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
             return
-        self.pixel1.setText(str_(self.ai.pixel1))
-        self.pixel2.setText(str_(self.ai.pixel2))
-        self.dist.setText(str_(self.ai.dist))
-        self.poni1.setText(str_(self.ai.poni1))
-        self.poni2.setText(str_(self.ai.poni2))
-        self.rot1.setText(str_(self.ai.rot1))
-        self.rot2.setText(str_(self.ai.rot2))
-        self.rot3.setText(str_(self.ai.rot3))
-        self.splineFile.setText(str_(self.ai.detector.splineFile))
-        self.wavelength.setText(str_(self.ai._wavelength))
-        name = self.ai.detector.name.lower()
+        self.pixel1.setText(str_(ai.pixel1))
+        self.pixel2.setText(str_(ai.pixel2))
+        self.dist.setText(str_(ai.dist))
+        self.poni1.setText(str_(ai.poni1))
+        self.poni2.setText(str_(ai.poni2))
+        self.rot1.setText(str_(ai.rot1))
+        self.rot2.setText(str_(ai.rot2))
+        self.rot3.setText(str_(ai.rot3))
+        self.splineFile.setText(str_(ai.detector.splineFile))
+        self.wavelength.setText(str_(ai._wavelength))
+        name = ai.detector.name.lower()
         if name in self.all_detectors:
             self.detector.setCurrentIndex(self.all_detectors.index(name))
         else:
@@ -627,30 +689,6 @@ class AIWidget(QtGui.QWidget):
         self.name = stack_name
     setStackDataObject = set_input_data
 
-    def setSelectionMask(self, mask=None):
-        """
-        PyMca Plugin specific
-
-        @param mask: 2D array with the masked region
-
-        """
-        if (mask is not None) and (mask.sum() > 0):
-            self.ai.mask = mask
-            self.do_mask.setChecked(True)
-            self.mask_file.setText(FROM_PYMCA)
-
-    def setBackgroundImage(self, dark=None):
-        """
-        PyMca Plugin specific
-
-        @param dark: 2D array with the dark-current
-
-        """
-        if (dark is not None) and (dark.sum() > 0):
-            self.ai.darkcurrent = dark
-            self.do_dark.setChecked(True)
-            self.dark_current.setText(FROM_PYMCA)
-
     def _float(self, kw, default=0):
         fval = default
         txtval = str(self.__dict__[kw].text())
@@ -660,68 +698,6 @@ class AIWidget(QtGui.QWidget):
             except ValueError:
                 logger.error("Unable to convert %s to float: %s" % (kw, txtval))
         return fval
-
-    @staticmethod
-    def make_ai(config):
-        """Create an Azimuthal integrator from the configuration
-        Static method !
-
-        @param config: dict with all parameters
-        @return: configured (but uninitialized) AzimuthalIntgrator
-        """
-        poni = config.get("poni")
-        if poni and op.isfile(poni):
-            ai = AzimuthalIntegrator.sload(poni)
-        detector = config.get("detector", None)
-        if detector:
-            ai.detector = detector_factory(detector)
-
-        wavelength = config.get("wavelength", 0)
-        if wavelength:
-            if wavelength <= 0 or wavelength > 1e-6:
-                logger.warning("Wavelength is in meter ... unlikely value %s" % wavelength)
-            ai.wavelength = wavelength
-
-        splinefile = config.get("splineFile")
-        if splinefile and op.isfile(splinefile):
-            ai.detector.splineFile = splinefile
-
-        for key in ("pixel1", "pixel2", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
-            value = config.get(key)
-            if value is not None:
-                ai.__setattr__(key, value)
-        if config.get("chi_discontinuity_at_0"):
-            ai.setChiDiscAtZero()
-
-        mask_file = config.get("mask_file")
-        if mask_file and config.get("do_mask"):
-            if op.exists(mask_file):
-                try:
-                    mask = fabio.open(mask_file).data
-                except Exception as error:
-                    logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
-                else:
-                    ai.mask = mask
-#            elif mask_file==FROM_PYMCA:
-#                ai.mask = mask
-
-        dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
-                      if op.isfile(i.strip())]
-        if dark_files and config.get("do_dark"):
-            ai.set_darkfiles(dark_files)
-
-        flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
-                      if op.isfile(i.strip())]
-        if flat_files and config.get("do_flat"):
-            ai.set_flatfiles(flat_files)
-
-        return ai
-
-    def set_ai(self):
-        """Setup the AzimuthalIntegrator
-        """
-        config = self.dump()
-        self.ai = self.make_ai(config)
 
     def detector_changed(self):
         logger.debug("detector_changed")
@@ -739,7 +715,6 @@ class AIWidget(QtGui.QWidget):
                 self.pixel2.setText(str(inst.pixel2))
             else:
                 logger.warning("No such spline file %s" % splineFile)
-        self.ai.detector = inst
 
     def openCL_changed(self):
         logger.debug("do_OpenCL")
@@ -774,7 +749,7 @@ class AIWidget(QtGui.QWidget):
             else:
                 method = "csr_ocl"
         else:
-            if self.input_data and len(self.input_data) > 5:
+            if self.input_data is not None and len(self.input_data) > 5:
                 method = "csr"
             else:
                 method = "splitbbox"

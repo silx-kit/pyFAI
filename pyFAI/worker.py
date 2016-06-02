@@ -87,7 +87,7 @@ Here are the valid keys:
 """
 
 import threading
-import os
+import os.path
 import logging
 logger = logging.getLogger("pyFAI.worker")
 import numpy
@@ -98,6 +98,60 @@ from .distortion import Distortion
 from . import units
 import json
 # from .io import h5py, HDF5Writer
+
+
+def make_ai(config):
+    """Create an Azimuthal integrator from the configuration
+    Static method !
+
+    @param config: dict with all parameters
+    @return: configured (but uninitialized) AzimuthalIntgrator
+    """
+    poni = config.get("poni")
+    if poni and os.path.isfile(poni):
+        ai = AzimuthalIntegrator.sload(poni)
+    detector = config.get("detector", None)
+    if detector:
+        ai.detector = detector_factory(detector)
+
+    wavelength = config.get("wavelength", 0)
+    if wavelength:
+        if wavelength <= 0 or wavelength > 1e-6:
+            logger.warning("Wavelength is in meter ... unlikely value %s" % wavelength)
+        ai.wavelength = wavelength
+
+    splinefile = config.get("splineFile")
+    if splinefile and os.path.isfile(splinefile):
+        ai.detector.splineFile = splinefile
+
+    for key in ("pixel1", "pixel2", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
+        value = config.get(key)
+        if value is not None:
+            ai.__setattr__(key, value)
+    if config.get("chi_discontinuity_at_0"):
+        ai.setChiDiscAtZero()
+
+    mask_file = config.get("mask_file")
+    if mask_file and config.get("do_mask"):
+        if os.path.exists(mask_file):
+            try:
+                mask = fabio.open(mask_file).data
+            except Exception as error:
+                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+            else:
+                ai.mask = mask
+
+    dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
+                  if os.path.isfile(i.strip())]
+    if dark_files and config.get("do_dark"):
+        ai.set_darkfiles(dark_files)
+
+    flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
+                  if os.path.isfile(i.strip())]
+    if flat_files and config.get("do_flat"):
+        ai.set_flatfiles(flat_files)
+
+    return ai
 
 
 class Worker(object):
@@ -147,6 +201,9 @@ class Worker(object):
         self.method = "lut"
         self.radial = None
         self.azimuthal = None
+        self.radial_range = None
+        self.azimuth_range = None
+        self.is_safe = True
 
     def __repr__(self):
         """
@@ -163,7 +220,9 @@ class Worker(object):
                   "Flat field image: %s" % self.flat_field_image,
                   "Mask image: %s" % self.mask_image,
                   "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
-                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
+                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension),
+                  "Radial range: %s" % self.radial_range,
+                  "Azimuth range: %s" % self.azimuth_range]
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -208,31 +267,39 @@ class Worker(object):
                  "method": self.method,
                  "polarization_factor":self.polarization,
                  # "filename": None,
-                 "safe": True,
+                 "safe": self.is_safe,
                  "data": data,
-                 "normalization_factor":monitor,
                  "correctSolidAngle": self.correct_solid_angle,
                  }
+
+        if monitor is not None:
+            kwarg["normalization_factor"] = monitor
 
         if self.do_2D():
             kwarg["npt_rad"] = self.nbpt_rad
             kwarg["npt_azim"] = self.nbpt_azim
-            if "filename" in kwarg:
-                if self.extension:
-                    kwarg["filename"] += self.extension
-                else:
-                    kwarg["filename"] += ".azim"
+            # if "filename" in kwarg:
+            #    if self.extension:
+            #        kwarg["filename"] += self.extension
+            #    else:
+            #        kwarg["filename"] += ".azim"
         else:
             kwarg["npt"] = self.nbpt_rad
-            if "filename" in kwarg:
-                if self.extension:
-                    kwarg["filename"] += self.extension
-                else:
-                    kwarg["filename"] += ".xy"
+            # if "filename" in kwarg:
+            #    if self.extension:
+            #        kwarg["filename"] += self.extension
+            #    else:
+            #        kwarg["filename"] += ".xy"
         if self.do_poisson:
             kwarg["error_model"] = "poisson"
         else:
             kwarg["error_model"] = None
+
+        if self.radial_range is not None:
+            kwarg["radial_range"] = self.radial_range
+
+        if self.azimuth_range is not None:
+            kwarg["azimuth_range"] = self.azimuth_range
 
         try:
             if self.do_2D():
@@ -240,18 +307,20 @@ class Worker(object):
             else:
                 rData = self.ai.integrate1d(**kwarg)
                 self.radial = rData[0]
+                self.azimuthal = None
                 rData = numpy.vstack(rData).T
 
         except Exception as err:
             err2 = ["error in integration",
                     str(err),
-                    "data.shape: %s" % data.shape,
+                    "data.shape: %s" % (data.shape,),
                     "data.size: %s" % data.size,
                     "ai:",
                     str(self.ai),
                     "csr:",
-                    str(self.ai._csr_integrator),
-                    "csr size: %s" % self.ai._lut_integrator.size]
+                    # str(self.ai._csr_integrator),
+                    # "csr size: %s" % self.ai._lut_integrator.size
+                    ]
             logger.error(err2)
             raise err
 
@@ -362,6 +431,20 @@ class Worker(object):
     def get_unit(self):
         return self._unit
     unit = property(get_unit, set_unit)
+
+    def set_error_model(self, value):
+        if value == "poisson":
+            self.do_poisson = True
+        elif value is None or value == "":
+            self.do_poisson = False
+        else:
+            raise RuntimeError("Unsupported error model '%s'" % value)
+
+    def get_error_model(self):
+        if self.do_poisson:
+            return "poisson"
+        return None
+    error_model = property(get_error_model, set_error_model)
 
     def get_config(self):
         """return configuration as a dictionary"""
