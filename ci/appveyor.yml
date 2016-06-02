@@ -23,7 +23,7 @@ environment:
           PYTHON_ARCH: "64"
 
         # Python 3.4
-        - PYTHON_DIR: "C:\\Python27-x64"
+        - PYTHON_DIR: "C:\\Python34-x64"
           PYTHON_VERSION: "3.4.3"
           PYTHON_ARCH: "64"
 
