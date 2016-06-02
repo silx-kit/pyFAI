@@ -6,8 +6,9 @@ The iPython/Jupyter notebook
 ----------------------------
 
 The document you are seeing it may be a PDF or a web page or another
-format, but what is important is how it has been made ... According to
-this article in
+format, but what is important is how it has been made ...
+
+According to this article in
 `Nature <http://www.nature.com/news/interactive-notebooks-sharing-the-code-1.16261>`__
 the Notebook, invented by iPython, and now part of the Jupyter project,
 is the revolution for data analysis which will allow reproducable
@@ -33,13 +34,15 @@ Outside ESRF with an ESRF account.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The JupyterHub server is not directly available on the internet, but you
-can login into the firewall to foward the web server:
+can
+``login into the firewall<http://www.esrf.eu/Infrastructure/Computing/Networks/InternetAndTheFirewall/UsersManual/SSH>``\ \_
+to forward the web server:
 
 ssh -XC -p5022 -L8000:scisoft13:8000 user@firewall.esrf.fr
 
 Once logged in ESRF, keep the terminal opened and browse on your local
 computer to http://localhost:8000 to authenticate with your ESRF
-crentials. Do not worry about confidentiality as the connection from
+credentials. Do not worry about confidentiality as the connection from
 your computer to the ESRF firewall is encrypted by the SSH connection.
 
 Other cases
@@ -47,17 +50,17 @@ Other cases
 
 In the most general case you will need to install the notebook on your
 local computer in addition to pyFAI and FabIO to follow the tutorial.
-WinPython provides it uneder windows. Please refer to the installation
+WinPython provides it under windows. Please refer to the installation
 procedure of pyFAI to install locally pyFAI on your computer
 
 Getting trained in using the notebook
 -------------------------------------
 
 There are plenty of good tutorials on how to use the notebook. `This
-one <https://github.com/jupyter/mozfest15-training/blob/master/00-python-intro-w-solutions.ipynb>`__
+one <https://github.com/jupyter/mozfest15-training/blob/master/00-python-intro.ipynb>`__
 presents a quick overview of the Python programming language and
 explains how to use the notebook. Reading it is strongly encouraged
-before proceeding to the pyFAI itselt.
+before proceeding to the pyFAI itself.
 
 Anyway, the most important information is to use **Control-Enter** to
 evaluate a cell.
@@ -65,12 +68,13 @@ evaluate a cell.
 In addition to this, we will need to download some files from the
 internet. The following cell contains a piece of code to download files.
 You do not need to understand what it does, but you may have to adjust
-the proxy settings to be able to connect to the net.
+the proxy settings to be able to connect to internet, especially at
+ESRF.
 
 .. code:: python
 
     import os, sys
-    os.environ["http_proxy"] = "http://proxy.esrf.fr:3128"
+    os.environ["http_proxy"] = "http://proxy.site.com:3128"
     
     def download(url):
         """download the file given in URL and return its local path"""
@@ -102,15 +106,17 @@ practice the exercises, you can download the notebook files (.ipynb)
 from
 `Github <https://github.com/kif/pyFAI/tree/master/doc/source/usage/tutorial>`__
 
-load and display diffraction images
+Load and display diffraction images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First of all we will download an image and display it.
+First of all we will download an image and display it. Displaying it the
+right way is important as the orientation of the image imposes the
+azimuthal angle sign.
 
 .. code:: python
 
-    %pylab inline
     #initializes the visualization module
+    %pylab inline
 
 
 .. parsed-literal::
@@ -129,9 +135,11 @@ First of all we will download an image and display it.
     moke.tif
 
 
-Moke is not a real diffraction image but it is a test pattern. Prior to
-displaying it, we will use the Fable Input/Output library to read the
-content of the file:
+The *moke.tif* image we just downloaded is not a real diffraction image
+but it is a test pattern used in the tests of pyFAI.
+
+Prior to displaying it, we will use the Fable Input/Output library to
+read the content of the file:
 
 .. code:: python
 
@@ -144,7 +152,7 @@ content of the file:
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f2205ad6e10>
+    <matplotlib.image.AxesImage at 0x7fd7aaa975c0>
 
 
 
@@ -169,13 +177,20 @@ clockwise, so the inverse of the trigonometric order.
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f2205aba550>
+    <matplotlib.image.AxesImage at 0x7fd7aaa70b00>
 
 
 
 
 .. image:: output_8_1.png
 
+
+**Nota:** Displaying the image properly or not does not change the
+content of the image or its representation in memory, it only changes
+its representation, which is important only for the user. **DO NOT USE**
+*numpy.flipud* or other array-manipulation which changes the memory
+representation of the image. This is likely to mess-up all your
+subsequent calculation.
 
 1D azimuthal integration
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,11 +208,6 @@ geometry is explained on the image.
 
 .. parsed-literal::
 
-    WARNING:pyFAI.utils:Exception No module named 'fftw3': FFTw3 not available. Falling back on Scipy
-
-
-.. parsed-literal::
-
     Detector Detector	 Spline= None	 PixelSize= 1.000e-04, 1.000e-04 m
     SampleDetDist= 1.000000e-01m	PONI= 0.000000e+00, 0.000000e+00m	rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
     DirectBeamDist= 100.000mm	Center: x=0.000, y=0.000 pix	Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
@@ -211,9 +221,8 @@ Printing the *ai* object displays 3 lines:
 -  The detector position in space using the *FIT2D* coordinate system
 
 Right now, the geometry in the *ai* object is wrong. It may be easier to
-define it correctly using the *FIT2D* gerometry which uses pixels for
-the center coordinates (but the sample-detector distance is in
-milimeters.
+define it correctly using the *FIT2D* geometry which uses pixels for the
+center coordinates (but the sample-detector distance is in millimeters).
 
 .. code:: python
 
@@ -261,7 +270,7 @@ milimeters.
 
 With the *ai* object properly setup, we can perform the azimuthal
 integration using the *intergate1d* method. This methods takes only 2
-mandatroy parameters: the image to integrate and the number of bins. We
+mandatory parameters: the image to integrate and the number of bins. We
 will provide a few other to enforce the calculations to be performed in
 2theta-space and in degrees:
 
@@ -276,7 +285,7 @@ will provide a few other to enforce the calculations to be performed in
 
 .. parsed-literal::
 
-    <matplotlib.text.Text at 0x7f21fc959ef0>
+    <matplotlib.text.Text at 0x7fd7aab3e908>
 
 
 
@@ -382,7 +391,7 @@ bins.
 
 .. parsed-literal::
 
-    <matplotlib.text.Text at 0x7f21fc92ac50>
+    <matplotlib.text.Text at 0x7fd7aaa0aa58>
 
 
 
@@ -423,7 +432,7 @@ Radial integration can directly be obtained from Caked images:
 
 .. parsed-literal::
 
-    <matplotlib.text.Text at 0x7f2182b19710>
+    <matplotlib.text.Text at 0x7fd7a833dcc0>
 
 
 
@@ -452,12 +461,12 @@ the *poni-file* into pyFAI and use it directly.
     import glob
     all_files = glob.glob("al2o*.edf.bz2")
     all_files.sort()
-    print(all_files)
+    print(len(all_files))
 
 
 .. parsed-literal::
 
-    ['al2o3_0000.edf.bz2', 'al2o3_0001.edf.bz2', 'al2o3_0002.edf.bz2', 'al2o3_0003.edf.bz2', 'al2o3_0004.edf.bz2', 'al2o3_0005.edf.bz2', 'al2o3_0006.edf.bz2', 'al2o3_0007.edf.bz2', 'al2o3_0008.edf.bz2', 'al2o3_0009.edf.bz2', 'al2o3_0010.edf.bz2', 'al2o3_0011.edf.bz2', 'al2o3_0012.edf.bz2', 'al2o3_0013.edf.bz2', 'al2o3_0014.edf.bz2', 'al2o3_0015.edf.bz2', 'al2o3_0016.edf.bz2', 'al2o3_0017.edf.bz2', 'al2o3_0018.edf.bz2', 'al2o3_0019.edf.bz2', 'al2o3_0020.edf.bz2', 'al2o3_0021.edf.bz2', 'al2o3_0022.edf.bz2', 'al2o3_0023.edf.bz2', 'al2o3_0024.edf.bz2', 'al2o3_0025.edf.bz2', 'al2o3_0026.edf.bz2', 'al2o3_0027.edf.bz2', 'al2o3_0028.edf.bz2', 'al2o3_0029.edf.bz2', 'al2o3_0030.edf.bz2', 'al2o3_0031.edf.bz2', 'al2o3_0032.edf.bz2', 'al2o3_0033.edf.bz2', 'al2o3_0034.edf.bz2', 'al2o3_0035.edf.bz2', 'al2o3_0036.edf.bz2', 'al2o3_0037.edf.bz2', 'al2o3_0038.edf.bz2', 'al2o3_0039.edf.bz2', 'al2o3_0040.edf.bz2', 'al2o3_0041.edf.bz2', 'al2o3_0042.edf.bz2', 'al2o3_0043.edf.bz2', 'al2o3_0044.edf.bz2', 'al2o3_0045.edf.bz2', 'al2o3_0046.edf.bz2', 'al2o3_0047.edf.bz2', 'al2o3_0048.edf.bz2', 'al2o3_0049.edf.bz2', 'al2o3_0050.edf.bz2']
+    51
 
 
 .. code:: python
@@ -476,6 +485,7 @@ the *poni-file* into pyFAI and use it directly.
 
 .. code:: python
 
+    %%time
     for one_file in all_files:
         destination = os.path.splitext(one_file)[0]+".dat"
         image = fabio.open(one_file).data
@@ -484,10 +494,8 @@ the *poni-file* into pyFAI and use it directly.
 
 .. parsed-literal::
 
-    /scisoft/users/jupyter/jupy34/lib/python3.4/site-packages/pyFAI/utils.py:184: VisibleDeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
-      out = numpy.empty((size1, size2), vect.dtype)
-    /scisoft/users/jupyter/jupy34/lib/python3.4/site-packages/pyFAI/utils.py:180: VisibleDeprecationWarning: using a non-integer number instead of an integer will result in an error in the future
-      out = numpy.empty((size2, size1), vect.dtype)
+    CPU times: user 35.6 s, sys: 272 ms, total: 35.8 s
+    Wall time: 22 s
 
 
 This was a simple integration of 50 files, saving the result into 2
@@ -499,5 +507,5 @@ Conclusion
 Using the notebook is rather simple as it allows to mix comments, code,
 and images for visualization of scientific data.
 
-The basic use pyFAI's AzimuthalIntgrator has also been presented.
-
+The basic use pyFAI's AzimuthalIntgrator has also been presented and may
+be adapted to you specific needs.

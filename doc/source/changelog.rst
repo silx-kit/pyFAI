@@ -1,12 +1,12 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2015
+:Date: 02/06/2015
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
 
-0.12.0: unreleased
-------------------
+0.12.0: 06/2016
+---------------
 * Continuous integration on linux, windows using Python 2.7 and 3.4+
 * Drop support of Python 2.6, 3.2, 3.3 and debian6 packaging
 * New radial output units: Reciprocal spacing squared and log(q) **ID02**
@@ -17,10 +17,17 @@ ChangeLog of Versions
 * Extensions (binary sub-modules) have all been moved to *ext* directory
 * Many improvements multigeometry integrators
 * Compatibility with the copy module (copy.deepcopy) for azimuthal integrator **ID02**
-* Update documentation and provide advanced tutorials (detector calibration, calibant calculation, error handling, ...)
-* pyFAI-integrate can now be used with or without GUI (ongoing)
-* Detectors: support for non-flat (Aarhus) and/or non-contiguous (Xpad) + many new detectors (ADSC, Pilatus CdTe, Apex II, Pixium...)
-* Distortion correction works also for non-contiguous detectors (ongoing)
+* Distortion correction works also for non-contiguous detectors
+* Update documentation and provide advanced tutorials:
+    - Introdution to pyFAI using the juyter notebook
+    - detector calibration **ID15, BM02**
+    - Correction of detector distortion, examples of pixel detectors.
+    - calibrant calculation **ID30**
+    - error handling **ID02, BM29**
+* pyFAI-integrate can now be used with or without GUI
+* Many new detectors (ADSC, Pilatus CdTe, Apex II, Pixium):
+    - support for non-flat/curved detectors (Aarhus)
+    - non-contiguous detectors (WOS Xpad)
 * Include tests and benchmarking tools as part of the library
 * Better testing.
 
