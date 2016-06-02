@@ -129,7 +129,7 @@ class AIWidget(QtGui.QWidget):
     """
     URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
 
-    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=None):
+    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
         self.units = {}
         self.ai = AzimuthalIntegrator()
         self.input_data = input_data
@@ -139,7 +139,7 @@ class AIWidget(QtGui.QWidget):
         self.fast_dim = fast_dim
         self.name = None
         self._sem = threading.Semaphore()
-        self.json_file = json_file or ".azimint.json"
+        self.json_file = json_file
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
@@ -172,7 +172,8 @@ class AIWidget(QtGui.QWidget):
         self.platform.currentIndexChanged.connect(self.platform_changed)
         self.set_validators()
         self.assign_unit()
-        self.restore(self.json_file)
+        if self.json_file is not None:
+            self.restore(self.json_file)
         self.progressBar.setValue(0)
         self.hdf5_path = None
 
@@ -464,7 +465,7 @@ class AIWidget(QtGui.QWidget):
             logger.info("Undefined unit !!!")
         return to_save
 
-    def dump(self, filename=".azimint.json"):
+    def dump(self, filename=None):
         """
         Dump the status of the current widget to a file in JSON
 
@@ -472,9 +473,11 @@ class AIWidget(QtGui.QWidget):
         @type filename: string
         @return: dict with configuration
         """
-        logger.info("Dump to %s" % filename)
         to_save = self.get_config()
+        if filename is None:
+            filename = self.json_file
         if filename is not None:
+            logger.info("Dump to %s" % filename)
             try:
                 with open(filename, "w") as myFile:
                     json.dump(to_save, myFile, indent=4)
