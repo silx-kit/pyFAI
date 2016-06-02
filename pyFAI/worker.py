@@ -312,13 +312,14 @@ class Worker(object):
         except Exception as err:
             err2 = ["error in integration",
                     str(err),
-                    "data.shape: %s" % data.shape,
+                    "data.shape: %s" % (data.shape,),
                     "data.size: %s" % data.size,
                     "ai:",
                     str(self.ai),
                     "csr:",
-                    str(self.ai._csr_integrator),
-                    "csr size: %s" % self.ai._lut_integrator.size]
+                    # str(self.ai._csr_integrator),
+                    # "csr size: %s" % self.ai._lut_integrator.size
+                    ]
             logger.error(err2)
             raise err
 
