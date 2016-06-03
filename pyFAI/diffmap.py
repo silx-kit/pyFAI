@@ -51,6 +51,7 @@ import json
 
 from .opencl import ocl
 from .units import to_unit
+from .utils import six
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
 
@@ -435,7 +436,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         ax.set_title("Execution time")
         ax.grid(True)
         fig.show()
-        raw_input("Enter to quit")
+        six.moves.input("Enter to quit")
 
     def get_pos(self, filename=None, idx=None):
         """
