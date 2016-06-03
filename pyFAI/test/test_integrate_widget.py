@@ -44,7 +44,9 @@ from .utilstest import getLogger
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..integrate_widget import AIWidget
+from ..gui_utils import has_Qt
+if has_Qt:
+    from ..integrate_widget import AIWidget
 from .utilstest import UtilsTest
 
 logger = getLogger(__file__)

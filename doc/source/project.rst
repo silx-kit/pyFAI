@@ -187,7 +187,7 @@ or
     python run_test.py -i
 
 
-PyFAI comes with 33 test-suites (211 tests in total) representing a coverage of 60%.
+PyFAI comes with 34 test-suites (223 tests in total) representing a coverage of 60%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.
