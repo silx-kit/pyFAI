@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
  *
- * Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+ * Principal author:       Jerome Kieffer (Jerome.Kieffer@ESRF.eu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
