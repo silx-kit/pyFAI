@@ -161,6 +161,13 @@
     :undoc-members:
     :show-inheritance:
 
+:mod:`worker` Module
+--------------------
+
+.. automodule:: pyFAI.worker
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 :mod:`units` Module
 -------------------
