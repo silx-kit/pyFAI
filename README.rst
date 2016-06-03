@@ -90,10 +90,7 @@ If you are using MS Windows you can also download a binary version packaged as e
 installation files (Chose the one corresponding to your python version).
 
 For MacOSX users with MacOS version>10.7, the default compiler switched from gcc
-to clang and dropped the OpenMP support. Three options for you:
-
-* Install a version of gcc (>4.2) on MacOSX
-* use the "--no-openmp" option to setup.py (depends on Cython installed)
+to clang and dropped the OpenMP support. Please refer to the installation documentation ...
 
 Documentation
 -------------
@@ -113,8 +110,8 @@ For full functionality of pyFAI the following modules need to be installed.
     * numpy 		- 	http://www.numpy.org
     * scipy 		- 	http://www.scipy.org
     * matplotlib 	- 	http://matplotlib.sourceforge.net/
-    * fabio			-	http://sourceforge.net/projects/fable/files/fabio/
-    * h5py			-   http://www.h5py.org/
+    * fabio		-	http://sourceforge.net/projects/fable/files/fabio/
+    * h5py		-  	http://www.h5py.org/
     * pyopencl		-	http://mathema.tician.de/software/pyopencl/
     * python-qt4	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
 
@@ -194,6 +191,7 @@ Contributors
  * Frédéric-Emmanuel Picca (Soleil)
  * Dimitris Karkoulis (ESRF)
  * Aurore Deschildre (ESRF)
+ * Valentin Valls (ESRF)
  * Giannis Ashiotis (ESRF)
  * Zubair Nawaz (Sesame)
  * Jon Wright (ESRF)
