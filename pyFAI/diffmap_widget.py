@@ -51,6 +51,7 @@ from .utils import float_, int_, str_, get_ui_file
 from .decorators import timeit
 from .units import to_unit
 from .integrate_widget import AIWidget
+from . import worker
 from .diffmap import DiffMap
 from .tree import ListDataSet, DataSet
 import logging
@@ -434,7 +435,7 @@ class DiffMapWidget(QtGui.QWidget):
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
             diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
             print(config_ai)
-            diffmap.ai = AIWidget.make_ai(config_ai)
+            diffmap.ai = worker.make_ai(config_ai)
             diffmap.method = config_ai.get("method", "csr")
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data = diffmap.init_ai()
