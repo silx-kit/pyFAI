@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/04/2016"
+__date__ = "03/06/2016"
 __status__ = "production"
 
 import os
@@ -145,16 +145,14 @@ class AbstractCalibration(object):
             "delete": "delete a group of points, provide the letter."
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
-    UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
-             "rot2":"radian", "rot3":"radian", "wavelength":"meter"}
-    VALID_URL = ["", 'file', 'hdf5', "nxs", "h5" ]
+    UNITS = {"dist": "meter", "poni1": "meter", "poni2": "meter", "rot1": "radian",
+             "rot2": "radian", "rot3": "radian", "wavelength": "meter"}
+    VALID_URL = ["", 'file', 'hdf5', "nxs", "h5"]
     PTS_PER_DEG = 0.3
-
 
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
-        """
-        Constructor:
+        """Constructor of AbstractCalibration
 
         @param dataFiles: list of filenames containing data images
         @param darkFiles: list of filenames containing dark current images
@@ -259,132 +257,130 @@ class AbstractCalibration(object):
         self.parser.add_argument("-V", "--version", action='version', version=version)
         self.parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
         self.parser.add_argument("-o", "--out", dest="outfile",
-                          help="Filename where processed image is saved", metavar="FILE",
-                          default="merged.edf")
+                                 help="Filename where processed image is saved", metavar="FILE",
+                                 default="merged.edf")
         self.parser.add_argument("-v", "--verbose",
-                          action="store_true", dest="debug", default=False,
-                          help="switch to debug/verbose mode")
+                                 action="store_true", dest="debug", default=False,
+                                 help="switch to debug/verbose mode")
         self.parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
-                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY, case sensitive !)",
-                      default=None)
+                                 help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY, case sensitive !)",
+                                 default=None)
         self.parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                      help="wavelength of the X-Ray beam in Angstrom. Mandatory ", default=None)
+                                 help="wavelength of the X-Ray beam in Angstrom. Mandatory ", default=None)
         self.parser.add_argument("-e", "--energy", dest="energy", type=float,
-                      help="energy of the X-Ray beam in keV (hc=%skeV.A)." % hc, default=None)
+                                 help="energy of the X-Ray beam in keV (hc=%skeV.A)." % hc, default=None)
         self.parser.add_argument("-P", "--polarization", dest="polarization_factor",
-                      type=float, default=None,
-                      help="polarization factor, from -1 (vertical) to +1 (horizontal),"\
-                      " default is None (no correction), synchrotrons are around 0.95")
+                                 type=float, default=None,
+                                 help="polarization factor, from -1 (vertical) to +1 (horizontal),"\
+                                 " default is None (no correction), synchrotrons are around 0.95")
         self.parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
-                      help="file containing the diffraction parameter (poni-file). MANDATORY for pyFAI-recalib!",
-                      default=None)
+                                 help="file containing the diffraction parameter (poni-file). MANDATORY for pyFAI-recalib!",
+                                 default=None)
         self.parser.add_argument("-b", "--background", dest="background",
-                      help="Automatic background subtraction if no value are provided",
-                      default=None)
+                                 help="Automatic background subtraction if no value are provided",
+                                 default=None)
         self.parser.add_argument("-d", "--dark", dest="dark",
-                      help="list of comma separated dark images to average and subtract", default=None)
+                                 help="list of comma separated dark images to average and subtract", default=None)
         self.parser.add_argument("-f", "--flat", dest="flat",
-                      help="list of comma separated flat images to average and divide", default=None)
+                                 help="list of comma separated flat images to average and divide", default=None)
         self.parser.add_argument("-s", "--spline", dest="spline",
-                      help="spline file describing the detector distortion", default=None)
+                                 help="spline file describing the detector distortion", default=None)
         self.parser.add_argument("-D", "--detector", dest="detector_name",
-                      help="Detector name (instead of pixel size+spline)", default=None)
+                                 help="Detector name (instead of pixel size+spline)", default=None)
         self.parser.add_argument("-m", "--mask", dest="mask",
-                      help="file containing the mask (for image reconstruction)", default=None)
+                                 help="file containing the mask (for image reconstruction)", default=None)
         self.parser.add_argument("-n", "--pt", dest="npt",
-                      help="file with datapoints saved. Default: basename.npt", default=None)
+                                 help="file with datapoints saved. Default: basename.npt", default=None)
         self.parser.add_argument("--filter", dest="filter",
-                      help="select the filter, either mean(default), max or median",
-                       default="mean")
+                                 help="select the filter, either mean(default), max or median",
+                                 default="mean")
         self.parser.add_argument("-l", "--distance", dest="distance", type=float,
-                      help="sample-detector distance in millimeter. Default: 100mm", default=None)
+                                 help="sample-detector distance in millimeter. Default: 100mm", default=None)
         self.parser.add_argument("--dist", dest="dist", type=float,
-                      help="sample-detector distance in meter. Default: 0.1m", default=None)
+                                 help="sample-detector distance in meter. Default: 0.1m", default=None)
         self.parser.add_argument("--poni1", dest="poni1", type=float,
-                      help="poni1 coordinate in meter. Default: center of detector", default=None)
+                                 help="poni1 coordinate in meter. Default: center of detector", default=None)
         self.parser.add_argument("--poni2", dest="poni2", type=float,
-                      help="poni2 coordinate in meter. Default: center of detector", default=None)
+                                 help="poni2 coordinate in meter. Default: center of detector", default=None)
         self.parser.add_argument("--rot1", dest="rot1", type=float,
-                      help="rot1 in radians. default: 0", default=None)
+                                 help="rot1 in radians. default: 0", default=None)
         self.parser.add_argument("--rot2", dest="rot2", type=float,
-                      help="rot2 in radians. default: 0", default=None)
+                                 help="rot2 in radians. default: 0", default=None)
         self.parser.add_argument("--rot3", dest="rot3", type=float,
-                      help="rot3 in radians. default: 0", default=None)
+                                 help="rot3 in radians. default: 0", default=None)
 
         self.parser.add_argument("--fix-dist", dest="fix_dist",
-                      help="fix the distance parameter", default=None, action="store_true")
+                                 help="fix the distance parameter", default=None, action="store_true")
         self.parser.add_argument("--free-dist", dest="fix_dist",
-                      help="free the distance parameter. Default: Activated", default=None, action="store_false")
+                                 help="free the distance parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-poni1", dest="fix_poni1",
-                      help="fix the poni1 parameter", default=None, action="store_true")
+                                 help="fix the poni1 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-poni1", dest="fix_poni1",
-                      help="free the poni1 parameter. Default: Activated", default=None, action="store_false")
+                                 help="free the poni1 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-poni2", dest="fix_poni2",
-                      help="fix the poni2 parameter", default=None, action="store_true")
+                                 help="fix the poni2 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-poni2", dest="fix_poni2",
-                      help="free the poni2 parameter. Default: Activated", default=None, action="store_false")
+                                 help="free the poni2 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-rot1", dest="fix_rot1",
-                      help="fix the rot1 parameter", default=None, action="store_true")
+                                 help="fix the rot1 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-rot1", dest="fix_rot1",
-                      help="free the rot1 parameter. Default: Activated", default=None, action="store_false")
+                                 help="free the rot1 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-rot2", dest="fix_rot2",
-                      help="fix the rot2 parameter", default=None, action="store_true")
+                                 help="fix the rot2 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-rot2", dest="fix_rot2",
-                      help="free the rot2 parameter. Default: Activated", default=None, action="store_false")
+                                 help="free the rot2 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-rot3", dest="fix_rot3",
-                      help="fix the rot3 parameter", default=None, action="store_true")
+                                 help="fix the rot3 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-rot3", dest="fix_rot3",
-                      help="free the rot3 parameter. Default: Activated", default=None, action="store_false")
+                                 help="free the rot3 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-wavelength", dest="fix_wavelength",
-                      help="fix the wavelength parameter. Default: Activated", default=True, action="store_true")
+                                 help="fix the wavelength parameter. Default: Activated", default=True, action="store_true")
         self.parser.add_argument("--free-wavelength", dest="fix_wavelength",
-                      help="free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
+                                 help="free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
 
         self.parser.add_argument("--tilt", dest="tilt",
-                      help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
+                                 help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
         self.parser.add_argument("--no-tilt", dest="tilt",
-                      help="Deactivated tilt refinement and set all rotation to 0", default=None, action="store_false")
+                                 help="Deactivated tilt refinement and set all rotation to 0", default=None, action="store_false")
 
         self.parser.add_argument("--saturation", dest="saturation",
-                      help="consider all pixel>max*(1-saturation) as saturated and "\
-                      "reconstruct them, default: 0 (deactivated)",
-                      default=0, type=float)
+                                 help="consider all pixel>max*(1-saturation) as saturated and "
+                                 "reconstruct them, default: 0 (deactivated)",
+                                 default=0, type=float)
         self.parser.add_argument("--weighted", dest="weighted",
-                      help="weight fit by intensity, by default not.",
-                       default=False, action="store_true")
+                                 help="weight fit by intensity, by default not.",
+                                 default=False, action="store_true")
         self.parser.add_argument("--npt", dest="nPt_1D",
-                      help="Number of point in 1D integrated pattern, Default: 1024", type=int,
-                      default=1024)
+                                 help="Number of point in 1D integrated pattern, Default: 1024", type=int,
+                                 default=1024)
         self.parser.add_argument("--npt-azim", dest="nPt_2D_azim",
-                      help="Number of azimuthal sectors in 2D integrated images. Default: 360", type=int,
-                      default=360)
+                                 help="Number of azimuthal sectors in 2D integrated images. Default: 360", type=int,
+                                 default=360)
         self.parser.add_argument("--npt-rad", dest="nPt_2D_rad",
-                      help="Number of radial bins in 2D integrated images. Default: 400", type=int,
-                      default=400)
+                                 help="Number of radial bins in 2D integrated images. Default: 400", type=int,
+                                 default=400)
         self.parser.add_argument("--unit", dest="unit",
-                      help="Valid units for radial range: 2th_deg, 2th_rad, q_nm^-1,"\
-                      " q_A^-1, r_mm. Default: 2th_deg", type=str, default="2th_deg")
+                                 help="Valid units for radial range: 2th_deg, 2th_rad, q_nm^-1,"
+                                 " q_A^-1, r_mm. Default: 2th_deg", type=str, default="2th_deg")
         self.parser.add_argument("--no-gui", dest="gui",
-                      help="force the program to run without a Graphical interface",
-                      default=True, action="store_false")
+                                 help="force the program to run without a Graphical interface",
+                                 default=True, action="store_false")
         self.parser.add_argument("--no-interactive", dest="interactive",
-                      help="force the program to run and exit without prompting"\
-                      " for refinements", default=True, action="store_false")
-
+                                 help="force the program to run and exit without prompting"
+                                 " for refinements", default=True, action="store_false")
 
     def analyse_options(self, options=None, args=None):
-        """
-        Analyse options and arguments
+        """Analyzes options and arguments
 
         @return: option,arguments
         """
-        if (options is None) and  (args is None):
+        if (options is None) and (args is None):
             options = self.parser.parse_args()
             args = options.args
         if options.debug:
@@ -392,15 +388,14 @@ class AbstractCalibration(object):
         self.outfile = options.outfile
         if options.dark:
             self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
-            if not self.darkFiles:  #empty container !!!
+            if not self.darkFiles:  # empty container !!!
                 logger.error("No dark file exists !!!")
                 self.darkFiles = None
         if options.flat:
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-            if not self.flatFiles:  #empty container !!!
+            if not self.flatFiles:  # empty container !!!
                 logger.error("No flat file exists !!!")
                 self.flatFiles = None
-
 
         if options.detector_name:
             self.detector = get_detector(options.detector_name, args)
@@ -417,7 +412,6 @@ class AbstractCalibration(object):
             self.mask = (fabio.open(options.mask).data != 0)
         else:  # Use default mask provided by detector
             self.mask = self.detector.mask
-
 
         self.pointfile = options.npt
         if options.spacing:
@@ -525,8 +519,8 @@ class AbstractCalibration(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = input("Please enter the pixel size (in micron, comma separated X,Y "\
-                            " i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
+            ans = input("Please enter the pixel size (in micron, comma separated X,Y "
+                        " i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
             else:
@@ -548,7 +542,7 @@ class AbstractCalibration(object):
             valid = False
             while valid:
                 ans = input("Please enter the calibrant name or the file"
-                                " containing the d-spacing:\t").strip()
+                            " containing the d-spacing:\t").strip()
                 if ans in ALL_CALIBRANTS:
                     self.calibrant = ALL_CALIBRANTS[ans]
                     valid = True
@@ -716,7 +710,6 @@ class AbstractCalibration(object):
         while not finished:
             count = 0
             if "wavelength" in self.fixed:
-#                print self.geoRef.calibrant
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     if (count == 0):
                         previous = sys.maxsize
@@ -777,19 +770,19 @@ class AbstractCalibration(object):
         """
 
         while True:
-            help = False
+            req_help = False
             print("Fixed: " + ", ".join(self.fixed))
             ans = input("Modify parameters (or ? for help)?\t ").strip()
             if "?" in ans:
-                help = True
+                req_help = True
             if not ans:
                 print("'done' to continue")
                 continue
             words = ans.lower().split()
             action = words[0]
-            if action in [ "help", "?"]:
-                help = True
-            if help:
+            if action in ["help", "?"]:
+                req_help = True
+            if req_help:
                 for what in self.HELP.keys():
                     if action.startswith(what):
                         print("Help on %s" % what)
@@ -811,7 +804,7 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
 
             elif action == "set":  # set wavelength 1e-10
-                if (len(words) in (3, 4)) and  words[1] in self.PARAMETERS:
+                if (len(words) in (3, 4)) and words[1] in self.PARAMETERS:
                     param = words[1]
                     try:
                         value = float(words[2])
@@ -828,8 +821,8 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
             elif action == "fix":  # fix wavelength
                 if (len(words) >= 2):
-                    for param  in words[1:]:
-                        if param  in self.PARAMETERS:
+                    for param in words[1:]:
+                        if param in self.PARAMETERS:
                             print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
                             self.fixed.add(param)
                         else:
@@ -838,7 +831,7 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
             elif action == "free":  # free wavelength
                 if (len(words) >= 2):
-                    for param  in words[1:]:
+                    for param in words[1:]:
                         if param in self.PARAMETERS:
                             print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
                             self.fixed.discard(param)
@@ -873,20 +866,20 @@ class AbstractCalibration(object):
                 self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
                 return False
             elif action == "bound":  # bound dist
-                if len(words) >= 2 and  words[1] in self.PARAMETERS:
+                if len(words) >= 2 and words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
                         readFloatFromKeyboard("Enter %s in %s " % (param, self.UNITS[param]) +
-                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
+                                              "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
                               param, self.geoRef.__getattribute__("get_%s_min" % param)(),
                               param, self.geoRef.__getattribute__("get_%s" % param)(),
                               param, self.geoRef.__getattribute__("get_%s_max" % param)()),
-                             {1:[self.geoRef.__getattribute__("set_%s" % param)],
-                              2:[self.geoRef.__getattribute__("set_%s_min" % param),
-                                 self.geoRef.__getattribute__("set_%s_max" % param)],
-                              3:[self.geoRef.__getattribute__("set_%s_min" % param),
-                                 self.geoRef.__getattribute__("set_%s" % param),
-                                 self.geoRef.__getattribute__("set_%s_max" % param)]})
+                             {1: [self.geoRef.__getattribute__("set_%s" % param)],
+                              2: [self.geoRef.__getattribute__("set_%s_min" % param),
+                                  self.geoRef.__getattribute__("set_%s_max" % param)],
+                              3: [self.geoRef.__getattribute__("set_%s_min" % param),
+                                  self.geoRef.__getattribute__("set_%s" % param),
+                                  self.geoRef.__getattribute__("set_%s_max" % param)]})
                     elif len(words) == 3:
                         try:
                             value = float(words[2])
@@ -920,35 +913,35 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
             elif action == "bounds":
                 readFloatFromKeyboard("Enter Distance in meter "
-                             "(or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " %
-                             (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max),
-                             {1:[self.geoRef.set_dist], 2:[ self.geoRef.set_dist_min, self.geoRef.set_dist_max],
-                              3:[ self.geoRef.set_dist_min, self.geoRef.set_dist, self.geoRef.set_dist_max]})
+                                      "(or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " %
+                                      (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max),
+                                      {1: [self.geoRef.set_dist], 2: [self.geoRef.set_dist_min, self.geoRef.set_dist_max],
+                                       3: [self.geoRef.set_dist_min, self.geoRef.set_dist, self.geoRef.set_dist_max]})
                 readFloatFromKeyboard("Enter Poni1 in meter "
-                              "(or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " %
-                              (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max),
-                               {1:[self.geoRef.set_poni1], 2:[ self.geoRef.set_poni1_min, self.geoRef.set_poni1_max],
-                                3:[ self.geoRef.set_poni1_min, self.geoRef.set_poni1, self.geoRef.set_poni1_max]})
+                                      "(or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " %
+                                      (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max),
+                                      {1: [self.geoRef.set_poni1], 2: [self.geoRef.set_poni1_min, self.geoRef.set_poni1_max],
+                                       3: [self.geoRef.set_poni1_min, self.geoRef.set_poni1, self.geoRef.set_poni1_max]})
                 readFloatFromKeyboard("Enter Poni2 in meter "
-                              "(or poni2_min[%.3f] poni2[%.3f] poni2_max[%.3f]):\t " %
-                              (self.geoRef.poni2_min, self.geoRef.poni2, self.geoRef.poni2_max),
-                              {1:[self.geoRef.set_poni2], 2:[ self.geoRef.set_poni2_min, self.geoRef.set_poni2_max],
-                               3:[ self.geoRef.set_poni2_min, self.geoRef.set_poni2, self.geoRef.set_poni2_max]})
+                                      "(or poni2_min[%.3f] poni2[%.3f] poni2_max[%.3f]):\t " %
+                                      (self.geoRef.poni2_min, self.geoRef.poni2, self.geoRef.poni2_max),
+                                      {1: [self.geoRef.set_poni2], 2: [self.geoRef.set_poni2_min, self.geoRef.set_poni2_max],
+                                       3: [self.geoRef.set_poni2_min, self.geoRef.set_poni2, self.geoRef.set_poni2_max]})
                 readFloatFromKeyboard("Enter Rot1 in rad "
-                              "(or rot1_min[%.3f] rot1[%.3f] rot1_max[%.3f]):\t " %
-                              (self.geoRef.rot1_min, self.geoRef.rot1, self.geoRef.rot1_max),
-                              {1:[self.geoRef.set_rot1], 2:[ self.geoRef.set_rot1_min, self.geoRef.set_rot1_max],
-                               3:[ self.geoRef.set_rot1_min, self.geoRef.set_rot1, self.geoRef.set_rot1_max]})
+                                      "(or rot1_min[%.3f] rot1[%.3f] rot1_max[%.3f]):\t " %
+                                      (self.geoRef.rot1_min, self.geoRef.rot1, self.geoRef.rot1_max),
+                                      {1: [self.geoRef.set_rot1], 2: [self.geoRef.set_rot1_min, self.geoRef.set_rot1_max],
+                                       3: [self.geoRef.set_rot1_min, self.geoRef.set_rot1, self.geoRef.set_rot1_max]})
                 readFloatFromKeyboard("Enter Rot2 in rad "
-                              "(or rot2_min[%.3f] rot2[%.3f] rot2_max[%.3f]):\t " %
-                              (self.geoRef.rot2_min, self.geoRef.rot2, self.geoRef.rot2_max),
-                              {1:[self.geoRef.set_rot2], 2:[ self.geoRef.set_rot2_min, self.geoRef.set_rot2_max],
-                               3:[ self.geoRef.set_rot2_min, self.geoRef.set_rot2, self.geoRef.set_rot2_max]})
+                                      "(or rot2_min[%.3f] rot2[%.3f] rot2_max[%.3f]):\t " %
+                                      (self.geoRef.rot2_min, self.geoRef.rot2, self.geoRef.rot2_max),
+                                      {1: [self.geoRef.set_rot2], 2: [self.geoRef.set_rot2_min, self.geoRef.set_rot2_max],
+                                       3: [self.geoRef.set_rot2_min, self.geoRef.set_rot2, self.geoRef.set_rot2_max]})
                 readFloatFromKeyboard("Enter Rot3 in rad "
-                              "(or rot3_min[%.3f] rot3[%.3f] rot3_max[%.3f]):\t " %
-                              (self.geoRef.rot3_min, self.geoRef.rot3, self.geoRef.rot3_max),
-                              {1:[self.geoRef.set_rot3], 2:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3_max],
-                               3:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
+                                      "(or rot3_min[%.3f] rot3[%.3f] rot3_max[%.3f]):\t " %
+                                      (self.geoRef.rot3_min, self.geoRef.rot3, self.geoRef.rot3_max),
+                                      {1: [self.geoRef.set_rot3], 2: [self.geoRef.set_rot3_min, self.geoRef.set_rot3_max],
+                                       3: [self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
             elif action == "done":
                 self.postProcess()
                 return True
@@ -1042,7 +1035,7 @@ class AbstractCalibration(object):
                 if len(words) < 2:
                     print(self.HELP[action])
                 else:
-                    for code in  words[1:]:
+                    for code in words[1:]:
                         self.peakPicker.remove_grp(code)
                     self.data = self.peakPicker.points.getList()
                     self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
@@ -1056,17 +1049,19 @@ class AbstractCalibration(object):
         @param rings: list of rings to consider
         """
         from scipy.optimize import leastsq
-        model = lambda x, mean, amp, phase:mean + amp * numpy.sin(x + phase)
-        error = lambda param, xdata, ydata:  model(xdata, *param) - ydata
+        model = lambda x, mean, amp, phase: mean + amp * numpy.sin(x + phase)
+        error = lambda param, xdata, ydata: model(xdata, *param) - ydata
+
         def jacob(param, xdata, ydata):
             j = numpy.ones((param.size, xdata.size))
             j[1, :] = numpy.sin(xdata + param[2])
             j[2, :] = param[1] * numpy.cos(xdata + param[2])
             return j
+
         sqrt2 = math.sqrt(2.)
         ttha = self.geoRef.twoThetaArray(self.detector.shape)
         resolution = numpy.rad2deg(max(abs(ttha[1:] - ttha[:-1]).max(),
-                          abs(ttha[:, 1:] - ttha[:, :-1]).max()))
+                                       abs(ttha[:, 1:] - ttha[:, :-1]).max()))
         if self.gui:
             if self.fig_chiplot:
                 self.fig_chiplot.clf()
@@ -1175,12 +1170,12 @@ class AbstractCalibration(object):
                                        all=True)
         t5 = time.time()
         logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
-                            " * two theta array generation %.3fs" % (t1 - t0),
-                            " * diff Solid Angle           %.3fs" % (t2 - t1),
-                            " * chi array generation       %.3fs" % (t2a - t2),
-                            " * corner coordinate array    %.3fs" % (t2b - t2a),
-                            " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
-                            " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
+                                     " * two theta array generation %.3fs" % (t1 - t0),
+                                     " * diff Solid Angle           %.3fs" % (t2 - t1),
+                                     " * chi array generation       %.3fs" % (t2a - t2),
+                                     " * corner coordinate array    %.3fs" % (t2b - t2a),
+                                     " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
+                                     " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
 
         if self.gui:
             self.ax_xrpd_1d.plot(res1["radial"], res1["I"])
@@ -1213,8 +1208,8 @@ class AbstractCalibration(object):
             pos_rad = res2["radial"]
             pos_azim = res2["azimuthal"]
             self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
-                         extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
-                         aspect="auto")
+                                   extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
+                                   aspect="auto")
             self.ax_xrpd_2d.set_title("2D regrouping")
             self.ax_xrpd_2d.set_xlabel(self.unit.label)
             self.ax_xrpd_2d.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
@@ -1353,7 +1348,7 @@ class AbstractCalibration(object):
                 self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
 
         if self.geoRef:
-#        reset geoRef object
+#             reset geoRef object
             self.geoRef.set_dist_min(0)
             self.geoRef.set_dist_max(100)
             self.geoRef.set_dist(self.ai.dist)
@@ -1438,20 +1433,20 @@ An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
         usage = "pyFAI-calib [options] -w 1 -D detector -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
         self.parser.add_argument("-r", "--reconstruct", dest="reconstruct",
-              help="Reconstruct image where data are masked or <0  (for Pilatus "\
-              "detectors or detectors with modules)",
-              action="store_true", default=False)
+                                 help="Reconstruct image where data are masked or <0  (for Pilatus "\
+                                 "detectors or detectors with modules)",
+                                 action="store_true", default=False)
 
         self.parser.add_argument("-g", "--gaussian", dest="gaussian",
-                               help="""Size of the gaussian kernel.
+                                 help="""Size of the gaussian kernel.
 Size of the gap (in pixels) between two consecutive rings, by default 100
 Increase the value if the arc is not complete;
 decrease the value if arcs are mixed together.""", default=None)
         self.parser.add_argument("--square", dest="square", action="store_true",
-            help="Use square kernel shape for neighbor search instead of diamond shape",
-            default=False)
+                                 help="Use square kernel shape for neighbor search instead of diamond shape",
+                                 default=False)
         self.parser.add_argument("-p", "--pixel", dest="pixel",
-                      help="size of the pixel in micron", default=None)
+                                 help="size of the pixel in micron", default=None)
 
         (options, _) = self.analyse_options()
         # Analyse remaining aruments and options
@@ -1464,7 +1459,6 @@ decrease the value if arcs are mixed together.""", default=None)
 
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
-
 
     def preprocess(self):
         """
@@ -1532,7 +1526,7 @@ decrease the value if arcs are mixed together.""", default=None)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
-        scores = [ (scor, pars), ]
+        scores = [(scor, pars), ]
 
         # Second attempt
         defaults = self.initgeoRef()
@@ -1560,7 +1554,7 @@ decrease the value if arcs are mixed together.""", default=None)
                 else:
                     logger.warning("Overwriting wavelength from PONI file (%s) "
                                    "with the one from command line (%s)" %
-                                    (old_wl, self.wavelength))
+                                   (old_wl, self.wavelength))
                 self.geoRef.wavelength = self.wavelength
             if self.detector:
                 gr_det = str(self.geoRef.detector)
@@ -1652,10 +1646,10 @@ and a new option which lets you choose between the original `massif` algorithm a
         self.configure_parser(usage=usage, description=description, epilog=epilog)
 
         self.parser.add_argument("-r", "--ring", dest="max_rings", type=int,
-                      help="maximum number of rings to extract. Default: all accessible", default=None)
+                                 help="maximum number of rings to extract. Default: all accessible", default=None)
         self.parser.add_argument("-k", "--keep", dest="keep",
-                      help="Keep existing control point and append new",
-                      default=False, action="store_true")
+                                 help="Keep existing control point and append new",
+                                 default=False, action="store_true")
 
         options = self.parser.parse_args()
         args = options.args
@@ -1671,11 +1665,9 @@ and a new option which lets you choose between the original `massif` algorithm a
         self.keep = options.keep
         self.analyse_options(options, args)
 
-
     def read_dSpacingFile(self):
         """Read the name of the file with d-spacing"""
         AbstractCalibration.read_dSpacingFile(self, verbose=False)
-
 
     def preprocess(self):
         """
@@ -1686,8 +1678,6 @@ and a new option which lets you choose between the original `massif` algorithm a
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True, pick=False)
             update_fig(self.peakPicker.fig)
-
-
 
     def refine(self):
         """
@@ -1749,12 +1739,11 @@ class MultiCalib(object):
         self.rot2 = 0.0
         self.rot3 = 0.0
 
-
     def __repr__(self):
         lst = ["Multi-Calibration object:",
-             "data= " + ", ".join(self.dataFiles),
-             "dark= " + ", ".join(self.darkFiles),
-             "flat= " + ", ".join(self.flatFiles)]
+               "data= " + ", ".join(self.dataFiles),
+               "dark= " + ", ".join(self.darkFiles),
+               "flat= " + ", ".join(self.flatFiles)]
         lst.append(self.detector.__repr__())
 #        lst.append("gaussian= %s" % self.gaussianWidth)
         return os.linesep.join(lst)
@@ -1788,8 +1777,8 @@ class MultiCalib(object):
 #        parser.add_argument("-o", "--out", dest="outfile",
 #                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
         parser.add_argument("-v", "--verbose",
-                          action="store_true", dest="debug", default=False,
-                          help="switch to debug/verbose mode")
+                            action="store_true", dest="debug", default=False,
+                            help="switch to debug/verbose mode")
 #        parser.add_argument("-g", "--gaussian", dest="gaussian", help="""Size of the gaussian kernel.
 # Size of the gap (in pixels) between two consecutive rings, by default 100
 # Increase the value if the arc is not complete;
@@ -1797,118 +1786,118 @@ class MultiCalib(object):
 #        parser.add_argument("-c", "--square", dest="square", action="store_true",
 #                      help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
         parser.add_argument("-c", "--calibrant", dest="calibrant", metavar="FILE",
-                      help="file containing d-spacing of the calibrant reference sample (MANDATORY)", default=None)
+                            help="file containing d-spacing of the calibrant reference sample (MANDATORY)", default=None)
         parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                      help="wavelength of the X-Ray beam in Angstrom", default=None)
+                            help="wavelength of the X-Ray beam in Angstrom", default=None)
         parser.add_argument("-e", "--energy", dest="energy", type=float,
-                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+                            help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
         parser.add_argument("-P", "--polarization", dest="polarization_factor",
-                      type=float, default=0.0,
-                      help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
+                            type=float, default=0.0,
+                            help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
         parser.add_argument("-b", "--background", dest="background",
-                      help="Automatic background subtraction if no value are provided", default=None)
+                            help="Automatic background subtraction if no value are provided", default=None)
         parser.add_argument("-d", "--dark", dest="dark",
-                      help="list of dark images to average and subtract", default=None)
+                            help="list of dark images to average and subtract", default=None)
         parser.add_argument("-f", "--flat", dest="flat",
-                      help="list of flat images to average and divide", default=None)
+                            help="list of flat images to average and divide", default=None)
 #        parser.add_argument("-r", "--reconstruct", dest="reconstruct",
 #                      help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
 #                      action="store_true", default=False)
         parser.add_argument("-s", "--spline", dest="spline",
-                      help="spline file describing the detector distortion", default=None)
+                            help="spline file describing the detector distortion", default=None)
         parser.add_argument("-p", "--pixel", dest="pixel",
-                      help="size of the pixel in micron", default=None)
+                            help="size of the pixel in micron", default=None)
         parser.add_argument("-D", "--detector", dest="detector_name",
-                      help="Detector name (instead of pixel size+spline)", default=None)
+                            help="Detector name (instead of pixel size+spline)", default=None)
         parser.add_argument("-m", "--mask", dest="mask",
-                      help="file containing the mask (for image reconstruction)", default=None)
+                            help="file containing the mask (for image reconstruction)", default=None)
 #        parser.add_argument("-n", "--npt", dest="npt",
 #                      help="file with datapoints saved", default=None)
         parser.add_argument("--filter", dest="filter",
-                      help="select the filter, either mean(default), max or median",
-                       default="mean")
+                            help="select the filter, either mean(default), max or median",
+                            default="mean")
         parser.add_argument("--saturation", dest="saturation",
-                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
-                      default=0.1, type=float)
+                            help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
+                            default=0.1, type=float)
         parser.add_argument("-r", "--ring", dest="max_rings", type=float,
-                      help="maximum number of rings to extract", default=None)
+                            help="maximum number of rings to extract", default=None)
 
         parser.add_argument("--weighted", dest="weighted",
-                      help="weight fit by intensity",
-                       default=False, action="store_true")
+                            help="weight fit by intensity",
+                            default=False, action="store_true")
         parser.add_argument("-l", "--distance", dest="distance", type=float,
-                      help="sample-detector distance in millimeter", default=None)
+                            help="sample-detector distance in millimeter", default=None)
 
         parser.add_argument("--tilt", dest="tilt",
-                      help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
+                            help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated",
+                            default=None, action="store_true")
         parser.add_argument("--no-tilt", dest="tilt",
-                      help="Deactivated tilt refinement and set all rotation to 0", default=None, action="store_false")
+                            help="Deactivated tilt refinement and set all rotation to 0", default=None, action="store_false")
 
         parser.add_argument("--dist", dest="dist", type=float,
-                      help="sample-detector distance in meter", default=None)
+                            help="sample-detector distance in meter", default=None)
         parser.add_argument("--poni1", dest="poni1", type=float,
-                      help="poni1 coordinate in meter", default=None)
+                            help="poni1 coordinate in meter", default=None)
         parser.add_argument("--poni2", dest="poni2", type=float,
-                      help="poni2 coordinate in meter", default=None)
+                            help="poni2 coordinate in meter", default=None)
         parser.add_argument("--rot1", dest="rot1", type=float,
-                      help="rot1 in radians", default=None)
+                            help="rot1 in radians", default=None)
         parser.add_argument("--rot2", dest="rot2", type=float,
-                      help="rot2 in radians", default=None)
+                            help="rot2 in radians", default=None)
         parser.add_argument("--rot3", dest="rot3", type=float,
-                      help="rot3 in radians", default=None)
+                            help="rot3 in radians", default=None)
 
         parser.add_argument("--fix-dist", dest="fix_dist",
-                      help="fix the distance parameter", default=None, action="store_true")
+                            help="fix the distance parameter", default=None, action="store_true")
         parser.add_argument("--free-dist", dest="fix_dist",
-                      help="free the distance parameter", default=None, action="store_false")
+                            help="free the distance parameter", default=None, action="store_false")
 
         parser.add_argument("--fix-poni1", dest="fix_poni1",
-                      help="fix the poni1 parameter", default=None, action="store_true")
+                            help="fix the poni1 parameter", default=None, action="store_true")
         parser.add_argument("--free-poni1", dest="fix_poni1",
-                      help="free the poni1 parameter", default=None, action="store_false")
+                            help="free the poni1 parameter", default=None, action="store_false")
 
         parser.add_argument("--fix-poni2", dest="fix_poni2",
-                      help="fix the poni2 parameter", default=None, action="store_true")
+                            help="fix the poni2 parameter", default=None, action="store_true")
         parser.add_argument("--free-poni2", dest="fix_poni2",
-                      help="free the poni2 parameter", default=None, action="store_false")
+                            help="free the poni2 parameter", default=None, action="store_false")
 
         parser.add_argument("--fix-rot1", dest="fix_rot1",
-                      help="fix the rot1 parameter", default=None, action="store_true")
+                            help="fix the rot1 parameter", default=None, action="store_true")
         parser.add_argument("--free-rot1", dest="fix_rot1",
-                      help="free the rot1 parameter", default=None, action="store_false")
+                            help="free the rot1 parameter", default=None, action="store_false")
 
         parser.add_argument("--fix-rot2", dest="fix_rot2",
-                      help="fix the rot2 parameter", default=None, action="store_true")
+                            help="fix the rot2 parameter", default=None, action="store_true")
         parser.add_argument("--free-rot2", dest="fix_rot2",
-                      help="free the rot2 parameter", default=None, action="store_false")
+                            help="free the rot2 parameter", default=None, action="store_false")
 
         parser.add_argument("--fix-rot3", dest="fix_rot3",
-                      help="fix the rot3 parameter", default=None, action="store_true")
+                            help="fix the rot3 parameter", default=None, action="store_true")
         parser.add_argument("--free-rot3", dest="fix_rot3",
-                      help="free the rot3 parameter", default=None, action="store_false")
+                            help="free the rot3 parameter", default=None, action="store_false")
 
         parser.add_argument("--fix-wavelength", dest="fix_wavelength",
-                      help="fix the wavelength parameter", default=True, action="store_true")
+                            help="fix the wavelength parameter", default=True, action="store_true")
         parser.add_argument("--free-wavelength", dest="fix_wavelength",
-                      help="free the wavelength parameter", default=True, action="store_false")
-
+                            help="free the wavelength parameter", default=True, action="store_false")
 
         parser.add_argument("--no-gui", dest="gui",
-                      help="force the program to run without a Graphical interface",
-                      default=True, action="store_false")
+                            help="force the program to run without a Graphical interface",
+                            default=True, action="store_false")
         parser.add_argument("--gui", dest="gui",
-                      help="force the program to run with a Graphical interface",
-                      default=True, action="store_true")
+                            help="force the program to run with a Graphical interface",
+                            default=True, action="store_true")
 
         parser.add_argument("--no-interactive", dest="interactive",
-                      help="force the program to run and exit without prompting for refinements",
-                      default=True, action="store_false")
+                            help="force the program to run and exit without prompting for refinements",
+                            default=True, action="store_false")
         parser.add_argument("--interactive", dest="interactive",
-                      help="force the program to prompt for refinements",
-                      default=True, action="store_true")
+                            help="force the program to prompt for refinements",
+                            default=True, action="store_true")
         parser.add_argument("--peak-picker", dest="peakPicker",
-                      help="Uses the 'massif', 'blob' or 'watershed' peak-picker algorithm (default: blob)",
-                      default="blob", type=str)
+                            help="Uses the 'massif', 'blob' or 'watershed' peak-picker algorithm (default: blob)",
+                            default="blob", type=str)
         options = parser.parse_args()
 
         # Analyse aruments and options
@@ -2011,12 +2000,11 @@ class MultiCalib(object):
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
             ans = input("Please enter the pixel size (in micron, comma separated X, Y "
-                            "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
+                        "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
             else:
                 self.get_pixelSize(ans)
-
 
     def read_dSpacingFile(self):
         """Read the name of the calibrant or the file with d-spacing"""
@@ -2037,12 +2025,11 @@ class MultiCalib(object):
             ans = ""
             while not self.calibrant:
                 ans = input("Please enter the name of the calibrant"
-                                " or the file containing the d-spacing:\t").strip()
+                            " or the file containing the d-spacing:\t").strip()
                 if ans in ALL_CALIBRANTS:
                     self.calibrant = ALL_CALIBRANTS[ans]
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(filename=ans)
-
 
     def read_wavelength(self):
         """Read the wavelength"""
@@ -2134,7 +2121,7 @@ class MultiCalib(object):
         idx = 0
         print("")
         print("Results of linear regression for distance in mm")
-        for key, dico in  self.results.items():
+        for key, dico in self.results.items():
             print(key, dico["dist"])
             print(dico["ai"])
             x[idx] = dico["dist"] * 1000
@@ -2152,10 +2139,10 @@ class MultiCalib(object):
             centerY[idx] = f["centerY"]
             idx += 1
         for name, elt in [("dist", dist),
-                         ("poni1", poni1), ("poni2", poni2),
-                         ("rot1", rot1), ("rot2", rot2), ("rot3", rot3),
-                         ("direct", direct), ("tilt", tilt), ("trp", trp),
-                         ("centerX", centerX), ("centerY", centerY)]:
+                          ("poni1", poni1), ("poni2", poni2),
+                          ("rot1", rot1), ("rot2", rot2), ("rot3", rot3),
+                          ("direct", direct), ("tilt", tilt), ("trp", trp),
+                          ("centerX", centerX), ("centerY", centerY)]:
             slope, intercept, r, _two, stderr = linregress(x, elt)
 
             print("%s = %s * dist_mm + %s \t R= %s\t stderr= %s" % (name, slope, intercept, r, stderr))
@@ -2164,7 +2151,7 @@ class MultiCalib(object):
 class CheckCalib(object):
     def __init__(self, poni=None, img=None, unit="2th_deg"):
         self.ponifile = poni
-        if poni :
+        if poni:
             self.ai = AzimuthalIntegrator.sload(poni)
         else:
             self.ai = None
@@ -2202,25 +2189,25 @@ refinement process.
         """
         version = "check_calib from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage,
-                              description=description)
+                                description=description)
         parser.add_argument("-V", "--version", action='version', version=version)
         parser.add_argument("args", metavar="FILE", help="Image file to check calibration for", nargs='+')
         parser.add_argument("-v", "--verbose",
-                          action="store_true", dest="verbose", default=False,
-                          help="switch to debug mode")
+                            action="store_true", dest="verbose", default=False,
+                            help="switch to debug mode")
         parser.add_argument("-d", "--dark", dest="dark", metavar="FILE", type=str,
-                      help="file containing the dark images to subtract", default=None)
+                            help="file containing the dark images to subtract", default=None)
         parser.add_argument("-f", "--flat", dest="flat", metavar="FILE", type=str,
-                      help="file containing the flat images to divide", default=None)
+                            help="file containing the flat images to divide", default=None)
         parser.add_argument("-m", "--mask", dest="mask", metavar="FILE", type=str,
-                      help="file containing the mask", default=None)
+                            help="file containing the mask", default=None)
         parser.add_argument("-p", "--poni", dest="poni", metavar="FILE", type=str,
-                      help="file containing the diffraction parameter (poni-file)",
-                      default=None)
+                            help="file containing the diffraction parameter (poni-file)",
+                            default=None)
         parser.add_argument("-e", "--energy", dest="energy", type=float,
-                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+                            help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
         parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                      help="wavelength of the X-Ray beam in Angstrom", default=None)
+                            help="wavelength of the X-Ray beam in Angstrom", default=None)
 
         options = parser.parse_args()
         if options.verbose:
@@ -2256,7 +2243,6 @@ refinement process.
 #        else:
 #            self.read_wavelength()
 
-
     def get_1dsize(self):
         logger.debug("in get_1dsize")
         return int(numpy.sqrt(self.img.shape[0] ** 2 + self.img.shape[1] ** 2))
@@ -2277,7 +2263,7 @@ refinement process.
             self.integrate()
 
         self.resynth = self.ai.calcfrom1d(self.r, self.I, shape=self.img.shape, mask=self.mask,
-                   dim1_unit=self.unit, correctSolidAngle=True)
+                                          dim1_unit=self.unit, correctSolidAngle=True)
         if self.mask is not None:
             self.img[numpy.where(self.mask)] = 0
 
@@ -2376,7 +2362,6 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     else:
         c.peakPicker.massif.initValleySize()
 
-
     if interactive:
         c.peakPicker.gui(log=True, maximize=True, pick=True)
         update_fig(c.peakPicker.fig)
@@ -2385,6 +2370,3 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     c.ai.wavelength = c.geoRef.wavelength
 
     return c.ai
-
-
-

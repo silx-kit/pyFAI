@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/05/2016"
+__date__ = "03/06/2016"
 
 
 import unittest
@@ -44,26 +44,29 @@ from .utilstest import getLogger
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..gui_utils import QtGui
 from ..integrate_widget import AIWidget
 from .utilstest import UtilsTest
 
 logger = getLogger(__file__)
+
 
 class AIWidgetMocked():
 
     def __init__(self, result=None):
         pass
 
+
 class TestAIWidget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if QtGui is not None:
+        from ..gui_utils import QtGui, has_Qt
+        if has_Qt:
             cls.app = QtGui.QApplication([])
 
     def setUp(self):
-        if QtGui is None:
+        from ..gui_utils import has_Qt
+        if not has_Qt:
             self.skipTest("Qt is not available")
 
     @classmethod

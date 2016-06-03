@@ -232,14 +232,14 @@ Linux
 .....
 
 
-`Travis provides continuous integration on Linux<https://travis-ci.org/kif/pyFAI/>`_, 64 bits computer with Python 2.7, 3.4 and 3.5.
+`Travis provides continuous integration on Linux <https://travis-ci.org/kif/pyFAI>`_, 64 bits computer with Python 2.7, 3.4 and 3.5.
 
 The builds cannot be retrieved with Travis-CO.
 
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows<https://ci.appveyor.com/project/kif/pyFAI>`_, 64 bits computer with Python 2.7 and 3.4.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/kif/pyFAI>`_, 64 bits computer with Python 2.7 and 3.4.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
 Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
 
