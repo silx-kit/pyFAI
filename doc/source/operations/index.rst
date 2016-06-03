@@ -69,6 +69,9 @@ There are few specific options to ``setup.py``:
 * ``--openmp``: Recompiles the Cython code with OpenMP support (Default under Windows and Linux).
 * ``--with-testimages``: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.
 
+Detailed installation procedure on different operating systems
+--------------------------------------------------------------
+
 .. toctree::
    :maxdepth: 2
 

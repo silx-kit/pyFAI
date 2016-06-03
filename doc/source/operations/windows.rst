@@ -164,7 +164,7 @@ The latest stable release of pyFAI should also be PIP-installable (starting at v
 
 
 Install pyFAI from sources
-==========================
+--------------------------
 
 The sources of pyFAI are available at https://github.com/pyFAI/pyFAI/releases
 the development is performed on https://github.com/kif/pyFAI
@@ -182,7 +182,7 @@ To upgrade the C-code in pyFAI, one needs in addition Cython:
    pip install --pre --no-index --find-links dist/ pyFAI
 
 Troubleshooting
-===============
+---------------
 
 This section contains some tips on windows.
 
