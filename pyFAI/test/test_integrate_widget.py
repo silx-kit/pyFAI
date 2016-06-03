@@ -62,12 +62,11 @@ class TestAIWidget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from ..gui_utils import QtGui, has_Qt
+        from ..gui_utils import QtGui
         if has_Qt:
             cls.app = QtGui.QApplication([])
 
     def setUp(self):
-        from ..gui_utils import has_Qt
         if not has_Qt:
             self.skipTest("Qt is not available")
 
