@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "03/06/2016"
 __status__ = "production"
 
 import sys
@@ -88,13 +88,13 @@ else:
         from PyQt4.QtCore import SIGNAL, pyqtSignal as Signal
     except ImportError:
         has_Qt = False
-
-    from PyQt4.QtCore import QT_VERSION_STR
-    from PyQt4.Qt import PYQT_VERSION_STR
-    from sip import SIP_VERSION_STR
-    Qt_version = tuple(int(i) for i in QT_VERSION_STR.split(".")[:3])
-    SIP_version = tuple(int(i) for i in SIP_VERSION_STR.split(".")[:3])
-    PyQt_version = tuple(int(i) for i in PYQT_VERSION_STR.split(".")[:3])
+    else:
+        from PyQt4.QtCore import QT_VERSION_STR
+        from PyQt4.Qt import PYQT_VERSION_STR
+        from sip import SIP_VERSION_STR
+        Qt_version = tuple(int(i) for i in QT_VERSION_STR.split(".")[:3])
+        SIP_version = tuple(int(i) for i in SIP_VERSION_STR.split(".")[:3])
+        PyQt_version = tuple(int(i) for i in PYQT_VERSION_STR.split(".")[:3])
 
 if has_Qt:
     matplotlib.rcParams['backend'] = 'Qt4Agg'
