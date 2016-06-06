@@ -57,7 +57,7 @@ You can automatically install the latest nightly built of pyFAI with:
    sudo mv silx.list /etc/apt/sources.list.d/
    sudo mv silx.pref /etc/apt/preferences.d/
    sudo apt-get update
-   sudo apt-get install -t jessie-backports pyfai
+   sudo apt-get install pyfai
 
 **Nota:** The nightly built packages are not signed, hence you will be prompted
 to install non-signed packages.

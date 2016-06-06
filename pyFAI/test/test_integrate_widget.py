@@ -34,9 +34,10 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2016"
+__date__ = "06/06/2016"
 
-
+import os
+import sys
 import unittest
 import numpy
 import fabio
@@ -139,12 +140,27 @@ class TestAIWidget(unittest.TestCase):
         for i in range(len(result[0])):
             numpy.testing.assert_array_almost_equal(result[0][i], expected[0][i], decimal=1)
 
-def suite():
-    testsuite = unittest.TestSuite()
-    test_names = unittest.getTestCaseNames(TestAIWidget, "test")
-    for test in test_names:
-        testsuite.addTest(TestAIWidget(test))
-    return testsuite
+
+if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
+    # On linux and no DISPLAY available (e.g., ssh without -X)
+    logger.warning('pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
+
+    class SkipGUITest(unittest.TestCase):
+        def runTest(self):
+            self.skipTest(
+                'pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
+
+    def suite():
+        suite = unittest.TestSuite()
+        suite.addTest(SkipGUITest())
+        return suite
+else:
+    def suite():
+        testsuite = unittest.TestSuite()
+        test_names = unittest.getTestCaseNames(TestAIWidget, "test")
+        for test in test_names:
+            testsuite.addTest(TestAIWidget(test))
+        return testsuite
 
 
 if __name__ == '__main__':
