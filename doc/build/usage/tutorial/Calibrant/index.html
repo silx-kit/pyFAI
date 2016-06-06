@@ -1,0 +1,312 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Selection of a calibrant &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Tutorials" href="../index.html" />
+    <link rel="next" title="Multi-geometry azimuthal integration" href="../multi-geometry.html" />
+    <link rel="prev" title="Detector distortion corrections" href="../Distortion/Distortion.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../multi-geometry.html" title="Multi-geometry azimuthal integration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../Distortion/Distortion.html" title="Detector distortion corrections"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="selection-of-a-calibrant">
+<h1>Selection of a calibrant<a class="headerlink" href="#selection-of-a-calibrant" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial we will see how to select a calibrant for a given
+experimental setup.</p>
+<div class="section" id="experimental-setup">
+<h2>Experimental setup<a class="headerlink" href="#experimental-setup" title="Permalink to this headline">¶</a></h2>
+<p>The experimental setup is a classical protein crystallography setup
+with:</p>
+<ul class="simple">
+<li>Large Pilatus 6M detector on a translation table</li>
+<li>The small and intense beam of ~50 microns in size has a wavelength of
+1 Angstrom</li>
+<li>The detector is in <em>normal</em> condition: orthogonal to the beam and
+centered in the middle of the detector.</li>
+</ul>
+<p>The scientist in charge of this beamline want to ensure all encoders are
+working properly and needs to validate the setup for distances between
+10cm and 80cm. He will buy reference material from NIST but he does not
+know which calibrant is best suited for his setup. We will assume all
+reference material sold by NIST are equally suitable for ray position
+(no issue with grain size, ...).</p>
+<p>The calibration works best in pyFAI if more than one Debye-Scherrer ring
+is seen on the detector.</p>
+</div>
+<div class="section" id="define-the-detector">
+<h2>Define the detector<a class="headerlink" href="#define-the-detector" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="n">dete</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">Pilatus6M</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">dete</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Pilatus6M   PixelSize= 1.720e-04, 1.720e-04 m
+</pre></div>
+</div>
+</div>
+<div class="section" id="select-reference-materials">
+<h2>Select reference materials<a class="headerlink" href="#select-reference-materials" title="Permalink to this headline">¶</a></h2>
+<p>The NIST sells different <a class="reference external" href="http://www.nist.gov/mml/mmsd/upload/852_08_81b.pdf">Standard Refrence
+Materials</a>, among
+them Silicon (SRM640), Lanthanum hexaboride (SRM660), Alumina (SRM676)
+and Ceria (SRM674) are commonly used. Many other exists: Cr203, TiO2,
+Zn0, SiO2, ... Evaluating them is left as an exercise.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI.calibrant</span>
+<span class="k">print</span><span class="p">(</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">calibrant</span><span class="o">.</span><span class="n">ALL_CALIBRANTS</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Calibrants available: Ni, CrOx, NaCl, Si_SRM640e, Si_SRM640d, Si_SRM640a, Si_SRM640c, alpha_Al2O3, Cr2O3, AgBh, Si_SRM640, CuO, PBBA, Si_SRM640b, quartz, C14H30O, cristobaltite, Si, LaB6, CeO2, LaB6_SRM660a, LaB6_SRM660b, LaB6_SRM660c, TiO2, ZnO, Al, Au
+</pre></div>
+</div>
+<p>You may wonder where the names of the calibrant came from and how they
+have been established.</p>
+<p>The name of all calibrant available in your version of pyFAI can be
+listed by just printing out the content of ALL_CALIBRANTS. New
+calibrant may have been added in pyFAI in more recent releases, just
+have a look at the <a class="reference external" href="https://github.com/kif/pyFAI/tree/master/calibration">developent web
+page</a>.</p>
+<p>Most of those calibrant files, which contain the <em>d-spacing</em> in Angstrom
+between Miller plans, have been prepared from the unit cell of the
+compount, found in publication. This publication is referenced in the
+header of the file. If one wishes to regenerate those files, the
+<em>pyFAI.calibrant.Cell</em> class may be used for.</p>
+<p>We will now focus on a subset of calibrant, instanciate them and put
+them into a dictionnary. The Python construct used here is called
+<em>dict-comprehension</em> and allows the creation and population of a
+dictionnary in a single line.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">cals</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">name</span><span class="p">,</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">calibrant</span><span class="o">.</span><span class="n">ALL_CALIBRANTS</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;Si&quot;</span><span class="p">,</span> <span class="s">&quot;LaB6&quot;</span><span class="p">,</span> <span class="s">&quot;CeO2&quot;</span><span class="p">,</span> <span class="s">&quot;alpha_Al2O3&quot;</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">cals</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>{&#39;Si&#39;: Si Calibrant , &#39;alpha_Al2O3&#39;: alpha_Al2O3 Calibrant , &#39;LaB6&#39;: LaB6 Calibrant , &#39;CeO2&#39;: CeO2 Calibrant }
+</pre></div>
+</div>
+<p>To be able to use those calibrants, one needs to define the wavelength
+used, here 1 Angstrom.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">wl</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="k">for</span> <span class="n">cal</span> <span class="ow">in</span> <span class="n">cals</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="n">cal</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">=</span> <span class="n">wl</span>
+<span class="k">print</span><span class="p">(</span><span class="n">cals</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>{&#39;Si&#39;: Si Calibrant at wavelength 1e-10, &#39;alpha_Al2O3&#39;: alpha_Al2O3 Calibrant at wavelength 1e-10, &#39;LaB6&#39;: LaB6 Calibrant at wavelength 1e-10, &#39;CeO2&#39;: CeO2 Calibrant at wavelength 1e-10}
+</pre></div>
+</div>
+</div>
+<div class="section" id="short-distance-images">
+<h2>Short distance images<a class="headerlink" href="#short-distance-images" title="Permalink to this headline">¶</a></h2>
+<p>The shortest the detector can come to the sample is about 10cm (to leave
+space for the beamstop). We will generate images of diffraction at this
+distance.</p>
+<p>For the display of images we will use <em>matplotlib</em> inlined.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">dete</span><span class="o">.</span><span class="n">calc_cartesian_positions</span><span class="p">()</span>
+<span class="n">poni1</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">poni2</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Detector center at </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">poni1</span><span class="p">,</span> <span class="n">poni2</span><span class="p">))</span>
+<span class="n">ai_short</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">AzimuthalIntegrator</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">poni1</span><span class="o">=</span><span class="n">poni1</span><span class="p">,</span> <span class="n">poni2</span><span class="o">=</span><span class="n">poni2</span><span class="p">,</span><span class="n">detector</span><span class="o">=</span><span class="n">dete</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ai_short</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector center at 0.217322000001, 0.211818
+Detector Pilatus6M   PixelSize= 1.720e-04, 1.720e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 2.173220e-01, 2.118180e-01m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=1231.500, y=1263.500 pix      Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre>%pylab inline
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">fig</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cals</span><span class="p">):</span>
+    <span class="n">cal</span> <span class="o">=</span> <span class="n">cals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">cal</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">ai_short</span><span class="p">)</span>
+    <span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="n">title</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../../_images/output_11_0.png" src="../../../_images/output_11_0.png" />
+<p>As one can see, there are plenty of rings on the image: it should be
+easy to calibrate. By moving further away the detector, the number of
+rings will decrease.</p>
+</div>
+<div class="section" id="long-distance-images">
+<h2>Long distance images<a class="headerlink" href="#long-distance-images" title="Permalink to this headline">¶</a></h2>
+<p>To keep good calibration one should have at lease two rings for the
+calibration. The longest distance from sample to the detector is 80cm.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai_long</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">AzimuthalIntegrator</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">poni1</span><span class="o">=</span><span class="n">poni1</span><span class="p">,</span> <span class="n">poni2</span><span class="o">=</span><span class="n">poni2</span><span class="p">,</span><span class="n">detector</span><span class="o">=</span><span class="n">dete</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ai_long</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Pilatus6M   PixelSize= 1.720e-04, 1.720e-04 m
+SampleDetDist= 8.000000e-01m        PONI= 2.173220e-01, 2.118180e-01m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 800.000mm   Center: x=1231.500, y=1263.500 pix      Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">fig</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cals</span><span class="p">):</span>
+    <span class="n">cal</span> <span class="o">=</span> <span class="n">cals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">cal</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">ai_long</span><span class="p">)</span>
+    <span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="n">title</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../../_images/output_14_0.png" src="../../../_images/output_14_0.png" />
+<p>The most adapted calibrant is probably the <em>LaB6</em> as 2 rings are still
+visible at 80 cm from the detector.</p>
+</div>
+<div class="section" id="integration-of-the-pattern-for-the-two-extreme-cases">
+<h2>Integration of the pattern for the two extreme cases<a class="headerlink" href="#integration-of-the-pattern-for-the-two-extreme-cases" title="Permalink to this headline">¶</a></h2>
+<p>We can integrate the image for the two extreme cases:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">lab6</span> <span class="o">=</span> <span class="n">cals</span><span class="p">[</span><span class="s">&quot;LaB6&quot;</span><span class="p">]</span>
+<span class="n">ai_short</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">=</span> <span class="n">ai_long</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">=</span> <span class="n">wl</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">img_short</span> <span class="o">=</span> <span class="n">lab6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">ai_short</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img_short</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">ai_short</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">img_short</span><span class="p">,</span><span class="mi">1000</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;q nm^-1&quot;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">img_long</span> <span class="o">=</span> <span class="n">lab6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">ai_long</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img_long</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">ai_long</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">img_long</span><span class="p">,</span><span class="mi">1000</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;q nm^-1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f1b7da2de50&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_16_1.png" src="../../../_images/output_16_1.png" />
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>The best calibrant in this case is probably LaB6.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Selection of a calibrant</a><ul>
+<li><a class="reference internal" href="#experimental-setup">Experimental setup</a></li>
+<li><a class="reference internal" href="#define-the-detector">Define the detector</a></li>
+<li><a class="reference internal" href="#select-reference-materials">Select reference materials</a></li>
+<li><a class="reference internal" href="#short-distance-images">Short distance images</a></li>
+<li><a class="reference internal" href="#long-distance-images">Long distance images</a></li>
+<li><a class="reference internal" href="#integration-of-the-pattern-for-the-two-extreme-cases">Integration of the pattern for the two extreme cases</a></li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../Distortion/Distortion.html"
+                        title="previous chapter">Detector distortion corrections</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../multi-geometry.html"
+                        title="next chapter">Multi-geometry azimuthal integration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/usage/tutorial/Calibrant/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../multi-geometry.html" title="Multi-geometry azimuthal integration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../Distortion/Distortion.html" title="Detector distortion corrections"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Creation of a calibrant file &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Tutorials" href="../index.html" />
+    <link rel="next" title="CCD calibration" href="../CCD_Calibration/CCD_calibration.html" />
+    <link rel="prev" title="Demo of usage of the MultiGeometry class of pyFAI" href="../MultiGeometry/index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../CCD_Calibration/CCD_calibration.html" title="CCD calibration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../MultiGeometry/index.html" title="Demo of usage of the MultiGeometry class of pyFAI"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="creation-of-a-calibrant-file">
+<h1>Creation of a calibrant file<a class="headerlink" href="#creation-of-a-calibrant-file" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial we will see how to generate a file describing a
+<em>reference material</em> used as calibrant to refine the geometry of the
+experimental setup, especially the position of the detector.</p>
+<p>In pyFAI, calibrant are defined in a bunch of files available from
+<a class="reference external" href="https://github.com/kif/pyFAI/tree/master/calibration">github</a>. Those
+files are automatically installed with pyFAI and readily available from
+the programming interface, as described in the <strong>Calibrant</strong> tutorial.</p>
+<p>This tutorials focuses on the content of the file and how to generate
+other calibrant files and how to exended existing ones.</p>
+<div class="section" id="content-of-the-file">
+<h2>Content of the file<a class="headerlink" href="#content-of-the-file" title="Permalink to this headline">¶</a></h2>
+<p>Calibrant files from <em>pyFAI</em> are heavily inspired from the ones used in
+<em>Fit2D</em>: they simply store the <em>d-spacing</em> between Miller plans and are
+simply loaded using the <em>numpy.loadtxt</em> function. In pyFAI we have
+improved with plent of comment (using <strong>#</strong>) to provide in addition the
+familly of Miller plan associated and the multiplicity, which, while not
+proportionnal to <em>Fobs</em> is somewhat related.</p>
+<p>One may think it would have been better/simpler to describe the cell of
+the material. Actually some calibrant, especially the ones used in SAXS
+like silver behenate (AgBh), but not only, are not well crystallized
+compounds and providing the <em>d-spacing</em> allows to use them as calibrant.
+Neverthless this tutorial will be focused on how to generate calibrant
+files fron crystal structures.</p>
+<p>Finally the <em>calibrant file</em> has a few lines of headers containing the
+name, the crystal cell parameters (if available) and quite importantly a
+reference to the source of information like a publication to allow the
+re-generation of the file if needed.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Calibrant: Silver Behenate (AgBh)</span>
+<span class="c"># Pseudocrystal a=inf b=inf c=58.380</span>
+<span class="c"># Ref: doi:10.1107/S0021889899012388</span>
+<span class="mf">5.83800000e+01</span> <span class="c"># (0,0,1)</span>
+<span class="mf">2.91900000e+01</span> <span class="c"># (0,0,2)</span>
+<span class="mf">1.94600000e+01</span> <span class="c"># (0,0,3)</span>
+<span class="mf">1.45950000e+01</span> <span class="c"># (0,0,4)</span>
+<span class="mf">1.16760000e+01</span> <span class="c"># (0,0,5)</span>
+<span class="mf">9.73000000e+00</span> <span class="c"># (0,0,6)</span>
+<span class="mf">8.34000000e+00</span> <span class="c"># (0,0,7)</span>
+<span class="mf">7.29750000e+00</span> <span class="c"># (0,0,8)</span>
+<span class="mf">6.48666667e+00</span> <span class="c"># (0,0,9)</span>
+<span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-cell-class">
+<h2>The Cell class<a class="headerlink" href="#the-cell-class" title="Permalink to this headline">¶</a></h2>
+<p>To generate a <em>calibrant file</em> from a crystal structure, the easiest is
+to use the <strong>pyFAI.calibrant.Cell</strong> class.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyFAI.calibrant</span> <span class="kn">import</span> <span class="n">Cell</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Cell</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Cell</span><span class="o">.</span><span class="n">__init__</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>    This is a cell object, able to calculate the volume and d-spacing according to formula from:
+
+    http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
+
+Constructor of the Cell class:
+
+        Crystalographic units are Angstrom for distances and degrees for angles !
+
+        @param a,b,c: unit cell length in Angstrom
+        @param alpha, beta, gamma: unit cell angle in degrees
+        @param lattice: &quot;cubic&quot;, &quot;tetragonal&quot;, &quot;hexagonal&quot;, &quot;rhombohedral&quot;, &quot;orthorhombic&quot;, &quot;monoclinic&quot;, &quot;triclinic&quot;
+        @param lattice_type: P, I, F, C or R
+</pre></div>
+</div>
+<p>The constructor of the class is used to build and well suited to
+triclinic crystal.</p>
+<div class="section" id="specific-constructors">
+<h3>Specific constructors<a class="headerlink" href="#specific-constructors" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">Nevertheless, most used calibrants are of much higher symmetry, like</div>
+</div>
+<p>cubic which takes only <strong>one</strong> parameter.
+| Here is an example for defining
+<a class="reference external" href="http://www.periodictable.com/Elements/084/data.html">Polonium</a> which
+is a simple cubic cell (Primitive) with a cell parameter of 335.9pm.
+This example was chosen as Polonium is apparently the only element with
+such primitive cubic packing.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">Po</span> <span class="o">=</span> <span class="n">Cell</span><span class="o">.</span><span class="n">cubic</span><span class="p">(</span><span class="mf">3.359</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Po</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Primitive cubic cell a=3.3590 b=3.3590 c=3.3590 alpha=90.000 beta=90.000 gamma=90.000
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">Po</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="mf">37.899197279</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&quot;Po.d_spacing?&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Po</span><span class="o">.</span><span class="n">d_spacing</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Po.save?&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Po</span><span class="o">.</span><span class="n">save</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Po.d_spacing?
+Calculate all d-spacing down to dmin
+
+        applies selection rules
+
+        @param dmin: minimum value of spacing requested
+        @return: dict d-spacing as string, list of tuple with Miller indices
+                preceded with the numerical value
+
+Po.save?
+Save informations about the cell in a d-spacing file, usable as Calibrant
+
+        @param name: name of the calibrant
+        @param doi: reference of the publication used to parametrize the cell
+        @param dmin: minimal d-spacing
+        @param dest_dir: name of the directory where to save the result
+</pre></div>
+</div>
+<p>To generate a <em>d-spacing</em> file usable as calibrant, one simply has to
+call the <em>save</em> method of the <em>Cell</em> instance.</p>
+<p><strong>Nota:</strong> the &#8221;.D&#8221; suffix is automatically appended.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">Po</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;Po&quot;</span><span class="p">,</span><span class="n">doi</span><span class="o">=</span><span class="s">&quot;http://www.periodictable.com/Elements/084/data.html&quot;</span><span class="p">,</span> <span class="n">dmin</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre>!cat Po.D
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Calibrant: Po</span>
+<span class="c"># Primitive cubic cell a=3.3590 b=3.3590 c=3.3590 alpha=90.000 beta=90.000 gamma=90.000</span>
+<span class="c"># Ref: http://www.periodictable.com/Elements/084/data.html</span>
+<span class="mf">3.35900000</span> <span class="c"># (1, 0, 0) 6</span>
+<span class="mf">2.37517168</span> <span class="c"># (1, 1, 0) 12</span>
+<span class="mf">1.93931955</span> <span class="c"># (1, 1, 1) 8</span>
+<span class="mf">1.67950000</span> <span class="c"># (2, 0, 0) 6</span>
+<span class="mf">1.50219047</span> <span class="c"># (2, 1, 0) 24</span>
+<span class="mf">1.37130601</span> <span class="c"># (2, 1, 1) 24</span>
+<span class="mf">1.18758584</span> <span class="c"># (2, 2, 0) 12</span>
+<span class="mf">1.11966667</span> <span class="c"># (3, 0, 0) 30</span>
+<span class="mf">1.06220907</span> <span class="c"># (3, 1, 0) 24</span>
+<span class="mf">1.01277661</span> <span class="c"># (3, 1, 1) 24</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-examples-lab6">
+<h3>Other Examples: LaB6<a class="headerlink" href="#other-examples-lab6" title="Permalink to this headline">¶</a></h3>
+<p>Lantanide Hexaboride, probably my favorite calibrant as it has a
+primitive cubic cell hence all reflections are valid and intense. The
+cell parameter is available from the
+<a class="reference external" href="https://www-s.nist.gov/srmors/certificates/660C.pdf">NIST</a> at
+a=4.156826.</p>
+<p>The number of reflections in a file is controled by the <em>dmin</em>
+parameter. The lower it is, the more lines there are and the more
+time-consuming this will be:</p>
+<div class="code python highlight-python"><div class="highlight"><pre>LaB6 = Cell.cubic(4.156826)
+%time d=LaB6.d_spacing(0.1)
+print(&quot;Number of reflections: %s&quot;%len(d))
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>CPU times: user 976 ms, sys: 76 ms, total: 1.05 s
+Wall time: 964 ms
+Number of reflections: 1441
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">LaB6</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;LaB6&quot;</span><span class="p">,</span><span class="n">doi</span><span class="o">=</span><span class="s">&quot;https://www-s.nist.gov/srmors/certificates/660C.pdf&quot;</span><span class="p">,</span> <span class="n">dmin</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre>!head LaB6.D
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Calibrant: LaB6</span>
+<span class="c"># Primitive cubic cell a=4.1568 b=4.1568 c=4.1568 alpha=90.000 beta=90.000 gamma=90.000</span>
+<span class="c"># Ref: https://www-s.nist.gov/srmors/certificates/660C.pdf</span>
+<span class="mf">4.15682600</span> <span class="c"># (1, 0, 0) 6</span>
+<span class="mf">2.93931985</span> <span class="c"># (1, 1, 0) 12</span>
+<span class="mf">2.39994461</span> <span class="c"># (1, 1, 1) 8</span>
+<span class="mf">2.07841300</span> <span class="c"># (2, 0, 0) 6</span>
+<span class="mf">1.85898910</span> <span class="c"># (2, 1, 0) 24</span>
+<span class="mf">1.69701711</span> <span class="c"># (2, 1, 1) 24</span>
+<span class="mf">1.46965993</span> <span class="c"># (2, 2, 0) 12</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-examples-silicon">
+<h3>Other Examples: Silicon<a class="headerlink" href="#other-examples-silicon" title="Permalink to this headline">¶</a></h3>
+<p>Silicon is easy to obtain <strong>pure</strong> thanks to microelectronics industry.
+Its cell is a face centered cubic with a diamond like structure. The
+cell parameter is available from the
+<a class="reference external" href="https://www-s.nist.gov/srmors/certificates/640E.pdf">NIST</a>:
+a=5.431179 A.</p>
+<p>Let&#8217;s compare the difference between the silicon structure and the
+equivalent FCC structure:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">Si</span> <span class="o">=</span> <span class="n">Cell</span><span class="o">.</span><span class="n">diamond</span><span class="p">(</span><span class="mf">5.431179</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Si</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Face centered cubic cell a=5.4312 b=5.4312 c=5.4312 alpha=90.000 beta=90.000 gamma=90.000
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">FCC</span> <span class="o">=</span> <span class="n">Cell</span><span class="o">.</span><span class="n">cubic</span><span class="p">(</span><span class="mf">5.431179</span><span class="p">,</span><span class="s">&quot;F&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">FCC</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Face centered cubic cell a=5.4312 b=5.4312 c=5.4312 alpha=90.000 beta=90.000 gamma=90.000
+</pre></div>
+</div>
+<p>Apparently, there is not difference. But to check it, let&#8217;s generate all
+lines down to 1A and compare them:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">sid</span> <span class="o">=</span> <span class="n">Si</span><span class="o">.</span><span class="n">d_spacing</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">sid</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:][</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span><span class="n">key</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[2, 2, 4]: 1.10863477e+00
+[1, 1, 3]: 1.63756208e+00
+[0, 2, 2]: 1.92021175e+00
+[1, 1, 1]: 3.13569266e+00
+[1, 1, 5]: 1.04523089e+00
+[1, 3, 3]: 1.24599792e+00
+[0, 0, 4]: 1.35779475e+00
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">fccd</span> <span class="o">=</span> <span class="n">FCC</span><span class="o">.</span><span class="n">d_spacing</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">fccd</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:][</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span><span class="n">key</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[2, 2, 4]: 1.10863477e+00
+[1, 1, 3]: 1.63756208e+00
+[0, 2, 2]: 1.92021175e+00
+[1, 1, 1]: 3.13569266e+00
+[1, 1, 5]: 1.04523089e+00
+[0, 2, 4]: 1.21444854e+00
+[2, 2, 2]: 1.56784633e+00
+[1, 3, 3]: 1.24599792e+00
+[0, 0, 2]: 2.71558950e+00
+[0, 0, 4]: 1.35779475e+00
+</pre></div>
+</div>
+<p>So there are many more reflection in the FCC structure compared to the
+diamond-like structure: (4 2 0), (2 2 2) are extinct as h+k+l=4n and all
+even.</p>
+</div>
+<div class="section" id="selection-rules">
+<h3>Selection rules<a class="headerlink" href="#selection-rules" title="Permalink to this headline">¶</a></h3>
+<p>Cell object contain <em>selection_rules</em> which tells if a reflection is
+allowed or not. Those <em>selection_rules</em> can be introspected:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">Si</span><span class="o">.</span><span class="n">selection_rules</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">FCC</span><span class="o">.</span><span class="n">selection_rules</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[&lt;function &lt;lambda&gt; at 0x7f8080fad848&gt;, &lt;function &lt;lambda&gt; at 0x7f8080fad938&gt;, &lt;function &lt;lambda&gt; at 0x7f8080fad9b0&gt;]
+[&lt;function &lt;lambda&gt; at 0x7f8080fadaa0&gt;, &lt;function &lt;lambda&gt; at 0x7f8080fada28&gt;]
+</pre></div>
+</div>
+<p>The <em>Si</em> object has one additionnal selection rule which explains the
+difference: A specific rule telling that reflection with h+k+l=4n is
+forbidden when (h,k,l) are all even.</p>
+<p>We will now have a look at the source code of those selection rules
+using the <em>inspect</em> module.</p>
+<p><strong>Nota:</strong> This is advanced Python hacking but useful for the
+demonstration</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">inspect</span>
+<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">Si</span><span class="o">.</span><span class="n">selection_rules</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>self.selection_rules = [lambda h, k, l: not(h == 0 and k == 0 and l == 0)]
+
+    self.selection_rules.append(lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3))
+
+    lambda h, k, l:not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0))
+</pre></div>
+</div>
+<p>Actually the last line correspond to an anonymous function (lambda)
+which implements this rule.</p>
+<p>As we have seen previously one can simply adapt the Cell instance by
+simply appending extra selection rules to this list.</p>
+<p>A selection rule is a function taking 3 integers as input and returning
+<em>True</em> if the reflection is allowed and <em>False</em> when it is forbidden by
+symmetry. By this way one can simply adapt existing object to generate
+the right <em>calibrant file</em>.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial we have seen the structure of a <em>calibrant file</em>, how
+to generate crystal structure cell object to write such calibrant files
+automatically, including all metadata needed for redistribution. Most
+advanced programmers can now modify the selection rules to remove
+forbidden reflection for a given cell.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Creation of a calibrant file</a><ul>
+<li><a class="reference internal" href="#content-of-the-file">Content of the file</a></li>
+<li><a class="reference internal" href="#the-cell-class">The Cell class</a><ul>
+<li><a class="reference internal" href="#specific-constructors">Specific constructors</a></li>
+<li><a class="reference internal" href="#other-examples-lab6">Other Examples: LaB6</a></li>
+<li><a class="reference internal" href="#other-examples-silicon">Other Examples: Silicon</a></li>
+<li><a class="reference internal" href="#selection-rules">Selection rules</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../MultiGeometry/index.html"
+                        title="previous chapter">Demo of usage of the MultiGeometry class of pyFAI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../CCD_Calibration/CCD_calibration.html"
+                        title="next chapter">CCD calibration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/usage/tutorial/MakeCalibrant/make_calibrant.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../CCD_Calibration/CCD_calibration.html" title="CCD calibration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../MultiGeometry/index.html" title="Demo of usage of the MultiGeometry class of pyFAI"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Integration tool: pyFAI-saxs &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Integration tool: pyFAI-waxs" href="pyFAI-waxs.html" />
+    <link rel="prev" title="Integration tool: diff_tomo" href="diff_tomo.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-waxs.html" title="Integration tool: pyFAI-waxs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="diff_tomo.html" title="Integration tool: diff_tomo"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="integration-tool-pyfai-saxs">
+<h1>Integration tool: pyFAI-saxs<a class="headerlink" href="#integration-tool-pyfai-saxs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>Azimuthal integration for SAXS users.</p>
+<p>pyFAI-saxs is the SAXS script of pyFAI that allows data reduction (azimuthal integration) for
+Small Angle Scattering with output axis in q space.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage:<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>pyFAI-saxs -p=param.poni -w1.54 file.edf file2.edf file3.edf</p>
+<dl class="docutils">
+<dt>Options:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show this help message and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-v</span>, <span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-p <var>PONIFILE</var></span></kbd></td>
+<td>PyFAI parameter file (.poni)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-n <var>NPT</var></span>, <span class="option">--npt <var>NPT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Number of points in radial dimension</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-w <var>WAVELENGTH</var></span>, <span class="option">--wavelength <var>WAVELENGTH</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>wavelength of the X-Ray beam in Angstrom</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-e <var>ENERGY</var></span>, <span class="option">--energy <var>ENERGY</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>energy of the X-Ray beam in keV (hc=12.398419292keV.A)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-u <var>DUMMY</var></span>, <span class="option">--dummy <var>DUMMY</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>dummy value for dead pixels</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-U <var>DELTA_DUMMY</var></span>, <span class="option">--delta_dummy <var>DELTA_DUMMY</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>delta dummy value</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-m <var>MASK</var></span>, <span class="option">--mask <var>MASK</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>name of the file containing the mask image</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-d <var>DARK</var></span>, <span class="option">--dark <var>DARK</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>name of the file containing the dark current</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-f <var>FLAT</var></span>, <span class="option">--flat <var>FLAT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>name of the file containing the flat field</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-P <var>POLARIZATION_FACTOR</var></span>, <span class="option">--polarization <var>POLARIZATION_FACTOR</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Polarization factor, from -1 (vertical) to +1
+(horizontal), default is None for no correction,
+synchrotrons are around 0.95</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--error-model <var>ERROR_MODEL</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Error model to use. Currently on &#8216;poisson&#8217; is
+implemented</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--unit <var>UNIT</var></span></kbd></td>
+<td>unit for the radial dimension: can be q_nm^-1, q_A^-1,
+2th_deg, 2th_rad or r_mm</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--ext <var>EXT</var></span></kbd></td>
+<td>extension of the regrouped filename (.dat)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--method <var>METHOD</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Integration method</td></tr>
+</tbody>
+</table>
+</dd>
+</dl>
+</div>
+<div class="section" id="example">
+<h2>Example:<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text"><div class="highlight"><pre>$ pyFAI-saxs --help
+usage: pyFAI-saxs [options] -n 1000 -p ponifile file1.edf file2.edf ...
+
+Azimuthal integration for SAXS users.
+
+positional arguments:
+  FILE                  Image files to integrate
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show program&#39;s version number and exit
+  -p PONIFILE           PyFAI parameter file (.poni)
+  -n NPT, --npt NPT     Number of points in radial dimension
+  -w WAVELENGTH, --wavelength WAVELENGTH
+                        wavelength of the X-Ray beam in Angstrom
+  -e ENERGY, --energy ENERGY
+                        energy of the X-Ray beam in keV (hc=12.398419292keV.A)
+  -u DUMMY, --dummy DUMMY
+                        dummy value for dead pixels
+  -U DELTA_DUMMY, --delta_dummy DELTA_DUMMY
+                        delta dummy value
+  -m MASK, --mask MASK  name of the file containing the mask image
+  -d DARK, --dark DARK  name of the file containing the dark current
+  -f FLAT, --flat FLAT  name of the file containing the flat field
+  -P POLARIZATION_FACTOR, --polarization POLARIZATION_FACTOR
+                        Polarization factor, from -1 (vertical) to +1
+                        (horizontal), default is None for no correction,
+                        synchrotrons are around 0.95
+  --error-model ERROR_MODEL
+                        Error model to use. Currently on &#39;poisson&#39; is
+                        implemented
+  --unit UNIT           unit for the radial dimension: can be q_nm^-1, q_A^-1,
+                        2th_deg, 2th_rad or r_mm
+  --ext EXT             extension of the regrouped filename (.dat)
+  --method METHOD       Integration method
+
+pyFAI-saxs is the SAXS script of pyFAI that allows data reduction (azimuthal
+integration) for Small Angle Scattering with output axis in q space.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Integration tool: pyFAI-saxs</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+<li><a class="reference internal" href="#usage">Usage:</a></li>
+<li><a class="reference internal" href="#example">Example:</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="diff_tomo.html"
+                        title="previous chapter">Integration tool: diff_tomo</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyFAI-waxs.html"
+                        title="next chapter">Integration tool: pyFAI-waxs</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/pyFAI-saxs.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-waxs.html" title="Integration tool: pyFAI-waxs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="diff_tomo.html" title="Integration tool: diff_tomo"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Azimuthal integration using the graphical user interface &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../index.html" />
+    <link rel="up" title="Cookbook recipes" href="index.html" />
+    <link rel="next" title="&lt;no title&gt;" href="integration_with_scripts.html" />
+    <link rel="prev" title="Calibration of a diffraction setup" href="calibrate.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="integration_with_scripts.html" title="&lt;no title&gt;"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="calibrate.html" title="Calibration of a diffraction setup"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Cookbook recipes</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="azimuthal-integration-using-the-graphical-user-interface">
+<h1>Azimuthal integration using the graphical user interface<a class="headerlink" href="#azimuthal-integration-using-the-graphical-user-interface" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://www.edna-site.org/pub/calibration/integration.flv">Associated video</a></p>
+<div class="section" id="look-at-your-integrated-patterns">
+<h2>Look at your integrated patterns<a class="headerlink" href="#look-at-your-integrated-patterns" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI can perform 1D or 2D integration.
+To view 1D patterns, I will use <em>grace</em>
+Let&#8217;s look at the integrated patterns
+obtained during calibration.</p>
+<p>As you can see, only the 10 rings used for
+calibration are well defined.</p>
+<p>This file is a text file containing as header
+all metadata needed to determine the geometry.</p>
+<p>2D integrated pattern (aka cake images)
+are EDF images. Try <em>fabio_viewer</em> to see them.</p>
+<p>Once again check the header of the file and the
+associated metadata.</p>
+</div>
+<div class="section" id="integrate-a-bunch-of-images">
+<h2>Integrate a bunch of images<a class="headerlink" href="#integrate-a-bunch-of-images" title="Permalink to this headline">¶</a></h2>
+<p>We will work with the 20 images used for the calibration.</p>
+</div>
+<div class="section" id="start-pyfai-intgrate">
+<h2>Start pyFAI-intgrate<a class="headerlink" href="#start-pyfai-intgrate" title="Permalink to this headline">¶</a></h2>
+<p>Either select files to process using the file-dialog or provide
+them on the command line.</p>
+</div>
+<div class="section" id="set-the-geometry">
+<h2>Set the geometry<a class="headerlink" href="#set-the-geometry" title="Permalink to this headline">¶</a></h2>
+<p>Simply load the PONI file and check the populated fields.</p>
+</div>
+<div class="section" id="azimuthal-integration-options">
+<h2>Azimuthal integration options<a class="headerlink" href="#azimuthal-integration-options" title="Permalink to this headline">¶</a></h2>
+<p>Check the dark/flat/ ... options
+Use the check-box to activate the option.</p>
+<p>Do <em>NOT</em> forget to specify the number of radial bins !</p>
+</div>
+<div class="section" id="select-the-device-for-processing">
+<h2>Select the device for processing<a class="headerlink" href="#select-the-device-for-processing" title="Permalink to this headline">¶</a></h2>
+<p>Unless the processing will be done on the
+CPU using OpenMP.</p>
+<p>Press OK to start the processing.</p>
+<p>The generation of the Look-Up table takes a few seconds
+then all files get processed quickly</p>
+</div>
+<div class="section" id="run-it-again-to-perform-caking">
+<h2>Run it again to perform caking<a class="headerlink" href="#run-it-again-to-perform-caking" title="Permalink to this headline">¶</a></h2>
+<p>Same a previously ... but
+provide a number of azimuthal bins !</p>
+</div>
+<div class="section" id="visualize-the-integrated-patterns">
+<h2>Visualize the integrated patterns<a class="headerlink" href="#visualize-the-integrated-patterns" title="Permalink to this headline">¶</a></h2>
+<p>Once again I used <em>grace</em> and <em>fabio_viewer</em>
+to display the result.</p>
+<p>That&#8217;s all.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Azimuthal integration using the graphical user interface</a><ul>
+<li><a class="reference internal" href="#look-at-your-integrated-patterns">Look at your integrated patterns</a></li>
+<li><a class="reference internal" href="#integrate-a-bunch-of-images">Integrate a bunch of images</a></li>
+<li><a class="reference internal" href="#start-pyfai-intgrate">Start pyFAI-intgrate</a></li>
+<li><a class="reference internal" href="#set-the-geometry">Set the geometry</a></li>
+<li><a class="reference internal" href="#azimuthal-integration-options">Azimuthal integration options</a></li>
+<li><a class="reference internal" href="#select-the-device-for-processing">Select the device for processing</a></li>
+<li><a class="reference internal" href="#run-it-again-to-perform-caking">Run it again to perform caking</a></li>
+<li><a class="reference internal" href="#visualize-the-integrated-patterns">Visualize the integrated patterns</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="calibrate.html"
+                        title="previous chapter">Calibration of a diffraction setup</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="integration_with_scripts.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/usage/cookbook/integration_with_the_gui.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="integration_with_scripts.html" title="&lt;no title&gt;"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="calibrate.html" title="Calibration of a diffraction setup"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Cookbook recipes</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

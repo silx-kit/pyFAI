@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation of Python Fast Azimuthal Integration library &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="next" title="Installation procedure on Linux" href="linux.html" />
+    <link rel="prev" title="pyFAI Package" href="../api/pyFAI.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="linux.html" title="Installation procedure on Linux"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../api/pyFAI.html" title="pyFAI Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation-of-python-fast-azimuthal-integration-library">
+<h1>Installation of Python Fast Azimuthal Integration library<a class="headerlink" href="#installation-of-python-fast-azimuthal-integration-library" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h2>
+<p>Installation procedure for all main operating systems</p>
+</div>
+<div class="section" id="hardware-requirement">
+<h2>Hardware requirement<a class="headerlink" href="#hardware-requirement" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI has been tested on various hardware: i386, x86_64, PPC64le, ARM.
+The main constrain may be the memory requirement: 2GB of memory is a minimal requirement to run the tests.
+The program may run with less but &#8220;MemoryError&#8221; are expected (appearing sometimes as segmentation faults).
+As a consequence, a 64-bits operating system with enough memory is strongly advised.</p>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)</p>
+<ul class="simple">
+<li>Python: version 2.7, 3.4 and 3.5.
+Support for 2.6, 3.2 and 3.3 has been dropped in v0.12</li>
+<li>NumPy: version 1.4 or newer</li>
+<li>SciPy: version 0.7 or newer</li>
+<li>Matplotlib: verson 0.99 or newer</li>
+<li>FabIO: version 0.08 or newer</li>
+<li>h5py (to access HDF5 files)</li>
+</ul>
+<p>There are plenty of optional dependencies which will not prevent pyFAI from working
+by may impair performances or prevent tools from properly working:</p>
+<ul class="simple">
+<li>pyopencl (for GPU computing)</li>
+<li>fftw (for image analysis)</li>
+<li>pymca (for mask drawing)</li>
+<li>PyQt4 or PySide (for the graphical user interface)</li>
+</ul>
+</div>
+<div class="section" id="build-dependencies">
+<h2>Build dependencies:<a class="headerlink" href="#build-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the run dependencies, pyFAI needs a C compiler to build extensions.</p>
+<p>C files are generated from <a class="reference external" href="http://cython.org">cython</a> source and distributed.
+The distributed version correspond to OpenMP version.
+Non-OpenMP version needs to be built from cython source code (especially on MacOSX).
+If you want to generate your own C files, make sure your local Cython version
+is sufficiently recent (&gt;0.20).</p>
+</div>
+<div class="section" id="building-procedure">
+<h2>Building procedure<a class="headerlink" href="#building-procedure" title="Permalink to this headline">¶</a></h2>
+<div class="code highlight-python"><div class="highlight"><pre>python setup.py build
+pip install . --upgrade
+</pre></div>
+</div>
+<p>There are few specific options to <tt class="docutils literal"><span class="pre">setup.py</span></tt>:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">--no-cython</span></tt>: Prevent Cython (even if present) to re-generate the C source code. Use the one provided by the development team.</li>
+<li><tt class="docutils literal"><span class="pre">--no-openmp</span></tt>: Recompiles the Cython code without OpenMP support (default under MacOSX).</li>
+<li><tt class="docutils literal"><span class="pre">--openmp</span></tt>: Recompiles the Cython code with OpenMP support (Default under Windows and Linux).</li>
+<li><tt class="docutils literal"><span class="pre">--with-testimages</span></tt>: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.</li>
+</ul>
+</div>
+<div class="section" id="detailed-installation-procedure-on-different-operating-systems">
+<h2>Detailed installation procedure on different operating systems<a class="headerlink" href="#detailed-installation-procedure-on-different-operating-systems" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="linux.html">Installation procedure on Linux</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="linux.html#installation-procedure-on-debian-ubuntu">Installation procedure on Debian/Ubuntu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="linux.html#installation-procedure-on-other-linux-distibution">Installation procedure on other linux distibution</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="macosx.html">Installation procedure on MacOSX</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="macosx.html#using-pip">Using PIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="macosx.html#installation-from-sources">Installation from sources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Installation procedure on Windows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#get-python">Get Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#install-pip">Install PIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#install-the-scientific-stack">Install the scientific stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#install-pyfai-via-pip">Install pyFAI via PIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#install-pyfai-from-sources">Install pyFAI from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="test-suites">
+<h2>Test suites<a class="headerlink" href="#test-suites" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI comes with a test suite to ensure all core functionalities are working as expected and numerical results are correct:</p>
+<div class="code highlight-python"><div class="highlight"><pre>python setup.py build test
+</pre></div>
+</div>
+<p><strong>Nota:</strong> to run the test, an internet connection is needed as 200MB of test images need to be download.
+You may have to set the environment variable <em>http_proxy</em> and <em>https_proxy</em>
+according to the networking environment you are in.
+Specifically at ESRF, please phone the hotline at 24-24 to get those information.</p>
+</div>
+<div class="section" id="environment-variables">
+<h2>Environment variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI can use a certain number of environment variable to modify its default behavior:</p>
+<ul class="simple">
+<li>PYFAI_OPENCL: set to &#8220;0&#8221; to disable the use of OpenCL</li>
+<li>PYFAI_DATA: path with gui, calibrant, ...</li>
+<li>PYFAI_TESTIMAGES: path wit test images (if absent, they get downloaded from the internet)</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation of Python Fast Azimuthal Integration library</a><ul>
+<li><a class="reference internal" href="#abstract">Abstract</a></li>
+<li><a class="reference internal" href="#hardware-requirement">Hardware requirement</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#build-dependencies">Build dependencies:</a></li>
+<li><a class="reference internal" href="#building-procedure">Building procedure</a></li>
+<li><a class="reference internal" href="#detailed-installation-procedure-on-different-operating-systems">Detailed installation procedure on different operating systems</a></li>
+<li><a class="reference internal" href="#test-suites">Test suites</a></li>
+<li><a class="reference internal" href="#environment-variables">Environment variables</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../api/pyFAI.html"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">pyFAI</span></tt> Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="linux.html"
+                        title="next chapter">Installation procedure on Linux</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/operations/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="linux.html" title="Installation procedure on Linux"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../api/pyFAI.html" title="pyFAI Package"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyFAI API &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="next" title="pyFAI Package" href="pyFAI.html" />
+    <link rel="prev" title="Design of the Python Fast Azimuthal Integrator" href="../design/ai.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="pyFAI Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../design/ai.html" title="Design of the Python Fast Azimuthal Integrator"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pyfai-api">
+<h1>pyFAI API<a class="headerlink" href="#pyfai-api" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes the programming interface of pyFAI, so what you can expect after having launched ipython and typed:
+..</p>
+<blockquote>
+<div>import pyFAI</div></blockquote>
+<p>The most important class is AzimuthalIntegrator which is an object containing both the geometry (it inherits from Geometry, another class)
+and exposes important methods (functions) like integrate1d and integrate2d.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html"><tt class="docutils literal"><span class="pre">pyFAI</span></tt> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.azimuthalIntegrator"><tt class="docutils literal"><span class="pre">azimuthalIntegrator</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.integrate_widget"><tt class="docutils literal"><span class="pre">integrate_widget</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.geometry"><tt class="docutils literal"><span class="pre">geometry</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.geometryRefinement"><tt class="docutils literal"><span class="pre">geometryRefinement</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.detectors"><tt class="docutils literal"><span class="pre">detectors</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.spline"><tt class="docutils literal"><span class="pre">spline</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.opencl"><tt class="docutils literal"><span class="pre">opencl</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.ocl_azim"><tt class="docutils literal"><span class="pre">ocl_azim</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.ocl_azim_lut"><tt class="docutils literal"><span class="pre">ocl_azim_lut</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.ocl_azim_csr"><tt class="docutils literal"><span class="pre">ocl_azim_csr</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.ocl_azim_csr_dis"><tt class="docutils literal"><span class="pre">ocl_azim_csr_dis</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.worker"><tt class="docutils literal"><span class="pre">worker</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.io"><tt class="docutils literal"><span class="pre">io</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.calibration"><tt class="docutils literal"><span class="pre">calibration</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.peak_picker"><tt class="docutils literal"><span class="pre">peak_picker</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.massif"><tt class="docutils literal"><span class="pre">massif</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.blob_detection"><tt class="docutils literal"><span class="pre">blob_detection</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.calibrant"><tt class="docutils literal"><span class="pre">calibrant</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.distortion"><tt class="docutils literal"><span class="pre">distortion</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#id7"><tt class="docutils literal"><span class="pre">worker</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.units"><tt class="docutils literal"><span class="pre">units</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.utils"><tt class="docutils literal"><span class="pre">utils</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#module-pyFAI.gui_utils"><tt class="docutils literal"><span class="pre">gui_utils</span></tt> Module</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../design/ai.html"
+                        title="previous chapter">Design of the Python Fast Azimuthal Integrator</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyFAI.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">pyFAI</span></tt> Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/modules.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="pyFAI Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../design/ai.html" title="Design of the Python Fast Azimuthal Integrator"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Integration tool: diff_tomo &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Integration tool: pyFAI-saxs" href="pyFAI-saxs.html" />
+    <link rel="prev" title="Integration tool: diff_map" href="diff_map.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-saxs.html" title="Integration tool: pyFAI-saxs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="diff_map.html" title="Integration tool: diff_map"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="integration-tool-diff-tomo">
+<h1>Integration tool: diff_tomo<a class="headerlink" href="#integration-tool-diff-tomo" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>Azimuthal integration for diffraction tomography.</p>
+<p>Diffraction tomography is an experiment where 2D diffraction patterns are recorded
+while performing a 2D scan, one (the slowest) in rotation around the sample center
+and the other (the fastest) along a translation through the sample.
+Diff_tomo is a script (based on pyFAI and h5py) which allows the reduction of this
+4D dataset into a 3D dataset containing the rotations angle (hundreds), the translation step (hundreds)
+and the many diffraction angles (thousands). The resulting dataset can be opened using PyMca roitool
+where the 1d dataset has to be selected as last dimension. This file is not (yet) NeXus compliant.</p>
+<p>This tool can be used for mapping experiments if one considers the slow scan
+direction as the rotation, but a tool named <em>diff_map</em> operates in a similar way,</p>
+<blockquote>
+<div>provides a Graphical interface and is more flexible</div></blockquote>
+<p>tips: If the number of files is too large, use double quotes around &#8220;<a href="#id1"><span class="problematic" id="id2">*</span></a>.edf&#8221;</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage:<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>diff_tomo [options] -p ponifile imagefiles*</p>
+</div>
+<div class="section" id="options">
+<h2>Options:<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show this help message and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-V</span>, <span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-o <var>FILE</var></span>, <span class="option">--output <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>HDF5 File where processed sinogram was saved, by
+default diff_tomo.h5</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></td>
+<td>switch to verbose/debug mode, defaut: quiet</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-P <var>FILE</var></span>, <span class="option">--prefix <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Prefix or common base for all files</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-e <var>EXTENSION</var></span>, <span class="option">--extension <var>EXTENSION</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Process all files with this extension</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-t <var>NTRANS</var></span>, <span class="option">--nTrans <var>NTRANS</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>number of points in translation. Mandatory</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-r <var>NROT</var></span>, <span class="option">--nRot <var>NROT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>number of points in rotation. Mandatory</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-c <var>NDIFF</var></span>, <span class="option">--nDiff <var>NDIFF</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>number of points in diffraction powder pattern,
+Mandatory</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-d <var>FILE</var></span>, <span class="option">--dark <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>list of dark images to average and subtract</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-f <var>FILE</var></span>, <span class="option">--flat <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>list of flat images to average and divide</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-m <var>FILE</var></span>, <span class="option">--mask <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>file containing the mask, no mask by default</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-p <var>FILE</var></span>, <span class="option">--poni <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>file containing the diffraction parameter (poni-file),
+Mandatory</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-O <var>OFFSET</var></span>, <span class="option">--offset <var>OFFSET</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>do not process the first files</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-g</span>, <span class="option">--gpu</span></kbd></td>
+<td>process using OpenCL on GPU</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-S</span>, <span class="option">--stats</span></kbd></td>
+<td>show statistics at the end</td></tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Most of those options are mandatory to define the structure of the dataset.</p>
+<div class="highlight-text"><div class="highlight"><pre>$ diff_tomo --help
+usage: diff_tomo [options] -p ponifile imagefiles*
+
+Azimuthal integration for diffraction tomography. Diffraction tomography is an
+experiment where 2D diffraction patterns are recorded while performing a 2D
+scan, one (the slowest) in rotation around the sample center and the other
+(the fastest) along a translation through the sample. Diff_tomo is a script
+(based on pyFAI and h5py) which allows the reduction of this 4D dataset into a
+3D dataset containing the rotations angle (hundreds), the translation step
+(hundreds) and the many diffraction angles (thousands). The resulting dataset
+can be opened using the PyMca ROItool where the 1d dataset has to be selected
+as last dimension. The output file aims at being NeXus compliant. This tool
+can be used for mapping experiments if one considers the slow scan direction
+as the rotation. but the *diff_map* tool provides in addition a graphical user
+interface.
+
+positional arguments:
+  FILE                  List of files to calibrate
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version         show program&#39;s version number and exit
+  -o FILE, --output FILE
+                        HDF5 File where processed sinogram was saved, by
+                        default diff_tomo.h5
+  -v, --verbose         switch to verbose/debug mode, defaut: quiet
+  -P FILE, --prefix FILE
+                        Prefix or common base for all files
+  -e EXTENSION, --extension EXTENSION
+                        Process all files with this extension
+  -t NTRANS, --nTrans NTRANS
+                        number of points in translation. Mandatory
+  -r NROT, --nRot NROT  number of points in rotation. Mandatory
+  -c NDIFF, --nDiff NDIFF
+                        number of points in diffraction powder pattern,
+                        Mandatory
+  -d FILE, --dark FILE  list of dark images to average and subtract
+  -f FILE, --flat FILE  list of flat images to average and divide
+  -m FILE, --mask FILE  file containing the mask, no mask by default
+  -p FILE, --poni FILE  file containing the diffraction parameter (poni-file),
+                        Mandatory
+  -O OFFSET, --offset OFFSET
+                        do not process the first files
+  -g, --gpu             process using OpenCL on GPU
+  -S, --stats           show statistics at the end
+
+If the number of files is too large, use double quotes &quot;*.edf&quot;
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Integration tool: diff_tomo</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+<li><a class="reference internal" href="#usage">Usage:</a></li>
+<li><a class="reference internal" href="#options">Options:</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="diff_map.html"
+                        title="previous chapter">Integration tool: diff_map</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyFAI-saxs.html"
+                        title="next chapter">Integration tool: pyFAI-saxs</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/diff_tomo.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-saxs.html" title="Integration tool: pyFAI-saxs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="diff_map.html" title="Integration tool: diff_map"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

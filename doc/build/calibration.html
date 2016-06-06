@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pre-processing of images: &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="up" title="General introduction to PyFAI" href="pyFAI.html" />
+    <link rel="next" title="Cookbook recipes" href="usage/cookbook/index.html" />
+    <link rel="prev" title="Image representation in Python" href="geometry.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="usage/cookbook/index.html" title="Cookbook recipes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="geometry.html" title="Image representation in Python"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="pyFAI.html" accesskey="U">General introduction to PyFAI</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <p>The determination of the geometry of the experimental setup for the diffraction pattern
+of a reference sample is called calibration in pyFAI.
+A geometry setup is composed of a detector, the six refined parameters like the distance
+and fixed parameters like the wavelength (or the energy of the beam), they are all
+saved together into a text files named &#8221;.poni&#8221; (as a reference to the point of
+normal incidence) which is subsequently used for processing the experiment.</p>
+<p>The program <strong>pyFAI-calib</strong> is used for calibrating
+the experimental setup using a constrained least squares optimization on
+the Debye-Scherrer rings of a reference sample (<span class="math">\(LaB_6\)</span>, <span class="math">\(CeO_2\)</span>, silver
+behenate <span class="math">\(AgBh\)</span>, …) and saves the results into a <em>.poni</em> file.
+Alternatively, geometries calibrated using Fit2D can be
+imported into pyFAI, including geometric distortions (i.e. optical-fiber
+tapers distortion) described as <em>spline-files</em>.
+For Fit2D compatibility, please refer to the <a class="reference internal" href="usage/tutorial/index.html#tutorials"><em>Tutorials</em></a> on basic usage of pyFAI.</p>
+<p>By storing all parameters together in a single small file, the risk of mixing two
+parameters is highly reduced and we believe this helps performing better
+science with fewer mistakes.</p>
+<p>While entering the geometry of the experiment in a poni-file is possible, it is
+easier to perform a calibration, using the Debye-Sherrer rings of a reference
+sample called calibrant.
+About 30 calibrants are provided by pyFAI like <span class="math">\(LaB_6\)</span>, ceria <span class="math">\(CeO_2\)</span>,
+silicon, corrundum or silver behenate.
+Among other simple compound, all of the NIST <a class="reference external" href="http://www.nist.gov/mml/mmsd/sustainable-materials/diffraction-metrology.cfm">Standard Reference Materials</a>
+have been are tabulated and are directly available as calibrant.
+One can alternatively provide its own calibrant description files which is
+a simple text-file containing the largest d-spacing (in Angstrom) for a set of
+Miller plans.
+A useful reference to generate this file is the American Mineralogist database <a class="reference internal" href="biblio.html#amd" id="id1">[AMD]</a>
+or the Crystallographic Open database <a class="reference internal" href="biblio.html#cod" id="id2">[COD]</a>.</p>
+<p>The calibration procedure is divided into 4 major steps:</p>
+<div class="section" id="pre-processing-of-images">
+<h1>Pre-processing of images:<a class="headerlink" href="#pre-processing-of-images" title="Permalink to this headline">¶</a></h1>
+<p>The typical pre-processing consists of the averaging (or better median filtering) of darks images.
+Dark current images are then subtracted from data and corrected for flat.</p>
+<p>If saturated pixels exists, the are likely to be treated like peaks but their positions
+will be wrong.
+It is advised to either mask them out or to desaturate them (pyFAI provides an option,
+but it is expensive in calculation time).</p>
+</div>
+<div class="section" id="peak-picking">
+<h1>Peak-picking<a class="headerlink" href="#peak-picking" title="Permalink to this headline">¶</a></h1>
+<p>The Peak-picking consists in the identification of peaks and groups of peaks
+belonging to same ring. It can be performed by 4 methods described hereafter.</p>
+<div class="section" id="massif-detection">
+<h2>Massif detection<a class="headerlink" href="#massif-detection" title="Permalink to this headline">¶</a></h2>
+<p>This method consists in making the difference of the original image and a blurred
+image. Then look for a large contiguous region of positives values, corresponding
+to a single group of peak.
+The blurring parameter can be adjusted using the <em>&#8220;-g&#8221;</em> option in pyFAI-calib.</p>
+</div>
+<div class="section" id="blob-detection">
+<h2>Blob detection<a class="headerlink" href="#blob-detection" title="Permalink to this headline">¶</a></h2>
+<p>The approach is based on difference of gaussians (DoGs) as described in the
+<a class="reference external" href="http://en.wikipedia.org/wiki/Blob_detection">blob_detection</a> article of wikipedia.</p>
+<p>It consists in blurring the image by convolution with a 2D gaussian kernel and making
+differences between two successive blurs (called Difference Of Gaussian or DoGs).
+In theses DoGs, keypoints are defined as the maxima in the 3D space (y,x,size of
+the gaussian). After their localization, keypoints are refined by Savitzky Golay
+algorithm or by an interpolation at the second order which is equivalent but uses
+less points. At this step, if the estimation of the maximum is too far from the maximum,
+the keypoint will be considered as a fake maximum and removed.</p>
+</div>
+<div class="section" id="steepest-ascent">
+<h2>Steepest ascent<a class="headerlink" href="#steepest-ascent" title="Permalink to this headline">¶</a></h2>
+<p>This is very naive implementation which looks for the nearest local maximum.
+Subsequently a sub-pixel optimization is performed based on a second order expansion
+using the local gradient and hessian.</p>
+</div>
+<div class="section" id="monte-carlo-sampling">
+<h2>Monte-Carlo sampling<a class="headerlink" href="#monte-carlo-sampling" title="Permalink to this headline">¶</a></h2>
+<p>Series of peaks can be extracted using the Steepest Ascent on randomly selected seeds.
+This method can be biased towards an already known geometry by starting from
+points which are supposed to be on the ring.</p>
+</div>
+</div>
+<div class="section" id="refinement-of-the-parameters">
+<h1>Refinement of the parameters<a class="headerlink" href="#refinement-of-the-parameters" title="Permalink to this headline">¶</a></h1>
+<p>After selecting groups of peaks, each of them is assigned to a Debye-Scherrer ring number
+and associated to a d-spacing value hence a theoritcal 2theta value.
+A supervised least-squares refinement, performed on the difference of peak position&#8217;s
+2-theta values versus the expected ones from calibrant provides the 6-geometry parameters
+fitted.</p>
+<p>The default optimization procedure is the Sequential Least SQuares Programming
+implemented in <em>scipy.optimize.slsqp</em>.
+The cost function is the sum of the square of the difference between the expected and
+calculated 2theta values for the various peaks. This sum is dependent on the number
+of control-points.</p>
+</div>
+<div class="section" id="validation-of-the-calibration">
+<h1>Validation of the calibration<a class="headerlink" href="#validation-of-the-calibration" title="Permalink to this headline">¶</a></h1>
+<p>Validation by an human being of the geometry is an essential step:
+pyFAI will overlaps to the diffraction image, the lines corresponding to the various diffraction
+rings expected from the calibrant.
+Those lines should be in pretty good agreement with the rings
+of the scattering image.
+The average error per control point (delta 2theta error in radian) is printed out
+and offers a quantitative measurement of the relative quality of the fit for similar
+setups/experiment.
+Neverthless its absolute value has no meaning, except the lower, the better.</p>
+<p>Subsequently, pyFAI offers some validation options in to check the quality of the fit.
+some of them global, some of them limited to given rings.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pre-processing of images:</a></li>
+<li><a class="reference internal" href="#peak-picking">Peak-picking</a><ul>
+<li><a class="reference internal" href="#massif-detection">Massif detection</a></li>
+<li><a class="reference internal" href="#blob-detection">Blob detection</a></li>
+<li><a class="reference internal" href="#steepest-ascent">Steepest ascent</a></li>
+<li><a class="reference internal" href="#monte-carlo-sampling">Monte-Carlo sampling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#refinement-of-the-parameters">Refinement of the parameters</a></li>
+<li><a class="reference internal" href="#validation-of-the-calibration">Validation of the calibration</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="geometry.html"
+                        title="previous chapter">Image representation in Python</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="usage/cookbook/index.html"
+                        title="next chapter">Cookbook recipes</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/calibration.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="usage/cookbook/index.html" title="Cookbook recipes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="geometry.html" title="Image representation in Python"
+             >previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="pyFAI.html" >General introduction to PyFAI</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

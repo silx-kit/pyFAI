@@ -1,0 +1,525 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction to the tutorials &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Tutorials" href="../index.html" />
+    <link rel="next" title="Detector distortion corrections" href="../Distortion/Distortion.html" />
+    <link rel="prev" title="Tutorials" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../Distortion/Distortion.html" title="Detector distortion corrections"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction-to-the-tutorials">
+<h1>Introduction to the tutorials<a class="headerlink" href="#introduction-to-the-tutorials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-ipython-jupyter-notebook">
+<h2>The iPython/Jupyter notebook<a class="headerlink" href="#the-ipython-jupyter-notebook" title="Permalink to this headline">¶</a></h2>
+<p>The document you are seeing it may be a PDF or a web page or another
+format, but what is important is how it has been made ...</p>
+<p>According to this article in
+<a class="reference external" href="http://www.nature.com/news/interactive-notebooks-sharing-the-code-1.16261">Nature</a>
+the Notebook, invented by iPython, and now part of the Jupyter project,
+is the revolution for data analysis which will allow reproducable
+science.</p>
+<p>This tutorial will introduce you to how to access to the notebook, how
+to use it and perform some basic data analysis with it and the pyFAI
+library.</p>
+</div>
+<div class="section" id="getting-access-to-the-notebook">
+<h2>Getting access to the notebook<a class="headerlink" href="#getting-access-to-the-notebook" title="Permalink to this headline">¶</a></h2>
+<p>There are many cases ...</p>
+<div class="section" id="inside-esrf">
+<h3>Inside ESRF<a class="headerlink" href="#inside-esrf" title="Permalink to this headline">¶</a></h3>
+<p>The simplest case as the data analysis unit offers you a notebook
+server: just connect your web browser to <a class="reference external" href="http://scisoft13:8000">http://scisoft13:8000</a> and
+authenticate with your ESRF credentials.</p>
+</div>
+<div class="section" id="outside-esrf-with-an-esrf-account">
+<h3>Outside ESRF with an ESRF account.<a class="headerlink" href="#outside-esrf-with-an-esrf-account" title="Permalink to this headline">¶</a></h3>
+<p>The JupyterHub server is not directly available on the internet, but you
+can
+<tt class="docutils literal"><span class="pre">login</span> <span class="pre">into</span> <span class="pre">the</span> <span class="pre">firewall&lt;http://www.esrf.eu/Infrastructure/Computing/Networks/InternetAndTheFirewall/UsersManual/SSH&gt;</span></tt>_
+to forward the web server:</p>
+<p>ssh -XC -p5022 -L8000:scisoft13:8000 user&#64;firewall.esrf.fr</p>
+<p>Once logged in ESRF, keep the terminal opened and browse on your local
+computer to <a class="reference external" href="http://localhost:8000">http://localhost:8000</a> to authenticate with your ESRF
+credentials. Do not worry about confidentiality as the connection from
+your computer to the ESRF firewall is encrypted by the SSH connection.</p>
+</div>
+<div class="section" id="other-cases">
+<h3>Other cases<a class="headerlink" href="#other-cases" title="Permalink to this headline">¶</a></h3>
+<p>In the most general case you will need to install the notebook on your
+local computer in addition to pyFAI and FabIO to follow the tutorial.
+WinPython provides it under windows. Please refer to the installation
+procedure of pyFAI to install locally pyFAI on your computer</p>
+</div>
+</div>
+<div class="section" id="getting-trained-in-using-the-notebook">
+<h2>Getting trained in using the notebook<a class="headerlink" href="#getting-trained-in-using-the-notebook" title="Permalink to this headline">¶</a></h2>
+<p>There are plenty of good tutorials on how to use the notebook. <a class="reference external" href="https://github.com/jupyter/mozfest15-training/blob/master/00-python-intro.ipynb">This
+one</a>
+presents a quick overview of the Python programming language and
+explains how to use the notebook. Reading it is strongly encouraged
+before proceeding to the pyFAI itself.</p>
+<p>Anyway, the most important information is to use <strong>Control-Enter</strong> to
+evaluate a cell.</p>
+<p>In addition to this, we will need to download some files from the
+internet. The following cell contains a piece of code to download files.
+You do not need to understand what it does, but you may have to adjust
+the proxy settings to be able to connect to internet, especially at
+ESRF.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;http_proxy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;http://proxy.site.com:3128&quot;</span>
+
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;download the file given in URL and return its local path&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">urllib2</span> <span class="kn">import</span> <span class="n">urlopen</span><span class="p">,</span> <span class="n">ProxyHandler</span><span class="p">,</span> <span class="n">build_opener</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span><span class="p">,</span> <span class="n">ProxyHandler</span><span class="p">,</span> <span class="n">build_opener</span>
+    <span class="n">dictProxies</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="s">&quot;http_proxy&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">dictProxies</span><span class="p">[</span><span class="s">&#39;http&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;http_proxy&quot;</span><span class="p">]</span>
+        <span class="n">dictProxies</span><span class="p">[</span><span class="s">&#39;https&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;http_proxy&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s">&quot;https_proxy&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">dictProxies</span><span class="p">[</span><span class="s">&#39;https&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;https_proxy&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">dictProxies</span><span class="p">:</span>
+        <span class="n">proxy_handler</span> <span class="o">=</span> <span class="n">ProxyHandler</span><span class="p">(</span><span class="n">dictProxies</span><span class="p">)</span>
+        <span class="n">opener</span> <span class="o">=</span> <span class="n">build_opener</span><span class="p">(</span><span class="n">proxy_handler</span><span class="p">)</span><span class="o">.</span><span class="n">open</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">opener</span> <span class="o">=</span> <span class="n">urlopen</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="s">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dest</span><span class="p">,</span> <span class="n">opener</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">target</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="introduction-to-diffraction-image-analysis-using-the-notebook">
+<h2>Introduction to diffraction image analysis using the notebook<a class="headerlink" href="#introduction-to-diffraction-image-analysis-using-the-notebook" title="Permalink to this headline">¶</a></h2>
+<p>All the tutorials in pyFAI are based on the notebook and if you wish to
+practice the exercises, you can download the notebook files (.ipynb)
+from
+<a class="reference external" href="https://github.com/kif/pyFAI/tree/master/doc/source/usage/tutorial">Github</a></p>
+<div class="section" id="load-and-display-diffraction-images">
+<h3>Load and display diffraction images<a class="headerlink" href="#load-and-display-diffraction-images" title="Permalink to this headline">¶</a></h3>
+<p>First of all we will download an image and display it. Displaying it the
+right way is important as the orientation of the image imposes the
+azimuthal angle sign.</p>
+<div class="code python highlight-python"><div class="highlight"><pre>#initializes the visualization module
+%pylab inline
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">moke</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="s">&quot;http://www.silx.org/pub/pyFAI/testimages/moke.tif&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">moke</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">moke</span><span class="o">.</span><span class="n">tif</span>
+</pre></div>
+</div>
+<p>The <em>moke.tif</em> image we just downloaded is not a real diffraction image
+but it is a test pattern used in the tests of pyFAI.</p>
+<p>Prior to displaying it, we will use the Fable Input/Output library to
+read the content of the file:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">fabio</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">fabio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">moke</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s">&quot;gray&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7fd7aaa975c0&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_6_11.png" src="../../../_images/output_6_11.png" />
+<p>As you can see, the image looks like an archery target. The option
+<em>origin=&#8221;lower&#8221;</em> of <em>imshow</em> allows to display the image with the origin
+at the <strong>lower left</strong> of the image.</p>
+<p>Displaying the image without this option ends with having the azimuthal
+angle (which angles are displayed in degrees on the image) to turn
+clockwise, so the inverse of the trigonometric order.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s">&quot;gray&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7fd7aaa70b00&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_8_11.png" src="../../../_images/output_8_11.png" />
+<p><strong>Nota:</strong> Displaying the image properly or not does not change the
+content of the image or its representation in memory, it only changes
+its representation, which is important only for the user. <strong>DO NOT USE</strong>
+<em>numpy.flipud</em> or other array-manipulation which changes the memory
+representation of the image. This is likely to mess-up all your
+subsequent calculation.</p>
+</div>
+<div class="section" id="d-azimuthal-integration">
+<h3>1D azimuthal integration<a class="headerlink" href="#d-azimuthal-integration" title="Permalink to this headline">¶</a></h3>
+<p>To perform an azimuthal integration of this image, we need to create an
+<strong>AzimuthalIntegrator</strong> object we will call <em>ai</em>. Fortunately, the
+geometry is explained on the image.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="n">ai</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">AzimuthalIntegrator</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">pixel1</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">pixel2</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Detector    Spline= None    PixelSize= 1.000e-04, 1.000e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 0.000000e+00, 0.000000e+00m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=0.000, y=0.000 pix    Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+</pre></div>
+</div>
+<p>Printing the <em>ai</em> object displays 3 lines:</p>
+<ul class="simple">
+<li>The detector definition, here a simple detector with square, regular
+pixels with the right size</li>
+<li>The detector position in space using the <em>pyFAI</em> coordinate system</li>
+<li>The detector position in space using the <em>FIT2D</em> coordinate system</li>
+</ul>
+<p>Right now, the geometry in the <em>ai</em> object is wrong. It may be easier to
+define it correctly using the <em>FIT2D</em> geometry which uses pixels for the
+center coordinates (but the sample-detector distance is in millimeters).</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">help</span><span class="p">(</span><span class="n">ai</span><span class="o">.</span><span class="n">setFit2D</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Help on method setFit2D in module pyFAI.geometry:
+
+setFit2D(directDist, centerX, centerY, tilt=0.0, tiltPlanRotation=0.0, pixelX=None, pixelY=None, splineFile=None) method of pyFAI.azimuthalIntegrator.AzimuthalIntegrator instance
+    Set the Fit2D-like parameter set: For geometry description see
+    HPR 1996 (14) pp-240
+
+    Warning: Fit2D flips automatically images depending on their file-format.
+    By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
+    To obtaine correct result you will have to flip images using numpy.flipud.
+
+    @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
+    @param tilt: tilt in degrees
+    @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+            * 0deg -&gt; Y does not move, +X goes to Z&lt;0
+            * 90deg -&gt; X does not move, +Y goes to Z&lt;0
+            * 180deg -&gt; Y does not move, +X goes to Z&gt;0
+            * 270deg -&gt; X does not move, +Y goes to Z&gt;0
+
+    @param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
+    @param centerX, centerY: pixel position of the beam center
+    @param splineFile: name of the file containing the spline
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai</span><span class="o">.</span><span class="n">setFit2D</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Detector    Spline= None    PixelSize= 1.000e-04, 1.000e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 3.000000e-02, 3.000000e-02m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=300.000, y=300.000 pix        Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+</pre></div>
+</div>
+<p>With the <em>ai</em> object properly setup, we can perform the azimuthal
+integration using the <em>intergate1d</em> method. This methods takes only 2
+mandatory parameters: the image to integrate and the number of bins. We
+will provide a few other to enforce the calculations to be performed in
+2theta-space and in degrees:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">tth</span><span class="p">,</span> <span class="n">I</span> <span class="o">=</span> <span class="n">ai</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">tth</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;moke&quot;</span><span class="p">)</span>
+<span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;2theta (deg)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7fd7aab3e908&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_15_1.png" src="../../../_images/output_15_1.png" />
+<p>As you can see, the 9 rings gave 9 sharp peaks at 2theta position
+regularly ranging from 4 to 12 degrees as expected from the image
+annotation.</p>
+<p><strong>Nota:</strong> the default unit is &#8220;q_nm^1&#8221;, so the scattering vector length
+expressed in inverse nanometers. To be able to calculate <em>q</em>, one needs
+to specify the wavelength used (here we didn&#8217;t). For example:
+ai.wavelength = 1e-10</p>
+<p>To save the content of the integrated pattern into a 2 column ASCII
+file, one can either save the (tth, I) arrays, or directly ask pyFAI to
+do it by providing an output filename:</p>
+<div class="code python highlight-python"><div class="highlight"><pre>ai.integrate1d(img, 30, unit=&quot;2th_deg&quot;, filename=&quot;moke.dat&quot;)
+!cat moke.dat
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre># == pyFAI calibration ==
+# SplineFile: None
+# PixelSize: 1.000e-04, 1.000e-04 m
+# PONI: 3.000e-02, 3.000e-02 m
+# Distance Sample to Detector: 0.1 m
+# Rotations: 0.000000 0.000000 0.000000 rad
+#
+# == Fit2d calibration ==
+# Distance Sample-beamCenter: 100.000 mm
+# Center: x=300.000, y=300.000 pix
+# Tilt: 0.000 deg  TiltPlanRot: 0.000 deg
+#
+# Polarization factor: None
+# Normalization factor: 1.0
+# --&gt; moke.dat
+#       2th_deg             I
+  3.831631e-01    6.384597e+00
+  1.149489e+00    1.240657e+01
+  1.915815e+00    1.222277e+01
+  2.682141e+00    1.170348e+01
+  3.448468e+00    9.964798e+00
+  4.214794e+00    8.913503e+00
+  4.981120e+00    9.104074e+00
+  5.747446e+00    9.242975e+00
+  6.513772e+00    6.136262e+00
+  7.280098e+00    9.039030e+00
+  8.046424e+00    9.203415e+00
+  8.812750e+00    9.324570e+00
+  9.579076e+00    6.470130e+00
+  1.034540e+01    7.790757e+00
+  1.111173e+01    9.410036e+00
+  1.187805e+01    9.464832e+00
+  1.264438e+01    7.749060e+00
+  1.341071e+01    1.151200e+01
+  1.417703e+01    1.324891e+01
+  1.494336e+01    1.038730e+01
+  1.570969e+01    1.069764e+01
+  1.647601e+01    1.056094e+01
+  1.724234e+01    1.286720e+01
+  1.800866e+01    1.323239e+01
+  1.877499e+01    1.548398e+01
+  1.954132e+01    2.364553e+01
+  2.030764e+01    2.537154e+01
+  2.107397e+01    2.512984e+01
+  2.184029e+01    2.191267e+01
+  2.260662e+01    7.605135e+00
+</pre></div>
+</div>
+<p>Here the excalmation mark indicates the notebook to call the <em>cat</em>
+command from UNIX to print the content of the file. This &#8220;moke.dat&#8221; file
+contains in addition to the 2th/I value, a header commented with &#8220;#&#8221;
+with the geometry used to perform the calculation.</p>
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a>Nota: ** The <em>ai</em> object has initialized the geometry on the first
+call and re-uses it on subsequent calls. This is why it is important to
+re-use the geometry in performance critical applications.</p>
+</div>
+<div class="section" id="d-integration-or-caking">
+<h3>2D integration or Caking<a class="headerlink" href="#d-integration-or-caking" title="Permalink to this headline">¶</a></h3>
+<p>One can perform the 2D integration which is called caking in FIT2D by
+simply calling the <em>intrgate2d</em> method with 3 mandatroy parameters: the
+data to integrate, the number of radial bins and the number of azimuthal
+bins.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">I</span><span class="p">,</span> <span class="n">tth</span><span class="p">,</span> <span class="n">chi</span> <span class="o">=</span> <span class="n">ai</span><span class="o">.</span><span class="n">integrate2d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">tth</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">tth</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">max</span><span class="p">()],</span> <span class="n">aspect</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">)</span>
+<span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;2 theta (deg)&quot;</span><span class="p">)</span>
+<span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;Azimuthal angle chi (deg)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7fd7aaa0aa58&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_19_1.png" src="../../../_images/output_19_1.png" />
+<p>The displayed image presents the &#8220;caked&#8221; image with the radial and
+azimuthal angles properly set on the axes. Search for the -180, -90,
+360/0 and 180 mark on the transformed image.</p>
+<p>Like <em>integrate1d</em>, <em>integrate2d</em> offers the ability to save the
+intgrated image into an image file (EDF format by default) with again
+all metadata in the headers.</p>
+</div>
+<div class="section" id="radial-integration">
+<h3>Radial integration<a class="headerlink" href="#radial-integration" title="Permalink to this headline">¶</a></h3>
+<p>Radial integration can directly be obtained from Caked images:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="mi">8</span> <span class="c">#degrees</span>
+<span class="c">#work on fewer radial bins in order to have an actual averaging:</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">tth</span><span class="p">,</span> <span class="n">chi</span> <span class="o">=</span> <span class="n">ai</span><span class="o">.</span><span class="n">integrate2d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">)</span>
+<span class="n">column</span> <span class="o">=</span> <span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">tth</span><span class="o">-</span><span class="n">target</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Column number </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">column</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">I</span><span class="p">[:,</span><span class="n">column</span><span class="p">])</span>
+<span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;Azimuthal angle&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Column number 34
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7fd7a833dcc0&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_21_2.png" src="../../../_images/output_21_2.png" />
+<p><strong>Nota:</strong> the pattern with higher noise along the diagonals is typical
+from the pixel splitting scheme employed. Here this scheme is a
+&#8220;bounding box&#8221; which makes digonal pixels look a bit larger (+40%) than
+the ones on the horizontal and vertical axis, explaining the variation
+of the noise.</p>
+</div>
+<div class="section" id="integration-of-a-bunch-of-files-using-pyfai">
+<h3>Integration of a bunch of files using pyFAI<a class="headerlink" href="#integration-of-a-bunch-of-files-using-pyfai" title="Permalink to this headline">¶</a></h3>
+<p>Once the processing for one file is established, one can loop over a
+bunch of files. A convienient way to get the list of files matching a
+pattern is with the <em>glob</em> module.</p>
+<p>Most of the time, the azimuthal integrator is obtained by simply loading
+the <em>poni-file</em> into pyFAI and use it directly.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">glob</span>
+<span class="n">all_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s">&quot;al2o*.edf.bz2&quot;</span><span class="p">)</span>
+<span class="n">all_files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_files</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">51</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;al2o3_00_max_51_frames.poni&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Detector    Spline= /users/kieffer/workspace-400/pyFAI/doc/source/usage/tutorial/Introduction/distorsion_2x2.spline         PixelSize= 1.034e-04, 1.025e-04 m
+Wavelength= 7.084811e-11m
+SampleDetDist= 1.168599e-01m        PONI= 5.295653e-02, 5.473342e-02m       rot1=0.015821  rot2= 0.009404  rot3= 0.000000 rad
+DirectBeamDist= 116.880mm   Center: x=515.795, y=522.995 pix        Tilt=1.055 deg  tiltPlanRotation= 149.271 deg
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre>%%time
+for one_file in all_files:
+    destination = os.path.splitext(one_file)[0]+&quot;.dat&quot;
+    image = fabio.open(one_file).data
+    ai.integrate1d(image, 1000, filename=destination)
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>CPU times: user 35.6 s, sys: 272 ms, total: 35.8 s
+Wall time: 22 s
+</pre></div>
+</div>
+<p>This was a simple integration of 50 files, saving the result into 2
+column ASCII files.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>Using the notebook is rather simple as it allows to mix comments, code,
+and images for visualization of scientific data.</p>
+<p>The basic use pyFAI&#8217;s AzimuthalIntgrator has also been presented and may
+be adapted to you specific needs.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction to the tutorials</a><ul>
+<li><a class="reference internal" href="#the-ipython-jupyter-notebook">The iPython/Jupyter notebook</a></li>
+<li><a class="reference internal" href="#getting-access-to-the-notebook">Getting access to the notebook</a><ul>
+<li><a class="reference internal" href="#inside-esrf">Inside ESRF</a></li>
+<li><a class="reference internal" href="#outside-esrf-with-an-esrf-account">Outside ESRF with an ESRF account.</a></li>
+<li><a class="reference internal" href="#other-cases">Other cases</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getting-trained-in-using-the-notebook">Getting trained in using the notebook</a></li>
+<li><a class="reference internal" href="#introduction-to-diffraction-image-analysis-using-the-notebook">Introduction to diffraction image analysis using the notebook</a><ul>
+<li><a class="reference internal" href="#load-and-display-diffraction-images">Load and display diffraction images</a></li>
+<li><a class="reference internal" href="#d-azimuthal-integration">1D azimuthal integration</a></li>
+<li><a class="reference internal" href="#d-integration-or-caking">2D integration or Caking</a></li>
+<li><a class="reference internal" href="#radial-integration">Radial integration</a></li>
+<li><a class="reference internal" href="#integration-of-a-bunch-of-files-using-pyfai">Integration of a bunch of files using pyFAI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">Tutorials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../Distortion/Distortion.html"
+                        title="next chapter">Detector distortion corrections</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/usage/tutorial/Introduction/introduction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../Distortion/Distortion.html" title="Detector distortion corrections"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Tutorials"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

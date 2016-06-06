@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation procedure on MacOSX &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="Installation of Python Fast Azimuthal Integration library" href="index.html" />
+    <link rel="next" title="Installation procedure on Windows" href="windows.html" />
+    <link rel="prev" title="Installation procedure on Linux" href="linux.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="windows.html" title="Installation procedure on Windows"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="linux.html" title="Installation procedure on Linux"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Installation of Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation-procedure-on-macosx">
+<h1>Installation procedure on MacOSX<a class="headerlink" href="#installation-procedure-on-macosx" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="using-pip">
+<h2>Using PIP<a class="headerlink" href="#using-pip" title="Permalink to this headline">¶</a></h2>
+<p>To install pyFAI on an <em>Apple</em> computer you will need a scientific Python stack.
+MacOSX provides by default Python2.7 with Numpy which is a good basis.</p>
+<div class="code highlight-python"><div class="highlight"><pre>sudo pip install matplotlib --upgrade
+sudo pip install scipy --upgrade
+sudo pip install fabio --upgrade
+sudo pip install h5py --upgrade
+sudo pip install cython --upgrade
+sudo pip install pyFAI --upgrade
+</pre></div>
+</div>
+<p>If you get an error about the local &#8220;UTF-8&#8221;, try to:</p>
+<div class="code highlight-python"><div class="highlight"><pre>export LC_ALL=C
+</pre></div>
+</div>
+<p>Before the installation.</p>
+</div>
+<div class="section" id="installation-from-sources">
+<h2>Installation from sources<a class="headerlink" href="#installation-from-sources" title="Permalink to this headline">¶</a></h2>
+<p>Get the sources from Github:</p>
+<div class="code highlight-python"><div class="highlight"><pre>wget https://github.com/pyFAI/pyFAI/archive/master.zip
+unzip master.zip
+cd pyFAI-master
+</pre></div>
+</div>
+<div class="section" id="about-openmp">
+<h3>About OpenMP<a class="headerlink" href="#about-openmp" title="Permalink to this headline">¶</a></h3>
+<p>OpenMP is a way to write multi-threaded code, running on multiple processors
+simultaneously.
+PyFAI makes heavy use of OpenMP, but there is an issue with recent versions of
+MacOSX (&gt;v10.6) where the default compiler of Apple, <em>Xcode</em>, dropped the
+support for OpenMP.</p>
+<p>There are two ways to compile pyFAI on MacOSX:</p>
+<ul class="simple">
+<li>Using <em>Xcode</em> and de-activating OpenMP in pyFAI</li>
+<li>Using another compiler which supports OpenMP</li>
+</ul>
+</div>
+<div class="section" id="using-xcode">
+<h3>Using Xcode<a class="headerlink" href="#using-xcode" title="Permalink to this headline">¶</a></h3>
+<p>To build pyFAI from sources, a C-compiler is needed.
+On an <em>Apple</em> computer, the default compiler is
+<a class="reference external" href="https://developer.apple.com/xcode/">Xcode</a>, and it is available for free on
+the <strong>AppStore</strong>.
+As pyFAI has by default OpenMP activated, and it needs to be de-activated,
+one needs to regenerate all Cython files without OpenMP.</p>
+<div class="code highlight-python"><div class="highlight"><pre>sudo pip install cython --upgrade
+rm pyFAI/ext/*.c
+python setup.py build --no-openmp
+python setup.py bdist_wheel
+sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-gcc-or-clang">
+<h3>Using <strong>gcc</strong> or <strong>clang</strong><a class="headerlink" href="#using-gcc-or-clang" title="Permalink to this headline">¶</a></h3>
+<p>If you want to keep the OpenMP feature (which makes the processing slightly faster),
+the alternative is to install another compiler like <a class="reference external" href="https://gcc.gnu.org/">gcc</a>
+or <a class="reference external" href="http://clang.llvm.org/">clang</a> on your <em>Apple</em> computer.
+As gcc &amp; clang support OpenMP, there is no need to re-generate the cython files.</p>
+<div class="code highlight-python"><div class="highlight"><pre>CC=gcc python setup.py build --openmp
+python setup.py bdist_wheel
+sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI
+</pre></div>
+</div>
+<p><strong>Nota:</strong> The usage of &#8220;python setup.py install&#8221; is now deprecated.
+It causes much more trouble as there is no installed file tracking,
+hence no way to de-install properly a package.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation procedure on MacOSX</a><ul>
+<li><a class="reference internal" href="#using-pip">Using PIP</a></li>
+<li><a class="reference internal" href="#installation-from-sources">Installation from sources</a><ul>
+<li><a class="reference internal" href="#about-openmp">About OpenMP</a></li>
+<li><a class="reference internal" href="#using-xcode">Using Xcode</a></li>
+<li><a class="reference internal" href="#using-gcc-or-clang">Using <strong>gcc</strong> or <strong>clang</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="linux.html"
+                        title="previous chapter">Installation procedure on Linux</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="windows.html"
+                        title="next chapter">Installation procedure on Windows</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/operations/macosx.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="windows.html" title="Installation procedure on Windows"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="linux.html" title="Installation procedure on Linux"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Installation of Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

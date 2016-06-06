@@ -1,0 +1,301 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Calibration of a diffraction setup &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../index.html" />
+    <link rel="up" title="Cookbook recipes" href="index.html" />
+    <link rel="next" title="Azimuthal integration using the graphical user interface" href="integration_with_the_gui.html" />
+    <link rel="prev" title="Cookbook recipes" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="integration_with_the_gui.html" title="Azimuthal integration using the graphical user interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Cookbook recipes"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Cookbook recipes</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="calibration-of-a-diffraction-setup">
+<h1>Calibration of a diffraction setup<a class="headerlink" href="#calibration-of-a-diffraction-setup" title="Permalink to this headline">¶</a></h1>
+<p>The files needed for this cookbook can be downloaded on:
+<a class="reference external" href="http://www.silx.org/pub/pyFAI/cookbook/calibration/">http://www.silx.org/pub/pyFAI/cookbook/calibration/</a>
+You can download them to practice:</p>
+<div class="highlight-shell"><div class="highlight"><pre><span class="nv">$ </span>mkdir calibration
+<span class="nv">$ </span><span class="nb">cd </span>calibration
+<span class="nv">$ </span>wget http://www.silx.org/pub/pyFAI/cookbook/calibration/LaB6_29.4keV.tif
+<span class="nv">$ </span>wget http://www.silx.org/pub/pyFAI/cookbook/calibration/F_K4320T_Cam43_30012013_distorsion.spline
+<span class="nv">$ </span>ls
+F_K4320T_Cam43_30012013_distorsion.spline  LaB6_29.4keV.tif
+</pre></div>
+</div>
+<p><a class="reference external" href="http://www.silx.org/pub/calibration/calibration.flv">The associated video is here</a></p>
+<div class="section" id="review-your-calibration-image">
+<h2>Review your calibration image<a class="headerlink" href="#review-your-calibration-image" title="Permalink to this headline">¶</a></h2>
+<p>As viewer, try fabio_viewer from the FabIO package</p>
+<div class="highlight-shell"><div class="highlight"><pre><span class="nv">$ </span>fabio_viewer LaB6_29.4keV.tif
+</pre></div>
+</div>
+<div class="figure align-center">
+<img alt="image" src="../../_images/fabio_viewer.png" />
+</div>
+<p>You may need to pre-process your data, <em>pyFAI-average</em> is a tool to perform pixel-wise
+transformation.
+In this example, the image file was obtained using a &#8220;max filter&#8221; over 20 frames
+with pyFAI-average:</p>
+<div class="highlight-shell"><div class="highlight"><pre><span class="nv">$ </span>pyFAI-average -m max -F tif -o LaB6_29.4keV.tif ref_lab6_00??.edf
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-all-additional-data">
+<h2>Get all additional data<a class="headerlink" href="#get-all-additional-data" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>calibrant used: LaB6 according to the name of the file</li>
+<li>the energy or the wavelength, 29.4keV according to the name of the file</li>
+<li>detector geometry: there is a spline file along with the file</li>
+<li>masks, dark, flat ... are not going to be used to keep things simple.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="start-pyfai-calib">
+<h2>Start pyFAI-calib<a class="headerlink" href="#start-pyfai-calib" title="Permalink to this headline">¶</a></h2>
+<p>Use the man page (or &#8211;help) to see all options, or go to the <a class="reference internal" href="../../man/scripts.html#manpage"><em>pyFAI scripts manual</em></a> section.</p>
+<p>Here we just provide the energy, the detector disortion file and the calibrant
+options in addition to the image file.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span class="nv">$ </span>pyFAI-calib -e 29.4 -s F_K4320T_Cam43_30012013_distorsion.spline -c LaB6 LaB6_29.4keV.tif
+FixedParameters<span class="o">([</span><span class="s1">&#39;wavelength&#39;</span><span class="o">])</span>
+ERROR:pyFAI.peak_picker:ControlPoint.load: No such file LaB6_29.4keV.npt
+INFO:pyFAI.massif:Image size is <span class="o">(</span>2048, 2048<span class="o">)</span>
+INFO:pyFAI.massif:Binning size is <span class="o">[</span>2, 2<span class="o">]</span>
+INFO:pyFAI.massif:Labeling found <span class="m">7272</span> massifs.
+INFO:pyFAI.massif:Labeling found <span class="m">7272</span> massifs.
+INFO:root:Please <span class="k">select</span> rings on the diffraction image. In parenthesis, some modified shortcuts <span class="k">for</span> single button mouse <span class="o">(</span>Apple<span class="o">)</span>:
+ * Right-click <span class="o">(</span>click+n<span class="o">)</span>:         try an auto find <span class="k">for</span> a ring
+ * Right-click + Ctrl <span class="o">(</span>click+b<span class="o">)</span>:  create new group with one point
+ * Right-click + Shift <span class="o">(</span>click+v<span class="o">)</span>: add one point to current group
+ * Right-click + m <span class="o">(</span>click+m<span class="o">)</span>:     find more points <span class="k">for</span> current group
+ * Center-click or <span class="o">(</span>click+d<span class="o">)</span>:     erase current group
+ * Center-click + <span class="m">1</span> or <span class="o">(</span>click+1<span class="o">)</span>: erase closest point from current group
+Please press enter when you are happy with your selection
+</pre></div>
+</div>
+</div>
+<div class="section" id="pick-peaks">
+<h2>Pick peaks<a class="headerlink" href="#pick-peaks" title="Permalink to this headline">¶</a></h2>
+<p>To perform the calibration one needs to create control points and assign them to rings.</p>
+<blockquote>
+<div><ul class="simple">
+<li>Right click on a few (5) points in the inner-most ring which has the index
+number #0</li>
+<li>Increase the counter on the top right to change the ring number and pick a few
+more points on the corresponding ring (again with right click).</li>
+</ul>
+</div></blockquote>
+<div class="figure align-center">
+<img alt="image" src="../../_images/pyFAI-calib_1.png" />
+</div>
+</div>
+<div class="section" id="review-the-group-of-peaks">
+<h2>Review the group of peaks<a class="headerlink" href="#review-the-group-of-peaks" title="Permalink to this headline">¶</a></h2>
+<p>Press Enter in the terminal to do so...
+and check the ring assignment</p>
+<p>Once done with all groups, the position of the expected rings is overlaid to the
+diffraction image. You may need to unzoom to view them !</p>
+<div class="highlight-shell"><div class="highlight"><pre>Now fill in the ring number. Ring number starts at 0, like point-groups.
+Point group <span class="c"># a (4 points)  (1315.9,1090.1)   [default=0] Ring#</span>
+Point group <span class="c"># b (5 points)  (1302.0, 926.0)   [default=0] Ring#</span>
+Point group <span class="c"># c (2 points)  (1085.3,1268.1)   [default=0] Ring#</span>
+Point group <span class="c"># d (2 points)  ( 850.1,1083.3)   [default=0] Ring#</span>
+Point group <span class="c"># e (5 points)  ( 965.1, 825.7)   [default=0] Ring#</span>
+Point group <span class="c"># f (4 points)  ( 898.2,1315.9)   [default=1] Ring#</span>
+Point group <span class="c"># g (2 points)  (1244.6, 733.6)   [default=1] Ring#</span>
+Point group <span class="c"># h (2 points)  (1350.1, 821.9)   [default=1] Ring#</span>
+Optimization terminated successfully.    <span class="o">(</span>Exit mode 0<span class="o">)</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<img alt="image" src="../../_images/pyFAI-calib_2.png" />
+</div>
+</div>
+<div class="section" id="acquire-some-more-control-points">
+<h2>Acquire some more control points<a class="headerlink" href="#acquire-some-more-control-points" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>Use <em>recalib</em> to extract a new set of control points, specify the number of rings, first a few of them then more</li>
+<li>You may want to free/fix/bound some parameter then <em>refine</em> again</li>
+</ul>
+</div></blockquote>
+<div class="highlight-shell"><div class="highlight"><pre>Fixed: wavelength
+Modify parameters <span class="o">(</span>or ? <span class="k">for</span> <span class="nb">help</span><span class="o">)</span>?   recalib 6
+<span class="o">[</span>...<span class="o">]</span>
+Fixed: wavelength
+Modify parameters <span class="o">(</span>or ? <span class="k">for</span> <span class="nb">help</span><span class="o">)</span>?   recalib 15
+<span class="o">[</span>...<span class="o">]</span>
+Fixed: wavelength
+Modify parameters <span class="o">(</span>or ? <span class="k">for</span> <span class="nb">help</span><span class="o">)</span>?   recalib 25
+</pre></div>
+</div>
+<div class="figure align-center">
+<img alt="image" src="../../_images/pyFAI-calib_3.png" />
+</div>
+</div>
+<div class="section" id="visualize-the-integrated-patterns">
+<h2>Visualize the integrated patterns<a class="headerlink" href="#visualize-the-integrated-patterns" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>integrate to view the integrated pattern</li>
+<li>then extract a few extra rings ...</li>
+<li>the geometry is displayed on the screen, and saved automatically in the poni-file</li>
+</ul>
+</div></blockquote>
+<div class="highlight-shell"><div class="highlight"><pre>Fixed: wavelength
+Modify parameters <span class="o">(</span>or ? <span class="k">for</span> <span class="nb">help</span><span class="o">)</span>?   integrate
+</pre></div>
+</div>
+<div class="figure align-center">
+<img alt="image" src="../../_images/pyFAI-calib_4.png" />
+</div>
+</div>
+<div class="section" id="quit">
+<h2>Quit<a class="headerlink" href="#quit" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell"><div class="highlight"><pre>Fixed: wavelength
+Modify parameters (or ? for help)?   quit
+$
+</pre></div>
+</div>
+<p>All different geometries have been saved into the LaB6_29.4keV.poni file and
+can directly be used with <em>pyFAI-integrate</em>.
+All control points are saved into LaB6_29.4keV.npt.</p>
+<p><strong>Final notes:</strong>
+In this case the calibration is far from being good and it is likely the
+distortion file applied is not the proper one according to many the waves on the 2D
+integration pattern.
+If one flips up-down the spline file prior to the calibration, the residual error
+is twice lower but the goes far beyond this cookbook.
+Here is the diffraction pattern from a properly calibrated setup:</p>
+<div class="figure align-center">
+<img alt="image" src="../../_images/pyFAI-calib_5.png" />
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyFAI.spline</span> <span class="kn">import</span> <span class="n">Spline</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">Spline</span><span class="p">(</span><span class="s">&quot;F_K4320T_Cam43_30012013_distorsion.spline&quot;</span><span class="p">)</span>
+<span class="n">ud</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">flipud</span><span class="p">()</span>
+<span class="n">ud</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;flipud.spline&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Calibration of a diffraction setup</a><ul>
+<li><a class="reference internal" href="#review-your-calibration-image">Review your calibration image</a></li>
+<li><a class="reference internal" href="#get-all-additional-data">Get all additional data</a></li>
+<li><a class="reference internal" href="#start-pyfai-calib">Start pyFAI-calib</a></li>
+<li><a class="reference internal" href="#pick-peaks">Pick peaks</a></li>
+<li><a class="reference internal" href="#review-the-group-of-peaks">Review the group of peaks</a></li>
+<li><a class="reference internal" href="#acquire-some-more-control-points">Acquire some more control points</a></li>
+<li><a class="reference internal" href="#visualize-the-integrated-patterns">Visualize the integrated patterns</a></li>
+<li><a class="reference internal" href="#quit">Quit</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Cookbook recipes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="integration_with_the_gui.html"
+                        title="next chapter">Azimuthal integration using the graphical user interface</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/usage/cookbook/calibrate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="integration_with_the_gui.html" title="Azimuthal integration using the graphical user interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Cookbook recipes"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Cookbook recipes</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

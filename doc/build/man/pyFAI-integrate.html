@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Integration tool: pyFAI-integrate &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Integration tool: diff_map" href="diff_map.html" />
+    <link rel="prev" title="Calibration tool: MX-calibrate" href="MX-calibrate.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="diff_map.html" title="Integration tool: diff_map"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="MX-calibrate.html" title="Calibration tool: MX-calibrate"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="integration-tool-pyfai-integrate">
+<h1>Integration tool: pyFAI-integrate<a class="headerlink" href="#integration-tool-pyfai-integrate" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
+on a set of files. It exposes most of the important options available within pyFAI and allows you
+to select a GPU (or an openCL platform) to perform the calculation on.</p>
+<div class="figure align-center">
+<img alt="image" src="../_images/integrate.png" />
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>pyFAI-integrate [options] file1.edf file2.edf ...</p>
+</div>
+<div class="section" id="options">
+<h2>Options:<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show help message and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></td>
+<td>switch to verbose/debug mode</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-o <var>OUTPUT</var></span>, <span class="option">--output=<var>OUTPUT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Directory or file where to store the output data</td></tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+<div class="section" id="tips-tricks">
+<h2>Tips &amp; Tricks:<a class="headerlink" href="#tips-tricks" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI-integrate saves all parameters in a .azimint.json (hidden) file. This JSON file
+is an ascii file which can be edited and used to configure online data analysis using
+the LImA plugin of pyFAI.</p>
+<p>Nota: there is bug in debian6 making the GUI crash (to be fixed inside pyqt)
+<a class="reference external" href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348">http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348</a></p>
+</div>
+<div class="section" id="example">
+<h2>Example:<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text"><div class="highlight"><pre>$ pyFAI-integrate --help
+usage: pyFAI-integrate [options] file1.edf file2.edf ...
+
+PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform
+azimuthal integration on a set of files. It exposes most of the important
+options available within pyFAI and allows you to select a GPU (or an openCL
+platform) to perform the calculation on.
+
+positional arguments:
+  FILE                  Files to be integrated
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version         show program&#39;s version number and exit
+  -v, --verbose         switch to verbose/debug mode
+  -o OUTPUT, --output OUTPUT
+                        Directory or file where to store the output data
+  -f FORMAT, --format FORMAT
+                        output data format (can be HDF5)
+  -s SLOW, --slow-motor SLOW
+                        Dimension of the scan on the slow direction (makes
+                        sense only with HDF5)
+  -r RAPID, --fast-motor RAPID
+                        Dimension of the scan on the fast direction (makes
+                        sense only with HDF5)
+  --no-gui              Process the dataset without showing the user
+                        interface.
+  -j JSON, --json JSON  Configuration file containing the processing to be
+                        done
+
+PyFAI-integrate saves all parameters in a .azimint.json (hidden) file. This
+JSON file is an ascii file which can be edited and used to configure online
+data analysis using the LImA plugin of pyFAI. Nota: there is bug in debian6
+making the GUI crash (to be fixed inside pyqt) http://bugs.debian.org/cgi-
+bin/bugreport.cgi?bug=697348
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Integration tool: pyFAI-integrate</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#options">Options:</a></li>
+<li><a class="reference internal" href="#tips-tricks">Tips &amp; Tricks:</a></li>
+<li><a class="reference internal" href="#example">Example:</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="MX-calibrate.html"
+                        title="previous chapter">Calibration tool: MX-calibrate</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="diff_map.html"
+                        title="next chapter">Integration tool: diff_map</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/pyFAI-integrate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="diff_map.html" title="Integration tool: diff_map"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="MX-calibrate.html" title="Calibration tool: MX-calibrate"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

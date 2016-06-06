@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Preprocessing tool: pyFAI-average &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Mask generation tool: drawMask_pymca" href="drawMask_pymca.html" />
+    <link rel="prev" title="pyFAI scripts manual" href="scripts.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="drawMask_pymca.html" title="Mask generation tool: drawMask_pymca"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="scripts.html" title="pyFAI scripts manual"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="preprocessing-tool-pyfai-average">
+<h1>Preprocessing tool: pyFAI-average<a class="headerlink" href="#preprocessing-tool-pyfai-average" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>This tool is used to average out a set of dark current images using
+mean or median filter (along the image stack). One can also reject outliers
+be specifying a cutoff (remove cosmic rays / zingers from dark)</p>
+<p>It can also be used to merge many images from the same sample when using a small beam
+and reduce the spotty-ness of Debye-Scherrer rings. In this case the &#8220;max-filter&#8221; is usually
+recommended.</p>
+</div>
+<div class="section" id="options">
+<h2>Options:<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p>Usage: pyFAI-average [options] -o output.edf file1.edf file2.edf ...</p>
+<dl class="docutils">
+<dt>positional arguments:</dt>
+<dd>FILE                  Files to be processed</dd>
+<dt>optional arguments:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show this help message and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-V</span>, <span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-o <var>OUTPUT</var></span>, <span class="option">--output <var>OUTPUT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Output/ destination of average image</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-m <var>METHOD</var></span>, <span class="option">--method <var>METHOD</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Method used for averaging, can be &#8216;mean&#8217;(default) or
+&#8216;min&#8217;, &#8216;max&#8217;, &#8216;median&#8217;, &#8216;sum&#8217;, &#8216;quantiles&#8217;</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-c <var>CUTOFF</var></span>, <span class="option">--cutoff <var>CUTOFF</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Take the mean of the average +/- cutoff * std_dev.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-F <var>FORMAT</var></span>, <span class="option">--format <var>FORMAT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Output file/image format (by default EDF)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-d <var>DARK</var></span>, <span class="option">--dark <var>DARK</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Dark noise to be subtracted</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-f <var>FLAT</var></span>, <span class="option">--flat <var>FLAT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Flat field correction</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></td>
+<td>switch to verbose/debug mode</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-q <var>QUANTILES</var></span>, <span class="option">--quantiles <var>QUANTILES</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>average out between two quantiles -q 0.20-0.90</td></tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<div class="highlight-text"><div class="highlight"><pre>$ pyFAI-average --help
+usage: pyFAI-average [options] [options] -o output.edf file1.edf file2.edf ...
+
+This tool can be used to average out a set of dark current images using mean
+or median filter (along the image stack). One can also reject outliers be
+specifying a cutoff (remove cosmic rays / zingers from dark)
+
+positional arguments:
+  FILE                  Files to be processed
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version         show program&#39;s version number and exit
+  -o OUTPUT, --output OUTPUT
+                        Output/ destination of average image
+  -m METHOD, --method METHOD
+                        Method used for averaging, can be &#39;mean&#39;(default) or
+                        &#39;min&#39;, &#39;max&#39;, &#39;median&#39;, &#39;sum&#39;, &#39;quantiles&#39;
+  -c CUTOFF, --cutoff CUTOFF
+                        Take the mean of the average +/- cutoff * std_dev.
+  -F FORMAT, --format FORMAT
+                        Output file/image format (by default EDF)
+  -d DARK, --dark DARK  Dark noise to be subtracted
+  -f FLAT, --flat FLAT  Flat field correction
+  -v, --verbose         switch to verbose/debug mode
+  -q QUANTILES, --quantiles QUANTILES
+                        average out between two quantiles -q 0.20-0.90
+  --quiet               Only error messages are printed out
+
+It can also be used to merge many images from the same sample when using a
+small beam and reduce the spotty-ness of Debye-Sherrer rings. In this case the
+&quot;max-filter&quot; is usually recommended.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Preprocessing tool: pyFAI-average</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+<li><a class="reference internal" href="#options">Options:</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="scripts.html"
+                        title="previous chapter">pyFAI scripts manual</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="drawMask_pymca.html"
+                        title="next chapter">Mask generation tool: drawMask_pymca</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/pyFAI-average.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="drawMask_pymca.html" title="Mask generation tool: drawMask_pymca"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="scripts.html" title="pyFAI scripts manual"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
