@@ -19,29 +19,6 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-import glob
-import shutil
-root_dir = os.path.abspath("../..")
-build_dir = glob.glob('../../build/lib*')
-if (not build_dir) or ("__init__.py" not in os.listdir(os.path.join(build_dir[0],"pyFAI"))):
-    import subprocess
-    curr_dir = os.getcwd()
-    os.chdir(root_dir)
-    errno = subprocess.call([sys.executable, 'setup.py', 'build'])
-    if errno != 0:
-        raise SystemExit(errno)
-    else:
-        os.chdir(curr_dir)
-    build_dir = glob.glob('../../build/lib*')
-    calib_dir = os.path.join(build_dir[0],"pyFAI","calibration")
-    if not os.path.exists(calib_dir):
-        print(root_dir,calib_dir)
-        shutil.copytree(os.path.join(root_dir,"calibration"), calib_dir)
-sys.path.insert(1, build_dir[0])
-os.environ["PATH"] = os.path.join(root_dir,"scripts") + os.pathsep + os.environ.get("PATH","")
-os.environ["PYTHONPATH"] = build_dir[0] + os.pathsep+os.environ.get("PYTHONPATH","")
-
-
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
