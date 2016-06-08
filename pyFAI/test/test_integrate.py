@@ -110,13 +110,15 @@ class TestIntegrate1D(unittest.TestCase):
 
 
 class TestIntegrate2D(unittest.TestCase):
-    npt = 500
-    img = UtilsTest.getimage("1883/Pilatus1M.edf")
-    data = fabio.open(img).data
-    ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
-    ai.wavelength = 1e-10
-    Rmax = 20
-    delta_pos_azim_max = 0.28
+    @classmethod
+    def setUpClass(cls):
+        cls.npt = 500
+        cls.img = UtilsTest.getimage("1883/Pilatus1M.edf")
+        cls.data = fabio.open(img).data
+        cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
+        cls.ai.wavelength = 1e-10
+        cls.Rmax = 20
+        cls.delta_pos_azim_max = 0.28
 
     def testQ(self):
         res = {}
