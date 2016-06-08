@@ -34,8 +34,8 @@ Outside ESRF with an ESRF account.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The JupyterHub server is not directly available on the internet, but you
-can
-``login into the firewall<http://www.esrf.eu/Infrastructure/Computing/Networks/InternetAndTheFirewall/UsersManual/SSH>``\ \_
+can `login into the
+firewall <http://www.esrf.eu/Infrastructure/Computing/Networks/InternetAndTheFirewall/UsersManual/SSH>`__
 to forward the web server:
 
 ssh -XC -p5022 -L8000:scisoft13:8000 user@firewall.esrf.fr
