@@ -5,6 +5,7 @@
 
 # Generated
 /package
+/profile.log
 
 # Packages
 *.egg
