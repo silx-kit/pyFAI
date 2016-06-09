@@ -61,7 +61,7 @@ class ParameterisedTestCase(unittest.TestCase):
         cls.N = 1000
         cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("1893/Pilatus1M.poni"))
         cls.data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
-        cls.ai.xrpd_LUT(data, N)
+        cls.ai.xrpd_LUT(cls.data, cls.N)
 
     def __init__(self, methodName='runTest', param=None):
         super(ParameterisedTestCase, self).__init__(methodName)
