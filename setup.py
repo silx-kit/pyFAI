@@ -278,7 +278,7 @@ def download_images():
     sys.path.insert(0, test_dir)
     from utilstest import UtilsTest
     image_home = os.path.join(root_dir, "testimages")
-    testimages = os.path.join(root_dir, "all_testimages.json")
+    testimages = os.path.join(image_home, "all_testimages.json")
     UtilsTest.image_home = image_home
     UtilsTest.testimages = testimages
     if os.path.exists(testimages):

@@ -344,7 +344,7 @@ if old_importer:
     utilstest = getattr(test_module, "utilstest")
 UtilsTest = getattr(utilstest, "UtilsTest")
 UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
-UtilsTest.testimages = os.path.join(PROJECT_DIR, "all_testimages.json")
+UtilsTest.testimages = os.path.join(UtilsTest.image_home, "all_testimages.json")
 UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
 
 test_suite = unittest.TestSuite()

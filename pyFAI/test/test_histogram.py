@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "09/06/2016"
 
 import unittest
 import time
@@ -56,15 +56,22 @@ class TestHistogram1d(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
+
+        # CSR logger should stop complaining about desactivated
+        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger.setLevel(logging.ERROR)
+
         shape = (512, 512)
         npt = 500
         self.size = shape[0] * shape[1]
         maxI = 1000
         self.epsilon = 1.0e-4
+        self.epsilon_csr = 0.33
         y, x = numpy.ogrid[:shape[0], :shape[1]]
-        tth = numpy.sqrt(x * x + y * y).astype("float32")
+        tth = numpy.sqrt(x * x + y * y)  # .astype("float32")
         mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
-        data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
+        # data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
+        data = (numpy.ones(shape) * maxI * mod).astype("uint16")
         self.data_sum = data.sum(dtype="float64")
         t0 = time.time()
         drange = (tth.min(), tth.max() * EPS32)
@@ -89,7 +96,8 @@ class TestHistogram1d(unittest.TestCase):
         t4 = time.time()
         logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
         # Under Linux, windows or MacOSX, up to 1 bin error has been reported...
-        self.err_max_cnt = 1
+        self.err_max_cnt = 0
+        self.err_max_cnt_csr = 8
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -97,6 +105,8 @@ class TestHistogram1d(unittest.TestCase):
         self.I_numpy = self.weight_numpy = self.bins_csr = None
         self.data_sum = self.size = self.err_max_cnt = None
         self.bins_csr = self.I_csr = self.weight_csr = self.unweight_csr = None
+        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger.setLevel(logging.WARNING)
 
     def test_count_numpy(self):
         """
@@ -186,34 +196,38 @@ class TestHistogram1d(unittest.TestCase):
             logger.warning("1d pixel count difference numpy/cython : max delta=%s", delta_max)
         self.assert_(delta_max <= self.err_max_cnt, "1d pixel count difference numpy/cython : max delta=%s" % delta_max)
 
-#         self.assert_(delta_max < 1, "numpy_vs_cython_1d max delta unweight = %s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
         self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
 
-        #  TODO: fix this !!!
         delta_max = abs(self.unweight_numpy - self.unweight_csr).max()
-        if delta_max > 0:
-            logger.warning("pixel count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max < 10, "numpy_vs_csr_1d max delta unweight = %s" % delta_max)
+
+        self.assert_(delta_max <= self.err_max_cnt_csr, "numpy_vs_csr_1d max delta unweight = %s" % delta_max)
         delta_max = abs(self.I_csr - self.I_numpy).max()
-        if delta_max > self.epsilon:
-            logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max < 0.65, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max < self.epsilon_csr, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 class TestHistogram2d(unittest.TestCase):
+
     """basic test for 2D histogram"""
+
     def setUp(self):
         unittest.TestCase.setUp(self)
+
+        # CSR logger should stop complaining about desactivated
+        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger.setLevel(logging.ERROR)
+
         shape = (512, 512)
         self.size = shape[0] * shape[1]
         self.maxI = 1000
         self.epsilon = 1.3e-4
+        self.epsilon_csr = 8.84
         y, x = numpy.ogrid[:shape[0], :shape[1]]
         tth = numpy.sqrt(x * x + y * y).astype("float32")
         mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
         data = (numpy.random.poisson(self.maxI, shape) * mod).astype("uint16")
+        data = (numpy.ones(shape) * self.maxI * mod).astype("uint16")
         self.data_sum = data.sum(dtype="float64")
         npt = (400, 360)
         chi = numpy.arctan2(y, x).astype("float32")
@@ -243,7 +257,7 @@ class TestHistogram2d(unittest.TestCase):
     #         err_max_cnt = 0
     #     else:
         # Under windows or MacOSX, up to 1 bin error has been reported...
-        self.err_max_cnt = 1.0
+        self.err_max_cnt = 1
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -253,6 +267,9 @@ class TestHistogram2d(unittest.TestCase):
         self.I_cython = self.tth_cython = self.chi_cython = self.weight_cython = self.unweight_cython
         self.unweight_numpy = self.weight_numpy = None
         self.maxI = None
+
+        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger.setLevel(logging.WARNING)
 
     def test_count_numpy(self):
         """
@@ -324,13 +341,13 @@ class TestHistogram2d(unittest.TestCase):
         self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy chi, max delta=%s" % max_delta)
 
         delta_max = abs(self.unweight_numpy - self.unweight_csr.T).max()
-        if delta_max > 0:
+        if delta_max > self.err_max_cnt:
             logger.warning("pixel count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max <= self.err_max_cnt + 1, "pixel count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max <= self.err_max_cnt, "pixel count difference numpy/csr : max delta=%s" % delta_max)
         delta_max = abs(self.I_csr.T - self.I_numpy).max()
-        if delta_max > self.epsilon:
+        if delta_max > self.epsilon_csr:
             logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max <= 31, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max <= self.epsilon_csr, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 def suite():

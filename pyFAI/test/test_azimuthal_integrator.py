@@ -58,7 +58,9 @@ except ImportError:
 
 
 class TestAzimPilatus(unittest.TestCase):
-    img = UtilsTest.getimage("1884/Pilatus6M.cbf")
+    @classmethod
+    def setUpClass(cls):
+        cls.img = UtilsTest.getimage("1884/Pilatus6M.cbf")
 
     def setUp(self):
         """Download files"""

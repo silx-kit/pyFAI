@@ -54,11 +54,11 @@ first focus on one spot in the middle:
 
 .. parsed-literal::
 
-    [0m[01;32m03jun102d.edf[0m*    [01;32mccd2_g3.edf[0m*     CCD_calibration.ipynb  [01;32mgrilHiCap_04jund.edf[0m*
-    ccd2_g1_chk.edf   ccd2_g6_1.edf    corrected.edf          testdetector.h5
-    [01;32mccd2_g2.edf[0m*      ccd2_g6_2.edf    [01;32mflm-4-1.edf[0m*
-    ccd2_g2g.edf      ccd2_g6_3.edf    frelonID22_grid.edf
-    [01;32mccd2_g3_chk.edf[0m*  ccd2_g6_chk.edf  [01;32mgrid.edf[0m*
+    CCD_calibration.ipynb  output_14_1.png  output_39_1.png  output_5_1.png
+    CCD_calibration.rst    output_18_1.png  output_4_1.png   output_54_1.png
+    frelonID22_grid.edf    output_21_1.png  output_45_1.png  output_6_1.png
+    output_12_1.png        output_24_1.png  output_48_1.png  output_8_1.png
+    output_13_1.png        output_29_1.png  output_50_1.png
 
 
 .. code:: python
@@ -67,18 +67,6 @@ first focus on one spot in the middle:
     #fname = "corrected.edf"
     import fabio
     img = fabio.open(fname).data
-
-
-.. parsed-literal::
-
-    WARNING:xsdimage:lxml library is probably not part of your python installation: disabling xsdimage format
-
-
-.. parsed-literal::
-
-    WARNING: Not using BLAS, PCA calculation will be slower
-    WARNING: Not using BLAS/ATLAS, PCA calculation will be slower
-
 
 .. code:: python
 
@@ -89,7 +77,7 @@ first focus on one spot in the middle:
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f0c4e70e588>
+    <matplotlib.image.AxesImage at 0x7fe7003270f0>
 
 
 
@@ -107,7 +95,7 @@ first focus on one spot in the middle:
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f0c4eae6908>
+    <matplotlib.image.AxesImage at 0x7fe7002c7dd8>
 
 
 
@@ -125,7 +113,7 @@ first focus on one spot in the middle:
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7f0c4ec89c50>]
+    [<matplotlib.lines.Line2D at 0x7fe70023b048>]
 
 
 
@@ -162,7 +150,7 @@ peak-position.
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f0c49f72828>
+    <matplotlib.image.AxesImage at 0x7fe6f72859b0>
 
 
 
@@ -181,8 +169,8 @@ peak-position.
 .. code:: python
 
     #Check that size is unchanged.
-    print(img.shape)
-    print(cnv.shape)
+    print(img.shape) 
+    print(cnv.shape) 
 
 
 .. parsed-literal::
@@ -201,7 +189,7 @@ peak-position.
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f0c3cf93e80>
+    <matplotlib.image.AxesImage at 0x7fe6c9565c88>
 
 
 
@@ -219,7 +207,7 @@ peak-position.
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f0c3cef3160>
+    <matplotlib.image.AxesImage at 0x7fe6c94c94e0>
 
 
 
@@ -238,7 +226,7 @@ peak-position.
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7f0c3cedc320>]
+    [<matplotlib.lines.Line2D at 0x7fe6c94b0978>]
 
 
 
@@ -279,7 +267,7 @@ is done on the log-scale of the intensity.
     iw.merge_singleton()
     all_regions = set(iw.regions.values())
     regions = [i for i in all_regions if i.size>mini]
-
+    
     print("Number of region segmented: %s"%len(all_regions))
     print("Number of large enough regions : %s"%len(regions))
 
@@ -288,11 +276,11 @@ is done on the log-scale of the intensity.
 .. parsed-literal::
 
     WARNING:pyFAI.utils:Exception No module named 'fftw3': FFTw3 not available. Falling back on Scipy
-    WARNING:pyFAI.timeit:init_labels took 2.123s
-    WARNING:pyFAI.timeit:init_borders took 0.066s
-    WARNING:pyFAI.timeit:init_regions took 0.646s
-    WARNING:pyFAI.timeit:init_pass took 0.229s
-    WARNING:pyFAI.timeit:merge_singleton took 0.054s
+    WARNING:pyFAI.timeit:init_labels took 1.799s
+    WARNING:pyFAI.timeit:init_borders took 0.064s
+    WARNING:pyFAI.timeit:init_regions took 0.599s
+    WARNING:pyFAI.timeit:init_pass took 0.186s
+    WARNING:pyFAI.timeit:merge_singleton took 0.044s
 
 
 .. parsed-literal::
@@ -367,7 +355,7 @@ We retain all peaks >10^3.5
 .. parsed-literal::
 
     Raw peak coordinate:
-    [(1187, 654), (35, 155), (1082, 1447), (1082, 1545), (39, 62), (1083, 1250), (1083, 1349), (1943, 1925), (1084, 1151), (1190, 455)]
+    [(1953, 89), (1953, 1642), (1568, 1743), (999, 158), (1955, 182), (1955, 1545), (1957, 276), (1570, 1647), (1957, 1448), (1000, 61)]
 
 
 
@@ -402,7 +390,7 @@ Precise peak extraction is performed using a second order tailor expansion
 .. parsed-literal::
 
     Refined peak coordinate:
-    [(1186.931446455419, 653.9433948583901), (34.4068917632103, 155.60163909196854), (1081.7659440785646, 1447.2154052853584), (1081.409073472023, 1545.5145089030266), (39.49280175566673, 62.08068184554577), (1083.1883269548416, 1249.924985870719), (1082.5653080940247, 1348.6598246097565), (1943.0012932673562, 1925.4793396294117), (1083.641106903553, 1150.8036927580833), (1189.607285887003, 455.1422745883465)]
+    [(1953.2549439370632, 88.77039569616318), (1952.7404631972313, 1641.562735259533), (1567.744435876608, 1742.5557337403297), (998.5149356722832, 157.63702633976936), (1955.189983740449, 181.73492154479027), (1955.2447860836983, 1545.142356067896), (1956.8895792663097, 276.11039923131466), (1569.8278829306364, 1646.4742686152458), (1957.3444995582104, 1448.1315957009792), (999.5458661019802, 61.594527184963226)]
 
 
 
@@ -423,7 +411,7 @@ this we calculate the distance\_matrix from any point to any other:
 
 .. code:: python
 
-    # Nota, pyFAI uses **C-coordinates** so they come out as (y,x) and not the usual (x,y).
+    # Nota, pyFAI uses **C-coordinates** so they come out as (y,x) and not the usual (x,y). 
     # This notation helps us to remind the order
     yx = numpy.array(ref_peaks)
 
@@ -446,7 +434,7 @@ neighbors
 
 .. parsed-literal::
 
-    <matplotlib.text.Text at 0x7f0bff0c5dd8>
+    <matplotlib.text.Text at 0x7fe6afced1d0>
 
 
 
@@ -466,13 +454,13 @@ and 110 pixel appart.
 
 .. code:: python
 
-    #We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west).
+    #We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west). 
     point_type = np.dtype([('center_y', float), ('center_x', float),
                             ('east_y', float), ('east_x', float),
                             ('west_y', float), ('west_x', float),
                             ('north_y', float), ('north_x', float),
                             ('south_y', float), ('south_x', float)])
-
+    
     neig = np.logical_and(dist>70.0, dist<110.0)
     valid = (neig.sum(axis=-1)==4).sum()
     print("There are %i control point with exactly 4 first neigbours"%valid)
@@ -488,7 +476,7 @@ and 110 pixel appart.
 
 .. code:: python
 
-    #Populate the structure: we use a loop as it loops only over 400 points
+    #Populate the structure: we use a loop as it loops only over 400 points 
     h=-1
     for i, center in enumerate(peaks_ref):
         if neig[i].sum()!=4: continue
@@ -515,7 +503,7 @@ prefer to take the peak the nearest to the centroid of all other peaks.
 .. code:: python
 
     #Select the initial guess for the center:
-
+    
     #Most intense peak:
     #m = max([i for i in regions], key=lambda i:i.maxi)
     #Cx, Cy = m.index%img.shape[-1],m.index//img.shape[-1]
@@ -523,20 +511,20 @@ prefer to take the peak the nearest to the centroid of all other peaks.
     Cx, Cy = 734, 1181 #beam center
     #Cx, Cy = tuple(i//2 for i in cnv.shape) #detector center
     print("The guessed center is at (%s, %s)"%(Cx, Cy))
-
+    
     #Get the nearest point from centroid:
     d2 = ((point["center_x"]-Cx)**2+(point["center_y"]-Cy)**2)
     best = d2.argmin()
     Op = point[best]
     Ox, Oy = Op["center_x"], Op["center_y"]
-
+    
     print("The center is at (%s, %s)"%(Ox, Oy))
-    #Calculate the average vector along the 4 main axes
+    #Calculate the average vector along the 4 main axes 
     Xx = (point[:]["east_x"] - point[:]["center_x"]).mean()
     Xy = (point[:]["east_y"] - point[:]["center_y"]).mean()
     Yx = (point[:]["north_x"] - point[:]["center_x"]).mean()
     Yy = (point[:]["north_y"] - point[:]["center_y"]).mean()
-
+    
     print("The X vector is is at (%s, %s)"%(Xx, Xy))
     print("The Y vector is is at (%s, %s)"%(Yx, Yy))
 
@@ -611,7 +599,7 @@ optimization later on.
 
 .. parsed-literal::
 
-    <matplotlib.text.Text at 0x7f0bff096390>
+    <matplotlib.text.Text at 0x7fe6af9a06a0>
 
 
 
@@ -661,29 +649,29 @@ the peaks on the border with less than 4 neighbours.
     peaks_m = numpy.empty_like(peaks_ref)
     peaks_m[:,1] = peaks_ref[:,0]
     peaks_m[:,0] = peaks_ref[:,1]
-
+    
     #parameter set for optimization:
     P0 = [Ox, Oy, Xx, Yx, Xy, Yy]
-
+    
     P = numpy.array(P0)
-
+    
     def to_hole(P, pixels):
         "Translate pixel -> hole"
         T = numpy.atleast_2d(P[:2])
         R = P[2:].reshape((2,2))
-
+    
         #Transformation matrix from pixel to holes:
         hole = dot(numpy.linalg.inv(R), (pixels - T).T).T
         return hole
-
+    
     def to_pix(P, holes):
         "Translate hole -> pixel"
         T = numpy.atleast_2d(P[:2])
         R = P[2:].reshape((2,2))
-        #Transformation from index points (holes) to pixel coordinates:
+        #Transformation from index points (holes) to pixel coordinates: 
         pix = dot(R,holes.T).T + T
         return pix
-
+    
     def error(P):
         "Error function"
         hole_float = to_hole(P, peaks_m)
@@ -691,7 +679,7 @@ the peaks on the border with less than 4 neighbours.
         delta = hole_float-hole_int
         delta2 = (delta**2).sum()
         return delta2
-
+    
     print("Total inital error ", error(P), P0)
     holes = to_hole(P, peaks_m)
     print("Maximum initial error versus integrer: %s * pitch size (5mm)"%(abs(holes-holes.round()).max()))
@@ -708,32 +696,32 @@ the peaks on the border with less than 4 neighbours.
 
     Total inital error  2.5995763607 [753.70350015163422, 1186.1879850327969, 97.719730182623479, 1.3821857949656571, -0.78797711765336542, 97.082699075794565]
     Maximum initial error versus integrer: 0.199838456433 * pitch size (5mm)
-          jac: array([ -1.49011612e-07,  -2.08616257e-07,  -2.68220901e-07,
-             1.19209290e-07,   1.19209290e-07,   3.87430191e-07])
+          fun: 2.1237728421683664
+     hess_inv: array([[  1.42593966e+01,   5.44352852e-01,  -8.73479841e-01,
+              5.68748502e-01,  -2.33073665e-02,   4.10718930e-02],
+           [  5.44352852e-01,   1.43410848e+01,  -2.15692202e-02,
+              2.26610844e-02,  -8.65679493e-01,   5.70957152e-01],
+           [ -8.73479841e-01,  -2.15692202e-02,   2.99975175e-01,
+             -4.39948219e-03,   3.21018068e-03,  -2.79429948e-03],
+           [  5.68748502e-01,   2.26610844e-02,  -4.39948219e-03,
+              3.01817357e-01,  -1.20164054e-03,   3.36669161e-03],
+           [ -2.33073665e-02,  -8.65679493e-01,   3.21018068e-03,
+             -1.20164054e-03,   2.96516360e-01,  -3.90213340e-03],
+           [  4.10718930e-02,   5.70957152e-01,  -2.79429948e-03,
+              3.36669161e-03,  -3.90213340e-03,   2.95822053e-01]])
+          jac: array([  0.00000000e+00,   2.98023224e-08,   8.94069672e-08,
+             1.49011612e-07,   5.66244125e-07,   5.66244125e-07])
+      message: 'Optimization terminated successfully.'
          nfev: 160
           nit: 15
-      message: 'Optimization terminated successfully.'
-       status: 0
          njev: 20
+       status: 0
       success: True
-            x: array([  7.53021133e+02,   1.18519692e+03,   9.81143527e+01,
-             1.47509463e+00,  -8.04478515e-01,   9.73166896e+01])
-          fun: 2.1237728421683415
-     hess_inv: array([[  1.42100651e+01,   5.92064797e-01,  -8.65311650e-01,
-              5.71616778e-01,  -2.93157223e-02,   3.36330120e-02],
-           [  5.92064797e-01,   1.42890834e+01,  -3.28993124e-02,
-              1.71968068e-02,  -8.57363816e-01,   5.83878215e-01],
-           [ -8.65311650e-01,  -3.28993124e-02,   2.99126185e-01,
-             -4.37220702e-03,   4.01788293e-03,  -2.74807907e-03],
-           [  5.71616778e-01,   1.71968068e-02,  -4.37220702e-03,
-              3.02142044e-01,  -1.06852612e-03,   2.67366996e-03],
-           [ -2.93157223e-02,  -8.57363816e-01,   4.01788293e-03,
-             -1.06852612e-03,   2.95805859e-01,  -4.27421580e-03],
-           [  3.36330120e-02,   5.83878215e-01,  -2.74807907e-03,
-              2.67366996e-03,  -4.27421580e-03,   2.97301584e-01]])
-    total Final error  2.12377284217 [  7.53021133e+02   1.18519692e+03   9.81143527e+01   1.47509463e+00
-      -8.04478515e-01   9.73166896e+01]
-    Maximum final error versus integrer: 0.234645010209 * pitch size (5mm)
+            x: array([  7.53021132e+02,   1.18519692e+03,   9.81143528e+01,
+             1.47509458e+00,  -8.04478630e-01,   9.73166898e+01])
+    total Final error  2.12377284217 [  7.53021132e+02   1.18519692e+03   9.81143528e+01   1.47509458e+00
+      -8.04478630e-01   9.73166898e+01]
+    Maximum final error versus integrer: 0.234645015753 * pitch size (5mm)
 
 
 .. code:: python
@@ -753,7 +741,7 @@ the peaks on the border with less than 4 neighbours.
 
 .. parsed-literal::
 
-    <matplotlib.text.Text at 0x7f0c04a54518>
+    <matplotlib.text.Text at 0x7fe6af965b00>
 
 
 
@@ -798,7 +786,7 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
     #we use peaks_res instead of peaks_m to be in y,x coordinates, not x,y
     delta_x = griddata(peaks_ref, delta[:,0], (grid_x, grid_y), method='cubic')
     delta_y = griddata(peaks_ref, delta[:,1], (grid_x, grid_y), method='cubic')
-
+    
     figure(figsize=(12,5))
     subplot(1,2,1)
     imshow(delta_x,origin="lower", interpolation="nearest")
@@ -815,7 +803,7 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
 
 .. parsed-literal::
 
-    <matplotlib.colorbar.Colorbar at 0x7f0bfd478240>
+    <matplotlib.colorbar.Colorbar at 0x7fe6ab7c6da0>
 
 
 
@@ -828,22 +816,22 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
     #From http://stackoverflow.com/questions/3662361/fill-in-missing-values-with-nearest-neighbour-in-python-numpy-masked-arrays
     def fill(data, invalid=None):
         """
-        Replace the value of invalid 'data' cells (indicated by 'invalid')
+        Replace the value of invalid 'data' cells (indicated by 'invalid') 
         by the value of the nearest valid data cell
-
+    
         Input:
             data:    numpy array of any dimension
             invalid: a binary array of same shape as 'data'. True cells set where data
                      value should be replaced.
                      If None (default), use: invalid  = np.isnan(data)
-
-        Output:
-            Return a filled array.
+    
+        Output: 
+            Return a filled array. 
         """
-
-        if invalid is None:
+    
+        if invalid is None: 
             invalid = numpy.isnan(data)
-
+    
         ind = ndimage.distance_transform_edt(invalid, return_distances=False, return_indices=True)
         return data[tuple(ind)]
 
@@ -866,7 +854,7 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
 
 .. parsed-literal::
 
-    <matplotlib.colorbar.Colorbar at 0x7f0bfc1f8f60>
+    <matplotlib.colorbar.Colorbar at 0x7fe6a84c9b00>
 
 
 
@@ -887,7 +875,7 @@ Saving the distortion correction arrays to a detector
     detector.max_shape = detector.shape = img.shape
     detector.set_dx(fill(delta_x))
     detector.set_dy(fill(delta_y))
-    detector.mask = numpy.isnan(delta_x).astype(numpy.int8)
+    detector.mask = numpy.isnan(delta_x).astype(numpy.int8)[:img.shape[0], :img.shape[1]]
     detector.save("testdetector.h5")
 
 
@@ -909,24 +897,18 @@ Validation of the distortion correction
     fabio.edfimage.EdfImage(data=cor).save("corrected.edf")
 
 
-.. parsed-literal::
 
-    WARNING:pyFAI.timeit:calc_pos took 0.747s
-    WARNING:pyFAI.timeit:calc_size took 0.944s
-    WARNING:pyFAI.timeit:calc_LUT took 2.907s
-
-
-
-.. image:: output_54_1.png
+.. image:: output_54_0.png
 
 
 Conclusion
 ==========
-This procedure describes how to measure the detector
-distortion and how to create a detector description file directly
-useable in pyFAI. Only the region inside the convex hull of the grid
-data-points is valid and the region of the detector which is not
-calibrated has been masked out to preven accidental use of it.
+
+This procedure describes how to measure the detector distortion and how
+to create a detector description file directly useable in pyFAI. Only
+the region inside the convex hull of the grid data-points is valid and
+the region of the detector which is not calibrated has been masked out
+to preven accidental use of it.
 
 The distortion corrected image can now be used to check how "good" the
 calibration actually is. This file can be injected in the third cell,
@@ -934,4 +916,3 @@ and follow the same procedure (left as exercise). This gives a maximum
 mis-placement of 0.003, the average error is then of 0.0006 and
 correction-map exhibit a displacement of pixels in the range +/- 0.2
 pixels which is acceptable and validates the whole procedure.
-
