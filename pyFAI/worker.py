@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2016"
+__date__ = "10/06/2016"
 __status__ = "development"
 __doc__ = """This module contains the Worker class:
 
@@ -102,7 +102,7 @@ import json
 
 def make_ai(config):
     """Create an Azimuthal integrator from the configuration
-    Static method !
+    stand alone function !
 
     @param config: dict with all parameters
     @return: configured (but uninitialized) AzimuthalIntgrator
