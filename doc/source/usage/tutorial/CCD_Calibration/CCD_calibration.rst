@@ -22,7 +22,7 @@ saving into a detector definition file
 
 The picture used is the one of a regular metallic grid of holes (spaced
 by 5mm), just in front of the detector. We will assume holes are
-circular what looks correct in first apploximation. Paralax error will
+circular what looks correct in first approximation. Paralax error will
 be ignored in a first time.
 
 Peak picking
