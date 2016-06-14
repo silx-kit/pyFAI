@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/06/2016"
+__date__ = "14/06/2016"
 __status__ = "development"
 __doc__ = """This module contains the Worker class:
 
@@ -250,7 +250,7 @@ class Worker(object):
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data):
+    def process(self, data, normalization_factor=1.0):
         """
         Process a frame
         #TODO:
@@ -260,7 +260,7 @@ class Worker(object):
         """
 
         with self._sem:
-            monitor = self._normalization_factor
+            monitor = self._normalization_factor * normalization_factor if self._normalization_factor else normalization_factor
         kwarg = {"unit": self.unit,
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
@@ -646,7 +646,7 @@ class DistortionWorker(object):
         if device is not None:
             logger.warning("GPU is not yet implemented")
 
-    def process(self, data, normalization=None):
+    def process(self, data, normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
         @param data: input data
