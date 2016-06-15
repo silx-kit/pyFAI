@@ -8,20 +8,20 @@
 OUTPUT_DIR=man
 
 # TODO: Extract it in a better way (maybe from scripts themself)
-CHECK_CALIB_DESCRIPTION="is the poni correct?"
-DETECTOR2NEXUS_DESCRIPTION="create NeXus detector definition"
+CHECK_CALIB_DESCRIPTION="Is the poni correct?"
+DETECTOR2NEXUS_DESCRIPTION="Create NeXus detector definition"
 DIFF_MAP_DESCRIPTION="Azimuthal integration for diffraction imaging"
 DIFF_TOMO_DESCRIPTION="Azimuthal integration for diffraction tomograph"
 DRAWMASK_PYMCA_DESCRIPTION="Draw a mask for integration"
 EIGER_MASK_DESCRIPTION="Extract mask from an Eiger detector file"
 MX_CALIBRATE_DESCRIPTION="Validate detector position for MX beamlines"
-PYFAI_AVERAGE_DESCRIPTION="image preprocessing tool"
+PYFAI_AVERAGE_DESCRIPTION="Image preprocessing tool"
 PYFAI_BENCHMARK_DESCRIPTION="Evaluate performances of PyFAI"
-PYFAI_CALIB_DESCRIPTION="calibration tool"
+PYFAI_CALIB_DESCRIPTION="Calibration tool"
 PYFAI_INTEGRATE_DESCRIPTION="Graphical interface for azimuthal integration"
 PYFAI_RECALIB_DESCRIPTION="Deprecated"
-PYFAI_SAXS_DESCRIPTION="integration in q-range"
-PYFAI_WAXS_DESCRIPTION="powder diffraction integration"
+PYFAI_SAXS_DESCRIPTION="Integration in q-range"
+PYFAI_WAXS_DESCRIPTION="Powder diffraction integration"
 
 if [ ! -d $OUTPUT_DIR ]
     then
