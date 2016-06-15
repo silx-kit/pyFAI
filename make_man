@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Usage: ./make_man
 #
@@ -6,6 +6,22 @@
 # To work, PyFAI must be installed on the system.
 
 OUTPUT_DIR=man
+
+# TODO: Extract it in a better way (maybe from scripts themself)
+CHECK_CALIB_DESCRIPTION="is the poni correct?"
+DETECTOR2NEXUS_DESCRIPTION="create NeXus detector definition"
+DIFF_MAP_DESCRIPTION="Azimuthal integration for diffraction imaging"
+DIFF_TOMO_DESCRIPTION="Azimuthal integration for diffraction tomograph"
+DRAWMASK_PYMCA_DESCRIPTION="Draw a mask for integration"
+EIGER_MASK_DESCRIPTION="Extract mask from an Eiger detector file"
+MX_CALIBRATE_DESCRIPTION="Validate detector position for MX beamlines"
+PYFAI_AVERAGE_DESCRIPTION="image preprocessing tool"
+PYFAI_BENCHMARK_DESCRIPTION="Evaluate performances of PyFAI"
+PYFAI_CALIB_DESCRIPTION="calibration tool"
+PYFAI_INTEGRATE_DESCRIPTION="Graphical interface for azimuthal integration"
+PYFAI_RECALIB_DESCRIPTION="Deprecated"
+PYFAI_SAXS_DESCRIPTION="integration in q-range"
+PYFAI_WAXS_DESCRIPTION="powder diffraction integration"
 
 if [ ! -d $OUTPUT_DIR ]
     then
@@ -19,7 +35,13 @@ for i in scripts/*;
     do
     script_name=$(basename $i)
     echo "Generate $script_name man"
-    help2man --no-discard-stderr --version-string=$version -N -n $script_name -s1 -S PyFAI -o $OUTPUT_DIR/$script_name.1 $script_name
+
+	# Read description from script variables defined above
+    script_description=${script_name^^}
+	script_description=${script_description/-/_}
+	script_description=`eval echo "\\\$${script_description}_DESCRIPTION"`
+
+    help2man --no-discard-stderr --version-string=$version -N -n "$script_description" -s1 -S PyFAI -o $OUTPUT_DIR/$script_name.1 $script_name
     man -t $OUTPUT_DIR/$script_name.1 | ps2pdf - $OUTPUT_DIR/$script_name.pdf
 #    man2html $OUTPUT_DIR/$script_name.1 > $OUTPUT_DIR/$script_name.html
 #    pandoc -t rst $OUTPUT_DIR/$script_name.html -o $OUTPUT_DIR/$script_name.rst
