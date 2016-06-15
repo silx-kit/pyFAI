@@ -22,10 +22,6 @@ import shutil
 import distutils.util
 import subprocess
 import logging
-logger = logging.getLogger("bootstrap")
-
-
-TARGET = os.path.basename(os.path.dirname(os.path.abspath(__file__))).split("-")[0]
 
 
 def _copy(infile, outfile):
@@ -91,6 +87,9 @@ def runfile(fname):
                     "PATH": SCRIPTSPATH + os.pathsep + os.environ.get("PATH", "")})
         run = subprocess.Popen(sys.argv, shell=False, env=env)
         run.wait()
+
+logger = logging.getLogger("bootstrap")
+TARGET = os.path.basename(os.path.dirname(os.path.abspath(__file__))).split("-")[0]
 
 home = os.path.dirname(os.path.abspath(__file__))
 SCRIPTSPATH = os.path.join(home,
