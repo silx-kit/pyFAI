@@ -43,9 +43,9 @@ import logging
 import types
 import math
 try:
-    from .third_party.argparse import ArgumentParser
-except ImportError:
     from argparse import ArgumentParser
+except ImportError:
+    from .third_party.argparse import ArgumentParser
 
 if sys.version_info[0] < 3:
     from urlparse import urlparse
