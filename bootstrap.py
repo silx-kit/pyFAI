@@ -88,6 +88,7 @@ def runfile(fname):
         run = subprocess.Popen(sys.argv, shell=False, env=env)
         run.wait()
 
+logging.basicConfig()
 logger = logging.getLogger("bootstrap")
 TARGET = os.path.basename(os.path.dirname(os.path.abspath(__file__))).split("-")[0]
 
