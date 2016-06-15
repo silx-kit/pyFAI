@@ -4,14 +4,16 @@
 /testimages
 
 # Generated
-/package
+/package/*.*
+/package/pyFAI*
+/man
 /profile.log
 
 # Packages
 *.egg
 *.egg-info
-dist
-build
+/dist
+/build
 eggs
 parts
 bin

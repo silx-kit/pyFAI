@@ -44,6 +44,10 @@ import sys
 import h5py
 import numpy
 import fabio
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.third_party.argparse import ArgumentParser
 
 
 def extract_mask(infile):
@@ -60,11 +64,18 @@ def extract_mask(infile):
     return detectorSpecific["pixel_mask"].value
 
 if __name__ == "__main__":
-    infile = os.path.abspath(sys.argv[1])
-    if len(sys.argv) > 2:
-        outfile = sys.argv[2]
+    description = "A tool to extract the mask from an Eiger detector file."
+    parser = ArgumentParser(description=description)
+    parser.add_argument('input_file', help='Input file. Must be an HDF5 file.')
+    parser.add_argument('output_file', nargs="?", help='Output file. It can be an msk, tif, or an edf file.')
+    options = parser.parse_args()
+
+    infile = os.path.abspath(options.input_file)
+    if options.output_file is not None:
+        outfile = options.output_file
     else:
         outfile = os.path.splitext(infile)[0] + "_mask.edf"
+
     mask = extract_mask(infile)
     if outfile.endswith("msk"):
         fabio.fit2dmaskimage.fit2dmaskimage(data=mask).write(outfile)
@@ -72,4 +83,3 @@ if __name__ == "__main__":
         fabio.tifimage.tifimage(data=mask).write(outfile)
     else:
         fabio.edfimage.edfimage(header={"data_file": infile}, data=mask).write(outfile)
-
