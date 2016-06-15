@@ -1,16 +1,26 @@
 #!/bin/sh
-if [ ! -d man ]
+#
+# Usage: ./make_man
+#
+# Generate man files for debian package.
+# To work, PyFAI must be installed on the system.
+
+OUTPUT_DIR=man
+
+if [ ! -d $OUTPUT_DIR ]
     then
-    mkdir man
+    mkdir $OUTPUT_DIR
     fi
+# Build the project before, to be able to display logs
+python setup.py build
 version=$(./bootstrap.py ./version.py |tail -n 1)
 echo $version
 for i in scripts/*;
     do
-    j=$(basename $i)
-    echo $j
-    help2man --no-discard-stderr --version-string=$version -N -n $j  -s1 -S PyFAI $i>man/$j.1
-    man -t man/$j.1 | ps2pdf - man/$j.pdf
-#    man2html man/$j.1 > man/$j.html
-#    pandoc -t rst man/$j.html -o man/$j.rst
+    script_name=$(basename $i)
+    echo "Generate $script_name man"
+    help2man --no-discard-stderr --version-string=$version -N -n $script_name -s1 -S PyFAI -o $OUTPUT_DIR/$script_name.1 $script_name
+    man -t $OUTPUT_DIR/$script_name.1 | ps2pdf - $OUTPUT_DIR/$script_name.pdf
+#    man2html $OUTPUT_DIR/$script_name.1 > $OUTPUT_DIR/$script_name.html
+#    pandoc -t rst $OUTPUT_DIR/$script_name.html -o $OUTPUT_DIR/$script_name.rst
     done
