@@ -632,11 +632,6 @@ class DistortionWorker(object):
         else:
             self.polarization = None
 
-        if detector is None:
-            self.distortion = None
-        else:
-            self.distortion = Distortion(detector, method="CSR", device=device)
-
         if mask is None:
             self.mask = False
         elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
@@ -649,6 +644,12 @@ class DistortionWorker(object):
         if device is not None:
             logger.warning("GPU is not yet implemented")
 
+        if detector is None:
+            self.distortion = None
+        else:
+            self.distortion = Distortion(detector, method="LUT", device=device,
+                                         mask=self.mask, empty=self.dummy or 0)
+
     def process(self, data, normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
@@ -656,32 +657,8 @@ class DistortionWorker(object):
         @param normalization: normalization factor
         @return processed data
         """
-        _shape = data.shape
-        #        ^^^^   this is why data is mandatory !
-        if self.dummy is not None:
-            if self.delta_dummy is None:
-                self.mask = numpy.logical_or((data == self.dummy), self.mask)
-            else:
-                self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
-                                        self.mask)
-            do_mask = True
-        else:
-            do_mask = (self.mask is not False)
-        # Explicitly make an copy !
-        data = numpy.array(data, dtype=numpy.float32)
-        if self.dark is not None:
-            data -= self.dark
-        if self.flat is not None:
-            data /= self.flat
-        if self.solidangle is not None:
-            data /= self.solidangle
-        if self.polarization is not None:
-            data /= self.polarization
-
-        if do_mask:
-            data[self.mask] = self.dummy or 0
         if self.distortion is not None:
-            return self.distortion.correct(data)
+            return self.distortion.correct(data, self.dummy, self.delta_dummy, normalization_factor)
         else:
             return data
 
