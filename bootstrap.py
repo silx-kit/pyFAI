@@ -84,7 +84,7 @@ if sys.version_info[0] >= 3:  # Python3
 def runfile(fname):
     try:
         execfile(fname)
-    except SyntaxError as error:
+    except (SyntaxError, NameError) as error:
         print(error)
         env = os.environ.copy()
         env.update({"PYTHONPATH": LIBPATH + os.pathsep + os.environ.get("PYTHONPATH", ""),
