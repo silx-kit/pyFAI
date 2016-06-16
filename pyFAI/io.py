@@ -249,9 +249,10 @@ class HDF5Writer(Writer):
         logger.debug("in init")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-            # TODO: this is Debug statement
-            open("fai_cfg.json", "w").write(json.dumps(self.fai_cfg, indent=4))
-            open("lima_cfg.json", "w").write(json.dumps(self.lima_cfg, indent=4))
+            if logger.isEnabledFor(logging.DEBUG):
+                # TODO: this is Debug statement
+                open("fai_cfg.debug.json", "w").write(json.dumps(self.fai_cfg, indent=4))
+                open("lima_cfg.debug.json", "w").write(json.dumps(self.lima_cfg, indent=4))
             self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
             if h5py:
                 try:

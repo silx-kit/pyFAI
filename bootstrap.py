@@ -22,10 +22,6 @@ import shutil
 import distutils.util
 import subprocess
 import logging
-logger = logging.getLogger("bootstrap")
-
-
-TARGET = os.path.basename(os.path.dirname(os.path.abspath(__file__))).split("-")[0]
 
 
 def _copy(infile, outfile):
@@ -92,6 +88,10 @@ def runfile(fname):
         run = subprocess.Popen(sys.argv, shell=False, env=env)
         run.wait()
 
+logging.basicConfig()
+logger = logging.getLogger("bootstrap")
+TARGET = os.path.basename(os.path.dirname(os.path.abspath(__file__))).split("-")[0]
+
 home = os.path.dirname(os.path.abspath(__file__))
 SCRIPTSPATH = os.path.join(home,
                            'build', _distutils_scripts_name())
@@ -132,16 +132,22 @@ if __name__ == "__main__":
         logger.info("04. Executing %s.main()" % (script,))
         fullpath = os.path.join(SCRIPTSPATH, script)
         if os.path.exists(fullpath):
-            runfile(fullpath)
+            exec_file = fullpath
         else:
             if os.path.exists(script):
-                runfile(script)
+                exec_file = script
             else:
                 for dirname in os.environ.get("PATH", "").split(os.pathsep):
                     fullpath = os.path.join(dirname, script)
                     if os.path.exists(fullpath):
-                        runfile(fullpath)
+                        exec_file = fullpath
                         break
+                else:
+                    exec_file = None
+        if exec_file is not None:
+            runfile(exec_file)
+        else:
+            logger.error("Script not found")
     else:
         logger.info("03. patch the sys.argv : ", sys.argv)
         sys.path.insert(2, "")
