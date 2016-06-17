@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2016"
+__date__ = "17/06/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -39,7 +39,6 @@ import sys
 import glob
 import shutil
 import platform
-import subprocess
 import numpy
 
 try:
@@ -536,8 +535,9 @@ def get_version():
 def get_readme():
     dirname = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(dirname, "README.rst"), "rb") as fp:
-        long_description = fp.read().decode("utf-8")
-    return long_description
+        long_description = fp.read()
+    return long_description.decode("utf-8")
+
 
 # double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = ["Development Status :: 5 - Production/Stable",
