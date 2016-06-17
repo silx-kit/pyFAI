@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fast Azimuthal Integration using Python &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="#" />
+    <link rel="next" title="General introduction to PyFAI" href="pyFAI.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="General introduction to PyFAI"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fast-azimuthal-integration-using-python">
+<h1>Fast Azimuthal Integration using Python<a class="headerlink" href="#fast-azimuthal-integration-using-python" title="Permalink to this headline">¶</a></h1>
+<p>PyFAI is a python libary for azimuthal integration of diffraction data acquired
+with 2D detectors, providing high performance thanks to GPU computing.
+Most concepts have been presented at EuroScipy 2014 in this
+<a class="reference external" href="https://www.youtube.com/watch?v=QSlo_Nyzeig">video</a>
+as well as the <a class="reference external" href="http://arxiv.org/abs/1412.6367">proceedings</a>.</p>
+<p>The documentation starts with a general descriptions of the pyFAI library.
+This first chapter contains an introduction to pyFAI, what it is, what it aims at
+and how it works (from the scientists point of view).
+Especially, geometry, calibration, azimuthal integration algorithms are described
+and pixel splitting schemes are explained.</p>
+<p>Follows cookbook and tutorials on how to use pyFAI:
+Cookbooks focus on how to use pyFAI using the various graphical interfaces or
+from scripts on the command linee.
+Tutorials use the <em>Jupyter</em> notebook (formerly ipython) and present the Python interface.
+The first tutorial start with a quick general introduction of the notebooks,
+how to process data in the general case, subsequent tutorials are more advanced
+and require already a good knowledge both in Python and pyFAI..
+After the tutorials, all manual pages of pyFAI programs, both graphical interfaces
+and scripts are described in the documentation.</p>
+<p>The design of the programming interface (API) is then exposed before a
+comprehensive description of most modules contained in pyFAI.
+Some minor submodules as well as the documentation of the Cython sub-modules are
+not included for concision purposes.</p>
+<p>Installation procedures for Windows, MacOSX and Linux operating systems are then
+described.</p>
+<p>Finally other programs/projects relying on pyFAI are presented and the project is
+summarized from a developer&#8217;s point of view.</p>
+<p>In appendix there are some figures about the project and its management and a list
+of publication on pyFAI.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html">General introduction to PyFAI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/cookbook/index.html">Cookbook recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="man/scripts.html">pyFAI scripts manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design/index.html">Design of the Python Fast Azimuthal Integration library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">pyFAI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operations/index.html">Installation of Python Fast Azimuthal Integration library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ecosystem.html">PyFAI Ecosystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">ChangeLog of Versions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publications.html">List of publication about pyFAI</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Fast Azimuthal Integration using Python</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyFAI.html"
+                        title="next chapter">General introduction to PyFAI</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="General introduction to PyFAI"
+             >next</a> |</li>
+        <li><a href="#">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

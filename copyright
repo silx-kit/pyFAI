@@ -38,6 +38,7 @@ Files:  version.py
         pyFAI/tree.py
         pyFAI/orderedset.py
         pyFAI/multi_geometry.py
+        pyFAI/worker.py
         pyFAI/ocl_sort.py
         pyFAI/ext/splitPixelFull.pyx
         pyFAI/ext/morphology.pyx

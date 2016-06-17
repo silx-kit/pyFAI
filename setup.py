@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2016"
+__date__ = "06/06/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -278,7 +278,7 @@ def download_images():
     sys.path.insert(0, test_dir)
     from utilstest import UtilsTest
     image_home = os.path.join(root_dir, "testimages")
-    testimages = os.path.join(root_dir, "all_testimages.json")
+    testimages = os.path.join(image_home, "all_testimages.json")
     UtilsTest.image_home = image_home
     UtilsTest.testimages = testimages
     if os.path.exists(testimages):
@@ -539,7 +539,7 @@ def get_readme():
         long_description = fp.read().decode("utf-8")
     return long_description
 
-
+# double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = ["Development Status :: 5 - Production/Stable",
                "Intended Audience :: Developers",
                "Programming Language :: Python :: 2",
@@ -547,7 +547,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                "Programming Language :: Cython",
                "Environment :: Console",
                "Environment :: X11 Applications :: Qt",
-               "Intented Audience :: Science/Research",
+               "Intended Audience :: Science/Research",
                "License :: OSI Approved :: GNU General Public License (GPL)",
                "License :: OSI Approved :: MIT License",
                "Topic :: Software Development :: Libraries :: Python Modules",

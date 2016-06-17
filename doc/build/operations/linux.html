@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation procedure on Linux &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="Installation of Python Fast Azimuthal Integration library" href="index.html" />
+    <link rel="next" title="Installation procedure on MacOSX" href="macosx.html" />
+    <link rel="prev" title="Installation of Python Fast Azimuthal Integration library" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="macosx.html" title="Installation procedure on MacOSX"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Installation of Python Fast Azimuthal Integration library"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Installation of Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation-procedure-on-linux">
+<h1>Installation procedure on Linux<a class="headerlink" href="#installation-procedure-on-linux" title="Permalink to this headline">¶</a></h1>
+<p>We cover first Debian-like distribution, then a generic recipie for all other
+version is given.</p>
+<div class="section" id="installation-procedure-on-debian-ubuntu">
+<h2>Installation procedure on Debian/Ubuntu<a class="headerlink" href="#installation-procedure-on-debian-ubuntu" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI has been designed and originally developed on Ubuntu 10.04 and debian6.
+Now, the pyFAI library is included into debian7, 8 and any recent Ubuntu and
+Mint distribution.
+To install the package provided by the distribution, use:</p>
+<div class="code highlight-python"><div class="highlight"><pre>sudo apt-get install pyfai
+</pre></div>
+</div>
+<p>The issue with distribution based installation is the obsolescence of the version
+available.</p>
+<div class="section" id="debian7-and-ubuntu-12-04">
+<h3>Debian7 and Ubuntu 12.04<a class="headerlink" href="#debian7-and-ubuntu-12-04" title="Permalink to this headline">¶</a></h3>
+<p>To build a more recent version, pyFAI provides you a small scripts which builds a <em>debian</em> package and installs it.
+It relies on <em>stdeb</em> and provides a single package with everything inside.
+You will be prompted for your password to gain root access in order to be able to install the freshly built package.</p>
+<div class="code highlight-python"><div class="highlight"><pre>sudo apt-get install python-stdeb cython python-fabio
+wget https://github.com/pyFAI/pyFAI/archive/master.zip
+unzip master.zip
+cd pyFAI-master
+./build-deb7.sh
+</pre></div>
+</div>
+</div>
+<div class="section" id="debian8-and-newer">
+<h3>Debian8 and newer<a class="headerlink" href="#debian8-and-newer" title="Permalink to this headline">¶</a></h3>
+<p>Thanks to the work of Frédéric-Emmanuel Picca, the debian package of pyFAI
+provides a pretty good template which allows continuous builds.</p>
+<div class="section" id="from-silx-repository">
+<h4>From silx repository<a class="headerlink" href="#from-silx-repository" title="Permalink to this headline">¶</a></h4>
+<p>You can automatically install the latest nightly built of pyFAI with:</p>
+<div class="code highlight-python"><div class="highlight"><pre>wget http://www.silx.org/pub/debian/silx.list
+wget http://www.silx.org/pub/debian/silx.pref
+sudo mv silx.list /etc/apt/sources.list.d/
+sudo mv silx.pref /etc/apt/preferences.d/
+sudo apt-get update
+sudo apt-get install pyfai
+</pre></div>
+</div>
+<p><strong>Nota:</strong> The nightly built packages are not signed, hence you will be prompted
+to install non-signed packages.</p>
+</div>
+<div class="section" id="build-from-sources">
+<h4>Build from sources<a class="headerlink" href="#build-from-sources" title="Permalink to this headline">¶</a></h4>
+<p>One can also built from sources:</p>
+<div class="code highlight-python"><div class="highlight"><pre>sudo apt-get install cython cython-dbg cython3 cython3-dbg debhelper dh-python \
+python-all-dev python-all-dbg python-fabio python-fabio-dbg python-fftw python-h5py \
+python-lxml python-lxml-dbg python-matplotlib python-matplotlib-dbg python-numpy\
+python-numpy-dbg python-qt4 python-qt4-dbg python-scipy python-scipy-dbg python-sphinx \
+python-sphinxcontrib.programoutput python-tk python-tk-dbg python3-all-dev python3-all-dbg \
+python3-fabio python3-fabio-dbg python3-lxml python3-lxml-dbg python3-matplotlib \
+python3-matplotlib-dbg python3-numpy python3-numpy-dbg python3-pyqt4 python3-pyqt4-dbg \
+python3-scipy python3-scipy-dbg python3-sphinx python3-sphinxcontrib.programoutput \
+python3-tk python3-tk-dbg
+wget https://github.com/pyFAI/pyFAI/archive/master.zip
+unzip master.zip
+cd pyFAI-master
+./build-deb8.sh
+</pre></div>
+</div>
+<p>The first line is really long and defines all the dependence tree for building
+<em>debian</em> package, including debug and documentation.
+The build procedure last for a few minutes and you will be prompted for your
+password in order to install the freshly built packages.
+The <em>deb-*files, available in the *package</em> directory are backports for your local
+installation.</p>
+</div>
+</div>
+</div>
+<div class="section" id="installation-procedure-on-other-linux-distibution">
+<h2>Installation procedure on other linux distibution<a class="headerlink" href="#installation-procedure-on-other-linux-distibution" title="Permalink to this headline">¶</a></h2>
+<p>If your distribution does not provide you pyFAI packages, using the <strong>PIP</strong> way
+is advised, via wheels packages. First install <em>pip</em> and <em>wheel</em>:</p>
+<div class="code highlight-python"><div class="highlight"><pre>wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+sudo pip install pyFAI
+</pre></div>
+</div>
+<p>Or you can install pyFAI from the sources:</p>
+<div class="code highlight-python"><div class="highlight"><pre>wget https://github.com/pyFAI/pyFAI/archive/master.zip
+unzip master.zip
+cd pyFAI-master
+python setup.py build test
+sudo pip install . --upgrade
+</pre></div>
+</div>
+<p><strong>Nota:</strong> The usage of &#8220;python setup.py install&#8221; is now deprecated.
+It causes much more trouble as there is no installed file tracking,
+hence no way to de-install properly the package.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation procedure on Linux</a><ul>
+<li><a class="reference internal" href="#installation-procedure-on-debian-ubuntu">Installation procedure on Debian/Ubuntu</a><ul>
+<li><a class="reference internal" href="#debian7-and-ubuntu-12-04">Debian7 and Ubuntu 12.04</a></li>
+<li><a class="reference internal" href="#debian8-and-newer">Debian8 and newer</a><ul>
+<li><a class="reference internal" href="#from-silx-repository">From silx repository</a></li>
+<li><a class="reference internal" href="#build-from-sources">Build from sources</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-procedure-on-other-linux-distibution">Installation procedure on other linux distibution</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Installation of Python Fast Azimuthal Integration library</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="macosx.html"
+                        title="next chapter">Installation procedure on MacOSX</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/operations/linux.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="macosx.html" title="Installation procedure on MacOSX"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Installation of Python Fast Azimuthal Integration library"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Installation of Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

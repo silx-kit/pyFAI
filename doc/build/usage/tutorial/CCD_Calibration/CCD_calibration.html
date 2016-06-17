@@ -1,0 +1,821 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CCD calibration &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Tutorials" href="../index.html" />
+    <link rel="next" title="pyFAI scripts manual" href="../../../man/scripts.html" />
+    <link rel="prev" title="Creation of a calibrant file" href="../MakeCalibrant/make_calibrant.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../man/scripts.html" title="pyFAI scripts manual"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../MakeCalibrant/make_calibrant.html" title="Creation of a calibrant file"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ccd-calibration">
+<h1>CCD calibration<a class="headerlink" href="#ccd-calibration" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial presents how to calibrate the distortion from a CCD camera
+coupled with a taper of optic fibers. If your camera is already
+calibrated using Fit2D and you have access to the corresponding <em>spline</em>
+file, this tutorial is not for you: simply create your detector object
+like this <strong>pyFAI.detectors.Detector(splineFile=&#8221;example.spline&#8221;)</strong> and
+you are done. This tutorial uses the image of a regular grid on the
+detector.</p>
+<p>It uses a procedure described in: &#8220;Calibration and correction of spatial
+distortions in 2D detector systems&#8221; from Hammersley, A. P.; Svensson, S.
+O.; Thompson, A. published in Nuclear Instruments and Methods in Physics
+Research Section A, Volume 346, Issue 1-2, p. 312-321.
+DOI:10.1016/0168-9002(94)90720-X</p>
+<p>The procedure is performed in 4 steps: 1. peak picking 2. grid
+assignment 3. distortion fitting 4. interpolation of the fitted data 5.
+saving into a detector definition file</p>
+<p>The picture used is the one of a regular metallic grid of holes (spaced
+by 5mm), just in front of the detector. We will assume holes are
+circular what looks correct in first apploximation. Paralax error will
+be ignored in a first time.</p>
+<div class="section" id="peak-picking">
+<h2>Peak picking<a class="headerlink" href="#peak-picking" title="Permalink to this headline">¶</a></h2>
+<p>Lets start with peak picking, for this, we will use the <em>FabIO</em> library
+able to read the image and <em>matplotlib</em> to display the image. The
+disortion is assumed to be minimal in the middle of the detector, so we
+first focus on one spot in the middle:</p>
+<div class="code python highlight-python"><div class="highlight"><pre>#For final rendering switch from nbagg -&gt; inline
+#%pylab nbagg
+%pylab inline
+#
+# search for the image containing the grid
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ls</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[0m[01;32m03jun102d.edf[0m*    [01;32mccd2_g3.edf[0m*     CCD_calibration.ipynb  [01;32mgrilHiCap_04jund.edf[0m*
+ccd2_g1_chk.edf   ccd2_g6_1.edf    corrected.edf          testdetector.h5
+[01;32mccd2_g2.edf[0m*      ccd2_g6_2.edf    [01;32mflm-4-1.edf[0m*
+ccd2_g2g.edf      ccd2_g6_3.edf    frelonID22_grid.edf
+[01;32mccd2_g3_chk.edf[0m*  ccd2_g6_chk.edf  [01;32mgrid.edf[0m*
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s">&quot;frelonID22_grid.edf&quot;</span>
+<span class="c">#fname = &quot;corrected.edf&quot;</span>
+<span class="kn">import</span> <span class="nn">fabio</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">fabio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>WARNING:xsdimage:lxml library is probably not part of your python installation: disabling xsdimage format
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>WARNING: Not using BLAS, PCA calculation will be slower
+WARNING: Not using BLAS/ATLAS, PCA calculation will be slower
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c4e70e588&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_4_1.png" src="../../../_images/output_4_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Zoom into a spot in the middle of the image, where the distortion is expected to be minimal</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="mi">1060</span><span class="p">:</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1040</span><span class="p">:</span><span class="mi">1080</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c4eae6908&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_5_1.png" src="../../../_images/output_5_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Look at the profile of the peak to measure the width (it is expected to be a crenel)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="mi">1060</span><span class="o">+</span><span class="mi">25</span><span class="p">,</span><span class="mi">1040</span><span class="p">:</span><span class="mi">1060</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7f0c4ec89c50&gt;]
+</pre></div>
+</div>
+<img alt="../../../_images/output_6_1.png" src="../../../_images/output_6_1.png" />
+<p>Let&#8217;s look at one spot, in the center of the image: it is circular and
+is slightly larger than 10 pixels. We will define a convolution kernel
+of size 11x11 of circular shape with sharp borders as this is what a
+perfect spot is expected to look like. The kernel is normalized in such
+a way it does not modify the average intensity of the image</p>
+<p>Now convolve the image with this circular kernel using scipy.signal (in
+direct space: the kernel is small and performance does not really matter
+here).</p>
+<p>It is important to have an odd size for the kernel for convolution as an
+even shape would induce an offset of 1/2 pixel in the located
+peak-position.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">11</span> <span class="c">#Odd of course</span>
+<span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span><span class="o">-</span><span class="n">center</span><span class="p">:</span><span class="n">center</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="n">center</span><span class="p">:</span><span class="n">center</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">r2</span><span class="o">&lt;=</span><span class="p">(</span><span class="n">center</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">kernel</span> <span class="o">/=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c49f72828&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_8_1.png" src="../../../_images/output_8_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span><span class="p">,</span> <span class="n">signal</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">cnv</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">convolve2d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;same&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Check that size is unchanged.</span>
+<span class="k">print</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Check the image still looks the same. it is just supposed to be smoother.</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">cnv</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c3cf93e80&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_12_1.png" src="../../../_images/output_12_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Zoom into the very same spot to ensure it is smoother</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">cnv</span><span class="p">[</span><span class="mi">1060</span><span class="p">:</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1040</span><span class="p">:</span><span class="mi">1080</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c3cef3160&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_13_1.png" src="../../../_images/output_13_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># and here again the same profile:</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">cnv</span><span class="p">[</span><span class="mi">1060</span><span class="o">+</span><span class="mi">25</span><span class="p">,</span><span class="mi">1030</span><span class="p">:</span><span class="mi">1070</span><span class="p">])</span>
+<span class="c"># the peak got broader (2x) but much smoother on the top: this is what we are interrested in.</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7f0c3cedc320&gt;]
+</pre></div>
+</div>
+<img alt="../../../_images/output_14_1.png" src="../../../_images/output_14_1.png" />
+<p>After convolution with a pattern of the same shape as the hole, the peak
+center is located with a sub-pixel resolution. The peak has a full size
+of 30 pix in 1 dimension.</p>
+<p>All peak positions will be extracted using the pyFAI inverse watershed
+algorithm. Once all regions are segmented, the ones too small are sieved
+out and the remaining ones are classifies according to their peak
+intensity using an histogram. As intensity vary a lot, this histogram it
+is done on the log-scale of the intensity.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">mini</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of points in the kernel: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">mini</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Number of points in the kernel: 97
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span> <span class="c">#depends if the version of pyFAI you are using</span>
+    <span class="kn">from</span> <span class="nn">pyFAI.watershed</span> <span class="kn">import</span> <span class="n">InverseWatershed</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pyFAI.ext.watershed</span> <span class="kn">import</span> <span class="n">InverseWatershed</span>
+    <span class="c">#Version of pyFAI newer than feb 2016</span>
+<span class="n">iw</span> <span class="o">=</span> <span class="n">InverseWatershed</span><span class="p">(</span><span class="n">cnv</span><span class="p">)</span>
+<span class="n">iw</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<span class="n">iw</span><span class="o">.</span><span class="n">merge_singleton</span><span class="p">()</span>
+<span class="n">all_regions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">iw</span><span class="o">.</span><span class="n">regions</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">all_regions</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">size</span><span class="o">&gt;</span><span class="n">mini</span><span class="p">]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of region segmented: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">all_regions</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of large enough regions : </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">regions</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>WARNING:pyFAI.utils:Exception No module named &#39;fftw3&#39;: FFTw3 not available. Falling back on Scipy
+WARNING:pyFAI.timeit:init_labels took 2.123s
+WARNING:pyFAI.timeit:init_borders took 0.066s
+WARNING:pyFAI.timeit:init_regions took 0.646s
+WARNING:pyFAI.timeit:init_pass took 0.229s
+WARNING:pyFAI.timeit:merge_singleton took 0.054s
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Number of region segmented: 79513
+Number of large enough regions : 8443
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">maxi</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">]</span>
+<span class="n">hist</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="c">#Look for the maximum value in each region to be able to segment accordingly</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>(array([  1.00000000e+00,   0.00000000e+00,   0.00000000e+00,
+          0.00000000e+00,   0.00000000e+00,   0.00000000e+00,
+          0.00000000e+00,   0.00000000e+00,   0.00000000e+00,
+          1.00000000e+00,   2.85000000e+02,   5.99900000e+03,
+          1.71900000e+03,   1.00000000e+00,   0.00000000e+00,
+          1.00000000e+00,   3.00000000e+00,   2.30000000e+01,
+          1.17000000e+02,   2.93000000e+02]),
+ array([ 2.05537045,  2.1621182 ,  2.26886594,  2.37561369,  2.48236143,
+         2.58910918,  2.69585692,  2.80260467,  2.90935241,  3.01610016,
+         3.1228479 ,  3.22959565,  3.33634339,  3.44309114,  3.54983888,
+         3.65658663,  3.76333437,  3.87008212,  3.97682986,  4.08357761,
+         4.19032535]),
+ &lt;a list of 20 Patch objects&gt;)
+</pre></div>
+</div>
+<img alt="../../../_images/output_18_1.png" src="../../../_images/output_18_1.png" />
+<p>There are clearly 3 groups of very different intensity, well segragated:</p>
+<ul class="simple">
+<li>around 10^2.1 (~125), those are the peaks where no tapper brings
+light</li>
+<li>around 10^3.4 (~2500), those are segmented region in the background</li>
+<li>above 10^3.9 (~8000), those are actual peaks, we are looking for.</li>
+</ul>
+<p>We retain all peaks &gt;10^3.5</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">peaks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="o">.</span><span class="n">index</span><span class="o">//</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="o">.</span><span class="n">index</span><span class="o">%</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">regions</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">maxi</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">10</span><span class="o">**</span><span class="mf">3.5</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of remaining peaks: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Number of remaining peaks: 438
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="n">peaks_raw</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">peaks_raw</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">peaks_raw</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&quot;or&quot;</span><span class="p">)</span>
+<span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">)</span>
+<span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&quot;Extracted peak position (raw)&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Raw peak coordinate:&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">peaks</span><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Raw peak coordinate:
+[(1187, 654), (35, 155), (1082, 1447), (1082, 1545), (39, 62), (1083, 1250), (1083, 1349), (1943, 1925), (1084, 1151), (1190, 455)]
+</pre></div>
+</div>
+<img alt="../../../_images/output_21_1.png" src="../../../_images/output_21_1.png" />
+</div>
+<div class="section" id="precise-peak-extraction-is-performed-using-a-second-order-tailor-expansion">
+<h2>Precise peak extraction is performed using a second order tailor expansion<a class="headerlink" href="#precise-peak-extraction-is-performed-using-a-second-order-tailor-expansion" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pyFAI.bilinear</span> <span class="kn">import</span> <span class="n">Bilinear</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pyFAI.ext.bilinear</span> <span class="kn">import</span> <span class="n">Bilinear</span>
+<span class="n">bl</span> <span class="o">=</span> <span class="n">Bilinear</span><span class="p">(</span><span class="n">cnv</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ref_peaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">bl</span><span class="o">.</span><span class="n">local_maxi</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">peaks</span><span class="p">]</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="n">peaks_ref</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ref_peaks</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">peaks_raw</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">peaks_raw</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&quot;or&quot;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">peaks_ref</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">peaks_ref</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&quot;ob&quot;</span><span class="p">)</span>
+<span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">)</span>
+<span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&quot;Extracted peak position (red: raw, blue: refined)&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Refined peak coordinate:&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ref_peaks</span><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Refined peak coordinate:
+[(1186.931446455419, 653.9433948583901), (34.4068917632103, 155.60163909196854), (1081.7659440785646, 1447.2154052853584), (1081.409073472023, 1545.5145089030266), (39.49280175566673, 62.08068184554577), (1083.1883269548416, 1249.924985870719), (1082.5653080940247, 1348.6598246097565), (1943.0012932673562, 1925.4793396294117), (1083.641106903553, 1150.8036927580833), (1189.607285887003, 455.1422745883465)]
+</pre></div>
+</div>
+<img alt="../../../_images/output_24_1.png" src="../../../_images/output_24_1.png" />
+<p>At this stage, a visual inspection of the grid confirms all peaks have
+been properly segmented. If this is not the case, one can adapt:</p>
+<ul class="simple">
+<li>the size of the kernel</li>
+<li>the threshold comming out of the histogramming</li>
+</ul>
+</div>
+<div class="section" id="pair-wise-distribution-function">
+<h2>Pair-wise distribution function<a class="headerlink" href="#pair-wise-distribution-function" title="Permalink to this headline">¶</a></h2>
+<p>We will now select the (4-) first neighbours for every single peak. For
+this we calculate the distance_matrix from any point to any other:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Nota, pyFAI uses **C-coordinates** so they come out as (y,x) and not the usual (x,y).</span>
+<span class="c"># This notation helps us to remind the order</span>
+<span class="n">yx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ref_peaks</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># pairwise distance calculation using scipy.spatial.distance_matrix</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">distance_matrix</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">distance_matrix</span><span class="p">(</span><span class="n">peaks_ref</span><span class="p">,</span> <span class="n">peaks_ref</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let&#8217;s have a look at the pairwise distribution function for the first
+neighbors</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">hist</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="mi">200</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">200</span><span class="p">))</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&quot;Pair-wise distribution function&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f0bff0c5dd8&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_29_1.png" src="../../../_images/output_29_1.png" />
+<p>This histogram provides us:</p>
+<ul class="simple">
+<li>At 0, the 438 peaks with 0-distance to themselves.</li>
+<li>between 85 and 105 the first neighbours</li>
+<li>between 125 and 150 the second neighbours.</li>
+<li>... and so on.</li>
+</ul>
+<p>We now focus on the first neighbours which are all located between 70
+and 110 pixel appart.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west).</span>
+<span class="n">point_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([(</span><span class="s">&#39;center_y&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;center_x&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+                        <span class="p">(</span><span class="s">&#39;east_y&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;east_x&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+                        <span class="p">(</span><span class="s">&#39;west_y&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;west_x&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+                        <span class="p">(</span><span class="s">&#39;north_y&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;north_x&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
+                        <span class="p">(</span><span class="s">&#39;south_y&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;south_x&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)])</span>
+
+<span class="n">neig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">dist</span><span class="o">&gt;</span><span class="mf">70.0</span><span class="p">,</span> <span class="n">dist</span><span class="o">&lt;</span><span class="mf">110.0</span><span class="p">)</span>
+<span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">neig</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;There are </span><span class="si">%i</span><span class="s"> control point with exactly 4 first neigbours&quot;</span><span class="o">%</span><span class="n">valid</span><span class="p">)</span>
+<span class="n">point</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">point_type</span><span class="p">)</span>
+<span class="c"># This initializes an empty structure to be populated</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>There are 359 control point with exactly 4 first neigbours
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Populate the structure: we use a loop as it loops only over 400 points</span>
+<span class="n">h</span><span class="o">=-</span><span class="mi">1</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">center</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">peaks_ref</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">neig</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">!=</span><span class="mi">4</span><span class="p">:</span> <span class="k">continue</span>
+    <span class="n">h</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;center_y&quot;</span><span class="p">],</span><span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;center_x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">center</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)):</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">neig</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="n">curr</span> <span class="o">=</span> <span class="n">yx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">curr</span><span class="o">-</span><span class="n">center</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">argmax</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">peaks_ref</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">neig</span><span class="p">[</span><span class="n">i</span><span class="p">])][</span><span class="n">l</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">j</span><span class="o">==</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;east_y&quot;</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;east_x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
+            <span class="k">elif</span> <span class="n">j</span><span class="o">==</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;west_y&quot;</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;west_x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
+            <span class="k">elif</span> <span class="n">j</span><span class="o">==</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span> <span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;north_y&quot;</span><span class="p">],</span><span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;north_x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
+            <span class="k">elif</span> <span class="n">j</span><span class="o">==</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;south_y&quot;</span><span class="p">],</span><span class="n">point</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s">&quot;south_x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>We will need to define an <em>origin</em> but taking it on the border of the
+image is looking for trouble as this is where distortions are likely to
+be the most important. The center of the detector is an option but we
+prefer to take the peak the nearest to the centroid of all other peaks.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Select the initial guess for the center:</span>
+
+<span class="c">#Most intense peak:</span>
+<span class="c">#m = max([i for i in regions], key=lambda i:i.maxi)</span>
+<span class="c">#Cx, Cy = m.index%img.shape[-1],m.index//img.shape[-1]</span>
+<span class="c">#Cx, Cy = point[&quot;center_x&quot;].mean(), point[&quot;center_y&quot;].mean() #Centroid of all points</span>
+<span class="n">Cx</span><span class="p">,</span> <span class="n">Cy</span> <span class="o">=</span> <span class="mi">734</span><span class="p">,</span> <span class="mi">1181</span> <span class="c">#beam center</span>
+<span class="c">#Cx, Cy = tuple(i//2 for i in cnv.shape) #detector center</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;The guessed center is at (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Cx</span><span class="p">,</span> <span class="n">Cy</span><span class="p">))</span>
+
+<span class="c">#Get the nearest point from centroid:</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">point</span><span class="p">[</span><span class="s">&quot;center_x&quot;</span><span class="p">]</span><span class="o">-</span><span class="n">Cx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="s">&quot;center_y&quot;</span><span class="p">]</span><span class="o">-</span><span class="n">Cy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">best</span> <span class="o">=</span> <span class="n">d2</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+<span class="n">Op</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="n">best</span><span class="p">]</span>
+<span class="n">Ox</span><span class="p">,</span> <span class="n">Oy</span> <span class="o">=</span> <span class="n">Op</span><span class="p">[</span><span class="s">&quot;center_x&quot;</span><span class="p">],</span> <span class="n">Op</span><span class="p">[</span><span class="s">&quot;center_y&quot;</span><span class="p">]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;The center is at (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Ox</span><span class="p">,</span> <span class="n">Oy</span><span class="p">))</span>
+<span class="c">#Calculate the average vector along the 4 main axes</span>
+<span class="n">Xx</span> <span class="o">=</span> <span class="p">(</span><span class="n">point</span><span class="p">[:][</span><span class="s">&quot;east_x&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="p">[:][</span><span class="s">&quot;center_x&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">Xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">point</span><span class="p">[:][</span><span class="s">&quot;east_y&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="p">[:][</span><span class="s">&quot;center_y&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">Yx</span> <span class="o">=</span> <span class="p">(</span><span class="n">point</span><span class="p">[:][</span><span class="s">&quot;north_x&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="p">[:][</span><span class="s">&quot;center_x&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">Yy</span> <span class="o">=</span> <span class="p">(</span><span class="n">point</span><span class="p">[:][</span><span class="s">&quot;north_y&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="p">[:][</span><span class="s">&quot;center_y&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;The X vector is is at (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Xx</span><span class="p">,</span> <span class="n">Xy</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;The Y vector is is at (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Yx</span><span class="p">,</span> <span class="n">Yy</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>The guessed center is at (734, 1181)
+The center is at (753.703500152, 1186.18798503)
+The X vector is is at (97.7197301826, -0.787977117653)
+The Y vector is is at (1.38218579497, 97.0826990758)
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&quot;X has an angle of </span><span class="si">%s</span><span class="s"> deg&quot;</span><span class="o">%</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">arctan2</span><span class="p">(</span><span class="n">Xy</span><span class="p">,</span> <span class="n">Xx</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Y has an angle of </span><span class="si">%s</span><span class="s"> deg&quot;</span><span class="o">%</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">arctan2</span><span class="p">(</span><span class="n">Yy</span><span class="p">,</span> <span class="n">Yx</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;The XY angle is </span><span class="si">%s</span><span class="s"> deg&quot;</span><span class="o">%</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">arctan2</span><span class="p">(</span><span class="n">Yy</span><span class="p">,</span> <span class="n">Yx</span><span class="p">)</span><span class="o">-</span><span class="n">arctan2</span><span class="p">(</span><span class="n">Xy</span><span class="p">,</span> <span class="n">Xx</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>X has an angle of -0.462002756355 deg
+Y has an angle of 89.1843236418 deg
+The XY angle is 89.6463263982 deg
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">point</span><span class="p">[:][</span><span class="s">&quot;center_x&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">Ox</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">point</span><span class="p">[:][</span><span class="s">&quot;center_y&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">Oy</span>
+<span class="n">xy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">Xx</span><span class="p">,</span><span class="n">Yx</span><span class="p">],[</span><span class="n">Xy</span><span class="p">,</span><span class="n">Yy</span><span class="p">]])</span>
+<span class="n">iR</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+<span class="n">IJ</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">iR</span><span class="p">,</span><span class="n">xy</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">Xmin</span> <span class="o">=</span> <span class="n">IJ</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+<span class="n">Xmax</span> <span class="o">=</span> <span class="n">IJ</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">Ymin</span> <span class="o">=</span> <span class="n">IJ</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+<span class="n">Ymax</span> <span class="o">=</span> <span class="n">IJ</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Xmin/max&quot;</span><span class="p">,</span><span class="n">Xmin</span><span class="p">,</span> <span class="n">Xmax</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Ymin/max&quot;</span><span class="p">,</span><span class="n">Ymin</span><span class="p">,</span><span class="n">Ymax</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Maximum error versus integrer: </span><span class="si">%s</span><span class="s"> * pitch size (5mm)&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">IJ</span><span class="o">-</span><span class="n">IJ</span><span class="o">.</span><span class="n">round</span><span class="p">())</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Xmin/max -6.07394212848 12.060721056
+Ymin/max -11.0890545732 7.04060363671
+Maximum error versus integrer: 0.117211354675 * pitch size (5mm)
+</pre></div>
+</div>
+<p>At this point it is important to check the correct rounding to integers:
+The maximum error should definitely be better than 0.2*pitch ! If not,
+try to change the origin (Cx and Cy). This criteria will be used for the
+optimization later on.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">IJ</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">IJ</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="s">&quot;or&quot;</span><span class="p">)</span>
+<span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">IJ</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">idx</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">IJ</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="s">&quot;og&quot;</span><span class="p">)</span>
+<span class="n">xlim</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">Xmin</span><span class="p">),</span> <span class="n">ceil</span><span class="p">(</span><span class="n">Xmax</span><span class="p">))</span>
+<span class="n">ylim</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">Ymin</span><span class="p">),</span> <span class="n">ceil</span><span class="p">(</span><span class="n">Ymax</span><span class="p">))</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&quot;Red: measured peaks, Green: Expected position&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f0bff096390&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_39_1.png" src="../../../_images/output_39_1.png" />
+<div class="section" id="estimation-of-the-pixel-size">
+<h3>Estimation of the pixel size:<a class="headerlink" href="#estimation-of-the-pixel-size" title="Permalink to this headline">¶</a></h3>
+<p>The pixel size is obtained from the pitch of the grid, in vectorial:</p>
+<p>pitch^2 = (Px*Xx)^2 + (Py Xy)^2</p>
+<p>pitch^2 = (Px*Yx)^2 + (Py Yy)^2</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">pitch</span> <span class="o">=</span> <span class="mf">5e-3</span> <span class="c">#mm distance between holes</span>
+<span class="n">Py</span> <span class="o">=</span> <span class="n">pitch</span><span class="o">*</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Yx</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="n">Xx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">Xy</span><span class="o">*</span><span class="n">Yx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">Xx</span><span class="o">*</span><span class="n">Yy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">Px</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">pitch</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">Xy</span><span class="o">*</span><span class="n">Py</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">Xx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Pixel size in average: x:</span><span class="si">%.3f</span><span class="s"> micron, y: </span><span class="si">%.3f</span><span class="s"> microns&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Px</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">Py</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Pixel size in average: x:51.165 micron, y: 51.497 microns
+</pre></div>
+</div>
+<p>At this stage, we have:</p>
+<ul class="simple">
+<li>A list of control points placed on a regular grid with a sub-pixel
+precision</li>
+<li>The center of the image, located on a control point</li>
+<li>the average X and Y vector to go from one control point to another</li>
+</ul>
+</div>
+</div>
+<div class="section" id="optimization-of-the-pixel-position">
+<h2>Optimization of the pixel position<a class="headerlink" href="#optimization-of-the-pixel-position" title="Permalink to this headline">¶</a></h2>
+<p>The optimization is obtained by minimizing the mis-placement of the
+control points on the regular grid. For a larger coverage we include now
+the peaks on the border with less than 4 neighbours.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#Measured peaks (all!), needs to flip x&lt;-&gt;y</span>
+<span class="n">peaks_m</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">peaks_ref</span><span class="p">)</span>
+<span class="n">peaks_m</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">peaks_ref</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">peaks_m</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">peaks_ref</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c">#parameter set for optimization:</span>
+<span class="n">P0</span> <span class="o">=</span> <span class="p">[</span><span class="n">Ox</span><span class="p">,</span> <span class="n">Oy</span><span class="p">,</span> <span class="n">Xx</span><span class="p">,</span> <span class="n">Yx</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">Yy</span><span class="p">]</span>
+
+<span class="n">P</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">P0</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">to_hole</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">pixels</span><span class="p">):</span>
+    <span class="s">&quot;Translate pixel -&gt; hole&quot;</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">P</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c">#Transformation matrix from pixel to holes:</span>
+    <span class="n">hole</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R</span><span class="p">),</span> <span class="p">(</span><span class="n">pixels</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">hole</span>
+
+<span class="k">def</span> <span class="nf">to_pix</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">holes</span><span class="p">):</span>
+    <span class="s">&quot;Translate hole -&gt; pixel&quot;</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">P</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="c">#Transformation from index points (holes) to pixel coordinates:</span>
+    <span class="n">pix</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">holes</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">T</span>
+    <span class="k">return</span> <span class="n">pix</span>
+
+<span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+    <span class="s">&quot;Error function&quot;</span>
+    <span class="n">hole_float</span> <span class="o">=</span> <span class="n">to_hole</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">peaks_m</span><span class="p">)</span>
+    <span class="n">hole_int</span> <span class="o">=</span> <span class="n">hole_float</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">hole_float</span><span class="o">-</span><span class="n">hole_int</span>
+    <span class="n">delta2</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">delta2</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Total inital error &quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">(</span><span class="n">P</span><span class="p">),</span> <span class="n">P0</span><span class="p">)</span>
+<span class="n">holes</span> <span class="o">=</span> <span class="n">to_hole</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">peaks_m</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Maximum initial error versus integrer: </span><span class="si">%s</span><span class="s"> * pitch size (5mm)&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">holes</span><span class="o">-</span><span class="n">holes</span><span class="o">.</span><span class="n">round</span><span class="p">())</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;total Final error &quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">),</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+<span class="n">holes</span> <span class="o">=</span> <span class="n">to_hole</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">peaks_m</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Maximum final error versus integrer: </span><span class="si">%s</span><span class="s"> * pitch size (5mm)&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">holes</span><span class="o">-</span><span class="n">holes</span><span class="o">.</span><span class="n">round</span><span class="p">())</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Total inital error  2.5995763607 [753.70350015163422, 1186.1879850327969, 97.719730182623479, 1.3821857949656571, -0.78797711765336542, 97.082699075794565]
+Maximum initial error versus integrer: 0.199838456433 * pitch size (5mm)
+      jac: array([ -1.49011612e-07,  -2.08616257e-07,  -2.68220901e-07,
+         1.19209290e-07,   1.19209290e-07,   3.87430191e-07])
+     nfev: 160
+      nit: 15
+  message: &#39;Optimization terminated successfully.&#39;
+   status: 0
+     njev: 20
+  success: True
+        x: array([  7.53021133e+02,   1.18519692e+03,   9.81143527e+01,
+         1.47509463e+00,  -8.04478515e-01,   9.73166896e+01])
+      fun: 2.1237728421683415
+ hess_inv: array([[  1.42100651e+01,   5.92064797e-01,  -8.65311650e-01,
+          5.71616778e-01,  -2.93157223e-02,   3.36330120e-02],
+       [  5.92064797e-01,   1.42890834e+01,  -3.28993124e-02,
+          1.71968068e-02,  -8.57363816e-01,   5.83878215e-01],
+       [ -8.65311650e-01,  -3.28993124e-02,   2.99126185e-01,
+         -4.37220702e-03,   4.01788293e-03,  -2.74807907e-03],
+       [  5.71616778e-01,   1.71968068e-02,  -4.37220702e-03,
+          3.02142044e-01,  -1.06852612e-03,   2.67366996e-03],
+       [ -2.93157223e-02,  -8.57363816e-01,   4.01788293e-03,
+         -1.06852612e-03,   2.95805859e-01,  -4.27421580e-03],
+       [  3.36330120e-02,   5.83878215e-01,  -2.74807907e-03,
+          2.67366996e-03,  -4.27421580e-03,   2.97301584e-01]])
+total Final error  2.12377284217 [  7.53021133e+02   1.18519692e+03   9.81143527e+01   1.47509463e+00
+  -8.04478515e-01   9.73166896e+01]
+Maximum final error versus integrer: 0.234645010209 * pitch size (5mm)
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">clf</span><span class="p">()</span>
+<span class="n">peaks_c</span> <span class="o">=</span> <span class="n">to_pix</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">to_hole</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">peaks_m</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">())</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">peaks_m</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">peaks_m</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s">&quot;or&quot;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">peaks_c</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">peaks_c</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s">&quot;og&quot;</span><span class="p">)</span>
+<span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">)</span>
+<span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&quot;Peak position: measured (red) and expected (Green)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f0c04a54518&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_45_1.png" src="../../../_images/output_45_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">pitch</span> <span class="o">=</span> <span class="mf">5e-3</span> <span class="c">#mm distance between holes</span>
+<span class="n">Ox</span><span class="p">,</span> <span class="n">Oy</span><span class="p">,</span> <span class="n">Xx</span><span class="p">,</span> <span class="n">Yx</span><span class="p">,</span> <span class="n">Xy</span><span class="p">,</span> <span class="n">Yy</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
+<span class="n">Py</span> <span class="o">=</span> <span class="n">pitch</span><span class="o">*</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Yx</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="n">Xx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">Xy</span><span class="o">*</span><span class="n">Yx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">Xx</span><span class="o">*</span><span class="n">Yy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">Px</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">pitch</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">Xy</span><span class="o">*</span><span class="n">Py</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">Xx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Optimized pixel size in average: x:</span><span class="si">%.3f</span><span class="s"> micron, y: </span><span class="si">%.3f</span><span class="s"> microns&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Px</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">Py</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Optimized pixel size in average: x:50.959 micron, y: 51.373 microns
+</pre></div>
+</div>
+<p>Few comments:</p>
+<ul class="simple">
+<li>The maximum error grow during optimization without explainations</li>
+<li>The outer part of the detector is the most distorted</li>
+</ul>
+</div>
+<div class="section" id="interpolation-of-the-fitted-data">
+<h2>Interpolation of the fitted data<a class="headerlink" href="#interpolation-of-the-fitted-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="multivariate-data-interpolation-griddata">
+<h3>Multivariate data interpolation (griddata)<a class="headerlink" href="#multivariate-data-interpolation-griddata" title="Permalink to this headline">¶</a></h3>
+<p>Correction arrays are built slightly larger (+1) to be able to
+manipulate corners instead of centers of pixels As coordinates are
+needed as y,x (and not x,y) we use p instead of peaks_m</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">griddata</span>
+<span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="n">peaks_c</span> <span class="o">-</span> <span class="n">peaks_m</span>
+<span class="c">#we use peaks_res instead of peaks_m to be in y,x coordinates, not x,y</span>
+<span class="n">delta_x</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">(</span><span class="n">peaks_ref</span><span class="p">,</span> <span class="n">delta</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;cubic&#39;</span><span class="p">)</span>
+<span class="n">delta_y</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">(</span><span class="n">peaks_ref</span><span class="p">,</span> <span class="n">delta</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;cubic&#39;</span><span class="p">)</span>
+
+<span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">delta_x</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">r&quot;$\delta$ x&quot;</span><span class="p">)</span>
+<span class="n">colorbar</span><span class="p">()</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">delta_y</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">r&quot;$\delta$ y&quot;</span><span class="p">)</span>
+<span class="n">colorbar</span><span class="p">()</span>
+<span class="c">#Nota: the arrays are filled with &quot;NaN&quot; outside the convex Hull</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.colorbar.Colorbar at 0x7f0bfd478240&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_48_1.png" src="../../../_images/output_48_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c">#From http://stackoverflow.com/questions/3662361/fill-in-missing-values-with-nearest-neighbour-in-python-numpy-masked-arrays</span>
+<span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace the value of invalid &#39;data&#39; cells (indicated by &#39;invalid&#39;)</span>
+<span class="sd">    by the value of the nearest valid data cell</span>
+
+<span class="sd">    Input:</span>
+<span class="sd">        data:    numpy array of any dimension</span>
+<span class="sd">        invalid: a binary array of same shape as &#39;data&#39;. True cells set where data</span>
+<span class="sd">                 value should be replaced.</span>
+<span class="sd">                 If None (default), use: invalid  = np.isnan(data)</span>
+
+<span class="sd">    Output:</span>
+<span class="sd">        Return a filled array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">invalid</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">invalid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">invalid</span><span class="p">,</span> <span class="n">return_distances</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">return_indices</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ind</span><span class="p">)]</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">fill</span><span class="p">(</span><span class="n">delta_x</span><span class="p">),</span><span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">r&quot;$\delta$ x&quot;</span><span class="p">)</span>
+<span class="n">colorbar</span><span class="p">()</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">fill</span><span class="p">(</span><span class="n">delta_y</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">r&quot;$\delta$ y&quot;</span><span class="p">)</span>
+<span class="n">colorbar</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.colorbar.Colorbar at 0x7f0bfc1f8f60&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_50_1.png" src="../../../_images/output_50_1.png" />
+<p>It is important to understand the extrapolation outside the convex hull
+has no justification, it is there just to prevent numerical bugs.</p>
+</div>
+</div>
+<div class="section" id="saving-the-distortion-correction-arrays-to-a-detector">
+<h2>Saving the distortion correction arrays to a detector<a class="headerlink" href="#saving-the-distortion-correction-arrays-to-a-detector" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyFAI.detectors</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">Py</span><span class="p">,</span><span class="n">Px</span><span class="p">)</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">max_shape</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">set_dx</span><span class="p">(</span><span class="n">fill</span><span class="p">(</span><span class="n">delta_x</span><span class="p">))</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">set_dy</span><span class="p">(</span><span class="n">fill</span><span class="p">(</span><span class="n">delta_y</span><span class="p">))</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">delta_x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;testdetector.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="validation-of-the-distortion-correction">
+<h2>Validation of the distortion correction<a class="headerlink" href="#validation-of-the-distortion-correction" title="Permalink to this headline">¶</a></h2>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyFAI.distortion</span> <span class="kn">import</span> <span class="n">Distortion</span>
+<span class="n">dis</span> <span class="o">=</span> <span class="n">Distortion</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
+<span class="n">cor</span> <span class="o">=</span> <span class="n">dis</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&quot;Original&quot;</span><span class="p">)</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">cor</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&quot;Corrected&quot;</span><span class="p">)</span>
+<span class="n">fabio</span><span class="o">.</span><span class="n">edfimage</span><span class="o">.</span><span class="n">EdfImage</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">cor</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;corrected.edf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>WARNING:pyFAI.timeit:calc_pos took 0.747s
+WARNING:pyFAI.timeit:calc_size took 0.944s
+WARNING:pyFAI.timeit:calc_LUT took 2.907s
+</pre></div>
+</div>
+<img alt="../../../_images/output_54_1.png" src="../../../_images/output_54_1.png" />
+</div>
+</div>
+<div class="section" id="conclusion">
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<p>This procedure describes how to measure the detector
+distortion and how to create a detector description file directly
+useable in pyFAI. Only the region inside the convex hull of the grid
+data-points is valid and the region of the detector which is not
+calibrated has been masked out to preven accidental use of it.</p>
+<p>The distortion corrected image can now be used to check how &#8220;good&#8221; the
+calibration actually is. This file can be injected in the third cell,
+and follow the same procedure (left as exercise). This gives a maximum
+mis-placement of 0.003, the average error is then of 0.0006 and
+correction-map exhibit a displacement of pixels in the range +/- 0.2
+pixels which is acceptable and validates the whole procedure.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CCD calibration</a><ul>
+<li><a class="reference internal" href="#peak-picking">Peak picking</a></li>
+<li><a class="reference internal" href="#precise-peak-extraction-is-performed-using-a-second-order-tailor-expansion">Precise peak extraction is performed using a second order tailor expansion</a></li>
+<li><a class="reference internal" href="#pair-wise-distribution-function">Pair-wise distribution function</a><ul>
+<li><a class="reference internal" href="#estimation-of-the-pixel-size">Estimation of the pixel size:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#optimization-of-the-pixel-position">Optimization of the pixel position</a></li>
+<li><a class="reference internal" href="#interpolation-of-the-fitted-data">Interpolation of the fitted data</a><ul>
+<li><a class="reference internal" href="#multivariate-data-interpolation-griddata">Multivariate data interpolation (griddata)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#saving-the-distortion-correction-arrays-to-a-detector">Saving the distortion correction arrays to a detector</a></li>
+<li><a class="reference internal" href="#validation-of-the-distortion-correction">Validation of the distortion correction</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../MakeCalibrant/make_calibrant.html"
+                        title="previous chapter">Creation of a calibrant file</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../../man/scripts.html"
+                        title="next chapter">pyFAI scripts manual</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/usage/tutorial/CCD_Calibration/CCD_calibration.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../man/scripts.html" title="pyFAI scripts manual"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../MakeCalibrant/make_calibrant.html" title="Creation of a calibrant file"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

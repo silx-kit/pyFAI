@@ -34,15 +34,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "09/06/2016"
 
 
 import unittest
-import os
 import numpy
 import logging
-import time
-import sys
 import fabio
 from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
@@ -69,7 +66,7 @@ class TestIntegrate1D(unittest.TestCase):
 
     def testQ(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel", "lut", "lut_ocl"):
+        for m in ("numpy", "cython", "BBox", "splitpixel", "lut", "lut_ocl"):
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, radial_range=(0.5, 5.8))
         for a in res:
             for b in res:
@@ -83,7 +80,7 @@ class TestIntegrate1D(unittest.TestCase):
 
     def testR(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel", "lut", "lut_ocl"):
+        for m in ("numpy", "cython", "BBox", "splitpixel", "lut", "lut_ocl"):
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, unit="r_mm", radial_range=(20, 150))
         for a in res:
             for b in res:
@@ -94,9 +91,10 @@ class TestIntegrate1D(unittest.TestCase):
                 else:
                     logger.info(mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
+
     def test2th(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel", "lut", "lut_ocl"):
+        for m in ("numpy", "cython", "BBox", "splitpixel", "lut", "lut_ocl"):
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, unit="2th_deg", radial_range=(0.5, 5.5))
         for a in res:
             for b in res:
@@ -110,17 +108,19 @@ class TestIntegrate1D(unittest.TestCase):
 
 
 class TestIntegrate2D(unittest.TestCase):
-    npt = 500
-    img = UtilsTest.getimage("1883/Pilatus1M.edf")
-    data = fabio.open(img).data
-    ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
-    ai.wavelength = 1e-10
-    Rmax = 20
-    delta_pos_azim_max = 0.28
+    @classmethod
+    def setUpClass(cls):
+        cls.npt = 500
+        cls.img = UtilsTest.getimage("1883/Pilatus1M.edf")
+        cls.data = fabio.open(cls.img).data
+        cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
+        cls.ai.wavelength = 1e-10
+        cls.Rmax = 20
+        cls.delta_pos_azim_max = 0.28
 
     def testQ(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel"):  # , "lut", "lut_ocl"):
+        for m in ("numpy", "cython", "BBox", "splitpixel"):
             res[m] = self.ai.integrate2d(self.data, self.npt, method=m)
         mask = (res["numpy"][0] != 0)
         self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
@@ -140,8 +140,8 @@ class TestIntegrate2D(unittest.TestCase):
 
     def testR(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel"):  # , "lut", "lut_ocl"):
-            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="r_mm")  # , radial_range=(20, 150))
+        for m in ("numpy", "cython", "BBox", "splitpixel"):
+            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="r_mm")
         mask = (res["numpy"][0] != 0)
         self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
         for a in res:
@@ -157,10 +157,11 @@ class TestIntegrate2D(unittest.TestCase):
                 self.assertTrue(delta_pos_rad <= 0.28, mesg)
                 self.assertTrue(delta_pos_azim <= self.delta_pos_azim_max, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
+
     def test2th(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel"):  # , "lut", "lut_ocl"):
-            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="2th_deg")  # , radial_range=(0.5, 5.5))
+        for m in ("numpy", "cython", "BBox", "splitpixel"):
+            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="2th_deg")
         mask = (res["numpy"][0] != 0)
         self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
         for a in res:
@@ -193,8 +194,3 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-#    if logger.getEffectiveLevel() == logging.DEBUG:
-#        pylab.legend()
-#        pylab.show()
-#        raw_input()
-#        pylab.clf()

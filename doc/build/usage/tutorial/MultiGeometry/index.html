@@ -1,0 +1,521 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Demo of usage of the MultiGeometry class of pyFAI &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Multi-geometry azimuthal integration" href="../multi-geometry.html" />
+    <link rel="next" title="Creation of a calibrant file" href="../MakeCalibrant/make_calibrant.html" />
+    <link rel="prev" title="Multi-geometry azimuthal integration" href="../multi-geometry.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../MakeCalibrant/make_calibrant.html" title="Creation of a calibrant file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../multi-geometry.html" title="Multi-geometry azimuthal integration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Tutorials</a> &raquo;</li>
+          <li><a href="../multi-geometry.html" accesskey="U">Multi-geometry azimuthal integration</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="demo-of-usage-of-the-multigeometry-class-of-pyfai">
+<h1>Demo of usage of the MultiGeometry class of pyFAI<a class="headerlink" href="#demo-of-usage-of-the-multigeometry-class-of-pyfai" title="Permalink to this headline">¶</a></h1>
+<p>For this tutorial, we will use the ipython notebook, now known as
+<em>Jypyter</em>, an take advantage of the integration of matplotlib with the
+<em>inline</em>:</p>
+<div class="code python highlight-python"><div class="highlight"><pre>%pylab inline
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
+</pre></div>
+</div>
+<p>The multi_geometry module of pyFAI allows you to integrate multiple
+images taken at various image position, all togeather. This tutorial
+will explain you how to perform azimuthal integration in three use-case:
+translation of the detector, rotation of the detector around the sample
+and finally how to fill gaps of a pixel detector. But before, we need to
+know how to generate fake diffraction image.</p>
+<div class="section" id="generation-of-diffraction-images">
+<h2>Generation of diffraction images<a class="headerlink" href="#generation-of-diffraction-images" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI knows about 20 different reference sample called calibrants. We
+will use them to generate fake diffraction images knowing the detector
+and its position in space</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="kn">import</span> <span class="nn">pyFAI.calibrant</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of known calibrants: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">calibrant</span><span class="o">.</span><span class="n">ALL_CALIBRANTS</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">calibrant</span><span class="o">.</span><span class="n">ALL_CALIBRANTS</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Number of known calibrants: 27
+Ni CrOx NaCl Si_SRM640e Si_SRM640d Si_SRM640a Si_SRM640c alpha_Al2O3 Cr2O3 AgBh Si_SRM640 CuO PBBA Si_SRM640b quartz C14H30O cristobaltite Si LaB6 CeO2 LaB6_SRM660a LaB6_SRM660b LaB6_SRM660c TiO2 ZnO Al Au
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">wl</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="n">LaB6</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">calibrant</span><span class="o">.</span><span class="n">ALL_CALIBRANTS</span><span class="p">(</span><span class="s">&quot;LaB6&quot;</span><span class="p">)</span>
+<span class="n">LaB6</span><span class="o">.</span><span class="n">set_wavelength</span><span class="p">(</span><span class="n">wl</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">LaB6</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>LaB6 Calibrant at wavelength 1e-10
+</pre></div>
+</div>
+<p>We will start with a &#8220;simple&#8221; detector called <em>Titan</em> (build by <em>Oxford
+Diffraction</em> but now sold by <em>Agilent</em>). It is a CCD detector with
+scintilator and magnifying optics fibers. The pixel size is constant:
+60µm</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">det</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">Titan</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+<span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">calc_cartesian_positions</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Detector is flat, P3= </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">p3</span><span class="p">)</span>
+<span class="n">poni1</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">poni2</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Center of the detector: poni1=</span><span class="si">%s</span><span class="s"> poni2=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">poni1</span><span class="p">,</span> <span class="n">poni2</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Detector is flat, P3= None
+Center of the detector: poni1=0.06144 poni2=0.06144
+</pre></div>
+</div>
+<p>The detector is placed orthogonal to the beam at 10cm. This geometry is
+saved into an <em>AzimuthalIntegrator</em> instance:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">AzimuthalIntegrator</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">poni1</span><span class="o">=</span><span class="n">poni1</span><span class="p">,</span> <span class="n">poni2</span><span class="o">=</span><span class="n">poni2</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">det</span><span class="p">)</span>
+<span class="n">ai</span><span class="o">.</span><span class="n">set_wavelength</span><span class="p">(</span><span class="n">wl</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Wavelength= 1.000000e-10m
+SampleDetDist= 1.000000e-01m        PONI= 6.144000e-02, 6.144000e-02m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=1024.000, y=1024.000 pix      Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+</pre></div>
+</div>
+<p>Knowing the calibrant, the wavelength, the detector and the geometry,
+one can simulate the 2D diffraction pattern:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">img</span> <span class="o">=</span> <span class="n">LaB6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7fbf946e68d0&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_10_1.png" src="../../../_images/output_10_1.png" />
+<p>This image can be integrated in q-space and plotted:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">ai</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;q_A^-1&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7fbf92da9d90&gt;]
+</pre></div>
+</div>
+<img alt="../../../_images/output_12_11.png" src="../../../_images/output_12_11.png" />
+<p>Note pyFAI does now about the ring position but nothing about relative
+intensities of rings.</p>
+</div>
+<div class="section" id="translation-of-the-detector-along-the-vertical-axis">
+<h2>Translation of the detector along the vertical axis<a class="headerlink" href="#translation-of-the-detector-along-the-vertical-axis" title="Permalink to this headline">¶</a></h2>
+<p>The vertical axis is defined along the <em>poni1</em>. If one moves the
+detector higher, the poni will appear at lower coordinates. So lets
+define 5 upwards verical translations of half the detector size.</p>
+<p>For this we will duplicate 5x the AzimuthalIntegrator object, but
+instances of <em>AzimuthalIntegrator</em> are mutable, so it is important to
+create an actual <em>copy</em> and not an <em>view</em> on them. In Python, one can
+use the <em>copy</em> function of the <em>copy</em> module:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">copy</span>
+</pre></div>
+</div>
+<p>We will now offset the <em>poni1</em> value of each AzimuthalIntegratoe which
+correspond to a vertical translation. Each subsequent image is offsetted
+by half a detector width (stored as <em>poni1</em>).</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ais</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">imgs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">plots</span> <span class="o">=</span> <span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">my_ai</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+    <span class="n">my_ai</span><span class="o">.</span><span class="n">poni1</span> <span class="o">-=</span> <span class="n">i</span><span class="o">*</span><span class="n">poni1</span>
+    <span class="n">my_img</span> <span class="o">=</span> <span class="n">LaB6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+    <span class="n">plots</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">my_img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+    <span class="n">ais</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+    <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_img</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Wavelength= 1.000000e-10m
+SampleDetDist= 1.000000e-01m        PONI= 6.144000e-02, 6.144000e-02m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=1024.000, y=1024.000 pix      Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Wavelength= 1.000000e-10m
+SampleDetDist= 1.000000e-01m        PONI= 0.000000e+00, 6.144000e-02m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=1024.000, y=0.000 pix Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Wavelength= 1.000000e-10m
+SampleDetDist= 1.000000e-01m        PONI= -6.144000e-02, 6.144000e-02m      rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=1024.000, y=-1024.000 pix     Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Wavelength= 1.000000e-10m
+SampleDetDist= 1.000000e-01m        PONI= -1.228800e-01, 6.144000e-02m      rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=1024.000, y=-2048.000 pix     Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Wavelength= 1.000000e-10m
+SampleDetDist= 1.000000e-01m        PONI= -1.843200e-01, 6.144000e-02m      rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=1024.000, y=-3072.000 pix     Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+</pre></div>
+</div>
+<img alt="../../../_images/output_16_11.png" src="../../../_images/output_16_11.png" />
+</div>
+<div class="section" id="multigeometry-integrator">
+<h2>MultiGeometry integrator<a class="headerlink" href="#multigeometry-integrator" title="Permalink to this headline">¶</a></h2>
+<p>The <em>MultiGeometry</em> instance can be created from any list of
+<em>AzimuthalIntegrator</em> instances or list of <em>poni-files</em>. Here we will
+use the former method.</p>
+<p>The main difference of a <em>MultiIntegrator</em> with a &#8220;normal&#8221;
+<em>AzimuthalIntegrator</em> comes from the definition of the output space in
+the constructor of the object. One needs to specify the unit and the
+integration range.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyFAI.multi_geometry</span> <span class="kn">import</span> <span class="n">MultiGeometry</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">mg</span> <span class="o">=</span> <span class="n">MultiGeometry</span><span class="p">(</span><span class="n">ais</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;q_A^-1&quot;</span><span class="p">,</span> <span class="n">radial_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mg</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>MultiGeometry integrator with 5 geometries on (0, 10) radial range (q_A^-1) and (-180, 180) azimuthal range (deg)
+</pre></div>
+</div>
+<p><em>MultiGeometry</em> integrators can be used in a similar way to &#8220;normal&#8221;
+<em>AzimuthalIntegrator</em>s. Keep in mind the output intensity is always
+scaled to absolute solid angle.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">mg</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="mi">10000</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7fbf90a4a210&gt;]
+</pre></div>
+</div>
+<img alt="../../../_images/output_21_12.png" src="../../../_images/output_21_12.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">ais</span><span class="p">):</span>
+    <span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;q_A^-1&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="../../../_images/output_22_0.png" src="../../../_images/output_22_0.png" />
+</div>
+<div class="section" id="rotation-of-the-detector">
+<h2>Rotation of the detector<a class="headerlink" href="#rotation-of-the-detector" title="Permalink to this headline">¶</a></h2>
+<p>The strength of translating the detector is that it simulates a larger
+detector, but this approach reaches its limit quikly as the higher the
+detector gets, the smallest the solid angle gets and induces artificial
+noise. One solution is to keep the detector at the same distance and
+rotate the detector.</p>
+<div class="section" id="creation-of-diffraction-images">
+<h3>Creation of diffraction images<a class="headerlink" href="#creation-of-diffraction-images" title="Permalink to this headline">¶</a></h3>
+<p>In this example we will use a Pilatus 200k with 2 modules. It has a gap
+in the middle of the two detectors and we will see how the
+<em>MultiGeometry</em> can help.</p>
+<p>As previously, we will use LaB6 but instead of translating the images,
+we will rotate them along the second axis:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">det</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">detector_factory</span><span class="p">(</span><span class="s">&quot;pilatus200k&quot;</span><span class="p">)</span>
+<span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">calc_cartesian_positions</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p3</span><span class="p">)</span>
+<span class="n">poni1</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">poni2</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">poni1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">poni2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">None</span>
+<span class="mf">0.035002</span>
+<span class="mf">0.041882</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">AzimuthalIntegrator</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">poni1</span><span class="o">=</span><span class="n">poni1</span><span class="p">,</span> <span class="n">poni2</span><span class="o">=</span><span class="n">poni2</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">det</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">LaB6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="c">#imshow(log(ai.integrate2d(img, 500, 360, unit=&quot;2th_deg&quot;)[0]))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7fbf90923790&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_25_1.png" src="../../../_images/output_25_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">ai</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7fbf90847490&gt;]
+</pre></div>
+</div>
+<img alt="../../../_images/output_26_1.png" src="../../../_images/output_26_1.png" />
+<p>We will rotate the detector with a step size of 15 degrees</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">step</span> <span class="o">=</span> <span class="mi">15</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span>
+<span class="n">ais</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">imgs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">plots</span> <span class="o">=</span> <span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">my_ai</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+    <span class="n">my_ai</span><span class="o">.</span><span class="n">rot2</span> <span class="o">-=</span> <span class="n">i</span><span class="o">*</span><span class="n">step</span>
+    <span class="n">my_img</span> <span class="o">=</span> <span class="n">LaB6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+    <span class="n">plots</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">my_img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+    <span class="n">ais</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+    <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_img</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Pilatus200k         PixelSize= 1.720e-04, 1.720e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 3.500200e-02, 4.188200e-02m       rot1=0.000000  rot2= 0.000000  rot3= 0.000000 rad
+DirectBeamDist= 100.000mm   Center: x=243.500, y=203.500 pix        Tilt=0.000 deg  tiltPlanRotation= 0.000 deg
+Detector Pilatus200k         PixelSize= 1.720e-04, 1.720e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 3.500200e-02, 4.188200e-02m       rot1=0.000000  rot2= -0.261799  rot3= 0.000000 rad
+DirectBeamDist= 103.528mm   Center: x=243.500, y=47.716 pix Tilt=15.000 deg  tiltPlanRotation= -90.000 deg
+Detector Pilatus200k         PixelSize= 1.720e-04, 1.720e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 3.500200e-02, 4.188200e-02m       rot1=0.000000  rot2= -0.523599  rot3= 0.000000 rad
+DirectBeamDist= 115.470mm   Center: x=243.500, y=-132.169 pix       Tilt=30.000 deg  tiltPlanRotation= -90.000 deg
+Detector Pilatus200k         PixelSize= 1.720e-04, 1.720e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 3.500200e-02, 4.188200e-02m       rot1=0.000000  rot2= -0.785398  rot3= 0.000000 rad
+DirectBeamDist= 141.421mm   Center: x=243.500, y=-377.895 pix       Tilt=45.000 deg  tiltPlanRotation= -90.000 deg
+Detector Pilatus200k         PixelSize= 1.720e-04, 1.720e-04 m
+SampleDetDist= 1.000000e-01m        PONI= 3.500200e-02, 4.188200e-02m       rot1=0.000000  rot2= -1.047198  rot3= 0.000000 rad
+DirectBeamDist= 200.000mm   Center: x=243.500, y=-803.506 pix       Tilt=60.000 deg  tiltPlanRotation= -90.000 deg
+</pre></div>
+</div>
+<img alt="../../../_images/output_28_1.png" src="../../../_images/output_28_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">ais</span><span class="p">):</span>
+    <span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="../../../_images/output_29_0.png" src="../../../_images/output_29_0.png" />
+</div>
+<div class="section" id="creation-of-the-multigeometry">
+<h3>Creation of the MultiGeometry<a class="headerlink" href="#creation-of-the-multigeometry" title="Permalink to this headline">¶</a></h3>
+<p>This time we will work in 2theta angle using degrees:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">mg</span> <span class="o">=</span> <span class="n">MultiGeometry</span><span class="p">(</span><span class="n">ais</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">,</span> <span class="n">radial_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mg</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">mg</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="mi">10000</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>MultiGeometry integrator with 5 geometries on (0, 90) radial range (2th_deg) and (-180, 180) azimuthal range (deg)
+area_pixel=1.32053624453 area_sum=2.69418873745, Error= -1.04022324159
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7fbf903e2650&gt;]
+</pre></div>
+</div>
+<img alt="../../../_images/output_31_2.png" src="../../../_images/output_31_2.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">I</span><span class="p">,</span><span class="n">tth</span><span class="p">,</span> <span class="n">chi</span> <span class="o">=</span> <span class="n">mg</span><span class="o">.</span><span class="n">integrate2d</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span><span class="mi">360</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">tth</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">tth</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">max</span><span class="p">()],</span> <span class="n">aspect</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">)</span>
+<span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;2theta&quot;</span><span class="p">)</span>
+<span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;chi&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7fbf90330350&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_32_1.png" src="../../../_images/output_32_1.png" />
+</div>
+</div>
+<div class="section" id="how-to-fill-up-gaps-in-arrays-of-pixel-detectors-during-2d-integration">
+<h2>How to fill-up gaps in arrays of pixel detectors during 2D integration<a class="headerlink" href="#how-to-fill-up-gaps-in-arrays-of-pixel-detectors-during-2d-integration" title="Permalink to this headline">¶</a></h2>
+<p>We will use ImXpad detectors which exhibits large gaps.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">det</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">detector_factory</span><span class="p">(</span><span class="s">&quot;Xpad_flat&quot;</span><span class="p">)</span>
+<span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">calc_cartesian_positions</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p3</span><span class="p">)</span>
+<span class="n">poni1</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">poni2</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">poni1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">poni2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">None</span>
+<span class="mf">0.076457</span>
+<span class="mf">0.0377653</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">AzimuthalIntegrator</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">poni1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">poni2</span><span class="o">=</span><span class="n">poni2</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">det</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">LaB6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7fbf909b8210&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_35_1.png" src="../../../_images/output_35_1.png" />
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">I</span><span class="p">,</span> <span class="n">tth</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">ai</span><span class="o">.</span><span class="n">integrate2d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">azimuth_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">180</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">,</span> <span class="n">dummy</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">I</span><span class="p">),</span><span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">tth</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">tth</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">max</span><span class="p">()],</span> <span class="n">aspect</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">)</span>
+<span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;2theta&quot;</span><span class="p">)</span>
+<span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;chi&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>-c:2: RuntimeWarning: invalid value encountered in sqrt
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7fbf90a67850&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_36_2.png" src="../../../_images/output_36_2.png" />
+<p>To observe textures, it is mandatory to fill the large empty space. This
+can be done by tilting the detector by a few degrees to higher 2theta
+angle (yaw 2x5deg) and turn the detector along the azimuthal angle (roll
+2x5deg):</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">step</span> <span class="o">=</span> <span class="mi">5</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span>
+<span class="n">nb_geom</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">ais</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">imgs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_geom</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_geom</span><span class="p">):</span>
+        <span class="n">my_ai</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+        <span class="n">my_ai</span><span class="o">.</span><span class="n">rot2</span> <span class="o">-=</span> <span class="n">i</span><span class="o">*</span><span class="n">step</span>
+        <span class="n">my_ai</span><span class="o">.</span><span class="n">rot3</span> <span class="o">-=</span> <span class="n">j</span><span class="o">*</span><span class="n">step</span>
+        <span class="n">my_img</span> <span class="o">=</span> <span class="n">LaB6</span><span class="o">.</span><span class="n">fake_calibration_image</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+        <span class="n">ais</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_ai</span><span class="p">)</span>
+        <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_img</span><span class="p">)</span>
+<span class="n">mg</span> <span class="o">=</span> <span class="n">MultiGeometry</span><span class="p">(</span><span class="n">ais</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;2th_deg&quot;</span><span class="p">,</span> <span class="n">radial_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="n">azimuth_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">),</span> <span class="n">empty</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mg</span><span class="p">)</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">tth</span><span class="p">,</span> <span class="n">chi</span> <span class="o">=</span> <span class="n">mg</span><span class="o">.</span><span class="n">integrate2d</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">360</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">I</span><span class="p">),</span><span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">tth</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">tth</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">chi</span><span class="o">.</span><span class="n">max</span><span class="p">()],</span> <span class="n">aspect</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">)</span>
+<span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;2theta&quot;</span><span class="p">)</span>
+<span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;chi&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>MultiGeometry integrator with 9 geometries on (0, 60) radial range (2th_deg) and (0, 180) azimuthal range (deg)
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>-c:16: RuntimeWarning: invalid value encountered in sqrt
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7fbf92c74710&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_38_3.png" src="../../../_images/output_38_3.png" />
+<p>As on can see, the gaps have disapeared and the statistics is much
+better, except on the border were only one image contributes to the
+integrated image.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<p>The multi_geometry module of pyFAI makes powder diffraction experiments
+with small moving detectors much easier.</p>
+<p>Some people would like to stitch input images together prior to
+integration. There are plenty of good tools to do this: generalist one
+like <a class="reference external" href="http://www.adobe.com/fr/products/photoshop.html">Photoshop</a> or
+more specialized ones like <a class="reference external" href="http://www.kolor.com/autopano">AutoPano</a>.
+More seriously this can be using the distortion module of a detector to
+re-sample the signal on a regular grid but one will have to store on one
+side the number of actual pixel contributing to a regular pixels and on
+the other the total intensity contained in the regularized pixel.
+Without the former information, doing science with a rebinned image is
+as meaningful as using Photoshop.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Demo of usage of the MultiGeometry class of pyFAI</a><ul>
+<li><a class="reference internal" href="#generation-of-diffraction-images">Generation of diffraction images</a></li>
+<li><a class="reference internal" href="#translation-of-the-detector-along-the-vertical-axis">Translation of the detector along the vertical axis</a></li>
+<li><a class="reference internal" href="#multigeometry-integrator">MultiGeometry integrator</a></li>
+<li><a class="reference internal" href="#rotation-of-the-detector">Rotation of the detector</a><ul>
+<li><a class="reference internal" href="#creation-of-diffraction-images">Creation of diffraction images</a></li>
+<li><a class="reference internal" href="#creation-of-the-multigeometry">Creation of the MultiGeometry</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-fill-up-gaps-in-arrays-of-pixel-detectors-during-2d-integration">How to fill-up gaps in arrays of pixel detectors during 2D integration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../multi-geometry.html"
+                        title="previous chapter">Multi-geometry azimuthal integration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../MakeCalibrant/make_calibrant.html"
+                        title="next chapter">Creation of a calibrant file</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/usage/tutorial/MultiGeometry/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../MakeCalibrant/make_calibrant.html" title="Creation of a calibrant file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../multi-geometry.html" title="Multi-geometry azimuthal integration"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Tutorials</a> &raquo;</li>
+          <li><a href="../multi-geometry.html" >Multi-geometry azimuthal integration</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

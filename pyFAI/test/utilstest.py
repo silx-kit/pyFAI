@@ -1,8 +1,4 @@
-#!/usr/bin/python
 # coding: utf-8
-#
-#    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -50,9 +46,9 @@ import distutils.util
 import unittest
 import logging
 try:  # Python3
-    from urllib.request import urlopen, ProxyHandler, build_opener
+    from urllib.request import urlopen, ProxyHandler, build_opener, URLError
 except ImportError:  # Python2
-    from urllib2 import urlopen, ProxyHandler, build_opener
+    from urllib2 import urlopen, ProxyHandler, build_opener, URLError
 # import urllib2
 import numpy
 import shutil
@@ -185,9 +181,12 @@ class UtilsTest(object):
                 opener = urlopen
 
             logger.info("wget %s/%s" % (cls.url_base, imagename))
-            data = opener("%s/%s" % (cls.url_base, imagename),
-                          data=None, timeout=cls.timeout).read()
-            logger.info("Image %s successfully downloaded." % imagename)
+            try:
+                data = opener("%s/%s" % (cls.url_base, imagename),
+                              data=None, timeout=cls.timeout).read()
+                logger.info("Image %s successfully downloaded." % imagename)
+            except URLError:
+                raise unittest.SkipTest("network unreachable.")
 
             try:
                 with open(fullimagename, "wb") as outfile:

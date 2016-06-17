@@ -1,0 +1,530 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Detector distortion corrections &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Tutorials" href="../index.html" />
+    <link rel="next" title="Selection of a calibrant" href="../Calibrant/index.html" />
+    <link rel="prev" title="Introduction to the tutorials" href="../Introduction/introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../Calibrant/index.html" title="Selection of a calibrant"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../Introduction/introduction.html" title="Introduction to the tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="detector-distortion-corrections">
+<h1>Detector distortion corrections<a class="headerlink" href="#detector-distortion-corrections" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial shows how to correct images for spatial distortion. Some
+tutorial examples rely on files available in
+<a class="reference external" href="http://www.silx.org/pub/pyFAI/testimages/">http://www.silx.org/pub/pyFAI/testimages/</a> and will be downloaded during
+this tutorial. The requiered minimum version of pyFAI is 0.12.0
+(currently dev5)</p>
+<div class="section" id="detector-definitions">
+<h2>Detector definitions<a class="headerlink" href="#detector-definitions" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI features an impressive list of 55 detector definitions contributed
+often by manufacturers and some other reverse engineerd by scientists.
+Each of them is defined as an invividual class which contains a way to
+calculate the mask (invalid pixels, gaps,…) and a method to calculate
+the pixel positions in Cartesian coordinates.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="n">all_detectors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">ALL_DETECTORS</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+<span class="c">#Sort detectors according to their name</span>
+<span class="n">all_detectors</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">nb_det</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_detectors</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of detectors registered:&quot;</span><span class="p">,</span> <span class="n">nb_det</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">all_detectors</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>WARNING:xsdimage:lxml library is probably not part of your python installation: disabling xsdimage format
+WARNING:pyFAI.utils:Exception No module named &#39;fftw3&#39;: FFTw3 not available. Falling back on Scipy
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Number of detectors registered: 55
+Detector Quantum 210         Spline= None    PixelSize= 5.100e-05, 5.100e-05 m
+Detector Quantum 270         Spline= None    PixelSize= 6.480e-05, 6.480e-05 m
+Detector Quantum 315         Spline= None    PixelSize= 5.100e-05, 5.100e-05 m
+Detector Quantum 4   Spline= None    PixelSize= 8.200e-05, 8.200e-05 m
+Detector Aarhus      Spline= None    PixelSize= 2.500e-05, 2.500e-05 m
+Detector ApexII      PixelSize= 6.000e-05, 6.000e-05 m
+Detector aca1300     PixelSize= 3.750e-06, 3.750e-06 m
+Undefined detector
+Detector Dexela 2923         PixelSize= 7.500e-05, 7.500e-05 m
+Detector Eiger16M    PixelSize= 7.500e-05, 7.500e-05 m
+Detector Eiger1M     PixelSize= 7.500e-05, 7.500e-05 m
+Detector Eiger4M     PixelSize= 7.500e-05, 7.500e-05 m
+Detector Eiger9M     PixelSize= 7.500e-05, 7.500e-05 m
+Detector Fairchild   PixelSize= 1.500e-05, 1.500e-05 m
+Detector HF-130k     Spline= None    PixelSize= 1.500e-04, 1.500e-04 m
+Detector HF-1M       Spline= None    PixelSize= 1.500e-04, 1.500e-04 m
+Detector HF-262k     Spline= None    PixelSize= 1.500e-04, 1.500e-04 m
+Detector HF-2.4M     Spline= None    PixelSize= 1.500e-04, 1.500e-04 m
+Detector HF-4M       Spline= None    PixelSize= 1.500e-04, 1.500e-04 m
+Detector HF-9.4M     Spline= None    PixelSize= 1.500e-04, 1.500e-04 m
+Detector Imxpad S10  PixelSize= 1.300e-04, 1.300e-04 m
+Detector Imxpad S140         PixelSize= 1.300e-04, 1.300e-04 m
+Detector Imxpad S70  PixelSize= 1.300e-04, 1.300e-04 m
+Detector MAR 345     PixelSize= 1.000e-04, 1.000e-04 m
+Detector Pixium 4700 detector        PixelSize= 1.540e-04, 1.540e-04 m
+Detector Perkin detector     PixelSize= 2.000e-04, 2.000e-04 m
+Detector Pilatus100k         PixelSize= 1.720e-04, 1.720e-04 m
+Detector Pilatus1M   PixelSize= 1.720e-04, 1.720e-04 m
+Detector Pilatus200k         PixelSize= 1.720e-04, 1.720e-04 m
+Detector Pilatus2M   PixelSize= 1.720e-04, 1.720e-04 m
+Detector Pilatus300k         PixelSize= 1.720e-04, 1.720e-04 m
+Detector Pilatus300kw        PixelSize= 1.720e-04, 1.720e-04 m
+Detector Pilatus6M   PixelSize= 1.720e-04, 1.720e-04 m
+Detector PilatusCdTe1M       PixelSize= 1.720e-04, 1.720e-04 m
+Detector PilatusCdTe2M       PixelSize= 1.720e-04, 1.720e-04 m
+Detector PilatusCdTe300k     PixelSize= 1.720e-04, 1.720e-04 m
+Detector PilatusCdTe300kw    PixelSize= 1.720e-04, 1.720e-04 m
+Detector Rayonix     PixelSize= 3.200e-05, 3.200e-05 m
+Detector MAR133      PixelSize= 6.400e-05, 6.400e-05 m
+Detector Rayonix lx170       PixelSize= 4.427e-05, 4.427e-05 m
+Detector Rayonix lx255       PixelSize= 4.427e-05, 4.427e-05 m
+Detector Rayonix mx170       PixelSize= 4.427e-05, 4.427e-05 m
+Detector Rayonix mx225       PixelSize= 7.324e-05, 7.324e-05 m
+Detector Rayonix mx225hs     PixelSize= 7.813e-05, 7.813e-05 m
+Detector Rayonix mx300       PixelSize= 7.324e-05, 7.324e-05 m
+Detector Rayonix mx300hs     PixelSize= 7.813e-05, 7.813e-05 m
+Detector Rayonix mx325       PixelSize= 7.935e-05, 7.935e-05 m
+Detector Rayonix mx340hs     PixelSize= 8.854e-05, 8.854e-05 m
+Detector Rayonix mx425hs     PixelSize= 4.427e-05, 4.427e-05 m
+Detector MAR165      PixelSize= 3.950e-05, 3.950e-05 m
+Detector Rayonix sx200       PixelSize= 4.800e-05, 4.800e-05 m
+Detector Rayonix Sx30hs      PixelSize= 1.563e-05, 1.563e-05 m
+Detector Rayonix Sx85hs      PixelSize= 4.427e-05, 4.427e-05 m
+Detector Titan 2k x 2k       PixelSize= 6.000e-05, 6.000e-05 m
+Detector Xpad S540 flat      PixelSize= 1.300e-04, 1.300e-04 m
+</pre></div>
+</div>
+</div>
+<div class="section" id="defining-a-detector-from-a-spline-file">
+<h2>Defining a detector from a spline file<a class="headerlink" href="#defining-a-detector-from-a-spline-file" title="Permalink to this headline">¶</a></h2>
+<p>For optically coupled CCD detectors, the geometrical distortion is often
+described by a two-dimensional cubic spline (as in FIT2D) which can be
+imported into the relevant detector instance and used to calculate the
+actual pixel position in space (and masked pixels).</p>
+<p>At the ESRF, mainly FReLoN detectors [J.-C. Labiche, ESRF Newsletter 25,
+41 (1996)] are used with spline files describing the distortion of the
+fiber optic taper.</p>
+<p>Let&#8217;s download such a file and create a detector from it.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;http_proxy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;http://proxy.site.com:3128&quot;</span>
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;download the file given in URL and return its local path&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">urllib2</span> <span class="kn">import</span> <span class="n">urlopen</span><span class="p">,</span> <span class="n">ProxyHandler</span><span class="p">,</span> <span class="n">build_opener</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span><span class="p">,</span> <span class="n">ProxyHandler</span><span class="p">,</span> <span class="n">build_opener</span>
+    <span class="n">dictProxies</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="s">&quot;http_proxy&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">dictProxies</span><span class="p">[</span><span class="s">&#39;http&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;http_proxy&quot;</span><span class="p">]</span>
+        <span class="n">dictProxies</span><span class="p">[</span><span class="s">&#39;https&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;http_proxy&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s">&quot;https_proxy&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">dictProxies</span><span class="p">[</span><span class="s">&#39;https&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;https_proxy&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">dictProxies</span><span class="p">:</span>
+        <span class="n">proxy_handler</span> <span class="o">=</span> <span class="n">ProxyHandler</span><span class="p">(</span><span class="n">dictProxies</span><span class="p">)</span>
+        <span class="n">opener</span> <span class="o">=</span> <span class="n">build_opener</span><span class="p">(</span><span class="n">proxy_handler</span><span class="p">)</span><span class="o">.</span><span class="n">open</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">opener</span> <span class="o">=</span> <span class="n">urlopen</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">url</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="s">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dest</span><span class="p">,</span> <span class="n">opener</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">target</span>
+
+<span class="n">spline_file</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="s">&quot;http://www.silx.org/pub/pyFAI/testimages/halfccd.spline&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">hd</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">FReLoN</span><span class="p">(</span><span class="n">splineFile</span><span class="o">=</span><span class="n">spline_file</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">hd</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Shape: </span><span class="si">%i</span><span class="s">, </span><span class="si">%i</span><span class="s">&quot;</span><span class="o">%</span> <span class="n">hd</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector FReLoN      Spline= /users/kieffer/workspace-400/pyFAI/doc/source/usage/tutorial/Distortion/halfccd.spline  PixelSize= 4.842e-05, 4.684e-05 m
+Shape: 1025, 2048
+</pre></div>
+</div>
+<p><em>Note</em> the unusual shape of this detector. This is probably a human
+error when calibrating the detector distortion in FIT2D.</p>
+<div class="section" id="visualizing-the-mask">
+<h3>Visualizing the mask<a class="headerlink" href="#visualizing-the-mask" title="Permalink to this headline">¶</a></h3>
+<p>Every detector object contains a mask attribute, defining pixels which
+are invalid. For FReLoN detector (a spline-files-defined detectors), all
+pixels having an offset such that the pixel falls out of the initial
+detector are considered as invalid.</p>
+<p>Masked pixel have non-null values can be displayed like this:</p>
+<div class="code python highlight-python"><div class="highlight"><pre>%pylab inline
+imshow(hd.mask, origin=&quot;lower&quot;, interpolation=&quot;nearest&quot;)
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f2304a8cd68&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_6_2.png" src="../../../_images/output_6_2.png" />
+</div>
+</div>
+<div class="section" id="detector-definition-files-as-nexus-files">
+<h2>Detector definition files as NeXus files<a class="headerlink" href="#detector-definition-files-as-nexus-files" title="Permalink to this headline">¶</a></h2>
+<p>Any detector object in pyFAI can be saved into an HDF5 file following
+the NeXus convention [Könnecke et al., 2015, J. Appl. Cryst. 48,
+301-305.]. Detector objects can subsequently be restored from disk,
+making complex detector definitions less error prone.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">h5_file</span> <span class="o">=</span> <span class="s">&quot;halfccd.h5&quot;</span>
+<span class="n">hd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">h5_file</span><span class="p">)</span>
+<span class="n">new_det</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detector_factory</span><span class="p">(</span><span class="n">h5_file</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">new_det</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Mask is the same: &quot;</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">new_det</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">hd</span><span class="o">.</span><span class="n">mask</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Pixel positions are the same: &quot;</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">new_det</span><span class="o">.</span><span class="n">get_pixel_corners</span><span class="p">(),</span> <span class="n">hd</span><span class="o">.</span><span class="n">get_pixel_corners</span><span class="p">()))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of masked pixels&quot;</span><span class="p">,</span> <span class="n">new_det</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>FReLoN detector from NeXus file: halfccd.h5  PixelSize= 4.842e-05, 4.684e-05 m
+Mask is the same:  True
+Pixel positions are the same:  True
+Number of masked pixels 34382
+</pre></div>
+</div>
+<p>Pixels of an area detector are saved as a four-dimensional dataset: i.e.
+a two-dimensional array of vertices pointing to every corner of each
+pixel, generating an array of dimension (Ny, Nx, Nc, 3), where Nx and Ny
+are the dimensions of the detector, Nc is the number of corners of each
+pixel, usually four, and the last entry contains the coordinates of the
+vertex itself (in the order: Z, Y, X).</p>
+<p>This kind of definition, while relying on large description files, can
+address some of the most complex detector layouts. They will be
+presented a bit later in this tutorial.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&quot;Size of Spline-file:&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s">&#39;halfccd.spline&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">st_size</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Size of Nexus-file:&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s">&#39;halfccd.h5&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">st_size</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Size of Spline-file: 1183
+Size of Nexus-file: 21451707
+</pre></div>
+</div>
+<p>The HDF5 file is indeed much larger than the spline file.</p>
+</div>
+<div class="section" id="modify-a-detector-and-saving">
+<h2>Modify a detector and saving<a class="headerlink" href="#modify-a-detector-and-saving" title="Permalink to this headline">¶</a></h2>
+<p>One may want to define a new mask (or flat-field) for its detector and
+save the mask with the detector definition. Here, we create a copy of
+the detector and reset its mask to enable all pixels in the detector and
+save the new detector instance into another file.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">copy</span>
+<span class="n">nomask_file</span> <span class="o">=</span> <span class="s">&quot;nomask.h5&quot;</span>
+<span class="n">nomask</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_det</span><span class="p">)</span>
+<span class="n">nomask</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">new_det</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+<span class="n">nomask</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nomask_file</span><span class="p">)</span>
+<span class="n">nomask</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detector_factory</span><span class="p">(</span><span class="s">&quot;nomask.h5&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;No pixels are masked&quot;</span><span class="p">,</span><span class="n">nomask</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>No pixels are masked 0
+</pre></div>
+</div>
+<p><strong>Wrap up</strong></p>
+<p>In this section we have seen how detectors are defined in pyFAI, how
+they can be created, either from the list of the parametrized ones, or
+from spline files, or from NeXus detector files. We have also seen how
+to save and subsequently restore a detector instance, preserving the
+modifications made.</p>
+</div>
+<div class="section" id="distortion-correction">
+<h2>Distortion correction<a class="headerlink" href="#distortion-correction" title="Permalink to this headline">¶</a></h2>
+<p>Once the position of every single pixel in space is known, one can
+benefit from the regridding engine of pyFAI adapted to image distortion
+correction tasks. The <em>pyFAI.distortion.Distortion</em> class is the
+equivalent of the <em>pyFAI.AzimuthalIntegrator</em> for distortion. Provided
+with a detector definition, it enables the correction of a set of images
+by using the same kind of look-up tables as for azimuthal integration.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyFAI.distortion</span> <span class="kn">import</span> <span class="n">Distortion</span>
+<span class="n">dis</span> <span class="o">=</span> <span class="n">Distortion</span><span class="p">(</span><span class="n">nomask</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">dis</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Distortion correction lut on device None for detector shape (1025, 2048):
+NexusDetector detector from NeXus file: nomask.h5    PixelSize= 4.842e-05, 4.684e-05 m
+</pre></div>
+</div>
+<div class="section" id="frelon-detector">
+<h3>FReLoN detector<a class="headerlink" href="#frelon-detector" title="Permalink to this headline">¶</a></h3>
+<p>First load the image to be corrected, then correct it for geometric
+distortion.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">halfccd_img</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="s">&quot;http://www.silx.org/pub/pyFAI/testimages/halfccd.edf&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">fabio</span>
+<span class="n">raw</span> <span class="o">=</span> <span class="n">fabio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">halfccd_img</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+<span class="n">cor</span> <span class="o">=</span> <span class="n">dis</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+
+<span class="c">#Then display images side by side</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">seterr</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s">&quot;ignore&quot;</span><span class="p">)</span> <span class="c">#remove warning messages from numpy</span>
+<span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cor</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>ERROR:pyFAI.distortion:The image shape ((1024, 2048)) is not the same as the detector ((1025, 2048)). Adapting shape ...
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f22fb6d48d0&gt;
+</pre></div>
+</div>
+<img alt="../../../_images/output_17_2.png" src="../../../_images/output_17_2.png" />
+<p><strong>Nota:</strong> in this case the image size (1024 lines) does not match the
+detector&#8217;s number of lines (1025) hence pyFAI complains about it. Here,
+pyFAI patched the image on an empty image of the right size so that the
+processing can occur.</p>
+<p>In this example, the size of the pixels and the shape of the detector
+are preserved, discarding all pixels falling outside the detector&#8217;s
+grid.</p>
+<p>One may want all pixels&#8217; intensity to be preserved in the
+transformation. By allowing the output array to be large enough to
+accomodate all pixels, the total intensity can be kept. For this, just
+enable the &#8220;resize&#8221; option in the constructor of <em>Distortion</em>:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">dis1</span> <span class="o">=</span> <span class="n">Distortion</span><span class="p">(</span><span class="n">hd</span><span class="p">,</span> <span class="n">resize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">dis1</span><span class="p">)</span>
+<span class="n">cor</span> <span class="o">=</span> <span class="n">dis1</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">dis1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;After correction, the image has a different shape&quot;</span><span class="p">,</span> <span class="n">cor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>ERROR:pyFAI.distortion:The image shape ((1024, 2048)) is not the same as the detector ((1025, 2048)). Adapting shape ...
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Distortion correction lut on device None for detector shape None:
+Detector FReLoN      Spline= /users/kieffer/workspace-400/pyFAI/doc/source/usage/tutorial/Distortion/halfccd.spline  PixelSize= 4.842e-05, 4.684e-05 m
+Distortion correction lut on device None for detector shape (1045, 2052):
+Detector FReLoN      Spline= /users/kieffer/workspace-400/pyFAI/doc/source/usage/tutorial/Distortion/halfccd.spline  PixelSize= 4.842e-05, 4.684e-05 m
+After correction, the image has a different shape (1045, 2052)
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-of-pixel-detectors">
+<h3>Example of Pixel-detectors:<a class="headerlink" href="#example-of-pixel-detectors" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="xpad-flat-detector">
+<h4>XPad Flat detector<a class="headerlink" href="#xpad-flat-detector" title="Permalink to this headline">¶</a></h4>
+<p>There is a striking example in the cover image of this article:
+<a class="reference external" href="http://scripts.iucr.org/cgi-bin/paper?S1600576715004306">http://scripts.iucr.org/cgi-bin/paper?S1600576715004306</a> where a detector
+made of multiple modules is <em>eating up</em> some rings. The first example
+will be about the regeneration of an &#8220;eyes friendly&#8221; version of this
+image.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">xpad_url</span> <span class="o">=</span> <span class="s">&quot;http://www.silx.org/pub/pyFAI/testimages/LaB6_18.57keV_frame_13.edf&quot;</span>
+<span class="n">xpad_file</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="n">xpad_url</span><span class="p">)</span>
+<span class="n">xpad</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detector_factory</span><span class="p">(</span><span class="s">&quot;Xpad_flat&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">xpad</span><span class="p">)</span>
+<span class="n">xpad_dis</span> <span class="o">=</span> <span class="n">Distortion</span><span class="p">(</span><span class="n">xpad</span><span class="p">,</span> <span class="n">resize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">raw</span> <span class="o">=</span> <span class="n">fabio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">xpad_file</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+<span class="n">cor</span> <span class="o">=</span> <span class="n">xpad_dis</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Shape as input and output:&quot;</span><span class="p">,</span> <span class="n">raw</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">cor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="c">#then display images side by side</span>
+<span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cor</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Conservation of the total intensity:&quot;</span><span class="p">,</span> <span class="n">raw</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">cor</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Detector Xpad S540 flat      PixelSize= 1.300e-04, 1.300e-04 m
+Shape as input and output: (960, 560) (1174, 578)
+Conservation of the total intensity: 11120798 1.11208e+07
+</pre></div>
+</div>
+<img alt="../../../_images/output_21_11.png" src="../../../_images/output_21_11.png" />
+</div>
+<div class="section" id="wos-xpad-detector">
+<h4>WOS XPad detector<a class="headerlink" href="#wos-xpad-detector" title="Permalink to this headline">¶</a></h4>
+<p>This is a new <strong>WAXS opened for SAXS</strong> pixel detector from ImXPad
+(available at ESRF-BM02/D2AM CRG beamline). It looks like two of
+<em>XPad_flat</em> detectors side by side with some modules shifted in order
+to create a hole to accomodate a flight-tube which gathers the SAXS
+photons to a second detector further away.</p>
+<p>The detector definition for this specific detector has directly been put
+down using the metrology informations from the manufacturer and saved as
+a NeXus detector definition file.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">wos_det</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="s">&quot;http://www.silx.org/pub/pyFAI/testimages/WOS.h5&quot;</span><span class="p">)</span>
+<span class="n">wos_img</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="s">&quot;http://www.silx.org/pub/pyFAI/testimages/WOS.edf&quot;</span><span class="p">)</span>
+<span class="n">wos</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">detector_factory</span><span class="p">(</span><span class="n">wos_det</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">wos</span><span class="p">)</span>
+<span class="n">wos_dis</span> <span class="o">=</span> <span class="n">Distortion</span><span class="p">(</span><span class="n">wos</span><span class="p">,</span> <span class="n">resize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">raw</span> <span class="o">=</span> <span class="n">fabio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">wos_img</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+<span class="n">cor</span> <span class="o">=</span> <span class="n">wos_dis</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Shape as input and output:&quot;</span><span class="p">,</span> <span class="n">raw</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">cor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="c">#then display images side by side</span>
+<span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cor</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Conservation of the total intensity:&quot;</span><span class="p">,</span> <span class="n">raw</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">cor</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>NexusDetector detector from NeXus file: WOS.h5       PixelSize= 1.300e-04, 1.300e-04 m
+Shape as input and output: (598, 1154) (710, 1302)
+Conservation of the total intensity: 444356428 4.44363e+08
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>/scisoft/users/jupyter/jupy34/lib/python3.4/site-packages/ipykernel/__main__.py:14: RuntimeWarning: invalid value encountered in log
+</pre></div>
+</div>
+<img alt="../../../_images/output_23_2.png" src="../../../_images/output_23_2.png" />
+<p><strong>Nota:</strong> Do not use this detector definition file to process data from
+the <a class="reference external" href="mailto:WOS&#37;&#52;&#48;D2AM">WOS<span>&#64;</span>D2AM</a> as it has not (yet) been fully validated and may contain
+some errors in the pixel positioning.</p>
+</div>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI provides a very comprehensive list of detector definitions, is
+versatile enough to address most area detectors on the market, and
+features a powerful regridding engine, both combined together into the
+distortion correction tool which ensures the conservation of the signal
+during the transformation (the number of photons counted is preserved
+during the transformation)</p>
+<p>Distortion correction should not be used for pre-processing images prior
+to azimuthal integration as it re-bins the image, thus induces a
+broadening of the peaks. The AzimuthalIntegrator object performs all
+this together with integration, it has hence a better precision.</p>
+<p>This tutorial did not answer the question <em>how to calibrate the
+distortion of a given detector ?</em> which is addressed in another tutorial
+called <strong>detector calibration</strong>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Detector distortion corrections</a><ul>
+<li><a class="reference internal" href="#detector-definitions">Detector definitions</a></li>
+<li><a class="reference internal" href="#defining-a-detector-from-a-spline-file">Defining a detector from a spline file</a><ul>
+<li><a class="reference internal" href="#visualizing-the-mask">Visualizing the mask</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#detector-definition-files-as-nexus-files">Detector definition files as NeXus files</a></li>
+<li><a class="reference internal" href="#modify-a-detector-and-saving">Modify a detector and saving</a></li>
+<li><a class="reference internal" href="#distortion-correction">Distortion correction</a><ul>
+<li><a class="reference internal" href="#frelon-detector">FReLoN detector</a></li>
+<li><a class="reference internal" href="#example-of-pixel-detectors">Example of Pixel-detectors:</a><ul>
+<li><a class="reference internal" href="#xpad-flat-detector">XPad Flat detector</a></li>
+<li><a class="reference internal" href="#wos-xpad-detector">WOS XPad detector</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../Introduction/introduction.html"
+                        title="previous chapter">Introduction to the tutorials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../Calibrant/index.html"
+                        title="next chapter">Selection of a calibrant</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/usage/tutorial/Distortion/Distortion.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../Calibrant/index.html" title="Selection of a calibrant"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../Introduction/introduction.html" title="Introduction to the tutorials"
+             >previous</a> |</li>
+        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

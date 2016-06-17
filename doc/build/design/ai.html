@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Design of the Python Fast Azimuthal Integrator &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="Design of the Python Fast Azimuthal Integration library" href="index.html" />
+    <link rel="next" title="pyFAI API" href="../api/modules.html" />
+    <link rel="prev" title="Design of the Python Fast Azimuthal Integration library" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api/modules.html" title="pyFAI API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Design of the Python Fast Azimuthal Integration library"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Design of the Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="design-of-the-python-fast-azimuthal-integrator">
+<h1>Design of the Python Fast Azimuthal Integrator<a class="headerlink" href="#design-of-the-python-fast-azimuthal-integrator" title="Permalink to this headline">¶</a></h1>
+<p>Author: Jérôme Kieffer</p>
+<p>Date: 20/03/2015</p>
+<p>Keywords: Design</p>
+<p>Target: Developers interested in using the library</p>
+<p>Reference: API documentation</p>
+<div class="section" id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h2>
+<p>The core part of pyFAI is the AzimuthalIntegator objects, named
+<em>ai</em> hereafter.
+This document describes the two importants methods of the class,
+how it is related to Detector, Geometry, and integration engines.</p>
+<p>One of the core idea is to have a complete representation of the geometry
+and perform the azimuthal integration as a single geometrical re-binning
+which take into account all effects like:</p>
+<ul class="simple">
+<li>Detector distortion</li>
+<li>Polar transformation</li>
+<li>assignment to the output space</li>
+</ul>
+<p>This document focuses on the core of pyFAI while peripheral code
+dealing with graphical user interfaces, image analysis online data
+analysis integration are not covered.</p>
+</div>
+<div class="section" id="azimuthalintegrator">
+<h2>AzimuthalIntegrator<a class="headerlink" href="#azimuthalintegrator" title="Permalink to this headline">¶</a></h2>
+<p>This class is the core of pyFAI, and it is the only one likely to be used by
+external developers/users. It is usually instantiated via a function of the
+module to load a poni-file:</p>
+<p>As one can see, the <em>ai</em> contains the detector geometry (type, pixel size,
+distortion) as well as the
+geometry of the experimental setup. The geometry is given in two equivalent
+forms: the internal representation of pyFAI (second line) and the one used by
+FIT2D.</p>
+<p>The <em>ai</em> is responsible for azimuthal integration, either the integration along
+complete ring, called full-integration, obtained via <em>ai.integrate1d</em> method.
+The sector-wise integration is obtained via the <em>ai.integrate2d</em> method.
+The options for those two methods are really similar and differ only by the
+parameters related to the azimuthal dimension of the averaging for <em>ai.integrate2d</em>.</p>
+<div class="section" id="azimuthal-integration-methods">
+<h3>Azimuthal integration methods<a class="headerlink" href="#azimuthal-integration-methods" title="Permalink to this headline">¶</a></h3>
+<p>Both integration method take as first argument the image coming from the detector
+as a numpy array. This is the only mandatory parameter.</p>
+<p>Important parameters are the number of bins in radial and azimuthal dimensions.
+Other parameters are the pre-processing information like dark and flat pixel wise
+correction (as array), the polarization factor and the solid-angle correction to
+be applied.</p>
+<p>Because multiple radial output space are possible (q, r, 2theta) each with multiple
+units, if one wants to avoid interpolation, it is important to export directly the data
+in the destination space, specifying the unit=&#8221;2th_deg&#8221; or &#8220;q_nm^-1&#8221;</p>
+<p>Many more option exists, please refer to the documentation of AzimuthalIntegration <a href="#id1"><span class="problematic" id="id2">integrate_</span></a></p>
+<p>The AzimuthalIntegration class inherits from the Geometry class and hold
+references to configured rebinning engines.</p>
+</div>
+</div>
+<div class="section" id="geometry">
+<h2>Geometry<a class="headerlink" href="#geometry" title="Permalink to this headline">¶</a></h2>
+<p>The Geometry class contains a reference to the detector (composition)
+and the logic to calculate the position in space of the various pixels.
+All arrays in the class are cached and calculated on demand.</p>
+<p>The Geometry class relies on the detector to provide the pixel position in space
+and subsequently transforms it in 2theta coordinates, or q, chi, r ...
+This can either be performed in the class itself or by calling
+function in the parallel implemented Cython module _geometry.
+Those transformation could be GPU-ized in the future.</p>
+</div>
+<div class="section" id="detector">
+<h2>Detector<a class="headerlink" href="#detector" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI deals only with area detector, indexed in 2 dimension but can
+handle pixel located in a 3D space.</p>
+<p>The <em>pyFAI.detectors</em> module contains the master <em>Detector</em> class
+which is capable of describing any detector.
+About 40 types of detectors, inheriting and specializing the <em>Detector</em>
+class are provided, offering convienient access to most commercial detectors.
+A factory is provided to easily instantiate a detector from its name.</p>
+<p>A detector class is responsible for two main tasks:</p>
+<ul class="simple">
+<li>provide the coordinate in space of any pixel position (center, corner, ...)</li>
+<li>Handle the mask: some detector feature automatic mask calculation (i.e. module based detectors).</li>
+</ul>
+<p>The disortion of the detector is handled here and could be GPU-ized in the future.</p>
+</div>
+<div class="section" id="rebinning-engines">
+<h2>Rebinning engines<a class="headerlink" href="#rebinning-engines" title="Permalink to this headline">¶</a></h2>
+<p>Once the geometry (radial and azimuthal coordinates) calculated for every pixel
+on the detector, the image from the detector is rebinned into the output space.
+Two types of rebinning engines exists:</p>
+<dl class="docutils">
+<dt>Histograms</dt>
+<dd>They take each single pixel from the image and transfer it to the destination bin, like histograms do.
+This family of algorithms is rather easy to implement and provides good single threaded performances,
+but it is hard to parallelize (efficiently) due to the need of atomic operations.</dd>
+<dt>Sparse matrix multiplication</dt>
+<dd>By recording where every single ends one can transform the previous histogram into a
+large sparse matrix multiplication which is either stored as a Look-Up Table (actually an array of struct, also called LIL)
+or more efficiently in the <a href="#id3"><span class="problematic" id="id4">CSR_</span></a> format.
+Those rebinning engines are trivially parallel and provide the best performances.</dd>
+</dl>
+</div>
+<div class="section" id="pixel-splitting">
+<h2>Pixel splitting<a class="headerlink" href="#pixel-splitting" title="Permalink to this headline">¶</a></h2>
+<p>Three levels of pixel splitting schemes are available within pyFAI:</p>
+<dl class="docutils">
+<dt>No splitting</dt>
+<dd>The whole intensity is assigned to the center of the pixel and rebinned using a simple histogram</dd>
+<dt>Bounding box pixel splitting</dt>
+<dd>The pixel is abstracted by a box surrounding it with, making calculation easier but blurring a bit the image</dd>
+<dt>Tight pixel splitting</dt>
+<dd>The pixel is represented by its actual corner position, offering a very precise positionning in space.</dd>
+</dl>
+<p>The main issue with pixel splitting arose from 2D integration and the habdling of pixel laying on the chi-discontinuity.</p>
+</div>
+<div class="section" id="references">
+<h2>References:<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>:: _integrate: <a class="reference external" href="http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d">http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d</a></p>
+<p>:: _CSR: <a class="reference external" href="http://en.wikipedia.org/wiki/Sparse_matrix">http://en.wikipedia.org/wiki/Sparse_matrix</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Design of the Python Fast Azimuthal Integrator</a><ul>
+<li><a class="reference internal" href="#abstract">Abstract</a></li>
+<li><a class="reference internal" href="#azimuthalintegrator">AzimuthalIntegrator</a><ul>
+<li><a class="reference internal" href="#azimuthal-integration-methods">Azimuthal integration methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geometry">Geometry</a></li>
+<li><a class="reference internal" href="#detector">Detector</a></li>
+<li><a class="reference internal" href="#rebinning-engines">Rebinning engines</a></li>
+<li><a class="reference internal" href="#pixel-splitting">Pixel splitting</a></li>
+<li><a class="reference internal" href="#references">References:</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Design of the Python Fast Azimuthal Integration library</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../api/modules.html"
+                        title="next chapter">pyFAI API</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/design/ai.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api/modules.html" title="pyFAI API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Design of the Python Fast Azimuthal Integration library"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Design of the Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

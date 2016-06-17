@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Multi-geometry azimuthal integration &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../index.html" />
+    <link rel="up" title="Tutorials" href="index.html" />
+    <link rel="next" title="Demo of usage of the MultiGeometry class of pyFAI" href="MultiGeometry/index.html" />
+    <link rel="prev" title="Selection of a calibrant" href="Calibrant/index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MultiGeometry/index.html" title="Demo of usage of the MultiGeometry class of pyFAI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Calibrant/index.html" title="Selection of a calibrant"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="multi-geometry-azimuthal-integration">
+<h1>Multi-geometry azimuthal integration<a class="headerlink" href="#multi-geometry-azimuthal-integration" title="Permalink to this headline">¶</a></h1>
+<p>Or how it is possible to perform an azimuthal regrouping using multiple detectors
+or by moving a single (small) detector to cover more solid angle.</p>
+<div class="section" id="idea">
+<h2>Idea<a class="headerlink" href="#idea" title="Permalink to this headline">¶</a></h2>
+<p>Azimuthal integration or azimuthal regrouping is (roughly) the averaging of all
+pixel intensities with the same Q value (or 2theta), as described in
+<a class="reference external" href="http://arxiv.org/pdf/1412.6367v1.pdf">this publication</a> chapter 3.2 and 3.3.</p>
+<p>By taking multiple images at various places in space one covers more solid angle,
+allowing either a better statistics or a larger Q-range coverage.</p>
+<p>As described in the publication, the average is calculated by the ratio of the
+(intensity-) weighted histogram by the unweighted histogram. By enforcing a same
+bin position over multiple geometries, one can create a combined weighted and
+unweighted histograms by simply summing all partial histograms from each geometry.</p>
+<p>The resulting pattern is obtained as usual by the ration of weighted/unweighted</p>
+</div>
+<div class="section" id="how-it-works">
+<h2>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h2>
+<p>Lets assume you are able to know where your detector is in space, either
+calibrated, either calculated from the goniometer position.
+A diffrection image (img_i) has been acquired using a geometry which is stored
+in a poni-file (poni_i) useable by pyFAI.</p>
+<p>To define a multi-geometry integrator, one needs all poni-files and one needs
+to define the output space so that all individual integrators use the same bins.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">fabio</span>
+<span class="kn">from</span> <span class="nn">pyFAI.multi_geometry</span> <span class="kn">import</span> <span class="n">MultiGeometry</span>
+
+<span class="n">img_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s">&quot;*.cbf&quot;</span><span class="p">)</span>
+<span class="n">img_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">fabio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">img_files</span><span class="p">]</span>
+<span class="n">ais</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;.poni&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">img_files</span><span class="p">]</span>
+<span class="n">mg</span> <span class="o">=</span> <span class="n">MultiGeometry</span><span class="p">(</span><span class="n">ais</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s">&quot;q_A^-1&quot;</span><span class="p">,</span> <span class="n">radial_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="n">wavelength</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<span class="n">q</span><span class="p">,</span> <span class="n">I</span> <span class="o">=</span> <span class="n">mg</span><span class="o">.</span><span class="n">integrate1d</span><span class="p">(</span><span class="n">img_data</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="what-is-automatic">
+<h3>What is automatic<a class="headerlink" href="#what-is-automatic" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>MultiGeometry takes care of defining the same output space with the same bin position,</li>
+<li>It performs the normalization of the solid angle (absolute solid angle, unlike AzimuthalIntegrator !)</li>
+<li>It can handle polarization correction if needed</li>
+<li>It can normalize by a monitor (I1 normalization) or correct for exposure time</li>
+</ul>
+</div>
+<div class="section" id="what-is-not">
+<h3>What is not<a class="headerlink" href="#what-is-not" title="Permalink to this headline">¶</a></h3>
+<p>For PDF measurement, data needs to be properly prepared, especially:</p>
+<ul class="simple">
+<li>Dark current subtraction</li>
+<li>Flat-field correction</li>
+<li>Exposure time correction (if all images are not taken with the same exposure time)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MultiGeometry/index.html">Demo of usage of the MultiGeometry class of pyFAI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="MultiGeometry/index.html#generation-of-diffraction-images">Generation of diffraction images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MultiGeometry/index.html#translation-of-the-detector-along-the-vertical-axis">Translation of the detector along the vertical axis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MultiGeometry/index.html#multigeometry-integrator">MultiGeometry integrator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MultiGeometry/index.html#rotation-of-the-detector">Rotation of the detector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MultiGeometry/index.html#how-to-fill-up-gaps-in-arrays-of-pixel-detectors-during-2d-integration">How to fill-up gaps in arrays of pixel detectors during 2D integration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="MultiGeometry/index.html#conclusion">Conclusion</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>MultiGeometry is a unique feature of PyFAI ...
+While extremely powerful, it need
+careful understanding of the numerical treatement going on underneath.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Multi-geometry azimuthal integration</a><ul>
+<li><a class="reference internal" href="#idea">Idea</a></li>
+<li><a class="reference internal" href="#how-it-works">How it works</a><ul>
+<li><a class="reference internal" href="#what-is-automatic">What is automatic</a></li>
+<li><a class="reference internal" href="#what-is-not">What is not</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Calibrant/index.html"
+                        title="previous chapter">Selection of a calibrant</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="MultiGeometry/index.html"
+                        title="next chapter">Demo of usage of the MultiGeometry class of pyFAI</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/usage/tutorial/multi-geometry.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MultiGeometry/index.html" title="Demo of usage of the MultiGeometry class of pyFAI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Calibrant/index.html" title="Selection of a calibrant"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,12 +1,12 @@
 :Author: Jérôme Kieffer
-:Date: 02/06/2015
+:Date: 06/06/2016
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
 
-0.12.0: 06/2016
----------------
+0.12.0: 06/06/2016
+------------------
 * Continuous integration on linux, windows using Python 2.7 and 3.4+
 * Drop support of Python 2.6, 3.2, 3.3 and debian6 packaging
 * New radial output units: Reciprocal spacing squared and log(q) **ID02**
@@ -19,7 +19,7 @@ ChangeLog of Versions
 * Compatibility with the copy module (copy.deepcopy) for azimuthal integrator **ID02**
 * Distortion correction works also for non-contiguous detectors
 * Update documentation and provide advanced tutorials:
-    - Introdution to pyFAI using the juyter notebook
+    - Introduction to pyFAI using the jupyter notebook
     - detector calibration **ID15, BM02**
     - Correction of detector distortion, examples of pixel detectors.
     - calibrant calculation **ID30**

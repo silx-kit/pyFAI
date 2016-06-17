@@ -1,0 +1,429 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ChangeLog of Versions &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="next" title="List of publication about pyFAI" href="publications.html" />
+    <link rel="prev" title="Test coverage report for pyFAI" href="coverage.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="publications.html" title="List of publication about pyFAI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="coverage.html" title="Test coverage report for pyFAI"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="changelog-of-versions">
+<h1>ChangeLog of Versions<a class="headerlink" href="#changelog-of-versions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>0.12.0: 06/2016<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Continuous integration on linux, windows using Python 2.7 and 3.4+</p>
+</li>
+<li><p class="first">Drop support of Python 2.6, 3.2, 3.3 and debian6 packaging</p>
+</li>
+<li><p class="first">New radial output units: Reciprocal spacing squared and log(q) <strong>ID02</strong></p>
+</li>
+<li><p class="first">GPU accelerate version of ai.separate (Bragg &amp; amorphous) <strong>ID13</strong></p>
+</li>
+<li><p class="first">Quantile filtering in pyFAI-average <strong>ID02</strong></p>
+</li>
+<li><p class="first">New graphical application for diffraction imaging <strong>ID21</strong></p>
+</li>
+<li><p class="first">Migrate to a common structure with <em>silx</em> (reorganize tests, benchmarks, ...)</p>
+</li>
+<li><p class="first">Extensions (binary sub-modules) have all been moved to <em>ext</em> directory</p>
+</li>
+<li><p class="first">Many improvements multigeometry integrators</p>
+</li>
+<li><p class="first">Compatibility with the copy module (copy.deepcopy) for azimuthal integrator <strong>ID02</strong></p>
+</li>
+<li><p class="first">Distortion correction works also for non-contiguous detectors</p>
+</li>
+<li><dl class="first docutils">
+<dt>Update documentation and provide advanced tutorials:</dt>
+<dd><ul class="first last simple">
+<li>Introdution to pyFAI using the juyter notebook</li>
+<li>detector calibration <strong>ID15, BM02</strong></li>
+<li>Correction of detector distortion, examples of pixel detectors.</li>
+<li>calibrant calculation <strong>ID30</strong></li>
+<li>error handling <strong>ID02, BM29</strong></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">pyFAI-integrate can now be used with or without GUI</p>
+</li>
+<li><dl class="first docutils">
+<dt>Many new detectors (ADSC, Pilatus CdTe, Apex II, Pixium):</dt>
+<dd><ul class="first last simple">
+<li>support for non-flat/curved detectors (Aarhus)</li>
+<li>non-contiguous detectors (WOS Xpad)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Include tests and benchmarking tools as part of the library</p>
+</li>
+<li><p class="first">Better testing.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2>0.11.0: 07/2015<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">All calibrant from NIST are now available, + Nickel, Aluminum, ... with bibliographic references</p>
+</li>
+<li><p class="first">The Cell class helps defining new calibrants.</p>
+</li>
+<li><p class="first">OpenCL Bitonic sort (to be integrated into Bragg/Amorphous separation)</p>
+</li>
+<li><p class="first">Calib is available from the Python interface (procedural API), not only from the shell script.</p>
+</li>
+<li><dl class="first docutils">
+<dt>Many new options in calib for reset/assign/delete/validate/validate2/chiplot.</dt>
+<dd><ul class="first last simple">
+<li>reset: set the detector, orthogonal, centered and at 10cm</li>
+<li>assign: checks the assignment of groups of points to rings</li>
+<li>delete: remove a group of peaks</li>
+<li>validate: autocorrelation of images: error on the center</li>
+<li>validate2:  autocorrelation of patterns at 180° apart: error on the center function of chi</li>
+<li>chiplot: assesses the quality of control points of one/multiple rings.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Fix the regression of the initial guess in calib (Thanks Jon Wright)</p>
+</li>
+<li><p class="first">New peak picking algorithm named &#8220;watershed&#8221; and based on inverse watershed for ridge recognition</p>
+</li>
+<li><p class="first">start factorizing cython regridding engines (work ongoing)</p>
+</li>
+<li><p class="first">Add &#8220;&#8211;poni&#8221; option for pyFAI-calib (Thanks Vadim Dyakin)</p>
+</li>
+<li><p class="first">Improved &#8220;guess_binning&#8221;, especially for Perkin Elmer flat panel detectors.</p>
+</li>
+<li><p class="first">Support for non planar detectors like Curved Imaging plate developped at Aarhus</p>
+</li>
+<li><p class="first">Support for Multi-geometry experiments (tested)</p>
+</li>
+<li><p class="first">Speed improvement for detector initialization</p>
+</li>
+<li><p class="first">better isotropy in peak picking (add penalization term)</p>
+</li>
+<li><p class="first">enhanced documentation on <a class="reference external" href="http://pyfai.readthedocs.org">http://pyfai.readthedocs.org</a></p>
+</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2>0.10.3: 03/2015<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Image segmentation based on inverse watershed (only for recalib, not for calib)</li>
+<li>Python3 compatibility</li>
+<li>include testimages  into distribution</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2>0.10.2: 11/2014<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Update documentation</li>
+<li>Packaging for debian 8</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h2>0.10.1: 10/2014<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fix issue in peak-picking</li>
+<li>Improve doc &amp; manpages</li>
+<li>Compatibility with PyMca5</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h2>0.10.0: 10/2014<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Correct Caglioti&#8217;s formula</li>
+<li>Update tests and OpenCL -&gt; works with Beignet and pocl open source drivers</li>
+<li>Compatibility with MacOSX and windows</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h2>0.9.4:  06/2014<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>include spec of Maxwell GPU</li>
+<li>fix issues with intel OpenCL icd v4.4</li>
+<li>introduce shape &amp; max_shape in detectors</li>
+<li>work on marchingsquares/sorted controurplot for calibration</li>
+<li>Enforce the use the Qt4Agg for Matplotlib and other GUI stuff.</li>
+<li>Update shape of detector in case of binning</li>
+<li>unified distortion class: merge OpenCL &amp; OpenMP implementation #108</li>
+<li>Benchmarks for distortion</li>
+<li>Raise the level to warning when inverting the mask</li>
+<li>set of new ImXpad detectors Related issue #111</li>
+<li>Fix issue with recalib within MX-calibrate</li>
+<li>saving detector description in Nexus files issue #110</li>
+<li>Update some calibrants: gold</li>
+<li>about to make peak-picking more user-friendly</li>
+<li>test for bragg separation</li>
+<li>work on PEP8 compliance</li>
+<li>Do not re-cythonize: makes debian package generation able to benefit from ccache</li>
+<li>conversion to SPD (rotation is missing)</li>
+<li>pixelwise worker</li>
+<li>correct both LUT &amp; OCL for memory error</li>
+<li>replace os.linsep with &#8220;n&#8221; when file file opened in text mode (not binary)</li>
+<li>rework the Extension part to be explicit instead of &#8220;black magic&#8221; :)</li>
+<li>implement Kahan summation in Cython (default still use Doubles: faster)</li>
+<li>Preprocessing kernel containing all cast to float kernels  #120</li>
+<li>update setup for no-openmp option related to issue #127</li>
+<li>Add read-out mode for mar345 as &#8220;guess_binning&#8221; method for detector. Also for MAR and Rayonix #125</li>
+<li>tool to benchmark HDF5 writing</li>
+<li>try to be compatible with both PySide and PyQt4 ... the uic stuff is untested and probably buggy #130</li>
+<li>Deactivate the automatic saturation correction by default. now it is opt-in #131</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h2>0.9.3:  02/2014<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Better control for peak-picking (Contribution from Gero Flucke, Desy)</li>
+<li>Precise Rayonix detectors description thanks to Michael Blum</li>
+<li>Start integrating blob-detection algorithm for peak-picking: #70</li>
+<li>Switch fron OptParse to ArgPrse: #83</li>
+<li>Provide some calibrant by default: #91</li>
+<li>Description of Mar345 detector + mask#92</li>
+<li>Auto-registration of detectors: #97</li>
+<li>Recalib and check-calib can be called from calib: #99</li>
+<li>Fake diffraction image from calibrant: #101</li>
+<li>Implementation of the CSR matrix representation to replace LUT</li>
+<li>Tight pixel splitting: #43</li>
+<li>Update documentation</li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h2>0.9.2: (01/2014)<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fix memory leak in Cython part of the look-up table generation</li>
+<li>Benchmarks with memory profiling</li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h2>0.9: 10/2013<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Add detector S140 from ImXpad, Titan from Agilent, Rayonix</li>
+<li>Fix issues: 61, 62, 68, 76, 81, 82, 85, 86, 87</li>
+<li>Enhancement in LImA plugins (better structure)</li>
+<li>IO module with Ascii/EDF/HDF5 writers</li>
+<li>Switch some GUI to pyQtGraph in addition to Qt</li>
+<li>Correction for solid-angle formula</li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h2>0.8: 10/2012<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Detector object is member of the geometry</li>
+<li>Binning of the detector, propagation to the spline if needed</li>
+<li>Detector object know about their masks.</li>
+<li>Automatic mask for some detectors like Pilatus or XPad</li>
+<li>Implementation of sub-pixel position correction for Pilatus detectors</li>
+<li>LUT implementation in 1D &amp; 2D (fully tested) both with OpenMP and with OpenCL</li>
+<li>Switch from C++/Cython OpenCL framework to PyOpenCL</li>
+<li>Port opencl code to both Windows 32/64 bits and MacOSX</li>
+<li>Add polarization corrections</li>
+<li>Use fast-CRC checksum on x86 using SSE4 (when available) to track array change on GPU buffers</li>
+<li>Support for flat 7*8 modules Xpad detectors.</li>
+<li>Benchmark with live graphics (still a memory issue with python2.6)</li>
+<li>Fat source distribution (python setup.py sdist &#8211;with-test-images) for debian</li>
+<li>Enhanced tests, especially for Saxs and OpenCL</li>
+<li>Recalibration tool for refining automatically parameters</li>
+<li>Enhancement of peak picking (much faster, recoded in pure Cython)</li>
+<li>Easy calibration for pixel detector (reconstruction of inter-module space)</li>
+<li>Error-bar generation using Poisson law</li>
+<li>Unified programming interface for all integration methods in 2theta, q or radius unit</li>
+<li>Graphical interface for azimuthal integration (pyFAI-integrate)</li>
+<li>Lots of test to prevent non regression</li>
+<li>Tool for merging images using various method (mean, median) and with outlayer rejection</li>
+<li>LImA plugin which can perform azimuthal integration live during the acquisition</li>
+<li>Distortion correction is available alone and as LImA plugin</li>
+<li>Recalibration can refine the wavelength in addition to 6 other parameters</li>
+<li>Calibration always done vs calibrant&#8217;s ring number, lots of new calibrant are available</li>
+<li>Selection by hand of single peaks for calibration</li>
+<li>New detectors: Dexela and Perkin-Elmer flat panel</li>
+<li>Automatic refinement of multiple images at various geometries (for MX)</li>
+<li>Many improvements requested by ID11 and ID13</li>
+</ul>
+</div>
+<div class="section" id="id12">
+<h2>0.7.2: 08/2012<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Add diff_tomo script</li>
+<li>Geometry calculation optimized in (parallel) cython</li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h2>0.7: 07/2012<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+<p>Implementation of look-up table based integration and OpenCL version of it</p>
+</div>
+<div class="section" id="id14">
+<h2>0.6: 07/2012<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>OpenCL flavor works well on GPU in double precision with device selection</li>
+</ul>
+</div>
+<div class="section" id="id15">
+<h2>0.5: 06/2012<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Include OpenCL version of azimuthal integration (based on histograms)</li>
+</ul>
+</div>
+<div class="section" id="id16">
+<h2>0.4: 06/2012<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Global clean up of the code regarding options from command line and better design</li>
+<li>Correct the orientation of the azimuthal angle chi</li>
+<li>Rename scripts in pyFAI-calib, pyFAI-saxs and pyFAI-waxs</li>
+</ul>
+</div>
+<div class="section" id="id17">
+<h2>0.3: 11/2011<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Azimuthal integration splits pixels like fit2d</li>
+</ul>
+</div>
+<div class="section" id="id18">
+<h2>0.2: 07/2011<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Azimuthal integration using cython histogramming is working</li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h2>0.1: 05/2011<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>Geometry is OK</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ChangeLog of Versions</a><ul>
+<li><a class="reference internal" href="#id1">0.12.0: 06/2016</a></li>
+<li><a class="reference internal" href="#id2">0.11.0: 07/2015</a></li>
+<li><a class="reference internal" href="#id3">0.10.3: 03/2015</a></li>
+<li><a class="reference internal" href="#id4">0.10.2: 11/2014</a></li>
+<li><a class="reference internal" href="#id5">0.10.1: 10/2014</a></li>
+<li><a class="reference internal" href="#id6">0.10.0: 10/2014</a></li>
+<li><a class="reference internal" href="#id7">0.9.4:  06/2014</a></li>
+<li><a class="reference internal" href="#id8">0.9.3:  02/2014</a></li>
+<li><a class="reference internal" href="#id9">0.9.2: (01/2014)</a></li>
+<li><a class="reference internal" href="#id10">0.9: 10/2013</a></li>
+<li><a class="reference internal" href="#id11">0.8: 10/2012</a></li>
+<li><a class="reference internal" href="#id12">0.7.2: 08/2012</a></li>
+<li><a class="reference internal" href="#id13">0.7: 07/2012</a></li>
+<li><a class="reference internal" href="#id14">0.6: 07/2012</a></li>
+<li><a class="reference internal" href="#id15">0.5: 06/2012</a></li>
+<li><a class="reference internal" href="#id16">0.4: 06/2012</a></li>
+<li><a class="reference internal" href="#id17">0.3: 11/2011</a></li>
+<li><a class="reference internal" href="#id18">0.2: 07/2011</a></li>
+<li><a class="reference internal" href="#id19">0.1: 05/2011</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="coverage.html"
+                        title="previous chapter">Test coverage report for pyFAI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="publications.html"
+                        title="next chapter">List of publication about pyFAI</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/changelog.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="publications.html" title="List of publication about pyFAI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="coverage.html" title="Test coverage report for pyFAI"
+             >previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

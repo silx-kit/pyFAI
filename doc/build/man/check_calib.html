@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Calibration tool: check_calib &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Calibration tool: MX-calibrate" href="MX-calibrate.html" />
+    <link rel="prev" title="Calibration tool: pyFAI-recalib" href="pyFAI-recalib.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MX-calibrate.html" title="Calibration tool: MX-calibrate"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-recalib.html" title="Calibration tool: pyFAI-recalib"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="calibration-tool-check-calib">
+<h1>Calibration tool: check_calib<a class="headerlink" href="#calibration-tool-check-calib" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>Check_calib is a deprecated tool aiming at validating both the geometric
+calibration and everything else like flat-field correction, distortion
+correction, at a sub-pixel level. Pleas use the <cite>validate</cite>, <cite>validate2</cite> and
+<cite>chiplot</cite> commands in pyFAI-calib, during the refinement process to obtain the same output with more options.</p>
+<div class="highlight-text"><div class="highlight"><pre>$ check_calib --help
+usage: check_calib [options] -p param.poni image.edf
+
+Check_calib is a research tool aiming at validating both the geometric
+calibration and everything else like flat-field correction, distortion
+correction, at a sub-pixel level. Note that `check_calib` program is obsolete
+as the same functionality is available from within pyFAI-calib, using the
+`validate` command in the refinement process.
+
+positional arguments:
+  FILE                  Image file to check calibration for
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version
+  -v, --verbose         switch to debug mode
+  -d FILE, --dark FILE  file containing the dark images to subtract
+  -f FILE, --flat FILE  file containing the flat images to divide
+  -m FILE, --mask FILE  file containing the mask
+  -p FILE, --poni FILE  file containing the diffraction parameter (poni-file)
+  -e ENERGY, --energy ENERGY
+                        energy of the X-Ray beam in keV (hc=12.398419292keV.A)
+  -w WAVELENGTH, --wavelength WAVELENGTH
+                        wavelength of the X-Ray beam in Angstrom
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Calibration tool: check_calib</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyFAI-recalib.html"
+                        title="previous chapter">Calibration tool: pyFAI-recalib</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="MX-calibrate.html"
+                        title="next chapter">Calibration tool: MX-calibrate</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/check_calib.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MX-calibrate.html" title="Calibration tool: MX-calibrate"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-recalib.html" title="Calibration tool: pyFAI-recalib"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

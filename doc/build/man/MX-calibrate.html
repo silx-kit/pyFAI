@@ -1,0 +1,422 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Calibration tool: MX-calibrate &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Integration tool: pyFAI-integrate" href="pyFAI-integrate.html" />
+    <link rel="prev" title="Calibration tool: check_calib" href="check_calib.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-integrate.html" title="Integration tool: pyFAI-integrate"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="check_calib.html" title="Calibration tool: check_calib"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="calibration-tool-mx-calibrate">
+<h1>Calibration tool: MX-calibrate<a class="headerlink" href="#calibration-tool-mx-calibrate" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>Calibrate automatically a set of frames taken at various sample-detector distance.</p>
+<p>This tool has been developed for ESRF MX-beamlines where an acceptable calibration is
+usually present is the header of the image. PyFAI reads it and does a &#8220;recalib&#8221; on
+each of them before exporting a linear regression of all parameters versus this distance.</p>
+<p>Most standard calibrants are directly installed together with pyFAI.
+If you prefer using your own, you can provide a &#8220;d-spacing&#8221; file
+containing the spacing of Miller plans in Angstrom (in decreasing order).
+Most crystal powders used for calibration are available in the American Mineralogist
+database <a class="reference internal" href="../biblio.html#amd" id="id1">[AMD]</a> or in the <a class="reference internal" href="../biblio.html#cod" id="id2">[COD]</a>.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage:<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ...</p>
+</div>
+<div class="section" id="options">
+<h2>Options:<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p>usage: MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ...</p>
+<p>Calibrate automatically a set of frames taken at various sample-detector
+distance. Return the linear regression of the fit in funtion of the sample-
+setector distance.</p>
+<dl class="docutils">
+<dt>positional arguments:</dt>
+<dd>FILE                  List of files to calibrate</dd>
+<dt>optional arguments:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show this help message and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-V</span>, <span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></td>
+<td>switch to debug/verbose mode</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-c <var>FILE</var></span>, <span class="option">--calibrant <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>file containing d-spacing of the calibrant reference
+sample (MANDATORY)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-w <var>WAVELENGTH</var></span>, <span class="option">--wavelength <var>WAVELENGTH</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>wavelength of the X-Ray beam in Angstrom</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-e <var>ENERGY</var></span>, <span class="option">--energy <var>ENERGY</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>energy of the X-Ray beam in keV (hc=12.398419292keV.A)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-P <var>POLARIZATION_FACTOR</var></span>, <span class="option">--polarization <var>POLARIZATION_FACTOR</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>polarization factor, from -1 (vertical) to +1
+(horizontal), default is 0, synchrotrons are around
+0.95</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-b <var>BACKGROUND</var></span>, <span class="option">--background <var>BACKGROUND</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Automatic background subtraction if no value are
+provided</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-d <var>DARK</var></span>, <span class="option">--dark <var>DARK</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>list of dark images to average and subtract</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-f <var>FLAT</var></span>, <span class="option">--flat <var>FLAT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>list of flat images to average and divide</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-s <var>SPLINE</var></span>, <span class="option">--spline <var>SPLINE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>spline file describing the detector distortion</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-p <var>PIXEL</var></span>, <span class="option">--pixel <var>PIXEL</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>size of the pixel in micron</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-D <var>DETECTOR_NAME</var></span>, <span class="option">--detector <var>DETECTOR_NAME</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Detector name (instead of pixel size+spline)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-m <var>MASK</var></span>, <span class="option">--mask <var>MASK</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>file containing the mask (for image reconstruction)</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--filter <var>FILTER</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>select the filter, either mean(default), max or median</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--saturation <var>SATURATION</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>consider all pixel&gt;max*(1-saturation) as saturated and
+reconstruct them</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-r <var>MAX_RINGS</var></span>, <span class="option">--ring <var>MAX_RINGS</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>maximum number of rings to extract</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--weighted</span></kbd></td>
+<td>weight fit by intensity</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-l <var>DISTANCE</var></span>, <span class="option">--distance <var>DISTANCE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>sample-detector distance in millimeter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--tilt</span></kbd></td>
+<td>Allow initially detector tilt to be refined (rot1,
+rot2, rot3). Default: Activated</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--no-tilt</span></kbd></td>
+<td>Deactivated tilt refinement and set all rotation to 0</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--dist <var>DIST</var></span></kbd></td>
+<td>sample-detector distance in meter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--poni1 <var>PONI1</var></span></kbd></td>
+<td>poni1 coordinate in meter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--poni2 <var>PONI2</var></span></kbd></td>
+<td>poni2 coordinate in meter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--rot1 <var>ROT1</var></span></kbd></td>
+<td>rot1 in radians</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--rot2 <var>ROT2</var></span></kbd></td>
+<td>rot2 in radians</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--rot3 <var>ROT3</var></span></kbd></td>
+<td>rot3 in radians</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--fix-dist</span></kbd></td>
+<td>fix the distance parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--free-dist</span></kbd></td>
+<td>free the distance parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--fix-poni1</span></kbd></td>
+<td>fix the poni1 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--free-poni1</span></kbd></td>
+<td>free the poni1 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--fix-poni2</span></kbd></td>
+<td>fix the poni2 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--free-poni2</span></kbd></td>
+<td>free the poni2 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--fix-rot1</span></kbd></td>
+<td>fix the rot1 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--free-rot1</span></kbd></td>
+<td>free the rot1 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--fix-rot2</span></kbd></td>
+<td>fix the rot2 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--free-rot2</span></kbd></td>
+<td>free the rot2 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--fix-rot3</span></kbd></td>
+<td>fix the rot3 parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--free-rot3</span></kbd></td>
+<td>free the rot3 parameter</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--fix-wavelength</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>fix the wavelength parameter</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--free-wavelength</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>free the wavelength parameter</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--no-gui</span></kbd></td>
+<td>force the program to run without a Graphical interface</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--gui</span></kbd></td>
+<td>force the program to run with a Graphical interface</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--no-interactive</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>force the program to run and exit without prompting
+for refinements</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--interactive</span></kbd></td>
+<td>force the program to prompt for refinements</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--peak-picker <var>PEAKPICKER</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Uses the &#8216;massif&#8217;, &#8216;blob&#8217; or &#8216;watershed&#8217; peak-picker
+algorithm (default: blob)</td></tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>This tool has been developed for ESRF MX-beamlines where an acceptable
+calibration is usually present is the header of the image. PyFAI reads it and
+does a &#8220;recalib&#8221; on each of them before exporting a linear regression of all
+parameters versus this distance.</p>
+</div>
+<div class="section" id="example">
+<h2>Example:<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text"><div class="highlight"><pre>$ MX-calibrate --help
+usage: MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ...
+
+Calibrate automatically a set of frames taken at various sample-detector
+distance. Return the linear regression of the fit in funtion of the sample-
+setector distance.
+
+positional arguments:
+  FILE                  List of files to calibrate
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version
+  -v, --verbose         switch to debug/verbose mode
+  -c FILE, --calibrant FILE
+                        file containing d-spacing of the calibrant reference
+                        sample (MANDATORY)
+  -w WAVELENGTH, --wavelength WAVELENGTH
+                        wavelength of the X-Ray beam in Angstrom
+  -e ENERGY, --energy ENERGY
+                        energy of the X-Ray beam in keV (hc=12.398419292keV.A)
+  -P POLARIZATION_FACTOR, --polarization POLARIZATION_FACTOR
+                        polarization factor, from -1 (vertical) to +1
+                        (horizontal), default is 0, synchrotrons are around
+                        0.95
+  -b BACKGROUND, --background BACKGROUND
+                        Automatic background subtraction if no value are
+                        provided
+  -d DARK, --dark DARK  list of dark images to average and subtract
+  -f FLAT, --flat FLAT  list of flat images to average and divide
+  -s SPLINE, --spline SPLINE
+                        spline file describing the detector distortion
+  -p PIXEL, --pixel PIXEL
+                        size of the pixel in micron
+  -D DETECTOR_NAME, --detector DETECTOR_NAME
+                        Detector name (instead of pixel size+spline)
+  -m MASK, --mask MASK  file containing the mask (for image reconstruction)
+  --filter FILTER       select the filter, either mean(default), max or median
+  --saturation SATURATION
+                        consider all pixel&gt;max*(1-saturation) as saturated and
+                        reconstruct them
+  -r MAX_RINGS, --ring MAX_RINGS
+                        maximum number of rings to extract
+  --weighted            weight fit by intensity
+  -l DISTANCE, --distance DISTANCE
+                        sample-detector distance in millimeter
+  --tilt                Allow initially detector tilt to be refined (rot1,
+                        rot2, rot3). Default: Activated
+  --no-tilt             Deactivated tilt refinement and set all rotation to 0
+  --dist DIST           sample-detector distance in meter
+  --poni1 PONI1         poni1 coordinate in meter
+  --poni2 PONI2         poni2 coordinate in meter
+  --rot1 ROT1           rot1 in radians
+  --rot2 ROT2           rot2 in radians
+  --rot3 ROT3           rot3 in radians
+  --fix-dist            fix the distance parameter
+  --free-dist           free the distance parameter
+  --fix-poni1           fix the poni1 parameter
+  --free-poni1          free the poni1 parameter
+  --fix-poni2           fix the poni2 parameter
+  --free-poni2          free the poni2 parameter
+  --fix-rot1            fix the rot1 parameter
+  --free-rot1           free the rot1 parameter
+  --fix-rot2            fix the rot2 parameter
+  --free-rot2           free the rot2 parameter
+  --fix-rot3            fix the rot3 parameter
+  --free-rot3           free the rot3 parameter
+  --fix-wavelength      fix the wavelength parameter
+  --free-wavelength     free the wavelength parameter
+  --no-gui              force the program to run without a Graphical interface
+  --gui                 force the program to run with a Graphical interface
+  --no-interactive      force the program to run and exit without prompting
+                        for refinements
+  --interactive         force the program to prompt for refinements
+  --peak-picker PEAKPICKER
+                        Uses the &#39;massif&#39;, &#39;blob&#39; or &#39;watershed&#39; peak-picker
+                        algorithm (default: blob)
+
+This tool has been developed for ESRF MX-beamlines where an acceptable
+calibration is usually present is the header of the image. PyFAI reads it and
+does a &quot;recalib&quot; on each of them before exporting a linear regression of all
+parameters versus this distance.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Calibration tool: MX-calibrate</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+<li><a class="reference internal" href="#usage">Usage:</a></li>
+<li><a class="reference internal" href="#options">Options:</a></li>
+<li><a class="reference internal" href="#example">Example:</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="check_calib.html"
+                        title="previous chapter">Calibration tool: check_calib</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyFAI-integrate.html"
+                        title="next chapter">Integration tool: pyFAI-integrate</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/MX-calibrate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-integrate.html" title="Integration tool: pyFAI-integrate"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="check_calib.html" title="Calibration tool: check_calib"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

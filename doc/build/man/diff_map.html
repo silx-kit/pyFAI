@@ -1,0 +1,328 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Integration tool: diff_map &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Integration tool: diff_tomo" href="diff_tomo.html" />
+    <link rel="prev" title="Integration tool: pyFAI-integrate" href="pyFAI-integrate.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="diff_tomo.html" title="Integration tool: diff_tomo"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-integrate.html" title="Integration tool: pyFAI-integrate"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="integration-tool-diff-map">
+<h1>Integration tool: diff_map<a class="headerlink" href="#integration-tool-diff-map" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>Azimuthal integration for diffraction imaging</p>
+<p>Diffraction mapping is an imaging experiment where 2D diffraction patterns are
+recorded while performing a 2D scan along two axes, one slower and the other fastest.</p>
+<p>Diff_map provides a Graphical User Interface (based on top of PyQt, pyFAI and h5py)
+which allows the reduction of this 4D dataset into a 3D dataset containing the
+two dimension of movement and the many diffraction angles (the output can be q-space for PDF-CT).</p>
+<div class="figure align-center">
+<img alt="image" src="../_images/diffmap_main.png" />
+</div>
+<p>On the left-hand side, the user can select a bunch of files to be processed.
+For now, any image format supported by FabIO is possible, including multi-frame
+images, but not ye NeXus files (work ongoing).</p>
+<p>On the right-hand side, the motor range can be specified togeather with their
+names. The diffraction parameters can be setup in a similar way to <em>pyFAI-integrate</em>.
+The output name can also be specified.</p>
+<div class="figure align-center">
+<img alt="image" src="../_images/diffmap_integrate.png" />
+</div>
+<p>The processing is launched using the <em>Run</em> button which opens a matplotlib figure
+to display the plot of the diffraction pattern and of the map image under
+construction.
+During this processing, one can select a scatering range to highlight the regions
+of interest.</p>
+<div class="figure align-center">
+<img alt="image" src="../_images/diffmap_running.png" />
+</div>
+<p>Further analysis can be performed on the resulting dataset using the PyMca roitool
+where the 1d dataset has to be selected as last dimension.
+The result file aims at NeXus compliance.</p>
+<p>This tool can be used for tomography experiments if one considers the slow scan
+direction as the rotation.</p>
+<p>The user interface can be disabled to allow scripting interface and providing a
+JSON configuration file (or all the options).</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage:<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>diff_map [options] imagefiles*</p>
+<dl class="docutils">
+<dt>positional arguments:</dt>
+<dd>FILE                  List of files to integrate</dd>
+<dt>optional arguments:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show this help message and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-V</span>, <span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-o <var>FILE</var></span>, <span class="option">--output <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>HDF5 File where processed map will be saved</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-v</span>, <span class="option">--verbose</span></kbd></td>
+<td>switch to verbose/debug mode, defaut: quiet</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-P <var>FILE</var></span>, <span class="option">--prefix <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Prefix or common base for all files</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-e <var>EXTENSION</var></span>, <span class="option">--extension <var>EXTENSION</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Process all files with this extension</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-t <var>FAST</var></span>, <span class="option">--fast <var>FAST</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>number of points for the fast motion. Mandatory
+without GUI</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-r <var>SLOW</var></span>, <span class="option">--slow <var>SLOW</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>number of points for slow motion. Mandatory without
+GUI</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-c <var>NPT_RAD</var></span>, <span class="option">--npt <var>NPT_RAD</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>number of points in diffraction powder pattern,
+Mandatory without GUI</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-d <var>FILE</var></span>, <span class="option">--dark <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>list of dark images to average and subtract</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-f <var>FILE</var></span>, <span class="option">--flat <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>list of flat images to average and divide</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-m <var>FILE</var></span>, <span class="option">--mask <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>file containing the mask, no mask by default</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-p <var>FILE</var></span>, <span class="option">--poni <var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>file containing the diffraction parameter (poni-file),
+Mandatory without GUI</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-O <var>OFFSET</var></span>, <span class="option">--offset <var>OFFSET</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>do not process the first files</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-g</span>, <span class="option">--gpu</span></kbd></td>
+<td>process using OpenCL on GPU</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-S</span>, <span class="option">--stats</span></kbd></td>
+<td>show statistics at the end</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--gui</span></kbd></td>
+<td>Use the Graphical User Interface</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--no-gui</span></kbd></td>
+<td>Do not use the Graphical User Interface</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--config <var>CONFIG</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>provide a JSON configuration file</td></tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<div class="section" id="bugs">
+<h3>Bugs:<a class="headerlink" href="#bugs" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>If the number of files is too large, use double</dt>
+<dd><p class="first last">quotes &#8220;<a href="#id1"><span class="problematic" id="id2">*</span></a>.edf&#8221;</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">There is a known bug on Debian7 where importing a large
+number of file can take much longer than the integration itself: consider
+passing files in the command line</p>
+</li>
+</ol>
+<div class="highlight-text"><div class="highlight"><pre>$ diff_map --help
+usage: diff_map [options] -p ponifile imagefiles*
+If the number of files is too large, use double quotes like &quot;*.edf&quot; 
+
+Azimuthal integration for diffraction imaging. Diffraction mapping is an
+experiment where 2D diffraction patterns are recorded while performing a 2D
+scan. Diff_map is a graphical application (based on pyFAI and h5py) which
+allows the reduction of this 4D dataset into a 3D dataset containing the two
+motion dimensions and the many diffraction angles (thousands). The resulting
+dataset can be opened using PyMca roitool where the 1d dataset has to be
+selected as last dimension. This result file aims at being NeXus compliant.
+This tool can be used for diffraction tomography experiment as well,
+considering the slow scan direction as the rotation.
+
+positional arguments:
+  FILE                  List of files to integrate. Mandatory without GUI
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version
+  -o FILE, --output FILE
+                        HDF5 File where processed map will be saved. Mandatory
+                        without GUI
+  -v, --verbose         switch to verbose/debug mode, default: quiet
+  -P FILE, --prefix FILE
+                        Prefix or common base for all files
+  -e EXTENSION, --extension EXTENSION
+                        Process all files with this extension
+  -t FAST, --fast FAST  number of points for the fast motion. Mandatory
+                        without GUI
+  -r SLOW, --slow SLOW  number of points for slow motion. Mandatory without
+                        GUI
+  -c NPT_RAD, --npt NPT_RAD
+                        number of points in diffraction powder pattern.
+                        Mandatory without GUI
+  -d FILE, --dark FILE  list of dark images to average and subtract (comma
+                        separated list)
+  -f FILE, --flat FILE  list of flat images to average and divide (comma
+                        separated list)
+  -m FILE, --mask FILE  file containing the mask, no mask by default
+  -p FILE, --poni FILE  file containing the diffraction parameter (poni-file),
+                        Mandatory without GUI
+  -O OFFSET, --offset OFFSET
+                        do not process the first files
+  -g, --gpu             process using OpenCL on GPU
+  -S, --stats           show statistics at the end
+  --gui                 Use the Graphical User Interface
+  --no-gui              Do not use the Graphical User Interface
+  --config CONFIG       provide a JSON configuration file
+
+Bugs: Many, see hereafter: 1)If the number of files is too large, use double
+quotes &quot;*.edf&quot; 2)There is a known bug on Debian7 where importing a large
+number of file can take much longer than the integration itself: consider
+passing files in the command line
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Integration tool: diff_map</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+<li><a class="reference internal" href="#usage">Usage:</a><ul>
+<li><a class="reference internal" href="#bugs">Bugs:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyFAI-integrate.html"
+                        title="previous chapter">Integration tool: pyFAI-integrate</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="diff_tomo.html"
+                        title="next chapter">Integration tool: diff_tomo</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/diff_map.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="diff_tomo.html" title="Integration tool: diff_tomo"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-integrate.html" title="Integration tool: pyFAI-integrate"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

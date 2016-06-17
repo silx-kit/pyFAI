@@ -22,11 +22,11 @@ environment:
           PYTHON_VERSION: "2.7.11"
           PYTHON_ARCH: "64"
 
-        # Python 3.4
-        - PYTHON_DIR: "C:\\Python34-x64"
-          PYTHON_VERSION: "3.4.3"
-          PYTHON_ARCH: "64"
-          DISTUTILS_USE_SDK: "1"
+        # Python 3.4: disabled for now, investigate why it crashes
+        #- PYTHON_DIR: "C:\\Python34-x64"
+        #  PYTHON_VERSION: "3.4.3"
+        #  PYTHON_ARCH: "64"
+        #  DISTUTILS_USE_SDK: "1"
 
         # Python 3.5
         - PYTHON_DIR: "C:\\Python35-x64"

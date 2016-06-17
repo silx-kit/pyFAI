@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Simple detector &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="up" title="General introduction to PyFAI" href="pyFAI.html" />
+    <link rel="next" title="Image representation in Python" href="geometry.html" />
+    <link rel="prev" title="General introduction to PyFAI" href="pyFAI.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="geometry.html" title="Image representation in Python"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="General introduction to PyFAI"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="pyFAI.html" accesskey="U">General introduction to PyFAI</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="simple-detector">
+<h1>Simple detector<a class="headerlink" href="#simple-detector" title="Permalink to this headline">¶</a></h1>
+<p>Like most other diffraction processing packages, pyFAI allows the definition of
+2D detectors with a constant pixel size and recoded in S.I..
+Typical pixel size are 50e-6 m (50 microns) and will be used as example in the
+numerical application.</p>
+<p>Pixels of the detector are indexed from the <em>origin</em> located at the <strong>lower left corner</strong>.
+The pixel&#8217;s center is located at half integer index:</p>
+<ul class="simple">
+<li>pixel 0 goes from position 0 m to 50e-6m and is centered at 25e-6 m.</li>
+<li>pixel 1 goes from position 50e-6 m to 100e-6 m and is centered at 75e-6 m</li>
+</ul>
+<p><strong>Nota</strong>:
+Most of the time you will need to pass the optional argument <em>origin=&#8221;lower&#8221;</em> to
+matplotlib imshow function when displaying the image to avoid confusion</p>
+</div>
+<div class="section" id="complex-detectors">
+<h1>Complex detectors<a class="headerlink" href="#complex-detectors" title="Permalink to this headline">¶</a></h1>
+<p>The <em>simple detector</em> approach reaches its limits
+with several detector types, such as multi-module and fiber optic taper coupled
+detectors (most CCDs).
+Large area pixel detectors are often composed of smaller modules (i.e. Pilatus
+from Dectris, Maxipix from ESRF, ...).</p>
+<p>By construction, such detectors exhibit gaps between modules along with
+pixels of various sizes within a single module, hence they require specific
+data masks.
+Optically coupled detectors need also to be corrected
+for small spatial displacements, often called geometric distortion.
+This is why detectors need more complex definitions than just that of a pixel
+size.
+To avoid complicated and error-prone sets of parameters, two tools have been introduced:
+either <em>detector</em> classes define programatically detector or Nexus saved detector setup.</p>
+<div class="section" id="detectors-classes">
+<h2>Detectors classes<a class="headerlink" href="#detectors-classes" title="Permalink to this headline">¶</a></h2>
+<p>They are used to define families of detectors.
+In order to take the specificities of each detector into account, pyFAI
+contains about 55 detector class definitions (and twice a much with aliases)
+which contain a mask (invalid pixels,
+gaps, ...) and a method to calculate the pixel positions in Cartesian
+coordinates. Available detectors can be printed using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="k">print</span><span class="p">(</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">ALL_DETECTORS</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For optically coupled CCD detectors, the geometrical distortion is often
+described by a bi-dimensional cubic spline which can be imported into
+the detector instance and be used to calculate the actual pixel position in space.</p>
+</div>
+<div class="section" id="nexus-detectors">
+<h2>Nexus Detectors<a class="headerlink" href="#nexus-detectors" title="Permalink to this headline">¶</a></h2>
+<p>Any detector object in pyFAI, can be saved into a HDF5 file following the NeXus
+convention (<a class="reference external" href="http://nexusformat.org">http://nexusformat.org</a>).
+Detector objects can subsequently be restored from the disk, making
+complex detector definitions less error-prone.
+Pixels of an area detector are saved as a 4D dataset: i.e. a 2D
+array of vertices pointing to every corner of each pixel, generating
+an array of shape: (<em>Ny</em>, <em>Nx</em>, <em>Nc</em>, 3) where <em>Nx</em> and <em>Ny</em> are the dimensions of the
+detector, <em>Nc</em> is the number of corners of each pixel, usually 4, and the last
+entry contains the coordinates of the vertex itself (z,y,x).
+This kind of definitions, while relying on large description files,
+can address some of the most complex detector layouts:</p>
+<ul class="simple">
+<li>hexagonal pixels (i.e. Pixirad detectors, still under development)</li>
+<li>curved/bent imaging plates (i.e. Rigaku, Aarhus detector)</li>
+<li>pixel detectors with tiled modular (i.e. Xpad detectors from ImXpad)</li>
+<li>semi-cylindrical pixel detectors (i.e. Pilatus12M from Dectris).</li>
+</ul>
+<p>The detector instance can be saved as HDF5, either programmatically, either
+on the command line.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyFAI</span> <span class="kn">import</span> <span class="n">detectors</span>
+<span class="n">frelon</span> <span class="o">=</span> <span class="n">detectors</span><span class="o">.</span><span class="n">FReLoN</span><span class="p">(</span><span class="s">&quot;halfccd.spline&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">frelon</span><span class="p">)</span>
+<span class="n">frelon</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;halfccd.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using the <em>detector2nexus</em> script to convert a complex detector definition
+(multiple modules, possibly in 3D) into
+a single NeXus detector definition together with the mask:</p>
+<blockquote>
+<div>detector2nexus -s halfccd.spline -o halfccd.h5</div></blockquote>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<p>Detector definition in pyFAI is very versatile.
+Fortunately, most detectors are already described, making the usage transparent
+for most users.
+There are a couple of <a class="reference internal" href="usage/tutorial/index.html#tutorials"><em>Tutorials</em></a> on detector definition which will help
+you understanding the mechanisme :</p>
+<ul class="simple">
+<li>Distortion which explains how to correct images for geometric distortion</li>
+<li>CCD-calibration which explains how to calibrate a detector for geometric
+distortion.</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simple detector</a></li>
+<li><a class="reference internal" href="#complex-detectors">Complex detectors</a><ul>
+<li><a class="reference internal" href="#detectors-classes">Detectors classes</a></li>
+<li><a class="reference internal" href="#nexus-detectors">Nexus Detectors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyFAI.html"
+                        title="previous chapter">General introduction to PyFAI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="geometry.html"
+                        title="next chapter">Image representation in Python</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/detector.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="geometry.html" title="Image representation in Python"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="General introduction to PyFAI"
+             >previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="pyFAI.html" >General introduction to PyFAI</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

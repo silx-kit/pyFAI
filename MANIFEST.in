@@ -20,4 +20,6 @@ include bootstrap.py
 include README.rst
 include CHANGELOG.txt
 include TODO.txt
+include copyright
 recursive-include scripts *.py 
+recursive-include package/debian *

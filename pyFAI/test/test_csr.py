@@ -49,11 +49,6 @@ if opencl.ocl:
 
 import fabio
 
-N = 1000
-ai = AzimuthalIntegrator.sload(UtilsTest.getimage("1893/Pilatus1M.poni"))
-data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
-ai.xrpd_LUT(data, N)
-
 
 class ParameterisedTestCase(unittest.TestCase):
     """ TestCase classes that want to be parameterised should
@@ -61,6 +56,13 @@ class ParameterisedTestCase(unittest.TestCase):
         From Eli Bendersky's website
         http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases/
     """
+    @classmethod
+    def setUpClass(cls):
+        cls.N = 1000
+        cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("1893/Pilatus1M.poni"))
+        cls.data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
+        cls.ai.xrpd_LUT(cls.data, cls.N)
+
     def __init__(self, methodName='runTest', param=None):
         super(ParameterisedTestCase, self).__init__(methodName)
         self.param = param
@@ -82,20 +84,20 @@ class ParamOpenclCSR(ParameterisedTestCase):
 
     def test_csr(self):
         workgroup_size = self.param
-        out_ref = splitBBox.histoBBox1d(data, ai.ttha, ai._cached_array["2th_delta"], bins=N)
-        csr = splitBBoxCSR.HistoBBox1d(ai.ttha, ai._cached_array["2th_delta"], bins=N, unit="2th_deg")
+        out_ref = splitBBox.histoBBox1d(self.data, self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N)
+        csr = splitBBoxCSR.HistoBBox1d(self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N, unit="2th_deg")
         if not opencl.ocl:
             skip = True
         else:
             try:
-                ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL", profile=True, block_size=workgroup_size)
-                out_ocl_csr = ocl_csr.integrate(data)
+                ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, self.data.size, "ALL", profile=True, block_size=workgroup_size)
+                out_ocl_csr = ocl_csr.integrate(self.data)
             except (opencl.pyopencl.MemoryError, MemoryError):
                 logger.warning("Skipping test due to memory error on device")
                 skip = True
             else:
                 skip = False
-        out_cyt_csr = csr.integrate(data)
+        out_cyt_csr = csr.integrate(self.data)
         cmt = "Testing ocl_csr with workgroup_size= %s" % (workgroup_size)
         logger.debug(cmt)
         if skip:

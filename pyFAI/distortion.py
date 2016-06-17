@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2016"
+__date__ = "14/06/2016"
 __status__ = "development"
 
 import logging
@@ -320,7 +320,7 @@ class Distortion(object):
                         self.lut = lut
         return self.lut
 
-    def correct(self, image, dummy=None, delta_dummy=None):
+    def correct(self, image, dummy=None, delta_dummy=None, normalization_factor=1.0):
         """
         Correct an image based on the look-up table calculated ...
 
@@ -328,8 +328,6 @@ class Distortion(object):
         @param dummy: value suggested for bad pixels
         @param delta_dummy: precision of the dummy value
         @return: corrected 2D image
-
-        #TODO: #225
         """
         if image.shape != self.shape_in:
             logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ..." % (image.shape, self.shape_in))

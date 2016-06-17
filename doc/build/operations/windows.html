@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation procedure on Windows &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="Installation of Python Fast Azimuthal Integration library" href="index.html" />
+    <link rel="next" title="PyFAI Ecosystem" href="../ecosystem.html" />
+    <link rel="prev" title="Installation procedure on MacOSX" href="macosx.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ecosystem.html" title="PyFAI Ecosystem"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="macosx.html" title="Installation procedure on MacOSX"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Installation of Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation-procedure-on-windows">
+<h1>Installation procedure on Windows<a class="headerlink" href="#installation-procedure-on-windows" title="Permalink to this headline">¶</a></h1>
+<p>PyFAI is a Python library. Even if you are only interested in some tool like
+pyFAI-calib or pyFAI-integrate, you need to install the complete library (for now).
+This is usually performed in 3 steps:</p>
+<ol class="arabic simple">
+<li>install Python,</li>
+<li>install the scientific Python stack</li>
+<li>install pyFAI itself.</li>
+</ol>
+<div class="section" id="get-python">
+<h2>Get Python<a class="headerlink" href="#get-python" title="Permalink to this headline">¶</a></h2>
+<p>Unlike on Unix computers, Python is not available by default on Windows computers.
+We recommend you to install the 64 bit version of <a class="reference external" href="http://python.org">Python</a>,
+preferably the latest 64 bits version from the
+<a class="reference external" href="https://www.python.org/downloads/release/python-2710/">2.7 series</a>.
+But Python 3.4 and 3.5 are also very good candidates.
+Python 2.6, 3.2 and 3.3 are no more supported since pyFAI v0.12.</p>
+<p>The 64 bits version is strongly advised if your hardware and operating system
+supports it, as the 32 bits versions is
+limited to 2 GB of memory, hence unable to treat large images (like 4096 x 4096).
+The test suite is not passing on Windows 32 bits due to the limited amount of
+memory available to the Python process,
+nevertheless, pyFAI is running on Winodws 32 bits (but not as well).</p>
+<p>Alternative Scientific Python stacks exists, like
+<a class="reference external" href="https://www.enthought.com/products/epd/">Enthought Python Distribution</a> ,
+<a class="reference external" href="https://www.enthought.com/products/canopy/">Canopy</a>,
+<a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a>,
+<a class="reference external" href="https://python-xy.github.io/">PythonXY</a> or
+<a class="reference external" href="http://winpython.github.io/">WinPython</a>.
+They all offer most of the scientific packages already installed which makes
+the installation of
+dependencies much easier.
+On the other hand, they all offer different packaging system and we cannot
+support all of them.
+Moreover, distribution from <em>Enthought</em> and <em>Continuum</em> are not free so you
+should be able to get support from those companies.</p>
+<p><strong>Nota:</strong> any flavor of those Python distribution is probably incompatible with
+any other due to change in compiler or Python compilation options.
+Mixing them is really looking for trouble, hence strongly discouraged.
+If you want an advice on which scientific python distribution for Windows to use,
+I would recommend <a class="reference external" href="http://winpython.github.io/">WinPython</a>.</p>
+</div>
+<div class="section" id="install-pip">
+<h2>Install PIP<a class="headerlink" href="#install-pip" title="Permalink to this headline">¶</a></h2>
+<p><strong>PIP</strong> is the package management system for Python, it connects to
+<a class="reference external" href="http://pypi.python.org">the Python Package Index</a>,
+download and install software packages from there.</p>
+<p>PIP has revolutionize the way Python libraries are installed as it is able to
+select the right build for your system, or compile them from the sources,
+which could be extremely tricky otherwise.
+If you installed python 2.7.10, 3.4 or newer, PIP is already installed.
+If <strong>pip</strong> is not yet installed on your system, download
+<a class="reference external" href="https://bootstrap.pypa.io/get-pip.py">get_pip.py</a> and run it:</p>
+<div class="code highlight-python"><div class="highlight"><pre>python get-pip.py
+</pre></div>
+</div>
+<p>Assuming python.exe is already in your PATH.</p>
+<p><strong>Nota:</strong>  Because PIP connects to the network, the <em>http_proxy</em> and <em>https_proxy</em>
+environment variable may need to be set-up properly.
+At ESRF, please get in contact with the hotline (24-24) to retrive those information.</p>
+</div>
+<div class="section" id="install-the-scientific-stack">
+<h2>Install the scientific stack<a class="headerlink" href="#install-the-scientific-stack" title="Permalink to this headline">¶</a></h2>
+<p>The strict dependencies for pyFAI are:</p>
+<ul class="simple">
+<li>NumPy</li>
+<li>SciPy</li>
+<li>matplotlib</li>
+<li>FabIO</li>
+<li>h5py</li>
+</ul>
+<p>Recommended dependencies are:</p>
+<ul class="simple">
+<li>cython</li>
+<li>h5py</li>
+<li>pyopencl</li>
+<li>PyQt4</li>
+<li>pymca</li>
+<li>rfoo</li>
+<li>pyfftw3</li>
+<li>lxml</li>
+</ul>
+<div class="section" id="using-pip">
+<h3>Using PIP<a class="headerlink" href="#using-pip" title="Permalink to this headline">¶</a></h3>
+<p>Most of the dependencies are available via PIP:</p>
+<div class="code highlight-python"><div class="highlight"><pre>pip install numpy --upgrade
+pip install scipy --upgrade
+pip install matplotlib --upgrade
+pip install fabio --upgrade
+pip install PyQt4 --upgrade
+</pre></div>
+</div>
+<p>Note that numpy/scipy/matplotlib are already installed in most &#8220;Scientific Python distribution&#8221;</p>
+<p>If one of the dependency is not available as a Wheel (i.e. binary package) but
+only as a source package, a compiler will be required.
+In this case, see the next paragraph.
+The generalization of Wheel packages should help and the installation of binary
+modules should become easier.</p>
+<p><strong>Nota:</strong> This requires a network access and correct proxy settings.
+At ESRF, please get in contact with the hotline (24-24) to retrive those information.</p>
+<div class="code highlight-python"><div class="highlight"><pre>set http_proxy=http://proxy.site.com:3128
+set https_proxy=http://proxy.site.com:3128
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-christoph-gohlke-repository">
+<h3>Using Christoph Gohlke repository<a class="headerlink" href="#using-christoph-gohlke-repository" title="Permalink to this headline">¶</a></h3>
+<p>Christoph Gohlke is a researcher at Laboratory for Fluorescence Dynamics, University of California, Irvine.
+He is maintaining a <a class="reference external" href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">large repository Python extension</a> (actually, all we need :) for Windows.
+Check twice the Python version and the Windows version (win32 or win_amd64) before downloading.</p>
+<p>Moreover the libraries he provides are linked against the MKL library from Intel which
+makes his packages faster then what you would get by simply recompiling them.</p>
+<p>Christoph now provides packages as wheels.
+To install them, download the wheels and use PIP:</p>
+<div class="code highlight-python"><div class="highlight"><pre>pip install numpy*.whl
+</pre></div>
+</div>
+<p>Alternatively, you can use the wheelhouse of the silx project:</p>
+<div class="code highlight-python"><div class="highlight"><pre>pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy scipy matplotlib fabio PyQt4
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="install-pyfai-via-pip">
+<h2>Install pyFAI via PIP<a class="headerlink" href="#install-pyfai-via-pip" title="Permalink to this headline">¶</a></h2>
+<p>The latest stable release of pyFAI should also be PIP-installable (starting at version 0.10.3):</p>
+<div class="code highlight-python"><div class="highlight"><pre>pip install pyFAI --upgrade
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-pyfai-from-sources">
+<h2>Install pyFAI from sources<a class="headerlink" href="#install-pyfai-from-sources" title="Permalink to this headline">¶</a></h2>
+<p>The sources of pyFAI are available at <a class="reference external" href="https://github.com/pyFAI/pyFAI/releases">https://github.com/pyFAI/pyFAI/releases</a>
+the development is performed on <a class="reference external" href="https://github.com/kif/pyFAI">https://github.com/kif/pyFAI</a></p>
+<p>In addition to the Python interpreter, you will need <em>the</em> C compiler compatible
+with your Python interpreter, for example you can find the one for Python2.7 at:
+<a class="reference external" href="http://aka.ms/vcpython27">http://aka.ms/vcpython27</a></p>
+<p>To upgrade the C-code in pyFAI, one needs in addition Cython:</p>
+<div class="code highlight-python"><div class="highlight"><pre>pip install cython --upgrade
+python setup.py bdist_wheel
+pip install --pre --no-index --find-links dist/ pyFAI
+</pre></div>
+</div>
+</div>
+<div class="section" id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<p>This section contains some tips on windows.</p>
+<div class="section" id="side-by-side-error">
+<h3>Side-by-side error<a class="headerlink" href="#side-by-side-error" title="Permalink to this headline">¶</a></h3>
+<p>When starting pyFAI you get a side-by-side error like:</p>
+<div class="highlight-python"><div class="highlight"><pre>ImportError: DLL load failed: The application has failed to start because its
+side-by-side configuration is incorrect. Please see the application event log or
+use the command-line sxstrace.exe tool for more detail.
+</pre></div>
+</div>
+<p>This means you are using a version of pyFAI which was compiled using the MSVC compiler
+(maybe not on your computer) but the Microsoft Visual C++ Redistributable Package is missing.
+For Python2.7, 64bits the missing DLL can be downloaded from:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://www.microsoft.com/en-us/download/confirmation.aspx?id=2092
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation procedure on Windows</a><ul>
+<li><a class="reference internal" href="#get-python">Get Python</a></li>
+<li><a class="reference internal" href="#install-pip">Install PIP</a></li>
+<li><a class="reference internal" href="#install-the-scientific-stack">Install the scientific stack</a><ul>
+<li><a class="reference internal" href="#using-pip">Using PIP</a></li>
+<li><a class="reference internal" href="#using-christoph-gohlke-repository">Using Christoph Gohlke repository</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-pyfai-via-pip">Install pyFAI via PIP</a></li>
+<li><a class="reference internal" href="#install-pyfai-from-sources">Install pyFAI from sources</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#side-by-side-error">Side-by-side error</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="macosx.html"
+                        title="previous chapter">Installation procedure on MacOSX</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../ecosystem.html"
+                        title="next chapter">PyFAI Ecosystem</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/operations/windows.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ecosystem.html" title="PyFAI Ecosystem"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="macosx.html" title="Installation procedure on MacOSX"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Installation of Python Fast Azimuthal Integration library</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

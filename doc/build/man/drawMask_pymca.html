@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Mask generation tool: drawMask_pymca &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
+    <link rel="next" title="Preprocessing tool: detector2nexus" href="detector2nexus.html" />
+    <link rel="prev" title="Preprocessing tool: pyFAI-average" href="pyFAI-average.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="detector2nexus.html" title="Preprocessing tool: detector2nexus"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-average.html" title="Preprocessing tool: pyFAI-average"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mask-generation-tool-drawmask-pymca">
+<h1>Mask generation tool: drawMask_pymca<a class="headerlink" href="#mask-generation-tool-drawmask-pymca" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>Draw a mask, i.e. an image containing the list of pixels which are considered invalid (no scintillator, module gap, beam stop shadow, ...).</p>
+<div class="figure align-center">
+<img alt="image" src="../_images/drawMask.png" />
+</div>
+<p>This will open a PyMca window and let you draw on the first image (provided) with different tools (brush, rectangle selection, ...).
+When you are finished, come back to the console and press enter.
+The mask image is saved into file1-masked.edf.
+Optionally the script will print the number of pixel
+masked and the intensity masked (as well on other files provided in input)</p>
+<p>Usage: drawMask_pymca [options] file1.edf file2.edf ...</p>
+</div>
+<div class="section" id="options">
+<h2>Options:<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show help message and exit</td></tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Optionally the script will print the number of pixel masked and the intensity masked (as well on other files provided in input)</p>
+<div class="highlight-text"><div class="highlight"><pre>$ drawMask_pymca --help
+API 1 -&gt; Console widget not available
+usage: drawMask_pymca file1.edf file2.edf ...
+
+Draw a mask, i.e. an image containing the list of pixels which are considered
+invalid (no scintillator, module gap, beam stop shadow, ...). This will open a
+PyMca window and let you draw on the first image (provided) with different
+tools (brush, rectangle selection, ...). When you are finished, come back to
+the console and press enter.
+
+positional arguments:
+  FILE           Files to be processed
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -v, --version  show program&#39;s version number and exit
+
+The mask image is saved into file1-masked.edf. Optionally the script will
+print the number of pixel masked and the intensity masked (as well on other
+files provided in input)
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Mask generation tool: drawMask_pymca</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+<li><a class="reference internal" href="#options">Options:</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyFAI-average.html"
+                        title="previous chapter">Preprocessing tool: pyFAI-average</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="detector2nexus.html"
+                        title="next chapter">Preprocessing tool: detector2nexus</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/drawMask_pymca.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="detector2nexus.html" title="Preprocessing tool: detector2nexus"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-average.html" title="Preprocessing tool: pyFAI-average"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+          <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

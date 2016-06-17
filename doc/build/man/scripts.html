@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyFAI scripts manual &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="next" title="Preprocessing tool: pyFAI-average" href="pyFAI-average.html" />
+    <link rel="prev" title="CCD calibration" href="../usage/tutorial/CCD_Calibration/CCD_calibration.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-average.html" title="Preprocessing tool: pyFAI-average"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../usage/tutorial/CCD_Calibration/CCD_calibration.html" title="CCD calibration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pyfai-scripts-manual">
+<span id="manpage"></span><h1>pyFAI scripts manual<a class="headerlink" href="#pyfai-scripts-manual" title="Permalink to this headline">¶</a></h1>
+<p>While pyFAI is first and foremost a Python library to be used by developers, a set of scripts is provided to process
+a full diffraction experiment on the command line without knowing anything about Python.
+Those scripts can be divided into 3 categories: pre-processing tools which prepare the dataset for the calibration tool.
+The calibration is the determination of the geometry of the experimental setup using Debye-Scherrer rings of a reference compound (or calibrant).
+Finally a full dataset can be integrated using different tools targeted at different experiments.</p>
+<dl class="docutils">
+<dt>Pre-processing tools:</dt>
+<dd><ul class="first last simple">
+<li>drawMask_pymca: tool for drawing a mask on top of an image</li>
+<li>pyFAI-average: tool for averaging/median/... filtering images (i.e. for dark current)</li>
+</ul>
+</dd>
+<dt>Calibration tools:</dt>
+<dd><ul class="first last simple">
+<li>pyFAI-calib: manually select the rings and refine the geometry</li>
+<li>pyFAI-recalib: automatic ring extraction to refine the geometry (deprecated: see &#8220;recalib&#8221; option in pyFAI-calib)</li>
+<li>MX-calibrate: Calibrate automatically a set of images taken at various detector distances</li>
+<li>check_calib: checks the calibration of an image at the sub-pixel level (deprecated: see &#8220;validate&#8221; option in pyFAI-calib)</li>
+</ul>
+</dd>
+<dt>Azimuthal integration tools:</dt>
+<dd><ul class="first last simple">
+<li>pyFAI-integrate: the graphical interface for integration (GUI)</li>
+<li>pyFAI-saxs: command line interface for small-angle scattering</li>
+<li>pyFAI-waxs: command line interface for powder difration</li>
+<li>diff_map: diffraction mapping &amp; tomography tool (command line and GUI)</li>
+<li>diff_tomo: diffraction tomography tool (command line only)</li>
+</ul>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI-average.html">Preprocessing tool: pyFAI-average</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drawMask_pymca.html">Mask generation tool: drawMask_pymca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detector2nexus.html">Preprocessing tool: detector2nexus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI-calib.html">Calibration tool: pyFAI-calib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI-recalib.html">Calibration tool: pyFAI-recalib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="check_calib.html">Calibration tool: check_calib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MX-calibrate.html">Calibration tool: MX-calibrate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI-integrate.html">Integration tool: pyFAI-integrate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diff_map.html">Integration tool: diff_map</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diff_tomo.html">Integration tool: diff_tomo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI-saxs.html">Integration tool: pyFAI-saxs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI-waxs.html">Integration tool: pyFAI-waxs</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../usage/tutorial/CCD_Calibration/CCD_calibration.html"
+                        title="previous chapter">CCD calibration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyFAI-average.html"
+                        title="next chapter">Preprocessing tool: pyFAI-average</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/scripts.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI-average.html" title="Preprocessing tool: pyFAI-average"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../usage/tutorial/CCD_Calibration/CCD_calibration.html" title="CCD calibration"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

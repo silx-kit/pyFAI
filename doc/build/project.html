@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Project &mdash; pyFAI 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="next" title="Test coverage report for pyFAI" href="coverage.html" />
+    <link rel="prev" title="PyFAI Ecosystem" href="ecosystem.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coverage.html" title="Test coverage report for pyFAI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ecosystem.html" title="PyFAI Ecosystem"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="project">
+<h1>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h1>
+<p>PyFAI is a library to deal with diffraction images for data reduction.
+This chapter describes the project from the computer engineering point of view.</p>
+<p>PyFAI is an open source project licensed under the GPL (+ MIT code) mainly
+written in Python (v2.7 or newer, 3.4 or newer) and heavily relying on the
+Python scientific ecosystem: numpy, scipy and matplotlib.
+It provides high performances image treatment thanks to cython and
+OpenCL... but only a C-compiler is needed to build it.</p>
+<div class="section" id="programming-language">
+<h2>Programming language<a class="headerlink" href="#programming-language" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI is a Python project but uses many programming languages:</p>
+<ul class="simple">
+<li>23000 lines of Python (plus 5000 for the test)</li>
+<li>8000 lines of Cython which are converted into ... C (about half a million lines)</li>
+<li>5000 lines of OpenCL kernels</li>
+</ul>
+<p>The OpenCL code has been tested using:</p>
+<ul class="simple">
+<li>Nvidia OpenCL v1.1 and v1.2 on Linux, Windows (GPU device)</li>
+<li>Intel OpenCL v1.2 on Linux and Windows (CPU and ACC (Phi) devices)</li>
+<li>AMD OpenCL v1.2 on Linux and Windows (CPU and GPU device)</li>
+<li>Apple OpenCL v1.2 on MacOSX  (CPU and GPU)</li>
+<li>Beignet OpenCL v1.2 on Linux (GPU device)</li>
+<li>Pocl OpenCL v1.2 on Linux (CPU device)</li>
+</ul>
+</div>
+<div class="section" id="repository">
+<h2>Repository:<a class="headerlink" href="#repository" title="Permalink to this headline">¶</a></h2>
+<p>The project is hosted on GitHub:
+<a class="reference external" href="https://github.com/pyFAI/pyFAI">https://github.com/pyFAI/pyFAI</a></p>
+<p>Which provides the <a class="reference external" href="https://github.com/kif/pyFAI/issues">issue tracker</a> in
+addition to Git hosting.
+Collaboration is done via Pull-Requests in github&#8217;s web interface:</p>
+<p>Everybody is welcome to <a class="reference external" href="https://github.com/kif/pyFAI/fork">fork the project</a>
+and adapt it to his own needs:
+CEA-Saclay, Synchrotrons Soleil, Desy and APS have already done so.
+Collaboration is encouraged and new developments can be submitted and merged
+into the main branch via pull-requests.</p>
+</div>
+<div class="section" id="getting-help">
+<h2>Getting help<a class="headerlink" href="#getting-help" title="Permalink to this headline">¶</a></h2>
+<p>A mailing list: <a class="reference external" href="mailto:pyfai&#37;&#52;&#48;esrf&#46;fr">pyfai<span>&#64;</span>esrf<span>&#46;</span>fr</a> is publicly available, it is the best place to ask
+your questions: the author and many advanced users are there and willing to help you.
+To subscribe to this mailing list, send an email to
+<a class="reference external" href="mailto:sympa&#37;&#52;&#48;esrf&#46;fr?Subject=subscribe%20pyfai">sympa<span>&#64;</span>esrf<span>&#46;</span>fr with &quot;subscribe pyfai&quot; as subject</a>.</p>
+<p>On this mailing list, you will have information about release of the software,
+new features available and meet experts to help you solve issues related to
+azimuthal integration and diffraction in general.
+It also provides a knowledge-base of most frequently asked question which needs
+to be integrated into this documentation.</p>
+<p>The volume of email on the list remains low, so you can subscribe without being
+too much spammed. As the mailing list is archived, and can be consulted at:
+<a class="reference external" href="http://www.edna-site.org/lurker/list/pyfai.en.html">http://www.edna-site.org/lurker</a>,
+you can also check the volume of the list.</p>
+<p>If you think you are facing a bug, the best is to
+<a class="reference external" href="https://github.com/kif/pyFAI/issues">create a new issue on the GitHub page</a>
+(you will need a GitHub account for that).</p>
+<p>Direct contact with authors is discouraged:
+pyFAI is open source software that we develop to aid the research
+community in doing what they do best.
+While we do enjoy doing this, we
+would not be able to dream of spending nearly as much time with
+pyFAI as we do if it wasn&#8217;t for your support.
+Interest of the scientific community (via a lively mailing list) and citation in
+scientific publication for our <a class="reference external" href="http://dx.doi.org/10.1107/S1600576715004306">software</a>
+is one of the main criterion for ESRF management when deciding if they should
+continue funding development.</p>
+</div>
+<div class="section" id="run-dependencies">
+<h2>Run dependencies<a class="headerlink" href="#run-dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Python version 2.7, 3.4, 3.5</li>
+<li>NumPy</li>
+<li>SciPy</li>
+<li>Matplotlib</li>
+<li>FabIO</li>
+<li>h5py</li>
+<li>pyopencl (optional)</li>
+<li>fftw (optional)</li>
+<li>pymca (optional)</li>
+<li>PyQt4 or PySide (for the graphical user interface)</li>
+</ul>
+</div>
+<div class="section" id="build-dependencies">
+<h2>Build dependencies:<a class="headerlink" href="#build-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the run dependencies, pyFAI needs a C compiler.</p>
+<p>There is an issue with MacOSX (v10.8 onwards) where the default compiler
+(Xcode5 or 6) switched from gcc 4.2 to clang which
+dropped the support for OpenMP (clang v3.5 supports OpenMP under linux but not
+directly under MacOSX).
+Multiple solution exist, pick any of those:</p>
+<ul class="simple">
+<li>Install a recent version of GCC (&gt;=4.2)</li>
+<li>Use Xcode without OpenMP, using the &#8211;no-openmp flag for setup.py.
+You will need to remove the <em>pyFAI/ext/histogram.c</em> file and regenerate it,
+cython needs to be installed.</li>
+</ul>
+<p>C files are generated from cython source and distributed. Cython is only needed
+for developing new binary modules.
+If you want to generate your own C files, make sure your local Cython version
+is recent enough (v0.21 and newer),
+unless your Cython files will not be translated to C, nor used.</p>
+</div>
+<div class="section" id="building-procedure">
+<h2>Building procedure<a class="headerlink" href="#building-procedure" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="as-most-of-the-python-projects">
+<h3>As most of the Python projects:<a class="headerlink" href="#as-most-of-the-python-projects" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-python"><div class="highlight"><pre>python setup.py build bdist_wheel
+pip install dist/pyFAI-0.12.0*.whl --upgrade
+</pre></div>
+</div>
+<p>There are few specific options to setup.py:</p>
+<ul class="simple">
+<li>&#8211;no-cython: do not use cython (even if present) and use the C source code
+provided by the development team</li>
+<li>&#8211;no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOSX.
+Delete also <em>pyFAI/ext/histogram.c</em> and install cython to regenerate C-files.</li>
+<li>&#8211;with-testimages: build the source distribution including all test images.
+Downloads 200MB of test images to create a self consistent tar-ball.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="test-suites">
+<h2>Test suites<a class="headerlink" href="#test-suites" title="Permalink to this headline">¶</a></h2>
+<p>To test the installed version of pyFAI:</p>
+<div class="code highlight-python"><div class="highlight"><pre>python run_test.py
+</pre></div>
+</div>
+<p>or from python:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="n">pyFAI</span><span class="o">.</span><span class="n">tests</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>It is normal to get few (&lt;20) <strong>Warning</strong> messages as the test procedure also
+tests corner cases.</p>
+<div class="section" id="to-run-the-test-an-internet-connection-is-needed-as-200mb-of-test-images-will-be-downloaded">
+<h3>To run the test an internet connection is needed as 200MB of test images will be downloaded.<a class="headerlink" href="#to-run-the-test-an-internet-connection-is-needed-as-200mb-of-test-images-will-be-downloaded" title="Permalink to this headline">¶</a></h3>
+<p>Setting the environment variable http_proxy can be necessary (depending on your network):</p>
+<div class="code highlight-python"><div class="highlight"><pre>export http_proxy=http://proxy.site.org:3128
+</pre></div>
+</div>
+<p>Especially at ESRF, the configuration of the network proxy can be obtained
+by phoning on the hotline: 24-24.</p>
+<p>To test the development version (built but not yet installed):</p>
+<div class="code highlight-python"><div class="highlight"><pre>python setup.py build test
+</pre></div>
+</div>
+<p>or</p>
+<div class="code highlight-python"><div class="highlight"><pre>python setup.py build
+python run_test.py -i
+</pre></div>
+</div>
+<p>PyFAI comes with 34 test-suites (223 tests in total) representing a coverage of 60%.
+This ensures both non regression over time and ease the distribution under different platforms:
+pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
+Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.</p>
+<p><strong>Note:</strong>: The test coverage tool does not count lines of Cython, nor those of OpenCL.
+<a class="reference external" href="http://www.exampler.com/testing-com/writings/coverage.pdf">Anyway test coverage is a tool for developers about possible weaknesses of their
+code and not a management indicator.</a></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Test coverage report for pyFAI</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="continuous-integration">
+<h2>Continuous integration<a class="headerlink" href="#continuous-integration" title="Permalink to this headline">¶</a></h2>
+<p>This software engineering practice consists in merging all developer working copies
+to a shared mainline several times a day and build the whole project for multiple
+targets.</p>
+<div class="section" id="on-debian-8-jessie">
+<h3>On Debian 8 - Jessie<a class="headerlink" href="#on-debian-8-jessie" title="Permalink to this headline">¶</a></h3>
+<p>Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
+<a class="reference external" href="http://www.silx.org/pub/debian/binary/">Nightly builds</a> are available for debian8-64 bits. To install them:</p>
+<div class="code highlight-python"><div class="highlight"><pre>sudo apt-get update
+sudo apt-get install pyfai
+</pre></div>
+</div>
+<p>You have to accept non-signed packages because they are automatically built.</p>
+<p>In addition some &#8220;cloud-based&#8221; tools are used to ensure a larger coverage of operating systems/environment.
+They rely on a <a class="reference external" href="http://www.edna-site.org/pub/debian/wheelhouse/">&#8220;local wheelhouse&#8221;</a>.</p>
+<p>Those wheels are optimized for Travis-CI, AppVeyor and ReadTheDocs, using them is not recommended as your Python configuration may differ
+(and those libraries could even crash your system).</p>
+</div>
+<div class="section" id="linux">
+<h3>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://travis-ci.org/kif/pyFAI">Travis provides continuous integration on Linux</a>, 64 bits computer with Python 2.7, 3.4 and 3.5.</p>
+<p>The builds cannot be retrieved with Travis-CO.</p>
+</div>
+<div class="section" id="appveyor">
+<h3>AppVeyor<a class="headerlink" href="#appveyor" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://ci.appveyor.com/project/kif/pyFAI">AppVeyor provides continuous integration on Windows</a>, 64 bits computer with Python 2.7 and 3.4.
+Successful builds provide installers for pyFAI as <em>wheels</em> and <em>msi</em>, they are anonymously available as <em>artifacts</em>.
+Due to the limitation of AppVeyor&#8217;s build system, those installers have openMP disabled.</p>
+</div>
+</div>
+<div class="section" id="list-of-contributors-in-code">
+<h2>List of contributors in code<a class="headerlink" href="#list-of-contributors-in-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>$ git log  --pretty=&#39;%aN##%s&#39; | grep -v &#39;Merge pull&#39; | grep -Po &#39;^[^#]+&#39; | sort | uniq -c | sort -rn
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>As of 06/2016:</dt>
+<dd><ul class="first last simple">
+<li>Jérôme Kieffer (ESRF)</li>
+<li>Frédéric-Emmanuel Picca (Soleil)</li>
+<li>Aurore Deschildre (ESRF)</li>
+<li>Giannis Ashiotis (ESRF)</li>
+<li>Dimitrios Karkoulis (ESRF)</li>
+<li>Valentin Valls (ESRF)</li>
+<li>Jon Wright (ESRF)</li>
+<li>Zubair Nawaz (Sesame)</li>
+<li>Amund Hov (ESRF)</li>
+<li>Dodogerstlin &#64;github</li>
+<li>Gunthard Benecke (Desy)</li>
+<li>Gero Flucke (Desy)</li>
+<li>Vadim Dyadkin (ESRF)</li>
+<li>Sigmund Neher (GWDG)</li>
+<li>Thomas Vincent (ESRF)</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="list-of-other-contributors-ideas-or-code">
+<h2>List of other contributors (ideas or code)<a class="headerlink" href="#list-of-other-contributors-ideas-or-code" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Peter Boesecke (geometry)</li>
+<li>Manuel Sanchez del Rio (histogramming)</li>
+<li>Armando Solé (masking widget + PyMca plugin)</li>
+<li>Sebastien Petitdemange (Lima plugin)</li>
+</ul>
+</div>
+<div class="section" id="list-of-supporters">
+<h2>List of supporters<a class="headerlink" href="#list-of-supporters" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>LinkSCEEM project: porting to OpenCL</li>
+<li>ESRF ID11: Provided manpower in 2012 and 2013 and beamtime</li>
+<li>ESRF ID13: Provided manpower in 2012, 2013, 2014, 2015, 2016 and beamtime</li>
+<li>ESRF ID29: provided manpower in 2013 (MX-calibrate)</li>
+<li>ESRF ID02: provided manpower 2014, 2016</li>
+<li>ESRF ID15: provide manpower 2015, 2016</li>
+<li>ESRF ID21: provide manpower 2015, 2016</li>
+<li>ESRF ID31: provide manpower 2016</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Project</a><ul>
+<li><a class="reference internal" href="#programming-language">Programming language</a></li>
+<li><a class="reference internal" href="#repository">Repository:</a></li>
+<li><a class="reference internal" href="#getting-help">Getting help</a></li>
+<li><a class="reference internal" href="#run-dependencies">Run dependencies</a></li>
+<li><a class="reference internal" href="#build-dependencies">Build dependencies:</a></li>
+<li><a class="reference internal" href="#building-procedure">Building procedure</a><ul>
+<li><a class="reference internal" href="#as-most-of-the-python-projects">As most of the Python projects:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#test-suites">Test suites</a><ul>
+<li><a class="reference internal" href="#to-run-the-test-an-internet-connection-is-needed-as-200mb-of-test-images-will-be-downloaded">To run the test an internet connection is needed as 200MB of test images will be downloaded.</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#continuous-integration">Continuous integration</a><ul>
+<li><a class="reference internal" href="#on-debian-8-jessie">On Debian 8 - Jessie</a></li>
+<li><a class="reference internal" href="#linux">Linux</a></li>
+<li><a class="reference internal" href="#appveyor">AppVeyor</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#list-of-contributors-in-code">List of contributors in code</a></li>
+<li><a class="reference internal" href="#list-of-other-contributors-ideas-or-code">List of other contributors (ideas or code)</a></li>
+<li><a class="reference internal" href="#list-of-supporters">List of supporters</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ecosystem.html"
+                        title="previous chapter">PyFAI Ecosystem</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coverage.html"
+                        title="next chapter">Test coverage report for pyFAI</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/project.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coverage.html" title="Test coverage report for pyFAI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ecosystem.html" title="PyFAI Ecosystem"
+             >previous</a> |</li>
+        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2016, Jerome Kieffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

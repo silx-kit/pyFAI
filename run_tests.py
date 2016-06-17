@@ -138,9 +138,11 @@ def _copy_files(source, dest, extn):
 
 
 class TestResult(unittest.TestResult):
-    logger = logging.getLogger("memProf")
-    logger.setLevel(logging.DEBUG)
-    logger.handlers.append(logging.FileHandler("profile.log"))
+
+    def __init__(self):
+        self.logger = logging.getLogger("memProf")
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.handlers.append(logging.FileHandler("profile.log"))
 
     def startTest(self, test):
         if resource:
@@ -342,7 +344,7 @@ if old_importer:
     utilstest = getattr(test_module, "utilstest")
 UtilsTest = getattr(utilstest, "UtilsTest")
 UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
-UtilsTest.testimages = os.path.join(PROJECT_DIR, "all_testimages.json")
+UtilsTest.testimages = os.path.join(UtilsTest.image_home, "all_testimages.json")
 UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
 
 test_suite = unittest.TestSuite()
