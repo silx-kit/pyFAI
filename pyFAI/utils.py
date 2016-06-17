@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/05/2016"
+__date__ = "17/06/2016"
 __status__ = "production"
 
 import logging
@@ -517,8 +517,8 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
 
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
-                   cutoff=None, quantiles=None, fformat="edf"):
+                  darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
+                  cutoff=None, quantiles=None, fformat="edf"):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -536,93 +536,107 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param fformat: file format of the output image, default: edf
     @return: filename with the data or the data ndarray in case format=None
     """
+    def correct_img(data):
+        "internal subfunction for dark/flat "
+        corrected_img = numpy.ascontiguousarray(data, numpy.float32)
+        if threshold or minimum or maximum:
+            corrected_img = removeSaturatedPixel(corrected_img, threshold, minimum, maximum)
+        if do_dark:
+            corrected_img -= dark
+        if do_flat:
+            corrected_img /= flat
+        return corrected_img
+    # input sanitization
     if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles"]:
         logger.warning("Filter %s not understood. switch to mean filter" % filter_)
         filter_ = "mean"
-    ld = len(listImages)
-    sumImg = None
+
+    nb_files = len(listImages)
+    nb_frames = 0
+    fimgs = []
+
+    for fn in listImages:
+        if isinstance(fn, six.string_types):
+            logger.info("Reading %s" % fn)
+            fimg = fabio.open(fn)
+        else:
+            if fabio.hexversion < 262148:
+                logger.error("Old version of fabio detected, upgrade to 0.4 or newer")
+
+            # Assume this is a numpy array like
+            if not ("ndim" in dir(fn) and "shape" in dir(fn)):
+                raise RuntimeError("Not good type for input, got %s, expected numpy array" % type(fn))
+            fimg = fabio.numpyimage.NumpyImage(data=fn)
+        fimgs.append(fimg)
+        nb_frames += fimg.nframes
+
+    acc_img = None
     do_dark = (darks is not None)
     do_flat = (flats is not None)
     dark = None
     flat = None
-    big_img = None
-    for idx, fn in enumerate(listImages[:]):
-        if isinstance(fn, six.string_types):
-            logger.info("Reading %s" % fn)
-            ds = fabio.open(fn).data
+
+    if do_dark:
+        if "ndim" in dir(darks) and darks.ndim == 3:
+            dark = averageDark(darks, center_method="mean", cutoff=4)
+        elif ("__len__" in dir(darks)) and isinstance(darks[0], six.string_types):
+            dark = averageDark([fabio.open(f).data for f in darks if exists(f)], center_method="mean", cutoff=4)
+        elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
+            dark = averageDark(darks, center_method="mean", cutoff=4)
+    if do_flat:
+        if "ndim" in dir(flats) and flats.ndim == 3:
+            flat = averageDark(flats, center_method="mean", cutoff=4)
+        elif ("__len__" in dir(flats)) and isinstance(flats[0], six.string_types):
+            flat = averageDark([fabio.open(f).data for f in flats if exists(f)], center_method="mean", cutoff=4)
+        elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
+            flat = averageDark(flats, center_method="mean", cutoff=4)
         else:
-            ds = fn
-            fn = "numpy_array"
-            listImages[idx] = fn
-        logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
-        shape = ds.shape
-        if do_dark and (dark is None):
-            if "ndim" in dir(darks) and darks.ndim == 3:
-                dark = averageDark(darks, center_method="mean", cutoff=4)
-            elif ("__len__" in dir(darks)) and isinstance(darks[0], six.string_types):
-                dark = averageDark([fabio.open(f).data for f in darks if exists(f)], center_method="mean", cutoff=4)
-            elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
-                dark = averageDark(darks, center_method="mean", cutoff=4)
-        if do_flat and (flat is  None):
-            if "ndim" in dir(flats) and flats.ndim == 3:
-                flat = averageDark(flats, center_method="mean", cutoff=4)
-            elif ("__len__" in dir(flats)) and isinstance(flats[0], six.string_types):
-                flat = averageDark([fabio.open(f).data for f in flats if exists(f)], center_method="mean", cutoff=4)
-            elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
-                flat = averageDark(flats, center_method="mean", cutoff=4)
-            else:
-                logger.warning("there is some wrong with flats=%s" % (flats))
-            if correct_flat_from_dark:
-                flat -= dark
-            flat[numpy.where(flat <= 0) ] = 1.0
-        correctedImg = numpy.ascontiguousarray(ds, numpy.float32)
-        if threshold or minimum or maximum:
-            correctedImg = removeSaturatedPixel(correctedImg, threshold, minimum, maximum)
-        if do_dark:
-            correctedImg -= dark
-        if do_flat:
-            correctedImg /= flat
-        if (cutoff or quantiles or (filter_ in ["median", "quantiles"])):
-            if big_img is None:
-                logger.info("Big array allocation for median filter/cut-off/quantiles")
-                big_img = numpy.zeros((ld, shape[0], shape[1]), dtype=numpy.float32)
-            big_img[idx, :, :] = correctedImg
-        elif filter_ == "max":
-            if sumImg is None:
-                sumImg = correctedImg
-            else:
-                sumImg = numpy.maximum(correctedImg, sumImg)
-        elif filter_ == "min":
-            if sumImg is None:
-                sumImg = correctedImg
-            else:
-                sumImg = numpy.minimum(correctedImg, sumImg)
-        elif filter_ == "mean":
-            if sumImg is None:
-                sumImg = correctedImg
-            else:
-                sumImg += correctedImg
-        elif filter_ == "sum":
-            if sumImg is None:
-                sumImg = correctedImg
-            else:
-                sumImg += correctedImg
-    if cutoff or quantiles or (filter_ in ["median", "quantiles"]):
+            logger.warning("there is some wrong with flats=%s" % (flats))
+        if correct_flat_from_dark:
+            flat -= dark
+        flat[numpy.where(flat <= 0)] = 1.0
+
+    if (cutoff or quantiles or (filter_ in ["median", "quantiles"])):
+        logger.info("Big array allocation for median filter/cut-off/quantiles")
+        first_shape = fimgs[0].data.shape
+        big_img = numpy.zeros((nb_frames, first_shape[0], first_shape[1]), dtype=numpy.float32)
+        idx = 0
+        for fimg in fimgs:
+            for frame in range(fimg.nframes):
+                if fimg.nframes == 1:
+                    ds = fimg.data
+                else:
+                    ds = fimg.getframe(frame).data
+                big_img[idx, :, :] = correct_img(ds)
+                idx += 1
         datared = averageDark(big_img, filter_, cutoff, quantiles)
     else:
-        if filter_ in ["max", "min"]:
-            datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
-        elif filter_ == "mean":
-            datared = sumImg / numpy.float32(ld)
-        elif filter_ == "sum":
-            datared = sumImg / numpy.float32(ld)
+        for idx, fimg in enumerate(fimgs):
+            for frame in range(fimg.nframes):
+                if fimg.nframes == 1:
+                    ds = fimg.data
+                else:
+                    ds = fimg.getframe(frame).data
+                logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
+
+                corrected_img = correct_img(ds)
+                if filter_ == "max":
+                    acc_img = corrected_img if (acc_img is None) else numpy.maximum(corrected_img, acc_img)
+                elif filter_ == "min":
+                    acc_img = corrected_img if (acc_img is None) else numpy.minimum(corrected_img, acc_img)
+                elif filter_ in ("mean", "sum"):
+                    acc_img = corrected_img if (acc_img is None) else corrected_img + acc_img
+            if filter_ == "mean":
+                datared = acc_img / numpy.float32(nb_frames)
+            else:
+                datared = acc_img
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
     if fformat is not None:
         if fformat.startswith("."):
             fformat = fformat.lstrip(".")
         if (output is None):
             prefix = ""
-            for ch in zip(*listImages):
+            for ch in zip(i.filename for i in fimgs):
                 c = ch[0]
                 good = True
                 if c in ["*", "?", "[", "{", "("]:
@@ -637,39 +651,30 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 else:
                     break
             if filter_ == "max":
-                output = "maxfilt%02i-%s.%s" % (ld, prefix, fformat)
+                output = "maxfilt%02i-%s.%s" % (nb_frames, prefix, fformat)
             elif filter_ == "median":
-                output = "medfilt%02i-%s.%s" % (ld, prefix, fformat)
+                output = "medfilt%02i-%s.%s" % (nb_files, prefix, fformat)
             elif filter_ == "median":
-                output = "meanfilt%02i-%s.%s" % (ld, prefix, fformat)
+                output = "meanfilt%02i-%s.%s" % (nb_files, prefix, fformat)
             else:
-                output = "merged%02i-%s.%s" % (ld, prefix, fformat)
-        if fformat and output:
-            if "." in fformat:  # in case "edf.gz"
-                fformat = fformat.split(".")[0]
-            fabiomod = fabio.__getattribute__(fformat + "image")
-            fabioclass = fabiomod.__getattribute__(fformat + "image")
-            header = {"method":filter_,
-                      "nframes":ld,
-                      "cutoff":str(cutoff),
-                      "quantiles": str(quantiles)}
-            form = "merged_file_%%0%ii" % len(str(len(listImages)))
-            header_list = ["method", "nframes", "cutoff"]
-            for i, f in enumerate(listImages):
-                name = form % i
-                header[name] = f
-                header_list.append(name)
-            fimg = fabioclass(data=datared,
-                              header=header)
-#            if "header_keys" in dir(fimg):
-            fimg.header_keys = header_list
-
-            if filter_ == "sum":
-                fimg = fabioclass(data=numpy.int32(datared * numpy.float32(ld)),
-                                  header=header)
-
-            fimg.write(output)
-            logger.info("Wrote %s" % output)
+                output = "merged%02i-%s.%s" % (nb_files, prefix, fformat)
+    if fformat and output:
+        if "." in fformat:  # in case "edf.gz"
+            fformat = fformat.split(".")[0]
+        fabioclass = fabio.factory(fformat + "image")
+        header = fabio.fabioimage.OrderedDict()
+        header["method"] = filter_
+        header["nfiles"] = nb_files,
+        header["nframes"] = nb_frames,
+        header["cutoff"] = str(cutoff),
+        header["quantiles"] = str(quantiles)
+        form = "merged_file_%%0%ii" % len(str(len(fimgs)))
+        for i, f in enumerate(fimgs):
+            name = form % i
+            header[name] = f.filename
+        fimg = fabioclass.__class__(data=datared, header=header)
+        fimg.write(output)
+        logger.info("Wrote %s" % output)
         return output
     else:
         return datared
@@ -831,7 +836,6 @@ def shiftFFT(input_img, shift_val, method="fftw"):
         fftw3 = sys.modules.get("fftw3")
     else:
         fftw3 = None
-#    print fftw3
     d0, d1 = input_img.shape
     v0, v1 = shift_val
     f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
