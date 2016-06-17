@@ -33,18 +33,17 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2016"
+__date__ = "17/06/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
-__doc__ = """
-
-Module for version handling:
+__doc__ = """Module for version handling:
 
 provides:
 * version = "1.2.3" or "1.2.3-beta4"
 * version_info = named tuple (1,2,3,"beta",4)
 * hexversion: 0x010203B4
 * strictversion = "1.2.3b4
+* debianversion = "1.2.3~beta4
 
 This is called hexversion since it only really looks meaningful when viewed as the
 result of passing it to the built-in hex() function.
@@ -68,12 +67,12 @@ RELEASE_LEVEL_VALUE = {"dev": 0,
                        "beta": 11,
                        "gamma": 11,
                        "rc": 12,
-                       "final":15}
+                       "final": 15}
 
 MAJOR = 0
 MINOR = 12
-MICRO = 0
-RELEV = "final"  # <16
+MICRO = 1
+RELEV = "dev"  # <16
 SERIAL = 0  # <16
 
 date = __date__
@@ -83,10 +82,10 @@ _version_info = namedtuple("version_info", ["major", "minor", "micro", "releasel
 
 version_info = _version_info(MAJOR, MINOR, MICRO, RELEV, SERIAL)
 
-strictversion = version = "%d.%d.%d" % version_info[:3]
-
+strictversion = version = debianversion = "%d.%d.%d" % version_info[:3]
 if version_info.releaselevel != "final":
     version += "-%s%s" % version_info[-2:]
+    debianversion += "~adev%i" % version_info[-1] if RELEV == "dev" else "~%s%i" % version_info[-2:]
     prerel = "a" if RELEASE_LEVEL_VALUE.get(version_info[3], 0) < 10 else "b"
     if prerel not in "ab":
         prerel = "a"
