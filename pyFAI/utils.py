@@ -353,6 +353,7 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
         else:
             return res[k0:-k0, k1:-k1]
 
+
 def expand(input_img, sigma, mode="constant", cval=0.0):
 
     """Expand array a with its reflection on boundaries
@@ -462,7 +463,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
     but averages all frames within  cutoff*std
 
     @param lstimg: list of 2D images or a 3D stack
-    @param center_method: is the center calculated by a "mean" or a "median", or "quantile"
+    @param center_method: is the center calculated by a "mean", "median", "quantile", "std"
     @param cutoff: keep all data where (I-center)/std < cutoff
     @param quantiles: 2-tuple of floats average out data between the two quantiles
 
@@ -547,7 +548,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             corrected_img /= flat
         return corrected_img
     # input sanitization
-    if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles"]:
+    if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
         logger.warning("Filter %s not understood. switch to mean filter" % filter_)
         filter_ = "mean"
 
@@ -596,9 +597,10 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             flat -= dark
         flat[numpy.where(flat <= 0)] = 1.0
 
-    if (cutoff or quantiles or (filter_ in ["median", "quantiles"])):
-        logger.info("Big array allocation for median filter/cut-off/quantiles")
-        first_shape = fimgs[0].data.shape
+    if (cutoff or quantiles or (filter_ in ["median", "quantiles", "std"])):
+        first_frame = fimgs[0]
+        first_shape = first_frame.data.shape
+        logger.info("Big array allocation for median filter/cut-off/quantiles %i*%i*%i", first_frame.nframes, first_frame.dim2, first_frame.dim1)
         big_img = numpy.zeros((nb_frames, first_shape[0], first_shape[1]), dtype=numpy.float32)
         idx = 0
         for fimg in fimgs:
@@ -617,7 +619,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                     ds = fimg.data
                 else:
                     ds = fimg.getframe(frame).data
-                logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
+                logger.debug("Intensity range for %s#%i is %s --> %s", fimg.filename, frame, ds.min(), ds.max())
 
                 corrected_img = correct_img(ds)
                 if filter_ == "max":
@@ -650,23 +652,17 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                     prefix += c
                 else:
                     break
-            if filter_ == "max":
-                output = "maxfilt%02i-%s.%s" % (nb_frames, prefix, fformat)
-            elif filter_ == "median":
-                output = "medfilt%02i-%s.%s" % (nb_files, prefix, fformat)
-            elif filter_ == "median":
-                output = "meanfilt%02i-%s.%s" % (nb_files, prefix, fformat)
-            else:
-                output = "merged%02i-%s.%s" % (nb_files, prefix, fformat)
+            output = "%sfilt%02i-%s.%s" % (filter_, nb_frames, prefix, fformat)
+
     if fformat and output:
         if "." in fformat:  # in case "edf.gz"
             fformat = fformat.split(".")[0]
         fabioclass = fabio.factory(fformat + "image")
         header = fabio.fabioimage.OrderedDict()
         header["method"] = filter_
-        header["nfiles"] = nb_files,
-        header["nframes"] = nb_frames,
-        header["cutoff"] = str(cutoff),
+        header["nfiles"] = nb_files
+        header["nframes"] = nb_frames
+        header["cutoff"] = str(cutoff)
         header["quantiles"] = str(quantiles)
         form = "merged_file_%%0%ii" % len(str(len(fimgs)))
         for i, f in enumerate(fimgs):
