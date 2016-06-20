@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Mask generation tool: drawMask_pymca &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Mask generation tool: pyFAI-drawmask &mdash; pyFAI 0.12.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -55,8 +55,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="mask-generation-tool-drawmask-pymca">
-<h1>Mask generation tool: drawMask_pymca<a class="headerlink" href="#mask-generation-tool-drawmask-pymca" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="mask-generation-tool-pyfai-drawmask">
+<h1>Mask generation tool: pyFAI-drawmask<a class="headerlink" href="#mask-generation-tool-pyfai-drawmask" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="purpose">
 <h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
 <p>Draw a mask, i.e. an image containing the list of pixels which are considered invalid (no scintillator, module gap, beam stop shadow, ...).</p>
@@ -68,7 +68,7 @@ When you are finished, come back to the console and press enter.
 The mask image is saved into file1-masked.edf.
 Optionally the script will print the number of pixel
 masked and the intensity masked (as well on other files provided in input)</p>
-<p>Usage: drawMask_pymca [options] file1.edf file2.edf ...</p>
+<p>Usage: pyFAI-drawmask [options] file1.edf file2.edf ...</p>
 </div>
 <div class="section" id="options">
 <h2>Options:<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
@@ -87,15 +87,17 @@ masked and the intensity masked (as well on other files provided in input)</p>
 </table>
 </div></blockquote>
 <p>Optionally the script will print the number of pixel masked and the intensity masked (as well on other files provided in input)</p>
-<div class="highlight-text"><div class="highlight"><pre>$ drawMask_pymca --help
+<div class="highlight-text"><div class="highlight"><pre>$ pyFAI-drawmask --help
+WARNING: Not using BLAS, PCA calculation will be slower
+WARNING: Not using BLAS/ATLAS, PCA calculation will be slower
 API 1 -&gt; Console widget not available
-usage: drawMask_pymca file1.edf file2.edf ...
+usage: pyFAI-drawmask file1.edf file2.edf ...
 
 Draw a mask, i.e. an image containing the list of pixels which are considered
 invalid (no scintillator, module gap, beam stop shadow, ...). This will open a
-PyMca window and let you draw on the first image (provided) with different
-tools (brush, rectangle selection, ...). When you are finished, come back to
-the console and press enter.
+window and let you draw on the first image (provided) with different tools
+(brush, rectangle selection, ...). When you are finished, come back to the
+console and press enter.
 
 positional arguments:
   FILE           Files to be processed
@@ -120,7 +122,7 @@ files provided in input)
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Mask generation tool: drawMask_pymca</a><ul>
+<li><a class="reference internal" href="#">Mask generation tool: pyFAI-drawmask</a><ul>
 <li><a class="reference internal" href="#purpose">Purpose</a></li>
 <li><a class="reference internal" href="#options">Options:</a></li>
 </ul>
@@ -135,7 +137,7 @@ files provided in input)
                         title="next chapter">Preprocessing tool: detector2nexus</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/man/drawMask_pymca.txt"
+    <li><a href="../_sources/man/pyFAI-drawmask.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
