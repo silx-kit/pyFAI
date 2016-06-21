@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/10/2015"
+__date__ = "17/06/2016"
 __status__ = "production"
 
 import os
@@ -116,7 +116,7 @@ def main():
                         help="Integration method ")
     parser.add_argument("--multi", dest="multiframe",  # type=bool,
                         default=False, action="store_true",
-                        help="Average out all frame in a file before integrating")
+                        help="Average out all frame in a file before integrating extracting variance, otherwise treat every single frame")
     parser.add_argument("--average", dest="average", type=str,
                         default="mean",
                         help="Method for averaging out: can be 'mean' (default), 'min', 'max' or 'median")

@@ -33,12 +33,10 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2016"
+__date__ = "17/06/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
-__doc__ = """
-
-Module for version handling:
+__doc__ = """Module for version handling:
 
 provides:
 * version = "1.2.3" or "1.2.3-beta4"
@@ -73,8 +71,8 @@ RELEASE_LEVEL_VALUE = {"dev": 0,
 
 MAJOR = 0
 MINOR = 12
-MICRO = 0
-RELEV = "final"  # <16
+MICRO = 1
+RELEV = "dev"  # <16
 SERIAL = 0  # <16
 
 date = __date__
