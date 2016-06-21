@@ -1,4 +1,4 @@
-Mask generation tool: drawMask_pymca
+Mask generation tool: pyFAI-drawmask
 ====================================
 
 Purpose
@@ -18,7 +18,7 @@ Optionally the script will print the number of pixel
 masked and the intensity masked (as well on other files provided in input)
 
 
-Usage: drawMask_pymca [options] file1.edf file2.edf ...
+Usage: pyFAI-drawmask [options] file1.edf file2.edf ...
 
 Options:
 --------
@@ -28,5 +28,5 @@ Options:
 
 Optionally the script will print the number of pixel masked and the intensity masked (as well on other files provided in input)
 
-.. command-output:: drawMask_pymca --help
+.. command-output:: pyFAI-drawmask --help
     :nostderr:

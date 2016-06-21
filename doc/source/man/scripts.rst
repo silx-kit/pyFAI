@@ -15,7 +15,7 @@ The calibration is the determination of the geometry of the experimental setup u
 Finally a full dataset can be integrated using different tools targeted at different experiments.
 
 Pre-processing tools:
- * drawMask_pymca: tool for drawing a mask on top of an image
+ * pyFAI-drawmask: tool for drawing a mask on top of an image
  * pyFAI-average: tool for averaging/median/... filtering images (i.e. for dark current)
 
 Calibration tools:
@@ -35,7 +35,7 @@ Azimuthal integration tools:
    :maxdepth: 1
 
    pyFAI-average
-   drawMask_pymca
+   pyFAI-drawmask
    detector2nexus
    pyFAI-calib
    pyFAI-recalib
