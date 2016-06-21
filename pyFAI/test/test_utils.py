@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "21/06/2016"
 
 import unittest
 import numpy
@@ -109,7 +109,9 @@ class TestUtils(unittest.TestCase):
 
         six = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark], "median", .001)
         self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
-
+        if fabio.hexversion < 262147:
+            logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
+            return
         seven = utils.averageImages([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
         self.assert_(abs(numpy.ones_like(self.dark) - fabio.open(seven).data).mean() < 1e-2, "averageImages")
 

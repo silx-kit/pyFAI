@@ -136,6 +136,10 @@ class TestBug211(unittest.TestCase):
             for k, v in self.env.items():
                 env += "%s    %s: %s" % (os.linesep, k, v)
             logger.error(env)
+        if fabio.hexversion < 262147:
+            logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
+            return
+
         self.assertEqual(p, 0, msg="pyFAI-average return code %i != 0" % p)
         self.assert_(numpy.allclose(fabio.open(self.outfile).data, self.res),
                      "pyFAI-average with quantiles gives good results")
