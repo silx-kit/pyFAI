@@ -164,7 +164,12 @@ else:
     raise Exception("Unsupported backend %s" % BACKEND)
 
 
-def postProcess(processFile, mask):
+def postProcessId21(processFile, mask):
+    """
+    Post process asked by Marine Cotte (ID21)
+
+    TODO: Remove it outside if it is possible. Ask them if it is still used.
+    """
     print("Selected %i datapoints on file %s" % (mask.sum(), processFile[0]))
     for datafile in processFile:
         data = fabio.open(datafile).data[numpy.where(mask)]
@@ -209,7 +214,7 @@ def main():
     app.exec_()
 
     mask = window.getSelectionMask()
-    postProcess(processFile, mask)
+    postProcessId21(processFile, mask)
 
 if __name__ == "__main__":
     main()
