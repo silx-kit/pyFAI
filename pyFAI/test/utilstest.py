@@ -1,8 +1,4 @@
-#!/usr/bin/python
 # coding: utf-8
-#
-#    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, Grenoble, France
 #

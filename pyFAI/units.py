@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2016"
+__date__ = "10/06/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -39,7 +39,12 @@ try:
 except (ImportError, Exception):
     import six
 
-hc = 12.398419292004204
+################################################################################
+# A few physical constants
+################################################################################
+
+hc = CONST_hc = 12.398419292004204
+CONST_q = 1.602176565e-19
 
 
 class Enum(dict):

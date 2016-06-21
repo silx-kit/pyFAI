@@ -1,34 +1,37 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
-#    Project: Fast Azimuthal integration
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-from __future__ import with_statement, print_function
+from __future__ import with_statement, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2016"
+__date__ = "14/06/2016"
 __status__ = "development"
 __doc__ = """This module contains the Worker class:
 
@@ -102,7 +105,7 @@ import json
 
 def make_ai(config):
     """Create an Azimuthal integrator from the configuration
-    Static method !
+    stand alone function !
 
     @param config: dict with all parameters
     @return: configured (but uninitialized) AzimuthalIntgrator
@@ -250,7 +253,7 @@ class Worker(object):
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data):
+    def process(self, data, normalization_factor=1.0):
         """
         Process a frame
         #TODO:
@@ -260,7 +263,7 @@ class Worker(object):
         """
 
         with self._sem:
-            monitor = self._normalization_factor
+            monitor = self._normalization_factor * normalization_factor if self._normalization_factor else normalization_factor
         kwarg = {"unit": self.unit,
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
@@ -629,11 +632,6 @@ class DistortionWorker(object):
         else:
             self.polarization = None
 
-        if detector is None:
-            self.distortion = None
-        else:
-            self.distortion = Distortion(detector, method="CSR", device=device)
-
         if mask is None:
             self.mask = False
         elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
@@ -646,39 +644,21 @@ class DistortionWorker(object):
         if device is not None:
             logger.warning("GPU is not yet implemented")
 
-    def process(self, data, normalization=None):
+        if detector is None:
+            self.distortion = None
+        else:
+            self.distortion = Distortion(detector, method="LUT", device=device,
+                                         mask=self.mask, empty=self.dummy or 0)
+
+    def process(self, data, normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
         @param data: input data
         @param normalization: normalization factor
         @return processed data
         """
-        _shape = data.shape
-        #        ^^^^   this is why data is mandatory !
-        if self.dummy is not None:
-            if self.delta_dummy is None:
-                self.mask = numpy.logical_or((data == self.dummy), self.mask)
-            else:
-                self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
-                                        self.mask)
-            do_mask = True
-        else:
-            do_mask = (self.mask is not False)
-        # Explicitly make an copy !
-        data = numpy.array(data, dtype=numpy.float32)
-        if self.dark is not None:
-            data -= self.dark
-        if self.flat is not None:
-            data /= self.flat
-        if self.solidangle is not None:
-            data /= self.solidangle
-        if self.polarization is not None:
-            data /= self.polarization
-
-        if do_mask:
-            data[self.mask] = self.dummy or 0
         if self.distortion is not None:
-            return self.distortion.correct(data)
+            return self.distortion.correct(data, self.dummy, self.delta_dummy, normalization_factor)
         else:
             return data
 
