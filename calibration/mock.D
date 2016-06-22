@@ -1,5 +1,5 @@
 # Fake calibrant used 
-# with moke.tif image for tests
+# with mock.tif image for tests
 1.432685417392191241e+01
 1.146279281302667385e+01
 9.553661304648699115e+00
