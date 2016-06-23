@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/06/2016"
+__date__ = "23/06/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -379,7 +379,7 @@ class sdist_debian(sdist):
 
     def prune_file_list(self):
         sdist.prune_file_list(self)
-        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc"]
+        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc", "pyFAI/third_party"]
         print("Removing files for debian")
         for rm in to_remove:
             self.filelist.exclude_pattern(pattern="*", anchor=False, prefix=rm)
@@ -573,8 +573,8 @@ package_dir = {"pyFAI": "pyFAI",
                "pyFAI.test": "pyFAI/test",
                "pyFAI.benchmark": "pyFAI/benchmark"}
 
-if os.path.isdir("third_party"):
-    package_dir["pyFAI.third_party"] = "third_party"
+if os.path.isdir("pyFAI/third_party"):
+    package_dir["pyFAI.third_party"] = "pyFAI/third_party"
     packages.append("pyFAI.third_party")
 
 
