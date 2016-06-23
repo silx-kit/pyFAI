@@ -36,9 +36,9 @@ __date__ = "23/06/2016"
 __license__ = "MIT"
 
 import distutils.util
+import distutils.dir_util
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -115,26 +115,6 @@ def get_project_name(root_dir):
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_NAME = get_project_name(PROJECT_DIR)
 logger.info('Project name: %s' % PROJECT_NAME)
-
-
-def _copy(infile, outfile):
-    "link or copy file according to the OS. Nota those are HARD_LINKS"
-    if "link" in dir(os):
-        os.link(infile, outfile)
-    else:
-        shutil.copy(infile, outfile)
-
-
-def _copy_files(source, dest, extn):
-    """
-    copy all files with a given extension from source to destination
-    """
-    if not os.path.isdir(dest):
-        os.makedirs(dest)
-    full_src = os.path.join(PROJECT_DIR, source)
-    for clf in os.listdir(full_src):
-        if clf.endswith(extn) and clf not in os.listdir(dest):
-            _copy(os.path.join(full_src, clf), os.path.join(dest, clf))
 
 
 class TestResult(unittest.TestResult):
@@ -245,9 +225,7 @@ def build_project(name, root_dir):
                          shell=False, cwd=root_dir)
     logger.debug("subprocess ended with rc= %s" % p.wait())
 
-    _copy_files("openCL", os.path.join(home, PROJECT_NAME, "openCL"), ".cl")
-    _copy_files("gui", os.path.join(home, PROJECT_NAME, "gui"), ".ui")
-    _copy_files("calibration", os.path.join(home, PROJECT_NAME, "calibration"), ".D")
+    distutils.dir_util.copy_tree("pyFAI/resources", os.path.join(home, PROJECT_NAME, "resources"), update=1)
 
     return home
 

@@ -1012,7 +1012,7 @@ def _get_data_path(filename):
     for resource in resources:
         if not resource:
             continue
-        real_filename = os.path.join(resource, filename)
+        real_filename = os.path.join(resource, "resources", filename)
         if os.path.exists(real_filename):
             return real_filename
     else:

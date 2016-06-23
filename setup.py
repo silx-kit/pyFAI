@@ -291,9 +291,9 @@ def download_images():
 
 installDir = PROJECT
 
-data_files = [(os.path.join(installDir, "openCL"), glob.glob("openCL/*.cl")),
-              (os.path.join(installDir, "gui"), glob.glob("gui/*.ui")),
-              (os.path.join(installDir, "calibration"), glob.glob("calibration/*.D"))]
+data_files = [(os.path.join(installDir, "resources/openCL"), glob.glob("resources/openCL/*.cl")),
+              (os.path.join(installDir, "resources/gui"), glob.glob("resources/gui/*.ui")),
+              (os.path.join(installDir, "resources/calibration"), glob.glob("resources/calibration/*.D"))]
 
 if sys.platform == "win32":
     # This is for mingw32/gomp
