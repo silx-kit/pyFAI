@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "23/06/2016"
 
 
 import unittest
@@ -62,7 +62,7 @@ except:
 
 
 class TestBispev(unittest.TestCase):
-    spinefile = "1461/halfccd.spline"
+    spinefile = "halfccd.spline"
 
     def setUp(self):
         """Download files"""

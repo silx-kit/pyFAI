@@ -46,8 +46,8 @@ from pyFAI import ocl_azim_csr
 # logger = utilstest.getLogger("profile")
 
 
-ponifile = utilstest.UtilsTest.getimage("1893/Pilatus1M.poni")
-datafile = utilstest.UtilsTest.getimage("1883/Pilatus1M.edf")
+ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")
+datafile = utilstest.UtilsTest.getimage("Pilatus1M.edf")
 ai = pyFAI.load(ponifile)
 data = fabio.open(datafile).data
 

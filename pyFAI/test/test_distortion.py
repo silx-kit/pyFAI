@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2016"
+__date__ = "23/06/2016"
 
 
 import unittest
@@ -49,9 +49,9 @@ from ..ext import sparse_utils
 
 class TestHalfCCD(unittest.TestCase):
     """basic test"""
-    halfFrelon = "1464/LaB6_0020.edf"
-    splineFile = "1461/halfccd.spline"
-    fit2d_cor = "2454/halfccd.fit2d.edf"
+    halfFrelon = "LaB6_0020.edf"
+    splineFile = "halfccd.spline"
+    fit2d_cor = "halfccd.fit2d.edf"
 
     def setUp(self):
         """Download files"""
@@ -179,8 +179,8 @@ class TestHalfCCD(unittest.TestCase):
 
 class TestImplementations(unittest.TestCase):
     """Ensure equivalence of implementation between numpy & Cython"""
-    halfFrelon = "1464/LaB6_0020.edf"
-    splineFile = "1461/halfccd.spline"
+    halfFrelon = "LaB6_0020.edf"
+    splineFile = "halfccd.spline"
 
     def setUp(self):
         """Download files"""

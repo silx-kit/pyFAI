@@ -28,7 +28,7 @@ import numpy
 import fabio
 from utilstest import  UtilsTest
 pyFAI = UtilsTest.pyFAI
-data = fabio.open(UtilsTest.getimage("1788/mock.tif")).data
+data = fabio.open(UtilsTest.getimage("mock.tif")).data
 ai = pyFAI.AzimuthalIntegrator.sload("mock.poni")
 ai.xrpd(data, 1000)
 tth = ai.twoThetaArray(data.shape)

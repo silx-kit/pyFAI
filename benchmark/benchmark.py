@@ -56,12 +56,12 @@ ocl = pyFAI.opencl.ocl
 from pyFAI.gui_utils import pylab, update_fig
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
-datasets = {"Fairchild.poni": utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
-            "halfccd.poni": utilstest.UtilsTest.getimage("1882/halfccd.edf"),
-            "Frelon2k.poni": utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
-            "Pilatus6M.poni": utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
-            "Pilatus1M.poni": utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
-            "Mar3450.poni": utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
+datasets = {"Fairchild.poni": utilstest.UtilsTest.getimage("Fairchild.edf"),
+            "halfccd.poni": utilstest.UtilsTest.getimage("halfccd.edf"),
+            "Frelon2k.poni": utilstest.UtilsTest.getimage("Frelon2k.edf"),
+            "Pilatus6M.poni": utilstest.UtilsTest.getimage("Pilatus6M.cbf"),
+            "Pilatus1M.poni": utilstest.UtilsTest.getimage("Pilatus1M.edf"),
+            "Mar3450.poni": utilstest.UtilsTest.getimage("LaB6_260210.mar3450")
             }
 
 # Handle to the Bench instance: allows debugging from outside if needed

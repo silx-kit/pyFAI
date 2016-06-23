@@ -50,7 +50,7 @@ matplotlib.use("gtk")
 from matplotlib import pyplot as plt
 plt.ion()
 
-splinefile = utilstest.UtilsTest.getimage("1900/frelon.spline")
+splinefile = utilstest.UtilsTest.getimage("frelon.spline")
 
 detector = pyFAI.detectors.FReLoN(splinefile)
 

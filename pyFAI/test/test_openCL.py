@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "23/06/2016"
 
 
 import unittest
@@ -72,17 +72,17 @@ class TestMask(unittest.TestCase):
             os.makedirs(self.tmp_dir)
 
         self.N = 1000
-        self.datasets = [{"img": UtilsTest.getimage("1883/Pilatus1M.edf"),
-                          "poni": UtilsTest.getimage("1893/Pilatus1M.poni"),
+        self.datasets = [{"img": UtilsTest.getimage("Pilatus1M.edf"),
+                          "poni": UtilsTest.getimage("Pilatus1M.poni"),
                           "spline": None},
-                         {"img": UtilsTest.getimage("1882/halfccd.edf"),
-                          "poni": UtilsTest.getimage("1895/halfccd.poni"),
-                          "spline": UtilsTest.getimage("1461/halfccd.spline")},
-                         {"img": UtilsTest.getimage("1881/Frelon2k.edf"),
-                          "poni": UtilsTest.getimage("1896/Frelon2k.poni"),
-                          "spline": UtilsTest.getimage("1900/frelon.spline")},
-                         {"img": UtilsTest.getimage("1884/Pilatus6M.cbf"),
-                          "poni": UtilsTest.getimage("1897/Pilatus6M.poni"),
+                         {"img": UtilsTest.getimage("halfccd.edf"),
+                          "poni": UtilsTest.getimage("halfccd.poni"),
+                          "spline": UtilsTest.getimage("halfccd.spline")},
+                         {"img": UtilsTest.getimage("Frelon2k.edf"),
+                          "poni": UtilsTest.getimage("Frelon2k.poni"),
+                          "spline": UtilsTest.getimage("frelon.spline")},
+                         {"img": UtilsTest.getimage("Pilatus6M.cbf"),
+                          "poni": UtilsTest.getimage("Pilatus6M.poni"),
                           "spline": None},
             ]
         for ds in self.datasets:

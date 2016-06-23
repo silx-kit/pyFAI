@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2016"
+__date__ = "23/06/2016"
 
 
 import unittest
@@ -56,7 +56,7 @@ class testPeakPicking(unittest.TestCase):
     def setUp(self):
         """Download files"""
 
-        self.calibFile = "1788/mock.tif"
+        self.calibFile = "mock.tif"
         self.ctrlPt = {0: (300, 230),
                       1: (300, 212),
                       2: (300, 195),
@@ -129,7 +129,7 @@ class testPeakPicking(unittest.TestCase):
 
 class TestMassif(unittest.TestCase):
     """test for ring extraction algorithm with image which needs binning (non regression test)"""
-    calibFile = "1788/mock.tif"
+    calibFile = "mock.tif"
     #TODO !!!
 
 
