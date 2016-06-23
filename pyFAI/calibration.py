@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2016"
+__date__ = "23/06/2016"
 __status__ = "production"
 
 import os
@@ -52,7 +52,6 @@ if sys.version_info[0] < 3:
 else:
     from urllib.parse import urlparse
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
 import numpy
 from .gui_utils import pylab, update_fig, matplotlib

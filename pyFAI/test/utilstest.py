@@ -54,7 +54,6 @@ import numpy
 import shutil
 import json
 import tempfile
-logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
