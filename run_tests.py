@@ -57,7 +57,29 @@ else:
     old_importer = False
 
 
-logging.basicConfig(level=logging.WARNING)
+class StreamHandlerUnittestReady(logging.StreamHandler):
+    """The unittest class TestResult redefine sys.stdout/err to capture
+    stdout/err from tests and to display them only when a test fail.
+
+    This class allow to use unittest stdout-capture by using the last sys.stdout
+    and not a cached one.
+    """
+
+    def emit(self, record):
+        """
+        @type record: logging.LogRecord
+        """
+        print(record.levelname + ":" + record.msg)
+
+    def flush(self):
+        pass
+
+# Same as basicConfig with a custom handler but portable Python 2 and 3
+root = logging.getLogger()
+root.addHandler(StreamHandlerUnittestReady())
+root.setLevel(logging.WARNING)
+
+
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
 
@@ -305,9 +327,9 @@ PROJECT_PATH = module.__path__[0]
 
 # Run the tests
 if options.memprofile:
-    runner = ProfileTestRunner()
+    runner = ProfileTestRunner(buffer=True)
 else:
-    runner = unittest.TextTestRunner()
+    runner = unittest.TextTestRunner(buffer=True)
 
 logger.warning("Test %s %s from %s",
                PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH)
@@ -335,7 +357,6 @@ if not options.test_name:
 else:
     test_suite.addTest(
         unittest.defaultTestLoader.loadTestsFromNames(options.test_name))
-
 
 if runner.run(test_suite).wasSuccessful():
     logger.info("Test suite succeeded")
