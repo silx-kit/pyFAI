@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/06/2016"
+__date__ = "30/06/2016"
 __status__ = "production"
 
 import logging
@@ -48,6 +48,9 @@ if "version_info" in dir(fabio) and fabio.version_info >= (0, 2, 2):
     from fabio.nexus import exists
 else:
     from os.path import exists
+if fabio.hexversion < 262144: # Before version 0.4
+    # Short cut fabio.factory do not exists on older versions
+    fabio.factory = fabio.fabioimage.FabioImage.factory
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
