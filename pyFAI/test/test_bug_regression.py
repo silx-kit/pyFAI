@@ -127,9 +127,13 @@ class TestBug211(unittest.TestCase):
         if not os.path.exists(self.exe):
             logger.error("Error with executable: %s, not found. Skipping test", self.exe)
             return
-        p = subprocess.call([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
-                            shell=False, env=self.env)
-        if p:
+
+        p = subprocess.Popen([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
+                            shell=False, env=self.env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        rc = p.wait()
+        if rc:
+            logger.info(p.stdout.read())
+            logger.error(p.stderr.read())
             l = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
             logger.error(os.linesep + (" ".join(l)))
             env = "Environment:"
@@ -142,7 +146,7 @@ class TestBug211(unittest.TestCase):
             logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
             return
 
-        self.assertEqual(p, 0, msg="pyFAI-average return code %i != 0" % p)
+        self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
         self.assert_(numpy.allclose(fabio.open(self.outfile).data, self.res),
                      "pyFAI-average with quantiles gives good results")
 
