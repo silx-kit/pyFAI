@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/06/2016"
+__date__ = "24/06/2016"
 
 import sys
 import os
@@ -136,6 +136,8 @@ class TestBug211(unittest.TestCase):
             for k, v in self.env.items():
                 env += "%s    %s: %s" % (os.linesep, k, v)
             logger.error(env)
+            self.fail()
+
         if fabio.hexversion < 262147:
             logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
             return
