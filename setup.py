@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2016"
+__date__ = "17/06/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -39,7 +39,6 @@ import sys
 import glob
 import shutil
 import platform
-import subprocess
 import numpy
 
 try:
@@ -372,6 +371,12 @@ class sdist_debian(sdist):
     * remove auto-generated doc
     * remove cython generated .c files
     """
+    @staticmethod
+    def get_debian_name():
+        import version
+        name = "%s_%s" % (PROJECT, version.debianversion)
+        return name
+
     def prune_file_list(self):
         sdist.prune_file_list(self)
         to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc"]
@@ -403,10 +408,10 @@ class sdist_debian(sdist):
             dest = "".join((base, ext))
         else:
             dest = base
-        sp = dest.split("-")
-        base = sp[:-1]
-        nr = sp[-1]
-        debian_arch = os.path.join(dirname, "-".join(base) + "_" + nr + ".orig.tar.gz")
+#         sp = dest.split("-")
+#         base = sp[:-1]
+#         nr = sp[-1]
+        debian_arch = os.path.join(dirname, self.get_debian_name() + ".orig.tar.gz")
         os.rename(self.archive_files[0], debian_arch)
         self.archive_files = [debian_arch]
         print("Building debian .orig.tar.gz in %s" % self.archive_files[0])
@@ -536,8 +541,9 @@ def get_version():
 def get_readme():
     dirname = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(dirname, "README.rst"), "rb") as fp:
-        long_description = fp.read().decode("utf-8")
-    return long_description
+        long_description = fp.read()
+    return long_description.decode("utf-8")
+
 
 # double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = ["Development Status :: 5 - Production/Stable",
