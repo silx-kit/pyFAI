@@ -1,8 +1,22 @@
-# AppVeyor.com is a Continuous Integration service to build and run tests Windows
-# https://ci.appveyor.com/project/kif/pyFAI
+# AppVeyor.com is a Continuous Integration service to build and run tests under
+# Windows
+# https://ci.appveyor.com/project/ESRF/pyFAI
+
+version: 0.13.{build}
+shallow_clone: true
+build: false
+
+notifications:
+- provider: Email
+  to:
+  - silx-ci@edna-site.org
+  subject: '[CI] appveyor'
+  on_build_success: false
+  on_build_failure: false
+  on_build_status_changed: true
 
 os:
-    - Visual Studio 2015
+    - Visual Studio 2015 - GCE
 
 cache:
     - '%LOCALAPPDATA%\pip\Cache'

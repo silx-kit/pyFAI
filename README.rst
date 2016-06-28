@@ -1,7 +1,7 @@
 pyFAI: Fast Azimuthal Integration in Python
 ===========================================
 
-Main development website: https://github.com/kif/pyFAI
+Main development website: https://github.com/silx-kit/pyFAI
 
 |Build Status| |Appveyor Status|
 
@@ -45,7 +45,7 @@ Download it one and unpack it::
     unzip pyFAI-master.zip
 
 As developement is also done on Github,
-`development branch is also available <https://github.com/kif/pyFAI/archive/master.zip>`_
+`development branch is also available <https://github.com/silx-kit/pyFAI/archive/master.zip>`_
 
 All files are unpacked into the directory pyFAI-master::
 
@@ -180,10 +180,11 @@ A mailing-list, pyfai@esrf.fr, is available to get help on the program and how t
 One needs to subscribe by sending an email to sympa@esrf.fr with a subject "subscribe pyfai".
 
 
-Maintainer
-----------
+Maintainers
+-----------
 
  * Jérôme Kieffer (ESRF)
+ * Valentin Valls (ESRF)
 
 Contributors
 ------------
@@ -191,7 +192,6 @@ Contributors
  * Frédéric-Emmanuel Picca (Soleil)
  * Dimitris Karkoulis (ESRF)
  * Aurore Deschildre (ESRF)
- * Valentin Valls (ESRF)
  * Giannis Ashiotis (ESRF)
  * Zubair Nawaz (Sesame)
  * Jon Wright (ESRF)
@@ -211,5 +211,5 @@ Indirect contributors (ideas, ...):
 
 .. |Build Status| image:: https://travis-ci.org/kif/pyFAI.svg?branch=master
    :target: https://travis-ci.org/kif/pyFAI
-.. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/if0fdfftdh4iigpo?svg=true
+.. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/c57jwp3at94t3jgr?svg=true
    :target: https://ci.appveyor.com/project/kif/pyfai

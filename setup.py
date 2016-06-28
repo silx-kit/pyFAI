@@ -579,7 +579,7 @@ if os.path.isdir("third_party"):
 
 
 if __name__ == "__main__":
-    setup(name='pyFAI',
+    setup(name=PROJECT,
           version=get_version(),
           author="Jérôme Kieffer (python), \
           Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
