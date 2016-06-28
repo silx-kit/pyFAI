@@ -1,8 +1,29 @@
-pyfai (0.12.0-1) UNRELEASED; urgency=medium
+pyfai (0.12.1~adev0-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+  * pyFAI snapshot 0.12.1-dev0 built for debian 8
+
+ -- Jerome Kieffer <jerome@terre-adelie.org>  Tue, 28 Jun 2016 13:51:48 +0200
+
+pyfai (0.12.1~adev0-1) UNRELEASED; urgency=medium
+
+  * upstream development build of pyFAI 0.12.1-dev0
+
+ -- Jerome Kieffer <jerome@terre-adelie.org>  Tue, 28 Jun 2016 13:51:48 +0200
+
+pyfai (0.12.1~adev0-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+  * pyFAI snapshot 0.12.1-dev0 built for debian 8
+
+ -- Jerome Kieffer <jerome@terre-adelie.org>  Tue, 28 Jun 2016 13:49:20 +0200
+
+pyfai (0.12.1~adev0-1) UNRELEASED; urgency=medium
 
   * upstream development build of pyFAI 0.12.0
+  * upstream development build of pyFAI 0.12.1-dev0
 
- -- Jerome Kieffer <jerome@terre-adelie.org>  Tue, 28 Jun 2016 12:47:51 +0200
+ -- Jerome Kieffer <jerome@terre-adelie.org>  Tue, 28 Jun 2016 13:49:20 +0200
 
 pyfai (0.11.0+dfsg-3) unstable; urgency=medium
 
