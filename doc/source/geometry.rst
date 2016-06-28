@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2016
+:Date: 28/06/2016
 :Keywords: generic description of the geometry
 :Target: General audiance
 
@@ -61,16 +61,19 @@ Changing the point of view behind the detector changes the sign of the azimuthal
 Default geometry in pyFAI
 -------------------------
 
-In the (most common) case of *transmission diffraction setup* on synchrotrons (like ESRF, Soleil, Petra3, SLS...) this makes looks like:
+In the (most common) case of *transmission diffraction setup* on synchrotrons
+(like ESRF, Soleil, Petra3, SLS...) this makes looks like:
 
 * Observer looking at the detector from the sample position:
 * Origin at the lower left of the detector
 * Axis 1 (i.e. *y*) being vertical, pointing upwards
 * Axis 2 (i.e. *x*) being horizontal, pointing to the center of the storage ring
-* Axis 3 (i.e. *z*) being horizontal, along the transmitted beam
+* Axis 3 (i.e. *z*) being horizontal, along the incident beam
 
-Axis 3 is built in such a way to be orthogonal and (1,2,3) is a direct orientation.
-This makes the sample position negative (at z<0).
+Axis 3 is built in such a way to be orthogonal to the plane  (1,2).
+Due to constraints on the origin and orientation of the azimuthal angle, chi,
+(1, 2, 3) is inderect orientation.
+This makes usually the PONI position with negative third coordiante (at z<0).
 
 
 Detector position
@@ -104,5 +107,9 @@ the detector is not mounted horizontally and/or one cares about polarization cor
 
 When all rotations are zero, the detector is in transmission mode with the
 incident beam orthogonal to the detector's surface.
+
+There is also a tutorial :ref:`tutorials` on the geomety which explains in detail
+the orientations of the different rotations used by pyFAI.
+
 
 
