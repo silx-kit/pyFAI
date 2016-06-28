@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/04/2016"
+__date__ = "21/06/2016"
 
 import sys
 import os
@@ -125,8 +125,8 @@ class TestBug211(unittest.TestCase):
 
     def test_quantile(self):
         if not os.path.exists(self.exe):
-            print("Error with executable: %s" % self.exe)
-            print(os.listdir(os.path.dirname(self.exe)))
+            logger.error("Error with executable: %s, not found. Skipping test", self.exe)
+            return
         p = subprocess.call([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
                             shell=False, env=self.env)
         if p:
@@ -136,9 +136,13 @@ class TestBug211(unittest.TestCase):
             for k, v in self.env.items():
                 env += "%s    %s: %s" % (os.linesep, k, v)
             logger.error(env)
+        if fabio.hexversion < 262147:
+            logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
+            return
+
         self.assertEqual(p, 0, msg="pyFAI-average return code %i != 0" % p)
         self.assert_(numpy.allclose(fabio.open(self.outfile).data, self.res),
-                         "pyFAI-average with quantiles gives good results")
+                     "pyFAI-average with quantiles gives good results")
 
 
 class TestBug232(unittest.TestCase):
