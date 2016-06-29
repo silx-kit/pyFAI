@@ -21,9 +21,6 @@ os:
 cache:
     - '%LOCALAPPDATA%\pip\Cache'
 
-# fetch repository as zip archive
-shallow_clone: true
-
 environment:
     global:
         WIN_SDK_ROOT: "C:\\Program Files\\Microsoft SDKs\\Windows"
