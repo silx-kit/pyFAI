@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "30/06/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -298,7 +298,8 @@ data_files = [(os.path.join(installDir, "resources/openCL"), glob.glob("resource
 if sys.platform == "win32":
     # This is for mingw32/gomp
     if tuple.__itemsize__ == 4:
-        data_files[0][1].append(os.path.join("dll", "pthreadGC2.dll"))
+        rule = (installDir, glob.glob("packages/win32/*.dll"))
+        data_files.append(rule)
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
     script_files = []
