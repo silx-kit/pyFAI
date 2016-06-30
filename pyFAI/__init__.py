@@ -26,7 +26,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "02/06/2016"
+__date__ = "30/06/2016"
 
 import sys
 import logging
@@ -36,7 +36,7 @@ import os
 project = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
 try:
     from ._version import __date__ as date
-    from ._version import version, version_info, hexversion, strictversion
+    from ._version import version, version_info, hexversion, strictversion, calc_hexversion
 except ImportError:
     raise RuntimeError("Do NOT use %s from its sources: build it and use the built version" % project)
 
