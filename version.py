@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
+# /*##########################################################################
 #
-#    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
-#
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
-#
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +21,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-
-from __future__ import absolute_import, print_function, division
-
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/06/2016"
-__status__ = "production"
-__docformat__ = 'restructuredtext'
-__doc__ = """Module for version handling:
+#
+# ###########################################################################*/
+"""Unique place where the version number is defined.
 
 provides:
 * version = "1.2.3" or "1.2.3-beta4"
@@ -44,6 +31,7 @@ provides:
 * hexversion: 0x010203B4
 * strictversion = "1.2.3b4
 * debianversion = "1.2.3~beta4"
+* calc_hexversion: the function to transform a version_tuple into an integer
 
 This is called hexversion since it only really looks meaningful when viewed as the
 result of passing it to the built-in hex() function.
@@ -60,14 +48,15 @@ Bits (big endian order)     Meaning
 Thus 2.1.0a3 is hexversion 0x020100a3.
 
 """
-__all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion"]
 
-RELEASE_LEVEL_VALUE = {"dev": 0,
-                       "alpha": 10,
-                       "beta": 11,
-                       "gamma": 11,
-                       "rc": 12,
-                       "final": 15}
+from __future__ import absolute_import, print_function, division
+__authors__ = ["Jérôme Kieffer"]
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "17/06/2016"
+__status__ = "production"
+__docformat__ = 'restructuredtext'
+__all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion"]
 
 MAJOR = 0
 MINOR = 12
@@ -75,11 +64,15 @@ MICRO = 1
 RELEV = "dev"  # <16
 SERIAL = 0  # <16
 
+RELEASE_LEVEL_VALUE = {"dev": 0,
+                       "alpha": 10,
+                       "beta": 11,
+                       "gamma": 11,
+                       "rc": 12,
+                       "final": 15}
 date = __date__
-
 from collections import namedtuple
 _version_info = namedtuple("version_info", ["major", "minor", "micro", "releaselevel", "serial"])
-
 version_info = _version_info(MAJOR, MINOR, MICRO, RELEV, SERIAL)
 
 strictversion = version = debianversion = "%d.%d.%d" % version_info[:3]
