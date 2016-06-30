@@ -27,8 +27,9 @@ d_input     = array.to_device(queue, input_a)
 d_preresult = cl.Buffer(ctx, mf.READ_WRITE, 4*4*workgroup_size)
 d_result = cl.Buffer(ctx, mf.READ_WRITE, 4*4)
 
-with open("reduction_test4.cl", "r") as kernelFile:
+with open("pyFAI/resources/openCL/reduction_test4.cl", "r") as kernelFile:
     kernel_src = kernelFile.read()
+    kernel_src = kernel_src.replace("#include \"for_eclipse.h\"", "")
 
 compile_options = "-D WORKGROUP_SIZE=%i" % (workgroup_size)
 

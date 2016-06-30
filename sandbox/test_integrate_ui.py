@@ -28,7 +28,7 @@ class AIWidget(QtGui.QWidget):
         self.input_data = input_data
         self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
-        uic.loadUi('integration.ui', self)
+        uic.loadUi('pyFAI/resources/gui/integration.ui', self)
         self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys()
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
