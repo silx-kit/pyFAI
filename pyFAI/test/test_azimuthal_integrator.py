@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "23/06/2016"
 
 
 import unittest
@@ -60,7 +60,7 @@ except ImportError:
 class TestAzimPilatus(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.img = UtilsTest.getimage("1884/Pilatus6M.cbf")
+        cls.img = UtilsTest.getimage("Pilatus6M.cbf")
 
     def setUp(self):
         """Download files"""
@@ -80,10 +80,10 @@ class TestAzimHalfFrelon(unittest.TestCase):
     def setUp(self):
         """Download files"""
 
-        fit2dFile = '1460/fit2d.dat'
-        halfFrelon = "1464/LaB6_0020.edf"
-        splineFile = "1461/halfccd.spline"
-        poniFile = "1463/LaB6.poni"
+        fit2dFile = 'fit2d.dat'
+        halfFrelon = "LaB6_0020.edf"
+        splineFile = "halfccd.spline"
+        poniFile = "LaB6.poni"
 
         self.tmpfiles = {"cython": os.path.join(tmp_dir, "cython.dat"),
                          "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
@@ -287,9 +287,9 @@ class TestFlatimage(unittest.TestCase):
 
 
 class test_saxs(unittest.TestCase):
-    saxsPilatus = "1492/bsa_013_01.edf"
-    maskFile = "1491/Pcon_01Apr_msk.edf"
-    maskRef = "1490/bioSaxsMaskOnly.edf"
+    saxsPilatus = "bsa_013_01.edf"
+    maskFile = "Pcon_01Apr_msk.edf"
+    maskRef = "bioSaxsMaskOnly.edf"
     ai = AzimuthalIntegrator(detector="Pilatus1M")
 
     def setUp(self):

@@ -43,8 +43,8 @@ pyFAI = sys.modules["pyFAI"]
 # from pyFAI import splitBBoxLUT
 # from pyFAI import splitBBoxCSR
 # logger = utilstest.getLogger("profile")
-ponifile = utilstest.UtilsTest.getimage("1893/Pilatus1M.poni")
-datafile = utilstest.UtilsTest.getimage("1883/Pilatus1M.edf")
+ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")
+datafile = utilstest.UtilsTest.getimage("Pilatus1M.edf")
 ai = pyFAI.load(ponifile)
 data = fabio.open(datafile).data
 # ref = ai.xrpd_LUT(data, 1000)[1]

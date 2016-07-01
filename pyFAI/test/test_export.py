@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "23/06/2016"
 
 
 import fabio
@@ -73,7 +73,7 @@ def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, 
     return res
 
 class TestFIT2D(unittest.TestCase):
-    poniFile = "1893/Pilatus1M.poni"
+    poniFile = "Pilatus1M.poni"
 
     def setUp(self):
         """Download files"""
@@ -107,7 +107,7 @@ class TestFIT2D(unittest.TestCase):
 
 
 class TestSPD(unittest.TestCase):
-    poniFile = "1893/Pilatus1M.poni"
+    poniFile = "Pilatus1M.poni"
 
     def setUp(self):
         """Download files"""

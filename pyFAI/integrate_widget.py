@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2016"
+__date__ = "23/06/2016"
 __status__ = "development"
 
 import logging
@@ -44,7 +44,6 @@ import threading
 import math
 import os.path as op
 import numpy
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.integrate_widget")
 from .gui_utils import QtCore, QtGui, uic, QtWebKit
 

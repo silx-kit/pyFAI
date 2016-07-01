@@ -176,8 +176,8 @@ class TestBug174(unittest.TestCase):
     wavelength change not taken into account (memoization error)
     """
     def test(self):
-        ai = load(UtilsTest.getimage("1893/Pilatus1M.poni"))
-        data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
+        ai = load(UtilsTest.getimage("Pilatus1M.poni"))
+        data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
         wl1 = 1e-10
         wl2 = 2e-10
         ai.wavelength = wl1
