@@ -56,13 +56,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "17/06/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
-__all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion"]
-
-MAJOR = 0
-MINOR = 12
-MICRO = 1
-RELEV = "dev"  # <16
-SERIAL = 0  # <16
+__all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion", "calc_hexversion"]
 
 RELEASE_LEVEL_VALUE = {"dev": 0,
                        "alpha": 10,
@@ -70,9 +64,18 @@ RELEASE_LEVEL_VALUE = {"dev": 0,
                        "gamma": 11,
                        "rc": 12,
                        "final": 15}
+
+MAJOR = 0
+MINOR = 12
+MICRO = 1
+RELEV = "dev"  # <16
+SERIAL = 0  # <16
+
 date = __date__
+
 from collections import namedtuple
 _version_info = namedtuple("version_info", ["major", "minor", "micro", "releaselevel", "serial"])
+
 version_info = _version_info(MAJOR, MINOR, MICRO, RELEV, SERIAL)
 
 strictversion = version = debianversion = "%d.%d.%d" % version_info[:3]
@@ -84,12 +87,31 @@ if version_info.releaselevel != "final":
         prerel = "a"
     strictversion += prerel + str(version_info[-1])
 
-hexversion = version_info[4]
-hexversion |= RELEASE_LEVEL_VALUE.get(version_info[3], 0) * 1 << 4
-hexversion |= version_info[2] * 1 << 8
-hexversion |= version_info[1] * 1 << 16
-hexversion |= version_info[0] * 1 << 24
 
+def calc_hexversion(major=0, minor=0, micro=0, releaselevel="dev", serial=0):
+    """Calculate the hexadecimal version number from the tuple version_info:
+    
+    :param major: integer
+    :param minor: integer
+    :param micro: integer
+    :param relev: integer or string
+    :param serial: integer
+    :return: integerm always increasing with revision numbers  
+    """
+    try:
+        releaselevel = int(releaselevel)
+    except ValueError:
+        releaselevel = RELEASE_LEVEL_VALUE.get(releaselevel, 0)
+
+    hex_version = int(serial)
+    hex_version |= releaselevel * 1 << 4
+    hex_version |= int(micro) * 1 << 8
+    hex_version |= int(minor) * 1 << 16
+    hex_version |= int(major) * 1 << 24
+    return hex_version
+
+
+hexversion = calc_hexversion(*version_info)
 
 if __name__ == "__main__":
     print(version)

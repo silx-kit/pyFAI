@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/06/2016"
+__date__ = "30/06/2016"
 
 import unittest
 import numpy
@@ -45,6 +45,7 @@ import tempfile
 from .utilstest import UtilsTest, getLogger, recursive_delete
 logger = getLogger(__file__)
 from .. import utils
+from .. import _version
 
 # if logger.getEffectiveLevel() <= logging.INFO:
 #    from pyFAI.gui_utils import pylab
@@ -160,6 +161,14 @@ class TestUtils(unittest.TestCase):
         self.assert_((numpy.outer(vect, numpy.ones(size2)) == utils.expand2d(vect, size2, False)).all(), "horizontal vector expand")
         self.assert_((numpy.outer(numpy.ones(size2), vect) == utils.expand2d(vect, size2, True)).all(), "vertical vector expand")
 
+    def test_hexversion(self):
+        # print(_version, type(_version))
+        self.assertEqual(_version.calc_hexversion(1), 1 << 24, "Major is OK")
+        self.assertEqual(_version.calc_hexversion(0, 1), 1 << 16, "Minor is OK")
+        self.assertEqual(_version.calc_hexversion(0, 0, 1), 1 << 8, "Micro is OK")
+        self.assertEqual(_version.calc_hexversion(0, 0, 0, 1), 1 << 4, "Release level is OK")
+        self.assertEqual(_version.calc_hexversion(0, 0, 0, 0, 1), 1, "Serial is OK")
+
 
 def suite():
     testsuite = unittest.TestSuite()
@@ -169,6 +178,7 @@ def suite():
     testsuite.addTest(TestUtils("test_gaussian_filter"))
     testsuite.addTest(TestUtils("test_set"))
     testsuite.addTest(TestUtils("test_expand2d"))
+    testsuite.addTest(TestUtils("test_hexversion"))
     return testsuite
 
 if __name__ == '__main__':
