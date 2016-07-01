@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "23/06/2016"
 
 import unittest
 import sys
@@ -45,7 +45,7 @@ from ..ext import watershed
 
 
 class TestWatershed(unittest.TestCase):
-    fname = "1883/Pilatus1M.edf"
+    fname = "Pilatus1M.edf"
 
     def setUp(self):
         self.data = fabio.open(UtilsTest.getimage(self.fname)).data

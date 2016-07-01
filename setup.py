@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/06/2016"
+__date__ = "30/06/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -291,14 +291,15 @@ def download_images():
 
 installDir = PROJECT
 
-data_files = [(os.path.join(installDir, "openCL"), glob.glob("openCL/*.cl")),
-              (os.path.join(installDir, "gui"), glob.glob("gui/*.ui")),
-              (os.path.join(installDir, "calibration"), glob.glob("calibration/*.D"))]
+data_files = [(os.path.join(installDir, "resources/openCL"), glob.glob("resources/openCL/*.cl")),
+              (os.path.join(installDir, "resources/gui"), glob.glob("resources/gui/*.ui")),
+              (os.path.join(installDir, "resources/calibration"), glob.glob("resources/calibration/*.D"))]
 
 if sys.platform == "win32":
     # This is for mingw32/gomp
     if tuple.__itemsize__ == 4:
-        data_files[0][1].append(os.path.join("dll", "pthreadGC2.dll"))
+        rule = (installDir, glob.glob("packages/win32/*.dll"))
+        data_files.append(rule)
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
     script_files = []
@@ -379,7 +380,7 @@ class sdist_debian(sdist):
 
     def prune_file_list(self):
         sdist.prune_file_list(self)
-        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc"]
+        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc", "pyFAI/third_party"]
         print("Removing files for debian")
         for rm in to_remove:
             self.filelist.exclude_pattern(pattern="*", anchor=False, prefix=rm)
@@ -573,8 +574,8 @@ package_dir = {"pyFAI": "pyFAI",
                "pyFAI.test": "pyFAI/test",
                "pyFAI.benchmark": "pyFAI/benchmark"}
 
-if os.path.isdir("third_party"):
-    package_dir["pyFAI.third_party"] = "third_party"
+if os.path.isdir("pyFAI/third_party"):
+    package_dir["pyFAI.third_party"] = "pyFAI/third_party"
     packages.append("pyFAI.third_party")
 
 

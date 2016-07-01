@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2016"
+__date__ = "23/06/2016"
 
 
 import unittest
@@ -60,8 +60,8 @@ class TestSparseBBox(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.N = 1000
         self.unit = "2th_deg"
-        self.ai = load(UtilsTest.getimage("1893/Pilatus1M.poni"))
-        self.data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
+        self.ai = load(UtilsTest.getimage("Pilatus1M.poni"))
+        self.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
         self.ref = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="splitBBox")[1]
         self.cython = splitBBox.histoBBox1d(self.data, self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N)
 

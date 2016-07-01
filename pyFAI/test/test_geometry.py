@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2016"
+__date__ = "23/06/2016"
 
 
 import unittest
@@ -71,8 +71,8 @@ class TestSolidAngle(unittest.TestCase):
     DirectBeamDist= 199.510mm    Center: x=1231.226, y=1253.864 pix    Tilt=0.591 deg  tiltPlanRotation= 139.352 deg
     integration in 2theta between 0 and 56 deg in 1770 points
     """
-    fit2dFile = '2548/powder_200_2_0001.chi'
-    pilatusFile = '2549/powder_200_2_0001.cbf'
+    fit2dFile = 'powder_200_2_0001.chi'
+    pilatusFile = 'powder_200_2_0001.cbf'
     ai = None
     fit2d = None
 

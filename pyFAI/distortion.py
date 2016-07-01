@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/06/2016"
+__date__ = "23/06/2016"
 __status__ = "development"
 
 import logging
@@ -38,7 +38,6 @@ import threading
 import os
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
-logging.basicConfig(level=logging.INFO)
 from math import ceil, floor
 from . import detectors
 from .opencl import ocl

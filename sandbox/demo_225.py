@@ -6,9 +6,9 @@ logging.basicConfig(level=logging.INFO)
 import pyFAI, pyFAI.distortion
 
 
-halfFrelon = "1464/LaB6_0020.edf"
-splineFile = "1461/halfccd.spline"
-fit2d_cor = "2454/halfccd.fit2d.edf"
+halfFrelon = "LaB6_0020.edf"
+splineFile = "halfccd.spline"
+fit2d_cor = "halfccd.fit2d.edf"
 from pyFAI.test.utilstest import UtilsTest
 fit2dFile = UtilsTest.getimage(fit2d_cor)
 halfFrelon = UtilsTest.getimage(halfFrelon)

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2016"
+__date__ = "23/06/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -54,7 +54,6 @@ import numpy
 import shutil
 import json
 import tempfile
-logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
@@ -134,7 +133,7 @@ class UtilsTest(object):
             just raise an Exception.
             """
             if imagename is None:
-                imagename = "2252/testimages.tar.bz2 unzip it "
+                imagename = "testimages.tar.bz2 unzip it "
             raise RuntimeError("Could not automatically \
                 download test images!\n \ If you are behind a firewall, \
                 please set both environment variable http_proxy and https_proxy.\
@@ -144,13 +143,11 @@ class UtilsTest(object):
     @classmethod
     def getimage(cls, imagename):
         """
-        Downloads the requested image from Forge.EPN-campus.eu
+        Downloads the requested image from a file set available at http://www.silx.org/pub/pyFAI/testimages/
 
-        @param: name of the image.
-        For the RedMine forge, the filename contains a directory name that is removed
-        @return: full path of the locally saved file
+        @param: relative name of the image.
+        @return: full path of the locally saved file.
         """
-        imagename = os.path.basename(imagename)
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
             image_list = list(cls.ALL_DOWNLOADED_FILES)
