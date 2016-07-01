@@ -44,13 +44,17 @@ import math
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
-if "version_info" in dir(fabio) and fabio.version_info >= (0, 2, 2):
+
+from ._version import calc_hexversion
+if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2)):
     from fabio.nexus import exists
 else:
     from os.path import exists
-if fabio.hexversion < 262144: # Before version 0.4
+
+if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
     # Short cut fabio.factory do not exists on older versions
     fabio.factory = fabio.fabioimage.FabioImage.factory
+
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
