@@ -59,8 +59,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyFAI'
-from pyFAI._version import strictversion, version, __date__ as fabio_date
-year = fabio_date.split("/")[-1]
+from pyFAI._version import strictversion, version, __date__ as pyfai_date
+year = pyfai_date.split("/")[-1]
 copyright = u'2012-%s, Jerome Kieffer'% (year)
 
 # Configure the environment to be able to use sphinxcontrib.programoutput
