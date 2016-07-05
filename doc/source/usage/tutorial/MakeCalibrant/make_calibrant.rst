@@ -89,9 +89,10 @@ triclinic crystal.
 Specific constructors
 ~~~~~~~~~~~~~~~~~~~~~
 
-| Nevertheless, most used calibrants are of much higher symmetry, like
+Nevertheless, most used calibrants are of much higher symmetry, like
 cubic which takes only **one** parameter.
-| Here is an example for defining
+
+Here is an example for defining
 `Polonium <http://www.periodictable.com/Elements/084/data.html>`__ which
 is a simple cubic cell (Primitive) with a cell parameter of 335.9pm.
 This example was chosen as Polonium is apparently the only element with

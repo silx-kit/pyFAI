@@ -2,6 +2,7 @@
 :Date: 31/05/2016
 :Keywords: generic description of the software
 :Target: General audiance
+
 General introduction to PyFAI
 =============================
 
@@ -136,7 +137,7 @@ integrated before being plotted.
    :align: center
    :alt: image
 
-The :ref:`tutorial` section makes heavy use of *ipython*, now  *jupyter*
+The :ref:`tutorials` section makes heavy use of *ipython*, now  *jupyter*
 to process data using pyFAI.
 The first tutorial also explains a bit how Python and Jupyter works to be
 able to perform basic processing efficiently with pyFAI.
