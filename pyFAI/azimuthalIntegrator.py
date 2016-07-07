@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2016"
+__date__ = "07/07/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -134,6 +134,120 @@ if ocl:
         ocl_sort = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
+
+
+class Integrate1dResult(tuple):
+    """
+    Result of an 1D integration. Provide a tuple access as a simple way to reach main attrbutes.
+    Default result, extra results, and some interagtion parameters are available from attributes.
+
+    For compatibility with older API, the object can be read as a tuple in different ways:
+
+    .. codeblock::
+
+        result = ai.integrate1d(...)
+        if result.sigma is None:
+            radial, I = result
+        else:
+            radial, I, sigma = result
+    """
+
+    def __new__(self, radial, intensity, sigma=None):
+        if sigma is None:
+            t = radial, intensity
+        else:
+            t = radial, intensity, sigma
+        return tuple.__new__(Integrate1dResult, t)
+
+    @property
+    def radial(self):
+        """
+        Radial positions (q/2theta/r)
+
+        @rtype: numpy.ndarray
+        """
+        return self[0]
+
+    @property
+    def intensity(self):
+        """
+        Regrouped intensity
+
+        @rtype: numpy.ndarray
+        """
+        return self[1]
+
+    @property
+    def sigma(self):
+        """
+        Error array if it was requested
+
+        @rtype: numpy.ndarray, None
+        """
+        if len(self) == 2:
+            return None
+        return self[2]
+
+
+class Integrate2dResult(tuple):
+    """
+    Result of an 2D integration. Provide a tuple access as a simple way to reach main attrbutes.
+    Default result, extra results, and some interagtion parameters are available from attributes.
+
+    For compatibility with older API, the object can be read as a tuple in different ways:
+
+    .. codeblock::
+
+        result = ai.integrate2d(...)
+        if result.sigma is None:
+            I, radial, azimuthal = result
+        else:
+            I, radial, azimuthal, sigma = result
+    """
+    def __new__(self, intensity, radial, azimuthal, sigma=None):
+        if sigma is None:
+            t = intensity, radial, azimuthal
+        else:
+            t = intensity, radial, azimuthal, sigma
+        return tuple.__new__(Integrate2dResult, t)
+
+    @property
+    def intensity(self):
+        """
+        Azimuthaly regrouped intensity
+
+        @rtype: numpy.ndarray
+        """
+        return self[0]
+
+    @property
+    def radial(self):
+        """
+        Radial positions (q/2theta/r)
+
+        @rtype: numpy.ndarray
+        """
+        return self[1]
+
+    @property
+    def azimuthal(self):
+        """
+        Azimuthal positions (chi)
+
+        @rtype: numpy.ndarray
+        """
+        return self[2]
+
+    @property
+    def sigma(self):
+        """
+        Error array if it was requested
+
+        @rtype: numpy.ndarray, None
+        """
+        if len(self) == 3:
+            return None
+        return self[3]
 
 
 class AzimuthalIntegrator(Geometry):
@@ -2160,7 +2274,7 @@ class AzimuthalIntegrator(Geometry):
 
 
         @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
-        @rtype: 2 or 3-tuple of ndarrays
+        @rtype: Integrate1dResult, dict
         """
         method = method.lower()
         unit = units.to_unit(unit)
@@ -2674,10 +2788,7 @@ class AzimuthalIntegrator(Geometry):
             if sigma is not None:
                 res["sigma"] = sigma
         else:
-            if sigma is not None:
-                res = qAxis, I, sigma
-            else:
-                res = qAxis, I
+            res = Integrate1dResult(qAxis, I, sigma)
         return res
 
     def integrate2d(self, data, npt_rad, npt_azim=360,
@@ -2732,7 +2843,7 @@ class AzimuthalIntegrator(Geometry):
         @type normalization_factor: float
         @param all: if true, return many more intermediate results as a dict.
         @return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
-        @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
+        @rtype: Integrate2dResult, dict
         """
         method = method.lower()
         npt = (npt_rad, npt_azim)
@@ -3126,10 +3237,7 @@ class AzimuthalIntegrator(Geometry):
             if sigma is not None:
                 res["sigma"] = sigma
         else:
-            if sigma is not None:
-                res = I, bins_rad, bins_azim, sigma
-            else:
-                res = I, bins_rad, bins_azim
+            res = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         return res
 
     @deprecated

@@ -34,16 +34,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "07/07/2016"
 
 
 import unittest
 import numpy
+import numpy.testing
 import logging
 import fabio
 from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..azimuthalIntegrator import Integrate1dResult
+from ..azimuthalIntegrator import Integrate2dResult
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
@@ -178,6 +181,56 @@ class TestIntegrate2D(unittest.TestCase):
                     logger.info(mesg)
                 self.assertTrue(delta_pos_rad <= 0.01, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
+
+class TestIntegrateResult(unittest.TestCase):
+
+    def setUp(self):
+        self.I = numpy.array([[1, 2], [3, 4]])
+        self.radial = numpy.array([[3, 2], [3, 4]])
+        self.azimuthal = numpy.array([[2, 2], [3, 4]])
+        self.sigma = numpy.array([[4, 2], [3, 4]])
+
+    def test_result_1d(self):
+        result = Integrate1dResult(self.radial, self.I)
+        # as tuple
+        radial, I = result
+        numpy.testing.assert_equal((self.I, self.radial), (I, radial))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        self.assertIsNone(result.sigma)
+
+    def test_result_2d(self):
+        result = Integrate2dResult(self.I, self.radial, self.azimuthal)
+        # as tuple
+        I, radial, azimuthal = result
+        numpy.testing.assert_equal((self.I, self.radial, self.azimuthal), (I, radial, azimuthal))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        numpy.testing.assert_array_equal(self.azimuthal, result.azimuthal)
+        self.assertIsNone(result.sigma)
+
+    def test_result_1d_with_sigma(self):
+        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        # as tuple
+        radial, I, sigma = result
+        numpy.testing.assert_equal((self.radial, self.I, self.sigma), (radial, I, sigma))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        numpy.testing.assert_array_equal(self.sigma, result.sigma)
+
+    def test_result_2d_with_sigma(self):
+        result = Integrate2dResult(self.I, self.radial, self.azimuthal, self.sigma)
+        # as tuple
+        I, radial, azimuthal, sigma = result
+        numpy.testing.assert_equal((self.I, self.radial, self.azimuthal, self.sigma), (I, radial, azimuthal, sigma))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        numpy.testing.assert_array_equal(self.azimuthal, result.azimuthal)
+        numpy.testing.assert_array_equal(self.sigma, result.sigma)
 
 
 def suite():

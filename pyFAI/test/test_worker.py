@@ -82,7 +82,7 @@ class TestWorker(unittest.TestCase):
         self.assertIsNotNone(w)
 
     def test_process_1d(self):
-        ai_result = numpy.array([0, 1]), numpy.array([2, 3])
+        ai_result = Integrate1dResult(numpy.array([0, 1]), numpy.array([2, 3]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])
@@ -118,7 +118,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(worker.azimuthal, None)
 
     def test_process_2d(self):
-        ai_result = numpy.array([0]), numpy.array([1]), numpy.array([2])
+        ai_result = Integrate2dResult(numpy.array([0]), numpy.array([1]), numpy.array([2]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])
@@ -164,7 +164,7 @@ class TestWorker(unittest.TestCase):
             pass
 
     def test_process_poisson(self):
-        ai_result = numpy.array([0]), numpy.array([1]), numpy.array([2])
+        ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])
@@ -175,7 +175,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai._integrate1d_kargs["error_model"], "poisson")
 
     def test_process_no_output(self):
-        ai_result = numpy.array([0]), numpy.array([1]), numpy.array([2])
+        ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])
