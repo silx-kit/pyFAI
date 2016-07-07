@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "07/07/2016"
 
 import os
 import sys
@@ -117,16 +117,16 @@ class TestMultiGeometry(unittest.TestCase):
         self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
-        ref = self.ai.integrate2d(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg", method="splitpixel", all=True)
-        obt = self.mg.integrate2d(self.lst_data, self.N, 360, all=True)
-        self.assertEqual(abs(ref["radial"] - obt["radial"]).max(), 0, "Bin position is the same")
-        self.assertEqual(abs(ref["azimuthal"] - obt["azimuthal"]).max(), 0, "Bin position is the same")
+        ref = self.ai.integrate2d(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg", method="splitpixel")
+        obt = self.mg.integrate2d(self.lst_data, self.N, 360)
+        self.assertEqual(abs(ref.radial - obt.radial).max(), 0, "Bin position is the same")
+        self.assertEqual(abs(ref.azimuthal - obt.azimuthal).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
-        mask = obt["count"] <= 1e-6  # restrict on valid pixel
+        mask = obt.count <= 1e-6  # restrict on valid pixel
         mask[:, 0:2] = True
-        delta = abs(obt["I"] * 1e6 - ref["I"])
-        delta_cnt = abs(obt["count"] - ref["count"])
-        delta_sum = abs(obt["sum"] * 1e6 - ref["sum"])
+        delta = abs(obt.intensity * 1e6 - ref.intensity)
+        delta_cnt = abs(obt.count - ref.count)
+        delta_sum = abs(obt.sum * 1e6 - ref.sum)
         delta[mask] = 0
         delta_cnt[mask] = 0
         delta_sum[mask] = 0
@@ -138,9 +138,9 @@ class TestMultiGeometry(unittest.TestCase):
                 from matplotlib import pyplot as plt
                 f = plt.figure()
                 a1 = f.add_subplot(2, 2, 1)
-                a1.imshow(ref["sum"])
+                a1.imshow(ref.sum)
                 a2 = f.add_subplot(2, 2, 2)
-                a2.imshow(obt["sum"])
+                a2.imshow(obt.sum)
                 a3 = f.add_subplot(2, 2, 3)
                 a3.imshow(delta_sum)
                 a4 = f.add_subplot(2, 2, 4)

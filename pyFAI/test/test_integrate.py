@@ -232,6 +232,21 @@ class TestIntegrateResult(unittest.TestCase):
         numpy.testing.assert_array_equal(self.azimuthal, result.azimuthal)
         numpy.testing.assert_array_equal(self.sigma, result.sigma)
 
+    def test_result_1d_unit(self):
+        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        result._set_unit("foobar")
+        numpy.testing.assert_array_equal("foobar", result.unit)
+
+    def test_result_1d_count(self):
+        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        result._set_count(self.sigma)
+        numpy.testing.assert_array_equal(self.sigma, result.count)
+
+    def test_result_2d_sum(self):
+        result = Integrate2dResult(self.I, self.radial, self.azimuthal, self.sigma)
+        result._set_sum(self.sigma)
+        numpy.testing.assert_array_equal(self.sigma, result.sum)
+
 
 def suite():
     testsuite = unittest.TestSuite()

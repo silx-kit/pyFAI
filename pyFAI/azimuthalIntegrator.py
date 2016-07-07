@@ -136,7 +136,51 @@ else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
 
 
-class Integrate1dResult(tuple):
+class IntegrateResult(tuple):
+    """
+    Class defining shared information between Integrate1dResult and Integrate2dResult.
+    """
+
+    def __init__(self):
+        self._sum = None
+        self._count = None
+
+    @property
+    def sum(self):
+        """
+        Sum information
+
+        @rtype: numpy.ndarray
+        """
+        return self._sum
+
+    def _set_sum(self, sum_):
+        """
+        Set the sum information
+
+        @type count: numpy.ndarray
+        """
+        self._sum = sum_
+
+    @property
+    def count(self):
+        """
+        Count information
+
+        @rtype: numpy.ndarray
+        """
+        return self._count
+
+    def _set_count(self, count):
+        """
+        Set the count information
+
+        @type count: numpy.ndarray
+        """
+        self._count = count
+
+
+class Integrate1dResult(IntegrateResult):
     """
     Result of an 1D integration. Provide a tuple access as a simple way to reach main attrbutes.
     Default result, extra results, and some interagtion parameters are available from attributes.
@@ -151,13 +195,16 @@ class Integrate1dResult(tuple):
         else:
             radial, I, sigma = result
     """
-
     def __new__(self, radial, intensity, sigma=None):
         if sigma is None:
             t = radial, intensity
         else:
             t = radial, intensity, sigma
-        return tuple.__new__(Integrate1dResult, t)
+        return IntegrateResult.__new__(Integrate1dResult, t)
+
+    def __init__(self, radial, intensity, sigma=None):
+        super(Integrate1dResult, self).__init__()
+        self._unit = None
 
     @property
     def radial(self):
@@ -188,8 +235,25 @@ class Integrate1dResult(tuple):
             return None
         return self[2]
 
+    @property
+    def unit(self):
+        """
+        Radial unit
 
-class Integrate2dResult(tuple):
+        @rtype: string
+        """
+        return self._unit
+
+    def _set_unit(self, unit):
+        """
+        Define the radial unit
+
+        @type unit: str
+        """
+        self._unit = unit
+
+
+class Integrate2dResult(IntegrateResult):
     """
     Result of an 2D integration. Provide a tuple access as a simple way to reach main attrbutes.
     Default result, extra results, and some interagtion parameters are available from attributes.
@@ -209,7 +273,10 @@ class Integrate2dResult(tuple):
             t = intensity, radial, azimuthal
         else:
             t = intensity, radial, azimuthal, sigma
-        return tuple.__new__(Integrate2dResult, t)
+        return IntegrateResult.__new__(Integrate2dResult, t)
+
+    def __init__(self, intensity, radial, azimuthal, sigma=None):
+        super(Integrate2dResult, self).__init__()
 
     @property
     def intensity(self):
@@ -2270,9 +2337,8 @@ class AzimuthalIntegrator(Geometry):
         @type normalization_factor: float
         @param block_size: size of the block for OpenCL integration (unused?)
         @param profile: set to True to enable profiling in OpenCL
-        @param all: if true return a dictionary with many more parameters
-
-
+        @param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
+        @type all: bool
         @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         @rtype: Integrate1dResult, dict
         """
@@ -2778,18 +2844,25 @@ class AzimuthalIntegrator(Geometry):
         self.save1D(filename, qAxis, I, sigma, unit,
                     dark, flat, polarization_factor, normalization_factor)
 
+        result = Integrate1dResult(qAxis, I, sigma)
+        result._set_unit(unit)
+        result._set_sum(sum)
+        result._set_count(count)
+
         if all:
-            res = {"radial": qAxis,
-                   "unit": unit,
-                   "I": I,
-                   "sum": sum,
-                   "count": count
+            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
+
+            res = {"radial": result.radial,
+                   "unit": result.unit,
+                   "I": result.intensity,
+                   "sum": result.sum,
+                   "count": result.count
                    }
-            if sigma is not None:
-                res["sigma"] = sigma
-        else:
-            res = Integrate1dResult(qAxis, I, sigma)
-        return res
+            if result.sigma is not None:
+                res["sigma"] = result.sigma
+            return res
+
+        return result
 
     def integrate2d(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
@@ -2841,7 +2914,8 @@ class AzimuthalIntegrator(Geometry):
         @type safe: bool
         @param normalization_factor: Value of a normalization monitor
         @type normalization_factor: float
-        @param all: if true, return many more intermediate results as a dict.
+        @param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
+        @type all: bool
         @return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         @rtype: Integrate2dResult, dict
         """
@@ -3228,17 +3302,24 @@ class AzimuthalIntegrator(Geometry):
                     dark=dark, flat=flat, polarization_factor=polarization_factor,
                     normalization_factor=normalization_factor)
 
+        result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result._set_count(count)
+        result._set_sum(sum)
+
         if all:
-            res = {"I":I,
-                   "radial":bins_rad,
-                   "azimuthal":bins_azim,
-                   "count":count,
-                   "sum": sum}
-            if sigma is not None:
-                res["sigma"] = sigma
-        else:
-            res = Integrate2dResult(I, bins_rad, bins_azim, sigma)
-        return res
+            logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
+
+            res = {"I": result.intensity,
+                   "radial": result.radial,
+                   "azimuthal": result.azimuthal,
+                   "count": result.count,
+                   "sum": result.sum
+                }
+            if result.sigma is not None:
+                res["sigma"] = result.sigma
+            return res
+
+        return result
 
     @deprecated
     def saxs(self, data, npt, filename=None,
