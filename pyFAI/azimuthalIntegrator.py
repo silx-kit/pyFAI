@@ -442,6 +442,7 @@ class AzimuthalIntegrator(Geometry):
         self._darkcurrent = None
         self._flatfield_crc = None
         self._darkcurrent_crc = None
+        self._writer = None
         self.flatfiles = None
         self.darkfiles = None
 
@@ -3468,60 +3469,16 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def makeHeaders(self, hdr="#", has_dark=False, has_flat=False,
-                    polarization_factor=None, normalization_factor=None):
-        """
-        @param hdr: string used as comment in the header
-        @type hdr: str
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float
+    def _create_default_writer(self):
+        """Default writer constructor"""
+        from .io import DefaultAiWriter
+        return DefaultAiWriter(None, self)
 
-        @return: the header
-        @rtype: str
-        """
-        if self.header is None:
-            headerLst = ["== pyFAI calibration =="]
-            headerLst.append("SplineFile: %s" % self.splineFile)
-            headerLst.append("PixelSize: %.3e, %.3e m" %
-                             (self.pixel1, self.pixel2))
-            headerLst.append("PONI: %.3e, %.3e m" % (self.poni1, self.poni2))
-            headerLst.append("Distance Sample to Detector: %s m" %
-                             self.dist)
-            headerLst.append("Rotations: %.6f %.6f %.6f rad" %
-                             (self.rot1, self.rot2, self.rot3))
-            headerLst += ["", "== Fit2d calibration =="]
-            f2d = self.getFit2D()
-            headerLst.append("Distance Sample-beamCenter: %.3f mm" %
-                             f2d["directDist"])
-            headerLst.append("Center: x=%.3f, y=%.3f pix" %
-                             (f2d["centerX"], f2d["centerY"]))
-            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" %
-                             (f2d["tilt"], f2d["tiltPlanRotation"]))
-            headerLst.append("")
-            if self._wavelength is not None:
-                headerLst.append("Wavelength: %s" % self.wavelength)
-            if self.maskfile is not None:
-                headerLst.append("Mask File: %s" % self.maskfile)
-            if has_dark or (self.darkcurrent is not None):
-                if self.darkfiles:
-                    headerLst.append("Dark current: %s" % self.darkfiles)
-                else:
-                    headerLst.append("Dark current: Done with unknown file")
-            if has_flat or (self.flatfield is not None):
-                if self.flatfiles:
-                    headerLst.append("Flat field: %s" % self.flatfiles)
-                else:
-                    headerLst.append("Flat field: Done with unknown file")
-            if polarization_factor is None and self._polarization is not None:
-                polarization_factor = self._polarization_factor
-            headerLst.append("Polarization factor: %s" % polarization_factor)
-            headerLst.append("Normalization factor: %s" % normalization_factor)
-            self.header = "\n".join([hdr + " " + i for i in headerLst])
-        return self.header
+    def __get_default_writer(self):
+        """Get the default writer. Used when a filename is defined."""
+        if self._writer is None:
+            self._writer = self._create_default_writer()
+        return self._writer
 
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
@@ -3547,24 +3504,10 @@ class AzimuthalIntegrator(Geometry):
 
         This method save the result of a 1D integration.
         """
-        dim1_unit = units.to_unit(dim1_unit)
-        if filename:
-            with open(filename, "w") as f:
-                f.write(self.makeHeaders(has_dark=has_dark, has_flat=has_flat,
-                                         polarization_factor=polarization_factor,
-                                         normalization_factor=normalization_factor))
-                try:
-                    f.write("\n# --> %s\n" % (filename))
-                except UnicodeError:
-                    f.write("\n# --> %s\n" % (filename.encode("utf8")))
-                if error is None:
-                    f.write("#%14s %14s\n" % (dim1_unit.REPR, "I "))
-                    f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
-                else:
-                    f.write("#%14s  %14s  %14s\n" %
-                            (dim1_unit.REPR, "I ", "sigma "))
-                    f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
-                f.write("\n")
+        if not filename:
+            return
+        writer = self.__get_default_writer()
+        writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
@@ -3594,56 +3537,8 @@ class AzimuthalIntegrator(Geometry):
         """
         if not filename:
             return
-
-        dim1_unit = units.to_unit(dim1_unit)
-        # TODO: propoerly manage ordered dict
-        try:
-            from collections import OrderedDict
-        except:
-            header = {}
-        else:
-            header = OrderedDict()
-
-        header["dist"] = str(self._dist)
-        header["poni1"] = str(self._poni1)
-        header["poni2"] = str(self._poni2)
-        header["rot1"] = str(self._rot1)
-        header["rot2"] = str(self._rot2)
-        header["rot3"] = str(self._rot3)
-        header["chi_min"] = str(dim2.min())
-        header["chi_max"] = str(dim2.max())
-        header[dim1_unit.REPR + "_min"] = str(dim1.min())
-        header[dim1_unit.REPR + "_max"] = str(dim1.max())
-        header["pixelX"] = str(self.pixel2)  # this is not a bug ... most people expect dim1 to be X
-        header["pixelY"] = str(self.pixel1)  # this is not a bug ... most people expect dim2 to be Y
-        header["polarization_factor"] = str(polarization_factor)
-        header["normalization_factor"] = str(normalization_factor)
-
-        if self.splineFile:
-            header["spline"] = str(self.splineFile)
-
-        if has_dark:
-            if self.darkfiles:
-                header["dark"] = self.darkfiles
-            else:
-                header["dark"] = 'unknown dark applied'
-        if has_flat:
-            if self.flatfiles:
-                header["flat"] = self.flatfiles
-            else:
-                header["flat"] = 'unknown flat applied'
-        f2d = self.getFit2D()
-        for key in f2d:
-            header["key"] = f2d[key]
-        try:
-            img = fabio.edfimage.edfimage(data=I.astype("float32"),
-                                          header=header)
-
-            if error is not None:
-                img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
-            img.write(filename)
-        except IOError:
-            logger.error("IOError while writing %s" % filename)
+        writer = self.__get_default_writer()
+        writer.__get_default_writer().save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
