@@ -3,5 +3,8 @@
 :Keywords: Cookbook
 :Target: Scientists
 
+Azimuthal integration using Python
+==================================
+
 This cookbook is now available a a tutorial using `jupyter <https://try.jupyter.org/>`_
-on the :ref:`tutorial` section.
+on the :ref:`tutorials` section.

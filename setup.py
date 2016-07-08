@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/07/2016"
+__date__ = "05/07/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -40,6 +40,7 @@ import glob
 import shutil
 import platform
 import numpy
+import distutils.dir_util
 
 try:
     # setuptools allows the creation of wheels
@@ -488,16 +489,11 @@ if sphinx:
             build = self.get_finalized_command('build')
             sys.path.insert(0, os.path.abspath(build.build_lib))
 
-            # Copy gui files to the path:
-            dst = os.path.join(os.path.abspath(build.build_lib), PROJECT, "gui")
-            if not os.path.isdir(dst):
-                os.makedirs(dst)
-            for i in os.listdir("gui"):
-                if i.endswith(".ui"):
-                    src = os.path.join("gui", i)
-                    idst = os.path.join(dst, i)
-                    if not os.path.exists(idst):
-                        shutil.copy(src, idst)
+            # Copy resource files to the path
+            # NOTE: UI files are needed to be able to execute scripts when using sphinxcontrib.programoutput
+            source = os.path.join(PROJECT, "resources")
+            destination = os.path.join(os.path.abspath(build.build_lib), PROJECT, "resources")
+            distutils.dir_util.copy_tree(source, destination, update=1)
 
             # Build the Users Guide in HTML and TeX format
             for builder in ('html', 'latex'):

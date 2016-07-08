@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/06/2016"
+__date__ = "05/07/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -84,9 +84,7 @@ class Geometry(object):
     - The third dimension is chose such as the referential is
       orthonormal, so dim3 is along incoming X-ray beam
 
-
-    Demonstration of the equation done using Mathematica.
-    -----------------------------------------------------
+    Demonstration of the equation done using Mathematica:
 
     Axis 1 is along first dimension of detector (when not tilted),
     this is the slow dimension of the image array in C or Y

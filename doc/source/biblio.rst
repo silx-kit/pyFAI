@@ -2,6 +2,9 @@
 :Date: 31/05/2015
 :Keywords: list of references
 
+Bibliography
+============
+
 .. [SRI2012] PyFAI, a versatile library for azimuthal regrouping
    J. Kieffer & D. Karkoulis
    J. Phys.: Conf. Ser. 425 202012

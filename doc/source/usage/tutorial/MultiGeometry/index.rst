@@ -153,6 +153,7 @@ use the *copy* function of the *copy* module:
 .. code:: python
 
     import copy
+
 We will now offset the *poni1* value of each AzimuthalIntegratoe which
 correspond to a vertical translation. Each subsequent image is offsetted
 by half a detector width (stored as *poni1*).

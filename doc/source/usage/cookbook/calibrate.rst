@@ -155,8 +155,8 @@ Visualize the integrated patterns
 
 .. code-block:: shell
 
- Fixed: wavelength
- Modify parameters (or ? for help)?   integrate
+    Fixed: wavelength
+    Modify parameters (or ? for help)?   integrate
 
 
 .. figure:: pyFAI-calib_4.png
@@ -174,9 +174,10 @@ Quit
     $
 
 .. code-block:: shell
-   ls
-   F_K4320T_Cam43_30012013_distorsion.spline  LaB6_29.4keV.npt   LaB6_29.4keV.tif
-   LaB6_29.4keV.azim                          LaB6_29.4keV.poni  LaB6_29.4keV.xy
+
+    ls
+    F_K4320T_Cam43_30012013_distorsion.spline  LaB6_29.4keV.npt   LaB6_29.4keV.tif
+    LaB6_29.4keV.azim                          LaB6_29.4keV.poni  LaB6_29.4keV.xy
 
 
 All different geometries have been saved into the LaB6_29.4keV.poni file and

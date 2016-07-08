@@ -367,7 +367,7 @@ command from UNIX to print the content of the file. This "moke.dat" file
 contains in addition to the 2th/I value, a header commented with "#"
 with the geometry used to perform the calculation.
 
-**Nota: ** The *ai* object has initialized the geometry on the first
+**Nota:** The *ai* object has initialized the geometry on the first
 call and re-uses it on subsequent calls. This is why it is important to
 re-use the geometry in performance critical applications.
 
