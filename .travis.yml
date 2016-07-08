@@ -10,7 +10,7 @@ python:
 #  - "3.3" #fails misteriously
   - "3.4"
   - "3.5"
-#  - "nightly"
+#  - "nightly" 
 #virtualenv:
 #    system_site_packages: NO !!!
 # the system python and the one from travis have been compiled with different options
