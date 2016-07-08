@@ -10,7 +10,7 @@ python:
 #  - "3.3" #fails misteriously
   - "3.4"
   - "3.5"
-#  - "nightly"
+#  - "nightly" 
 #virtualenv:
 #    system_site_packages: NO !!!
 # the system python and the one from travis have been compiled with different options
@@ -41,6 +41,8 @@ install:
   - "pip install --upgrade pip"
   - "pip install cython --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse"
   - "pip install --upgrade numpy --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse"
+    #remove after h5py 2.6
+  - "pip install --upgrade h5py --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse --no-index"  
   - "pip install --upgrade --trusted-host www.edna-site.org -r ci/requirements_travis.txt"
   - "python ci/info_platform.py"
   - "python setup.py build"

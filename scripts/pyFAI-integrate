@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2015"
+__date__ = "01/07/2016"
 __satus__ = "production"
 import sys, logging, json, os, time, types, threading
 import os.path as op
@@ -109,20 +109,21 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
         logger.info("setLevel: debug")
         logger.setLevel(logging.DEBUG)
 
-    from PyQt4 import QtCore, QtGui, uic
-    app = QtGui.QApplication([])
-    if not args:
-        dia = QtGui.QFileDialog(directory=os.getcwd())
-        dia.setFileMode(QtGui.QFileDialog.ExistingFiles)
-        dia.exec_()
-        try:
-        	args = [str(i) for i in  dia.selectedFiles()]
-        except UnicodeEncodeError as err:
-        	logger.error("Problem with the name of some files: %s" % (err))
-        	args = [unicode(i) for i in  dia.selectedFiles()]
+    if options.gui:
+        from PyQt4 import QtCore, QtGui, uic
+        app = QtGui.QApplication([])
+        if not args:
+            dia = QtGui.QFileDialog(directory=os.getcwd())
+            dia.setFileMode(QtGui.QFileDialog.ExistingFiles)
+            dia.exec_()
+            try:
+            	args = [str(i) for i in  dia.selectedFiles()]
+            except UnicodeEncodeError as err:
+            	logger.error("Problem with the name of some files: %s" % (err))
+            	args = [unicode(i) for i in  dia.selectedFiles()]
 
-    window = AIWidget(args, options.output, options.format, options.slow, options.rapid, options.json)
-    window.set_input_data(args)
+        window = AIWidget(args, options.output, options.format, options.slow, options.rapid, options.json)
+        window.set_input_data(args)
     if options.gui:
         window.show()
         sys.exit(app.exec_())
