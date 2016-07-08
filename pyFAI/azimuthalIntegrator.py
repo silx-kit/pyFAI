@@ -144,6 +144,11 @@ class IntegrateResult(tuple):
     def __init__(self):
         self._sum = None
         self._count = None
+        self._unit = None
+        self._has_dark_correction = None
+        self._has_flat_correction = None
+        self._normalization_factor = None
+        self._polarization_factor = None
 
     @property
     def sum(self):
@@ -179,6 +184,91 @@ class IntegrateResult(tuple):
         """
         self._count = count
 
+    @property
+    def unit(self):
+        """
+        Radial unit
+
+        @rtype: string
+        """
+        return self._unit
+
+    def _set_unit(self, unit):
+        """
+        Define the radial unit
+
+        @type unit: str
+        """
+        self._unit = unit
+
+    @property
+    def has_dark_correction(self):
+        """
+        True if a dark correction was applied
+
+        @rtype: bool
+        """
+        return self._has_dark_correction
+
+    def _set_has_dark_correction(self, has_dark_correction):
+        """
+        Define if dark correction was applied
+
+        @type has_dark_correction: bool
+        """
+        self._has_dark_correction = has_dark_correction
+
+    @property
+    def has_flat_correction(self):
+        """
+        True if a flat correction was applied
+
+        @rtype: bool
+        """
+        return self._has_flat_correction
+
+    def _set_has_flat_correction(self, has_flat_correction):
+        """
+        Define if flat correction was applied
+
+        @type has_flat_correction: bool
+        """
+        self._has_flat_correction = has_flat_correction
+
+    @property
+    def normalization_factor(self):
+        """
+        The normalisation factor used
+
+        @rtype: float
+        """
+        return self._normalization_factor
+
+    def _set_normalization_factor(self, normalization_factor):
+        """
+        Define the used normalisation factor
+
+        @type normalization_factor: float
+        """
+        self._normalization_factor = normalization_factor
+
+    @property
+    def polarization_factor(self):
+        """
+        The polarization factor used
+
+        @rtype: float
+        """
+        return self._polarization_factor
+
+    def _set_polarization_factor(self, polarization_factor):
+        """
+        Define the used polarization factor
+
+        @type polarization_factor: float
+        """
+        self._polarization_factor = polarization_factor
+
 
 class Integrate1dResult(IntegrateResult):
     """
@@ -204,7 +294,6 @@ class Integrate1dResult(IntegrateResult):
 
     def __init__(self, radial, intensity, sigma=None):
         super(Integrate1dResult, self).__init__()
-        self._unit = None
 
     @property
     def radial(self):
@@ -234,23 +323,6 @@ class Integrate1dResult(IntegrateResult):
         if len(self) == 2:
             return None
         return self[2]
-
-    @property
-    def unit(self):
-        """
-        Radial unit
-
-        @rtype: string
-        """
-        return self._unit
-
-    def _set_unit(self, unit):
-        """
-        Define the radial unit
-
-        @type unit: str
-        """
-        self._unit = unit
 
 
 class Integrate2dResult(IntegrateResult):
@@ -2848,6 +2920,10 @@ class AzimuthalIntegrator(Geometry):
         result._set_unit(unit)
         result._set_sum(sum)
         result._set_count(count)
+        result._set_has_dark_correction(dark is not None)
+        result._set_has_flat_correction(flat is not None)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
 
         if all:
             logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
@@ -3303,8 +3379,13 @@ class AzimuthalIntegrator(Geometry):
                     normalization_factor=normalization_factor)
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum)
+        result._set_has_dark_correction(dark is not None)
+        result._set_has_flat_correction(flat is not None)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
 
         if all:
             logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
