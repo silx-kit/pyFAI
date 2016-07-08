@@ -49,6 +49,7 @@ logger = getLogger(__file__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..azimuthalIntegrator import Integrate1dResult
 from ..azimuthalIntegrator import Integrate2dResult
+from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
@@ -115,6 +116,16 @@ class TestIntegrate1D(unittest.TestCase):
         f = tempfile.NamedTemporaryFile(delete=True)
         self.assertEquals(os.path.getsize(f.name), 0)
         self.ai.integrate1d(self.data, self.npt, filename=f.name)
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
+
+    def test_defaultwriter(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        result = self.ai.integrate1d(self.data, self.npt)
+        writer = DefaultAiWriter(f.name, self.ai)
+        writer.write(result)
+        writer.close()
         self.assertGreater(os.path.getsize(f.name), 40)
         f.close()
 
@@ -195,6 +206,16 @@ class TestIntegrate2D(unittest.TestCase):
         f = tempfile.NamedTemporaryFile(delete=True)
         self.assertEquals(os.path.getsize(f.name), 0)
         self.ai.integrate2d(self.data, self.npt, filename=f.name)
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
+
+    def test_defaultwriter(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        result = self.ai.integrate2d(self.data, self.npt)
+        writer = DefaultAiWriter(f.name, self.ai)
+        writer.write(result)
+        writer.close()
         self.assertGreater(os.path.getsize(f.name), 40)
         f.close()
 
