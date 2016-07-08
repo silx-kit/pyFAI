@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/06/2016"
+__date__ = "08/07/2016"
 __status__ = "development"
 __doc__ = """This module contains the Worker class:
 
@@ -253,13 +253,14 @@ class Worker(object):
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data, normalization_factor=1.0):
+    def process(self, data, normalization_factor=1.0, writer=None):
         """
         Process a frame
         #TODO:
         dark, flat, sa are missing
 
-        @param: data: numpy array containing the input image
+        @param data: numpy array containing the input image
+        @param writer: An open writer in which 'write' will be called with the result of the integration
         """
 
         with self._sem:
@@ -306,12 +307,15 @@ class Worker(object):
 
         try:
             if self.do_2D():
-                rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
+                integrated_result = self.ai.integrate2d(**kwarg)
+                self.radial = integrated_result.radial
+                self.azimuthal = integrated_result.azimuthal
+                result = integrated_result.intensity
             else:
-                rData = self.ai.integrate1d(**kwarg)
-                self.radial = rData[0]
+                integrated_result = self.ai.integrate1d(**kwarg)
+                self.radial = integrated_result.radial
                 self.azimuthal = None
-                rData = numpy.vstack(rData).T
+                result = numpy.vstack(integrated_result).T
 
         except Exception as err:
             err2 = ["error in integration",
@@ -324,11 +328,14 @@ class Worker(object):
                     # str(self.ai._csr_integrator),
                     # "csr size: %s" % self.ai._lut_integrator.size
                     ]
-            logger.error(err2)
+            logger.error("; ".join(err2))
             raise err
 
+        if writer is not None:
+            writer.write(integrated_result)
+
         if self.output == "numpy":
-            return rData
+            return result
 
     def setSubdir(self, path):
         """

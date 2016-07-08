@@ -33,7 +33,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/05/2016"
+__date__ = "08/07/2016"
 
 
 import unittest
@@ -42,6 +42,8 @@ from .utilstest import getLogger
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..azimuthalIntegrator import Integrate1dResult
+from ..azimuthalIntegrator import Integrate2dResult
 
 logger = getLogger(__file__)
 
@@ -68,6 +70,21 @@ class AzimuthalIntegratorMocked():
         if isinstance(self._result, Exception):
             raise self._result
         return self._result
+
+
+class MockedAiWriter():
+
+    def __init__(self, result=None):
+        self._write_called = 0
+        self._close_called = 0
+        self._write_kargs = {}
+
+    def write(self, data):
+        self._write_called += 1
+        self._write_kargs["data"] = data
+
+    def close(self):
+        self._close_called += 1
 
 
 class TestWorker(unittest.TestCase):
@@ -152,6 +169,50 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(result.tolist(), [0])
         self.assertEquals(worker.radial.tolist(), [1])
         self.assertEquals(worker.azimuthal.tolist(), [2])
+
+    def test_1d_writer(self):
+        ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))
+        ai = AzimuthalIntegratorMocked(result=ai_result)
+        data = numpy.array([0])
+        worker = Worker(ai)
+        worker.unit = units.TTH_DEG
+        worker.dummy = "b"
+        worker.delta_dummy = "c"
+        worker.method = "d"
+        worker.polarization = "e"
+        worker.correct_solid_angle = "f"
+        worker.nbpt_rad = "g"
+        worker.nbpt_azim = 1
+        worker.output = "numpy"
+
+        writer = MockedAiWriter()
+        _result = worker.process(data, writer=writer)
+
+        self.assertEquals(writer._write_called, 1)
+        self.assertEquals(writer._close_called, 0)
+        self.assertIs(writer._write_kargs["data"], ai_result)
+
+    def test_2d_writer(self):
+        ai_result = Integrate2dResult(numpy.array([0]), numpy.array([1]), numpy.array([2]))
+        ai = AzimuthalIntegratorMocked(result=ai_result)
+        data = numpy.array([0])
+        worker = Worker(ai)
+        worker.unit = units.TTH_DEG
+        worker.dummy = "b"
+        worker.delta_dummy = "c"
+        worker.method = "d"
+        worker.polarization = "e"
+        worker.correct_solid_angle = "f"
+        worker.nbpt_rad = "g"
+        worker.nbpt_azim = 1
+        worker.output = "numpy"
+
+        writer = MockedAiWriter()
+        _result = worker.process(data, writer=writer)
+
+        self.assertEquals(writer._write_called, 1)
+        self.assertEquals(writer._close_called, 0)
+        self.assertIs(writer._write_kargs["data"], ai_result)
 
     def test_process_exception(self):
         ai = AzimuthalIntegratorMocked(result=Exception("Out of memory"))
