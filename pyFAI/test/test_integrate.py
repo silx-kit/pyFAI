@@ -34,9 +34,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2016"
+__date__ = "08/07/2016"
 
 
+import tempfile
+import os
 import unittest
 import numpy
 import numpy.testing
@@ -108,6 +110,13 @@ class TestIntegrate1D(unittest.TestCase):
                 else:
                     logger.info(mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
+
+    def test_filename(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        self.ai.integrate1d(self.data, self.npt, filename=f.name)
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
 
 
 class TestIntegrate2D(unittest.TestCase):
@@ -181,6 +190,14 @@ class TestIntegrate2D(unittest.TestCase):
                     logger.info(mesg)
                 self.assertTrue(delta_pos_rad <= 0.01, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
+
+    def test_filename(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        self.ai.integrate2d(self.data, self.npt, filename=f.name)
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
+
 
 class TestIntegrateResult(unittest.TestCase):
 

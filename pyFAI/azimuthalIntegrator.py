@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2016"
+__date__ = "08/07/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -605,7 +605,7 @@ class AzimuthalIntegrator(Geometry):
         tthAxis = 90.0 * (b[1:] + b[:-1]) / pi
         I = val / self._nbPixCache[npt]
         self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark, flat, polarization_factor)
+                    dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -661,7 +661,7 @@ class AzimuthalIntegrator(Geometry):
                                                empty=dummy if dummy is not None else self._empty)
         tthAxis = rad2deg(tthAxis)
         self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark, flat, polarization_factor)
+                    dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -817,7 +817,7 @@ class AzimuthalIntegrator(Geometry):
                                                  polarization=polarization,
                                                  )
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg", dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -955,7 +955,7 @@ class AzimuthalIntegrator(Geometry):
                                                   )
         tthAxis = rad2deg(tthAxis)
         self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark, flat, polarization_factor)
+                    dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     # Default implementation:
@@ -2134,7 +2134,7 @@ class AzimuthalIntegrator(Geometry):
                                                           polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
+        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
@@ -2278,7 +2278,7 @@ class AzimuthalIntegrator(Geometry):
                                                            polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
+        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
@@ -2842,7 +2842,7 @@ class AzimuthalIntegrator(Geometry):
                 sigma /= normalization_factor
 
         self.save1D(filename, qAxis, I, sigma, unit,
-                    dark, flat, polarization_factor, normalization_factor)
+                    dark is not None, flat is not None, polarization_factor, normalization_factor)
 
         result = Integrate1dResult(qAxis, I, sigma)
         result._set_unit(unit)
@@ -3299,7 +3299,7 @@ class AzimuthalIntegrator(Geometry):
         bins_azim = bins_azim * 180.0 / pi
 
         self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    dark=dark, flat=flat, polarization_factor=polarization_factor,
+                    has_dark=dark is not None, has_flat=flat is not None, polarization_factor=polarization_factor,
                     normalization_factor=normalization_factor)
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
@@ -3387,15 +3387,15 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def makeHeaders(self, hdr="#", dark=None, flat=None,
+    def makeHeaders(self, hdr="#", has_dark=False, has_flat=False,
                     polarization_factor=None, normalization_factor=None):
         """
         @param hdr: string used as comment in the header
         @type hdr: str
-        @param dark: save the darks filenames (default: no)
-        @type dark: ???
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
         @param flat: save the flat filenames (default: no)
-        @type flat: ???
+        @type has_flat: bool
         @param polarization_factor: the polarization factor
         @type polarization_factor: float
 
@@ -3425,12 +3425,12 @@ class AzimuthalIntegrator(Geometry):
                 headerLst.append("Wavelength: %s" % self.wavelength)
             if self.maskfile is not None:
                 headerLst.append("Mask File: %s" % self.maskfile)
-            if (dark is not None) or (self.darkcurrent is not None):
+            if has_dark or (self.darkcurrent is not None):
                 if self.darkfiles:
                     headerLst.append("Dark current: %s" % self.darkfiles)
                 else:
                     headerLst.append("Dark current: Done with unknown file")
-            if (flat is not None) or (self.flatfield is not None):
+            if has_flat or (self.flatfield is not None):
                 if self.flatfiles:
                     headerLst.append("Flat field: %s" % self.flatfiles)
                 else:
@@ -3443,7 +3443,7 @@ class AzimuthalIntegrator(Geometry):
         return self.header
 
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
-               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
+               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 1D integration
         @type filename: str
@@ -3455,10 +3455,10 @@ class AzimuthalIntegrator(Geometry):
         @type error: numpy.ndarray or None
         @param dim1_unit: the unit of the dim1 array
         @type dim1_unit: pyFAI.units.Unit
-        @param dark: save the darks filenames (default: no)
-        @type dark: ???
-        @param flat: save the flat filenames (default: no)
-        @type flat: ???
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
+        @param has_flat: save the flat filenames (default: no)
+        @type has_flat: bool
         @param polarization_factor: the polarization factor
         @type polarization_factor: float
         @param normalization_factor: the monitor value
@@ -3469,7 +3469,7 @@ class AzimuthalIntegrator(Geometry):
         dim1_unit = units.to_unit(dim1_unit)
         if filename:
             with open(filename, "w") as f:
-                f.write(self.makeHeaders(dark=dark, flat=flat,
+                f.write(self.makeHeaders(has_dark=has_dark, has_flat=has_flat,
                                          polarization_factor=polarization_factor,
                                          normalization_factor=normalization_factor))
                 try:
@@ -3486,7 +3486,7 @@ class AzimuthalIntegrator(Geometry):
                 f.write("\n")
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
-               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
+               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 2D histogram
         @type filename: str
@@ -3500,10 +3500,10 @@ class AzimuthalIntegrator(Geometry):
         @type error: numpy.ndarray or None
         @param dim1_unit: the unit of the dim1 array
         @type dim1_unit: pyFAI.units.Unit
-        @param dark: save the darks filenames (default: no)
-        @type dark: ???
-        @param flat: save the flat filenames (default: no)
-        @type flat: ???
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
+        @param has_flat: save the flat filenames (default: no)
+        @type has_flat: bool
         @param polarization_factor: the polarization factor
         @type polarization_factor: float
         @param normalization_factor: the monitor value
@@ -3541,12 +3541,12 @@ class AzimuthalIntegrator(Geometry):
         if self.splineFile:
             header["spline"] = str(self.splineFile)
 
-        if dark is not None:
+        if has_dark:
             if self.darkfiles:
                 header["dark"] = self.darkfiles
             else:
                 header["dark"] = 'unknown dark applied'
-        if flat is not None:
+        if has_flat:
             if self.flatfiles:
                 header["flat"] = self.flatfiles
             else:
