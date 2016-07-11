@@ -49,6 +49,7 @@ from pyFAI.integrate_widget import AIWidget
 import pyFAI.worker
 from pyFAI.io import DefaultAiWriter
 from pyFAI.io import HDF5Writer
+from pyFAI.util.shell import ProgressBar
 
 try:
     from argparse import ArgumentParser
@@ -102,9 +103,17 @@ def integrate_shell(options, args):
             logger.warning("File %s do not exists. Ignored." % item)
     image_filenames = sorted(image_filenames)
 
+    progress_bar = ProgressBar("Integration", len(image_filenames), 20)
+
     # Integrate files one by one
     for i, item in enumerate(image_filenames):
         logger.debug("Processing %s" % item)
+
+        if len(item) > 100:
+            message = op.basename(item)
+        else:
+            message = item
+        progress_bar.update(i + 1, message=message)
 
         img = fabio.open(item)
         multiframe = img.nframes > 1
@@ -140,6 +149,7 @@ def integrate_shell(options, args):
                 worker.process(data, writer=writer)
             writer.close()
 
+    progress_bar.clear()
     logger.info("Processing done in %.3fs !" % (time.time() - start_time))
 
 
