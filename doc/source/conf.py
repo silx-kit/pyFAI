@@ -65,12 +65,13 @@ copyright = u'2012-%s, Jerome Kieffer'% (year)
 
 # Configure the environment to be able to use sphinxcontrib.programoutput
 # NOTE: Must be done after pyFAI._version import which at the end of the end imports PyMCA
-# Importing MyMCA redefine and reorder PYTHONPATH
+# Importing PyMCA redefine and reorder PYTHONPATH
 import glob
 root_dir = os.path.abspath("../..")
 build_dir = glob.glob('../../build/lib*')
 os.environ["PATH"] = os.path.abspath(os.path.join(root_dir,"scripts")) + os.pathsep + os.environ.get("PATH","")
-os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH","")
+if build_dir:
+    os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH","")
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
