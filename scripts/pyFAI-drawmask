@@ -108,6 +108,7 @@ if BACKEND == "SILX":
             self.__plot2D.maskAction.setVisible(False)
             self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(self.__plot2D)
             self.__maskPanel.setDirection(QtGui.QBoxLayout.TopToBottom)
+            self.__maskPanel.setMultipleMasks("single")
 
             panelLayout = QtGui.QVBoxLayout()
             panelLayout.addWidget(self.__maskPanel)
