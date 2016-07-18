@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/07/2016"
+__date__ = "18/07/2016"
 
 
 import tempfile
@@ -47,8 +47,8 @@ import fabio
 from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..azimuthalIntegrator import Integrate1dResult
-from ..azimuthalIntegrator import Integrate2dResult
+from ..containers import Integrate1dResult
+from ..containers import Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:

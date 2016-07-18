@@ -33,7 +33,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/07/2016"
+__date__ = "18/07/2016"
 
 
 import unittest
@@ -42,8 +42,8 @@ from .utilstest import getLogger
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..azimuthalIntegrator import Integrate1dResult
-from ..azimuthalIntegrator import Integrate2dResult
+from ..containers import Integrate1dResult
+from ..containers import Integrate2dResult
 
 logger = getLogger(__file__)
 

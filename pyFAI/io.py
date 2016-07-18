@@ -625,8 +625,8 @@ class DefaultAiWriter(Writer):
             raise Exception("This file format do not support multi frame. You have to change the filename.")
         self._already_written = True
 
-        from .azimuthalIntegrator import Integrate1dResult
-        from .azimuthalIntegrator import Integrate2dResult
+        from .containers import Integrate1dResult
+        from .containers import Integrate2dResult
 
         if isinstance(data, Integrate1dResult):
             self.save1D(self._filename,
