@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "07/07/2016"
 __status__ = "production"
 
 import os
@@ -1156,8 +1156,7 @@ class AbstractCalibration(object):
                                        unit=self.unit,
                                        polarization_factor=self.polarization_factor,
                                        method=self.integrator_method,
-                                       error_model=self.error_model,
-                                       all=True)
+                                       error_model=self.error_model)
         t4 = time.time()
         res2 = self.geoRef.integrate2d(self.peakPicker.data,
                                        self.nPt_2D_rad, self.nPt_2D_azim,
@@ -1165,8 +1164,7 @@ class AbstractCalibration(object):
                                        unit=self.unit,
                                        polarization_factor=self.polarization_factor,
                                        method=self.integrator_method,
-                                       error_model=self.error_model,
-                                       all=True)
+                                       error_model=self.error_model)
         t5 = time.time()
         logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
                                      " * two theta array generation %.3fs" % (t1 - t0),
@@ -1177,7 +1175,7 @@ class AbstractCalibration(object):
                                      " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
 
         if self.gui:
-            self.ax_xrpd_1d.plot(res1["radial"], res1["I"])
+            self.ax_xrpd_1d.plot(res1.radial, res1.intensity)
             # GF: Add vertical line for each used calibration ring:
             xValues = None
             twoTheta = numpy.array([i for i in self.peakPicker.points.calibrant.get_2th() if i])  # in radian
@@ -1203,9 +1201,9 @@ class AbstractCalibration(object):
             self.ax_xrpd_1d.set_title("1D integration")
             self.ax_xrpd_1d.set_xlabel(self.unit.label)
             self.ax_xrpd_1d.set_ylabel("Intensity")
-            img = res2["I"]
-            pos_rad = res2["radial"]
-            pos_azim = res2["azimuthal"]
+            img = res2.intensity
+            pos_rad = res2.radial
+            pos_azim = res2.azimuthal
             self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
                                    extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
                                    aspect="auto")

@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/07/2016"
+__date__ = "11/07/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -564,9 +564,10 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
 setup_requires = ["numpy", "cython"]
 
-packages = ["pyFAI", "pyFAI.ext", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
+packages = ["pyFAI", "pyFAI.ext", "pyFAI.util", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
 package_dir = {"pyFAI": "pyFAI",
                "pyFAI.ext": "pyFAI/ext",
+               "pyFAI.util": "pyFAI/util",
                "pyFAI.test": "pyFAI/test",
                "pyFAI.benchmark": "pyFAI/benchmark",
                "pyFAI.resources": "pyFAI/resources"}
