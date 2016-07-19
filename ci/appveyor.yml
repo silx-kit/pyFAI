@@ -73,8 +73,8 @@ build_script:
     # Build
     - "del pyFAI\\ext\\histogram.c"
     # OpenMP is not available on python 3.4
-    - python setup.py build --no-openmp"
-    - python setup.py test"
+    - "python setup.py build --no-openmp"
+    - "python setup.py test"
     - "python setup.py bdist_wheel bdist_msi"
     - ps: "ls dist"
     # Install the generated wheel package to test it
@@ -90,7 +90,7 @@ test_script:
     - "%VENV_TEST_DIR%\\Scripts\\activate.bat"
 
     # Upgrade distribution modules
-    - python -m pip install --upgrade pip
+    - "python -m pip install --upgrade pip"
     - "pip install --upgrade setuptools wheel"
     # Install build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
