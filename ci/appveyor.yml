@@ -33,11 +33,11 @@ environment:
           PYTHON_VERSION: "2.7.11"
           PYTHON_ARCH: "64"
 
-        # Python 3.4: disabled for now, investigate why it crashes
-        #- PYTHON_DIR: "C:\\Python34-x64"
-        #  PYTHON_VERSION: "3.4.3"
-        #  PYTHON_ARCH: "64"
-        #  DISTUTILS_USE_SDK: "1"
+        # Python 3.4
+        - PYTHON_DIR: "C:\\Python34-x64"
+          PYTHON_VERSION: "3.4.3"
+          PYTHON_ARCH: "64"
+          DISTUTILS_USE_SDK: "1"
 
         # Python 3.5
         - PYTHON_DIR: "C:\\Python35-x64"
@@ -63,6 +63,10 @@ build_script:
     - "pip install wheel"
     # setuptools-24.0.3-py2.py3-none-any.whl looks to break python 3.5 linking
     # - "pip install --upgrade setuptools"
+
+    # Looks to fix python 3.4 compilation
+    # https://github.com/datamade/pylbfgs/commit/eb1ea3ed71e9bd80be440be41360b467196c2aac
+    - echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
 
     # Install build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy cython --upgrade"
