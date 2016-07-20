@@ -33,11 +33,11 @@ environment:
           PYTHON_VERSION: "2.7.11"
           PYTHON_ARCH: "64"
 
-        # Python 3.4: disabled for now, investigate why it crashes
-        #- PYTHON_DIR: "C:\\Python34-x64"
-        #  PYTHON_VERSION: "3.4.3"
-        #  PYTHON_ARCH: "64"
-        #  DISTUTILS_USE_SDK: "1"
+        # Python 3.4
+        - PYTHON_DIR: "C:\\Python34-x64"
+          PYTHON_VERSION: "3.4.3"
+          PYTHON_ARCH: "64"
+          DISTUTILS_USE_SDK: "1"
 
         # Python 3.5
         - PYTHON_DIR: "C:\\Python35-x64"
@@ -60,6 +60,12 @@ build_script:
     # Create build virtualenv
     - "virtualenv --clear %VENV_BUILD_DIR%"
     - "%VENV_BUILD_DIR%\\Scripts\\activate.bat"
+
+    # Configure environment
+    - ps: >-
+        If ($env:PYTHON_VERSION -Like "3.4.*") {
+          & "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+        }
 
     # Install build dependencies
     - "pip install --upgrade wheel"
