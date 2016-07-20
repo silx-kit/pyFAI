@@ -32,16 +32,20 @@ environment:
         - PYTHON_DIR: "C:\\Python27-x64"
           PYTHON_VERSION: "2.7.11"
           PYTHON_ARCH: "64"
+          BUILD_ARGS: ""
 
         # Python 3.4
         - PYTHON_DIR: "C:\\Python34-x64"
           PYTHON_VERSION: "3.4.3"
           PYTHON_ARCH: "64"
+          # OpenMP is not available on python 3.4
+          BUILD_ARGS: "--no-openmp"
 
         # Python 3.5
         - PYTHON_DIR: "C:\\Python35-x64"
           PYTHON_VERSION: "3.5.0"
           PYTHON_ARCH: "64"
+          BUILD_ARGS: ""
 
 install:
     # Add Python to PATH
@@ -79,8 +83,7 @@ build_script:
 
     # Build
     - "del pyFAI\\ext\\histogram.c"
-    # OpenMP is not available on python 3.4
-    - "python setup.py build --no-openmp"
+    - "python setup.py build %BUILD_ARGS%"
     - "python setup.py test"
     - "python setup.py bdist_wheel bdist_msi"
     - ps: "ls dist"
