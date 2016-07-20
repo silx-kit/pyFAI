@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/07/2016"
+__date__ = "20/07/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -47,14 +47,12 @@ try:
     from setuptools import setup, Command
     from setuptools.command.sdist import sdist
     from setuptools.command.build_ext import build_ext
-    from setuptools.command.install_data import install_data
     from setuptools.command.install import install
     from setuptools.command.build_py import build_py as _build_py
-except ImportError:
+except ImportError as e:
     from distutils.core import setup, Command
     from distutils.command.sdist import sdist
     from distutils.command.build_ext import build_ext
-    from distutils.command.install_data import install_data
     from distutils.command.install import install
     from distutils.command.build_py import build_py as _build_py
 from numpy.distutils.core import Extension as _Extension
@@ -318,19 +316,6 @@ if sys.platform == "win32":
 
 else:
     script_files = glob.glob("scripts/*")
-
-
-class smart_install_data(install_data):
-    def run(self):
-        global installDir
-
-        install_cmd = self.get_finalized_command('install')
-#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
-        self.install_dir = getattr(install_cmd, 'install_lib')
-        print("DATA to be installed in %s" % self.install_dir)
-        installDir = os.path.join(self.install_dir, installDir)
-        return install_data.run(self)
-cmdclass['install_data'] = smart_install_data
 
 
 # #################################### #
