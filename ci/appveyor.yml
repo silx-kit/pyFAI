@@ -71,6 +71,15 @@ build_script:
           & "C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Bin\\SetEnv.cmd" /x64
         }
 
+    # Workaround to fix pyfai compilation on Python 3.5
+    # Last setuptools on virtualenv create linking error: fatal error LNK1181: cannot open input file 'Files.obj'
+    # It can be reproduced in our windows computer
+    # Still need to investigate
+    - ps: >-
+        If ($env:PYTHON_VERSION -Like "3.5.*") {
+          pip install --upgrade setuptools!=24.0.*,!=24.1.*,!=24.2.*,!=24.3.*
+        }
+
     # Install build dependencies
     - "pip install --upgrade wheel"
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy cython --upgrade"
