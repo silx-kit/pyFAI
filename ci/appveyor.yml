@@ -26,6 +26,7 @@ environment:
         WIN_SDK_ROOT: "C:\\Program Files\\Microsoft SDKs\\Windows"
         VENV_BUILD_DIR: "venv_build"
         VENV_TEST_DIR: "venv_test"
+        SETUPTOOLS_VERSION: ""
 
     matrix:
         # Python 2.7
@@ -46,13 +47,15 @@ environment:
           PYTHON_VERSION: "3.5.0"
           PYTHON_ARCH: "64"
           BUILD_ARGS: ""
+          # Specific problem on pyfai appveyor python 3.5. Need investigation.
+          SETUPTOOLS_VERSION: "==18.2"
 
 install:
     # Add Python to PATH
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
     # Upgrade/install distribution modules
-    - "pip install --upgrade setuptools"
+    - "pip install --upgrade setuptools%SETUPTOOLS_VERSION%"
     - "python -m pip install --upgrade pip"
 
     # Install virtualenv
