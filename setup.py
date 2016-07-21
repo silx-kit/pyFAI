@@ -49,12 +49,15 @@ try:
     from setuptools.command.build_ext import build_ext
     from setuptools.command.install import install
     from setuptools.command.build_py import build_py as _build_py
+    print("Use setuptools")
 except ImportError as e:
     from distutils.core import setup, Command
     from distutils.command.sdist import sdist
     from distutils.command.build_ext import build_ext
     from distutils.command.install import install
     from distutils.command.build_py import build_py as _build_py
+    print("Use distutils")
+    print(e)
 from numpy.distutils.core import Extension as _Extension
 
 
