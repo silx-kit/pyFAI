@@ -59,7 +59,7 @@ build_script:
     - ps: >-
         If ($env:PYTHON_VERSION -Like "3.4.*") {
           & "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-        } Else If ($env:PYTHON_VERSION -Like "3.5.*") {
+        } ElseIf ($env:PYTHON_VERSION -Like "3.5.*") {
           # Workaround to fix linking errors inside a virtualenv
           # Still need to investigate. Silx with the same env do not have this kind of problems
           # This setuptools version must be ignored
