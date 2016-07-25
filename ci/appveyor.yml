@@ -77,7 +77,7 @@ build_script:
     # Still need to investigate
     - ps: >-
         If ($env:PYTHON_VERSION -Like "3.5.*") {
-          pip install --upgrade setuptools!=24.0.*,!=24.1.*,!=24.2.*,!=24.3.*
+          pip install --upgrade setuptools!=24.*.*,!=25.0.*
         }
 
     # Install build dependencies
