@@ -35,13 +35,13 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "04/08/2016"
 
 import sys
-import os
 import unittest
 from .utilstest import UtilsTest, getLogger
 
 logger = getLogger("test_all")
 
 
+from . import test_average
 from . import test_dummy
 from . import test_histogram
 from . import test_geometry_refinement
@@ -79,6 +79,7 @@ from . import test_utils_shell
 
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(test_average.suite())
     testsuite.addTest(test_dummy.suite())
     testsuite.addTest(test_histogram.suite())
     testsuite.addTest(test_geometry_refinement.suite())

@@ -65,7 +65,8 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
-from .utils import averageImages, measure_offset, expand_args, \
+from . import average
+from .utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, roundfft, \
             win32
 from .azimuthalIntegrator import AzimuthalIntegrator
@@ -570,7 +571,7 @@ class AbstractCalibration(object):
         """
         # GF: self.saturation ignored if none of the other options active...
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
-            self.outfile = averageImages(self.dataFiles, self.outfile,
+            self.outfile = average.average_images(self.dataFiles, self.outfile,
                                          threshold=self.saturation, minimum=self.cutBackground,
                                          darks=self.darkFiles, flats=self.flatFiles,
                                          filter_=self.filter)

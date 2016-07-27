@@ -41,6 +41,7 @@ import numpy
 from math import pi
 from numpy import rad2deg
 from .geometry import Geometry
+from . import average
 from . import units
 from . import utils
 from .utils import StringTypes, EPS32, deg2rad
@@ -3427,7 +3428,7 @@ class AzimuthalIntegrator(Geometry):
             self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
             self.darkfiles = files[0]
         else:
-            self.set_darkcurrent(utils.averageImages(files, filter_=method, fformat=None, threshold=0))
+            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
     def set_flatfiles(self, files, method="mean"):
@@ -3450,7 +3451,7 @@ class AzimuthalIntegrator(Geometry):
             self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
             self.flatfiles = files[0]
         else:
-            self.set_flatfield(utils.averageImages(files, filter_=method, fformat=None, threshold=0))
+            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.flatfiles = "%s(%s)" % (method, ",".join(files))
 
     def get_empty(self):
