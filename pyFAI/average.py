@@ -159,6 +159,8 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         if isinstance(fn, six.string_types):
             logger.info("Reading %s", fn)
             fimg = fabio.open(fn)
+        elif isinstance(fn, fabio.fabioimage.fabioimage):
+            fimg = fn
         else:
             if fabio.hexversion < 262148:
                 logger.error("Old version of fabio detected, upgrade to 0.4 or newer")
