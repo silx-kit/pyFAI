@@ -79,6 +79,10 @@ def main():
                       help="switch to verbose/debug mode")
     parser.add_argument("-q", "--quantiles", dest="quantiles", default=None,
                       help="average out between two quantiles -q 0.20-0.90")
+    parser.add_argument("--monitor-name", dest="monitor_key", default=None,
+                      help="Name of the monitor in the header of each input files. If defined the contribution \
+                      of each input file is divided by the monitor. If the header do not contain or contain wrong \
+                      values, the contribution of the input file is null.")
     parser.add_argument("--quiet", dest="verbose", default=None, action="store_false",
                       help="Only error messages are printed out")
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
@@ -126,7 +130,7 @@ def main():
     if images:
         dataout = pyFAI.average.average_images(images, filter_=options.method, cutoff=options.cutoff,
                                             threshold=0, fformat=options.format, output=output,
-                                            flats=flats, darks=darks, quantiles=quantiles)
+                                            flats=flats, darks=darks, quantiles=quantiles, monitor_key=options.monitor_key)
         return dataout
 
 if __name__ == "__main__":

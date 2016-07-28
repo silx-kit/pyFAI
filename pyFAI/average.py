@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/07/2016"
+__date__ = "28/07/2016"
 __status__ = "production"
 
 import logging
@@ -116,9 +116,89 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
     return output
 
 
+class MonitorNotFound(Exception):
+    """Raised when monitor information in not found or is not valid."""
+    pass
+
+
+def _get_monitor_value_from_edf(image, monitor_key):
+    """Return the monitor value from an EDF image using an header key.
+
+    Take care of the counter and motor syntax using for example 'counter/bmon'
+    which reach 'bmon' value from 'counter_pos' key using index from
+    'counter_mne' key.
+
+    @param image fabio.fabioimage.FabioImage: Image containing the header
+    @param monitor_key str: Key containing the monitor
+    @return: returns the monitor else raise a MonitorNotFound
+    @rtype: float
+    @raise MonitorNotFound: when the expected monitor is not found on the header
+    """
+    keys = image.header
+
+    if "/" in monitor_key:
+        base_key, mnemonic = monitor_key.split('/', 1)
+
+        mnemonic_values_key = base_key + "_mne"
+        mnemonic_values =  keys.get(mnemonic_values_key, None)
+        if mnemonic_values is None:
+            raise MonitorNotFound("Monitor mnemonic key '%s' not found in the header" % (mnemonic_values_key))
+
+        mnemonic_values = mnemonic_values.split()
+        pos_values_key = base_key + "_pos"
+        pos_values =  keys.get(pos_values_key)
+        if pos_values is None:
+            raise MonitorNotFound("Monitor pos key '%s' not found in the header" % (pos_values_key))
+
+        pos_values = pos_values.split()
+
+        try:
+            index = mnemonic_values.index(mnemonic)
+        except ValueError as _e:
+            logger.debug("Exception", exc_info=1)
+            raise MonitorNotFound("Monitor mnemonic '%s' not found in the header key '%s'" % (mnemonic, mnemonic_values_key))
+
+        if index >= len(pos_values):
+            raise MonitorNotFound("Monitor value '%s' not found in '%s'. Not enougth values." % (pos_values_key))
+
+        monitor = pos_values[index]
+
+    else:
+        if monitor_key not in keys:
+            raise MonitorNotFound("Monitor key '%s' not found in the header" % (monitor_key))
+        monitor = keys[monitor_key]
+
+    try:
+        monitor = float(monitor)
+    except ValueError as _e:
+        logger.debug("Exception", exc_info=1)
+        raise MonitorNotFound("Monitor value '%s' is not valid" % (monitor))
+    return monitor
+
+
+def _get_monitor_value(image, monitor_key):
+    """Return the monitor value from an image using an header key.
+
+    @param image fabio.fabioimage.FabioImage: Image containing the header
+    @param monitor_key str: Key containing the monitor
+    @return: returns the monitor else raise an exception
+    @rtype: float
+    @raise MonitorNotFound: when the expected monitor is not found on the header
+    """
+    if monitor_key is None:
+        return Exception("No monitor defined")
+
+    if isinstance(image, fabio.edfimage.EdfImage):
+        return _get_monitor_value_from_edf(image, monitor_key)
+    elif isinstance(image, fabio.numpyimage.numpyimage):
+        return _get_monitor_value_from_edf(image, monitor_key)
+    else:
+        raise Exception("File format '%s' unsupported" % type(image))
+
+
 def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
-                  cutoff=None, quantiles=None, fformat="edf"):
+                  cutoff=None, quantiles=None, fformat="edf", monitor_key=None):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -134,10 +214,11 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
     @param cutoff: keep all data where (I-center)/std < cutoff
     @param quantiles: 2-tuple containing the lower and upper quantile (0<q<1) to average out.
     @param fformat: file format of the output image, default: edf
+    @param monitor_key str: Key containing the monitor. Can be none.
     @return: filename with the data or the data ndarray in case format=None
     """
-    def correct_img(data):
-        "internal subfunction for dark/flat "
+    def correct_img(image, data):
+        "internal subfunction for dark/flat/monitor "
         corrected_img = numpy.ascontiguousarray(data, numpy.float32)
         if threshold or minimum or maximum:
             corrected_img = removeSaturatedPixel(corrected_img, threshold, minimum, maximum)
@@ -145,6 +226,14 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
             corrected_img -= dark
         if do_flat:
             corrected_img /= flat
+        if monitor_key is not None:
+            try:
+                monitor = _get_monitor_value(image, monitor_key)
+                corrected_img /= monitor
+            except MonitorNotFound as e:
+                logger.warning("Monitor not found in filename '%s', data skipped. Cause: %s", image.filename, str(e))
+                return None
+
         return corrected_img
     # input sanitization
     if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
@@ -210,8 +299,13 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
                     ds = fimg.data
                 else:
                     ds = fimg.getframe(frame).data
-                big_img[idx, :, :] = correct_img(ds)
+                data = correct_img(fimg, ds)
+                if data is None:
+                    # skip inconsistante data
+                    continue
+                big_img[idx] = data
                 idx += 1
+        big_img.resize((idx, first_shape[0], first_shape[1]))
         datared = average_dark(big_img, filter_, cutoff, quantiles)
     else:
         for idx, fimg in enumerate(fimgs):
@@ -222,7 +316,10 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
                     ds = fimg.getframe(frame).data
                 logger.debug("Intensity range for %s#%i is %s --> %s", fimg.filename, frame, ds.min(), ds.max())
 
-                corrected_img = correct_img(ds)
+                corrected_img = correct_img(fimg, ds)
+                if corrected_img is None:
+                    nb_frames -= 1
+                    continue
                 if filter_ == "max":
                     acc_img = corrected_img if (acc_img is None) else numpy.maximum(corrected_img, acc_img)
                 elif filter_ == "min":

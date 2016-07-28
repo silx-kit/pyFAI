@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/07/2016"
+__date__ = "28/07/2016"
 
 import unittest
 import numpy
@@ -85,12 +85,94 @@ class TestAverage(unittest.TestCase):
         seven = average.average_images([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
         self.assert_(abs(numpy.ones_like(self.dark) - fabio.open(seven).data).mean() < 1e-2, "average_images")
 
+    def test_average_monitor(self):
+        data1 = numpy.array([[1.0, 3.0], [3.0, 4.0]])
+        data2 = numpy.array([[2.0, 2.0], [1.0, 4.0]])
+        data3 = numpy.array([[3.0, 1.0], [2.0, 4.0]])
+        mon1, mon2, mon3 = 0.1, 1.0, 3.1
+        image1 = fabio.numpyimage.numpyimage(data1)
+        image1.header["mon"] = str(mon1)
+        image2 = fabio.numpyimage.numpyimage(data2)
+        image2.header["mon"] = str(mon2)
+        image3 = fabio.numpyimage.numpyimage(data3)
+        image3.header["mon"] = str(mon3)
+        image_ignored = fabio.numpyimage.numpyimage(data3)
+
+        expected_result = data1 / mon1 + data2 / mon2 + data3 / mon3
+        filename = average.average_images([image1, image2, image3, image_ignored], threshold=0, filter_="sum", monitor_key="mon", output=self.tmp_file)
+        result = fabio.open(filename).data
+        numpy.testing.assert_array_almost_equal(result, expected_result, decimal=3)
+
+class TestAverageMonitorName(unittest.TestCase):
+
+    def setUp(self):
+        header = {
+            "mon1": "100",
+            "bad": "foo",
+            "counter_pos": "12 13 14 foo",
+            "counter_mne": "mon2 mon3 mon4 mon5",
+            "bad_size_pos": "foo foo foo",
+            "bad_size_mne": "mon2 mon3 mon4 mon5",
+            "mne_not_exists_pos": "12 13 14 foo",
+            "pos_not_exists_mne": "mon2 mon3 mon4 mon5",
+        }
+        self.image = fabio.numpyimage.numpyimage(numpy.array([]), header)
+
+    def test_monitor(self):
+        result = average._get_monitor_value_from_edf(self.image, "mon1")
+        self.assertEquals(100, result)
+
+    def test_monitor_in_counter(self):
+        result = average._get_monitor_value_from_edf(self.image, "counter/mon3")
+        self.assertEquals(13, result)
+
+    def test_bad_monitor(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "bad")
+
+    def test_bad_monitor_in_counter(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "counter/mon5")
+
+    def test_bad_counter_syntax(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "counter/mon5/1")
+
+    def test_missing_monitor(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "not_exists")
+
+    def test_missing_counter(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "not_exists/mon")
+
+    def test_missing_counter_monitor(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "counter/not_exists")
+
+    def test_missing_counter_mne(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "mne_not_exists/mon")
+
+    def test_missing_counter_pos(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "pos_not_exists/mon")
+
+    def test_missing_counter_pos_element(self):
+        self.assertRaises(average.MonitorNotFound, average._get_monitor_value_from_edf, self.image, "bad_size/mon")
+
+    def test_edf_file_motor(self):
+        image = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        result = average._get_monitor_value_from_edf(image, "motor/lx")
+        self.assertEqual(result, -0.2)
+
+    def test_edf_file_key(self):
+        image = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
+        result = average._get_monitor_value_from_edf(image, "scan_no")
+        self.assertEqual(result, 19)
 
 def suite():
     testsuite = unittest.TestSuite()
+
     test_names = unittest.getTestCaseNames(TestAverage, "test")
     for test in test_names:
         testsuite.addTest(TestAverage(test))
+
+    test_names = unittest.getTestCaseNames(TestAverageMonitorName, "test")
+    for test in test_names:
+        testsuite.addTest(TestAverageMonitorName(test))
     return testsuite
 
 
