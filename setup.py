@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/07/2016"
+__date__ = "25/07/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -290,9 +290,7 @@ def download_images():
 
 installDir = PROJECT
 
-data_files = [(os.path.join(installDir, "resources/openCL"), glob.glob("resources/openCL/*.cl")),
-              (os.path.join(installDir, "resources/gui"), glob.glob("resources/gui/*.ui")),
-              (os.path.join(installDir, "resources/calibration"), glob.glob("resources/calibration/*.D"))]
+data_files = []
 
 if sys.platform == "win32":
     # This is for mingw32/gomp
