@@ -5,7 +5,6 @@
 wheel
 numpy
 #Cython
-lxml
 Pillow
 h5py
 fabio
