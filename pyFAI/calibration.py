@@ -707,7 +707,7 @@ class AbstractCalibration(object):
             self.peakPicker.closeGUI()
         print("Before refinement, the geometry is:")
         print(self.geoRef)
-        previous = sys.maxint
+        previous = six.MAXSIZE
         finished = False
         fig2 = None
         while not finished:
@@ -715,7 +715,7 @@ class AbstractCalibration(object):
             if "wavelength" in self.fixed:
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     if (count == 0):
-                        previous = sys.maxsize
+                        previous = six.MAXSIZE
                     else:
                         previous = self.geoRef.chi2()
                     self.geoRef.refine2(1000000, fix=self.fixed)
@@ -724,7 +724,7 @@ class AbstractCalibration(object):
             else:
                 while previous > self.geoRef.chi2_wavelength() and (count < self.max_iter):
                     if (count == 0):
-                        previous = sys.maxsize
+                        previous = six.MAXSIZE
                     else:
                         previous = self.geoRef.chi2()
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
@@ -763,7 +763,7 @@ class AbstractCalibration(object):
             else:
                 finished = True
             if not finished:
-                previous = sys.maxsize
+                previous = six.MAXSIZE
 
     def prompt(self):
         """
