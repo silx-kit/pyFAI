@@ -40,7 +40,6 @@ import os
 import sys
 import time
 import logging
-import types
 import math
 try:
     from argparse import ArgumentParser
@@ -57,6 +56,7 @@ import numpy
 from .gui_utils import pylab, update_fig, matplotlib
 from scipy.stats import linregress
 import fabio
+from . import utils
 try:
     from .third_party import six
 except (ImportError, Exception):
@@ -97,7 +97,7 @@ def get_detector(detector, datafiles=None):
     @return pyFAI.detector.Detector instance
     """
     res = None
-    if type(detector) in types.StringTypes:
+    if type(detector) in utils.StringTypes:
         try:
             res = detector_factory(detector)
         except RuntimeError:
