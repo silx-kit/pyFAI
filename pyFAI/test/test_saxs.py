@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "29/07/2016"
 
 
 import unittest
@@ -49,6 +49,10 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 
 class TestSaxs(unittest.TestCase):
@@ -155,5 +159,5 @@ if __name__ == '__main__':
     if logger.getEffectiveLevel() == logging.DEBUG:
         pylab.legend()
         pylab.show()
-        raw_input()
+        six.moves.input()
         pylab.clf()
