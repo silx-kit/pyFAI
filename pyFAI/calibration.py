@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2016"
+__date__ = "29/07/2016"
 __status__ = "production"
 
 import os
@@ -57,12 +57,16 @@ import numpy
 from .gui_utils import pylab, update_fig, matplotlib
 from scipy.stats import linregress
 import fabio
+try:
+    from .third_party import six
+except (ImportError, Exception):
+    import six
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
 from .utils import averageImages, measure_offset, expand_args, \
-            readFloatFromKeyboard, input, FixedParameters, roundfft, \
+            readFloatFromKeyboard, FixedParameters, roundfft, \
             win32
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
@@ -518,7 +522,7 @@ class AbstractCalibration(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = input("Please enter the pixel size (in micron, comma separated X,Y "
+            ans = six.moves.input("Please enter the pixel size (in micron, comma separated X,Y "
                         " i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
@@ -540,7 +544,7 @@ class AbstractCalibration(object):
                 print(os.linesep.join(comments))
             valid = False
             while valid:
-                ans = input("Please enter the calibrant name or the file"
+                ans = six.moves.input("Please enter the calibrant name or the file"
                             " containing the d-spacing:\t").strip()
                 if ans in ALL_CALIBRANTS:
                     self.calibrant = ALL_CALIBRANTS[ans]
@@ -552,7 +556,7 @@ class AbstractCalibration(object):
     def read_wavelength(self):
         """Read the wavelength"""
         while not self.wavelength:
-            ans = input("Please enter wavelength in Angstrom:\t").strip()
+            ans = six.moves.input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = self.ai.wavelength = 1e-10 * float(ans)
             except Exception:
@@ -771,7 +775,7 @@ class AbstractCalibration(object):
         while True:
             req_help = False
             print("Fixed: " + ", ".join(self.fixed))
-            ans = input("Modify parameters (or ? for help)?\t ").strip()
+            ans = six.moves.input("Modify parameters (or ? for help)?\t ").strip()
             if "?" in ans:
                 req_help = True
             if not ans:
@@ -1481,7 +1485,7 @@ decrease the value if arcs are mixed together.""", default=None)
             update_fig(self.peakPicker.fig)
 #        self.peakPicker.finish(self.pointfile, callback=self.set_data)
         self.set_data(self.peakPicker.finish(self.pointfile))
-#        input("Please press enter when you are happy with your selection" + os.linesep)
+#        six.moves.input("Please press enter when you are happy with your selection" + os.linesep)
 #        while self.data is None:
 #            update_fig(self.peakPicker.fig)
 #            time.sleep(0.1)
@@ -1996,7 +2000,7 @@ class MultiCalib(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = input("Please enter the pixel size (in micron, comma separated X, Y "
+            ans = six.moves.input("Please enter the pixel size (in micron, comma separated X, Y "
                         "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
@@ -2021,7 +2025,7 @@ class MultiCalib(object):
             print(os.linesep.join(comments))
             ans = ""
             while not self.calibrant:
-                ans = input("Please enter the name of the calibrant"
+                ans = six.moves.input("Please enter the name of the calibrant"
                             " or the file containing the d-spacing:\t").strip()
                 if ans in ALL_CALIBRANTS:
                     self.calibrant = ALL_CALIBRANTS[ans]
@@ -2031,7 +2035,7 @@ class MultiCalib(object):
     def read_wavelength(self):
         """Read the wavelength"""
         while not self.wavelength:
-            ans = input("Please enter wavelength in Angstrom:\t").strip()
+            ans = six.moves.input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = 1e-10 * float(ans)
             except:
