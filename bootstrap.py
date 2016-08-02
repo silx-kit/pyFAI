@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     if script:
         sys.argv = sys.argv[1:]
-        logger.info("03. patch the sys.argv : ", sys.argv)
+        logger.info("03. patch the sys.argv: %s", sys.argv)
         logger.info("04. Executing %s.main()", script)
         fullpath = os.path.join(SCRIPTSPATH, script)
         if os.path.exists(fullpath):
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         else:
             logger.error("Script not found")
     else:
-        logger.info("03. patch the sys.argv : ", sys.argv)
+        logger.info("03. patch the sys.argv: %s", sys.argv)
         sys.path.insert(2, "")
         try:
             from IPython import embed

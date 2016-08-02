@@ -464,7 +464,7 @@ class Spline(object):
         logger.info(len(yRectBivariateSpline.get_knots()[0]),
               len(yRectBivariateSpline.get_knots()[1]),
               "y-knots", yRectBivariateSpline.get_knots())
-        logger.info("Residual x,y", xRectBivariateSpline.get_residual(),
+        logger.info("Residual x=%s, y=%s", xRectBivariateSpline.get_residual(),
               yRectBivariateSpline.get_residual())
         self.xSplineKnotsX = xRectBivariateSpline.get_knots()[0]
         self.xSplineKnotsY = xRectBivariateSpline.get_knots()[1]

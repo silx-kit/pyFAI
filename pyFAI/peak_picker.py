@@ -925,7 +925,7 @@ class ControlPoints(object):
                             x = float(vx)
                             y = float(vy)
                         except Exception as error:
-                            logger.error("ControlPoints.load: unable to convert to float %s (point)", value, error)
+                            logger.error("ControlPoints.load: unable to convert to float %s (point): %s", value, error)
                         else:
                             points.append([y, x])
                 elif key.startswith("new"):
