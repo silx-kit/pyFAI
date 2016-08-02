@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "05/03/2015"
+__date__ = "02/08/2016"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -275,10 +275,10 @@ class Spline(object):
         fFWHM_X = scipy.optimize.bisect(curvX , histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX , histXdr[0], histXmax)
         fFWHM_Y = scipy.optimize.bisect(curvY , histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY , histYdr[0], histYmax)
         logger.info("Analysis of the difference between two splines")
-        logger.info("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels." % (maxErrX, maxErrY))
-        logger.info("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (histXmax, histYmax))
-        logger.info("Mean of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (deltax.mean(), deltay.mean()))
-        logger.info("FWHM in X= %.3f pixels,\t in Y= %.3f pixels." % (fFWHM_X, fFWHM_Y))
+        logger.info("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels.", maxErrX, maxErrY)
+        logger.info("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels.", histXmax, histYmax)
+        logger.info("Mean of histogram in X= %.3f pixels,\t in Y= %.3f pixels.", deltax.mean(), deltay.mean())
+        logger.info("FWHM in X= %.3f pixels,\t in Y= %.3f pixels.", fFWHM_X, fFWHM_Y)
 
         if verbose:
             import pylab
@@ -451,8 +451,8 @@ class Spline(object):
             s=smoothing)
 
         if timing:
-            logger.info("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec."
-                  % (intermediateTime - startTime, time.time() - intermediateTime))
+            logger.info("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec.",
+                  intermediateTime - startTime, time.time() - intermediateTime)
 
         logger.info(len(xRectBivariateSpline.get_coeffs()),
               "x-coefs", xRectBivariateSpline.get_coeffs())
@@ -592,7 +592,7 @@ class Spline(object):
                 self.zeros()
             else:
                 self.read(self.filename)
-        logger.info("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
+        logger.info("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm", center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize)
         if timing:
             startTime = time.time()
         distance = 1.0e6 * distanceSampleDetector  # from meters to microns
@@ -626,7 +626,7 @@ class Spline(object):
         tiltedSpline.yDispArray = tiltArrayY
         # tiltedSpline.array2spline(smoothing=1e-6, timing=True)
         if timing:
-            logger.info("Time for the generation of the distorted spline: %.3f sec" % (time.time() - startTime))
+            logger.info("Time for the generation of the distorted spline: %.3f sec", time.time() - startTime)
         return tiltedSpline
 
     def setPixelSize(self, pixelSize):
@@ -773,7 +773,7 @@ def main():
 
     spline = Spline()
     spline.read(spline_file)
-    logger.info("Original Spline: %s" % spline)
+    logger.info("Original Spline: %s", spline)
     spline.spline2array(timing=True)
     tilted = spline.tilt(center, tilt, rotation_tilt, distance, timing=True)
     tilted.writeEDF("%s-tilted-t%i-p%i-d%i" %

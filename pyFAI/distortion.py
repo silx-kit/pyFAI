@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "02/08/2016"
 __status__ = "development"
 
 import logging
@@ -329,7 +329,7 @@ class Distortion(object):
         @return: corrected 2D image
         """
         if image.shape != self.shape_in:
-            logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ..." % (image.shape, self.shape_in))
+            logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
             new_img = numpy.zeros(self.shape_in, dtype=image.dtype)
             common_shape = [min(i, j) for i, j in zip(image.shape, self.shape_in)]
             new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
@@ -361,7 +361,7 @@ class Distortion(object):
         try:
             out.shape = self._shape_out
         except ValueError as _err:
-            logger.error("Requested in_shape=%s out_shape=%s and " % (self.shape_in, self.shape_out))
+            logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
             raise
         return out
 

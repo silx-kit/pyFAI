@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -84,7 +84,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("Numpy has R=%s" % R)
+        if R > 20: logger.error("Numpy has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="Numpy R=%.1f" % R)
             pylab.yscale("log")
@@ -100,7 +100,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("Cython has R=%s" % R)
+        if R > 20: logger.error("Cython has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="Cython R=%.1f" % R)
             pylab.yscale("log")
@@ -116,7 +116,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("SplitPixel has R=%s" % R)
+        if R > 20: logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="SplitBBox R=%.1f" % R)
             pylab.yscale("log")
@@ -132,7 +132,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("SplitPixel has R=%s" % R)
+        if R > 20: logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="SplitPixel R=%.1f" % R)
             pylab.yscale("log")

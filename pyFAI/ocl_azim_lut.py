@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -78,7 +78,7 @@ class OCL_LUT_Integrator(object):
             if res:
                 platformid, deviceid = res
             else:
-                logger.warning("No such devicetype %s" % devicetype)
+                logger.warning("No such devicetype %s", devicetype)
                 platformid, deviceid = ocl.select_device()
         elif platformid is None:
             platformid = 0
@@ -197,7 +197,7 @@ class OCL_LUT_Integrator(object):
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
-        logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
+        logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:

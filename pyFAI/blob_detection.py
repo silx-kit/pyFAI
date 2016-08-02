@@ -27,7 +27,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -271,7 +271,7 @@ class BlobDetection(object):
             increase = previous * sqrt((self.dest_sigma / self.init_sigma) ** (2.0 / self.scale_per_octave) - 1.0)
             self.sigmas.append((sigma_abs, increase))
             previous = sigma_abs
-        logger.debug("Sigma= %s" % self.sigmas)
+        logger.debug("Sigma= %s", self.sigmas)
 
     def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
@@ -696,7 +696,7 @@ class BlobDetection(object):
                 finished = True
             else:
                 finished = (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0)
-        logger.warning("Blob detection found %i keypoints" % len(self.keypoints))
+        logger.warning("Blob detection found %i keypoints", len(self.keypoints))
 
     def nearest_peak(self, p, refine=True, Imin=None):
         """

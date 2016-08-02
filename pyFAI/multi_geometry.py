@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2016"
+__date__ = "02/08/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -83,7 +83,7 @@ class MultiGeometry(object):
             for ai in self.ais:
                 ai.setChiDiscAtPi()
         else:
-            logger.warning("Unable to set the Chi discontinuity at %s" % chi_disc)
+            logger.warning("Unable to set the Chi discontinuity at %s", chi_disc)
 
     def __repr__(self, *args, **kwargs):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \

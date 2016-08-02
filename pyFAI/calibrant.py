@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/02/2016"
+__date__ = "02/08/2016"
 __status__ = "production"
 
 
@@ -342,7 +342,7 @@ class Calibrant(object):
             if filename:
                 self._filename = filename
             if not os.path.isfile(self._filename):
-                logger.error("No such calibrant file: %s" % self._filename)
+                logger.error("No such calibrant file: %s", self._filename)
                 return
             self._filename = os.path.abspath(self._filename)
             self._dSpacing = numpy.unique(numpy.loadtxt(self._filename))
@@ -396,7 +396,7 @@ class Calibrant(object):
             if value:
                 self._wavelength = float(value)
                 if self._wavelength < 1e-15 or self._wavelength > 1e-6:
-                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+                    logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                 self._calc_2th()
 
     def setWavelength_changeDs(self, value=None):
@@ -407,7 +407,7 @@ class Calibrant(object):
             if value:
                 self._wavelength = float(value)
                 if self._wavelength < 1e-15 or self._wavelength > 1e-6:
-                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+                    logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                 self._calc_dSpacing()
 
     def set_wavelength(self, value=None):
@@ -417,11 +417,11 @@ class Calibrant(object):
                 if value:
                     self._wavelength = float(value)
                     if (self._wavelength < 1e-15) or (self._wavelength > 1e-6):
-                        logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+                        logger.warning("This is an unlikely wavelength (in meter): %s", self._wavelength)
                     updated = True
             elif abs(self._wavelength - value) / self._wavelength > epsilon:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
-                logger.warning("%s != %s, delta= %s" % (self._wavelength, value, self._wavelength - value))
+                logger.warning("%s != %s, delta= %s", self._wavelength, value, self._wavelength - value)
         if updated:
             self._calc_2th()
 
@@ -456,7 +456,7 @@ class Calibrant(object):
         if not self._2th:
             ds = self.dSpacing  # forces the file reading if not done
             if not ds:
-                logger.error("Not d-spacing for calibrant: %s" % self)
+                logger.error("Not d-spacing for calibrant: %s", self)
             with self._sem:
                 if not self._2th:
                     self._calc_2th()
@@ -523,7 +523,7 @@ class calibrant_factory(object):
             basedir = get_calibration_dir()
         self.directory = basedir
         if not os.path.isdir(self.directory):
-            logger.warning("No calibrant directory: %s" % self.directory)
+            logger.warning("No calibrant directory: %s", self.directory)
             self.all = {}
         else:
             self.all = dict([(os.path.splitext(i)[0], os.path.join(self.directory, i))

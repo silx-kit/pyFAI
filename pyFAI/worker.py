@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/07/2016"
+__date__ = "02/08/2016"
 __status__ = "development"
 __doc__ = """This module contains the Worker class:
 
@@ -120,7 +120,7 @@ def make_ai(config):
     wavelength = config.get("wavelength", 0)
     if wavelength:
         if wavelength <= 0 or wavelength > 1e-6:
-            logger.warning("Wavelength is in meter ... unlikely value %s" % wavelength)
+            logger.warning("Wavelength is in meter ... unlikely value %s", wavelength)
         ai.wavelength = wavelength
 
     splinefile = config.get("splineFile")
@@ -140,7 +140,7 @@ def make_ai(config):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 ai.mask = mask
 
@@ -379,10 +379,10 @@ class Worker(object):
             try:
                 fwavelength = float(wavelength)
             except ValueError:
-                logger.error("Unable to convert wavelength to float: %s" % wavelength)
+                logger.error("Unable to convert wavelength to float: %s", wavelength)
             else:
                 if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+                    logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
                 self.ai.wavelength = fwavelength
 
         splineFile = config.get("splineFile")
@@ -408,7 +408,7 @@ class Worker(object):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 self.ai.mask = mask
                 self.mask_image = os.path.abspath(mask_file)

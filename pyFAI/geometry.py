@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/07/2016"
+__date__ = "02/08/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1146,7 +1146,7 @@ class Geometry(object):
                 if self._wavelength is not None:
                     f.write("Wavelength: %s\n" % self._wavelength)
         except IOError:
-            logger.error("IOError while writing to file %s" % filename)
+            logger.error("IOError while writing to file %s", filename)
     write = save
 
     @classmethod
@@ -1180,7 +1180,7 @@ class Geometry(object):
             try:
                 value = words[1].strip()
             except Exception as error:  # IGNORE:W0703:
-                logger.error("Error %s with line: %s" % (error, line))
+                logger.error("Error %s with line: %s", error, line)
             data[key] = value
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"])
@@ -1560,7 +1560,7 @@ class Geometry(object):
         """
         shape = self.get_shape(shape)
         if t0 < 0 or t0 > 1:
-            logger.error("Impossible value for normal transmission: %s" % t0)
+            logger.error("Impossible value for normal transmission: %s", t0)
             return
 
         with self._sem:

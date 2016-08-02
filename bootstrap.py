@@ -13,7 +13,7 @@ example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "23/06/2016"
+__date__ = "02/08/2016"
 
 
 import sys
@@ -75,11 +75,11 @@ def get_project_name(root_dir):
     :param str root_dir: Directory where to run the command.
     :return: The name of the project stored in root_dir
     """
-    logger.debug("Getting project name in %s" % root_dir)
+    logger.debug("Getting project name in %s", root_dir)
     p = subprocess.Popen([sys.executable, "setup.py", "--name"],
                          shell=False, cwd=root_dir, stdout=subprocess.PIPE)
     name, _stderr_data = p.communicate()
-    logger.debug("subprocess ended with rc= %s" % p.returncode)
+    logger.debug("subprocess ended with rc= %s", p.returncode)
     return name.split()[-1].decode('ascii')
 
 logging.basicConfig()
@@ -94,7 +94,7 @@ cwd = os.getcwd()
 os.chdir(home)
 build = subprocess.Popen([sys.executable, "setup.py", "build"],
                 shell=False, cwd=os.path.dirname(os.path.abspath(__file__)))
-logger.info("Build process ended with rc= %s" % build.wait())
+logger.info("Build process ended with rc= %s", build.wait())
 distutils.dir_util.copy_tree("pyFAI/resources", os.path.join(LIBPATH, PROJECT_NAME, "resources"), update=1)
 
 os.chdir(cwd)
@@ -109,19 +109,19 @@ if __name__ == "__main__":
         script = sys.argv[1]
 
     if script:
-        logger.info("Executing %s from source checkout" % (script))
+        logger.info("Executing %s from source checkout", script)
     else:
         logging.info("Running iPython by default")
     sys.path.insert(0, LIBPATH)
-    logger.info("01. Patched sys.path with %s" % LIBPATH)
+    logger.info("01. Patched sys.path with %s", LIBPATH)
 
     sys.path.insert(0, SCRIPTSPATH)
-    logger.info("02. Patched sys.path with %s" % SCRIPTSPATH)
+    logger.info("02. Patched sys.path with %s", SCRIPTSPATH)
 
     if script:
         sys.argv = sys.argv[1:]
         logger.info("03. patch the sys.argv : ", sys.argv)
-        logger.info("04. Executing %s.main()" % (script,))
+        logger.info("04. Executing %s.main()", script)
         fullpath = os.path.join(SCRIPTSPATH, script)
         if os.path.exists(fullpath):
             exec_file = fullpath

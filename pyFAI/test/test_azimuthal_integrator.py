@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -129,7 +129,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         tth, I = self.ai.xrpd_numpy(self.data,
                                     len(self.fit2d), self.tmpfiles["numpy"], correctSolidAngle=False)
         rwp = Rwp((tth, I), self.fit2d.T)
-        logger.info("Rwp numpy/fit2d = %.3f" % rwp)
+        logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
@@ -153,7 +153,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
 #        logger.info(tth)
 #        logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
-        logger.info("Rwp cython/fit2d = %.3f" % rwp)
+        logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
@@ -185,7 +185,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
 #        logger.info(tth)
 #        logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
-        logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f" % (t1, rwp))
+        logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
@@ -217,7 +217,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                                correctSolidAngle=False)
         logger.info("After xrpd_splitPixel")
         rwp = Rwp((tth_cy, I_cy), (tth_np, I_np))
-        logger.info("Rwp = %.3f" % rwp)
+        logger.info("Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
             fig = pylab.figure()

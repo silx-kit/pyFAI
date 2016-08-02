@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/05/2016"
+__date__ = "02/08/2016"
 __status__ = "DEPRECATED -> see worker"
 __docformat__ = 'restructuredtext'
 
@@ -115,10 +115,10 @@ class Processor(object):
             try:
                 fwavelength = float(wavelength)
             except ValueError:
-                logger.error("Unable to convert wavelength to float: %s" % wavelength)
+                logger.error("Unable to convert wavelength to float: %s", wavelength)
             else:
                 if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+                    logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
                 self.ai.wavelength = fwavelength
 
         splineFile = config.get("splineFile")
@@ -146,7 +146,7 @@ class Processor(object):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 self.ai.mask = mask
                 self.mask_image = os.path.abspath(mask_file)
@@ -227,7 +227,7 @@ class Processor(object):
             with open(filename, "w") as myFile:
                 json.dump(to_save, myFile, indent=4)
         except IOError as error:
-            logger.error("Error while saving config: %s" % error)
+            logger.error("Error while saving config: %s", error)
         else:
             logger.debug("Saved")
 

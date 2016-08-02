@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2016"
+__date__ = "02/08/2016"
 
 import unittest
 import numpy
@@ -138,7 +138,7 @@ class TestUtils(unittest.TestCase):
                 blurred1 = scipy.ndimage.filters.gaussian_filter(self.flat, sigma, mode=mode)
                 blurred2 = utils.gaussian_filter(self.flat, sigma, mode=mode)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
-                logger.info("Error for gaussian blur sigma: %s with mode %s is %s" % (sigma, mode, delta))
+                logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
                 self.assert_(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
 
     def test_set(self):

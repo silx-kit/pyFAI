@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 __status__ = "production"
 
 import os
@@ -203,7 +203,7 @@ class AbstractCalibration(object):
             elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
-                logger.error("Unable to handle such calibrant %s" % calibrant)
+                logger.error("Unable to handle such calibrant %s", calibrant)
                 self.calibrant = None
         else:
             self.calibrant = None
@@ -409,7 +409,7 @@ class AbstractCalibration(object):
             elif os.path.isfile(options.spline):
                 self.detector.set_splineFile(os.path.abspath(options.spline))
             else:
-                logger.error("Unknown spline file %s" % (options.spline))
+                logger.error("Unknown spline file %s", options.spline)
 
         if options.mask and os.path.isfile(options.mask):
             self.mask = (fabio.open(options.mask).data != 0)
@@ -423,7 +423,7 @@ class AbstractCalibration(object):
             elif os.path.isfile(options.spacing):
                 self.calibrant = Calibrant(options.spacing)
             else:
-                logger.error("No such Calibrant / d-Spacing file: %s" % options.spacing)
+                logger.error("No such Calibrant / d-Spacing file: %s", options.spacing)
 
         if self.calibrant is None:
             self.read_dSpacingFile(True)
@@ -579,7 +579,7 @@ class AbstractCalibration(object):
 
         url = urlparse(self.outfile)
         if url.scheme not in self.VALID_URL:
-            logger.warning("unexpected URL: %s" % self.outfile)
+            logger.warning("unexpected URL: %s", self.outfile)
         self.basename, ext = os.path.splitext(url.path)
         if ext in [".gz", ".bz2"]:
             self.basename = os.path.splitext(self.basename)[0]
@@ -619,7 +619,7 @@ class AbstractCalibration(object):
         @param method: method for keypoint extraction
         @param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
-        logger.info("in extract_cpt with method %s" % method)
+        logger.info("in extract_cpt with method %s", method)
         assert self.ai
         assert self.calibrant
         assert self.peakPicker
@@ -996,7 +996,7 @@ class AbstractCalibration(object):
                     elif value in ("1", "on", "yes", "true"):
                         self.weighted = True
                     else:
-                        logger.warning("Unrecognized argument for weight: %s" % value)
+                        logger.warning("Unrecognized argument for weight: %s", value)
                         continue
                 print("Weights: %s" % self.weighted)
                 if (old != self.weighted):
@@ -1043,7 +1043,7 @@ class AbstractCalibration(object):
                     self.data = self.peakPicker.points.getList()
                     self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
             else:
-                logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
+                logger.warning("Unrecognized action: %s, type 'quit' to leave ", action)
 
     def chiplot(self, rings=None):
         """
@@ -1119,7 +1119,7 @@ class AbstractCalibration(object):
         if not gui_utils.main_loop:
             self.fig_chiplot.show()
         update_fig(self.fig_chiplot)
-        logger.info("One pixel = %.3e deg" % resolution)
+        logger.info("One pixel = %.3e deg", resolution)
 
     def postProcess(self):
         """
@@ -1196,7 +1196,7 @@ class AbstractCalibration(object):
                 dBeamCentre = self.geoRef.getFit2D()["directDist"]  # in mm!!
                 xValues = dBeamCentre * numpy.tan(twoTheta)
             else:
-                logger.warning('Unknown unit %s, do not plot calibration rings' % str(self.unit))
+                logger.warning("Unknown unit %s, do not plot calibration rings", self.unit)
             if xValues is not None:
                 for x in xValues:
                     line = matplotlib.lines.Line2D([x, x], self.ax_xrpd_1d.axis()[2:4],
@@ -1256,7 +1256,7 @@ class AbstractCalibration(object):
         if self.geoRef:
             self.ai.setPyFAI(**self.geoRef.getPyFAI())
             self.ai.wavelength = self.geoRef.wavelength
-        logger.info("Performing autocorreclation on %sx%s, Fourier analysis may take some time" % (slices, npt))
+        logger.info("Performing autocorreclation on %sx%s, Fourier analysis may take some time", slices, npt)
         img, tth, chi = self.ai.integrate2d(self.peakPicker.data, npt, slices, azimuth_range=(-180, 180), unit="r_mm", method="splitpixel")
         ft = numpy.fft.fft(img, npt * 2, axis=-1)
         crosscor = numpy.fft.ifft(ft[:half_slices, :] * (ft[half_slices:, :].conj()), axis=-1).real
@@ -1278,7 +1278,7 @@ class AbstractCalibration(object):
         dx = -f_prime / f_second
         if (abs(dx) >= 0.5).any():
             msk = abs(dx) > 1
-            logger.info("Correction is important ! %s" % msk)
+            logger.info("Correction is important ! %s", msk)
             dx[msk] = 0.0
         center[half_slices:] = (x0 + dx - npt) * dr
         center[:half_slices] = -center[half_slices:]
@@ -1317,7 +1317,7 @@ class AbstractCalibration(object):
         //@param refine: launch the refinement
         """
         if how not in ["center", "ring"]:  # ,"best"]:
-            logger.warning("unknow geometry reset method: %s, fall back on detector center" % how)
+            logger.warning("unknow geometry reset method: %s, fall back on detector center", how)
             how = "center"
         if self.data is None:
             logger.warning("No datapoint: fall back on detector center")
@@ -1922,7 +1922,7 @@ class MultiCalib(object):
             if os.path.isfile(options.spline):
                 self.detector.splineFile = os.path.abspath(options.spline)
             else:
-                logger.error("Unknown spline file %s" % (options.spline))
+                logger.error("Unknown spline file %s", options.spline)
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
         self.filter = options.filter

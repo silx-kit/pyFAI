@@ -9,7 +9,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2013"
+__date__ = "02/08/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -224,7 +224,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
 #        else:
 #            directory = os.path.join(sav_parms.directory, self.subdir)
 #        if not os.path.exists(directory):
-#            logger.error("Ouput directory does not exist !!!  %s" % directory)
+#            logger.error("Ouput directory does not exist !!!  %s", directory)
 #            try:
 #                os.makedirs(directory)
 #            except:  # No luck withthreads

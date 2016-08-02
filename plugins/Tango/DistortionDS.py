@@ -13,7 +13,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2013"
+__date__ = "02/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -278,7 +278,7 @@ if __name__ == '__main__':
 
     ltangoParam += args.to_tango
     try:
-        logger.debug("Tango parameters: %s" % ltangoParam)
+        logger.debug("Tango parameters: %s", ltangoParam)
         py = PyTango.Util(ltangoParam)
         py.add_TgClass(DistortionDSClass, DistortionDS, 'DistortionDS')
         U = py.instance() #PyTango.Util.instance()

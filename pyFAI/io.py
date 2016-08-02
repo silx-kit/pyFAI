@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2016"
+__date__ = "02/08/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module for "high-performance" writing in either 1D with Ascii , 
@@ -103,7 +103,7 @@ def from_isotime(text, use_tz=False):
     except:
         text = str(text)
     if len(text) < 19:
-        logger.warning("Not a iso-time string: %s" % text)
+        logger.warning("Not a iso-time string: %s", text)
         return
     base = text[:19]
     if use_tz and len(text) == 25:
@@ -141,7 +141,7 @@ class Writer(object):
         """
         self.filename = filename
         if os.path.exists(filename):
-            logger.warning("Destination file %s exists" % filename)
+            logger.warning("Destination file %s exists", filename)
         self._sem = threading.Semaphore()
         self.dirname = None
         self.subdir = None
@@ -170,7 +170,7 @@ class Writer(object):
                     try:
                         os.makedirs(dirname)
                     except Exception as err:
-                        logger.info("Problem while creating directory %s: %s" % (dirname, err))
+                        logger.info("Problem while creating directory %s: %s", dirname, err)
 
     def flush(self, *arg, **kwarg):
         """
@@ -374,7 +374,7 @@ class HDF5Writer(Writer):
         Minimalistic method to limit the overhead.
         @param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
-        logger.debug("In write, index %s" % index)
+        logger.debug("In write, index %s", index)
         radial = None
         azimuthal = None
         if isinstance(data, numpy.ndarray):
@@ -611,7 +611,7 @@ class DefaultAiWriter(Writer):
                 img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
             img.write(filename)
         except IOError:
-            logger.error("IOError while writing %s" % filename)
+            logger.error("IOError while writing %s", filename)
 
     def write(self, data):
         """
@@ -729,11 +729,11 @@ class AsciiWriter(Writer):
         else:
             self.directory = os.path.join(lima_cfg.get("directory", self.directory), self.subdir)
         if not os.path.exists(self.directory):
-            logger.warning("Output directory: %s does not exist,creating it" % self.directory)
+            logger.warning("Output directory: %s does not exist,creating it", self.directory)
             try:
                 os.makedirs(self.directory)
             except Exception as error:
-                logger.info("Problem while creating directory %s: %s" % (self.directory, error))
+                logger.info("Problem while creating directory %s: %s", self.directory, error)
 
     def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
@@ -821,11 +821,11 @@ class FabioWriter(Writer):
         else:
             self.directory = os.path.join(directory, self.subdir)
         if not os.path.exists(self.directory):
-            logger.warning("Output directory: %s does not exist,creating it" % self.directory)
+            logger.warning("Output directory: %s does not exist,creating it", self.directory)
             try:
                 os.makedirs(self.directory)
             except Exception as error:
-                logger.info("Problem while creating directory %s: %s" % (self.directory, error))
+                logger.info("Problem while creating directory %s: %s", self.directory, error)
 
     def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
@@ -1031,9 +1031,9 @@ class Nexus(object):
             if name in toplevel:
                 if overwrite:
                     del toplevel[name]
-                    logger.warning("Overwriting %s in %s" % (toplevel[name].name, self.filename))
+                    logger.warning("Overwriting %s in %s", toplevel[name].name, self.filename)
                 else:
-                    logger.warning("Not overwriting %s in %s" % (toplevel[name].name, self.filename))
+                    logger.warning("Not overwriting %s in %s", toplevel[name].name, self.filename)
                     return
             toplevel[name] = obj.value
             for k, v in obj.attrs.items():
