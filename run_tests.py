@@ -69,7 +69,8 @@ class StreamHandlerUnittestReady(logging.StreamHandler):
         """
         @type record: logging.LogRecord
         """
-        print(record.levelname + ":" + record.msg)
+        self.stream = sys.stderr
+        super(StreamHandlerUnittestReady, self).emit(record)
 
     def flush(self):
         pass
