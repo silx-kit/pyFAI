@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "02/08/2016"
+__date__ = "03/08/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -125,7 +125,6 @@ class OCL_LUT_Integrator(object):
         :return: copy of the object
         """
         return self.__class__(self._lut, self.size, 
-                              block_size=self.BLOCK_SIZE,
                               platformid=self.platform.id,
                               deviceid=self.device.id,
                               checksum=self.on_device.get("lut"),
@@ -141,7 +140,6 @@ class OCL_LUT_Integrator(object):
         new_lut = self._lut.copy()
         memo[id(self._lut)] = new_lut
         new_obj = self.__class__(new_lut, self.size, 
-                                 block_size=self.BLOCK_SIZE,
                                  platformid=self.platform.id,
                                  deviceid=self.device.id,
                                  checksum=self.on_device.get("lut"),
