@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "03/08/2016"
 __status__ = "DEPRECATED -> see worker"
 __docformat__ = 'restructuredtext'
 
@@ -60,7 +60,6 @@ class Processor(object):
         elif type(config) in types.StringTypes:
             if os.path.isfile(config):
                 self.config = json.load(open(config, "r"))
-                self.config_file(config)
             else:
                 self.config = json.loads(config)
         if self.config:
