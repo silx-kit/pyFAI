@@ -13,7 +13,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/11/2015"
+__date__ = "03/08/2016"
 __satus__ = "development"
 
 import sys
@@ -61,7 +61,7 @@ class DoubleView(QtGui.QWidget):
         self.last_frame = None
         self.last = time.time()
         if poni:
-            worker = pyFAI.worker.Worker(ai=pyFAI.load(poni))
+            worker = pyFAI.worker.Worker(azimuthalIntgrator=pyFAI.load(poni))
         elif json:
             worker = pyFAI.worker.Worker()
             worker.setJsonConfig(json)
