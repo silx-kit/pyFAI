@@ -13,16 +13,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "03/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
 import sys
-import threading
 import logging
-import gc
-import time
 import traceback
 logger = logging.getLogger("pyfai.distortionDS")
 # set loglevel at least at INFO
@@ -31,30 +28,19 @@ if logger.getEffectiveLevel() > logging.INFO:
 from os.path import dirname
 cwd = dirname(dirname(dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(cwd, "build", "lib.linux-x86_64-2.6"))
-import pyFAI
-if sys.version < (2, 7):
-    from pyFAI.argparse import ArgumentParser
-else:
-    from argparse import ArgumentParser
 
 try:
-    from pyFAI.fastcrc import crc32
+    from argparse import ArgumentParser
 except ImportError:
-    from zlib import crc32
+    from pyFAI.third_party.argparse import ArgumentParser
 
-import fabio
 try:
     import pyopencl
-    import pyFAI.ocl_azim_lut
 except ImportError:
     pyopencl = None
     logger.warning("Unable to import pyopencl, will use OpenMP (if available)")
 import PyTango
-import numpy
-if sys.version > (3, 0):
-    from queue import Queue
-else:
-    from Queue import Queue
+
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
