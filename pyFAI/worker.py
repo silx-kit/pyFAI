@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "04/08/2016"
 __status__ = "development"
 __doc__ = """This module contains the Worker class:
 
@@ -158,20 +158,27 @@ def make_ai(config):
 
 
 class Worker(object):
-    def __init__(self, azimuthalIntgrator=None,
+    def __init__(self, azimuthalIntegrator=None,
                  shapeIn=(2048, 2048), shapeOut=(360, 500),
-                 unit="r_mm", dummy=None, delta_dummy=None):
+                 unit="r_mm", dummy=None, delta_dummy=None,
+                 azimuthalIntgrator=None):
         """
-        @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
+        @param azimuthalIntegrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance
+        @param azimuthalIntgrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance (deprecated)
         @param shapeIn: image size in input
         @param shapeOut: Integrated size: can be (1,2000) for 1D integration
         @param unit: can be "2th_deg, r_mm or q_nm^-1 ...
         """
+        # TODO remove it in few month (added on 2016-08-04)
+        if azimuthalIntgrator is not None:
+            logger.warning("'Worker(azimuthalIntgrator=...)' parameter is deprecated cause it contains a typo. Please use 'azimuthalIntegrator='")
+            azimuthalIntegrator = azimuthalIntgrator
+
         self._sem = threading.Semaphore()
-        if azimuthalIntgrator is None:
+        if azimuthalIntegrator is None:
             self.ai = AzimuthalIntegrator()
         else:
-            self.ai = azimuthalIntgrator
+            self.ai = azimuthalIntegrator
 #        self.config = {}
 #        self.config_file = "azimInt.json"
 #        self.nbpt_azim = 0
