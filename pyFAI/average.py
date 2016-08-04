@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/07/2016"
+__date__ = "04/08/2016"
 __status__ = "production"
 
 import logging
@@ -53,6 +53,120 @@ if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4,
     fabio.factory = fabio.fabioimage.FabioImage.factory
 
 logger = logging.getLogger("pyFAI.average")
+
+
+class ImageReductionFilter(object):
+    """
+    Generic filter applyed in a set of images.
+    """
+
+    def add_image(self, image):
+        """
+        Add an image to the filter.
+
+        @param image numpy.ndarray: image to add
+        """
+        raise NotImplementedError()
+
+    def get_result(self):
+        """
+        Get the result of the filter.
+
+        @return: result filter
+        """
+        raise NotImplementedError()
+
+
+class ImageAccumulatorFilter(ImageReductionFilter):
+    """
+    Filter applyed in a set of images in which it is possible
+    to reduce data step by step into a single merged image.
+    """
+
+    def __init__(self):
+        self._count = 0
+        self._accumulated_image = None
+
+    def add_image(self, image):
+        """
+        Add an image to the filter.
+
+        @param image numpy.ndarray: image to add
+        """
+        self._accumulated_image = self._accumulate(self._accumulated_image, image)
+        self._count += 1
+
+    def _accumulate(self, accumulated_image, added_image):
+        """
+        Add an image to the filter.
+
+        @param accumulated_image numpy.ndarray: image use to accumulate information
+        @param added_image numpy.ndarray: image to add
+        """
+        raise NotImplementedError()
+
+    def get_result(self):
+        """
+        Get the result of the filter.
+
+        @return: result filter
+        @rtype: numpy.ndarray
+        """
+        return self._accumulated_image
+
+
+class MaxAveraging(ImageAccumulatorFilter):
+    name = "max"
+
+    def _accumulate(self, accumulated_image, added_image):
+        if accumulated_image is None:
+            return added_image
+        return numpy.maximum(accumulated_image, added_image)
+
+
+class MinAveraging(ImageAccumulatorFilter):
+    name = "min"
+
+    def _accumulate(self, accumulated_image, added_image):
+        if accumulated_image is None:
+            return added_image
+        return numpy.minimum(accumulated_image, added_image)
+
+
+class SumAveraging(ImageAccumulatorFilter):
+    name = "sum"
+
+    def _accumulate(self, accumulated_image, added_image):
+        if accumulated_image is None:
+            return added_image
+        return accumulated_image + added_image
+
+
+class MeanAveraging(SumAveraging):
+    name = "mean"
+
+    def get_result(self):
+        return self._accumulated_image / numpy.float32(self._count)
+
+
+_FILTERS = [
+    MaxAveraging,
+    MinAveraging,
+    MeanAveraging,
+    SumAveraging,
+]
+
+_FILTER_NAME_MAPPING = {}
+for f in _FILTERS:
+    _FILTER_NAME_MAPPING[f.name] = f
+
+
+def _get_filter_class(filter_name):
+    global _FILTER_NAME_MAPPING
+    filter_class = _FILTER_NAME_MAPPING.get(filter_name, None)
+    if filter_class is None:
+        raise Exception("Filter name '%s' unknown" % filter_name)
+    return filter_class
 
 
 def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)):
@@ -233,7 +347,6 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
             except MonitorNotFound as e:
                 logger.warning("Monitor not found in filename '%s', data skipped. Cause: %s", image.filename, str(e))
                 return None
-
         return corrected_img
     # input sanitization
     if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
@@ -261,7 +374,6 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         fimgs.append(fimg)
         nb_frames += fimg.nframes
 
-    acc_img = None
     do_dark = (darks is not None)
     do_flat = (flats is not None)
     dark = None
@@ -308,28 +420,23 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         big_img.resize((idx, first_shape[0], first_shape[1]))
         datared = average_dark(big_img, filter_, cutoff, quantiles)
     else:
-        for idx, fimg in enumerate(fimgs):
-            for frame in range(fimg.nframes):
-                if fimg.nframes == 1:
-                    ds = fimg.data
+        filter_class = _get_filter_class(filter_)
+        accumulator = filter_class()
+        for fabio_image in fimgs:
+            for frame in range(fabio_image.nframes):
+                if fabio_image.nframes == 1:
+                    data = fabio_image.data
                 else:
-                    ds = fimg.getframe(frame).data
-                logger.debug("Intensity range for %s#%i is %s --> %s", fimg.filename, frame, ds.min(), ds.max())
+                    data = fabio_image.getframe(frame).data
+                logger.debug("Intensity range for %s#%i is %s --> %s", fabio_image.filename, frame, data.min(), data.max())
 
-                corrected_img = correct_img(fimg, ds)
-                if corrected_img is None:
-                    nb_frames -= 1
+                corrected_image = correct_img(fabio_image, data)
+                if corrected_image is None:
                     continue
-                if filter_ == "max":
-                    acc_img = corrected_img if (acc_img is None) else numpy.maximum(corrected_img, acc_img)
-                elif filter_ == "min":
-                    acc_img = corrected_img if (acc_img is None) else numpy.minimum(corrected_img, acc_img)
-                elif filter_ in ("mean", "sum"):
-                    acc_img = corrected_img if (acc_img is None) else corrected_img + acc_img
-            if filter_ == "mean":
-                datared = acc_img / numpy.float32(nb_frames)
-            else:
-                datared = acc_img
+                accumulator.add_image(corrected_image)
+
+        datared = accumulator.get_result()
+
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
     if fformat is not None:
         if fformat.startswith("."):
