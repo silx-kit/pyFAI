@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "29/07/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -54,6 +54,11 @@ import numpy
 import shutil
 import json
 import tempfile
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
+
 logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
@@ -349,8 +354,7 @@ def diff_img(ref, obt, comment=""):
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -368,8 +372,7 @@ def diff_crv(ref, obt, comment=""):
         im_obt = ax1.plot(obt, label="%s obt" % comment)
         im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 class ParameterisedTestCase(unittest.TestCase):

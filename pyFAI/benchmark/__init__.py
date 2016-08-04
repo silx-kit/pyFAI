@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "23/06/2016"
+__date__ = "29/07/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -50,6 +50,10 @@ except:
     from pyFAI import pyFAI
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 try:
     from ..gui_utils import pylab, update_fig
@@ -671,4 +675,4 @@ if __name__ == "__main__":
                   do_1d=options.onedim, do_2d=options.twodim, devices=devices)
 
     pylab.ion()
-    raw_input("Enter to quit")
+    six.moves.input("Enter to quit")

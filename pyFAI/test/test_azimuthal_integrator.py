@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "29/07/2016"
 
 
 import unittest
@@ -52,10 +52,9 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 tmp_dir = UtilsTest.tempdir
 try:
-    from ..utils import input
-except ImportError:
-    pass
-
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 class TestAzimPilatus(unittest.TestCase):
     @classmethod
@@ -141,7 +140,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         assert rwp < 11
 
     def test_cython_vs_fit2d(self):
@@ -165,7 +164,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         assert rwp < 11
 
     def test_cythonSP_vs_fit2d(self):
@@ -197,7 +196,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         assert rwp < 11
 
     def test_cython_vs_numpy(self):
@@ -231,7 +230,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
 
         assert rwp < 3
 
@@ -262,7 +261,7 @@ class TestFlatimage(unittest.TestCase):
             sp = fig.add_subplot(111)
             sp.imshow(I, interpolation="nearest")
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         I[I == -1.0] = 1.0
         assert abs(I.min() - 1.0) < self.epsilon
         assert abs(I.max() - 1.0) < self.epsilon
@@ -280,7 +279,7 @@ class TestFlatimage(unittest.TestCase):
             sp = fig.add_subplot(111)
             sp.imshow(I, interpolation="nearest")
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         I[I == -1.0] = 1.0
         assert abs(I.min() - 1.0) < self.epsilon
         assert abs(I.max() - 1.0) < self.epsilon

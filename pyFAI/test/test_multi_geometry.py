@@ -33,20 +33,22 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/07/2016"
+__date__ = "29/07/2016"
 
 import os
 import sys
 import unittest
 import logging
-if sys.version_info[0] > 2:
-    raw_input = input
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..multi_geometry import MultiGeometry
 from ..detectors import Detector
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 import fabio
 
 
@@ -102,7 +104,7 @@ class TestMultiGeometry(unittest.TestCase):
             ax.plot(I_ref, label="ref")
             ax.legend()
             f.show()
-            raw_input()
+            six.moves.input()
         self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate1d_withpol(self):
@@ -146,7 +148,7 @@ class TestMultiGeometry(unittest.TestCase):
                 a4 = f.add_subplot(2, 2, 4)
                 a4.plot(delta_sum.sum(axis=0))
                 f.show()
-                raw_input()
+                six.moves.input()
 
         self.assert_(delta_cnt.max() < 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
         self.assert_(delta_sum.max() < 0.04, "pixel sum is the same delta=%s" % delta_sum.max())

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2016"
+__date__ = "29/07/2016"
 __status__ = "production"
 
 import logging
@@ -92,13 +92,7 @@ except (ImportError, WindowsError) as err:
 
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
-
-
 StringTypes = (six.binary_type, six.text_type)
-try:
-    input = raw_input
-except NameError:
-    pass
 
 try:
     from .fastcrc import crc32
@@ -1262,7 +1256,7 @@ def readFloatFromKeyboard(text, dictVar):
     @param text: string to be displayed
     @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
     """
-    fromkb = raw_input(text).strip()
+    fromkb = six.moves.input(text).strip()
     try:
         vals = [float(i) for i in fromkb.split()]
     except:
