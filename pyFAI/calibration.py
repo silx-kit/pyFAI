@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "04/08/2016"
 __status__ = "production"
 
 import os
@@ -1256,7 +1256,7 @@ class AbstractCalibration(object):
         if self.geoRef:
             self.ai.setPyFAI(**self.geoRef.getPyFAI())
             self.ai.wavelength = self.geoRef.wavelength
-        logger.info("Performing autocorreclation on %sx%s, Fourier analysis may take some time", slices, npt)
+        logger.info("Performing autocorrelation on %sx%s, Fourier analysis may take some time", slices, npt)
         img, tth, chi = self.ai.integrate2d(self.peakPicker.data, npt, slices, azimuth_range=(-180, 180), unit="r_mm", method="splitpixel")
         ft = numpy.fft.fft(img, npt * 2, axis=-1)
         crosscor = numpy.fft.ifft(ft[:half_slices, :] * (ft[half_slices:, :].conj()), axis=-1).real
