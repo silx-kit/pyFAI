@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __doc__ = """Test for OpenCL sorting on GPU"""
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -50,7 +50,7 @@ logger = getLogger(__file__)
 try:
     import pyopencl
 except ImportError as error:
-    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s." % error)
+    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
     skip = True
 else:
     skip = False

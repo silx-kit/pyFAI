@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 
 import unittest
 import time
@@ -174,11 +174,11 @@ class TestHistogram1d(unittest.TestCase):
         self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
 
         rwp1 = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
-        logger.info("Rwp Cython/Numpy = %.3f" % rwp1)
+        logger.info("Rwp Cython/Numpy = %.3f", rwp1)
         self.assert_(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
 
         rwp2 = Rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
-        logger.info("Rwp CSR/Numpy = %.3f" % rwp2)
+        logger.info("Rwp CSR/Numpy = %.3f", rwp2)
         self.assert_(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
 
         if logger.getEffectiveLevel() == logging.DEBUG:

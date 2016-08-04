@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "04/08/2016"
 __status__ = "development"
 
 import logging
@@ -193,7 +193,7 @@ class AIWidget(QtGui.QWidget):
             elif unit.REPR == "r_mm":
                 self.units[unit] = self.r_mm
             else:
-                logger.debug("Unit unknown to GUI %s" % unit)
+                logger.debug("Unit unknown to GUI %s", unit)
 
     def set_validators(self):
         """
@@ -263,7 +263,7 @@ class AIWidget(QtGui.QWidget):
             rad_min = float_(self.radial_range_min.text())
             rad_max = float_(self.radial_range_max.text())
         except ValueError as error:
-            logger.error("error in parsing radial range: %s" % error)
+            logger.error("error in parsing radial range: %s", error)
             return None
         result = (rad_min, rad_max)
         if result == (None, None):
@@ -277,7 +277,7 @@ class AIWidget(QtGui.QWidget):
             azim_min = float_(self.azimuth_range_min.text())
             azim_max = float_(self.azimuth_range_max.text())
         except ValueError as error:
-            logger.error("error in parsing azimuthal range: %s" % error)
+            logger.error("error in parsing azimuthal range: %s", error)
             return None
         result = (azim_min, azim_max)
         if result == (None, None):
@@ -335,7 +335,7 @@ class AIWidget(QtGui.QWidget):
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                         os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
-            logger.debug("processing %s" % self.input_data)
+            logger.debug("processing %s", self.input_data)
             start_time = time.time()
             if self.input_data in [None, []]:
                 logger.warning("No input data to process")
@@ -343,7 +343,7 @@ class AIWidget(QtGui.QWidget):
 
             elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
                 # We have a numpy array of dim3
-                w = worker.Worker(azimuthalIntgrator=ai)
+                w = worker.Worker(azimuthalIntegrator=ai)
                 try:
                     w.nbpt_rad = self.__get_nbpt_rad()
                     w.unit = self.__get_unit()
@@ -410,7 +410,7 @@ class AIWidget(QtGui.QWidget):
 
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
-                    logger.debug("processing %s" % item)
+                    logger.debug("processing %s", item)
                     if isinstance(item, (six.text_type, six.binary_type)) and op.exists(item):
                         fab_img = fabio.open(item)
                         multiframe = (fab_img.nframes > 1)
@@ -455,7 +455,7 @@ class AIWidget(QtGui.QWidget):
                     out.append(res)
 
                     #TODO manage HDF5 stuff !!!
-            logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
+            logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
         self.die()
         return out
@@ -531,12 +531,12 @@ class AIWidget(QtGui.QWidget):
         if filename is None:
             filename = self.json_file
         if filename is not None:
-            logger.info("Dump to %s" % filename)
+            logger.info("Dump to %s", filename)
             try:
                 with open(filename, "w") as myFile:
                     json.dump(to_save, myFile, indent=4)
             except IOError as error:
-                logger.error("Error while saving config: %s" % error)
+                logger.error("Error while saving config: %s", error)
             else:
                 logger.debug("Saved")
         return to_save
@@ -547,9 +547,9 @@ class AIWidget(QtGui.QWidget):
         @param filename: path where the config was saved
         @type filename: str
         """
-        logger.debug("Restore from %s" % filename)
+        logger.debug("Restore from %s", filename)
         if not op.isfile(filename):
-            logger.error("No such file: %s" % filename)
+            logger.error("No such file: %s", filename)
             return
         data = json.load(open(filename))
         self.set_config(data)
@@ -627,7 +627,7 @@ class AIWidget(QtGui.QWidget):
                 self.pixel2.setText(str(ai.pixel2))
                 self.splineFile.setText(ai.detector.splineFile or "")
             except Exception as error:
-                logger.error("failed %s on %s" % (error, splinefile))
+                logger.error("failed %s on %s", error, splinefile)
 
     def select_maskfile(self):
         logger.debug("select_maskfile")
@@ -665,7 +665,7 @@ class AIWidget(QtGui.QWidget):
             ai = AzimuthalIntegrator.sload(ponifile)
         except Exception as error:
             ai = AzimuthalIntegrator()
-            logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
+            logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
             return
         self.pixel1.setText(str_(ai.pixel1))
         self.pixel2.setText(str_(ai.pixel2))
@@ -695,7 +695,7 @@ class AIWidget(QtGui.QWidget):
             try:
                 fval = float(txtval)
             except ValueError:
-                logger.error("Unable to convert %s to float: %s" % (kw, txtval))
+                logger.error("Unable to convert %s to float: %s", kw, txtval)
         return fval
 
     def detector_changed(self):
@@ -713,7 +713,7 @@ class AIWidget(QtGui.QWidget):
                 self.pixel1.setText(str(inst.pixel1))
                 self.pixel2.setText(str(inst.pixel2))
             else:
-                logger.warning("No such spline file %s" % splineFile)
+                logger.warning("No such spline file %s", splineFile)
 
     def openCL_changed(self):
         logger.debug("do_OpenCL")

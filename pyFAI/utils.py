@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 __status__ = "production"
 
 import logging
@@ -488,7 +488,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
         logger.info("Filtering data (median)")
         center = numpy.median(stack, axis=0)
     elif center_method.startswith("quantil"):
-        logger.info("Filtering data (quantiles: %s)" % str(quantiles))
+        logger.info("Filtering data (quantiles: %s)", quantiles)
         sorted_ = numpy.sort(stack, axis=0)
         lower = max(0, int(numpy.floor(min(quantiles) * length)))
         upper = min(length, int(numpy.ceil(max(quantiles) * length)))
@@ -498,7 +498,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
             elif lower > 0:
                 lower -= 1
             else:
-                logger.warning("Empty selection for quantil %s, would keep points from %s to %s" % (quantiles, lower, upper))
+                logger.warning("Empty selection for quantil %s, would keep points from %s to %s", quantiles, lower, upper)
         center = sorted_[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
@@ -550,7 +550,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         return corrected_img
     # input sanitization
     if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
-        logger.warning("Filter %s not understood. switch to mean filter" % filter_)
+        logger.warning("Filter %s not understood. switch to mean filter", filter_)
         filter_ = "mean"
 
     nb_files = len(listImages)
@@ -559,7 +559,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
 
     for fn in listImages:
         if isinstance(fn, six.string_types):
-            logger.info("Reading %s" % fn)
+            logger.info("Reading %s", fn)
             fimg = fabio.open(fn)
         else:
             if fabio.hexversion < 262148:
@@ -593,7 +593,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
             flat = averageDark(flats, center_method="mean", cutoff=4)
         else:
-            logger.warning("there is some wrong with flats=%s" % (flats))
+            logger.warning("there is some wrong with flats=%s", flats)
         if correct_flat_from_dark:
             flat -= dark
         flat[numpy.where(flat <= 0)] = 1.0
@@ -671,7 +671,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             header[name] = f.filename
         fimg = fabioclass.__class__(data=datared, header=header)
         fimg.write(output)
-        logger.info("Wrote %s" % output)
+        logger.info("Wrote %s", output)
         return output
     else:
         return datared

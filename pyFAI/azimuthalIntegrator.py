@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2261,7 +2261,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
                 if reset:
-                    logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate1d: Resetting integrator because %s", reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, npt, mask,
                                                               radial_range, azimuth_range,
@@ -2386,7 +2386,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = ("azimuth_range requested and"
                                  " CSR's azimuth_range don't match")
                 if reset:
-                    logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate1d: Resetting integrator because %s", reset)
                     if "no" in method:
                         split = "no"
                     elif "full" in method:
@@ -2829,7 +2829,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range requested and LUT's azimuth_range don't match"
                 error = False
                 if reset:
-                    logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate2d: Resetting integrator because %s", reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
                         error = False
@@ -2868,7 +2868,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                            deviceid=deviceid,
                                                                                            checksum=self._lut_integrator.lut_checksum)
 #                                 except (MemoryError, RuntimeError) as err:
-#                                     logger.warning("Error: %s, falling back on forward implementation" % err)
+#                                     logger.warning("Error: %s, falling back on forward implementation", err)
 #                                     self._lut_integrator = None
 #                                     self._ocl_lut_integr = None
 #                                     gc.collect()
@@ -2935,7 +2935,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 error = False
                 if reset:
-                    logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate2d: Resetting integrator because %s", reset)
                     if "no" in method:
                         split = "no"
                     elif "full" in method:
@@ -2983,7 +2983,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                            deviceid=deviceid,
                                                                                            checksum=self._csr_integrator.lut_checksum)
 #                                 except (MemoryError, RuntimeError) as err:  # LUT method is hungry...
-#                                     logger.warning("Error: %s, falling back on forward implementation" % err)
+#                                     logger.warning("Error: %s, falling back on forward implementation", err)
 #                                     self._csr_integrator = None
 #                                     self._ocl_csr_integr = None
 #                                     gc.collect()
@@ -3311,7 +3311,7 @@ class AzimuthalIntegrator(Geometry):
         if "ocl" in method and npt_azim & (npt_azim - 1):
             old = npt_azim
             npt_azim = int(2 ** numpy.round(numpy.log2(npt_azim)))
-            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s" % (old, npt_azim))
+            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s", old, npt_azim)
 #             self._ocl_sem.acquire()
         integ2d, radial, azimuthal = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                                       unit=unit, method=method,

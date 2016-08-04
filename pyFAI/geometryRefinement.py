@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "03/08/2016"
 __status__ = "development"
 
 import os
@@ -264,7 +264,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
-    def refine2(self, maxiter=1000000, fix=["wavelength"]):
+    def refine2(self, maxiter=1000000, fix=None):
+        if fix is None:
+            fix = ["wavelength"]
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
         param = []
         bounds = []
@@ -313,7 +315,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
-    def refine2_wavelength(self, maxiter=1000000, fix=["wavelength"]):
+    def refine2_wavelength(self, maxiter=1000000, fix=None):
+        if fix is None:
+            fix = ["wavelength"]
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
 
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
@@ -455,7 +459,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         if not curve_fit:
             import scipy
-            logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s" % scipy.version.version)
+            logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s", scipy.version.version)
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
         size = d1.size

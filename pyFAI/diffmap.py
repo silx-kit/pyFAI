@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/05/2016"
+__date__ = "02/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module with GUI for diffraction mapping experiments"""
@@ -262,19 +262,19 @@ If the number of files is too large, use double quotes like "*.edf" """
         if options.mask:
             mask = urlparse(options.mask).path
             if os.path.isfile(mask):
-                logger.info("Reading Mask file from: %s" % mask)
+                logger.info("Reading Mask file from: %s", mask)
                 self.mask = os.path.abspath(mask)
                 config["ai"]["mask_file"] = self.mask
                 config["ai"]["do_mask"] = True
             else:
-                logger.warning("No such mask file %s" % mask)
+                logger.warning("No such mask file %s", mask)
         if options.poni:
             if os.path.isfile(options.poni):
-                logger.info("Reading PONI file from: %s" % options.poni)
+                logger.info("Reading PONI file from: %s", options.poni)
                 self.poni = options.poni
                 config["ai"]["poni"] = self.poni
             else:
-                logger.warning("No such poni file %s" % options.poni)
+                logger.warning("No such poni file %s", options.poni)
         if options.fast is not None:
             self.npt_fast = int(options.fast)
             config["fast_motor_points"] = self.npt_fast

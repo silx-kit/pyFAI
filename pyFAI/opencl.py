@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2015"
+__date__ = "03/08/2016"
 __status__ = "stable"
 
 import os
@@ -251,7 +251,7 @@ class OpenCL(object):
                 out = self.platforms[platid]
         return out
 
-    def select_device(self, dtype="ALL", memory=None, extensions=[], best=True, **kwargs):
+    def select_device(self, dtype="ALL", memory=None, extensions=None, best=True, **kwargs):
         """
         Select a device based on few parameters (at the end, keep the one with most memory)
 
@@ -260,6 +260,8 @@ class OpenCL(object):
         @param extensions: list of extensions to be present
         @param best: shall we look for the
         """
+        if extensions is None:
+            extensions = []
         if "type" in kwargs:
             dtype = kwargs["type"].upper()
         else:

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/08/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -88,7 +88,7 @@ class UtilsTest(object):
     try:
         pyFAI = __import__("%s.directories" % name)
     except Exception as error:
-        logger.warning("Unable to loading %s %s" % (name, error))
+        logger.warning("Unable to loading %s %s", name, error)
         image_home = None
     else:
         image_home = pyFAI.directories.testimages
@@ -115,7 +115,7 @@ class UtilsTest(object):
     @classmethod
     def deep_reload(cls):
         cls.pyFAI = __import__(cls.name)
-        logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
+        logger.info("%s loaded from %s", cls.name, cls.pyFAI.__file__)
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
         import pyFAI.decorators
@@ -162,7 +162,7 @@ class UtilsTest(object):
                     json.dump(image_list, fp, indent=4)
             except IOError:
                 logger.debug("Unable to save JSON list")
-        logger.info("UtilsTest.getimage('%s')" % imagename)
+        logger.info("UtilsTest.getimage('%s')", imagename)
         if not os.path.exists(cls.image_home):
             os.makedirs(cls.image_home)
 
@@ -182,11 +182,11 @@ class UtilsTest(object):
             else:
                 opener = urlopen
 
-            logger.info("wget %s/%s" % (cls.url_base, imagename))
+            logger.info("wget %s/%s", cls.url_base, imagename)
             try:
                 data = opener("%s/%s" % (cls.url_base, imagename),
                               data=None, timeout=cls.timeout).read()
-                logger.info("Image %s successfully downloaded." % imagename)
+                logger.info("Image %s successfully downloaded.", imagename)
             except URLError:
                 raise unittest.SkipTest("network unreachable.")
 
@@ -255,7 +255,7 @@ class UtilsTest(object):
         mylogger = logging.getLogger(basename)
         logger.setLevel(level)
         mylogger.setLevel(level)
-        mylogger.debug("tests loaded from file: %s" % basename)
+        mylogger.debug("tests loaded from file: %s", basename)
         return mylogger
 
     @classmethod

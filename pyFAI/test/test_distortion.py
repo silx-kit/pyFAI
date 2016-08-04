@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -127,7 +127,7 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
         self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
     def test_lut_vs_fit2d(self):
@@ -150,7 +150,7 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
         self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
     def test_csr_vs_fit2d(self):
@@ -173,7 +173,7 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
         self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
 

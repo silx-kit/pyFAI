@@ -105,7 +105,7 @@ print("=========================================================================
 ocl_csr.__del__()
 
 
-ocl_csr_padded = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr_padded.lut, data.size, "GPU",profile=True, padded=True, block_size=workgroup_size)
+ocl_csr_padded = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr_padded.lut, data.size, "GPU",profile=True, block_size=workgroup_size)
 out_ocl_csr_padded = ocl_csr_padded.integrate(data)[0]
 print("")
 print("ÖpenCL CSR padded: ", ocl_csr_padded.device)

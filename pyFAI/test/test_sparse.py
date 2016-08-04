@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -72,22 +72,22 @@ class TestSparseBBox(unittest.TestCase):
 
     def test_LUT(self):
         obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="LUT")[1]
-        logger.debug("delta on global result: %s" % (abs(obt - self.ref) / self.ref).max())
+        logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
         self.assert_(numpy.allclose(obt, self.ref))
 
         cython = self.ai._lut_integrator.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
-            logger.debug("delta on cython result: %s" % (abs(obt - ref) / ref).max())
+            logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
             self.assert_(numpy.allclose(obt, ref))
 
     def test_CSR(self):
         obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="CSR")[1]
-        logger.debug("delta on global result: %s" % (abs(obt - self.ref) / self.ref).max())
+        logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
         self.assert_(numpy.allclose(obt, self.ref))
 
         cython = self.ai._csr_integrator.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
-            logger.debug("delta on cython result: %s" % (abs(obt - ref) / ref).max())
+            logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
             self.assert_(numpy.allclose(obt, ref))
 
 

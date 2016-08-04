@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "11/04/2016"
+__date__ = "02/08/2016"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -92,7 +92,7 @@ class OCL_CSR_Integrator(object):
             if res:
                 platformid, deviceid = res
             else:
-                logger.warning("No such devicetype %s" % devicetype)
+                logger.warning("No such devicetype %s", devicetype)
                 platformid, deviceid = ocl.select_device()
         elif platformid is None:
             platformid = 0
@@ -216,7 +216,7 @@ class OCL_CSR_Integrator(object):
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.BLOCK_SIZE, int(self.device_type == "CPU"))
-        logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
+        logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
