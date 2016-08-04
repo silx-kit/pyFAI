@@ -1000,7 +1000,10 @@ def _get_data_path(filename):
 
     For now, just perform a recursive search
     """
-    resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
+    resources = [
+        os.environ.get("PYFAI_DATA"),
+        data_dir,
+        os.path.join(os.path.dirname(__file__), "..")]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
