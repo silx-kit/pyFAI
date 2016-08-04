@@ -401,9 +401,8 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
 
     if (cutoff or quantiles or (filter_ in ["median", "quantiles", "std"])):
         first_frame = fimgs[0]
-        first_shape = first_frame.data.shape
         logger.info("Big array allocation for median filter/cut-off/quantiles %i*%i*%i", first_frame.nframes, first_frame.dim2, first_frame.dim1)
-        big_img = numpy.zeros((nb_frames, first_shape[0], first_shape[1]), dtype=numpy.float32)
+        big_list = []
         idx = 0
         for fimg in fimgs:
             for frame in range(fimg.nframes):
@@ -415,10 +414,9 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
                 if data is None:
                     # skip inconsistante data
                     continue
-                big_img[idx] = data
+                big_list.append(data)
                 idx += 1
-        big_img.resize((idx, first_shape[0], first_shape[1]))
-        datared = average_dark(big_img, filter_, cutoff, quantiles)
+        datared = average_dark(big_list, filter_, cutoff, quantiles)
     else:
         filter_class = _get_filter_class(filter_)
         accumulator = filter_class()
