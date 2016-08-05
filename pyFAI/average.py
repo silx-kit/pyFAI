@@ -402,6 +402,68 @@ def _normalize_image_stack(image_stack):
     raise Exception("Unsupported type '%s' for image_stack" % type(image_stack))
 
 
+class AverageWriter():
+
+    def write_header(self, merged_files, nb_frames, cut_off, quantiles):
+        raise NotImplementedError()
+
+    def write_reduction(self, reduction):
+        raise NotImplementedError()
+
+    def close(self):
+        """Close the writer. Must not be used anymore."""
+        raise NotImplementedError()
+
+
+class MultiFilesAverageWriter(AverageWriter):
+    """Write reductions into multi files. File headers are duplicated."""
+
+    def __init__(self, file_name_pattern, file_format):
+        """
+        @param file_name_pattern str: File name pattern for the output files.
+            If it contains "%(reduction_name)s", it is updated for each
+            reduction writing with the name of the reduction.
+        @param file_format str: File format used. It is the default
+            extension file.
+        """
+        self._file_name_pattern = file_name_pattern
+        self._header = fabio.fabioimage.OrderedDict()
+
+        # in case "edf.gz"
+        if "." in file_format:
+            file_format = file_format.split(".")[0]
+
+        self._fabio_class = fabio.factory(file_format + "image")
+
+    def write_header(self, merged_files, nb_frames, cut_off, quantiles):
+        self._header["nfiles"] = len(merged_files)
+        self._header["nframes"] = nb_frames
+        self._header["cutoff"] = str(cut_off)
+        self._header["quantiles"] = str(quantiles)
+
+        pattern = "merged_file_%%0%ii" % len(str(len(merged_files)))
+        for i, f in enumerate(merged_files):
+            name = pattern % i
+            self._header[name] = f.filename
+
+    def _get_file_name(self, reduction_name):
+        keys = {"reduction_name": reduction_name}
+        return self._file_name_pattern % keys
+
+    def write_reduction(self, reduction_name, data):
+        file_name = self._get_file_name(reduction_name)
+        # overwrite the method
+        self._header["method"] = reduction_name
+        image = self._fabio_class.__class__(data=data, header=self._header)
+        image.write(file_name)
+        logger.info("Wrote %s", file_name)
+        self._last_file_name = file_name
+
+    def close(self):
+        """Close the writer. Must not be used anymore."""
+        self._header = None
+
+
 def common_prefix(string_list):
     """Return the common prefix of a list of strings
 
@@ -468,7 +530,6 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         logger.warning("Filter %s not understood. switch to mean filter", filter_)
         filter_ = "mean"
 
-    nb_files = len(listImages)
     nb_frames = 0
     fimgs = []
 
@@ -531,27 +592,16 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
     if fformat is not None:
         if fformat.startswith("."):
             fformat = fformat.lstrip(".")
-        if (output is None):
+        if output is None:
             prefix = common_prefix([i.filename for i in fimgs])
-            output = "%sfilt%02i-%s.%s" % (filter_, nb_frames, prefix, fformat)
+            output = "filt%02i-%s.%s" % (nb_frames, prefix, fformat)
+            output = "%(reduction_name)s" + output
 
-    if fformat and output:
-        if "." in fformat:  # in case "edf.gz"
-            fformat = fformat.split(".")[0]
-        fabioclass = fabio.factory(fformat + "image")
-        header = fabio.fabioimage.OrderedDict()
-        header["method"] = filter_
-        header["nfiles"] = nb_files
-        header["nframes"] = nb_frames
-        header["cutoff"] = str(cutoff)
-        header["quantiles"] = str(quantiles)
-        form = "merged_file_%%0%ii" % len(str(len(fimgs)))
-        for i, f in enumerate(fimgs):
-            name = form % i
-            header[name] = f.filename
-        fimg = fabioclass.__class__(data=datared, header=header)
-        fimg.write(output)
-        logger.info("Wrote %s", output)
-        return output
+    if output is not None:
+        writer = MultiFilesAverageWriter(output, fformat)
+        writer.write_header(fimgs, nb_frames, cutoff, quantiles)
+        writer.write_reduction(filter_, datared)
+        writer.close()
+        return writer._last_file_name
     else:
         return datared
