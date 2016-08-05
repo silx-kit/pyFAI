@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/08/2016"
+__date__ = "05/08/2016"
 __status__ = "production"
 
 import logging
@@ -147,6 +147,66 @@ class MeanAveraging(SumAveraging):
 
     def get_result(self):
         return self._accumulated_image / numpy.float32(self._count)
+
+
+class ImageStackFilter(ImageReductionFilter):
+    """
+    Filter creating a stack from all images and computing everything at the end.
+    """
+    def __init__(self, max_stack_size):
+        self._stack = None
+        self._max_stack_size = max_stack_size
+        self._count = 0
+
+    def add_image(self, image):
+        """
+        Add an image to the filter.
+
+        @param image numpy.ndarray: image to add
+        """
+        if self._stack is None:
+            shape = self._max_stack_size, image.shape[0], image.shape[1]
+            self._stack = numpy.zeros(shape, dtype=numpy.float32)
+        self._stack[self._count] = image
+        self._count += 1
+
+    def _compute_stack_reduction(self, stack):
+        raise NotImplementedError()
+
+    def get_result(self):
+        if self._stack is None:
+            raise Exception("No data to reduce")
+
+        shape = self._count, self._stack.shape[1], self._stack.shape[2]
+        self._stack.resize(shape)
+        return self._compute_stack_reduction(self._stack)
+
+
+class AverageDarkFilter(ImageStackFilter):
+    """
+    Filter based on the algorithm of average_dark
+
+    TODO: Must be splited according to each filter_name, and removed
+    """
+    def __init__(self, max_stack_size, filter_name, cut_off, quantiles):
+        super(AverageDarkFilter, self).__init__(max_stack_size)
+        self._filter_name = filter_name
+        self._cut_off = cut_off
+        self._quantiles = quantiles
+
+    def _compute_stack_reduction(self, stack):
+        """
+        Compute the stack reduction.
+
+        @param stack numpy.ndarray: stack to reduce
+
+        @return: result filter
+        @rtype: numpy.ndarray
+        """
+        return average_dark(stack,
+            self._filter_name,
+            self._cut_off,
+            self._quantiles)
 
 
 _FILTERS = [
@@ -399,41 +459,27 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
             flat -= dark
         flat[numpy.where(flat <= 0)] = 1.0
 
+    # create accumulator according to params
     if (cutoff or quantiles or (filter_ in ["median", "quantiles", "std"])):
-        first_frame = fimgs[0]
-        logger.info("Big array allocation for median filter/cut-off/quantiles %i*%i*%i", first_frame.nframes, first_frame.dim2, first_frame.dim1)
-        big_list = []
-        idx = 0
-        for fimg in fimgs:
-            for frame in range(fimg.nframes):
-                if fimg.nframes == 1:
-                    ds = fimg.data
-                else:
-                    ds = fimg.getframe(frame).data
-                data = correct_img(fimg, ds)
-                if data is None:
-                    # skip inconsistante data
-                    continue
-                big_list.append(data)
-                idx += 1
-        datared = average_dark(big_list, filter_, cutoff, quantiles)
+        accumulator = AverageDarkFilter(nb_frames, filter_, cutoff, quantiles)
     else:
         filter_class = _get_filter_class(filter_)
         accumulator = filter_class()
-        for fabio_image in fimgs:
-            for frame in range(fabio_image.nframes):
-                if fabio_image.nframes == 1:
-                    data = fabio_image.data
-                else:
-                    data = fabio_image.getframe(frame).data
-                logger.debug("Intensity range for %s#%i is %s --> %s", fabio_image.filename, frame, data.min(), data.max())
 
-                corrected_image = correct_img(fabio_image, data)
-                if corrected_image is None:
-                    continue
-                accumulator.add_image(corrected_image)
+    # compute data reduction
+    for fabio_image in fimgs:
+        for frame in range(fabio_image.nframes):
+            if fabio_image.nframes == 1:
+                data = fabio_image.data
+            else:
+                data = fabio_image.getframe(frame).data
+            logger.debug("Intensity range for %s#%i is %s --> %s", fabio_image.filename, frame, data.min(), data.max())
 
-        datared = accumulator.get_result()
+            corrected_image = correct_img(fabio_image, data)
+            if corrected_image is None:
+                continue
+            accumulator.add_image(corrected_image)
+    datared = accumulator.get_result()
 
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
     if fformat is not None:
