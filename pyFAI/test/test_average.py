@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/08/2016"
+__date__ = "05/08/2016"
 
 import unittest
 import numpy
@@ -99,11 +99,13 @@ class TestAverage(unittest.TestCase):
         self.assert_(numpy.allclose(result, expected),
                      "average with quantiles gives bad results")
 
+    def test_output_file(self):
         if fabio.hexversion < 262147:
-            logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
-            return
-        seven = average.average_images([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
-        self.assert_(abs(numpy.ones_like(self.dark) - fabio.open(seven).data).mean() < 1e-2, "average_images")
+            self.skipTest("The version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now" % fabio.version)
+        file_name = average.average_images([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
+        result = fabio.open(file_name).data
+        expected = numpy.ones_like(self.dark)
+        self.assert_(abs(expected - result).mean() < 1e-2, "average_images")
 
     def test_average_monitor(self):
         data1 = numpy.array([[1.0, 3.0], [3.0, 4.0]])
