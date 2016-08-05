@@ -402,6 +402,29 @@ def _normalize_image_stack(image_stack):
     raise Exception("Unsupported type '%s' for image_stack" % type(image_stack))
 
 
+def common_prefix(string_list):
+    """Return the common prefix of a list of strings
+
+    TODO: move it into utils package
+
+    @param string_list list of str: List of strings
+    @rtype: str
+    """
+    prefix = ""
+    for ch in zip(string_list):
+        c = ch[0]
+        good = True
+        for i in ch:
+            if i != c:
+                good = False
+                break
+        if good:
+            prefix += c
+        else:
+            break
+    return prefix
+
+
 def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
                   cutoff=None, quantiles=None, fformat="edf", monitor_key=None):
@@ -509,21 +532,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         if fformat.startswith("."):
             fformat = fformat.lstrip(".")
         if (output is None):
-            prefix = ""
-            for ch in zip(i.filename for i in fimgs):
-                c = ch[0]
-                good = True
-                if c in ["*", "?", "[", "{", "("]:
-                    good = False
-                    break
-                for i in ch:
-                    if i != c:
-                        good = False
-                        break
-                if good:
-                    prefix += c
-                else:
-                    break
+            prefix = common_prefix([i.filename for i in fimgs])
             output = "%sfilt%02i-%s.%s" % (filter_, nb_frames, prefix, fformat)
 
     if fformat and output:
