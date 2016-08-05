@@ -68,6 +68,10 @@ class ImageReductionFilter(object):
         """
         raise NotImplementedError()
 
+    def get_parameters(self):
+        """Return a dictionary containing filter parameters"""
+        return {"cutoff": None, "quantiles": None}
+
     def get_result(self):
         """
         Get the result of the filter.
@@ -193,6 +197,14 @@ class AverageDarkFilter(ImageStackFilter):
         self._filter_name = filter_name
         self._cut_off = cut_off
         self._quantiles = quantiles
+
+    @property
+    def name(self):
+        return self._filter_name
+
+    def get_parameters(self):
+        """Return a dictionary containing filter parameters"""
+        return {"cutoff": self._cut_off, "quantiles": self._quantiles}
 
     def _compute_stack_reduction(self, stack):
         """
@@ -404,7 +416,7 @@ def _normalize_image_stack(image_stack):
 
 class AverageWriter():
 
-    def write_header(self, merged_files, nb_frames, cut_off, quantiles):
+    def write_header(self, merged_files, nb_frames):
         raise NotImplementedError()
 
     def write_reduction(self, reduction):
@@ -427,7 +439,7 @@ class MultiFilesAverageWriter(AverageWriter):
             extension file.
         """
         self._file_name_pattern = file_name_pattern
-        self._header = fabio.fabioimage.OrderedDict()
+        self._global_header = {}
 
         # in case "edf.gz"
         if "." in file_format:
@@ -435,26 +447,30 @@ class MultiFilesAverageWriter(AverageWriter):
 
         self._fabio_class = fabio.factory(file_format + "image")
 
-    def write_header(self, merged_files, nb_frames, cut_off, quantiles):
-        self._header["nfiles"] = len(merged_files)
-        self._header["nframes"] = nb_frames
-        self._header["cutoff"] = str(cut_off)
-        self._header["quantiles"] = str(quantiles)
+    def write_header(self, merged_files, nb_frames):
+        self._global_header["nfiles"] = len(merged_files)
+        self._global_header["nframes"] = nb_frames
 
         pattern = "merged_file_%%0%ii" % len(str(len(merged_files)))
         for i, f in enumerate(merged_files):
             name = pattern % i
-            self._header[name] = f.filename
+            self._global_header[name] = f.filename
 
     def _get_file_name(self, reduction_name):
         keys = {"reduction_name": reduction_name}
         return self._file_name_pattern % keys
 
-    def write_reduction(self, reduction_name, data):
-        file_name = self._get_file_name(reduction_name)
+    def write_reduction(self, algorithm, data):
+        file_name = self._get_file_name(algorithm.name)
         # overwrite the method
-        self._header["method"] = reduction_name
-        image = self._fabio_class.__class__(data=data, header=self._header)
+        header = fabio.fabioimage.OrderedDict()
+        header["method"] = algorithm.name
+        for name, value in self._global_header.items():
+            header[name] = str(value)
+        filter_parameters = algorithm.get_parameters()
+        for name, value in filter_parameters.items():
+            header[name] = str(value)
+        image = self._fabio_class.__class__(data=data, header=header)
         image.write(file_name)
         logger.info("Wrote %s", file_name)
         self._last_file_name = file_name
@@ -487,6 +503,158 @@ def common_prefix(string_list):
     return prefix
 
 
+class Average(object):
+
+    def __init__(self):
+        self._dark = None
+        self._raw_flat = None
+        self._flat = None
+        self._monitor_key = None
+        self._threshold = None
+        self._minimum = None
+        self._maximum = None
+        self._fabio_images = []
+        self._writer = None
+        self._algorithms = []
+        self._nb_frames = 0
+        self._correct_flat_from_dark = False
+        # TODO we should remove that
+        self._last_result = None
+
+    def set_dark(self, dark_list):
+        if dark_list is None:
+            self._dark = None
+            return
+        darks = _normalize_image_stack(dark_list)
+        self._dark = average_dark(darks, center_method="mean", cutoff=4)
+
+    def set_flat(self, flat_list):
+        if flat_list is None:
+            self._raw_flat = None
+            return
+        flats = _normalize_image_stack(flat_list)
+        self._raw_flat = average_dark(flats, center_method="mean", cutoff=4)
+
+    def set_correct_flat_from_dark(self, correct_flat_from_dark):
+        self._correct_flat_from_dark = correct_flat_from_dark
+
+    def get_counter_frames(self):
+        return self._nb_frames
+
+    def get_fabio_imnges(self):
+        return self._fabio_images
+
+    def set_images(self, image_list):
+        self._fabio_images = []
+        self._nb_frames = 0
+        for image in image_list:
+            if isinstance(image, six.string_types):
+                logger.info("Reading %s", image)
+                fabio_image = fabio.open(image)
+            elif isinstance(image, fabio.fabioimage.fabioimage):
+                fabio_image = image
+            else:
+                if fabio.hexversion < 262148:
+                    logger.error("Old version of fabio detected, upgrade to 0.4 or newer")
+
+                # Assume this is a numpy array like
+                if not isinstance(image, numpy.ndarray):
+                    raise RuntimeError("Not good type for input, got %s, expected numpy array" % type(image))
+                fabio_image = fabio.numpyimage.NumpyImage(data=image)
+
+            self._fabio_images.append(fabio_image)
+            self._nb_frames += fabio_image.nframes
+
+    def set_monitor_name(self, monitor_name):
+        self._monitor_key = monitor_name
+
+    def set_pixel_filter(self, threshold, minimum, maximum):
+        self._threshold = threshold
+        self._minimum = minimum
+        self._maximum = maximum
+
+    def set_writer(self, writer):
+        self._writer = writer
+
+    def add_algorithm(self, algorithm):
+        self._algorithms.append(algorithm)
+
+    def _get_corrected_image(self, fabio_image, image):
+        "internal subfunction for dark/flat/monitor "
+        corrected_image = numpy.ascontiguousarray(image, numpy.float32)
+        if self._threshold or self._minimum or self._maximum:
+            corrected_image = removeSaturatedPixel(corrected_image, self._threshold, self._minimum, self._maximum)
+        if self._dark is not None:
+            corrected_image -= self._dark
+        if self._flat is not None:
+            corrected_image /= self._flat
+        if self._monitor_key is not None:
+            try:
+                monitor = _get_monitor_value(fabio_image, self._monitor_key)
+                corrected_image /= monitor
+            except MonitorNotFound as e:
+                logger.warning("Monitor not found in filename '%s', data skipped. Cause: %s", fabio_image.filename, str(e))
+                return None
+        return corrected_image
+
+    def _get_image_reduction(self, algorithm):
+        # TODO we should init the algorithm here
+        for fabio_image in self._fabio_images:
+            for frame in range(fabio_image.nframes):
+                if fabio_image.nframes == 1:
+                    data = fabio_image.data
+                else:
+                    data = fabio_image.getframe(frame).data
+                logger.debug("Intensity range for %s#%i is %s --> %s", fabio_image.filename, frame, data.min(), data.max())
+
+                corrected_image = self._get_corrected_image(fabio_image, data)
+                if corrected_image is None:
+                    continue
+                algorithm.add_image(corrected_image)
+        return algorithm.get_result()
+
+    def _update_flat(self):
+        """
+        Update the flat according to the last process parameters
+        """
+        if self._raw_flat is not None:
+            flat = numpy.array(self._raw_flat)
+            if self._correct_flat_from_dark:
+                if self._dark is not None:
+                    flat -= self._dark
+                else:
+                    logger.debug("No dark. Flat correction using dark skipped")
+            flat[numpy.where(flat <= 0)] = 1.0
+        else:
+            flat = None
+        self._flat = flat
+
+    def process(self):
+        self._update_flat()
+        writer = self._writer
+
+        if writer is not None:
+            writer.write_header(self._fabio_images, self._nb_frames)
+
+        for algorithm in self._algorithms:
+            image_reduction = self._get_image_reduction(algorithm)
+            logger.debug("Intensity range in merged dataset : %s --> %s", image_reduction.min(), image_reduction.max())
+            if writer is not None:
+                writer.write_reduction(algorithm, image_reduction)
+            self._last_result = image_reduction
+
+        if writer is not None:
+            writer.close()
+
+    def get_last_result(self):
+        return self._last_result
+
+    def get_last_file_name(self):
+        if self._writer is None:
+            return None
+        return self._writer._last_file_name
+
+
 def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
                   cutoff=None, quantiles=None, fformat="edf", monitor_key=None):
@@ -508,100 +676,46 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
     @param monitor_key str: Key containing the monitor. Can be none.
     @return: filename with the data or the data ndarray in case format=None
     """
-    def correct_img(image, data):
-        "internal subfunction for dark/flat/monitor "
-        corrected_img = numpy.ascontiguousarray(data, numpy.float32)
-        if threshold or minimum or maximum:
-            corrected_img = removeSaturatedPixel(corrected_img, threshold, minimum, maximum)
-        if dark is not None:
-            corrected_img -= dark
-        if flat is not None:
-            corrected_img /= flat
-        if monitor_key is not None:
-            try:
-                monitor = _get_monitor_value(image, monitor_key)
-                corrected_img /= monitor
-            except MonitorNotFound as e:
-                logger.warning("Monitor not found in filename '%s', data skipped. Cause: %s", image.filename, str(e))
-                return None
-        return corrected_img
+
     # input sanitization
     if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
         logger.warning("Filter %s not understood. switch to mean filter", filter_)
         filter_ = "mean"
 
-    nb_frames = 0
-    fimgs = []
+    average = Average()
+    average.set_images(listImages)
+    average.set_dark(darks)
+    average.set_flat(flats)
+    average.set_correct_flat_from_dark(correct_flat_from_dark)
+    average.set_monitor_name(monitor_key)
+    average.set_pixel_filter(threshold, minimum, maximum)
 
-    for fn in listImages:
-        if isinstance(fn, six.string_types):
-            logger.info("Reading %s", fn)
-            fimg = fabio.open(fn)
-        elif isinstance(fn, fabio.fabioimage.fabioimage):
-            fimg = fn
-        else:
-            if fabio.hexversion < 262148:
-                logger.error("Old version of fabio detected, upgrade to 0.4 or newer")
-
-            # Assume this is a numpy array like
-            if not ("ndim" in dir(fn) and "shape" in dir(fn)):
-                raise RuntimeError("Not good type for input, got %s, expected numpy array" % type(fn))
-            fimg = fabio.numpyimage.NumpyImage(data=fn)
-        fimgs.append(fimg)
-        nb_frames += fimg.nframes
-
-    # create dark and flat
-    dark = None
-    flat = None
-    if darks is not None:
-        darks = _normalize_image_stack(darks)
-        dark = average_dark(darks, center_method="mean", cutoff=4)
-    if flats is not None:
-        flats = _normalize_image_stack(flats)
-        flat = average_dark(flats, center_method="mean", cutoff=4)
-        if correct_flat_from_dark:
-            if dark is not None:
-                flat -= dark
-            else:
-                logger.debug("No dark. Flat correction using dark skipped")
-        flat[numpy.where(flat <= 0)] = 1.0
-
-    # create accumulator according to params
+    # define reduction algorithm according to params
     if (cutoff or quantiles or (filter_ in ["median", "quantiles", "std"])):
-        accumulator = AverageDarkFilter(nb_frames, filter_, cutoff, quantiles)
+        algorithm = AverageDarkFilter(average.get_counter_frames(), filter_, cutoff, quantiles)
     else:
         filter_class = _get_filter_class(filter_)
-        accumulator = filter_class()
+        algorithm = filter_class()
+    average.add_algorithm(algorithm)
 
-    # compute data reduction
-    for fabio_image in fimgs:
-        for frame in range(fabio_image.nframes):
-            if fabio_image.nframes == 1:
-                data = fabio_image.data
-            else:
-                data = fabio_image.getframe(frame).data
-            logger.debug("Intensity range for %s#%i is %s --> %s", fabio_image.filename, frame, data.min(), data.max())
-
-            corrected_image = correct_img(fabio_image, data)
-            if corrected_image is None:
-                continue
-            accumulator.add_image(corrected_image)
-    datared = accumulator.get_result()
-
-    logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
+    # define writer
     if fformat is not None:
         if fformat.startswith("."):
             fformat = fformat.lstrip(".")
         if output is None:
-            prefix = common_prefix([i.filename for i in fimgs])
-            output = "filt%02i-%s.%s" % (nb_frames, prefix, fformat)
+            prefix = common_prefix([i.filename for i in average.get_fabio_images()])
+            output = "filt%02i-%s.%s" % (average.get_counter_frames(), prefix, fformat)
             output = "%(reduction_name)s" + output
 
     if output is not None:
         writer = MultiFilesAverageWriter(output, fformat)
-        writer.write_header(fimgs, nb_frames, cutoff, quantiles)
-        writer.write_reduction(filter_, datared)
-        writer.close()
-        return writer._last_file_name
+        average.set_writer(writer)
     else:
-        return datared
+        writer = None
+
+    average.process()
+
+    if writer is not None:
+        return average.get_last_file_name()
+    else:
+        return average.get_last_result()
