@@ -370,6 +370,38 @@ def _get_monitor_value(image, monitor_key):
         raise Exception("File format '%s' unsupported" % type(image))
 
 
+def _normalize_image_stack(image_stack):
+    """
+    Convert input data to a list of 2D numpy arrays or a stack
+    of numpy array (3D array).
+
+    @param image_stack list or numpy.ndarray: slice of images
+    @return: A stack of image (list of 2D array or a single 3D array)
+    @rtype: list or numpy.ndarray
+    """
+    if image_stack is None:
+        return None
+
+    if isinstance(image_stack, numpy.ndarray) and image_stack.ndim == 3:
+        # numpy image stack (single 3D image)
+        return image_stack
+
+    if isinstance(image_stack, list):
+        # list of numpy images (multi 2D images)
+        result = []
+        for image in image_stack:
+            if isinstance(image, six.string_types):
+                data = fabio.open(image).data
+            elif isinstance(image, numpy.ndarray) and image.ndim == 2:
+                data = image
+            else:
+                raise Exception("Unsupported image type '%s' in image_stack" % type(image))
+            result.append(data)
+        return result
+
+    raise Exception("Unsupported type '%s' for image_stack" % type(image_stack))
+
+
 def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
                   cutoff=None, quantiles=None, fformat="edf", monitor_key=None):
@@ -396,9 +428,9 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         corrected_img = numpy.ascontiguousarray(data, numpy.float32)
         if threshold or minimum or maximum:
             corrected_img = removeSaturatedPixel(corrected_img, threshold, minimum, maximum)
-        if do_dark:
+        if dark is not None:
             corrected_img -= dark
-        if do_flat:
+        if flat is not None:
             corrected_img /= flat
         if monitor_key is not None:
             try:
@@ -434,29 +466,20 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         fimgs.append(fimg)
         nb_frames += fimg.nframes
 
-    do_dark = (darks is not None)
-    do_flat = (flats is not None)
+    # create dark and flat
     dark = None
     flat = None
-
-    if do_dark:
-        if "ndim" in dir(darks) and darks.ndim == 3:
-            dark = average_dark(darks, center_method="mean", cutoff=4)
-        elif ("__len__" in dir(darks)) and isinstance(darks[0], six.string_types):
-            dark = average_dark([fabio.open(f).data for f in darks if exists(f)], center_method="mean", cutoff=4)
-        elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
-            dark = average_dark(darks, center_method="mean", cutoff=4)
-    if do_flat:
-        if "ndim" in dir(flats) and flats.ndim == 3:
-            flat = average_dark(flats, center_method="mean", cutoff=4)
-        elif ("__len__" in dir(flats)) and isinstance(flats[0], six.string_types):
-            flat = average_dark([fabio.open(f).data for f in flats if exists(f)], center_method="mean", cutoff=4)
-        elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
-            flat = average_dark(flats, center_method="mean", cutoff=4)
-        else:
-            logger.warning("there is some wrong with flats=%s", flats)
+    if darks is not None:
+        darks = _normalize_image_stack(darks)
+        dark = average_dark(darks, center_method="mean", cutoff=4)
+    if flats is not None:
+        flats = _normalize_image_stack(flats)
+        flat = average_dark(flats, center_method="mean", cutoff=4)
         if correct_flat_from_dark:
-            flat -= dark
+            if dark is not None:
+                flat -= dark
+            else:
+                logger.debug("No dark. Flat correction using dark skipped")
         flat[numpy.where(flat <= 0)] = 1.0
 
     # create accumulator according to params
