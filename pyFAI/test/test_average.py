@@ -79,6 +79,26 @@ class TestAverage(unittest.TestCase):
 
         six = average.average_dark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark], "median", .001)
         self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
+
+    def test_quantile(self):
+        shape = (100, 100)
+        dtype = numpy.float32
+        image1 = numpy.random.random(shape).astype(dtype)
+        image2 = numpy.random.random(shape).astype(dtype)
+        image3 = numpy.zeros(shape, dtype=dtype)
+        image4 = numpy.ones(shape, dtype=dtype)
+        image5 = numpy.random.random(shape).astype(dtype)
+        expected = (image1 + image2 + image5) / 3.0
+        result = average.average_images(
+            [image1, image2, image3, image4, image5],
+            quantiles=(0.2, 0.8),
+            threshold=0,
+            filter_="quantiles",
+            fformat=None)
+
+        self.assert_(numpy.allclose(result, expected),
+                     "average with quantiles gives bad results")
+
         if fabio.hexversion < 262147:
             logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
             return
@@ -102,48 +122,6 @@ class TestAverage(unittest.TestCase):
         filename = average.average_images([image1, image2, image3, image_ignored], threshold=0, filter_="sum", monitor_key="mon", output=self.tmp_file)
         result = fabio.open(filename).data
         numpy.testing.assert_array_almost_equal(result, expected_result, decimal=3)
-
-class TestQuantile(unittest.TestCase):
-    """
-    Check the quantile filter in average
-    """
-    def setUp(self):
-        shape = (100, 100)
-        dtype = numpy.float32
-        self.image_files = []
-        self.outfile = os.path.join(UtilsTest.tempdir, "out.edf")
-        res = numpy.zeros(shape, dtype=dtype)
-        for i in range(5):
-            fn = os.path.join(UtilsTest.tempdir, "img_%i.edf" % i)
-            if i == 3:
-                data = numpy.zeros(shape, dtype=dtype)
-            elif i == 4:
-                data = numpy.ones(shape, dtype=dtype)
-            else:
-                data = numpy.random.random(shape).astype(dtype)
-                res += data
-            e = fabio.edfimage.edfimage(data=data)
-            e.write(fn)
-            self.image_files.append(fn)
-        self.res = res / 3.0
-
-    def tearDown(self):
-        for fn in self.image_files:
-            os.unlink(fn)
-        if os.path.exists(self.outfile):
-            os.unlink(self.outfile)
-        self.image_files = None
-        self.res = None
-
-    def test_quantile(self):
-        file_name = average.average_images(
-            self.image_files,
-            quantiles=(0.2, 0.8),
-            threshold=0,
-            filter_="quantiles",
-            output=self.outfile)
-        self.assert_(numpy.allclose(fabio.open(file_name).data, self.res),
-                     "average with quantiles gives bad results")
 
 
 class TestAverageMonitorName(unittest.TestCase):
