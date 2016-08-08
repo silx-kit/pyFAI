@@ -55,7 +55,13 @@ except ImportError:
     from distutils.command.build_ext import build_ext
     from distutils.command.install import install
     from distutils.command.build_py import build_py as _build_py
-from numpy.distutils.core import Extension as _Extension
+
+# Fix use of Extension from numpy if it is really needed
+# Our setup is not working anymore with setuptools >=24, Python 3.5, Windows
+# Is numpy really needed for compilation? else we have to investigate
+# Silx setup looks to not have this problem. It can be interesting to reuse it
+#from numpy.distutils.core import Extension as _Extension
+from setuptools import Extension as _Extension
 
 
 PROJECT = "pyFAI"
@@ -228,8 +234,8 @@ class build_ext_pyFAI(build_ext):
         # Compiler
         # name, compileflag, linkflag
         'msvc': {
-            'openmp': ('/openmp', ' '),
-            'debug': ('/Zi', ' '),
+            'openmp': ('/openmp', ''),
+            'debug': ('/Zi', ''),
             'OpenCL': 'OpenCL',
         },
         'mingw32': {
