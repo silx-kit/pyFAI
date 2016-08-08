@@ -78,7 +78,7 @@ installed version)::
 The newest development version can also be obtained by checking out from the git
 repository::
 
-    git clone https://github.com/kif/pyFAI.git
+    git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
     python setup.py build bdist_wheel
     sudo pip install . --upgrade
@@ -209,7 +209,7 @@ Indirect contributors (ideas, ...):
  * Brian Pauw
  * Veijo Honkimaki
 
-.. |Build Status| image:: https://travis-ci.org/kif/pyFAI.svg?branch=master
-   :target: https://travis-ci.org/kif/pyFAI
-.. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/c57jwp3at94t3jgr?svg=true
-   :target: https://ci.appveyor.com/project/kif/pyfai
+.. |Build Status| image:: https://travis-ci.org/silx-kit/pyFAI.svg?branch=master
+   :target: https://travis-ci.org/silx-kit/pyFAI
+.. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/github/silx-kit/pyfai?svg=true
+   :target: https://ci.appveyor.com/project/ESRF/pyfai
