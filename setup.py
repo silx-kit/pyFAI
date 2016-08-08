@@ -228,8 +228,8 @@ class build_ext_pyFAI(build_ext):
         # Compiler
         # name, compileflag, linkflag
         'msvc': {
-            'openmp': ('/openmp', ' '),
-            'debug': ('/Zi', ' '),
+            'openmp': ('/openmp', ''),
+            'debug': ('/Zi', ''),
             'OpenCL': 'OpenCL',
         },
         'mingw32': {
