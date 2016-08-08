@@ -148,6 +148,22 @@ class TestAverage(unittest.TestCase):
         result = fabio.open(filename).data
         numpy.testing.assert_array_almost_equal(result, expected_result, decimal=3)
 
+    def test_writed_properties(self):
+        writer = average.MultiFilesAverageWriter("foo", "edf", dry_run=True)
+        algorithm = average.AverageDarkFilter(filter_name="quantiles", cut_off=None, quantiles=(0.2, 0.8))
+        image1 = numpy.random.random((1, 1)).astype(numpy.float32)
+
+        averager = average.Average()
+        averager.set_writer(writer)
+        averager.set_images([image1])
+        averager.add_algorithm(algorithm)
+        averager.process()
+
+        fabio_image = writer.get_fabio_image(algorithm)
+        header = fabio_image.header
+        self.assertEqual(eval(header["cutoff"]), None)
+        self.assertEqual(eval(header["quantiles"]), (0.2, 0.8))
+
 
 class TestAverageMonitorName(unittest.TestCase):
 
