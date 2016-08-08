@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/08/2016"
+__date__ = "08/08/2016"
 __status__ = "production"
 
 import logging
@@ -59,6 +59,14 @@ class ImageReductionFilter(object):
     """
     Generic filter applyed in a set of images.
     """
+
+    def init(self, max_images=None):
+        """
+        Initialize the filter before using it.
+
+        @param max_images int: Max images supported by the filter
+        """
+        pass
 
     def add_image(self, image):
         """
@@ -87,7 +95,7 @@ class ImageAccumulatorFilter(ImageReductionFilter):
     to reduce data step by step into a single merged image.
     """
 
-    def __init__(self):
+    def init(self, max_images=None):
         self._count = 0
         self._accumulated_image = None
 
@@ -157,9 +165,9 @@ class ImageStackFilter(ImageReductionFilter):
     """
     Filter creating a stack from all images and computing everything at the end.
     """
-    def __init__(self, max_stack_size):
+    def init(self, max_images=None):
         self._stack = None
-        self._max_stack_size = max_stack_size
+        self._max_stack_size = max_images
         self._count = 0
 
     def add_image(self, image):
@@ -192,8 +200,8 @@ class AverageDarkFilter(ImageStackFilter):
 
     TODO: Must be splited according to each filter_name, and removed
     """
-    def __init__(self, max_stack_size, filter_name, cut_off, quantiles):
-        super(AverageDarkFilter, self).__init__(max_stack_size)
+    def __init__(self, filter_name, cut_off, quantiles):
+        super(AverageDarkFilter, self).__init__()
         self._filter_name = filter_name
         self._cut_off = cut_off
         self._quantiles = quantiles
@@ -598,7 +606,7 @@ class Average(object):
         return corrected_image
 
     def _get_image_reduction(self, algorithm):
-        # TODO we should init the algorithm here
+        algorithm.init(max_images=self._nb_frames)
         for fabio_image in self._fabio_images:
             for frame in range(fabio_image.nframes):
                 if fabio_image.nframes == 1:
@@ -692,7 +700,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
 
     # define reduction algorithm according to params
     if (cutoff or quantiles or (filter_ in ["median", "quantiles", "std"])):
-        algorithm = AverageDarkFilter(average.get_counter_frames(), filter_, cutoff, quantiles)
+        algorithm = AverageDarkFilter(filter_, cutoff, quantiles)
     else:
         filter_class = _get_filter_class(filter_)
         algorithm = filter_class()
