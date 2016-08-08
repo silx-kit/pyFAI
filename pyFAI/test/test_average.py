@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/08/2016"
+__date__ = "08/08/2016"
 
 import unittest
 import numpy
@@ -106,6 +106,29 @@ class TestAverage(unittest.TestCase):
         result = fabio.open(file_name).data
         expected = numpy.ones_like(self.dark)
         self.assert_(abs(expected - result).mean() < 1e-2, "average_images")
+
+    def test_min_filter(self):
+        algorith = average.MinAveraging()
+        algorith.init()
+        min_array = numpy.array([[1]])
+        max_array = numpy.array([[500]])
+        algorith.add_image(min_array)
+        algorith.add_image(max_array)
+        result = algorith.get_result()
+        numpy.testing.assert_array_almost_equal(result, min_array, decimal=3)
+
+    def test_max_filter(self):
+        algorith = average.MaxAveraging()
+        algorith.init()
+        min_array = numpy.array([[1]])
+        max_array = numpy.array([[500]])
+        algorith.add_image(min_array)
+        algorith.add_image(max_array)
+        result = algorith.get_result()
+        numpy.testing.assert_array_almost_equal(result, max_array, decimal=3)
+
+    def test_unknown_filter(self):
+        self.assertRaises(Exception, average._get_filter_class, "not_existing")
 
     def test_average_monitor(self):
         data1 = numpy.array([[1.0, 3.0], [3.0, 4.0]])
