@@ -38,6 +38,7 @@ __status__ = "production"
 import logging
 import numpy
 import fabio
+import weakref
 
 try:
     from .third_party import six
@@ -438,16 +439,20 @@ class AverageWriter():
 class MultiFilesAverageWriter(AverageWriter):
     """Write reductions into multi files. File headers are duplicated."""
 
-    def __init__(self, file_name_pattern, file_format):
+    def __init__(self, file_name_pattern, file_format, dry_run=False):
         """
         @param file_name_pattern str: File name pattern for the output files.
             If it contains "%(reduction_name)s", it is updated for each
             reduction writing with the name of the reduction.
         @param file_format str: File format used. It is the default
             extension file.
+        @param dry_run bool: If dry_run, the file is created on memory but not
+            saved on the file system at the end
         """
         self._file_name_pattern = file_name_pattern
         self._global_header = {}
+        self._fabio_images = weakref.WeakKeyDictionary()
+        self._dry_run = dry_run
 
         # in case "edf.gz"
         if "." in file_format:
@@ -479,9 +484,17 @@ class MultiFilesAverageWriter(AverageWriter):
         for name, value in filter_parameters.items():
             header[name] = str(value)
         image = self._fabio_class.__class__(data=data, header=header)
-        image.write(file_name)
-        logger.info("Wrote %s", file_name)
-        self._last_file_name = file_name
+        if not self._dry_run:
+            image.write(file_name)
+            logger.info("Wrote %s", file_name)
+        self._fabio_images[algorithm] = image
+
+    def get_fabio_image(self, algorithm):
+        """Get the constructed fabio image
+
+        @rtype: fabio.fabioimage.FabioImage
+        """
+        return self._fabio_images[algorithm]
 
     def close(self):
         """Close the writer. Must not be used anymore."""
@@ -526,8 +539,7 @@ class Average(object):
         self._algorithms = []
         self._nb_frames = 0
         self._correct_flat_from_dark = False
-        # TODO we should remove that
-        self._last_result = None
+        self._results = weakref.WeakKeyDictionary()
 
     def set_dark(self, dark_list):
         if dark_list is None:
@@ -649,18 +661,13 @@ class Average(object):
             logger.debug("Intensity range in merged dataset : %s --> %s", image_reduction.min(), image_reduction.max())
             if writer is not None:
                 writer.write_reduction(algorithm, image_reduction)
-            self._last_result = image_reduction
+            self._results[algorithm] = image_reduction
 
         if writer is not None:
             writer.close()
 
-    def get_last_result(self):
-        return self._last_result
-
-    def get_last_file_name(self):
-        if self._writer is None:
-            return None
-        return self._writer._last_file_name
+    def get_image_reduction(self, algorithm):
+        return self._results[algorithm]
 
 
 def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
@@ -724,6 +731,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
     average.process()
 
     if writer is not None:
-        return average.get_last_file_name()
+        fabio_image = writer.get_fabio_image(algorithm)
+        return fabio_image.filename
     else:
-        return average.get_last_result()
+        return average.get_image_reduction(algorithm)
