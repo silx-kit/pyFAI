@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/07/2016"
+__date__ = "04/08/2016"
 
 import sys
 import os
@@ -74,7 +74,7 @@ from . import test_multi_geometry
 from . import test_ocl_sort
 from . import test_worker
 from . import test_integrate_widget
-from . import test_util_shell
+from . import test_utils_shell
 
 
 def suite():
@@ -111,7 +111,7 @@ def suite():
     testsuite.addTest(test_ocl_sort.suite())
     testsuite.addTest(test_worker.suite())
     testsuite.addTest(test_integrate_widget.suite())
-    testsuite.addTest(test_util_shell.suite())
+    testsuite.addTest(test_utils_shell.suite())
     return testsuite
 
 

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "04/08/2016"
 __status__ = "production"
 
 import logging
@@ -45,7 +45,7 @@ sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
 
-from ._version import calc_hexversion
+from .._version import calc_hexversion
 if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2)):
     from fabio.nexus import exists
 else:
@@ -59,15 +59,15 @@ from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
 try:
-    from .third_party import six
+    from ..third_party import six
 except (ImportError, Exception):
     import six
 try:
-    from .ext import relabel as _relabel
+    from ..ext import relabel as _relabel
 except ImportError:
     _relabel = None
 try:
-    from .directories import data_dir
+    from ..directories import data_dir
 except ImportError:
     data_dir = None
 
@@ -95,7 +95,7 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 StringTypes = (six.binary_type, six.text_type)
 
 try:
-    from .fastcrc import crc32
+    from ..fastcrc import crc32
 except:
     from zlib import crc32
 
@@ -1000,7 +1000,10 @@ def _get_data_path(filename):
 
     For now, just perform a recursive search
     """
-    resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
+    resources = [
+        os.environ.get("PYFAI_DATA"),
+        data_dir,
+        os.path.join(os.path.dirname(__file__), "..")]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
