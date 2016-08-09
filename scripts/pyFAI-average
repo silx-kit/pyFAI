@@ -30,22 +30,157 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/07/2016"
+__date__ = "09/08/2016"
 __status__ = "production"
 
 import os
 import sys
-import fabio
 import logging
+
+# Must be defined before libraries which define there own basicConfig
+
+class PreEmitStreamHandler(logging.StreamHandler):
+    """Add a hook before emit function"""
+
+    def emit(self, record):
+        """
+        @type record: logging.LogRecord
+        """
+        self.pre_emit()
+        super(PreEmitStreamHandler, self).emit(record)
+
+    def pre_emit(self):
+        pass
+
+# Same as basicConfig with a custom handler but portable Python 2 and 3
+log_root = logging.getLogger()
+log_handler = PreEmitStreamHandler()
+log_root.addHandler(log_handler)
+log_root.setLevel(logging.INFO)
+
+logger = logging.getLogger("average")
+
+import fabio
 import pyFAI
 import pyFAI.utils
+import pyFAI.utils.shell
+from pyFAI import average
+
 try:
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("average")
+
+def parse_algorithms(options):
+    """Return a list of initilized algorithms from the command line"""
+
+    result = []
+    available_methods = ["min", "max", "median", "mean", "sum", "quantiles", "std"]
+
+    methods = options.method.split(",")
+    methods = set(methods) - set([""])
+
+    if options.quantiles:
+        for sep in "-,":
+            if sep in options.quantiles:
+                q1, q2 = options.quantiles.split(sep, 1)
+                break
+        else:
+            q1 = float(options.quantiles)
+            q2 = 1.0 - q1
+        quantiles = (float(q1), float(q2))
+
+        if "quanties" not in methods:
+            logger.warning("Add quantiles to the set of methods as quantiles parameters is defined.")
+            methods.add("quantiles")
+    else:
+        quantiles = None
+        if "quanties" in methods:
+            logger.warning("Quantiles method defined but no parameters set. Method skipped.")
+            methods.remove("quantiles")
+
+    if len(methods) == 0:
+        logger.warning("No method defined. Add default mean method")
+        method.add("mean")
+
+    for m in methods:
+        if m not in available_methods:
+            logger.warning("Filter '%s' unknown. Filter skipped.", options.method)
+
+        # define reduction algorithm according to params
+        if (options.cutoff or quantiles or (m in ["median", "quantiles", "std"])):
+            algorithm = average.AverageDarkFilter(m, options.cutoff, quantiles)
+        else:
+            filter_class = average._get_filter_class(m)
+            algorithm = filter_class()
+
+        result.append(algorithm)
+
+    return result
+
+
+def parse_writer(input_images, options):
+    """Return a writer by using information from the command line"""
+    output = options.output
+    file_format = options.format
+
+    if output:
+        pass
+    else:
+        prefix = os.path.commonprefix(input_images)
+        suffix = ""
+        if options.cutoff:
+            suffix += "_cutoff_%s_std" % options.cutoff
+        suffix += "_%s_files.%s" % (len(input_images), file_format)
+        output = prefix + "%(reduction_name)s" + suffix
+
+    return average.MultiFilesAverageWriter(output, file_format)
+
+
+class ShellAverageObserver(average.AverageObserver):
+    """Display average processing using a shell progress bar"""
+
+    def __init__(self):
+        self.__bar = None
+        self.__size = 40
+
+    def image_loaded(self, fabio_image, image_index, images_count):
+        if self.__bar is None:
+            self.__bar = pyFAI.utils.shell.ProgressBar("Loading", images_count, self.__size)
+        self.__bar.update(image_index, fabio_image.filename)
+
+    def process_started(self):
+        if self.__bar is not None:
+            self.__bar.clear()
+            self.__bar = None
+
+    def algorithm_started(self, algorithm):
+        if self.__bar is not None:
+            self.__bar.clear()
+            self.__bar = None
+
+    def frame_processed(self, algorithm, frame_index, frames_count):
+        if self.__bar is None:
+            title = "Process %s" % algorithm.name
+            self.__frames_count = frames_count + 1
+            self.__bar = pyFAI.utils.shell.ProgressBar(title, self.__frames_count, self.__size)
+        self.__bar.update(frame_index, "Feeding frames")
+
+    def result_processing(self, algorithm):
+        self.__bar.update(self.__frames_count - 1, "Computing result")
+
+    def algorithm_finished(self, algorithm):
+        self.__bar.clear()
+        self.__bar = None
+        print("%s reduction finished" % algorithm.name.capitalize())
+
+    def process_finished(self):
+        pass
+
+    def clear(self):
+        if self.__bar is not None:
+            self.__bar.clear()
 
 def main():
     usage = "pyFAI-average [options] [options] -o output.edf file1.edf file2.edf ..."
@@ -65,8 +200,11 @@ def main():
                       type=str, default=None,
                       help="Output/ destination of average image")
     parser.add_argument("-m", "--method", dest="method",
-                      type=str, default="mean",
-                      help="Method used for averaging, can be 'mean'(default) or 'min', 'max', 'median', 'sum', 'quantiles'")
+                      type=str, default="",
+                      help="Method used for averaging, can be 'mean' \
+                      (default) or 'min', 'max', 'median', 'sum', 'quantiles'\
+                      , 'cutoff', 'std'. Multiple filters can be defined with \
+                      ',' separator.")
     parser.add_argument("-c", "--cutoff", dest="cutoff", type=float, default=None,
                   help="Take the mean of the average +/- cutoff * std_dev.")
     parser.add_argument("-F", "--format", dest="format", type=str, default="edf",
@@ -90,48 +228,57 @@ def main():
 
     options = parser.parse_args()
 
+    # logging
+    if options.verbose is True:
+        average.logger.setLevel(logging.DEBUG)
+    elif options.verbose is False:
+        average.logger.setLevel(logging.ERROR)
+    else:
+        average.logger.setLevel(logging.WARN)
+
+    # shell output
+    if options.verbose is not False:
+        observer = ShellAverageObserver()
+        # clean up the progress bar before displaying a log
+        log_handler.pre_emit = observer.clear
+    else:
+        observer = None
+
     # Analyze arguments and options
     images = pyFAI.utils.expand_args(options.args)
 
-    if options.verbose is True:
-        pyFAI.utils.logger.setLevel(logging.DEBUG)
-    elif options.verbose is False:
-        pyFAI.utils.logger.setLevel(logging.ERROR)
-    else:
-        pyFAI.utils.logger.setLevel(logging.INFO)
-    if  options.output:
-        output = options.output
-    else:
-        output = "%s_%s" % (os.path.commonprefix(images), options.method)
-        if options.cutoff:
-            output += "_cutoff_%s_std" % options.cutoff
-        output += "_%s_files.%s" % (len(images), options.format)
     if options.flat:
         flats = pyFAI.utils.expand_args([options.flat])
     else:
         flats = None
+
     if options.dark:
         darks = pyFAI.utils.expand_args([options.dark])
     else:
         darks = None
-    if options.quantiles:
-        options.method = "quantiles"
-        for sep in "-,":
-            if sep in options.quantiles:
-                q1, q2 = options.quantiles.split(sep, 1)
-                break
-        else:
-            q1 = float(options.quantiles)
-            q2 = 1.0 - q1
-        quantiles = (float(q1), float(q2))
 
-    else:
-        quantiles = None
+    algorithms = parse_algorithms(options)
+    if len(algorithms) == 0:
+        logger.warning("Configure process with a mean filter")
+        algorithms = [average.MeanAveraging()]
+
+    writer = parse_writer(images, options)
+
     if images:
-        dataout = pyFAI.average.average_images(images, filter_=options.method, cutoff=options.cutoff,
-                                            threshold=0, fformat=options.format, output=output,
-                                            flats=flats, darks=darks, quantiles=quantiles, monitor_key=options.monitor_key)
-        return dataout
+        process = average.Average()
+        process.set_observer(observer)
+        process.set_images(images)
+        process.set_dark(darks)
+        process.set_flat(flats)
+        #average.set_correct_flat_from_dark(correct_flat_from_dark)
+        process.set_monitor_name(options.monitor_key)
+        process.set_pixel_filter(threshold=0, minimum=None, maximum=None)
+        for algorithm in algorithms:
+            process.add_algorithm(algorithm)
+        process.set_writer(writer)
+        process.process()
+    else:
+        logger.warning("No input file specified.")
 
 if __name__ == "__main__":
     main()
