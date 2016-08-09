@@ -247,13 +247,46 @@ _FILTER_NAME_MAPPING = {}
 for f in _FILTERS:
     _FILTER_NAME_MAPPING[f.name] = f
 
+_AVERAGE_DARK_FILTERS = set(["min", "max", "sum", "mean", "std", "quantiles", "median"])
 
-def _get_filter_class(filter_name):
-    global _FILTER_NAME_MAPPING
-    filter_class = _FILTER_NAME_MAPPING.get(filter_name, None)
-    if filter_class is None:
-        raise Exception("Filter name '%s' unknown" % filter_name)
-    return filter_class
+
+def is_algorithm_name_exists(filter_name):
+    """Return true if the name is a name of a filter algorithm"""
+    if filter_name in _FILTER_NAME_MAPPING:
+        return True
+    elif filter_name in _AVERAGE_DARK_FILTERS:
+        return True
+    return False
+
+
+class AlgorithmCreationError(RuntimeError):
+    pass
+
+
+def create_algorithm(filter_name, cut_off=None, quantiles=None):
+    """Factory to create algorithm according to parameters
+
+    @param cutoff float or None: keep all data where (I-center)/std < cutoff
+    @param quantiles (float, float) or None: 2-tuple of floats average out data between the two quantiles
+    @return: An algorithm
+    @rtype: ImageReductionFilter
+    @raise AlgorithmCreationError: If it is not possible to create the algorythm
+    """
+    global _FILTER_NAME_MAPPING, _AVERAGE_DARK_FILTERS
+
+    if filter_name in _FILTER_NAME_MAPPING and cut_off is None:
+        # use less memory
+        filter_class = _FILTER_NAME_MAPPING[filter_name]
+        algorithm = filter_class()
+    elif filter_name in _AVERAGE_DARK_FILTERS:
+        # must create a big array with all the data
+        if filter_name == "quantiles" and quantiles is None:
+            raise AlgorithmCreationError("Quantiles algorithm expect quantiles parameters")
+        algorithm = AverageDarkFilter(filter_name, cut_off, quantiles)
+    else:
+        raise AlgorithmCreationError("No algorithm available for the expected parameters")
+
+    return algorithm
 
 
 def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)):
@@ -755,9 +788,13 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
     """
 
     # input sanitization
-    if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
+    if not is_algorithm_name_exists(filter_):
         logger.warning("Filter %s not understood. switch to mean filter", filter_)
         filter_ = "mean"
+
+    if quantiles is not None and filter_ != "quantiles":
+        logger.warning("Set method to quantiles as quantiles parameters is defined.")
+        filter_ = "quantiles"
 
     average = Average()
     average.set_images(listImages)
@@ -767,12 +804,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
     average.set_monitor_name(monitor_key)
     average.set_pixel_filter(threshold, minimum, maximum)
 
-    # define reduction algorithm according to params
-    if (cutoff or quantiles or (filter_ in ["median", "quantiles", "std"])):
-        algorithm = AverageDarkFilter(filter_, cutoff, quantiles)
-    else:
-        filter_class = _get_filter_class(filter_)
-        algorithm = filter_class()
+    algorithm = create_algorithm(filter_, cutoff, quantiles)
     average.add_algorithm(algorithm)
 
     # define writer

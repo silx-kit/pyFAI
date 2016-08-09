@@ -75,9 +75,6 @@ except ImportError:
 def parse_algorithms(options):
     """Return a list of initilized algorithms from the command line"""
 
-    result = []
-    available_methods = ["min", "max", "median", "mean", "sum", "quantiles", "std"]
-
     methods = options.method.split(",")
     methods = set(methods) - set([""])
 
@@ -96,24 +93,25 @@ def parse_algorithms(options):
             methods.add("quantiles")
     else:
         quantiles = None
-        if "quanties" in methods:
+        if "quantiles" in methods:
             logger.warning("Quantiles method defined but no parameters set. Method skipped.")
             methods.remove("quantiles")
 
     if len(methods) == 0:
         logger.warning("No method defined. Add default mean method")
-        method.add("mean")
+        methods.add("mean")
 
-    for m in methods:
-        if m not in available_methods:
-            logger.warning("Filter '%s' unknown. Filter skipped.", options.method)
+    result = []
+    for method in methods:
+        if not average.is_algorithm_name_exists(method):
+            logger.warning("Method name '%s' unknown. Method skipped.")
+            continue
 
-        # define reduction algorithm according to params
-        if (options.cutoff or quantiles or (m in ["median", "quantiles", "std"])):
-            algorithm = average.AverageDarkFilter(m, options.cutoff, quantiles)
-        else:
-            filter_class = average._get_filter_class(m)
-            algorithm = filter_class()
+        try:
+            algorithm = average.create_algorithm(method, options.cutoff, quantiles)
+        except average.AlgorithmCreationError as e:
+            logger.warning("Method skipped: %s", e)
+            continue
 
         result.append(algorithm)
 

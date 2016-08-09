@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/08/2016"
+__date__ = "09/08/2016"
 
 import unittest
 import numpy
@@ -127,9 +127,6 @@ class TestAverage(unittest.TestCase):
         result = algorith.get_result()
         numpy.testing.assert_array_almost_equal(result, max_array, decimal=3)
 
-    def test_unknown_filter(self):
-        self.assertRaises(Exception, average._get_filter_class, "not_existing")
-
     def test_average_monitor(self):
         data1 = numpy.array([[1.0, 3.0], [3.0, 4.0]])
         data2 = numpy.array([[2.0, 2.0], [1.0, 4.0]])
@@ -163,6 +160,33 @@ class TestAverage(unittest.TestCase):
         header = fabio_image.header
         self.assertEqual(eval(header["cutoff"]), None)
         self.assertEqual(eval(header["quantiles"]), (0.2, 0.8))
+
+
+class TestAverageAlgorithmFactory(unittest.TestCase):
+
+    def test_max(self):
+        alrorithm = average.create_algorithm("max")
+        self.assertTrue(isinstance(alrorithm, average.MaxAveraging))
+
+    def test_sum(self):
+        alrorithm = average.create_algorithm("sum")
+        self.assertTrue(isinstance(alrorithm, average.SumAveraging))
+
+    def test_median(self):
+        alrorithm = average.create_algorithm("median")
+        self.assertTrue(isinstance(alrorithm, average.AverageDarkFilter))
+        self.assertEquals(alrorithm.name, "median")
+
+    def test_sum_cutoff(self):
+        alrorithm = average.create_algorithm("sum", cut_off=0.5)
+        self.assertTrue(isinstance(alrorithm, average.AverageDarkFilter))
+        self.assertEquals(alrorithm.name, "sum")
+
+    def test_quantiles_no_params(self):
+        self.assertRaises(average.AlgorithmCreationError, average.create_algorithm, "quantiles")
+
+    def test_unknown_filter(self):
+        self.assertRaises(average.AlgorithmCreationError, average.create_algorithm, "not_existing")
 
 
 class TestAverageMonitorName(unittest.TestCase):
