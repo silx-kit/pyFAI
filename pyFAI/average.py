@@ -124,7 +124,10 @@ class ImageAccumulatorFilter(ImageReductionFilter):
         @return: result filter
         @rtype: numpy.ndarray
         """
-        return self._accumulated_image
+        result = self._accumulated_image
+        # release the allocated memory
+        self._accumulated_image = None
+        return result
 
 
 class MaxAveraging(ImageAccumulatorFilter):
@@ -158,7 +161,8 @@ class MeanAveraging(SumAveraging):
     name = "mean"
 
     def get_result(self):
-        return self._accumulated_image / numpy.float32(self._count)
+        result = super(MeanAveraging, self).get_result()
+        return result / numpy.float32(self._count)
 
 
 class ImageStackFilter(ImageReductionFilter):
@@ -191,7 +195,10 @@ class ImageStackFilter(ImageReductionFilter):
 
         shape = self._count, self._stack.shape[1], self._stack.shape[2]
         self._stack.resize(shape)
-        return self._compute_stack_reduction(self._stack)
+        result = self._compute_stack_reduction(self._stack)
+        # release the allocated memory
+        self._stack = None
+        return result
 
 
 class AverageDarkFilter(ImageStackFilter):
