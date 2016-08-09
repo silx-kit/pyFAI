@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/08/2016"
+__date__ = "09/08/2016"
 __status__ = "production"
 
 import logging
@@ -46,7 +46,6 @@ except (ImportError, Exception):
     import six
 
 from .utils import removeSaturatedPixel
-from .utils import exists
 
 from ._version import calc_hexversion
 if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
@@ -524,6 +523,37 @@ def common_prefix(string_list):
     return prefix
 
 
+class AverageObserver(object):
+
+    def image_loaded(self, fabio_image, image_index, images_count):
+        """Called when an input image is loaded"""
+        pass
+
+    def process_started(self):
+        """Called when the full processing is started"""
+        pass
+
+    def algorithm_started(self, algorithm):
+        """Called when an algorithm is started"""
+        pass
+
+    def frame_processed(self, algorithm, frame_index, frames_count):
+        """Called after providing a frame to an algorithm"""
+        pass
+
+    def result_processing(self, algorithm):
+        """Called before the result of an algorithm is computed"""
+        pass
+
+    def algorithm_finished(self, algorithm):
+        """Called when an algorithm is finished"""
+        pass
+
+    def process_finished(self):
+        """Called when the full process is finished"""
+        pass
+
+
 class Average(object):
 
     def __init__(self):
@@ -540,6 +570,14 @@ class Average(object):
         self._nb_frames = 0
         self._correct_flat_from_dark = False
         self._results = weakref.WeakKeyDictionary()
+        self._observer = None
+
+    def set_observer(self, observer):
+        """Set an observer to the average process.
+
+        @param observer AverageObserver: An observer
+        """
+        self._observer = observer
 
     def set_dark(self, dark_list):
         if dark_list is None:
@@ -567,7 +605,7 @@ class Average(object):
     def set_images(self, image_list):
         self._fabio_images = []
         self._nb_frames = 0
-        for image in image_list:
+        for image_index, image in enumerate(image_list):
             if isinstance(image, six.string_types):
                 logger.info("Reading %s", image)
                 fabio_image = fabio.open(image)
@@ -582,6 +620,8 @@ class Average(object):
                     raise RuntimeError("Not good type for input, got %s, expected numpy array" % type(image))
                 fabio_image = fabio.numpyimage.NumpyImage(data=image)
 
+            if self._observer:
+                self._observer.image_loaded(fabio_image, image_index, len(image_list))
             self._fabio_images.append(fabio_image)
             self._nb_frames += fabio_image.nframes
 
@@ -619,6 +659,7 @@ class Average(object):
 
     def _get_image_reduction(self, algorithm):
         algorithm.init(max_images=self._nb_frames)
+        frame_index = 0
         for fabio_image in self._fabio_images:
             for frame in range(fabio_image.nframes):
                 if fabio_image.nframes == 1:
@@ -628,9 +669,13 @@ class Average(object):
                 logger.debug("Intensity range for %s#%i is %s --> %s", fabio_image.filename, frame, data.min(), data.max())
 
                 corrected_image = self._get_corrected_image(fabio_image, data)
-                if corrected_image is None:
-                    continue
-                algorithm.add_image(corrected_image)
+                if corrected_image is not None:
+                    algorithm.add_image(corrected_image)
+                if self._observer:
+                    self._observer.frame_processed(algorithm, frame_index, self._nb_frames)
+                frame_index += 1
+        if self._observer:
+            self._observer.result_processing(algorithm)
         return algorithm.get_result()
 
     def _update_flat(self):
@@ -653,15 +698,25 @@ class Average(object):
         self._update_flat()
         writer = self._writer
 
+        if self._observer:
+            self._observer.process_started()
+
         if writer is not None:
             writer.write_header(self._fabio_images, self._nb_frames)
 
         for algorithm in self._algorithms:
+            if self._observer:
+                self._observer.algorithm_started(algorithm)
             image_reduction = self._get_image_reduction(algorithm)
             logger.debug("Intensity range in merged dataset : %s --> %s", image_reduction.min(), image_reduction.max())
             if writer is not None:
                 writer.write_reduction(algorithm, image_reduction)
             self._results[algorithm] = image_reduction
+            if self._observer:
+                self._observer.algorithm_finished(algorithm)
+
+        if self._observer:
+            self._observer.process_finished()
 
         if writer is not None:
             writer.close()
