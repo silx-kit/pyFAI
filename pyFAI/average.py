@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/08/2016"
+__date__ = "10/08/2016"
 __status__ = "production"
 
 import logging
@@ -45,7 +45,7 @@ try:
 except (ImportError, Exception):
     import six
 
-from .utils import removeSaturatedPixel
+from . import utils
 
 from ._version import calc_hexversion
 if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
@@ -481,7 +481,7 @@ class MultiFilesAverageWriter(AverageWriter):
     def __init__(self, file_name_pattern, file_format, dry_run=False):
         """
         @param file_name_pattern str: File name pattern for the output files.
-            If it contains "%(reduction_name)s", it is updated for each
+            If it contains "{method_name}", it is updated for each
             reduction writing with the name of the reduction.
         @param file_format str: File format used. It is the default
             extension file.
@@ -509,8 +509,8 @@ class MultiFilesAverageWriter(AverageWriter):
             self._global_header[name] = f.filename
 
     def _get_file_name(self, reduction_name):
-        keys = {"reduction_name": reduction_name}
-        return self._file_name_pattern % keys
+        keys = {"method_name": reduction_name}
+        return utils.string.safe_format(self._file_name_pattern, keys)
 
     def write_reduction(self, algorithm, data):
         file_name = self._get_file_name(algorithm.name)
@@ -683,7 +683,7 @@ class Average(object):
         "internal subfunction for dark/flat/monitor "
         corrected_image = numpy.ascontiguousarray(image, numpy.float32)
         if self._threshold or self._minimum or self._maximum:
-            corrected_image = removeSaturatedPixel(corrected_image, self._threshold, self._minimum, self._maximum)
+            corrected_image = utils.removeSaturatedPixel(corrected_image, self._threshold, self._minimum, self._maximum)
         if self._dark is not None:
             corrected_image -= self._dark
         if self._flat is not None:
@@ -814,7 +814,7 @@ def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum
         if output is None:
             prefix = common_prefix([i.filename for i in average.get_fabio_images()])
             output = "filt%02i-%s.%s" % (average.get_counter_frames(), prefix, fformat)
-            output = "%(reduction_name)s" + output
+            output = "{method_name}" + output
 
     if output is not None:
         writer = MultiFilesAverageWriter(output, fformat)

@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/08/2016"
+__date__ = "10/08/2016"
 __status__ = "production"
 
 import os
@@ -64,6 +64,7 @@ import fabio
 import pyFAI
 import pyFAI.utils
 import pyFAI.utils.shell
+import pyFAI.utils.string
 from pyFAI import average
 
 try:
@@ -118,21 +119,33 @@ def parse_algorithms(options):
     return result
 
 
-def parse_writer(input_images, options):
+def parse_writer(input_images, options, algorithms):
     """Return a writer by using information from the command line"""
     output = options.output
     file_format = options.format
 
     if output:
-        pass
+        template = output
+        if len(algorithms) > 1 and "{method_name}" not in template:
+            # make sure the template will create multi files
+            base, ext = os.path.splitext(template)
+            template = base + "_{method_name}" + ext
     else:
-        prefix = os.path.commonprefix(input_images)
+        prefix = "{common_prefix}"
         suffix = ""
         if options.cutoff:
-            suffix += "_cutoff_%s_std" % options.cutoff
-        suffix += "_%s_files.%s" % (len(input_images), file_format)
-        output = prefix + "%(reduction_name)s" + suffix
+            suffix += "_cutoff_{cutoff}_std" % options.cutoff
+        suffix += "_{image_count}_files.{file_format}"
+        output = prefix + "{method_name}" + suffix
 
+    formats = {
+        "common_prefix": os.path.commonprefix(input_images),
+        "image_count": len(input_images),
+        "cutoff": options.cutoff,
+        "file_format": file_format,
+    }
+
+    output = pyFAI.utils.string.safe_format(template, formats)
     return average.MultiFilesAverageWriter(output, file_format)
 
 
@@ -260,7 +273,7 @@ def main():
         logger.warning("Configure process with a mean filter")
         algorithms = [average.MeanAveraging()]
 
-    writer = parse_writer(images, options)
+    writer = parse_writer(images, options, algorithms)
 
     if images:
         process = average.Average()
