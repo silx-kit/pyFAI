@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/08/2016"
+__date__ = "12/08/2016"
 
 import unittest
 import numpy
@@ -126,6 +126,26 @@ class TestAverage(unittest.TestCase):
         algorith.add_image(max_array)
         result = algorith.get_result()
         numpy.testing.assert_array_almost_equal(result, max_array, decimal=3)
+
+    def test_sum_filter(self):
+        algorith = average.SumAveraging()
+        algorith.init()
+        array1 = numpy.array([[1, -20, 500]])
+        array2 = numpy.array([[500, 1, -20]])
+        algorith.add_image(array1)
+        algorith.add_image(array2)
+        result = algorith.get_result()
+        numpy.testing.assert_array_almost_equal(result, (array1 + array2), decimal=3)
+
+    def test_mean_filter(self):
+        algorith = average.MeanAveraging()
+        algorith.init()
+        array1 = numpy.array([[1, -20, 500]])
+        array2 = numpy.array([[500, 1, -20]])
+        algorith.add_image(array1)
+        algorith.add_image(array2)
+        result = algorith.get_result()
+        numpy.testing.assert_array_almost_equal(result, (array1 + array2) * 0.5, decimal=3)
 
     def test_average_monitor(self):
         data1 = numpy.array([[1.0, 3.0], [3.0, 4.0]])
