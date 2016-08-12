@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/07/2016"
+__date__ = "09/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module containing utilitary around shell"""
@@ -98,7 +98,7 @@ class ProgressBar:
             bar_position = self.bar_width
 
         # line to display
-        line = '\r%15s [%s%s] % 3d%%  %s\r' % (self.title, u'■' * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
+        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, u'■' * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
 
         # trailing to mask the previous message
         line_size = len(line)
@@ -107,5 +107,5 @@ class ProgressBar:
             clean_size = 0
         self.last_size = line_size
 
-        sys.stdout.write(line + " " * clean_size)
+        sys.stdout.write(line + " " * clean_size + "\r")
         sys.stdout.flush()
