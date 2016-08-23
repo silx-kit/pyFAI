@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "02/08/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -54,6 +54,11 @@ import numpy
 import shutil
 import json
 import tempfile
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
+
 logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
@@ -83,7 +88,7 @@ class UtilsTest(object):
     try:
         pyFAI = __import__("%s.directories" % name)
     except Exception as error:
-        logger.warning("Unable to loading %s %s" % (name, error))
+        logger.warning("Unable to loading %s %s", name, error)
         image_home = None
     else:
         image_home = pyFAI.directories.testimages
@@ -110,7 +115,7 @@ class UtilsTest(object):
     @classmethod
     def deep_reload(cls):
         cls.pyFAI = __import__(cls.name)
-        logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
+        logger.info("%s loaded from %s", cls.name, cls.pyFAI.__file__)
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
         import pyFAI.decorators
@@ -157,7 +162,7 @@ class UtilsTest(object):
                     json.dump(image_list, fp, indent=4)
             except IOError:
                 logger.debug("Unable to save JSON list")
-        logger.info("UtilsTest.getimage('%s')" % imagename)
+        logger.info("UtilsTest.getimage('%s')", imagename)
         if not os.path.exists(cls.image_home):
             os.makedirs(cls.image_home)
 
@@ -177,11 +182,11 @@ class UtilsTest(object):
             else:
                 opener = urlopen
 
-            logger.info("wget %s/%s" % (cls.url_base, imagename))
+            logger.info("wget %s/%s", cls.url_base, imagename)
             try:
                 data = opener("%s/%s" % (cls.url_base, imagename),
                               data=None, timeout=cls.timeout).read()
-                logger.info("Image %s successfully downloaded." % imagename)
+                logger.info("Image %s successfully downloaded.", imagename)
             except URLError:
                 raise unittest.SkipTest("network unreachable.")
 
@@ -250,7 +255,7 @@ class UtilsTest(object):
         mylogger = logging.getLogger(basename)
         logger.setLevel(level)
         mylogger.setLevel(level)
-        mylogger.debug("tests loaded from file: %s" % basename)
+        mylogger.debug("tests loaded from file: %s", basename)
         return mylogger
 
     @classmethod
@@ -349,8 +354,7 @@ def diff_img(ref, obt, comment=""):
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -368,8 +372,7 @@ def diff_crv(ref, obt, comment=""):
         im_obt = ax1.plot(obt, label="%s obt" % comment)
         im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 class ParameterisedTestCase(unittest.TestCase):

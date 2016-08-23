@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "02/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -90,4 +90,4 @@ class Grid(object):
             data = self.image[self.mask]
             data.sort()
             level = data[int(len(data) * percentile / 100.)]
-        raise NotImplemented("TODO")
+        raise NotImplementedError("TODO")

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2016"
+__date__ = "04/08/2016"
 __status__ = "production"
 
 import logging
@@ -45,7 +45,7 @@ sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
 
-from ._version import calc_hexversion
+from .._version import calc_hexversion
 if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2)):
     from fabio.nexus import exists
 else:
@@ -59,15 +59,15 @@ from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
 try:
-    from .third_party import six
+    from ..third_party import six
 except (ImportError, Exception):
     import six
 try:
-    from .ext import relabel as _relabel
+    from ..ext import relabel as _relabel
 except ImportError:
     _relabel = None
 try:
-    from .directories import data_dir
+    from ..directories import data_dir
 except ImportError:
     data_dir = None
 
@@ -92,16 +92,10 @@ except (ImportError, WindowsError) as err:
 
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
-
-
 StringTypes = (six.binary_type, six.text_type)
-try:
-    input = raw_input
-except NameError:
-    pass
 
 try:
-    from .fastcrc import crc32
+    from ..fastcrc import crc32
 except:
     from zlib import crc32
 
@@ -494,7 +488,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
         logger.info("Filtering data (median)")
         center = numpy.median(stack, axis=0)
     elif center_method.startswith("quantil"):
-        logger.info("Filtering data (quantiles: %s)" % str(quantiles))
+        logger.info("Filtering data (quantiles: %s)", quantiles)
         sorted_ = numpy.sort(stack, axis=0)
         lower = max(0, int(numpy.floor(min(quantiles) * length)))
         upper = min(length, int(numpy.ceil(max(quantiles) * length)))
@@ -504,7 +498,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
             elif lower > 0:
                 lower -= 1
             else:
-                logger.warning("Empty selection for quantil %s, would keep points from %s to %s" % (quantiles, lower, upper))
+                logger.warning("Empty selection for quantil %s, would keep points from %s to %s", quantiles, lower, upper)
         center = sorted_[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
@@ -556,7 +550,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         return corrected_img
     # input sanitization
     if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
-        logger.warning("Filter %s not understood. switch to mean filter" % filter_)
+        logger.warning("Filter %s not understood. switch to mean filter", filter_)
         filter_ = "mean"
 
     nb_files = len(listImages)
@@ -565,7 +559,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
 
     for fn in listImages:
         if isinstance(fn, six.string_types):
-            logger.info("Reading %s" % fn)
+            logger.info("Reading %s", fn)
             fimg = fabio.open(fn)
         else:
             if fabio.hexversion < 262148:
@@ -599,7 +593,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
             flat = averageDark(flats, center_method="mean", cutoff=4)
         else:
-            logger.warning("there is some wrong with flats=%s" % (flats))
+            logger.warning("there is some wrong with flats=%s", flats)
         if correct_flat_from_dark:
             flat -= dark
         flat[numpy.where(flat <= 0)] = 1.0
@@ -677,7 +671,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             header[name] = f.filename
         fimg = fabioclass.__class__(data=datared, header=header)
         fimg.write(output)
-        logger.info("Wrote %s" % output)
+        logger.info("Wrote %s", output)
         return output
     else:
         return datared
@@ -1006,7 +1000,10 @@ def _get_data_path(filename):
 
     For now, just perform a recursive search
     """
-    resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
+    resources = [
+        os.environ.get("PYFAI_DATA"),
+        data_dir,
+        os.path.join(os.path.dirname(__file__), "..")]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
@@ -1262,7 +1259,7 @@ def readFloatFromKeyboard(text, dictVar):
     @param text: string to be displayed
     @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
     """
-    fromkb = raw_input(text).strip()
+    fromkb = six.moves.input(text).strip()
     try:
         vals = [float(i) for i in fromkb.split()]
     except:

@@ -31,6 +31,10 @@ from __future__ import absolute_import, print_function, with_statement, division
 import utilstest
 import pyFAI, fabio, numpy, sys, os, optparse, time
 import pylab
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 
 
 def shift(input, shift):
@@ -206,11 +210,11 @@ if __name__ == "__main__":
 
     pylab.imshow(cc.delta, aspect="auto", interpolation=None, origin="bottom")
 #    pylab.show()
-    raw_input("Delta image")
+    six.moves.input("Delta image")
     pylab.imshow(cc.img.data, aspect="auto", interpolation=None, origin="bottom")
-    raw_input("raw image")
+    six.moves.input("raw image")
     pylab.imshow(cc.resynth, aspect="auto", interpolation=None, origin="bottom")
-    raw_input("rebuild image")
+    six.moves.input("rebuild image")
     pylab.clf()
     pylab.plot(cc.r, cc.I)
-    raw_input("powder pattern")
+    six.moves.input("powder pattern")

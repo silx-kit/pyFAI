@@ -11,7 +11,10 @@ import sys, numpy, time
 from pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
-from six.moves import input
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitBBox
@@ -102,7 +105,7 @@ print("=========================================================================
 ocl_csr.__del__()
 
 
-ocl_csr_padded = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr_padded.lut, data.size, "GPU",profile=True, padded=True, block_size=workgroup_size)
+ocl_csr_padded = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr_padded.lut, data.size, "GPU",profile=True, block_size=workgroup_size)
 out_ocl_csr_padded = ocl_csr_padded.integrate(data)[0]
 print("")
 print("ÖpenCL CSR padded: ", ocl_csr_padded.device)
@@ -123,5 +126,5 @@ plot(out_ocl_csr, label="ocl_csr")
 plot(out_ocl_csr_padded, label="ocl_csr_padded")
 legend()
 show()
-input()
+six.moves.input()
 

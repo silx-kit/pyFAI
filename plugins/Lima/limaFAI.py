@@ -9,21 +9,24 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/10/2013"
+__date__ = "03/08/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
-import os, json, distutils.util, sys, threading, logging
+import threading
+import logging
+import numpy
+import sys
+import os
+import distutils.util
+from os.path import dirname
+
 logger = logging.getLogger("lima.pyfai")
 # set loglevel at least at INFO
 if logger.getEffectiveLevel() > logging.INFO:
     logger.setLevel(logging.INFO)
-import numpy
 from Lima import Core
-#from Utils import BasePostProcess
-import sys
-import os, json, distutils.util
-from os.path import dirname
+
 try:
     import pyFAI
 except ImportError:
@@ -224,7 +227,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
 #        else:
 #            directory = os.path.join(sav_parms.directory, self.subdir)
 #        if not os.path.exists(directory):
-#            logger.error("Ouput directory does not exist !!!  %s" % directory)
+#            logger.error("Ouput directory does not exist !!!  %s", directory)
 #            try:
 #                os.makedirs(directory)
 #            except:  # No luck withthreads

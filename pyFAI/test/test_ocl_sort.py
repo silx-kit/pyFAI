@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __doc__ = """Test for OpenCL sorting on GPU"""
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -39,6 +39,10 @@ import unittest
 import numpy
 import logging
 from .utilstest import UtilsTest, getLogger
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 logger = getLogger(__file__)
 
@@ -46,7 +50,7 @@ logger = getLogger(__file__)
 try:
     import pyopencl
 except ImportError as error:
-    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s." % error)
+    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
     skip = True
 else:
     skip = False
@@ -87,7 +91,7 @@ class TestOclSort(unittest.TestCase):
 #         pylab.plot(res, label="obt")
 #         pylab.legend()
 #         pylab.show()
-#         raw_input()
+#         six.moves.input()
         self.assert_(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
             s.log_profile()
@@ -109,7 +113,7 @@ class TestOclSort(unittest.TestCase):
 #         pylab.plot(res, label="obt")
 #         pylab.legend()
 #         pylab.show()
-#         raw_input()
+#         six.moves.input()
         self.assert_(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
             s.log_profile()

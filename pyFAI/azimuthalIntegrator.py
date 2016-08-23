@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2016"
+__date__ = "02/08/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -45,6 +45,8 @@ from . import units
 from . import utils
 from .utils import StringTypes, EPS32, deg2rad
 from .decorators import deprecated
+from .containers import Integrate1dResult
+from .containers import Integrate2dResult
 import fabio
 error = None
 
@@ -189,6 +191,7 @@ class AzimuthalIntegrator(Geometry):
         self._darkcurrent = None
         self._flatfield_crc = None
         self._darkcurrent_crc = None
+        self._writer = None
         self.flatfiles = None
         self.darkfiles = None
 
@@ -424,7 +427,7 @@ class AzimuthalIntegrator(Geometry):
         tthAxis = 90.0 * (b[1:] + b[:-1]) / pi
         I = val / self._nbPixCache[npt]
         self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark, flat, polarization_factor)
+                    dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -480,7 +483,7 @@ class AzimuthalIntegrator(Geometry):
                                                empty=dummy if dummy is not None else self._empty)
         tthAxis = rad2deg(tthAxis)
         self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark, flat, polarization_factor)
+                    dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -636,7 +639,7 @@ class AzimuthalIntegrator(Geometry):
                                                  polarization=polarization,
                                                  )
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg", dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -774,7 +777,7 @@ class AzimuthalIntegrator(Geometry):
                                                   )
         tthAxis = rad2deg(tthAxis)
         self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark, flat, polarization_factor)
+                    dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     # Default implementation:
@@ -1953,7 +1956,7 @@ class AzimuthalIntegrator(Geometry):
                                                           polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
+        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
@@ -2097,7 +2100,7 @@ class AzimuthalIntegrator(Geometry):
                                                            polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
+        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
@@ -2156,11 +2159,10 @@ class AzimuthalIntegrator(Geometry):
         @type normalization_factor: float
         @param block_size: size of the block for OpenCL integration (unused?)
         @param profile: set to True to enable profiling in OpenCL
-        @param all: if true return a dictionary with many more parameters
-
-
+        @param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
+        @type all: bool
         @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
-        @rtype: 2 or 3-tuple of ndarrays
+        @rtype: Integrate1dResult, dict
         """
         method = method.lower()
         unit = units.to_unit(unit)
@@ -2259,7 +2261,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
                 if reset:
-                    logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate1d: Resetting integrator because %s", reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, npt, mask,
                                                               radial_range, azimuth_range,
@@ -2384,7 +2386,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = ("azimuth_range requested and"
                                  " CSR's azimuth_range don't match")
                 if reset:
-                    logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate1d: Resetting integrator because %s", reset)
                     if "no" in method:
                         split = "no"
                     elif "full" in method:
@@ -2662,23 +2664,31 @@ class AzimuthalIntegrator(Geometry):
                 sigma /= normalization_factor
 
         self.save1D(filename, qAxis, I, sigma, unit,
-                    dark, flat, polarization_factor, normalization_factor)
+                    dark is not None, flat is not None, polarization_factor, normalization_factor)
+
+        result = Integrate1dResult(qAxis, I, sigma)
+        result._set_unit(unit)
+        result._set_sum(sum)
+        result._set_count(count)
+        result._set_has_dark_correction(dark is not None)
+        result._set_has_flat_correction(flat is not None)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
 
         if all:
-            res = {"radial": qAxis,
-                   "unit": unit,
-                   "I": I,
-                   "sum": sum,
-                   "count": count
+            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
+
+            res = {"radial": result.radial,
+                   "unit": result.unit,
+                   "I": result.intensity,
+                   "sum": result.sum,
+                   "count": result.count
                    }
-            if sigma is not None:
-                res["sigma"] = sigma
-        else:
-            if sigma is not None:
-                res = qAxis, I, sigma
-            else:
-                res = qAxis, I
-        return res
+            if result.sigma is not None:
+                res["sigma"] = result.sigma
+            return res
+
+        return result
 
     def integrate2d(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
@@ -2730,9 +2740,10 @@ class AzimuthalIntegrator(Geometry):
         @type safe: bool
         @param normalization_factor: Value of a normalization monitor
         @type normalization_factor: float
-        @param all: if true, return many more intermediate results as a dict.
+        @param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
+        @type all: bool
         @return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
-        @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
+        @rtype: Integrate2dResult, dict
         """
         method = method.lower()
         npt = (npt_rad, npt_azim)
@@ -2818,7 +2829,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range requested and LUT's azimuth_range don't match"
                 error = False
                 if reset:
-                    logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate2d: Resetting integrator because %s", reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
                         error = False
@@ -2857,7 +2868,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                            deviceid=deviceid,
                                                                                            checksum=self._lut_integrator.lut_checksum)
 #                                 except (MemoryError, RuntimeError) as err:
-#                                     logger.warning("Error: %s, falling back on forward implementation" % err)
+#                                     logger.warning("Error: %s, falling back on forward implementation", err)
 #                                     self._lut_integrator = None
 #                                     self._ocl_lut_integr = None
 #                                     gc.collect()
@@ -2924,7 +2935,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 error = False
                 if reset:
-                    logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
+                    logger.info("AI.integrate2d: Resetting integrator because %s", reset)
                     if "no" in method:
                         split = "no"
                     elif "full" in method:
@@ -2972,7 +2983,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                            deviceid=deviceid,
                                                                                            checksum=self._csr_integrator.lut_checksum)
 #                                 except (MemoryError, RuntimeError) as err:  # LUT method is hungry...
-#                                     logger.warning("Error: %s, falling back on forward implementation" % err)
+#                                     logger.warning("Error: %s, falling back on forward implementation", err)
 #                                     self._csr_integrator = None
 #                                     self._ocl_csr_integr = None
 #                                     gc.collect()
@@ -3114,23 +3125,32 @@ class AzimuthalIntegrator(Geometry):
         bins_azim = bins_azim * 180.0 / pi
 
         self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    dark=dark, flat=flat, polarization_factor=polarization_factor,
+                    has_dark=dark is not None, has_flat=flat is not None, polarization_factor=polarization_factor,
                     normalization_factor=normalization_factor)
 
+        result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result._set_unit(unit)
+        result._set_count(count)
+        result._set_sum(sum)
+        result._set_has_dark_correction(dark is not None)
+        result._set_has_flat_correction(flat is not None)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+
         if all:
-            res = {"I":I,
-                   "radial":bins_rad,
-                   "azimuthal":bins_azim,
-                   "count":count,
-                   "sum": sum}
-            if sigma is not None:
-                res["sigma"] = sigma
-        else:
-            if sigma is not None:
-                res = I, bins_rad, bins_azim, sigma
-            else:
-                res = I, bins_rad, bins_azim
-        return res
+            logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
+
+            res = {"I": result.intensity,
+                   "radial": result.radial,
+                   "azimuthal": result.azimuthal,
+                   "count": result.count,
+                   "sum": result.sum
+                }
+            if result.sigma is not None:
+                res["sigma"] = result.sigma
+            return res
+
+        return result
 
     @deprecated
     def saxs(self, data, npt, filename=None,
@@ -3198,63 +3218,19 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def makeHeaders(self, hdr="#", dark=None, flat=None,
-                    polarization_factor=None, normalization_factor=None):
-        """
-        @param hdr: string used as comment in the header
-        @type hdr: str
-        @param dark: save the darks filenames (default: no)
-        @type dark: ???
-        @param flat: save the flat filenames (default: no)
-        @type flat: ???
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float
+    def _create_default_writer(self):
+        """Default writer constructor"""
+        from .io import DefaultAiWriter
+        return DefaultAiWriter(None, self)
 
-        @return: the header
-        @rtype: str
-        """
-        if self.header is None:
-            headerLst = ["== pyFAI calibration =="]
-            headerLst.append("SplineFile: %s" % self.splineFile)
-            headerLst.append("PixelSize: %.3e, %.3e m" %
-                             (self.pixel1, self.pixel2))
-            headerLst.append("PONI: %.3e, %.3e m" % (self.poni1, self.poni2))
-            headerLst.append("Distance Sample to Detector: %s m" %
-                             self.dist)
-            headerLst.append("Rotations: %.6f %.6f %.6f rad" %
-                             (self.rot1, self.rot2, self.rot3))
-            headerLst += ["", "== Fit2d calibration =="]
-            f2d = self.getFit2D()
-            headerLst.append("Distance Sample-beamCenter: %.3f mm" %
-                             f2d["directDist"])
-            headerLst.append("Center: x=%.3f, y=%.3f pix" %
-                             (f2d["centerX"], f2d["centerY"]))
-            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" %
-                             (f2d["tilt"], f2d["tiltPlanRotation"]))
-            headerLst.append("")
-            if self._wavelength is not None:
-                headerLst.append("Wavelength: %s" % self.wavelength)
-            if self.maskfile is not None:
-                headerLst.append("Mask File: %s" % self.maskfile)
-            if (dark is not None) or (self.darkcurrent is not None):
-                if self.darkfiles:
-                    headerLst.append("Dark current: %s" % self.darkfiles)
-                else:
-                    headerLst.append("Dark current: Done with unknown file")
-            if (flat is not None) or (self.flatfield is not None):
-                if self.flatfiles:
-                    headerLst.append("Flat field: %s" % self.flatfiles)
-                else:
-                    headerLst.append("Flat field: Done with unknown file")
-            if polarization_factor is None and self._polarization is not None:
-                polarization_factor = self._polarization_factor
-            headerLst.append("Polarization factor: %s" % polarization_factor)
-            headerLst.append("Normalization factor: %s" % normalization_factor)
-            self.header = "\n".join([hdr + " " + i for i in headerLst])
-        return self.header
+    def __get_default_writer(self):
+        """Get the default writer. Used when a filename is defined."""
+        if self._writer is None:
+            self._writer = self._create_default_writer()
+        return self._writer
 
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
-               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
+               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 1D integration
         @type filename: str
@@ -3266,10 +3242,10 @@ class AzimuthalIntegrator(Geometry):
         @type error: numpy.ndarray or None
         @param dim1_unit: the unit of the dim1 array
         @type dim1_unit: pyFAI.units.Unit
-        @param dark: save the darks filenames (default: no)
-        @type dark: ???
-        @param flat: save the flat filenames (default: no)
-        @type flat: ???
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
+        @param has_flat: save the flat filenames (default: no)
+        @type has_flat: bool
         @param polarization_factor: the polarization factor
         @type polarization_factor: float
         @param normalization_factor: the monitor value
@@ -3277,27 +3253,13 @@ class AzimuthalIntegrator(Geometry):
 
         This method save the result of a 1D integration.
         """
-        dim1_unit = units.to_unit(dim1_unit)
-        if filename:
-            with open(filename, "w") as f:
-                f.write(self.makeHeaders(dark=dark, flat=flat,
-                                         polarization_factor=polarization_factor,
-                                         normalization_factor=normalization_factor))
-                try:
-                    f.write("\n# --> %s\n" % (filename))
-                except UnicodeError:
-                    f.write("\n# --> %s\n" % (filename.encode("utf8")))
-                if error is None:
-                    f.write("#%14s %14s\n" % (dim1_unit.REPR, "I "))
-                    f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
-                else:
-                    f.write("#%14s  %14s  %14s\n" %
-                            (dim1_unit.REPR, "I ", "sigma "))
-                    f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
-                f.write("\n")
+        if not filename:
+            return
+        writer = self.__get_default_writer()
+        writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
-               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
+               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 2D histogram
         @type filename: str
@@ -3311,10 +3273,10 @@ class AzimuthalIntegrator(Geometry):
         @type error: numpy.ndarray or None
         @param dim1_unit: the unit of the dim1 array
         @type dim1_unit: pyFAI.units.Unit
-        @param dark: save the darks filenames (default: no)
-        @type dark: ???
-        @param flat: save the flat filenames (default: no)
-        @type flat: ???
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
+        @param has_flat: save the flat filenames (default: no)
+        @type has_flat: bool
         @param polarization_factor: the polarization factor
         @type polarization_factor: float
         @param normalization_factor: the monitor value
@@ -3324,56 +3286,8 @@ class AzimuthalIntegrator(Geometry):
         """
         if not filename:
             return
-
-        dim1_unit = units.to_unit(dim1_unit)
-        # TODO: propoerly manage ordered dict
-        try:
-            from collections import OrderedDict
-        except:
-            header = {}
-        else:
-            header = OrderedDict()
-
-        header["dist"] = str(self._dist)
-        header["poni1"] = str(self._poni1)
-        header["poni2"] = str(self._poni2)
-        header["rot1"] = str(self._rot1)
-        header["rot2"] = str(self._rot2)
-        header["rot3"] = str(self._rot3)
-        header["chi_min"] = str(dim2.min())
-        header["chi_max"] = str(dim2.max())
-        header[dim1_unit.REPR + "_min"] = str(dim1.min())
-        header[dim1_unit.REPR + "_max"] = str(dim1.max())
-        header["pixelX"] = str(self.pixel2)  # this is not a bug ... most people expect dim1 to be X
-        header["pixelY"] = str(self.pixel1)  # this is not a bug ... most people expect dim2 to be Y
-        header["polarization_factor"] = str(polarization_factor)
-        header["normalization_factor"] = str(normalization_factor)
-
-        if self.splineFile:
-            header["spline"] = str(self.splineFile)
-
-        if dark is not None:
-            if self.darkfiles:
-                header["dark"] = self.darkfiles
-            else:
-                header["dark"] = 'unknown dark applied'
-        if flat is not None:
-            if self.flatfiles:
-                header["flat"] = self.flatfiles
-            else:
-                header["flat"] = 'unknown flat applied'
-        f2d = self.getFit2D()
-        for key in f2d:
-            header["key"] = f2d[key]
-        try:
-            img = fabio.edfimage.edfimage(data=I.astype("float32"),
-                                          header=header)
-
-            if error is not None:
-                img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
-            img.write(filename)
-        except IOError:
-            logger.error("IOError while writing %s" % filename)
+        writer = self.__get_default_writer()
+        writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
@@ -3397,7 +3311,7 @@ class AzimuthalIntegrator(Geometry):
         if "ocl" in method and npt_azim & (npt_azim - 1):
             old = npt_azim
             npt_azim = int(2 ** numpy.round(numpy.log2(npt_azim)))
-            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s" % (old, npt_azim))
+            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s", old, npt_azim)
 #             self._ocl_sem.acquire()
         integ2d, radial, azimuthal = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                                       unit=unit, method=method,

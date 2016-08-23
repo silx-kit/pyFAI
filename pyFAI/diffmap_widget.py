@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "02/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -406,7 +406,7 @@ class DiffMapWidget(QtGui.QWidget):
         if fname is None:
             fname = self.json_file
         if not os.path.exists(fname):
-            logger.warning("No such configuration file: %s" % fname)
+            logger.warning("No such configuration file: %s", fname)
             return
         with open(fname, "r") as fd:
             dico = json.loads(fd.read())
@@ -453,7 +453,7 @@ class DiffMapWidget(QtGui.QWidget):
             if diffmap.nxs:
                 self.data_np = diffmap.dataset.value
                 diffmap.nxs.close()
-        logger.warning("Processing finished in %.3fs" % (time.time() - t0))
+        logger.warning("Processing finished in %.3fs", time.time() - t0)
         self.progressbarChanged.emit(len(self.list_dataset), 0)
 
     def display_processing(self, config):

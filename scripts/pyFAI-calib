@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2015"
+__date__ = "29/07/2016"
 __satus__ = "development"
 
 import os
@@ -46,7 +46,10 @@ import matplotlib
 matplotlib.use("Qt4Agg")
 import pyFAI
 from pyFAI.calibration import Calibration
-
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
@@ -62,4 +65,4 @@ if __name__ == "__main__":
     c.read_pixelsSize()
     c.preprocess()
     c.gui_peakPicker()
-    raw_input("Press enter to quit")
+    six.moves.input("Press enter to quit")

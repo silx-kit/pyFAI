@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -115,7 +115,7 @@ class testPeakPicking(unittest.TestCase):
             delta2 = gr.refine2()
             logger.info(gr.__repr__())
             if delta2 == last:
-                logger.info("refinement finished after %s iteration" % i)
+                logger.info("refinement finished after %s iteration", i)
                 break
             last = delta2
         self.assertEquals(last < 1e-4, True, "residual error is less than 1e-4, got %s" % last)
