@@ -331,8 +331,8 @@ if options.memprofile:
 else:
     runner = unittest.TextTestRunner(buffer=True)
 
-logger.warning("Test %s %s from %s",
-               PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH)
+logger.warning("Test %s %s from %s"%(
+               PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
 
 test_module_name = PROJECT_NAME + '.test'
 logger.info('Import %s', test_module_name)
