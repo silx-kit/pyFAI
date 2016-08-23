@@ -2,31 +2,39 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
 #
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2015"
+__date__ = "15/07/2016"
 __status__ = "stable"
 
 import os
@@ -46,19 +54,31 @@ else:
         logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
         pyopencl = None
 
-FLOP_PER_CORE = { "GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
-                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
-                  "ACC": 8}  # ACC: the Xeon-phi (MIC) appears to be able to process 8 Flops per hyperthreaded-core
+FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
+                 "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
+                 "ACC": 8}  # ACC: the Xeon-phi (MIC) appears to be able to process 8 Flops per hyperthreaded-core
+# Sources : https://en.wikipedia.org/wiki/CUDA
 NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
-                         (1, 1): 24,  # Measured on G98 [Quadro NVS 295]
-                         (1, 2): 24,  # Guessed !
-                         (1, 3): 24,  # measured on a GT285 (GT200)
-                         (2, 0): 64,  # Measured on a 580 (GF110)
-                         (2, 1): 96,  # Measured on Quadro2000 GF106GL
-                         (3, 0): 384,  # Guessed!
-                         (3, 5): 384,  # Measured on K20
-                         (5, 0): 256}  # Maxwell 4 warps/SM 2 flops/ CU
+                        (1, 1): 24,  # Measured on G98 [Quadro NVS 295]
+                        (1, 2): 24,  # Guessed !
+                        (1, 3): 24,  # measured on a GT285 (GT200)
+                        (2, 0): 64,  # Measured on a 580 (GF110)
+                        (2, 1): 96,  # Measured on Quadro2000 GF106GL
+                        (3, 0): 384,  # Guessed!
+                        (3, 5): 384,  # Measured on K20
+                        (3, 7): 384,  # K80: Guessed!
+                        (5, 0): 256,  # Maxwell 4 warps/SM 2 flops/ CU
+                        (5, 2): 256,  # Titan-X
+                        (5, 3): 256,  # TX1
+                        (6, 0): 128,  # GP100
+                        (6, 1): 128,  # GP104
+                        (6, 2): 128,  # ?
+                        (7, 0): 256,  # Volta ?
+                        (7, 1): 256,  # Volta ?
+                        }
+
 AMD_FLOP_PER_CORE = 160  # Measured on a M7820 10 core, 700MHz 1120GFlops
+
 
 class Device(object):
     """
@@ -100,7 +120,6 @@ class Device(object):
             self.flops = cores * frequency * flop_core
         else:
             self.flops = flop_core
-
 
     def __repr__(self):
         return "%s" % self.name
@@ -225,7 +244,6 @@ class OpenCL(object):
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
 
-
     def __repr__(self):
         out = ["OpenCL devices:"]
         for platformid, platform in enumerate(self.platforms):
@@ -284,7 +302,7 @@ class OpenCL(object):
                                 elif best_found[2] < device.flops:
                                     best_found = platformid, deviceid, device.flops
         if best_found:
-            return  best_found[0], best_found[1]
+            return best_found[0], best_found[1]
 
     def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None, cached=True):
         """
@@ -343,6 +361,7 @@ if pyopencl:
 else:
     ocl = None
 
+
 def release_cl_buffers(cl_buffers):
     """
     @param cl_buffer: the buffer you want to release
@@ -350,16 +369,16 @@ def release_cl_buffers(cl_buffers):
 
     This method release the memory of the buffers store in the dict
     """
-    for key, buffer in cl_buffers.items():
-        if buffer is not None:
-            if isinstance(buffer, pyopencl.array.Array):
+    for key, buffer_ in cl_buffers.items():
+        if buffer_ is not None:
+            if isinstance(buffer_, pyopencl.array.Array):
                 try:
-                    buffer.data.release()
+                    buffer_.data.release()
                 except pyopencl.LogicError:
                     logger.error("Error while freeing buffer %s", key)
             else:
                 try:
-                    buffer.release()
+                    buffer_.release()
                 except pyopencl.LogicError:
                     logger.error("Error while freeing buffer %s", key)
             cl_buffers[key] = None
@@ -401,5 +420,3 @@ def allocate_cl_buffers(buffers, device=None, context=None):
         raise MemoryError(error)
 
     return mem
-
-

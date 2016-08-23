@@ -41,15 +41,16 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2015"
+__date__ = "23/08/2016"
 __status__ = "development"
 
-import os, getpass, tempfile
+import os
+import getpass
+import tempfile
 import logging
 logger = logging.getLogger("pyFAI.directories")
 
 PYFAI_DATA = "/usr/share/pyFAI"
-PYFAI_TESTIMAGES = "/usr/share/pyFAI/testimages"
 
 # testimage contains the directory name where
 data_dir = None
