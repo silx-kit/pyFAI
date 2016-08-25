@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/08/2016"
+__date__ = "24/08/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -56,12 +56,7 @@ except ImportError:
     from distutils.command.install import install
     from distutils.command.build_py import build_py as _build_py
 
-# Fix use of Extension from numpy if it is really needed
-# Our setup is not working anymore with setuptools >=24, Python 3.5, Windows
-# Is numpy really needed for compilation? else we have to investigate
-# Silx setup looks to not have this problem. It can be interesting to reuse it
-#from numpy.distutils.core import Extension as _Extension
-from setuptools import Extension as _Extension
+from numpy.distutils.core import Extension as _Extension
 
 
 PROJECT = "pyFAI"
