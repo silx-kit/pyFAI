@@ -138,12 +138,11 @@ The extra ubuntu packages needed are:
     * python-dev
     * python-fabio
     * python-pyopencl
-    * python-fftw
     * python-qt4
 
 using apt-get these can be installed as::
 
-    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
+    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-qt4
 
 MacOSX
 ------
