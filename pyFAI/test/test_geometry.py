@@ -36,11 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-<<<<<<< HEAD
-__date__ = "23/08/2016"
-=======
 __date__ = "29/08/2016"
->>>>>>> origin
 
 
 import unittest
@@ -232,6 +228,9 @@ class ParamFastPath(ParameterisedTestCase):
     detectors = ("Pilatus300k", "Xpad_flat")
     number_of_geometries = 2
     epsilon = 3e-7
+    epsilon_r = 1e-5
+    epsilon_a = 1e-5
+    count_a = 17
     # Here is a set of pathological cases ...
     geometries = [  # Provides atol = 1.08e-5
                   {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605, "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983, "wavelength": 1e-10, 'detector': 'Pilatus300k'},
@@ -252,30 +251,6 @@ class ParamFastPath(ParameterisedTestCase):
                "rot2": random.random() - 0.5,
                "rot3": random.random() - 0.5,
                "wavelength": 1e-10}
-<<<<<<< HEAD
-# Here is a set of pathological cases ...
-# Provides atol = 1.08e-5
-#         geo = {"dist": 0.037759112584709535,
-#                "poni1": 0.005490358659182459,
-#                "poni2": 0.06625690275821605,
-#                "rot1": 0.20918568578536278,
-#                "rot2": 0.42161920581114365,
-#                "rot3": 0.38784171093239983,
-#                "wavelength": 1e-10}
-# Provides atol = 2.8e-5
-#         geo = {'dist': 0.48459003559204783,
-#                'poni2':-0.15784154756282065,
-#                'poni1': 0.02783657100374448,
-#                'rot3':-0.2901541134116695,
-#                'rot1':-0.3927992588689394,
-#                'rot2': 0.148115949280184,
-#                "wavelength": 1e-10}
-# Provides atol = 3.67761e-05
-        # geo = {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus300k', 'dist': 0.7350926443000882}
-# Provides atol = 4.94719e-05
-        # geo = {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186, 'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077, 'dist': 0.04711960678381288, 'poni1': 0.012745759325719641}
-=======
->>>>>>> origin
 
         for det in detectors:
             dico = geo.copy()
@@ -300,11 +275,11 @@ class ParamFastPath(ParameterisedTestCase):
         # We expect precision on radial position
         delta_r = delta[..., 0].max()
         # issue with numerical stability of azimuthal position due to arctan(y,x)
-        cnt_delta_a = (delta[..., 1] > 1e-5).sum()
+        cnt_delta_a = (delta[..., 1] > self.epsilon_a).sum()
         logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
                     space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
-        self.assert_(delta_r < 1e-5, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
-        self.assert_(cnt_delta_a < 17, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
+        self.assert_(delta_r < self.epsilon_r, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
+        self.assert_(cnt_delta_a < self.count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""
