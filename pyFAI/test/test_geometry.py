@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "29/08/2016"
 
 
 import unittest
@@ -255,6 +255,9 @@ class ParamFastPath(ParameterisedTestCase):
 #                "wavelength": 1e-10}
 # Provides atol = 3.67761e-05
 #         geo = {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus300k', 'dist': 0.7350926443000882}
+#         atol=2pi
+        geo = {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455, 'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118, 'detector': 'Pilatus300k', 'dist': 0.43544642285972124}
+
         for det in detectors:
             dico = geo.copy()
             dico["detector"] = det
