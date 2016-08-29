@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/08/2016"
+__date__ = "25/08/2016"
 __status__ = "production"
 
 import logging
@@ -76,19 +76,10 @@ import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 
-cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
 
 win32 = (os.name == "nt") and (tuple.__itemsize__ == 4)
-
-has_fftw3 = None
-try:
-    import fftw3
-    has_fftw3 = True
-except (ImportError, WindowsError) as err:
-    logger.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
-    has_fftw3 = False
 
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
@@ -99,6 +90,7 @@ try:
 except:
     from zlib import crc32
 
+
 def calc_checksum(ary, safe=True):
     """
     Calculate the checksum by default (or returns its buffer location if unsafe)
@@ -107,24 +99,6 @@ def calc_checksum(ary, safe=True):
         return crc32(ary)
     else:
         return ary.__array_interface__['data'][0]
-
-def gaussian(M, std):
-    """
-    Return a Gaussian window of length M with standard-deviation std.
-
-    This differs from the scipy.signal.gaussian implementation as:
-    - The default for sym=False (needed for gaussian filtering without shift)
-    - This implementation is normalized
-
-    @param M: length of the windows (int)
-    @param std: standatd deviation sigma
-
-    The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
-
-    """
-    x = numpy.arange(M) - M / 2.0
-    return numpy.exp(-(x / std) ** 2 / 2.0) / std / numpy.sqrt(2 * numpy.pi)
-
 
 def float_(val):
     """
@@ -192,9 +166,27 @@ def expand2d(vect, size2, vertical=True):
     return out
 
 
-def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
+def gaussian(M, std):
     """
-    2-dimensional Gaussian filter implemented with FFTw
+    Return a Gaussian window of length M with standard-deviation std.
+
+    This differs from the scipy.signal.gaussian implementation as:
+    - The default for sym=False (needed for gaussian filtering without shift)
+    - This implementation is normalized
+
+    @param M: length of the windows (int)
+    @param std: standatd deviation sigma
+
+    The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
+
+    """
+    x = numpy.arange(M) - M / 2.0
+    return numpy.exp(-(x / std) ** 2 / 2.0) / std / numpy.sqrt(2 * numpy.pi)
+
+
+def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
+    """
+    2-dimensional Gaussian filter implemented with FFT
 
     @param input_img:    input array to filter
     @type input_img: array-like
@@ -209,56 +201,29 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
     @param cval: scalar, optional
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
-    res = None
-    # TODO: understand why this is needed !
-    if "has_fftw3" not in dir():
-        has_fftw3 = ("fftw3" in sys.modules)
-    if has_fftw3:
-        try:
-            if isinstance(sigma, (list, tuple)):
-                sigma = (float(sigma[0]), float(sigma[1]))
-            else:
-                sigma = (float(sigma), float(sigma))
-            k0 = int(ceil(4.0 * float(sigma[0])))
-            k1 = int(ceil(4.0 * float(sigma[1])))
-
-            if mode != "wrap":
-                input_img = expand(input_img, (k0, k1), mode, cval)
-            s0, s1 = input_img.shape
-            sum_init = input_img.astype(numpy.float32).sum()
-            fftOut = numpy.zeros((s0, s1), dtype=complex)
-            fftIn = numpy.zeros((s0, s1), dtype=complex)
-            with sem:
-                fft = fftw3.Plan(fftIn, fftOut, direction='forward')
-                ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
-
-            g0 = gaussian(s0, sigma[0])
-            g1 = gaussian(s1, sigma[1])
-            g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
-            g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
-            g2 = numpy.outer(g0, g1)
-            g2fft = numpy.zeros((s0, s1), dtype=complex)
-            fftIn[:, :] = g2.astype(complex)
-            fft()
-            g2fft[:, :] = fftOut.conjugate()
-
-            fftIn[:, :] = input_img.astype(complex)
-            fft()
-
-            fftOut *= g2fft
-            ifft()
-            out = fftIn.real.astype(numpy.float32)
-            sum_out = out.sum()
-            res = out * sum_init / sum_out
-            if mode != "wrap":
-                res = res[k0:-k0, k1:-k1]
-        except MemoryError:
-            logging.error("MemoryError in FFTw3 part. Falling back on Scipy")
-    if res is None:
-        has_fftw3 = False
+    if use_scipy:
         res = scipy.ndimage.filters.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
-    return res
+    else:
+        if isinstance(sigma, (list, tuple)):
+            sigma = (float(sigma[0]), float(sigma[1]))
+        else:
+            sigma = (float(sigma), float(sigma))
+        k0 = int(ceil(4.0 * float(sigma[0])))
+        k1 = int(ceil(4.0 * float(sigma[1])))
 
+        if mode != "wrap":
+            input_img = expand(input_img, (k0, k1), mode, cval)
+        s0, s1 = input_img.shape
+        g0 = gaussian(s0, sigma[0])
+        g1 = gaussian(s1, sigma[1])
+        g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
+        g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
+        g2 = numpy.outer(g0, g1)
+        fftIn = numpy.fft.ifft2(numpy.fft.fft2(input_img) * numpy.fft.fft2(g2).conjugate())
+        res = fftIn.real.astype(numpy.float32)
+        if mode != "wrap":
+            res = res[k0:-k0, k1:-k1]
+    return res
 
 
 def shift(input_img, shift_val):
@@ -280,6 +245,7 @@ def shift(input_img, shift_val):
     re[:d0, :d1] = input_img[r0:, r1:]
     return re
 
+
 def dog(s1, s2, shape=None):
     """
     2D difference of gaussian
@@ -294,9 +260,10 @@ def dog(s1, s2, shape=None):
     centered = numpy.exp(-r2 / (2. * s1) ** 2) / 2. / numpy.pi / s1 - numpy.exp(-r2 / (2. * s2) ** 2) / 2. / numpy.pi / s2
     return centered
 
+
 def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
     """
-    2-dimensional Difference of Gaussian filter implemented with FFTw
+    2-dimensional Difference of Gaussian filter implemented with FFT
 
     @param input_img:    input_img array to filter
     @type input_img: array-like
@@ -323,32 +290,9 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
         else:
             k0 = k1 = int(ceil(4.0 * float(sigma)))
 
-        if fftw3:
-            sum_init = input_img.astype(numpy.float32).sum()
-            fftOut = numpy.zeros((s0, s1), dtype=complex)
-            fftIn = numpy.zeros((s0, s1), dtype=complex)
-
-            with sem:
-                fft = fftw3.Plan(fftIn, fftOut, direction='forward')
-                ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
-
-
-            g2fft = numpy.zeros((s0, s1), dtype=complex)
-            fftIn[:, :] = shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)
-            fft()
-            g2fft[:, :] = fftOut.conjugate()
-
-            fftIn[:, :] = input_img.astype(complex)
-            fft()
-
-            fftOut *= g2fft
-            ifft()
-            out = fftIn.real.astype(numpy.float32)
-            sum_out = out.sum()
-            res = out * sum_init / sum_out
-        else:
-            res = numpy.fft.ifft2(numpy.fft.fft2(input_img.astype(complex)) * \
-                                  numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)).conjugate())
+        res = numpy.fft.ifft2(numpy.fft.fft2(input_img.astype(complex)) *
+                              numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)),
+                                                   (s0 // 2, s1 // 2)).astype(complex)).conjugate())
         if mode == "wrap":
             return res
         else:
@@ -816,45 +760,27 @@ def unBinning(binnedArray, binsize, norm=True):
     return out
 
 
-
-def shiftFFT(input_img, shift_val, method="fftw"):
-    """
-    Do shift using FFTs
+def shiftFFT(input_img, shift_val, method="fft"):
+    """Do shift using FFTs
+    
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
     @param input_img: 2d numpy array
     @param shift_val: 2-tuple of float
     @return: shifted image
-
     """
-    # TODO: understand why this is needed !
-    if "has_fftw3" not in dir():
-        has_fftw3 = ("fftw3" in sys.modules)
-    if "has_fftw3" and ("fftw3" not in dir()):
-        fftw3 = sys.modules.get("fftw3")
+    if method == "fft":
+        d0, d1 = input_img.shape
+        v0, v1 = shift_val
+        f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
+        f1 = numpy.fft.ifftshift(numpy.arange(-d1 // 2, d1 // 2))
+        m1, m0 = numpy.meshgrid(f1, f0)
+        e0 = numpy.exp(-2j * numpy.pi * v0 * m0 / float(d0))
+        e1 = numpy.exp(-2j * numpy.pi * v1 * m1 / float(d1))
+        e = e0 * e1
+        out = abs(numpy.fft.ifft2(numpy.fft.fft2(input_img) * e))
     else:
-        fftw3 = None
-    d0, d1 = input_img.shape
-    v0, v1 = shift_val
-    f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
-    f1 = numpy.fft.ifftshift(numpy.arange(-d1 // 2, d1 // 2))
-    m1, m0 = numpy.meshgrid(f1, f0)
-    e0 = numpy.exp(-2j * numpy.pi * v0 * m0 / float(d0))
-    e1 = numpy.exp(-2j * numpy.pi * v1 * m1 / float(d1))
-    e = e0 * e1
-    if method.startswith("fftw") and (fftw3 is not None):
-        input_ = numpy.zeros((d0, d1), dtype=complex)
-        output = numpy.zeros((d0, d1), dtype=complex)
-        with sem:
-            fft = fftw3.Plan(input_, output, direction='forward', flags=['estimate'])
-            ifft = fftw3.Plan(output, input_, direction='backward', flags=['estimate'])
-        input_[:, :] = input_img.astype(complex)
-        fft()
-        output *= e
-        ifft()
-        out = input_ / input_.size
-    else:
-        out = numpy.fft.ifft2(numpy.fft.fft2(input_img) * e)
-    return abs(out)
+        out = scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity")
+    return out
 
 
 def maximum_position(img):
@@ -900,35 +826,16 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     logs = []
     assert img2.shape == shape
     t0 = time.time()
-    if method[:4] == "fftw" and (fftw3 is not None):
-        input_ = numpy.zeros(shape, dtype=complex)
-        output = numpy.zeros(shape, dtype=complex)
-        with sem:
-            fft = fftw3.Plan(input_, output, direction='forward', flags=['measure'])
-            ifft = fftw3.Plan(output, input_, direction='backward', flags=['measure'])
-        input_[:, :] = img2.astype(complex)
-        fft()
-        temp = output.conjugate()
-        input_[:, :] = img1.astype(complex)
-        fft()
-        output *= temp
-        ifft()
-        res = input_.real / input_.size
-#    elif method[:4] == "cuda" and (cu_fft is not None):
-#        with sem:
-#            cuda_correlate = CudaCorrelate(shape)
-#            res = cuda_correlate.correlate(img1, img2)
-    else:  # use numpy fftpack
-        i1f = numpy.fft.fft2(img1)
-        i2f = numpy.fft.fft2(img2)
-        res = numpy.fft.ifft2(i1f * i2f.conjugate()).real
+    i1f = numpy.fft.fft2(img1)
+    i2f = numpy.fft.fft2(img2)
+    res = numpy.fft.ifft2(i1f * i2f.conjugate()).real
     t1 = time.time()
 
     ################################################################################
     # END of convolutions
     ################################################################################
     offset1 = maximum_position(res)
-    res = shift(res, (shape[0] // 2 , shape[1] // 2))
+    res = shift(res, (shape[0] // 2, shape[1] // 2))
     mean = res.mean(dtype="float64")
     maxi = res.max()
     std = res.std(dtype="float64")
@@ -936,7 +843,7 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     new = numpy.maximum(numpy.zeros(shape), res - numpy.ones(shape) * (mean + std * SN * 0.9))
     com2 = center_of_mass(new)
     logs.append("MeasureOffset: fine result of the centered image: %s %s " % com2)
-    offset2 = ((com2[0] - shape[0] // 2) % shape[0] , (com2[1] - shape[1] // 2) % shape[1])
+    offset2 = ((com2[0] - shape[0] // 2) % shape[0], (com2[1] - shape[1] // 2) % shape[1])
     delta0 = (offset2[0] - offset1[0]) % shape[0]
     delta1 = (offset2[1] - offset1[1]) % shape[1]
     if delta0 > shape[0] // 2:
@@ -975,7 +882,7 @@ def expand_args(args):
     @return: list of actual args
     """
     new = []
-    for afile in  args:
+    for afile in args:
         if exists(afile):
             new.append(afile)
         else:

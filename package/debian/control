@@ -14,7 +14,6 @@ Build-Depends: cython,
                python-all-dbg,
                python-fabio,
                python-fabio-dbg,
-               python-fftw,
                python-h5py,
                python-h5py-dbg,
                python-lxml,
@@ -89,8 +88,7 @@ Depends: ${misc:Depends},
          python-imaging,
          python-matplotlib,
          python-scipy
-Recommends: python-fftw,
-            python-h5py,
+Recommends: python-h5py,
             python-pyopencl,
             python-qt4 | python-pyside
 Suggests: pymca,
@@ -132,8 +130,7 @@ Recommends: python-dbg,
             python-pyopencl-dbg,
             python-qt4-dbg,
             python-h5py-dbg
-Suggests: python-fftw-dbg,
-          python-h5py-dbg
+Suggests: python-h5py-dbg
 Description: Fast Azimuthal Integration scripts - Python2 debug
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray
@@ -166,8 +163,7 @@ Depends: ${misc:Depends},
          python3-scipy
 Recommends: python3-pyopencl,
             python3-pyqt4 | python3-pyside
-Suggests: python3-fftw,
-          python3-h5py
+Suggests: python3-h5py
 Description: Fast Azimuthal Integration scripts - Python3
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray
@@ -201,8 +197,7 @@ Depends: ${misc:Depends},
 Recommends: python3-dbg,
             python3-pyopencl-dbg,
             python3-pyqt4-dbg | python3-pyside-dbg
-Suggests: python3-fftw-dbg,
-          python3-h5py-dbg
+Suggests: python3-h5py-dbg
 Description: Fast Azimuthal Integration scripts - Python3 debug
  PyFAI is a Python library for azimuthal integration; it allows the conversion
  of diffraction images taken with 2D detectors like CCD cameras into X-Ray

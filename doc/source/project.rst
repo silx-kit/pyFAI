@@ -93,8 +93,6 @@ Run dependencies
 * FabIO
 * h5py
 * pyopencl (optional)
-* fftw (optional)
-* pymca (optional)
 * PyQt4 or PySide (for the graphical user interface)
 
 Build dependencies:
