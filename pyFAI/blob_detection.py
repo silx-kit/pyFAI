@@ -27,12 +27,11 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "03/08/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
-import itertools
 import logging
 logger = logging.getLogger("pyFAI.blob_detection")
 import numpy
@@ -55,7 +54,7 @@ else:
 
 from .ext.bilinear import Bilinear
 
-from math import sqrt, cos, sin, pow
+from math import sqrt
 
 from .utils import binning, is_far_from_group
 
@@ -85,7 +84,7 @@ def make_gaussian(im, sigma, xc, yc):
 def local_max(dogs, mask=None, n_5=True):
     """
     @param dogs: 3d array with (sigma,y,x) containing difference of gaussians
-    @parm mask: mask out keypoint next to the mask (or inside the mask)
+    @param mask: mask out keypoint next to the mask (or inside the mask)
     @param n_5: look for a larger neighborhood
     """
     if mask is not None:
@@ -271,7 +270,7 @@ class BlobDetection(object):
             increase = previous * sqrt((self.dest_sigma / self.init_sigma) ** (2.0 / self.scale_per_octave) - 1.0)
             self.sigmas.append((sigma_abs, increase))
             previous = sigma_abs
-        logger.debug("Sigma= %s" % self.sigmas)
+        logger.debug("Sigma= %s", self.sigmas)
 
     def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
@@ -578,7 +577,7 @@ class BlobDetection(object):
 #                 print val
 #                 print vect
 #                 print numpy.dot(vect[0],vect[1])
-                e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
+                _e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
                 j += 1
 #                 print j
 #                 print e
@@ -630,7 +629,7 @@ class BlobDetection(object):
         sinrot3 = sin(rot3)
 
         L = -L
-        dy = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * cosrot2 * cosrot3 * (d1 * cosrot2 * cosrot3 + \
+        _dy = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * cosrot2 * cosrot3 * (d1 * cosrot2 * cosrot3 + \
                         d2 * (cosrot3 * sinrot1 * sinrot2 - cosrot1 * sinrot3) + L * (cosrot1 * cosrot3 * sinrot2 + \
                         sinrot1 * sinrot3)) + 2 * cosrot2 * sinrot3 * (d1 * cosrot2 * sinrot3 + \
                         L * (-(cosrot3 * sinrot1) + cosrot1 * sinrot2 * sinrot3) + d2 * (cosrot1 * cosrot3 + \
@@ -649,7 +648,7 @@ class BlobDetection(object):
                         L * (cosrot1 * cosrot3 * sinrot2 + sinrot1 * sinrot3)) ** 2 + (d1 * cosrot2 * sinrot3 + L * (-(cosrot3 * sinrot1) + \
                         cosrot1 * sinrot2 * sinrot3) + d2 * (cosrot1 * cosrot3 + sinrot1 * sinrot2 * sinrot3)) ** 2)
 
-        dx = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * (cosrot3 * sinrot1 * sinrot2 - \
+        _dx = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * (cosrot3 * sinrot1 * sinrot2 - \
                         cosrot1 * sinrot3) * (d1 * cosrot2 * cosrot3 + d2 * (cosrot3 * sinrot1 * sinrot2 - cosrot1 * sinrot3) + \
                         L * (cosrot1 * cosrot3 * sinrot2 + sinrot1 * sinrot3)) + 2 * (cosrot1 * cosrot3 + \
                         sinrot1 * sinrot2 * sinrot3) * (d1 * cosrot2 * sinrot3 + L * (-(cosrot3 * sinrot1) + cosrot1 * sinrot2 * sinrot3) + \
@@ -696,7 +695,7 @@ class BlobDetection(object):
                 finished = True
             else:
                 finished = (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0)
-        logger.warning("Blob detection found %i keypoints" % len(self.keypoints))
+        logger.warning("Blob detection found %i keypoints", len(self.keypoints))
 
     def nearest_peak(self, p, refine=True, Imin=None):
         """
@@ -817,7 +816,7 @@ if __name__ == "__main__":
     dy = []
 
 
-    import fabio, pylab
+    import fabio
 #     img = fabio.open("../test/testimages/LaB6_0003.mar3450").data
 #     img = fabio.open("../test/testimages/grid2k0000.edf").data
     img = fabio.open("../test/testimages/halfccd.edf").data
@@ -830,6 +829,7 @@ if __name__ == "__main__":
     print(bd.sigmas)
 #
 #     #building histogram with the corrected sigmas
+#     import pylab
 #     sigma = numpy.asarray(sigma)
 #     pylab.figure(2)
 #     pylab.clf()

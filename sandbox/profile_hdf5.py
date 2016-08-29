@@ -72,7 +72,7 @@ def bench_hdf5(n=1024, shape=(1024, 1024), dtype="float32", dirname=None, bsize=
     """
     tmp_dir = tempfile.mkdtemp(dir=dirname)
     h5file = os.path.join(tmp_dir, "junk.h5")
-    logger.info("Writing large dataset %ix(%i,%i) of %s to %s." % (n, shape[0], shape[1], dtype, h5file))
+    logger.info("Writing large dataset %ix(%i,%i) of %s to %s.", n, shape[0], shape[1], dtype, h5file)
 
     dtype = numpy.dtype(dtype)
     if dtype.kind == "f":
@@ -95,7 +95,7 @@ def bench_hdf5(n=1024, shape=(1024, 1024), dtype="float32", dirname=None, bsize=
     writer.close()
     t = time.time() - t0
     bps = nbytes / t
-    logger.info("Writing of %.3fMB in HDF5 took %.3fs (%.3f MByte/s)" % (nmbytes, t, nmbytes / t))
+    logger.info("Writing of %.3fMB in HDF5 took %.3fs (%.3f MByte/s)", nmbytes, t, nmbytes / t)
     statinfo = os.stat(h5file)
     assert statinfo.st_size > nbytes
 

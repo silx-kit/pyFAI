@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/07/2016"
+__date__ = "24/08/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -47,16 +47,15 @@ try:
     from setuptools import setup, Command
     from setuptools.command.sdist import sdist
     from setuptools.command.build_ext import build_ext
-    from setuptools.command.install_data import install_data
     from setuptools.command.install import install
     from setuptools.command.build_py import build_py as _build_py
 except ImportError:
     from distutils.core import setup, Command
     from distutils.command.sdist import sdist
     from distutils.command.build_ext import build_ext
-    from distutils.command.install_data import install_data
     from distutils.command.install import install
     from distutils.command.build_py import build_py as _build_py
+
 from numpy.distutils.core import Extension as _Extension
 
 
@@ -230,8 +229,8 @@ class build_ext_pyFAI(build_ext):
         # Compiler
         # name, compileflag, linkflag
         'msvc': {
-            'openmp': ('/openmp', ' '),
-            'debug': ('/Zi', ' '),
+            'openmp': ('/openmp', ''),
+            'debug': ('/Zi', ''),
             'OpenCL': 'OpenCL',
         },
         'mingw32': {
@@ -292,9 +291,7 @@ def download_images():
 
 installDir = PROJECT
 
-data_files = [(os.path.join(installDir, "resources/openCL"), glob.glob("resources/openCL/*.cl")),
-              (os.path.join(installDir, "resources/gui"), glob.glob("resources/gui/*.ui")),
-              (os.path.join(installDir, "resources/calibration"), glob.glob("resources/calibration/*.D"))]
+data_files = []
 
 if sys.platform == "win32":
     # This is for mingw32/gomp
@@ -318,19 +315,6 @@ if sys.platform == "win32":
 
 else:
     script_files = glob.glob("scripts/*")
-
-
-class smart_install_data(install_data):
-    def run(self):
-        global installDir
-
-        install_cmd = self.get_finalized_command('install')
-#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
-        self.install_dir = getattr(install_cmd, 'install_lib')
-        print("DATA to be installed in %s" % self.install_dir)
-        installDir = os.path.join(self.install_dir, installDir)
-        return install_data.run(self)
-cmdclass['install_data'] = smart_install_data
 
 
 # #################################### #
@@ -564,9 +548,10 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
 setup_requires = ["numpy", "cython"]
 
-packages = ["pyFAI", "pyFAI.ext", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
+packages = ["pyFAI", "pyFAI.ext", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
 package_dir = {"pyFAI": "pyFAI",
                "pyFAI.ext": "pyFAI/ext",
+               "pyFAI.utils": "pyFAI/utils",
                "pyFAI.test": "pyFAI/test",
                "pyFAI.benchmark": "pyFAI/benchmark",
                "pyFAI.resources": "pyFAI/resources"}

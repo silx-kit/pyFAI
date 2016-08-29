@@ -34,15 +34,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2016"
+__date__ = "25/08/2016"
 
 import unittest
 import numpy
-import sys
 import os
 import fabio
-import tempfile
-from .utilstest import UtilsTest, getLogger, recursive_delete
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 from .. import utils
 from .. import _version
@@ -52,11 +50,11 @@ from .. import _version
 import scipy.ndimage
 
 # TODO Test:
-# gaussian_filter
 # relabel
 # boundingBox
 # removeSaturatedPixel
 # DONE:
+# # gaussian_filter
 # # binning
 # # unbinning
 # # shift
@@ -136,9 +134,9 @@ class TestUtils(unittest.TestCase):
         for sigma in [2, 9.0 / 8.0]:
             for mode in ["wrap", "reflect", "constant", "nearest", "mirror"]:
                 blurred1 = scipy.ndimage.filters.gaussian_filter(self.flat, sigma, mode=mode)
-                blurred2 = utils.gaussian_filter(self.flat, sigma, mode=mode)
+                blurred2 = utils.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
-                logger.info("Error for gaussian blur sigma: %s with mode %s is %s" % (sigma, mode, delta))
+                logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
                 self.assert_(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
 
     def test_set(self):

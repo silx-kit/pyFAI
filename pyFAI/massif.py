@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "02/08/2016"
 __status__ = "production"
 
 import sys
@@ -101,7 +101,7 @@ class Massif(object):
         else:
             res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx] ]
         if (len(res) != 2) or not((0 <= out[0] < self.data.shape[0]) and (0 <= res[1] < self.data.shape[1])):
-            logger.error("in nearest_peak %s -> %s" % (x, out))
+            logger.error("in nearest_peak %s -> %s", x, out)
             return
         else:
             return res
@@ -296,7 +296,7 @@ class Massif(object):
                         pattern = [[1] * 3] * 3  # [[0, 1, 0], [1, 1, 1], [0, 1, 0]]#[[1] * 3] * 3
                     logger.debug("Labeling all massifs. This takes some time !!!")
                     labeled_massif, self._number_massif = label((self.getBinnedData() > self.getBluredData()), pattern)
-                    logger.info("Labeling found %s massifs." % self._number_massif)
+                    logger.info("Labeling found %s massifs.", self._number_massif)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
                     relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
@@ -305,5 +305,5 @@ class Massif(object):
                     self._labeled_massif = unBinning(relabeled, self.binning, False)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
-                    logger.info("Labeling found %s massifs." % self._number_massif)
+                    logger.info("Labeling found %s massifs.", self._number_massif)
         return self._labeled_massif

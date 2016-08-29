@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/06/2016"
+__date__ = "02/08/2016"
 
 import unittest
 import time
@@ -46,6 +46,11 @@ from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 from ..ext.histogram import histogram, histogram2d
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
+
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
@@ -169,11 +174,11 @@ class TestHistogram1d(unittest.TestCase):
         self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
 
         rwp1 = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
-        logger.info("Rwp Cython/Numpy = %.3f" % rwp1)
+        logger.info("Rwp Cython/Numpy = %.3f", rwp1)
         self.assert_(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
 
         rwp2 = Rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
-        logger.info("Rwp CSR/Numpy = %.3f" % rwp2)
+        logger.info("Rwp CSR/Numpy = %.3f", rwp2)
         self.assert_(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -187,7 +192,7 @@ class TestHistogram1d(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            raw_input("Press enter to quit")
+            six.moves.input("Press enter to quit")
 
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
         logger.info("1d pixel count difference numpy/cython : max delta=%s", delta_max)

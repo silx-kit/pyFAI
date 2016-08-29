@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -52,10 +52,9 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 tmp_dir = UtilsTest.tempdir
 try:
-    from ..utils import input
-except ImportError:
-    pass
-
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 class TestAzimPilatus(unittest.TestCase):
     @classmethod
@@ -130,7 +129,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         tth, I = self.ai.xrpd_numpy(self.data,
                                     len(self.fit2d), self.tmpfiles["numpy"], correctSolidAngle=False)
         rwp = Rwp((tth, I), self.fit2d.T)
-        logger.info("Rwp numpy/fit2d = %.3f" % rwp)
+        logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
@@ -141,7 +140,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         assert rwp < 11
 
     def test_cython_vs_fit2d(self):
@@ -154,7 +153,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
 #        logger.info(tth)
 #        logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
-        logger.info("Rwp cython/fit2d = %.3f" % rwp)
+        logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
@@ -165,7 +164,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         assert rwp < 11
 
     def test_cythonSP_vs_fit2d(self):
@@ -186,7 +185,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
 #        logger.info(tth)
 #        logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
-        logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f" % (t1, rwp))
+        logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
@@ -197,7 +196,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         assert rwp < 11
 
     def test_cython_vs_numpy(self):
@@ -218,7 +217,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                                correctSolidAngle=False)
         logger.info("After xrpd_splitPixel")
         rwp = Rwp((tth_cy, I_cy), (tth_np, I_np))
-        logger.info("Rwp = %.3f" % rwp)
+        logger.info("Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
             fig = pylab.figure()
@@ -231,7 +230,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
 
         assert rwp < 3
 
@@ -262,7 +261,7 @@ class TestFlatimage(unittest.TestCase):
             sp = fig.add_subplot(111)
             sp.imshow(I, interpolation="nearest")
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         I[I == -1.0] = 1.0
         assert abs(I.min() - 1.0) < self.epsilon
         assert abs(I.max() - 1.0) < self.epsilon
@@ -280,7 +279,7 @@ class TestFlatimage(unittest.TestCase):
             sp = fig.add_subplot(111)
             sp.imshow(I, interpolation="nearest")
             fig.show()
-            input("Press enter to quit")
+            six.moves.input("Press enter to quit")
         I[I == -1.0] = 1.0
         assert abs(I.min() - 1.0) < self.epsilon
         assert abs(I.max() - 1.0) < self.epsilon

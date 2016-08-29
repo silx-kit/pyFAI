@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "02/08/2016"
 __status__ = "beta"
 
 import logging
@@ -242,7 +242,7 @@ class Refinment2D(object):
         @return: ???
         @rtype: ???
         """
-        logger.info("Scanning along axis %s" % axis)
+        logger.info("Scanning along axis %s", axis)
         f = self.ai.getFit2D()
         out = []
         meas_pts = numpy.linspace(f[axis] - width / 2.0,

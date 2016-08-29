@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 
 import unittest
 import logging
@@ -115,7 +115,7 @@ class TestCalibrant(unittest.TestCase):
                 ax.imshow(img, interpolation='nearest')
                 fig.show()
                 six.moves.input("enter> ")
-            logger.info("%s min: %s max: %s " % (det.name, img.min(), img.max()))
+            logger.info("%s min: %s max: %s ", det.name, img.min(), img.max())
             self.assert_(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assert_(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")

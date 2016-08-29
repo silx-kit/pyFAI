@@ -16,6 +16,10 @@ print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
 from pyFAI import ocl_hist_pixelsplit
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 #from pyFAI import splitBBoxLUT
 #from pyFAI import splitBBoxCSR
 #logger = utilstest.getLogger("profile")
@@ -165,5 +169,5 @@ ref = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg")
 ####plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 #legend()
 #show()
-#raw_input()
+#six.moves.input()
 

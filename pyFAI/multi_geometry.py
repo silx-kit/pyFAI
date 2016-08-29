@@ -31,13 +31,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/04/2016"
+__date__ = "02/08/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import logging
 logger = logging.getLogger("pyFAI.multi_geometry")
 from .azimuthalIntegrator import AzimuthalIntegrator
+from .containers import Integrate1dResult
+from .containers import Integrate2dResult
 from . import units
 from .utils import EPS32
 import threading
@@ -81,7 +83,7 @@ class MultiGeometry(object):
             for ai in self.ais:
                 ai.setChiDiscAtPi()
         else:
-            logger.warning("Unable to set the Chi discontinuity at %s" % chi_disc)
+            logger.warning("Unable to set the Chi discontinuity at %s", chi_disc)
 
     def __repr__(self, *args, **kwargs):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
@@ -97,8 +99,9 @@ class MultiGeometry(object):
         @param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
         @param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
         @param monitors: normalization monitors value (list of floats)
-        @param all: return a dict with all information in it.
+        @param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate1dResult).
         @return: 2th/I or a dict with everything depending on "all"
+        @rtype: Integrate1dResult, dict
         """
         if monitors is None:
             monitors = [1.0] * len(self.ais)
@@ -110,28 +113,30 @@ class MultiGeometry(object):
                                  polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
-                                 method="splitpixel", unit=self.unit, safe=True,
-                                 all=True)
-            count += res["count"]
+                                 method="splitpixel", unit=self.unit, safe=True)
+            count += res.count
             sac = (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2) if correctSolidAngle else 1.0 / monitor
-            sum += res["sum"] * sac
+            sum += res.sum * sac
 
         I = sum / numpy.maximum(count, EPS32 - 1)
         I[count <= (EPS32 - 1)] = self.empty
 
+        # TODO is it possible to compute sigma?
+        result = Integrate1dResult(res.radial, I)
+        result._set_unit(self.unit)
+        result._set_sum(sum)
+        result._set_count(count)
+
         if all:
+            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
             out = {"I":I,
-                 "radial": res["radial"],
+                 "radial": res.radial,
+                 "unit": self.unit,
                  "count": count,
                  "sum": sum}
-#             if sigma is not None:
-#                 res["sigma"] = sigma
-        else:
-#             if sigma is not None:
-#                 res = I, res["radial"], res["azimuthal"], sigma
-#             else:
-                out = res["radial"], I
-        return out
+            return out
+
+        return result
 
     def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600,
                     correctSolidAngle=True, polarization_factor=None,
@@ -143,8 +148,9 @@ class MultiGeometry(object):
         @param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
         @param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
         @param monitors: normalization monitors value (list of floats)
-        @param all: return a dict with all information in it.
+        @param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate2dResult).
         @return: I/2th/chi or a dict with everything depending on "all"
+        @rtype: Integrate2dResult, dict
         """
         if monitors is None:
             monitors = [1.0] * len(self.ais)
@@ -156,29 +162,29 @@ class MultiGeometry(object):
                                  polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
-                                 method="splitpixel", unit=self.unit, safe=True,
-                                 all=True)
-            count += res["count"]
+                                 method="splitpixel", unit=self.unit, safe=True)
+            count += res.count
             sac = (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2) if correctSolidAngle else 1.0 / monitor
-            sum += res["sum"] * sac
+            sum += res.sum * sac
 
         I = sum / numpy.maximum(count, EPS32 - 1)
         I[count <= (EPS32 - 1)] = self.empty
 
+        # TODO is it possible to compute sigma?
+        result = Integrate2dResult(I, res.radial, res.azimuthal)
+        result._set_sum(sum)
+        result._set_count(count)
+
         if all:
+            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
             out = {"I": I,
-                 "radial": res["radial"],
-                 "azimuthal": res["azimuthal"],
+                 "radial": res.radial,
+                 "azimuthal": res.azimuthal,
                  "count": count,
                  "sum":  sum}
-#             if sigma is not None:
-#                 res["sigma"] = sigma
-        else:
-#             if sigma is not None:
-#                 res = I, res["radial"], res["azimuthal"], sigma
-#             else:
-                out = I, res["radial"], res["azimuthal"]
-        return out
+            return out
+
+        return result
 
     def set_wavelength(self, value):
         """

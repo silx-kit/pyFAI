@@ -10,7 +10,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2013"
+__date__ = "02/08/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -98,7 +98,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
             directory = os.path.join(sav_parms.directory, self.subdir)
 
         if not os.path.exists(directory):
-            logger.error("Ouput directory does not exist !!!  %s" % directory)
+            logger.error("Ouput directory does not exist !!!  %s", directory)
 
             try:
                 os.makedirs(directory)
@@ -144,7 +144,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
                 try:
                     self.darkcurrent = numpy.ascontiguousarray(fabio.open(imagefile).data, numpy.float32)
                 except Exception as error:
-                    logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
+                    logger.warning("setDarkcurrentFile: Unable to read file %s: %s", imagefile, error)
                 else:
                     self.darkcurrent_crc = crc32(self.darkcurrent)
                     self.header["darkcurrent"] = imagefile
@@ -162,7 +162,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
                 try:
                     self.flatfield = numpy.ascontiguousarray(fabio.open(imagefile).data, numpy.float32)
                 except Exception as error:
-                    logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
+                    logger.warning("setFlatfieldFile: Unable to read file %s: %s", imagefile, error)
                 else:
                     self.flatfield_crc = crc32(self.flatfield)
                     self.header["flatfield"] = imagefile

@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "04/04/2014"
+__date__ = "02/08/2016"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -201,7 +201,7 @@ class OCL_Hist_Pixelsplit(object):
 
         compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f" % \
                 (self.bins, self.size, self.BLOCK_SIZE, numpy.finfo(numpy.float32).eps)
-        logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
+        logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:

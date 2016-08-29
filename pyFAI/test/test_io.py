@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -119,7 +119,7 @@ class testHDF5Writer(unittest.TestCase):
             writer.write(data[i % m], i)
         writer.close()
         t = time.time() - t0
-        logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)" % (n, shape, nmbytes, t, nmbytes / t))
+        logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
         self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
 
@@ -151,7 +151,7 @@ class testFabIOWriter(unittest.TestCase):
             writer.write(data[i % m], i)
         writer.close()
         t = time.time() - t0
-        logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)" % (n, shape, nmbytes, t, nmbytes / t))
+        logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
         self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
 

@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "29/07/2016"
 
 
 import unittest
@@ -48,6 +48,10 @@ logger = getLogger(__file__)
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 from .. import load, detectors, AzimuthalIntegrator
 
 
@@ -86,7 +90,7 @@ class TestMask(unittest.TestCase):
             pylab.title("test_mask_splitBBox")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -111,7 +115,7 @@ class TestMask(unittest.TestCase):
             pylab.title("test_mask_splitBBox")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -136,7 +140,7 @@ class TestMask(unittest.TestCase):
             pylab.title("test_mask_splitBBox")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -160,7 +164,7 @@ class TestMask(unittest.TestCase):
             pylab.plot(*x3, label="dummy")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -184,7 +188,7 @@ class TestMask(unittest.TestCase):
             pylab.plot(*x3, label="dummy")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
@@ -208,7 +212,7 @@ class TestMask(unittest.TestCase):
             pylab.plot(*x3, label="dummy")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
@@ -232,7 +236,7 @@ class TestMask(unittest.TestCase):
             pylab.plot(*x3, label="dummy")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
@@ -265,7 +269,7 @@ class TestMaskBeamstop(unittest.TestCase):
             pylab.plot(self.tth, self.I, label="nomask")
             pylab.legend()
             pylab.show()
-            raw_input()
+            six.moves.input()
 
         self.assertAlmostEqual(self.tth[0], 0.0, 1, "tth without mask starts at 0")
 

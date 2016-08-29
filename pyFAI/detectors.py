@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/06/2016"
+__date__ = "02/08/2016"
 __status__ = "stable"
 __doc__ = """Description of all detectors with a factory to instantiate them"""
 
@@ -692,7 +692,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             bin2 = self.max_shape[1] // shape[1]
             res = self.max_shape[0] % shape[0] + self.max_shape[1] % shape[1]
             if res != 0:
-                logger.warning("Impossible binning: max_shape is %s, requested shape %s" % (self.max_shape, shape))
+                logger.warning("Impossible binning: max_shape is %s, requested shape %s", self.max_shape, shape)
             old_binning = self._binning
             self._binning = (bin1, bin2)
             self.shape = shape
@@ -848,7 +848,7 @@ class Pilatus(Detector):
                 self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
                 self.uniform_pixel = False
             except Exception as error:
-                logger.error("set_splineFile with %s gave error: %s" % (splineFile, error))
+                logger.error("set_splineFile with %s gave error: %s", splineFile, error)
                 self.x_offset_file = self.y_offset_file = self.offset1 = self.offset2 = None
                 self.uniform_pixel = True
                 return
@@ -934,7 +934,7 @@ class Pilatus(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
+                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s", self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.
         # For Pilatus,
         if center:
@@ -1146,7 +1146,7 @@ class Eiger(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
+                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s", self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.
         if center:
             # Eiger detectors images are re-built to be contiguous
@@ -1783,7 +1783,7 @@ class Rayonix(Detector):
                 self._pixel1 = self.BINNED_PIXEL_SIZE[bin_size[0]]
                 self._pixel2 = self.BINNED_PIXEL_SIZE[bin_size[1]]
             else:
-                logger.warning("Binning factor (%sx%s) is not an official value for Rayonix detectors" % (bin_size[0], bin_size[1]))
+                logger.warning("Binning factor (%sx%s) is not an official value for Rayonix detectors", bin_size[0], bin_size[1])
                 self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
                 self._pixel2 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[1])
             self._binning = bin_size

@@ -3,7 +3,7 @@ import logging
 import numpy
 import fabio
 logging.basicConfig(level=logging.INFO)
-import pyFAI, pyFAI.distortion
+import pyFAI.distortion
 
 
 halfFrelon = "LaB6_0020.edf"
@@ -16,16 +16,16 @@ splineFile = UtilsTest.getimage(splineFile)
 det = pyFAI.detectors.FReLoN(splineFile)
 img = fabio.open(halfFrelon).data
 # det.binning = 5, 8
-import numpy
+
 dis = pyFAI.distortion.Distortion(det, det.shape, resize=False,
                                          mask=numpy.zeros(det.shape, "int8"))
 pos = dis.calc_pos(False)
-from pyFAI.ext import _distortion
+import pyFAI.ext._distortion
 print(dis.bin_size)
 t0 = time.time()
-ref = _distortion.calc_CSR(pos, det.shape, dis.calc_size(), (8, 8))
+ref = pyFAI.ext._distortion.calc_CSR(pos, det.shape, dis.calc_size(), (8, 8))
 t1 = time.time()
-obt = _distortion.calc_openmp(pos, det.shape, (8, 8))
+obt = pyFAI.ext._distortion.calc_openmp(pos, det.shape, (8, 8))
 t2 = time.time()
 print("ref", t1 - t0, "new", t2 - t1)
 
@@ -38,11 +38,9 @@ bad = 1.0 * dis.lut.size / (delta == 0).sum() - 1
 print(bad)
 
 def compact_CSR(data, indices, indptr):
-    import numpy
     print("Compact CSR...")
     new_data = []
     new_indices = []
-    new_indptr = []
     print("    was size %.3fMB" % (sum([i.nbytes for i in (data, indices, indptr)]) / 1e6))
     for i in range(len(indptr) - 1):
         start = indptr[i]
@@ -60,7 +58,6 @@ def compact_CSR(data, indices, indptr):
 
 
 def compact_LUT(lut):
-    import numpy
     print("Compact LUT...")
     print("    was size %.3fMB" % (lut.nbytes / 1e6))
     pos = (lut["coef"] > 0)
@@ -74,7 +71,6 @@ def compact_LUT(lut):
     print("    new size %.3fMB" % (lut.nbytes / 1e6))
     return lut
 
-import numpy
 from math import floor, ceil, fabs
 def calc_area(I1, I2, slope, intercept):
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
@@ -215,6 +211,9 @@ def integrate(box, start, stop, slope, intercept):
                         box[int(floor(stop)), h] += sign * dA
                         AA -= dA
                         h += 1
+
+A0, B0, C0, D0 = 0, 0, 0, 0
+A1, B1, C1, D1 = 0, 0, 0, 0
 
 offset0 = int(floor(min(A0, B0, C0, D0)))
 offset1 = int(floor(min(A1, B1, C1, D1)))

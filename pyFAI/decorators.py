@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2015"
+__date__ = "02/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Bunch of useful decorators"""
@@ -54,7 +54,7 @@ def deprecated(func):
         decorator that deprecates the use of a function
         """
         name = func.func_name if sys.version_info[0] < 3 else func.__name__
-        depreclog.warning("%s is Deprecated !!! %s" % (name, os.linesep.join([""] + traceback.format_stack()[:-1])))
+        depreclog.warning("%s is Deprecated !!! %s", name, os.linesep.join([""] + traceback.format_stack()[:-1]))
         return func(*arg, **kw)
     return wrapper
 
@@ -67,7 +67,7 @@ def timeit(func):
         res = func(*arg, **kw)
         t2 = time.time()
         name = func.func_name if sys.version_info[0] < 3 else func.__name__
-        timelog.warning("%s took %.3fs" % (name, t2 - t1))
+        timelog.warning("%s took %.3fs", name, t2 - t1)
         return res
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__

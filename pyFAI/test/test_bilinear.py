@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -61,11 +61,11 @@ class TestBilinear(unittest.TestCase):
             i, j = numpy.random.randint(100), numpy.random.randint(100)
             k, l = b.local_maxi((i, j))
             if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
-                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
+                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
             else:
-                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
+                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
                 ok += 1
-        logger.info("Success rate: %.1f" % (100.*ok / self.N))
+        logger.info("Success rate: %.1f", 100.0 * ok / self.N)
         self.assertEqual(ok, self.N, "Maximum is always found")
 
     def test_max_search_half(self):
@@ -81,11 +81,11 @@ class TestBilinear(unittest.TestCase):
             i, j = numpy.random.randint(100), numpy.random.randint(100)
             k, l = b.local_maxi((i, j))
             if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
-                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
+                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
             else:
-                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
+                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)", i, j, k, l)
                 ok += 1
-        logger.info("Success rate: %.1f" % (100. * ok / self.N))
+        logger.info("Success rate: %.1f", 100.0 * ok / self.N)
         self.assertEqual(ok, self.N, "Maximum is always found")
 
 
