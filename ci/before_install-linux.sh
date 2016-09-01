@@ -1,7 +1,7 @@
 #!/bin/bash
 echo $(pwd)
-cd ci
-bash ./amd_sdk.sh;
+bash ./ci/amd_sdk.sh;
+ls
 tar -xjf AMD-SDK.tar.bz2;
 export AMDAPPSDK=$(pwd)/AMDAPPSDK;
 export OPENCL_VENDOR_PATH=${AMDAPPSDK}/etc/OpenCL/vendors;
