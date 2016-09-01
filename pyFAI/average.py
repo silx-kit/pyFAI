@@ -1,26 +1,28 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#    Project: Azimuthal integration
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright 2013-2016 (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
 """
 
@@ -28,11 +30,11 @@ Utilities, mainly for image treatment
 
 """
 
-__author__ = "Jerome Kieffer"
+__authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/08/2016"
+__date__ = "01/09/2016"
 __status__ = "production"
 
 import logging
@@ -57,14 +59,14 @@ logger = logging.getLogger("pyFAI.average")
 
 class ImageReductionFilter(object):
     """
-    Generic filter applyed in a set of images.
+    Generic filter applied in a set of images.
     """
 
     def init(self, max_images=None):
         """
         Initialize the filter before using it.
 
-        @param max_images int: Max images supported by the filter
+        :param max_images int: Max images supported by the filter
         """
         pass
 
@@ -72,7 +74,7 @@ class ImageReductionFilter(object):
         """
         Add an image to the filter.
 
-        @param image numpy.ndarray: image to add
+        :param image numpy.ndarray: image to add
         """
         raise NotImplementedError()
 
@@ -84,14 +86,14 @@ class ImageReductionFilter(object):
         """
         Get the result of the filter.
 
-        @return: result filter
+        :return: result filter
         """
         raise NotImplementedError()
 
 
 class ImageAccumulatorFilter(ImageReductionFilter):
     """
-    Filter applyed in a set of images in which it is possible
+    Filter applied in a set of images in which it is possible
     to reduce data step by step into a single merged image.
     """
 
@@ -103,7 +105,7 @@ class ImageAccumulatorFilter(ImageReductionFilter):
         """
         Add an image to the filter.
 
-        @param image numpy.ndarray: image to add
+        :param image numpy.ndarray: image to add
         """
         self._accumulated_image = self._accumulate(self._accumulated_image, image)
         self._count += 1
@@ -112,8 +114,8 @@ class ImageAccumulatorFilter(ImageReductionFilter):
         """
         Add an image to the filter.
 
-        @param accumulated_image numpy.ndarray: image use to accumulate information
-        @param added_image numpy.ndarray: image to add
+        :param accumulated_image numpy.ndarray: image use to accumulate information
+        :param added_image numpy.ndarray: image to add
         """
         raise NotImplementedError()
 
@@ -121,8 +123,8 @@ class ImageAccumulatorFilter(ImageReductionFilter):
         """
         Get the result of the filter.
 
-        @return: result filter
-        @rtype: numpy.ndarray
+        :return: result filter
+        :rtype: numpy.ndarray
         """
         result = self._accumulated_image
         # release the allocated memory
@@ -178,7 +180,7 @@ class ImageStackFilter(ImageReductionFilter):
         """
         Add an image to the filter.
 
-        @param image numpy.ndarray: image to add
+        :param image numpy.ndarray: image to add
         """
         if self._stack is None:
             shape = self._max_stack_size, image.shape[0], image.shape[1]
@@ -205,7 +207,7 @@ class AverageDarkFilter(ImageStackFilter):
     """
     Filter based on the algorithm of average_dark
 
-    TODO: Must be splited according to each filter_name, and removed
+    TODO: Must be split according to each filter_name, and removed
     """
     def __init__(self, filter_name, cut_off, quantiles):
         super(AverageDarkFilter, self).__init__()
@@ -225,15 +227,14 @@ class AverageDarkFilter(ImageStackFilter):
         """
         Compute the stack reduction.
 
-        @param stack numpy.ndarray: stack to reduce
-
-        @return: result filter
-        @rtype: numpy.ndarray
+        :param stack numpy.ndarray: stack to reduce
+        :return: result filter
+        :rtype: numpy.ndarray
         """
         return average_dark(stack,
-            self._filter_name,
-            self._cut_off,
-            self._quantiles)
+                            self._filter_name,
+                            self._cut_off,
+                            self._quantiles)
 
 
 _FILTERS = [
@@ -266,11 +267,11 @@ class AlgorithmCreationError(RuntimeError):
 def create_algorithm(filter_name, cut_off=None, quantiles=None):
     """Factory to create algorithm according to parameters
 
-    @param cutoff float or None: keep all data where (I-center)/std < cutoff
-    @param quantiles (float, float) or None: 2-tuple of floats average out data between the two quantiles
-    @return: An algorithm
-    @rtype: ImageReductionFilter
-    @raise AlgorithmCreationError: If it is not possible to create the algorythm
+    :param cutoff float or None: keep all data where (I-center)/std < cutoff
+    :param quantiles (float, float) or None: 2-tuple of floats average out data between the two quantiles
+    :return: An algorithm
+    :rtype: ImageReductionFilter
+    :raise AlgorithmCreationError: If it is not possible to create the algorithm
     """
     global _FILTER_NAME_MAPPING, _AVERAGE_DARK_FILTERS
 
@@ -295,12 +296,11 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
     Centers the result on the mean or the median ...
     but averages all frames within  cutoff*std
 
-    @param lstimg: list of 2D images or a 3D stack
-    @param center_method: is the center calculated by a "mean", "median", "quantile", "std"
-    @param cutoff: keep all data where (I-center)/std < cutoff
-    @param quantiles: 2-tuple of floats average out data between the two quantiles
-
-    @return: 2D image averaged
+    :param lstimg: list of 2D images or a 3D stack
+    :param center_method: is the center calculated by a "mean", "median", "quantile", "std"
+    :param cutoff: keep all data where (I-center)/std < cutoff
+    :param quantiles: 2-tuple of floats average out data between the two quantiles
+    :return: 2D image averaged
     """
     if "ndim" in dir(lstimg) and lstimg.ndim == 3:
         stack = lstimg.astype(numpy.float32)
@@ -362,11 +362,11 @@ def _get_monitor_value_from_edf(image, monitor_key):
     which reach 'bmon' value from 'counter_pos' key using index from
     'counter_mne' key.
 
-    @param image fabio.fabioimage.FabioImage: Image containing the header
-    @param monitor_key str: Key containing the monitor
-    @return: returns the monitor else raise a MonitorNotFound
-    @rtype: float
-    @raise MonitorNotFound: when the expected monitor is not found on the header
+    :param image fabio.fabioimage.FabioImage: Image containing the header
+    :param monitor_key str: Key containing the monitor
+    :return: returns the monitor else raise a MonitorNotFound
+    :rtype: float
+    :raise MonitorNotFound: when the expected monitor is not found on the header
     """
     keys = image.header
 
@@ -374,13 +374,13 @@ def _get_monitor_value_from_edf(image, monitor_key):
         base_key, mnemonic = monitor_key.split('/', 1)
 
         mnemonic_values_key = base_key + "_mne"
-        mnemonic_values =  keys.get(mnemonic_values_key, None)
+        mnemonic_values = keys.get(mnemonic_values_key, None)
         if mnemonic_values is None:
             raise MonitorNotFound("Monitor mnemonic key '%s' not found in the header" % (mnemonic_values_key))
 
         mnemonic_values = mnemonic_values.split()
         pos_values_key = base_key + "_pos"
-        pos_values =  keys.get(pos_values_key)
+        pos_values = keys.get(pos_values_key)
         if pos_values is None:
             raise MonitorNotFound("Monitor pos key '%s' not found in the header" % (pos_values_key))
 
@@ -413,11 +413,11 @@ def _get_monitor_value_from_edf(image, monitor_key):
 def _get_monitor_value(image, monitor_key):
     """Return the monitor value from an image using an header key.
 
-    @param image fabio.fabioimage.FabioImage: Image containing the header
-    @param monitor_key str: Key containing the monitor
-    @return: returns the monitor else raise an exception
-    @rtype: float
-    @raise MonitorNotFound: when the expected monitor is not found on the header
+    :param image fabio.fabioimage.FabioImage: Image containing the header
+    :param monitor_key str: Key containing the monitor
+    :return: returns the monitor else raise an exception
+    :rtype: float
+    :raise MonitorNotFound: when the expected monitor is not found on the header
     """
     if monitor_key is None:
         return Exception("No monitor defined")
@@ -435,9 +435,9 @@ def _normalize_image_stack(image_stack):
     Convert input data to a list of 2D numpy arrays or a stack
     of numpy array (3D array).
 
-    @param image_stack list or numpy.ndarray: slice of images
-    @return: A stack of image (list of 2D array or a single 3D array)
-    @rtype: list or numpy.ndarray
+    :param image_stack list or numpy.ndarray: slice of images
+    :return: A stack of image (list of 2D array or a single 3D array)
+    :rtype: list or numpy.ndarray
     """
     if image_stack is None:
         return None
@@ -480,12 +480,12 @@ class MultiFilesAverageWriter(AverageWriter):
 
     def __init__(self, file_name_pattern, file_format, dry_run=False):
         """
-        @param file_name_pattern str: File name pattern for the output files.
+        :param file_name_pattern str: File name pattern for the output files.
             If it contains "{method_name}", it is updated for each
             reduction writing with the name of the reduction.
-        @param file_format str: File format used. It is the default
+        :param file_format str: File format used. It is the default
             extension file.
-        @param dry_run bool: If dry_run, the file is created on memory but not
+        :param dry_run bool: If dry_run, the file is created on memory but not
             saved on the file system at the end
         """
         self._file_name_pattern = file_name_pattern
@@ -531,7 +531,7 @@ class MultiFilesAverageWriter(AverageWriter):
     def get_fabio_image(self, algorithm):
         """Get the constructed fabio image
 
-        @rtype: fabio.fabioimage.FabioImage
+        :rtype: fabio.fabioimage.FabioImage
         """
         return self._fabio_images[algorithm]
 
@@ -545,8 +545,8 @@ def common_prefix(string_list):
 
     TODO: move it into utils package
 
-    @param string_list list of str: List of strings
-    @rtype: str
+    :param string_list list of str: List of strings
+    :rtype: str
     """
     prefix = ""
     for ch in zip(string_list):
@@ -615,7 +615,7 @@ class Average(object):
     def set_observer(self, observer):
         """Set an observer to the average process.
 
-        @param observer AverageObserver: An observer
+        :param observer AverageObserver: An observer
         """
         self._observer = observer
 
@@ -766,25 +766,25 @@ class Average(object):
 
 
 def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                  darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
-                  cutoff=None, quantiles=None, fformat="edf", monitor_key=None):
+                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
+                   cutoff=None, quantiles=None, fformat="edf", monitor_key=None):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
-    @param listImages: list of string representing the filenames
-    @param output: name of the optional output file
-    @param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
-    @param minimum: minimum valid value or True
-    @param maximum: maximum valid value
-    @param darks: list of dark current images for subtraction
-    @param flats: list of flat field images for division
-    @param filter_: can be "min", "max", "median", "mean", "sum", "quantiles" (default='mean')
-    @param correct_flat_from_dark: shall the flat be re-corrected ?
-    @param cutoff: keep all data where (I-center)/std < cutoff
-    @param quantiles: 2-tuple containing the lower and upper quantile (0<q<1) to average out.
-    @param fformat: file format of the output image, default: edf
-    @param monitor_key str: Key containing the monitor. Can be none.
-    @return: filename with the data or the data ndarray in case format=None
+    :param listImages: list of string representing the filenames
+    :param output: name of the optional output file
+    :param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
+    :param minimum: minimum valid value or True
+    :param maximum: maximum valid value
+    :param darks: list of dark current images for subtraction
+    :param flats: list of flat field images for division
+    :param filter_: can be "min", "max", "median", "mean", "sum", "quantiles" (default='mean')
+    :param correct_flat_from_dark: shall the flat be re-corrected ?
+    :param cutoff: keep all data where (I-center)/std < cutoff
+    :param quantiles: 2-tuple containing the lower and upper quantile (0<q<1) to average out.
+    :param fformat: file format of the output image, default: edf
+    :param monitor_key str: Key containing the monitor. Can be none.
+    :return: filename with the data or the data ndarray in case format=None
     """
 
     # input sanitization
