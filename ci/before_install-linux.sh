@@ -1,4 +1,6 @@
 #!/bin/bash
+echo $(pwd)
+cd ci
 bash ./amd_sdk.sh;
 tar -xjf AMD-SDK.tar.bz2;
 export AMDAPPSDK=$(pwd)/AMDAPPSDK;
