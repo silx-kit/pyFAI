@@ -228,6 +228,9 @@ class ParamFastPath(ParameterisedTestCase):
     detectors = ("Pilatus300k", "Xpad_flat")
     number_of_geometries = 2
     epsilon = 3e-7
+    epsilon_r = 1e-5
+    epsilon_a = 1e-5
+    count_a = 17
     # Here is a set of pathological cases ...
     geometries = [  # Provides atol = 1.08e-5
                   {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605, "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983, "wavelength": 1e-10, 'detector': 'Pilatus300k'},
@@ -272,11 +275,11 @@ class ParamFastPath(ParameterisedTestCase):
         # We expect precision on radial position
         delta_r = delta[..., 0].max()
         # issue with numerical stability of azimuthal position due to arctan(y,x)
-        cnt_delta_a = (delta[..., 1] > 1e-5).sum()
+        cnt_delta_a = (delta[..., 1] > self.epsilon_a).sum()
         logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
                     space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
-        self.assert_(delta_r < 1e-5, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
-        self.assert_(cnt_delta_a < 17, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
+        self.assert_(delta_r < self.epsilon_r, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
+        self.assert_(cnt_delta_a < self.count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""

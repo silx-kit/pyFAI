@@ -244,6 +244,7 @@ class OpenCL(object):
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
 
+
     def __repr__(self):
         out = ["OpenCL devices:"]
         for platformid, platform in enumerate(self.platforms):
