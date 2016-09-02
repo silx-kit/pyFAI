@@ -23,15 +23,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Module for treating simultaneously multiple detector configuration
+within a single integration"""
+
 from __future__ import absolute_import, print_function, with_statement, division
 
-__doc__ = """Module for treating simultaneously multiple detector configuration
-             within a single integration"""
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "02/09/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -59,15 +60,17 @@ class MultiGeometry(object):
                  wavelength=None, empty=0.0, chi_disc=180):
         """
         Constructor of the multi-geometry integrator
-        @param ais: list of azimuthal integrators
-        @param radial_range: common range for integration
-        @param azimuthal_range: common range for integration
-        @param empty: value for empty pixels
-        @param chi_disc: if 0, set the chi_discontinuity at
+        :param ais: list of azimuthal integrators
+        :param radial_range: common range for integration
+        :param azimuthal_range: common range for integration
+        :param empty: value for empty pixels
+        :param chi_disc: if 0, set the chi_discontinuity at
         """
         self._sem = threading.Semaphore()
         self.abolute_solid_angle = None
-        self.ais = [ ai if isinstance(ai, AzimuthalIntegrator) else AzimuthalIntegrator.sload(ai) for ai in ais]
+        self.ais = [ai if isinstance(ai, AzimuthalIntegrator)
+                    else AzimuthalIntegrator.sload(ai)
+                    for ai in ais]
         self.wavelength = None
         if wavelength:
             self.set_wavelength(wavelength)
@@ -90,98 +93,139 @@ class MultiGeometry(object):
             (len(self.ais), self.radial_range, self.unit, self.azimuth_range)
 
     def integrate1d(self, lst_data, npt=1800,
-                    correctSolidAngle=True, polarization_factor=None,
+                    correctSolidAngle=True,
+                    lst_variance=None, error_model=None,
+                    polarization_factor=None,
                     monitors=None, all=False):
         """Perform 1D azimuthal integration
 
-        @param lst_data: list of numpy array
-        @param npt: number of points int the integration
-        @param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
-        @param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
-        @param monitors: normalization monitors value (list of floats)
-        @param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate1dResult).
-        @return: 2th/I or a dict with everything depending on "all"
-        @rtype: Integrate1dResult, dict
+        :param lst_data: list of numpy array
+        :param npt: number of points int the integration
+        :param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
+        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
+        :type lst_variance: list of ndarray
+        :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        :type error_model: str
+        :param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
+        :param monitors: normalization monitors value (list of floats)
+        :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate1dResult).
+        :return: 2th/I or a dict with everything depending on "all"
+        :rtype: Integrate1dResult, dict
         """
         if monitors is None:
             monitors = [1.0] * len(self.ais)
-        sum = numpy.zeros(npt, dtype=numpy.float64)
+        if lst_variance is None:
+            lst_variance = [None] * len(self.ais)
+        sum_ = numpy.zeros(npt, dtype=numpy.float64)
         count = numpy.zeros(npt, dtype=numpy.float64)
-        for ai, data, monitor in zip(self.ais, lst_data, monitors):
+        sigma2 = None
+        for ai, data, monitor, variance in zip(self.ais, lst_data, monitors, lst_variance):
             res = ai.integrate1d(data, npt=npt,
                                  correctSolidAngle=correctSolidAngle,
+                                 variance=variance, error_model=error_model,
                                  polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
                                  method="splitpixel", unit=self.unit, safe=True)
-            count += res.count
-            sac = (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2) if correctSolidAngle else 1.0 / monitor
-            sum += res.sum * sac
+            sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
+            count += res.count * sac
+            sum_ += res.sum / monitor
+            if res.sigma is not None:
+                if sigma2 is None:
+                    sigma2 = numpy.zeros(npt, dtype=numpy.float64)
+                sigma2 += (res.sigma ** 2) / monitor
 
-        I = sum / numpy.maximum(count, EPS32 - 1)
-        I[count <= (EPS32 - 1)] = self.empty
+        norm = numpy.maximum(count, EPS32 - 1)
+        invalid = count <= (EPS32 - 1)
+        I = sum_ / norm
+        I[invalid] = self.empty
 
-        # TODO is it possible to compute sigma?
-        result = Integrate1dResult(res.radial, I)
+        if sigma2 is not None:
+            sigma = numpy.sqrt(sigma2) / norm
+            sigma[invalid] = self.empty
+            result = Integrate1dResult(res.radial, I, sigma)
+        else:
+
+            result = Integrate1dResult(res.radial, I)
         result._set_unit(self.unit)
-        result._set_sum(sum)
-        result._set_count(count)
-
-        if all:
-            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
-            out = {"I":I,
-                 "radial": res.radial,
-                 "unit": self.unit,
-                 "count": count,
-                 "sum": sum}
-            return out
-
-        return result
-
-    def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600,
-                    correctSolidAngle=True, polarization_factor=None,
-                    monitors=None, all=False):
-        """Performs 2D azimuthal integration of multiples frames, one for each geometry
-
-        @param lst_data: list of numpy array
-        @param npt: number of points int the integration
-        @param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
-        @param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
-        @param monitors: normalization monitors value (list of floats)
-        @param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate2dResult).
-        @return: I/2th/chi or a dict with everything depending on "all"
-        @rtype: Integrate2dResult, dict
-        """
-        if monitors is None:
-            monitors = [1.0] * len(self.ais)
-        sum = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
-        count = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
-        for ai, data, monitor in zip(self.ais, lst_data, monitors):
-            res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
-                                 correctSolidAngle=correctSolidAngle,
-                                 polarization_factor=polarization_factor,
-                                 radial_range=self.radial_range,
-                                 azimuth_range=self.azimuth_range,
-                                 method="splitpixel", unit=self.unit, safe=True)
-            count += res.count
-            sac = (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2) if correctSolidAngle else 1.0 / monitor
-            sum += res.sum * sac
-
-        I = sum / numpy.maximum(count, EPS32 - 1)
-        I[count <= (EPS32 - 1)] = self.empty
-
-        # TODO is it possible to compute sigma?
-        result = Integrate2dResult(I, res.radial, res.azimuthal)
-        result._set_sum(sum)
+        result._set_sum(sum_)
         result._set_count(count)
 
         if all:
             logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
             out = {"I": I,
-                 "radial": res.radial,
-                 "azimuthal": res.azimuthal,
-                 "count": count,
-                 "sum":  sum}
+                   "radial": res.radial,
+                   "unit": self.unit,
+                   "count": count,
+                   "sum": sum_}
+            return out
+
+        return result
+
+    def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600,
+                    correctSolidAngle=True,
+                    lst_variance=None, error_model=None,
+                    polarization_factor=None,
+                    monitors=None, all=False):
+        """Performs 2D azimuthal integration of multiples frames, one for each geometry
+
+        :param lst_data: list of numpy array
+        :param npt: number of points int the integration
+        :param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
+        :param lst_variance: list of array containing the variance of the data. If not available, no error propagation is done
+        :type lst_variance: list of ndarray
+        :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        :type error_model: str
+        :param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
+        :param monitors: normalization monitors value (list of floats)
+        :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate2dResult).
+        :return: I/2th/chi or a dict with everything depending on "all"
+        :rtype: Integrate2dResult, dict
+        """
+        if monitors is None:
+            monitors = [1.0] * len(self.ais)
+        if lst_variance is None:
+            lst_variance = [None] * len(self.ais)
+        sum_ = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
+        count = numpy.zeros_like(sum_)
+        sigma2 = None
+        for ai, data, monitor, variance in zip(self.ais, lst_data, monitors, lst_variance):
+            res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
+                                 correctSolidAngle=correctSolidAngle,
+                                 variance=variance, error_model=error_model,
+                                 polarization_factor=polarization_factor,
+                                 radial_range=self.radial_range,
+                                 azimuth_range=self.azimuth_range,
+                                 method="splitpixel", unit=self.unit, safe=True)
+            sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
+            count += res.count * sac
+            sum_ += res.sum / monitor
+            if res.sigma is not None:
+                if sigma2 is None:
+                    sigma2 = count = numpy.zeros_like(sum_)
+                sigma2 += (res.sigma ** 2) / monitor
+
+        norm = numpy.maximum(count, EPS32 - 1)
+        invalid = count <= (EPS32 - 1)
+        I = sum_ / norm
+        I[invalid] = self.empty
+
+        if sigma2 is not None:
+            sigma = numpy.sqrt(sigma2) / norm
+            sigma[invalid] = self.empty
+            result = Integrate2dResult(I, res.radial, res.azimuthal, sigma)
+        else:
+            result = Integrate2dResult(I, res.radial, res.azimuthal)
+        result._set_sum(sum_)
+        result._set_count(count)
+
+        if all:
+            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
+            out = {"I": I,
+                   "radial": res.radial,
+                   "azimuthal": res.azimuthal,
+                   "count": count,
+                   "sum": sum_}
             return out
 
         return result

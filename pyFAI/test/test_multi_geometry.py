@@ -2,7 +2,7 @@
 # coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,29 +26,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Test suites for multi_geometry modules"""
+
 from __future__ import absolute_import, print_function, with_statement, division
 
-__doc__ = """Test suites for multi_geometry modules"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "02/09/2016"
 
-import os
-import sys
 import unittest
-import logging
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..multi_geometry import MultiGeometry
 from ..detectors import Detector
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+
 import fabio
 
 
@@ -95,16 +91,7 @@ class TestMultiGeometry(unittest.TestCase):
         tth_obt, I_obt = obt
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
-        delta = (abs(I_obt * 1e6 - I_ref).max())
-        if delta > 9e-5:
-            from matplotlib import pyplot
-            f = pyplot.figure()
-            ax = f.add_subplot(1, 1, 1)
-            ax.plot(I_obt * 1e6, label="obt")
-            ax.plot(I_ref, label="ref")
-            ax.legend()
-            f.show()
-            six.moves.input()
+        delta = (abs(I_obt * 1e-6 - I_ref).max())
         self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate1d_withpol(self):
@@ -115,7 +102,7 @@ class TestMultiGeometry(unittest.TestCase):
         tth_obt, I_obt = obt
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
-        delta = (abs(I_obt * 1e6 - I_ref).max())
+        delta = (abs(I_obt * 1e-6 - I_ref).max())
         self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
@@ -126,9 +113,9 @@ class TestMultiGeometry(unittest.TestCase):
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         mask = obt.count <= 1e-6  # restrict on valid pixel
         mask[:, 0:2] = True
-        delta = abs(obt.intensity * 1e6 - ref.intensity)
-        delta_cnt = abs(obt.count - ref.count)
-        delta_sum = abs(obt.sum * 1e6 - ref.sum)
+        delta = abs(obt.intensity * 1e-6 - ref.intensity)
+        delta_cnt = abs(obt.count * 1e6 - ref.count)
+        delta_sum = abs(obt.sum - ref.sum)
         delta[mask] = 0
         delta_cnt[mask] = 0
         delta_sum[mask] = 0
@@ -136,19 +123,6 @@ class TestMultiGeometry(unittest.TestCase):
             logger.warning("TestMultiGeometry.test_integrate2d gave difference "
                            "of intensity: %s, count: %s cum: %s",
                            delta.max(), delta_cnt.max(), delta_sum.max())
-            if logger.level <= logging.DEBUG:
-                from matplotlib import pyplot as plt
-                f = plt.figure()
-                a1 = f.add_subplot(2, 2, 1)
-                a1.imshow(ref.sum)
-                a2 = f.add_subplot(2, 2, 2)
-                a2.imshow(obt.sum)
-                a3 = f.add_subplot(2, 2, 3)
-                a3.imshow(delta_sum)
-                a4 = f.add_subplot(2, 2, 4)
-                a4.plot(delta_sum.sum(axis=0))
-                f.show()
-                six.moves.input()
 
         self.assert_(delta_cnt.max() < 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
         self.assert_(delta_sum.max() < 0.04, "pixel sum is the same delta=%s" % delta_sum.max())

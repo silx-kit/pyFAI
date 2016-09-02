@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright 2013-2016 (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -24,15 +24,16 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Module containing holder classes, like returned objects."""
+
 from __future__ import absolute_import, print_function, division, with_statement
 
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2016"
+__date__ = "02/09/2016"
 __status__ = "development"
-__doc__ = """Module containing holder classes, like returned objects."""
 
 
 class IntegrateResult(tuple):
