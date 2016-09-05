@@ -79,3 +79,5 @@ else:
                 os.makedirs(testimages)
             except OSError as err:
                 logger.warning("Creating test_directory %s ended in error %s, probably a race condition", testimages, err)
+
+

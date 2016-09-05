@@ -12,5 +12,5 @@ h5py
 fabio
 scipy
 matplotlib
-#mako
-#pyopencl
+mako
+pyopencl==2015.1
