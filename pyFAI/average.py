@@ -1,28 +1,29 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright 2013-2016 (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright 2003-2016 (C) European Synchrotron Radiation Facility, Grenoble,
+#             France
 #
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
-#  furnished to do so, subject to the following conditions:
-#  .
-#  The above copyright notice and this permission notice shall be included in
-#  all copies or substantial portions of the Software.
-#  .
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#  THE SOFTWARE.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 """
 
@@ -34,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2016"
+__date__ = "07/09/2016"
 __status__ = "production"
 
 import logging
@@ -114,7 +115,8 @@ class ImageAccumulatorFilter(ImageReductionFilter):
         """
         Add an image to the filter.
 
-        :param accumulated_image numpy.ndarray: image use to accumulate information
+        :param accumulated_image numpy.ndarray: image use to accumulate
+            information
         :param added_image numpy.ndarray: image to add
         """
         raise NotImplementedError()
@@ -169,7 +171,8 @@ class MeanAveraging(SumAveraging):
 
 class ImageStackFilter(ImageReductionFilter):
     """
-    Filter creating a stack from all images and computing everything at the end.
+    Filter creating a stack from all images and computing everything at the
+    end.
     """
     def init(self, max_images=None):
         self._stack = None
@@ -268,10 +271,12 @@ def create_algorithm(filter_name, cut_off=None, quantiles=None):
     """Factory to create algorithm according to parameters
 
     :param cutoff float or None: keep all data where (I-center)/std < cutoff
-    :param quantiles (float, float) or None: 2-tuple of floats average out data between the two quantiles
+    :param quantiles (float, float) or None: 2-tuple of floats average out data
+        between the two quantiles
     :return: An algorithm
     :rtype: ImageReductionFilter
-    :raise AlgorithmCreationError: If it is not possible to create the algorithm
+    :raise AlgorithmCreationError: If it is not possible to create the
+        algorithm
     """
     global _FILTER_NAME_MAPPING, _AVERAGE_DARK_FILTERS
 
@@ -297,9 +302,11 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
     but averages all frames within  cutoff*std
 
     :param lstimg: list of 2D images or a 3D stack
-    :param center_method: is the center calculated by a "mean", "median", "quantile", "std"
+    :param center_method: is the center calculated by a "mean", "median",
+        "quantile", "std"
     :param cutoff: keep all data where (I-center)/std < cutoff
-    :param quantiles: 2-tuple of floats average out data between the two quantiles
+    :param quantiles: 2-tuple of floats average out data between the two
+        quantiles
     :return: 2D image averaged
     """
     if "ndim" in dir(lstimg) and lstimg.ndim == 3:
@@ -366,7 +373,8 @@ def _get_monitor_value_from_edf(image, monitor_key):
     :param monitor_key str: Key containing the monitor
     :return: returns the monitor else raise a MonitorNotFound
     :rtype: float
-    :raise MonitorNotFound: when the expected monitor is not found on the header
+    :raise MonitorNotFound: when the expected monitor is not found on the
+        header
     """
     keys = image.header
 
@@ -417,7 +425,8 @@ def _get_monitor_value(image, monitor_key):
     :param monitor_key str: Key containing the monitor
     :return: returns the monitor else raise an exception
     :rtype: float
-    :raise MonitorNotFound: when the expected monitor is not found on the header
+    :raise MonitorNotFound: when the expected monitor is not found on the
+        header
     """
     if monitor_key is None:
         return Exception("No monitor defined")
@@ -765,23 +774,28 @@ class Average(object):
         return self._results[algorithm]
 
 
-def average_images(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
-                   cutoff=None, quantiles=None, fformat="edf", monitor_key=None):
+def average_images(listImages, output=None, threshold=0.1, minimum=None,
+                   maximum=None, darks=None, flats=None, filter_="mean",
+                   correct_flat_from_dark=False, cutoff=None, quantiles=None,
+                   fformat="edf", monitor_key=None):
     """
-    Takes a list of filenames and create an average frame discarding all saturated pixels.
+    Takes a list of filenames and create an average frame discarding all
+        saturated pixels.
 
     :param listImages: list of string representing the filenames
     :param output: name of the optional output file
-    :param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
+    :param threshold: what is the upper limit? all pixel > max*(1-threshold)
+        are discareded.
     :param minimum: minimum valid value or True
     :param maximum: maximum valid value
     :param darks: list of dark current images for subtraction
     :param flats: list of flat field images for division
-    :param filter_: can be "min", "max", "median", "mean", "sum", "quantiles" (default='mean')
+    :param filter_: can be "min", "max", "median", "mean", "sum", "quantiles"
+        (default='mean')
     :param correct_flat_from_dark: shall the flat be re-corrected ?
     :param cutoff: keep all data where (I-center)/std < cutoff
-    :param quantiles: 2-tuple containing the lower and upper quantile (0<q<1) to average out.
+    :param quantiles: 2-tuple containing the lower and upper quantile (0<q<1)
+        to average out.
     :param fformat: file format of the output image, default: edf
     :param monitor_key str: Key containing the monitor. Can be none.
     :return: filename with the data or the data ndarray in case format=None
