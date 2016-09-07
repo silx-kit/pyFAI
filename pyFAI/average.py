@@ -67,7 +67,7 @@ class ImageReductionFilter(object):
         """
         Initialize the filter before using it.
 
-        :param max_images int: Max images supported by the filter
+        :param int max_images: Max images supported by the filter
         """
         pass
 
@@ -75,12 +75,15 @@ class ImageReductionFilter(object):
         """
         Add an image to the filter.
 
-        :param image numpy.ndarray: image to add
+        :param numpy.ndarray image: image to add
         """
         raise NotImplementedError()
 
     def get_parameters(self):
-        """Return a dictionary containing filter parameters"""
+        """Return a dictionary containing filter parameters
+
+        :rtype: dict
+        """
         return {"cutoff": None, "quantiles": None}
 
     def get_result(self):
@@ -106,7 +109,7 @@ class ImageAccumulatorFilter(ImageReductionFilter):
         """
         Add an image to the filter.
 
-        :param image numpy.ndarray: image to add
+        :param numpy.ndarray image: image to add
         """
         self._accumulated_image = self._accumulate(self._accumulated_image, image)
         self._count += 1
@@ -115,9 +118,9 @@ class ImageAccumulatorFilter(ImageReductionFilter):
         """
         Add an image to the filter.
 
-        :param accumulated_image numpy.ndarray: image use to accumulate
+        :param numpy.ndarray accumulated_image: image use to accumulate
             information
-        :param added_image numpy.ndarray: image to add
+        :param numpy.ndarray added_image: image to add
         """
         raise NotImplementedError()
 
@@ -183,7 +186,7 @@ class ImageStackFilter(ImageReductionFilter):
         """
         Add an image to the filter.
 
-        :param image numpy.ndarray: image to add
+        :param numpy.ndarray image: image to add
         """
         if self._stack is None:
             shape = self._max_stack_size, image.shape[0], image.shape[1]
@@ -192,6 +195,8 @@ class ImageStackFilter(ImageReductionFilter):
         self._count += 1
 
     def _compute_stack_reduction(self, stack):
+        """Called after initialization of the stack and return the reduction
+        result."""
         raise NotImplementedError()
 
     def get_result(self):
@@ -230,7 +235,7 @@ class AverageDarkFilter(ImageStackFilter):
         """
         Compute the stack reduction.
 
-        :param stack numpy.ndarray: stack to reduce
+        :param numpy.ndarray stack: stack to reduce
         :return: result filter
         :rtype: numpy.ndarray
         """
@@ -264,15 +269,19 @@ def is_algorithm_name_exists(filter_name):
 
 
 class AlgorithmCreationError(RuntimeError):
+    """Exception returned if creation of an ImageReductionFilter is not
+    possible"""
     pass
 
 
 def create_algorithm(filter_name, cut_off=None, quantiles=None):
     """Factory to create algorithm according to parameters
 
-    :param cutoff float or None: keep all data where (I-center)/std < cutoff
-    :param quantiles (float, float) or None: 2-tuple of floats average out data
-        between the two quantiles
+    :param cutoff: keep all data where (I-center)/std < cutoff
+    :type cutoff:  float or None
+    :param quantiles: 2-tuple of floats average out data between the two
+        quantiles
+    :type quantiles:  tuple(float, float) or None
     :return: An algorithm
     :rtype: ImageReductionFilter
     :raise AlgorithmCreationError: If it is not possible to create the
@@ -302,11 +311,13 @@ def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)
     but averages all frames within  cutoff*std
 
     :param lstimg: list of 2D images or a 3D stack
-    :param center_method: is the center calculated by a "mean", "median",
+    :param str center_method: is the center calculated by a "mean", "median",
         "quantile", "std"
     :param cutoff: keep all data where (I-center)/std < cutoff
+    :type cutoff:  float or None
     :param quantiles: 2-tuple of floats average out data between the two
         quantiles
+    :type quantiles:  tuple(float, float) or None
     :return: 2D image averaged
     """
     if "ndim" in dir(lstimg) and lstimg.ndim == 3:
@@ -369,8 +380,8 @@ def _get_monitor_value_from_edf(image, monitor_key):
     which reach 'bmon' value from 'counter_pos' key using index from
     'counter_mne' key.
 
-    :param image fabio.fabioimage.FabioImage: Image containing the header
-    :param monitor_key str: Key containing the monitor
+    :param fabio.fabioimage.FabioImage image: Image containing the header
+    :param str monitor_key: Key containing the monitor
     :return: returns the monitor else raise a MonitorNotFound
     :rtype: float
     :raise MonitorNotFound: when the expected monitor is not found on the
@@ -421,8 +432,8 @@ def _get_monitor_value_from_edf(image, monitor_key):
 def _get_monitor_value(image, monitor_key):
     """Return the monitor value from an image using an header key.
 
-    :param image fabio.fabioimage.FabioImage: Image containing the header
-    :param monitor_key str: Key containing the monitor
+    :param fabio.fabioimage.FabioImage image: Image containing the header
+    :param str monitor_key: Key containing the monitor
     :return: returns the monitor else raise an exception
     :rtype: float
     :raise MonitorNotFound: when the expected monitor is not found on the
@@ -444,7 +455,8 @@ def _normalize_image_stack(image_stack):
     Convert input data to a list of 2D numpy arrays or a stack
     of numpy array (3D array).
 
-    :param image_stack list or numpy.ndarray: slice of images
+    :param image_stack: slice of images
+    :type image_stack: list or numpy.ndarray
     :return: A stack of image (list of 2D array or a single 3D array)
     :rtype: list or numpy.ndarray
     """
@@ -472,11 +484,22 @@ def _normalize_image_stack(image_stack):
 
 
 class AverageWriter():
+    """Interface for using writer in `Average` process."""
 
     def write_header(self, merged_files, nb_frames):
+        """Write the header of the average
+
+        :param list merged_files: List of files used to generate this output
+        :param int nb_frames: Number of frames used
+        """
         raise NotImplementedError()
 
-    def write_reduction(self, reduction):
+    def write_reduction(self, algorithm, data):
+        """Write one reduction
+
+        :param ImageReductionFilter algorithm: Algorithm used
+        :param object data: Data of this reduction
+        """
         raise NotImplementedError()
 
     def close(self):
@@ -489,12 +512,12 @@ class MultiFilesAverageWriter(AverageWriter):
 
     def __init__(self, file_name_pattern, file_format, dry_run=False):
         """
-        :param file_name_pattern str: File name pattern for the output files.
+        :param str file_name_pattern: File name pattern for the output files.
             If it contains "{method_name}", it is updated for each
             reduction writing with the name of the reduction.
-        :param file_format str: File format used. It is the default
+        :param str file_format: File format used. It is the default
             extension file.
-        :param dry_run bool: If dry_run, the file is created on memory but not
+        :param bool dry_run: If dry_run, the file is created on memory but not
             saved on the file system at the end
         """
         self._file_name_pattern = file_name_pattern
@@ -554,7 +577,7 @@ def common_prefix(string_list):
 
     TODO: move it into utils package
 
-    :param string_list list of str: List of strings
+    :param list(str) string_list: List of strings
     :rtype: str
     """
     prefix = ""
@@ -604,8 +627,10 @@ class AverageObserver(object):
 
 
 class Average(object):
+    """Process images to generate an average using different algorithms."""
 
     def __init__(self):
+        """Constructor"""
         self._dark = None
         self._raw_flat = None
         self._flat = None
@@ -624,11 +649,15 @@ class Average(object):
     def set_observer(self, observer):
         """Set an observer to the average process.
 
-        :param observer AverageObserver: An observer
+        :param AverageObserver observer: An observer
         """
         self._observer = observer
 
     def set_dark(self, dark_list):
+        """Defines images used as dark.
+
+        :param list dark_list: List of dark used
+        """
         if dark_list is None:
             self._dark = None
             return
@@ -636,6 +665,10 @@ class Average(object):
         self._dark = average_dark(darks, center_method="mean", cutoff=4)
 
     def set_flat(self, flat_list):
+        """Defines images used as flat.
+
+        :param list flat_list: List of dark used
+        """
         if flat_list is None:
             self._raw_flat = None
             return
@@ -643,15 +676,31 @@ class Average(object):
         self._raw_flat = average_dark(flats, center_method="mean", cutoff=4)
 
     def set_correct_flat_from_dark(self, correct_flat_from_dark):
+        """Defines if the dark must be applied on the flat.
+
+        :param bool correct_flat_from_dark: If true, the dark is applied.
+        """
         self._correct_flat_from_dark = correct_flat_from_dark
 
     def get_counter_frames(self):
+        """Returns the number of frames used for the process.
+
+        :rtype: int
+        """
         return self._nb_frames
 
-    def get_fabio_imnges(self):
+    def get_fabio_images(self):
+        """Returns source images as fabio images.
+
+        :rtype: list(fabio.fabioimage.FabioImage)"""
         return self._fabio_images
 
     def set_images(self, image_list):
+        """Defines the set set of source images to used to process an average.
+
+        :param list image_list: List of filename, numpy arrays, fabio images
+            used as source for the computation.
+        """
         self._fabio_images = []
         self._nb_frames = 0
         for image_index, image in enumerate(image_list):
@@ -675,21 +724,51 @@ class Average(object):
             self._nb_frames += fabio_image.nframes
 
     def set_monitor_name(self, monitor_name):
+        """Defines the monitor name used to correct images before processing
+        the average. This monitor must be part of the file header, else the
+        image is skipped.
+
+        :param str monitor_name: Name of the monitor available on the header
+            file
+        """
+
         self._monitor_key = monitor_name
 
     def set_pixel_filter(self, threshold, minimum, maximum):
+        """Defines the filter applied on each pixels of the images before
+        processing the average.
+
+        :param threshold: what is the upper limit?
+            all pixel > max*(1-threshold) are discareded.
+        :param minimum: minimum valid value or True
+        :param maximum: maximum valid value
+        """
         self._threshold = threshold
         self._minimum = minimum
         self._maximum = maximum
 
     def set_writer(self, writer):
+        """Defines the object write which will be used to store the result.
+
+        :param AverageWriter writer: The writer to use."""
         self._writer = writer
 
     def add_algorithm(self, algorithm):
+        """Defines another algorithm which will be computed on the source.
+
+        :param ImageReductionFilter algorithm: An averaging algorithm.
+        """
         self._algorithms.append(algorithm)
 
     def _get_corrected_image(self, fabio_image, image):
-        "internal subfunction for dark/flat/monitor "
+        """Returns an image corrected by pixel filter, flat, dark and monitor
+        correction.
+
+        :param fabio.fabioimage.FabioImage fabio_image: Object containing the
+            header of the data to process
+        :param numpy.ndarray image: Data to process
+        :rtype: numpy.ndarray
+        """
         corrected_image = numpy.ascontiguousarray(image, numpy.float32)
         if self._threshold or self._minimum or self._maximum:
             corrected_image = utils.removeSaturatedPixel(corrected_image, self._threshold, self._minimum, self._maximum)
@@ -707,6 +786,12 @@ class Average(object):
         return corrected_image
 
     def _get_image_reduction(self, algorithm):
+        """Returns the result of an averaging algorithm using all over
+        parameters defined in this object.
+
+        :param ImageReductionFilter algorithm: Averaging algorithm
+        :rtype: numpy.ndarray
+        """
         algorithm.init(max_images=self._nb_frames)
         frame_index = 0
         for fabio_image in self._fabio_images:
@@ -730,6 +815,8 @@ class Average(object):
     def _update_flat(self):
         """
         Update the flat according to the last process parameters
+
+        :rtype: numpy.ndarray
         """
         if self._raw_flat is not None:
             flat = numpy.array(self._raw_flat)
@@ -744,6 +831,11 @@ class Average(object):
         self._flat = flat
 
     def process(self):
+        """Process source images to all defined averaging algorithms defined
+        using defined parameters. To access to the results you have to define
+        a writer (`AverageWriter`). To follow the process forward you have to
+        define an observer (`AverageObserver`).
+        """
         self._update_flat()
         writer = self._writer
 
@@ -771,6 +863,12 @@ class Average(object):
             writer.close()
 
     def get_image_reduction(self, algorithm):
+        """Returns the result of an algorithm. The `process` must be already
+        done.
+
+        :param ImageReductionFilter algorithm: An averaging algorithm
+        :rtype: numpy.ndarray
+        """
         return self._results[algorithm]
 
 
