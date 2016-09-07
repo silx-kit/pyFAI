@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/08/2016"
+__date__ = "07/09/2016"
 __status__ = "production"
 
 import os
@@ -136,7 +136,7 @@ def parse_writer(input_images, options, algorithms):
         if options.cutoff:
             suffix += "_cutoff_{cutoff}_std" % options.cutoff
         suffix += "_{image_count}_files.{file_format}"
-        output = prefix + "{method_name}" + suffix
+        template = prefix + "{method_name}" + suffix
 
     formats = {
         "common_prefix": os.path.commonprefix(input_images),
