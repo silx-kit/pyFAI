@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/08/2016"
+__date__ = "08/09/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Test module for utils.string module"""
@@ -37,33 +37,34 @@ __doc__ = """Test module for utils.string module"""
 import unittest
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
-from ..utils import string
+from ..utils import stringutil
+
 
 class TestUtilsString(unittest.TestCase):
 
     def test_default_behaviour_nothing(self):
-        self.assertEquals(string.safe_format("aaaa", {}), "aaaa")
+        self.assertEquals(stringutil.safe_format("aaaa", {}), "aaaa")
 
     def test_default_behaviour_list(self):
-        self.assertEquals(string.safe_format("aaaa{0}{1}", (10, "aaaa")), "aaaa10aaaa")
+        self.assertEquals(stringutil.safe_format("aaaa{0}{1}", (10, "aaaa")), "aaaa10aaaa")
 
     def test_default_behaviour_dict(self):
-        self.assertEquals(string.safe_format("aaaa{a}{b}", {"a":10, "b": "aaaa"}), "aaaa10aaaa")
+        self.assertEquals(stringutil.safe_format("aaaa{a}{b}", {"a":10, "b": "aaaa"}), "aaaa10aaaa")
 
     def test_default_behaviour_object(self):
-        args = {"a":(10, 1), "b": TestUtilsString}
+        args = {"a": (10, 1), "b": TestUtilsString}
         expected = "aaaa10TestUtilsString"
-        self.assertEquals(string.safe_format("aaaa{a[0]}{b.__name__}", args), expected)
+        self.assertEquals(stringutil.safe_format("aaaa{a[0]}{b.__name__}", args), expected)
 
     def test_missing_index(self):
-        self.assertEquals(string.safe_format("aaaa{0}{1}{2}", (10, "aaaa")), "aaaa10aaaa{2}")
+        self.assertEquals(stringutil.safe_format("aaaa{0}{1}{2}", (10, "aaaa")), "aaaa10aaaa{2}")
 
     def test_missing_key(self):
-        self.assertEquals(string.safe_format("aaaa{a}{b}{c}", {"a":10, "b": "aaaa"}), "aaaa10aaaa{c}")
+        self.assertEquals(stringutil.safe_format("aaaa{a}{b}{c}", {"a":10, "b": "aaaa"}), "aaaa10aaaa{c}")
 
     def test_missing_object(self):
         expected = "aaaa{a[0]}{b.__name__}"
-        self.assertEquals(string.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
+        self.assertEquals(stringutil.safe_format("aaaa{a[0]}{b.__name__}", {}), expected)
 
 
 def suite():

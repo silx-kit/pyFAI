@@ -49,6 +49,7 @@ except (ImportError, Exception):
     import six
 
 from . import utils
+from .utils import stringutil
 
 from ._version import calc_hexversion
 if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
@@ -545,7 +546,7 @@ class MultiFilesAverageWriter(AverageWriter):
 
     def _get_file_name(self, reduction_name):
         keys = {"method_name": reduction_name}
-        return utils.string.safe_format(self._file_name_pattern, keys)
+        return stringutil.safe_format(self._file_name_pattern, keys)
 
     def write_reduction(self, algorithm, data):
         file_name = self._get_file_name(algorithm.name)

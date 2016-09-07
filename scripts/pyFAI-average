@@ -64,7 +64,7 @@ import fabio
 import pyFAI
 import pyFAI.utils
 import pyFAI.utils.shell
-import pyFAI.utils.string
+import pyFAI.utils.stringutil
 from pyFAI import average
 
 try:
@@ -145,7 +145,7 @@ def parse_writer(input_images, options, algorithms):
         "file_format": file_format,
     }
 
-    output = pyFAI.utils.string.safe_format(template, formats)
+    output = pyFAI.utils.stringutil.safe_format(template, formats)
     return average.MultiFilesAverageWriter(output, file_format)
 
 
