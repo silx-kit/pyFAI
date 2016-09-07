@@ -486,11 +486,12 @@ def _normalize_image_stack(image_stack):
 class AverageWriter():
     """Interface for using writer in `Average` process."""
 
-    def write_header(self, merged_files, nb_frames):
+    def write_header(self, merged_files, nb_frames, monitor_name):
         """Write the header of the average
 
         :param list merged_files: List of files used to generate this output
         :param int nb_frames: Number of frames used
+        :param str monitor_name: Name of the monitor used. Can be None.
         """
         raise NotImplementedError()
 
@@ -531,9 +532,11 @@ class MultiFilesAverageWriter(AverageWriter):
 
         self._fabio_class = fabio.factory(file_format + "image")
 
-    def write_header(self, merged_files, nb_frames):
+    def write_header(self, merged_files, nb_frames, monitor_name):
         self._global_header["nfiles"] = len(merged_files)
         self._global_header["nframes"] = nb_frames
+        if monitor_name is not None:
+            self._global_header["monitor_name"] = monitor_name
 
         pattern = "merged_file_%%0%ii" % len(str(len(merged_files)))
         for i, f in enumerate(merged_files):
@@ -843,7 +846,7 @@ class Average(object):
             self._observer.process_started()
 
         if writer is not None:
-            writer.write_header(self._fabio_images, self._nb_frames)
+            writer.write_header(self._fabio_images, self._nb_frames, self._monitor_key)
 
         for algorithm in self._algorithms:
             if self._observer:
