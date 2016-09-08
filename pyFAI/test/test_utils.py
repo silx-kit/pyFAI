@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2016"
+__date__ = "08/09/2016"
 
 import unittest
 import numpy
@@ -50,8 +50,6 @@ import scipy.ndimage
 
 # TODO Test:
 # relabel
-# boundingBox
-# removeSaturatedPixel
 # DONE:
 # # gaussian_filter
 # # binning

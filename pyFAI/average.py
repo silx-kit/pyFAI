@@ -35,20 +35,23 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/09/2016"
+__date__ = "08/09/2016"
 __status__ = "production"
 
 import logging
 import numpy
 import fabio
 import weakref
+from scipy import ndimage
+from scipy.interpolate import interp1d
+from scipy.optimize.optimize import fmin
+from scipy.optimize.optimize import fminbound
 
 try:
     from .third_party import six
 except (ImportError, Exception):
     import six
 
-from . import utils
 from .utils import stringutil
 
 from ._version import calc_hexversion
@@ -303,6 +306,96 @@ def create_algorithm(filter_name, cut_off=None, quantiles=None):
         raise AlgorithmCreationError("No algorithm available for the expected parameters")
 
     return algorithm
+
+
+def bounding_box(img):
+    """
+    Tries to guess the bounding box around a valid massif
+
+    :param img: 2D array like
+    :return: 4-typle (d0_min, d1_min, d0_max, d1_max)
+    """
+    img = img.astype(numpy.int)
+    img0 = (img.sum(axis=1) > 0).astype(numpy.int)
+    img1 = (img.sum(axis=0) > 0).astype(numpy.int)
+    dimg0 = img0[1:] - img0[:-1]
+    min0 = dimg0.argmax()
+    max0 = dimg0.argmin() + 1
+    dimg1 = img1[1:] - img1[:-1]
+    min1 = dimg1.argmax()
+    max1 = dimg1.argmin() + 1
+    if max0 == 1:
+        max0 = img0.size
+    if max1 == 1:
+        max1 = img1.size
+    return (min0, min1, max0, max1)
+
+
+def remove_saturated_pixel(ds, threshold=0.1, minimum=None, maximum=None):
+    """
+    Remove saturated fixes from an array.
+
+    :param ds: a dataset as  ndarray
+    :param float threshold: what is the upper limit?
+        all pixel > max*(1-threshold) are discareded.
+    :param float minimum: minumum valid value (or True for auto-guess)
+    :param float maximum: maximum valid value
+    :return: another dataset
+    """
+    shape = ds.shape
+    if ds.dtype == numpy.uint16:
+        maxt = (1.0 - threshold) * 65535.0
+    elif ds.dtype == numpy.int16:
+        maxt = (1.0 - threshold) * 32767.0
+    elif ds.dtype == numpy.uint8:
+        maxt = (1.0 - threshold) * 255.0
+    elif ds.dtype == numpy.int8:
+        maxt = (1.0 - threshold) * 127.0
+    else:
+        if maximum is None:
+            maxt = (1.0 - threshold) * ds.max()
+        else:
+            maxt = maximum
+    if maximum is not None:
+        maxt = min(maxt, maximum)
+    invalid = (ds > maxt)
+    if minimum:
+        if minimum is True:
+            # automatic guess of the best minimum TODO: use the HWHM to guess the minumum...
+            data_min = ds.min()
+            x, y = numpy.histogram(numpy.log(ds - data_min + 1.0), bins=100)
+            f = interp1d((y[1:] + y[:-1]) / 2.0, -x, bounds_error=False, fill_value=-x.min())
+            max_low = fmin(f, y[1], disp=0)
+            max_hi = fmin(f, y[-1], disp=0)
+            if max_hi > max_low:
+                f = interp1d((y[1:] + y[:-1]) / 2.0, x, bounds_error=False)
+                min_center = fminbound(f, max_low, max_hi)
+            else:
+                min_center = max_hi
+            minimum = float(numpy.exp(y[((min_center / y) > 1).sum() - 1])) - 1.0 + data_min
+            logger.debug("removeSaturatedPixel: best minimum guessed is %s", minimum)
+        ds[ds < minimum] = minimum
+        ds -= minimum  # - 1.0
+
+    if invalid.sum(dtype=int) == 0:
+        logger.debug("No saturated area where found")
+        return ds
+    gi = ndimage.morphology.binary_dilation(invalid)
+    lgi, nc = ndimage.label(gi)
+    if nc > 100:
+        logger.warning("More than 100 saturated zones were found on this image !!!!")
+    for zone in range(nc + 1):
+        dzone = (lgi == zone)
+        if dzone.sum(dtype=int) > ds.size // 2:
+            continue
+        min0, min1, max0, max1 = bounding_box(dzone)
+        ksize = min(max0 - min0, max1 - min1)
+        subset = ds[max(0, min0 - 4 * ksize):min(shape[0], max0 + 4 * ksize), max(0, min1 - 4 * ksize):min(shape[1], max1 + 4 * ksize)]
+        while subset.max() > maxt:
+            subset = ndimage.median_filter(subset, ksize)
+        ds[max(0, min0 - 4 * ksize):min(shape[0], max0 + 4 * ksize), max(0, min1 - 4 * ksize):min(shape[1], max1 + 4 * ksize)] = subset
+    fabio.edfimage.edfimage(data=ds).write("removeSaturatedPixel.edf")
+    return ds
 
 
 def average_dark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)):
@@ -775,7 +868,7 @@ class Average(object):
         """
         corrected_image = numpy.ascontiguousarray(image, numpy.float32)
         if self._threshold or self._minimum or self._maximum:
-            corrected_image = utils.removeSaturatedPixel(corrected_image, self._threshold, self._minimum, self._maximum)
+            corrected_image = remove_saturated_pixel(corrected_image, self._threshold, self._minimum, self._maximum)
         if self._dark is not None:
             corrected_image -= self._dark
         if self._flat is not None:

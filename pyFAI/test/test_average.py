@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/08/2016"
+__date__ = "08/09/2016"
 
 import unittest
 import numpy
@@ -43,6 +43,11 @@ from .utilstest import UtilsTest, getLogger
 from .. import average
 
 logger = getLogger(__file__)
+
+
+# TODO add tests from
+# - boundingBox
+# - removeSaturatedPixel
 
 
 class TestAverage(unittest.TestCase):
@@ -268,6 +273,7 @@ class TestAverageMonitorName(unittest.TestCase):
         image = fabio.open(UtilsTest.getimage("Pilatus1M.edf"))
         result = average._get_monitor_value_from_edf(image, "scan_no")
         self.assertEqual(result, 19)
+
 
 def suite():
     testsuite = unittest.TestSuite()
