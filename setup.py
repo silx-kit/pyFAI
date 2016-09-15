@@ -49,7 +49,10 @@ try:
     from setuptools.command.build_ext import build_ext
     from setuptools.command.install import install
     from setuptools.command.build_py import build_py as _build_py
-except ImportError:
+    print("Use setuptools")
+except ImportError as e:
+    print(e)
+    print("Use distutils")
     from distutils.core import setup, Command
     from distutils.command.sdist import sdist
     from distutils.command.build_ext import build_ext
