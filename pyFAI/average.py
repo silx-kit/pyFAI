@@ -333,14 +333,14 @@ def bounding_box(img):
 
 def remove_saturated_pixel(ds, threshold=0.1, minimum=None, maximum=None):
     """
-    Remove saturated fixes from an array.
+    Remove saturated fixes from an array inplace.
 
-    :param ds: a dataset as  ndarray
+    :param ds: a dataset as ndarray
     :param float threshold: what is the upper limit?
         all pixel > max*(1-threshold) are discareded.
     :param float minimum: minumum valid value (or True for auto-guess)
     :param float maximum: maximum valid value
-    :return: another dataset
+    :return: the input dataset
     """
     shape = ds.shape
     if ds.dtype == numpy.uint16:
