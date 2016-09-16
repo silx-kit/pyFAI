@@ -394,7 +394,6 @@ def remove_saturated_pixel(ds, threshold=0.1, minimum=None, maximum=None):
         while subset.max() > maxt:
             subset = ndimage.median_filter(subset, ksize)
         ds[max(0, min0 - 4 * ksize):min(shape[0], max0 + 4 * ksize), max(0, min1 - 4 * ksize):min(shape[1], max1 + 4 * ksize)] = subset
-    fabio.edfimage.edfimage(data=ds).write("removeSaturatedPixel.edf")
     return ds
 
 
