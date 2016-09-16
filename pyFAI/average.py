@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2016"
+__date__ = "16/09/2016"
 __status__ = "production"
 
 import logging
@@ -857,15 +857,16 @@ class Average(object):
         self._algorithms.append(algorithm)
 
     def _get_corrected_image(self, fabio_image, image):
-        """Returns an image corrected by pixel filter, flat, dark and monitor
-        correction.
+        """Returns an image corrected by pixel filter, saturation, flat, dark,
+        and monitor correction. The internal computation is done in float
+        64bits. The result is provided as float 32 bits.
 
         :param fabio.fabioimage.FabioImage fabio_image: Object containing the
             header of the data to process
         :param numpy.ndarray image: Data to process
         :rtype: numpy.ndarray
         """
-        corrected_image = numpy.ascontiguousarray(image, numpy.float32)
+        corrected_image = numpy.ascontiguousarray(image, numpy.float64)
         if self._threshold or self._minimum or self._maximum:
             corrected_image = remove_saturated_pixel(corrected_image, self._threshold, self._minimum, self._maximum)
         if self._dark is not None:
@@ -879,7 +880,7 @@ class Average(object):
             except MonitorNotFound as e:
                 logger.warning("Monitor not found in filename '%s', data skipped. Cause: %s", fabio_image.filename, str(e))
                 return None
-        return corrected_image
+        return numpy.ascontiguousarray(corrected_image, numpy.float32)
 
     def _get_image_reduction(self, algorithm):
         """Returns the result of an averaging algorithm using all over
