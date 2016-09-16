@@ -34,12 +34,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2016"
+__date__ = "08/09/2016"
 
 import unittest
 import numpy
 import os
-import fabio
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 from .. import utils
@@ -51,8 +50,6 @@ import scipy.ndimage
 
 # TODO Test:
 # relabel
-# boundingBox
-# removeSaturatedPixel
 # DONE:
 # # gaussian_filter
 # # binning
@@ -60,8 +57,6 @@ import scipy.ndimage
 # # shift
 # # shiftFFT
 # # measure_offset
-# # averageDark
-# # averageImages
 
 
 class TestUtils(unittest.TestCase):
@@ -86,33 +81,6 @@ class TestUtils(unittest.TestCase):
         unbinned = utils.unBinning(binned, (4, 2))
         self.assertEqual(unbinned.shape, self.unbinned.shape, "unbinned size is OK")
         self.assertAlmostEqual(unbinned.sum(), self.unbinned.sum(), 2, "content is the same")
-
-    def test_averageDark(self):
-        """
-        Some testing for dark averaging
-        """
-        one = utils.averageDark([self.dark])
-        self.assertEqual(abs(self.dark - one).max(), 0, "data are the same")
-
-        two = utils.averageDark([self.dark, self.dark])
-        self.assertEqual(abs(self.dark - two).max(), 0, "data are the same: mean test")
-
-        three = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "median")
-        self.assertEqual(abs(self.dark - three).max(), 0, "data are the same: median test")
-
-        four = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "min")
-        self.assertEqual(abs(numpy.zeros_like(self.dark) - four).max(), 0, "data are the same: min test")
-
-        five = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "max")
-        self.assertEqual(abs(numpy.ones_like(self.dark) - five).max(), 0, "data are the same: max test")
-
-        six = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark], "median", .001)
-        self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
-        if fabio.hexversion < 262147:
-            logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
-            return
-        seven = utils.averageImages([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
-        self.assert_(abs(numpy.ones_like(self.dark) - fabio.open(seven).data).mean() < 1e-2, "averageImages")
 
     def test_shift(self):
         """
@@ -171,7 +139,6 @@ class TestUtils(unittest.TestCase):
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestUtils("test_binning"))
-    testsuite.addTest(TestUtils("test_averageDark"))
     testsuite.addTest(TestUtils("test_shift"))
     testsuite.addTest(TestUtils("test_gaussian_filter"))
     testsuite.addTest(TestUtils("test_set"))

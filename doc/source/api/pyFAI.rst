@@ -7,6 +7,14 @@
     :undoc-members:
     :show-inheritance:
 
+:mod:`average` Module
+---------------------------------
+
+.. automodule:: pyFAI.average
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`azimuthalIntegrator` Module
 ---------------------------------
 
