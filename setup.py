@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2016"
+__date__ = "19/09/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -211,7 +211,8 @@ ext_modules = [
     Extension('marchingsquares'),
     Extension('watershed'),
     Extension('_tree'),
-    Extension('sparse_utils')
+    Extension('sparse_utils'),
+    Extension('preproc', can_use_openmp=True),
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):
