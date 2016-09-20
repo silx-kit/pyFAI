@@ -34,15 +34,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/09/2016"
+__date__ = "20/09/2016"
 
 
 import unittest
 import numpy
 import logging
-import sys
-import fabio
-logger = getLogger(__file__)
+
+logger = logging.getLogger(__file__)
 
 from ..ext import preproc
 
@@ -55,10 +54,10 @@ class TestPreproc(unittest.TestCase):
         shape = 8, 8
         size = shape[0] * shape[1]
         target = numpy.ones(shape)
-        target[:2, :] = 0
-        target[-2:, :] = 0
-        target[:, -2:] = 0
-        target[:, :2] = 0
+        target[:2, :] = -1
+        target[-2:, :] = -1
+        target[:, -2:] = -1
+        target[:, :2] = -1
         mask = numpy.zeros(shape, "int8")
         mask[:2, :] = 1
         dark = numpy.random.poisson(10, size).reshape(shape)
@@ -69,9 +68,44 @@ class TestPreproc(unittest.TestCase):
         dummy = -1
         raw[:, :2] = dummy
         flat[:, -2:] = dummy
-        res = preproc.preproc(raw)
-        # add some tests with various levels of conditionning
 
+        # add some tests with various levels of conditionning
+        res = preproc.preproc(raw)
+        # then Nan on last lines -> 0
+        self.assertEqual(abs(res[-2:, 2:]).max(), 0, "Nan filtering")
+
+        res = preproc.preproc(raw, empty=-1)
+        # then Nan on last lines -> -1
+        self.assertEqual(abs(res[-2:, :] + 1).max(), 0, "Nan filtering")
+
+        res = preproc.preproc(raw, dummy=-1, delta_dummy=0.5)
+        # test dummy
+        self.assertEqual(abs(res[-2:, :] + 1).max(), 0, "dummy")
+
+        # test polarization, solidangle and sensor thickness  with dummy.
+        res = preproc.preproc(raw, dark, polarization=flat, dummy=dummy, mask=mask, normalization_factor=scale)
+        self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
+        self.assertGreater(abs(numpy.round(res) - target).max(), 0, "flat != polarization")
+
+        res = preproc.preproc(raw, dark, solidangle=flat, dummy=dummy, mask=mask, normalization_factor=scale)
+        self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
+        self.assertGreater(abs(numpy.round(res) - target).max(), 0, "flat != solidangle")
+
+        res = preproc.preproc(raw, dark, absorption=flat, dummy=dummy, mask=mask, normalization_factor=scale)
+        self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
+        self.assertGreater(abs(numpy.round(res) - target).max(), 0, "flat != absorption")
+
+        # Test all features together
         res = preproc.preproc(raw, dark, flat, dummy=dummy, mask=mask, normalization_factor=scale)
-        print(raw)
-        print(numpy.round(res))
+        self.assertEqual(abs(numpy.round(res) - target).max(), 0, "mask is properly applied")
+
+
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(TestPreproc("test"))
+    return testsuite
+
+
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    runner.run(suite())

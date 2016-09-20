@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "19/09/2016"
+__date__ = "20/09/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -204,7 +204,7 @@ def preproc(data,
         check_dummy = False
         cdummy = empty or 0.0
         ddummy = 0.0
-    print("dummy:", cdummy, ddummy)
+
     if dark is not None:
         assert dark.size == size, "Dark array size is correct"
         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
