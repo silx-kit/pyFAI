@@ -77,6 +77,11 @@ build_script:
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ pyparsing scipy --upgrade"
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
 
+    # Force setuptools version to 27.1.2 while this issue is not patched
+    # See https://github.com/pypa/setuptools/issues/790
+    # Without it, appveyor on Python 3.5 fail
+    - "pip install --upgrade setuptools==27.1.2"
+
     # Print Python info
     - "python ci\\info_platform.py"
     - "pip list"
