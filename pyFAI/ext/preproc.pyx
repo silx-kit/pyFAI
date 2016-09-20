@@ -37,7 +37,16 @@ import numpy
 cimport numpy as cnp
 from cython cimport floating
 from cython.parallel import prange
-from libc.math cimport isnan, fabs
+from libc.math cimport fabs
+
+
+IF UNAME_SYSNAME == "Windows":
+    cdef extern from "numpy/npy_math.h" nogil:
+        long double NAN "NPY_NAN"
+        bint isnan "npy_isnan"(long double)
+ELSE:
+    from libc.math cimport isnan
+
 
 ctypedef fused any_int_t:
     cnp.uint8_t
