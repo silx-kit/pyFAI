@@ -98,7 +98,7 @@ class ProgressBar:
             bar_position = self.bar_width
 
         # line to display
-        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, u'■' * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
+        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, u'\u25A0' * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
 
         # trailing to mask the previous message
         line_size = len(line)
