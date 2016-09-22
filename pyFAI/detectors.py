@@ -1682,7 +1682,7 @@ class Xpad_flat(ImXPadS10):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    pixel_size1 = self._calc_pixels_size(self.max_shape[0], self.module_size[0], self._pixel1)
+                    pixel_size1 = numpy.ones(self.max_shape[0]) * self._pixel1
                     pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self._pixel2)
                     # half pixel offset
                     pixel_center1 = pixel_size1 / 2.0  # half pixel offset
