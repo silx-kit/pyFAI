@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/08/2016"
+__date__ = "21/09/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module containing utilitary around shell"""
@@ -41,10 +41,10 @@ class ProgressBar:
     """
     Progress bar in shell mode
     """
-    def __init__ (self, title, max_value, bar_width):
+    def __init__(self, title, max_value, bar_width):
         """
         Create a progress bar using a title, a maximum value and a graphical size.
-        
+
         The display is done with stdout using carriage return to to hide the
         previous progress. It is not possible to use stdout for something else
         whill a progress bar is in use.
@@ -52,7 +52,7 @@ class ProgressBar:
         The result looks like:
 
         .. codeblock::
-        
+
             Title [■■■■■■      ]  50%  Message
 
 
@@ -80,7 +80,7 @@ class ProgressBar:
     def update(self, value, message=""):
         """
         Update the progrss bar with the progress bar's current value.
-        
+
         Set the progress bar's current value, compute the percentage
         of progress and update the screen with. Carriage return is used
         first and then the content of the progress bar. The cursor is
@@ -98,7 +98,7 @@ class ProgressBar:
             bar_position = self.bar_width
 
         # line to display
-        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, u'■' * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
+        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, u'\u25A0' * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
 
         # trailing to mask the previous message
         line_size = len(line)
