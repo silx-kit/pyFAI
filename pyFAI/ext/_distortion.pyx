@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "13/05/2016"
+__date__ = "23/09/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -46,7 +46,7 @@ import types
 import os
 import sys
 import time
-logger = logging.getLogger("pyFAI._distortion")
+logger = logging.getLogger("pyFAI.ext._distortion")
 from ..detectors import detector_factory
 from ..utils import expand2d
 from ..decorators import timeit
@@ -56,7 +56,12 @@ except ImportError:
     import six
 import fabio
 
-include "sparse_common.pxi"
+#include "sparse_common.pxi"
+from sparse_utils cimport ArrayBuilder, lut_point 
+from sparse_utils import ArrayBuilder, dtype_lut
+# cdef struct lut_point:
+#     int idx
+#     float coef
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
