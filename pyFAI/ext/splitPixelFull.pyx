@@ -205,11 +205,11 @@ def fullSplit1D(numpy.ndarray pos not None,
     if pos.ndim > 3:
         # create a view
         pos = pos.reshape((-1, 4, 2))
-    assert pos.shape[0] == size
-    assert pos.shape[1] == 4
-    assert pos.shape[2] == 2
-    assert pos.ndim == 3
-    assert bins > 1
+    assert pos.shape[0] == size, "pos.shape[0] == size"
+    assert pos.shape[1] == 4, "pos.shape[1] == 4"
+    assert pos.shape[2] == 2, "pos.shape[2] == 2"
+    assert pos.ndim == 3, "pos.ndim == 3"
+    assert bins > 1, "at lease one bin"
     cdef:
         numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos, dtype=numpy.float64)
         data_t[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
@@ -266,23 +266,23 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     if mask is not None:
         check_mask = True
-        assert mask.size == size
+        assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
     if dark is not None:
         do_dark = True
-        assert dark.size == size
+        assert dark.size == size, "dark current array size"
         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
     if flat is not None:
         do_flat = True
-        assert flat.size == size
+        assert flat.size == size, "flat-field array size"
         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
     if polarization is not None:
         do_polarization = True
-        assert polarization.size == size
+        assert polarization.size == size, "polarization array size"
         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
     if solidangle is not None:
         do_solidangle = True
-        assert solidangle.size == size
+        assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
 
     with nogil:
@@ -429,10 +429,10 @@ def fullSplit2D(numpy.ndarray pos not None,
     if pos.ndim > 3:  # create a view
         pos = pos.reshape((-1, 4, 2))
 
-    assert pos.shape[0] == size
-    assert pos.shape[1] == 4  # 4 corners
-    assert pos.shape[2] == 2  # tth and chi
-    assert pos.ndim == 3
+    assert pos.shape[0] == size, "pos.shape[0] == size"
+    assert pos.shape[1] == 4, "pos.shape[1] == 4", "pos has 4 corners"
+    assert pos.shape[2] == 2, "pos.shape[2] == 2" , "pos.shape[2] == 2: tth and chi"
+    assert pos.ndim == 3, "pos.ndim == 3"
     try:
         all_bins0, all_bins1 = tuple(bins)
     except:
@@ -506,23 +506,23 @@ def fullSplit2D(numpy.ndarray pos not None,
 
     if mask is not None:
         check_mask = True
-        assert mask.size == size
+        assert mask.size == size, "mask size"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
     if dark is not None:
         do_dark = True
-        assert dark.size == size
+        assert dark.size == size, "dark current array size"
         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
     if flat is not None:
         do_flat = True
-        assert flat.size == size
+        assert flat.size == size, "flat-field array size"
         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
     if polarization is not None:
         do_polarization = True
-        assert polarization.size == size
+        assert polarization.size == size, "polarization array size"
         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
     if solidangle is not None:
         do_solidangle = True
-        assert solidangle.size == size
+        assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
 
     with nogil:

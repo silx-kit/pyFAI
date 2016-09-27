@@ -199,9 +199,9 @@ class FullSplitCSR_1d(object):
 #        self.padding = int(padding)
         if pos.ndim>3: #create a view
             pos = pos.reshape((-1,4,2))
-        assert pos.shape[1] == 4
-        assert pos.shape[2] == 2
-        assert pos.ndim == 3
+        assert pos.shape[1] == 4, "pos.shape[1] == 4"
+        assert pos.shape[2] == 2, "pos.shape[2] == 2"
+        assert pos.ndim == 3, "pos.ndim == 3"
         self.pos = pos
         self.size = pos.shape[0]
         self.bins = bins
@@ -210,7 +210,7 @@ class FullSplitCSR_1d(object):
         self.allow_pos0_neg = allow_pos0_neg
         self.empty = empty or 0.0
         if  mask is not None:
-            assert mask.size == self.size
+            assert mask.size == self.size, "mask size"
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
             if mask_checksum:
@@ -500,19 +500,19 @@ class FullSplitCSR_1d(object):
             cdummy =  <float>float(self.empty)
         if flat is not None:
             do_flat = True
-            assert flat.size == size
+            assert flat.size == size, "flat-field array size"
             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
         if dark is not None:
             do_dark = True
-            assert dark.size == size
+            assert dark.size == size, "dark current array size"
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidAngle.size == size
+            assert solidangle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
             do_polarization = True
-            assert polarization.size == size
+            assert polarization.size == size, "polarization array size"
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
@@ -621,9 +621,9 @@ class FullSplitCSR_2d(object):
 
         if pos.ndim > 3:  # create a view
             pos = pos.reshape((-1, 4, 2))
-        assert pos.shape[1] == 4
-        assert pos.shape[2] == 2
-        assert pos.ndim == 3
+        assert pos.shape[1] == 4, "pos.shape[1] == 4"
+        assert pos.shape[2] == 2, "pos.shape[2] == 2"
+        assert pos.ndim == 3, "pos.ndim == 3"
         self.pos = pos
         self.size = pos.shape[0]
         self.bins = bins
@@ -632,7 +632,7 @@ class FullSplitCSR_2d(object):
         self.empty = empty or 0.0
         self.allow_pos0_neg = allow_pos0_neg
         if  mask is not None:
-            assert mask.size == self.size
+            assert mask.size == self.size, "mask size"
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int64)
             if mask_checksum:
@@ -1138,19 +1138,19 @@ class FullSplitCSR_2d(object):
 
         if flat is not None:
             do_flat = True
-            assert flat.size == size
+            assert flat.size == size, "flat-field array size"
             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
         if dark is not None:
             do_dark = True
-            assert dark.size == size
+            assert dark.size == size, "dark current array size"
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidAngle.size == size
+            assert solidangle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
             do_polarization = True
-            assert polarization.size == size
+            assert polarization.size == size, "polarization array size"
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
