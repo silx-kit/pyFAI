@@ -28,7 +28,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -449,7 +449,7 @@ class HistoBBox1d(object):
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidangle.size == size, "Solid angle array size"
+            assert solidAngle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
             do_polarization = True
@@ -605,7 +605,7 @@ class HistoBBox1d(object):
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidangle.size == size, "Solid angle array size"
+            assert solidAngle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
             do_polarization = True
@@ -1208,7 +1208,7 @@ class HistoBBox2d(object):
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidangle.size == size, "Solid angle array size"
+            assert solidAngle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
             do_polarization = True

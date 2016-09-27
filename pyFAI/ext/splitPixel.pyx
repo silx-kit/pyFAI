@@ -32,7 +32,7 @@ Histogram (direct) implementation
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -396,8 +396,8 @@ def fullSplit2D(numpy.ndarray pos not None,
         pos = pos.reshape((-1, 4, 2))
 
     assert pos.shape[0] == size, "pos.shape[0] == size"
-    assert pos.shape[1] == 4, "pos.shape[1] == 4", "pos has 4 corners"
-    assert pos.shape[2] == 2, "pos.shape[2] == 2" , "pos.shape[2] == 2: tth and chi"
+    assert pos.shape[1] == 4, "pos.shape[1] == 4: pos has 4 corners"
+    assert pos.shape[2] == 2, "pos.shape[2] == 2: tth and chi"
     assert pos.ndim == 3, "pos.ndim == 3"
     try:
         bins0, bins1 = tuple(bins)

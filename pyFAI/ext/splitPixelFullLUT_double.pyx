@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -465,7 +465,7 @@ class HistoLUT1dFullSplit(object):
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidangle.size == size, "Solid angle array size"
+            assert solidAngle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float64)
         if polarization is not None:
             do_polarization = True
