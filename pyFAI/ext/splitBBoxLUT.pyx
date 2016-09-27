@@ -104,7 +104,7 @@ class HistoBBox1d(object):
         """
 
         self.size = pos0.size
-        assert delta_pos0.size == self.size
+        assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
         self.bins = bins
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
@@ -129,8 +129,8 @@ class HistoBBox1d(object):
         self.pos1Range = pos1Range
         self.calc_boundaries(pos0Range)
         if pos1Range is not None and len(pos1Range) > 1:
-            assert pos1.size == self.size
-            assert delta_pos1.size == self.size
+            assert pos1.size == self.size, "pos1 size"
+            assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=numpy.float32)
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float32)
@@ -426,7 +426,7 @@ class HistoBBox1d(object):
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after - rc_before) >= 2)
 
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
@@ -583,7 +583,7 @@ class HistoBBox1d(object):
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
 
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
@@ -749,9 +749,9 @@ class HistoBBox2d(object):
         """
         cdef numpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
-        assert delta_pos0.size == self.size
-        assert pos1.size == self.size
-        assert delta_pos1.size == self.size
+        assert delta_pos0.size == self.size, "delta_pos0.size == self.size"
+        assert pos1.size == self.size, "pos1 size"
+        assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
         self.chiDiscAtPi = 1 if chiDiscAtPi else 0
         self.allow_pos0_neg = allow_pos0_neg
 
@@ -1188,7 +1188,7 @@ class HistoBBox2d(object):
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
 
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True

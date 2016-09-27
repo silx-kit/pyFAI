@@ -29,7 +29,7 @@
 __doc__ = """Cython module to reconstruct the masked values of an image"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -113,7 +113,7 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
 
     @return: reconstructed image.
     """
-    assert data.ndim == 2
+    assert data.ndim == 2, "data.ndim == 2"
     cdef:
         ssize_t d0 = data.shape[0]
         ssize_t d1 = data.shape[1]
@@ -130,8 +130,8 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
         else:
             mask += (abs(data - dummy) <= delta_dummy)
     cdef numpy.int8_t[:, :] cmask = mask.astype(numpy.int8)
-    assert d0 == mask.shape[0]
-    assert d1 == mask.shape[1]
+    assert d0 == mask.shape[0], "mask.shape[0]"
+    assert d1 == mask.shape[1], "mask.shape[1]"
     cdef numpy.ndarray[numpy.float32_t, ndim = 2]out = numpy.zeros_like(data)
     out += data
     out[mask.astype(bool)] = 0

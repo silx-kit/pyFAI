@@ -121,8 +121,8 @@ class HistoBBox1d(object):
             self.calc_boundaries_nosplit(pos0Range)
 
         if pos1Range is not None and len(pos1Range) > 1:
-            assert pos1.size == self.size
-            assert delta_pos1.size == self.size
+            assert pos1.size == self.size, "pos1 size"
+            assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=numpy.float32)
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float32)
@@ -522,7 +522,7 @@ class HistoBBox1d(object):
             numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
             float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
@@ -653,7 +653,7 @@ class HistoBBox2d(object):
         """
         cdef int i, size, bin0, bin1
         self.size = pos0.size
-        assert pos1.size == self.size
+        assert pos1.size == self.size, "pos1 size"
 
         if "size" not in dir(delta_pos0) or delta_pos0.size != self.size or\
            "size" not in dir(delta_pos1) or delta_pos1.size != self.size:
@@ -1230,7 +1230,7 @@ class HistoBBox2d(object):
             float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
 
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True

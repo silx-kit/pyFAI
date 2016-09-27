@@ -58,6 +58,7 @@ Files:  version.py
         pyFAI/ext/bilinear.pyx
         pyFAI/ext/splitPixelFullCSR.pyx
         pyFAI/ext/histogram.pyx
+        pyFAI/ext/watershed.pyx
         pyFAI/ext/*.pxi
         pyFAI/ext/src/*
         pyFAI/benchmark/*

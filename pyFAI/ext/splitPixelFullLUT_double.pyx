@@ -445,7 +445,7 @@ class HistoLUT1dFullSplit(object):
             numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float64)
             double[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True

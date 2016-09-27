@@ -25,7 +25,7 @@
 __doc__ = """A module to relabel regions"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -60,8 +60,8 @@ def countThem(numpy.ndarray label not None, \
         int s, i, idx
         float d, b
     s = label.size
-    assert s == cdata.size
-    assert s == cblured.size
+    assert s == cdata.size, "cdata.size"
+    assert s == cblured.size, "cblured.size"
     with nogil:
         for i in range(s):
             idx = clabel[i]
