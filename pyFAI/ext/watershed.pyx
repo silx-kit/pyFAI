@@ -1,34 +1,38 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-__doc__ = """
-Inverse watershed for connecting region of high intensity
+"""Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/01/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 
 import cython
 import numpy
@@ -199,7 +203,7 @@ class InverseWatershed(object):
         @param data: 2d image as numpy array
 
         """
-        assert data.ndim == 2
+        assert data.ndim == 2, "data.ndim == 2"
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
         
         self.height, self.width = data.shape
@@ -243,8 +247,8 @@ class InverseWatershed(object):
         """
         import h5py
         with h5py.File(fname) as h5:
-            assert h5["VERSION"].value == cls.VERSION
-            assert h5["NAME"].value == cls.NAME
+            assert h5["VERSION"].value == cls.VERSION, "Version of module used for HDF5"
+            assert h5["NAME"].value == cls.NAME, "Name of module used for HDF5"
             self = cls(h5["data"].value, h5["thres"].value)
             for i in ("labels", "borders"):
                 setattr(self, i, h5[i].value)
@@ -558,19 +562,19 @@ class InverseWatershed(object):
                 dmin2 = dmin * dmin
             else:
                 dmin2 = 0.0
-            if keep and len(output_points)>keep:
+            if keep and len(output_points) > keep:
                 tmp_lst = output_points
                 rej_lst = []
                 output_points = []
                 for pt in tmp_lst:
                     for pt2 in output_points:
-                        d2 = (pt[0]-pt2[0])**2 + (pt[1]-pt2[1])**2
-                        if d2<=dmin2:
+                        d2 = (pt[0] - pt2[0]) ** 2 + (pt[1] - pt2[1]) ** 2
+                        if d2 <= dmin2:
                             rej_lst.append(pt)
                             break
                     else:
                         output_points.append(pt)
-                        if len(output_points)>=keep:
+                        if len(output_points) >= keep:
                             return output_points
-                output_points = (output_points+rej_lst)[:keep]
+                output_points = (output_points + rej_lst)[:keep]
         return output_points
