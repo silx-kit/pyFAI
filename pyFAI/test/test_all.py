@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2016"
+__date__ = "20/09/2016"
 
 import sys
 import unittest
@@ -76,6 +76,7 @@ from . import test_worker
 from . import test_integrate_widget
 from . import test_utils_shell
 from . import test_utils_stringutil
+from . import test_preproc
 
 
 def suite():
@@ -115,6 +116,7 @@ def suite():
     testsuite.addTest(test_integrate_widget.suite())
     testsuite.addTest(test_utils_shell.suite())
     testsuite.addTest(test_utils_stringutil.suite())
+    testsuite.addTest(test_preproc.suite())
     return testsuite
 
 
