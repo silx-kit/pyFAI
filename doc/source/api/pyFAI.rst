@@ -8,7 +8,7 @@
     :show-inheritance:
 
 :mod:`average` Module
----------------------------------
+---------------------
 
 .. automodule:: pyFAI.average
     :members:
@@ -22,6 +22,15 @@
     :members:
     :undoc-members:
     :show-inheritance:
+
+:mod:`multi_geometry` Module
+----------------------------
+
+.. automodule:: pyFAI.multi_geometry
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 :mod:`integrate_widget` Module
 ------------------------------
