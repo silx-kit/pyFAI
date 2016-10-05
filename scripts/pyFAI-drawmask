@@ -33,10 +33,12 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2016"
+__date__ = "05/10/2016"
 __satus__ = "Production"
 import os
 import numpy
+import logging
+logging.basicConfig()
 import fabio
 
 try:
@@ -57,11 +59,12 @@ except:
 from pyFAI.gui_utils import QtGui
 import pyFAI.utils
 
-
 try:
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
+
+_logger = logging.getLogger("drawmask")
 
 
 class AbstractMaskImageWidget(QtGui.QMainWindow):
@@ -107,6 +110,15 @@ if BACKEND == "SILX":
             self.__plot2D = silx.gui.plot.Plot2D()
             self.__plot2D.maskAction.setVisible(False)
             self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(plot=self.__plot2D)
+            try:
+                colormap = {
+                    'name': "inferno",
+                    'normalization': 'log',
+                    'autoscale': True,
+                }
+                self.__plot2D.setDefaultColormap(colormap)
+            except:
+                _logger.error("Impossible to change the default colormap. Source code not compatible.", exc_info=True)
             self.__maskPanel.setDirection(QtGui.QBoxLayout.TopToBottom)
             self.__maskPanel.setMultipleMasks("single")
 
