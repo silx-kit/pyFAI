@@ -421,7 +421,7 @@ static const char *__pyx_filename;
 
 static const char *__pyx_f[] = {
   "pyFAI/ext/sparse_utils.pyx",
-  "stringsource",
+  "pyFAI/ext/stringsource",
   "pyFAI/ext/sparse_common.pxi",
 };
 struct __pyx_memoryview_obj;
@@ -523,7 +523,7 @@ struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 struct __pyx_t_5pyFAI_3ext_12sparse_utils_lut_point;
 
-/* "pyFAI/ext/sparse_common.pxi":38
+/* "sparse_common.pxi":38
  * import numpy
  * 
  * cdef struct lut_point:             # <<<<<<<<<<<<<<
@@ -1189,6 +1189,8 @@ static char __pyx_k_format[] = "format";
 static char __pyx_k_import[] = "__import__";
 static char __pyx_k_indptr[] = "indptr";
 static char __pyx_k_name_2[] = "__name__";
+static char __pyx_k_ncol_0[] = "ncol >0";
+static char __pyx_k_nrow_0[] = "nrow >0";
 static char __pyx_k_stable[] = "stable";
 static char __pyx_k_status[] = "__status__";
 static char __pyx_k_struct[] = "struct";
@@ -1209,7 +1211,7 @@ static char __pyx_k_dtype_lut[] = "dtype_lut";
 static char __pyx_k_enumerate[] = "enumerate";
 static char __pyx_k_indices_2[] = "indices_";
 static char __pyx_k_13_05_2016[] = "13/05/2016";
-static char __pyx_k_31_05_2016[] = "31/05/2016";
+static char __pyx_k_27_09_2016[] = "27/09/2016";
 static char __pyx_k_CSR_to_LUT[] = "CSR_to_LUT";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_LUT_to_CSR[] = "LUT_to_CSR";
@@ -1253,7 +1255,7 @@ static char __pyx_k_Unable_to_convert_item_to_object[] = "Unable to convert item
 static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents in dimension %d (got %d and %d)";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static PyObject *__pyx_kp_s_13_05_2016;
-static PyObject *__pyx_kp_s_31_05_2016;
+static PyObject *__pyx_kp_s_27_09_2016;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
 static PyObject *__pyx_n_s_CSR_to_LUT;
 static PyObject *__pyx_kp_s_Can_only_create_a_buffer_that_is;
@@ -1327,9 +1329,11 @@ static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_name;
 static PyObject *__pyx_n_s_name_2;
 static PyObject *__pyx_n_s_ncol;
+static PyObject *__pyx_kp_s_ncol_0;
 static PyObject *__pyx_n_s_ndim;
 static PyObject *__pyx_n_s_nelt;
 static PyObject *__pyx_n_s_nrow;
+static PyObject *__pyx_kp_s_nrow_0;
 static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_n_s_obj;
 static PyObject *__pyx_n_s_pack;
@@ -2170,7 +2174,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT(CYTHON_UNUSED P
  * 
  *     nrow = indptr.size - 1             # <<<<<<<<<<<<<<
  *     ncol = (indptr[1:] - indptr[:-1]).max()
- *     assert nrow > 0
+ *     assert nrow > 0, "nrow >0"
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_indptr, __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -2185,8 +2189,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT(CYTHON_UNUSED P
  * 
  *     nrow = indptr.size - 1
  *     ncol = (indptr[1:] - indptr[:-1]).max()             # <<<<<<<<<<<<<<
- *     assert nrow > 0
- *     assert ncol > 0
+ *     assert nrow > 0, "nrow >0"
+ *     assert ncol > 0, "ncol >0"
  */
   __pyx_t_1 = __Pyx_PyObject_GetSlice(__pyx_v_indptr, 1, 0, NULL, NULL, &__pyx_slice_, 1, 0, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -2224,14 +2228,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT(CYTHON_UNUSED P
   /* "pyFAI/ext/sparse_utils.pyx":90
  *     nrow = indptr.size - 1
  *     ncol = (indptr[1:] - indptr[:-1]).max()
- *     assert nrow > 0             # <<<<<<<<<<<<<<
- *     assert ncol > 0
+ *     assert nrow > 0, "nrow >0"             # <<<<<<<<<<<<<<
+ *     assert ncol > 0, "ncol >0"
  * 
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
   if (unlikely(!Py_OptimizeFlag)) {
     if (unlikely(!((__pyx_v_nrow > 0) != 0))) {
-      PyErr_SetNone(PyExc_AssertionError);
+      PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_nrow_0);
       {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
@@ -2239,15 +2243,15 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT(CYTHON_UNUSED P
 
   /* "pyFAI/ext/sparse_utils.pyx":91
  *     ncol = (indptr[1:] - indptr[:-1]).max()
- *     assert nrow > 0
- *     assert ncol > 0             # <<<<<<<<<<<<<<
+ *     assert nrow > 0, "nrow >0"
+ *     assert ncol > 0, "ncol >0"             # <<<<<<<<<<<<<<
  * 
  *     cdef:
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
   if (unlikely(!Py_OptimizeFlag)) {
     if (unlikely(!((__pyx_v_ncol > 0) != 0))) {
-      PyErr_SetNone(PyExc_AssertionError);
+      PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_ncol_0);
       {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
@@ -13944,7 +13948,7 @@ static struct PyModuleDef __pyx_moduledef = {
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_13_05_2016, __pyx_k_13_05_2016, sizeof(__pyx_k_13_05_2016), 0, 0, 1, 0},
-  {&__pyx_kp_s_31_05_2016, __pyx_k_31_05_2016, sizeof(__pyx_k_31_05_2016), 0, 0, 1, 0},
+  {&__pyx_kp_s_27_09_2016, __pyx_k_27_09_2016, sizeof(__pyx_k_27_09_2016), 0, 0, 1, 0},
   {&__pyx_kp_s_Buffer_view_does_not_expose_stri, __pyx_k_Buffer_view_does_not_expose_stri, sizeof(__pyx_k_Buffer_view_does_not_expose_stri), 0, 0, 1, 0},
   {&__pyx_n_s_CSR_to_LUT, __pyx_k_CSR_to_LUT, sizeof(__pyx_k_CSR_to_LUT), 0, 0, 1, 1},
   {&__pyx_kp_s_Can_only_create_a_buffer_that_is, __pyx_k_Can_only_create_a_buffer_that_is, sizeof(__pyx_k_Can_only_create_a_buffer_that_is), 0, 0, 1, 0},
@@ -14018,9 +14022,11 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
   {&__pyx_n_s_name_2, __pyx_k_name_2, sizeof(__pyx_k_name_2), 0, 0, 1, 1},
   {&__pyx_n_s_ncol, __pyx_k_ncol, sizeof(__pyx_k_ncol), 0, 0, 1, 1},
+  {&__pyx_kp_s_ncol_0, __pyx_k_ncol_0, sizeof(__pyx_k_ncol_0), 0, 0, 1, 0},
   {&__pyx_n_s_ndim, __pyx_k_ndim, sizeof(__pyx_k_ndim), 0, 0, 1, 1},
   {&__pyx_n_s_nelt, __pyx_k_nelt, sizeof(__pyx_k_nelt), 0, 0, 1, 1},
   {&__pyx_n_s_nrow, __pyx_k_nrow, sizeof(__pyx_k_nrow), 0, 0, 1, 1},
+  {&__pyx_kp_s_nrow_0, __pyx_k_nrow_0, sizeof(__pyx_k_nrow_0), 0, 0, 1, 0},
   {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
   {&__pyx_n_s_obj, __pyx_k_obj, sizeof(__pyx_k_obj), 0, 0, 1, 1},
   {&__pyx_n_s_pack, __pyx_k_pack, sizeof(__pyx_k_pack), 0, 0, 1, 1},
@@ -14076,8 +14082,8 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *     nrow = indptr.size - 1
  *     ncol = (indptr[1:] - indptr[:-1]).max()             # <<<<<<<<<<<<<<
- *     assert nrow > 0
- *     assert ncol > 0
+ *     assert nrow > 0, "nrow >0"
+ *     assert ncol > 0, "ncol >0"
  */
   __pyx_slice_ = PySlice_New(__pyx_int_1, Py_None, Py_None); if (unlikely(!__pyx_slice_)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_slice_);
@@ -14437,7 +14443,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  * __doc__ = """Convertion between sparse matrix representations"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "31/05/2016"
+ * __date__ = "27/09/2016"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -14445,7 +14451,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  * __doc__ = """Convertion between sparse matrix representations"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "31/05/2016"
+ * __date__ = "27/09/2016"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -14453,15 +14459,15 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
   /* "pyFAI/ext/sparse_utils.pyx":31
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "31/05/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "27/09/2016"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_31_05_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_27_09_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/sparse_utils.pyx":32
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "31/05/2016"
+ * __date__ = "27/09/2016"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -14469,7 +14475,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/sparse_utils.pyx":33
- * __date__ = "31/05/2016"
+ * __date__ = "27/09/2016"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
@@ -14477,7 +14483,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/sparse_common.pxi":28
+  /* "sparse_common.pxi":28
  * # THE SOFTWARE.
  * 
  * __doc__ = """Common Look-Up table datatypes"""             # <<<<<<<<<<<<<<
@@ -14486,7 +14492,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_doc, __pyx_kp_s_Common_Look_Up_table_datatypes) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/sparse_common.pxi":29
+  /* "sparse_common.pxi":29
  * 
  * __doc__ = """Common Look-Up table datatypes"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
@@ -14495,7 +14501,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/sparse_common.pxi":30
+  /* "sparse_common.pxi":30
  * __doc__ = """Common Look-Up table datatypes"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
@@ -14504,7 +14510,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/sparse_common.pxi":31
+  /* "sparse_common.pxi":31
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "13/05/2016"             # <<<<<<<<<<<<<<
@@ -14513,7 +14519,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_13_05_2016) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/sparse_common.pxi":32
+  /* "sparse_common.pxi":32
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "13/05/2016"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
@@ -14522,7 +14528,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/sparse_common.pxi":33
+  /* "sparse_common.pxi":33
  * __date__ = "13/05/2016"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
@@ -14531,7 +14537,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/sparse_common.pxi":36
+  /* "sparse_common.pxi":36
  * 
  * import cython
  * import numpy             # <<<<<<<<<<<<<<
@@ -14543,7 +14549,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/sparse_common.pxi":42
+  /* "sparse_common.pxi":42
  *     float coef
  * 
  * dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])             # <<<<<<<<<<<<<<

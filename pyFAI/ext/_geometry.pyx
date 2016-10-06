@@ -195,7 +195,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
         double cosRot3 = cos(rot3)
         ssize_t  size = pos1.size, i = 0
         double p1, p2, p3
-    assert pos2.size == size
+    assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
@@ -214,7 +214,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
             t2[i] = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t3[i] = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
-        assert pos3.size == size
+        assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             p1 = c1[i] - poni1
@@ -263,7 +263,7 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
         ssize_t  size = pos1.size, i = 0
-    assert pos2.size == size
+    assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
@@ -274,7 +274,7 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_tth(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
-        assert pos3.size == size
+        assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_tth(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -317,7 +317,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
     cdef ssize_t  size = pos1.size, i = 0
-    assert pos2.size == size
+    assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
@@ -328,7 +328,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_chi(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
-        assert pos3.size == size
+        assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_chi(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -372,7 +372,7 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
         ssize_t  size = pos1.size, i = 0, ndim
-    assert pos2.size == size
+    assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
@@ -383,7 +383,7 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_q(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
     else:
-        assert pos3.size == size
+        assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_q(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
@@ -419,7 +419,7 @@ def calc_r(double L, double rot1, double rot2, double rot3,
         double sinRot3 = sin(rot3)
         double cosRot3 = cos(rot3)
         ssize_t  size = pos1.size, i = 0
-    assert pos2.size == size
+    assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
@@ -430,7 +430,7 @@ def calc_r(double L, double rot1, double rot2, double rot3,
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_r(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     else:
-        assert pos3.size == size
+        assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_r(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -457,7 +457,7 @@ def calc_cosa(double L,
     @return: ndarray of double with same shape and size as pos1
     """
     cdef ssize_t  size = pos1.size, i = 0
-    assert pos2.size == size
+    assert pos2.size == size, "pos2.size == size"
     cdef:
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
@@ -468,7 +468,7 @@ def calc_cosa(double L,
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_cosa(c1[i], c2[i], L)
     else:
-        assert pos3.size == size
+        assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             out[i] = f_cosa(c1[i], c2[i], L + c3[i])
@@ -497,7 +497,7 @@ def calc_rad_azim(double L,
     raise KeyError when space is bad !
     """
     cdef ssize_t  size = pos1.size, i = 0
-    assert pos2.size == size
+    assert pos2.size == size, "pos2.size == size"
     cdef:
         double sinRot1 = sin(rot1)
         double cosRot1 = cos(rot1)
@@ -539,7 +539,7 @@ def calc_rad_azim(double L,
                 out[i, 0] = sqrt(t1 * t1 + t2 * t2)
             out[i, 1] = atan2(t1, t2)
     else:
-        assert pos3.size == size
+        assert pos3.size == size, "pos3.size == size"
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
             t1 = f_t1(c1[i] - poni1, c2[i] - poni2, L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)

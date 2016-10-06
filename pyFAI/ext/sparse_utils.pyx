@@ -28,7 +28,7 @@
 __doc__ = """Convertion between sparse matrix representations"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -87,8 +87,8 @@ def CSR_to_LUT(data, indices, indptr):
 
     nrow = indptr.size - 1
     ncol = (indptr[1:] - indptr[:-1]).max()
-    assert nrow > 0
-    assert ncol > 0
+    assert nrow > 0, "nrow >0"
+    assert ncol > 0, "ncol >0" 
 
     cdef:
         float[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)

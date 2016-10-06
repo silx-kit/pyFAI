@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, France
 #
@@ -25,13 +25,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-__doc__ = """Calculates histograms of pos0 (tth) weighted by Intensity
+"""Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box similar to fit2D
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -85,9 +85,9 @@ def histoBBox1d(numpy.ndarray weights not None,
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
-    assert pos0.size == size
-    assert delta_pos0.size == size
-    assert bins > 1
+    assert pos0.size == size, "pos0.size == size"
+    assert delta_pos0.size == size, "delta_pos0.size == size"
+    assert bins > 1, "at lease one bin"
     cdef:
         ssize_t   bin0_max, bin0_min, bin = 0
         float data, deltaR, deltaL, deltaA,p1, epsilon = 1e-10, cdummy = 0, ddummy = 0
@@ -107,7 +107,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
 
     if mask is not None:
-        assert mask.size == size
+        assert mask.size == size, "mask size"
         check_mask = True
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
 
@@ -124,20 +124,20 @@ def histoBBox1d(numpy.ndarray weights not None,
         cdummy = empty or 0.0
         ddummy = 0.0
     if dark is not None:
-        assert dark.size == size
+        assert dark.size == size, "dark current array size"
         do_dark = True
         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
     if flat is not None:
-        assert flat.size == size
+        assert flat.size == size, "flat-field array size"
         do_flat = True
         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
     if polarization is not None:
         do_polarization = True
-        assert polarization.size == size
+        assert polarization.size == size, "polarization array size"
         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
     if solidangle is not None:
         do_solidangle = True
-        assert solidangle.size == size
+        assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
     cpos0_lower = numpy.zeros(size, dtype=numpy.float32)
@@ -167,8 +167,8 @@ def histoBBox1d(numpy.ndarray weights not None,
     pos0_max = pos0_maxin * EPS32
 
     if pos1Range is not None and len(pos1Range) > 1:
-        assert pos1.size == size
-        assert delta_pos1.size == size
+        assert pos1.size == size, "pos1.size == size"
+        assert delta_pos1.size == size, "delta_pos1.size == size"
         check_pos1 = 1
         cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=numpy.float32)
@@ -301,10 +301,10 @@ def histoBBox2d(numpy.ndarray weights not None,
 
     cdef ssize_t bins0, bins1, i, j, idx
     cdef size_t size = weights.size
-    assert pos0.size == size
-    assert pos1.size == size
-    assert delta_pos0.size == size
-    assert delta_pos1.size == size
+    assert pos0.size == size, "pos0.size == size"
+    assert pos1.size == size, "pos1.size == size"
+    assert delta_pos0.size == size, "delta_pos0.size == size"
+    assert delta_pos1.size == size, "delta_pos1.size == size"
     try:
         bins0, bins1 = tuple(bins)
     except:
@@ -336,7 +336,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     cdef float[:] cflat, cdark, cpolarization, csolidangle
 
     if mask is not None:
-        assert mask.size == size
+        assert mask.size == size, "mask size"
         check_mask = True
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
 
@@ -350,20 +350,20 @@ def histoBBox2d(numpy.ndarray weights not None,
         cdummy = float(empty)
 
     if dark is not None:
-        assert dark.size == size
+        assert dark.size == size, "dark current array size"
         do_dark = True
         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
     if flat is not None:
-        assert flat.size == size
+        assert flat.size == size, "flat-field array size"
         do_flat = True
         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
     if polarization is not None:
         do_polarization = True
-        assert polarization.size == size
+        assert polarization.size == size, "polarization array size"
         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
     if solidangle is not None:
         do_solidangle = True
-        assert solidangle.size == size
+        assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
     pos0_min = cpos0[0]
