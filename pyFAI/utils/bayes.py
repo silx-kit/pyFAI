@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/10/2016"
+__date__ = "10/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -62,10 +62,10 @@ class BayesianBackground(object):
      
     """
     s1 = None
+    PREFACTOR = 1
 
     @classmethod
     def classinit(cls):
-#         print("init")
         # Spline depends on integration constant...
         # from quadratic behaviour near 0 to logarithmic one between 6 and 8
         spliney = numpy.array([0.00000000e+00,
@@ -97,10 +97,10 @@ class BayesianBackground(object):
         if self.s1 is None:
             self.classinit()
 
-    @staticmethod
-    def bayes_llk_negative(z):
+    @classmethod
+    def bayes_llk_negative(cls, z):
         "used to calculate the log-likelihood of negative values: quadratic"
-        return 5 * z ** 2
+        return cls.PREFACTOR * z * z
 
     @classmethod
     def bayes_llk_small(cls, z):
@@ -158,25 +158,28 @@ class BayesianBackground(object):
         tmp = cls.bayes_llk(w_obs * (y_obs - s(x_obs))).sum()
         return tmp
 
-    def __call__(self, x, y, sigma=None, npt=40):
-        """
+    def __call__(self, x, y, sigma=None, npt=40, k=3):
+        """Function like class instance... 
+        
         :param float[:] x: coordinates along the horizontal axis
         :param float[:] y: coordinates along the vertical axis
         :param float[:] sigma: error along the vertical axis
         :param int npt: number of points of the fitting spline
+        :param int k: order of the fitted spline.
         :return float[:]: the background for y 
+        
+        Nota: Due to spline function, one needs: npt >= k + 1
         """
         if sigma is None:
             # assume sigma=sqrt(yobs) !
-            w_obs = 1.0 / y
+            w_obs = 1.0 / numpy.sqrt(y)
         else:
-            w_obs = 1.0 / sigma ** 2
+            w_obs = 1.0 / sigma
         # deal with 0-variance points
         mask = numpy.logical_not(numpy.isnan(w_obs))
         x_obs = x[mask]
         y_obs = y[mask]
         w_obs = w_obs[mask]
-        k = 3  # spline parameter
         x0 = numpy.linspace(x_obs.min(), x_obs.max(), npt)
         y0 = numpy.zeros(npt) + y_obs.mean()
         # Minimize
