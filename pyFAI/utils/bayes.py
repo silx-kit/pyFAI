@@ -123,7 +123,7 @@ class BayesianBackground(object):
 
     @classmethod
     def bayes_llk(cls, z):
-        """Calculate actually the log-likelyhood from a set of weighted error
+        """Calculate actually the log-likelihood from a set of weighted error
         
         Re implementation of:
         (y<=0)*5*y**2 + (y>0)*(y<8)*pyFAI.utils.bayes.background.spline(y) + (y>=8)*(s1+log(abs(y)+1*(y<8)))
@@ -199,49 +199,65 @@ class BayesianBackground(object):
         y_calc = UnivariateSpline(x0, y1, s=0, k=k)(x)
         return y_calc
 
-#     @classmethod
-#     def func2d_min(cls, intensity, d0_pos, d1_pos, w_obs, x0, k0, k1):
-#         """ Function to optimize
-#
-#         :param y0: values of the background
-#         :param x_obs: experimental values
-#         :param y_obs: experimental values
-#         :param w_obs: weights of the experimental points
-#         :param x0: position of evaluation of the spline
-#         :param k: order of the spline, usually 3
-#         :return: sum of the log-likelihood to be minimized
-#         """
-#         spline = RectBivariateSpline(d0_pos, d1_pos, y0
-#
-#             k0, k1)
-#
-#         s = UnivariateSpline(x0, y0, s=0, k=k)
-#         tmp = cls.bayes_llk(w_obs * (y_obs - s(x_obs))).sum()
-#         return tmp
-#
-#
-#     def background_image(self, img, sigma=None, mask=None, nx=10, ny=10, kx=3, ky=3):
-#         shape = img.shape
-#         if sigma is not None:
-#             assert sigma.shape == shape
-#         else:
-#             sigma = numpy.sqrt(img)
-#
-#         w = 1 / sigma
-#
-#         mask_nan = numpy.isnan(w)
-#         if mask is not None:
-#             assert mask.shape == shape
-#             mask = numpy.logical_or(mask_nan, mask)
-#         else:
-#             mask = mask_nan
-#
-#         d0_pos = numpy.arange(shape[0])
-#         d1_pos = numpy.arange(shape[1])
-#
-#         y1 = optimize.fmin_powell(self.func_min, y0,
-#                                   args=(x_obs, y_obs, w_obs, x0, k),
-#                                   disp=False)
+    @classmethod
+    def func2d_min(cls, values, d0_sparse, d1_sparse, d0_pos, d1_pos, y_obs, w_obs, valid, k):
+        """ Function to optimize
 
+        :param values: values of the background on spline knots
+        :param d0_sparse: positions along slowest axis of the spline knots 
+        :param d1_pos: positions along fastest axis of the spline knots
+        :param d0_pos: positions along slowest axis (all coordinates)
+        :param d1_pos: positions along fastest axis (all coordinates)
+        :param y_obs: intensities actually measured 
+        :param w_obs: weights of the experimental points
+        :param valid: coordinated of valid pixels
+        :param k: order of the spline, usually 3
+        :return: sum of the log-likelihood to be minimized
+        """
+        values = values.reshape(d0_sparse.size, d1_sparse.size)
+        spline = RectBivariateSpline(d0_sparse, d1_sparse, values, kx=k, ky=k)
+        bg = spline(d0_pos, d1_pos)
+        err = w_obs * (y_obs - bg)
+        if valid is not True:
+            err = err.take(valid)
+        else:
+            err = err.ravel()
+        sum_err = cls.bayes_llk(err).sum()
+        return sum_err
+
+    def background_image(self, img, sigma=None, mask=None, npt=10, k=3):
+        shape = img.shape
+        if sigma is not None:
+            assert sigma.shape == shape
+        else:
+            sigma = numpy.sqrt(img)
+
+        w = 1 / sigma
+
+        mask_nan = numpy.isnan(w)
+        if mask is not None:
+            assert mask.shape == shape
+            mask = numpy.logical_or(mask_nan, mask)
+        else:
+            mask = mask_nan
+
+        if mask.sum() == 0:
+            valid = numpy.where(numpy.logical_not(mask))
+        else:
+            valid = True
+        d0_pos = numpy.arange(0, shape[0])
+        d1_pos = numpy.arange(0, shape[1])
+
+        d0_sparse = numpy.linspace(0, shape[0], npt)
+        d1_sparse = numpy.linspace(0, shape[1], npt)
+
+        y0 = numpy.zeros((npt, npt)) + img.mean()
+        y1 = optimize.fmin_powell(self.func2d_min, y0,
+                                  args=(d0_sparse, d1_sparse, d0_pos, d1_pos, img, w, valid, k),
+                                  disp=True, callback=lambda x: print(x))
+
+        spline = RectBivariateSpline(d0_sparse, d1_sparse, y1, k, k)
+        bg = spline(d0_pos, d1_pos)
+        return bg
 
 background = BayesianBackground()
