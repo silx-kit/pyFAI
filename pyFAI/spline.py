@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "02/08/2016"
+__date__ = "17/10/2016"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -87,9 +87,9 @@ class Spline(object):
         self.ySplineKnotsX = []
         self.ySplineKnotsY = []
         self.ySplineCoeff = []
-        self.pixelSize = None #2-tuple of float
-        self.grid = None #
-        self.filename = None #string
+        self.pixelSize = None  # 2-tuple of float
+        self.grid = None
+        self.filename = None  # string
         if filename is not None:
             self.read(filename)
 
@@ -110,20 +110,20 @@ class Spline(object):
 
     def __copy__(self):
         """@return: Shallow copy of the spline"""
-        unmutable =  "splineOrder", "lenStrFloat","xmin","ymin","xmax","ymax","filename","pixelSize","grid"
-        arrays = "xDispArray","yDispArray"
-        lists = "xSplineKnotsX","xSplineKnotsY","xSplineCoeff","ySplineKnotsX","ySplineKnotsY","ySplineCoeff"
+        unmutable = "splineOrder", "lenStrFloat", "xmin", "ymin", "xmax", "ymax", "filename", "pixelSize", "grid"
+        arrays = "xDispArray", "yDispArray"
+        lists = "xSplineKnotsX", "xSplineKnotsY", "xSplineCoeff", "ySplineKnotsX", "ySplineKnotsY", "ySplineCoeff"
         new = self.__class__()
-        for key in unmutable+arrays+lists:
+        for key in unmutable + arrays + lists:
             new.__setattr__(key, self.__getattribute__(key))
         return new
 
     def __deepcopy__(self, memo=None):
         """@return: deep copy of the spline"""
-        unmutable =  "splineOrder", "lenStrFloat","xmin","ymin","xmax","ymax","filename","pixelSize","grid"
-        arrays = "xDispArray","yDispArray"
-        lists = "xSplineKnotsX","xSplineKnotsY","xSplineCoeff","ySplineKnotsX","ySplineKnotsY","ySplineCoeff"
-        
+        unmutable = "splineOrder", "lenStrFloat", "xmin", "ymin", "xmax", "ymax", "filename", "pixelSize", "grid"
+        arrays = "xDispArray", "yDispArray"
+        lists = "xSplineKnotsX", "xSplineKnotsY", "xSplineCoeff", "ySplineKnotsX", "ySplineKnotsY", "ySplineCoeff"
+
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -675,25 +675,21 @@ class Spline(object):
         self.xDispArray = None
         self.yDispArray = None
 
-
     def correct(self, pos):
-        delta1 = fitpack.bisplev(pos[1], pos[0],
-                                        [self.xSplineKnotsX,
-                                         self.xSplineKnotsY,
-                                         self.xSplineCoeff,
-                                         self.splineOrder,
-                                         self.splineOrder],
+        delta1 = fitpack.bisplev(pos[1], pos[0], [self.xSplineKnotsX,
+                                                  self.xSplineKnotsY,
+                                                  self.xSplineCoeff,
+                                                  self.splineOrder,
+                                                  self.splineOrder],
                                  dx=0, dy=0)
 
         delta0 = fitpack.bisplev(pos[1], pos[0], [self.ySplineKnotsX,
-                                         self.ySplineKnotsY,
-                                         self.ySplineCoeff,
-                                         self.splineOrder,
-                                         self.splineOrder],
+                                                  self.ySplineKnotsY,
+                                                  self.ySplineCoeff,
+                                                  self.splineOrder,
+                                                  self.splineOrder],
                                  dx=0, dy=0)
         return delta0 + pos[0], delta1 + pos[1]
-
-
 
     def flipud(self):
         """
@@ -763,7 +759,7 @@ def main():
         if os.path.isfile(keyword):
             spline_file = keyword
         elif keyword.lower().find("center=") in [0, 1, 2]:
-            center = [float(i) for i in  keyword.split("=")[1].split("x")]
+            center = [float(i) for i in keyword.split("=")[1].split("x")]
         elif keyword.lower().find("dist=") in [0, 1, 2]:
             distance = float(keyword.split("=")[1])
         elif keyword.lower().find("tilt=") in [0, 1, 2]:

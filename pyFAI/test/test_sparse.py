@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "17/10/2016"
 
 
 import unittest
@@ -42,7 +42,7 @@ import os
 import sys
 import time
 from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+logger = getLogger(__name__)
 from .. import load
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
