@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/09/2016"
+__date__ = "17/10/2016"
 
 import sys
 import unittest
@@ -77,6 +77,7 @@ from . import test_integrate_widget
 from . import test_utils_shell
 from . import test_utils_stringutil
 from . import test_preproc
+from . import test_bayes
 
 
 def suite():
@@ -117,6 +118,7 @@ def suite():
     testsuite.addTest(test_utils_shell.suite())
     testsuite.addTest(test_utils_stringutil.suite())
     testsuite.addTest(test_preproc.suite())
+    testsuite.addTest(test_bayes.suite())
     return testsuite
 
 

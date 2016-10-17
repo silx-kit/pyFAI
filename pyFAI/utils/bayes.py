@@ -35,12 +35,12 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2016"
+__date__ = "17/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import numpy
-from scipy.interpolate import UnivariateSpline
+from scipy.interpolate import UnivariateSpline, RectBivariateSpline
 from scipy import optimize
 
 
@@ -68,20 +68,13 @@ class BayesianBackground(object):
     def classinit(cls):
         # Spline depends on integration constant...
         # from quadratic behaviour near 0 to logarithmic one between 6 and 8
-        spliney = numpy.array([0.00000000e+00,
-                               1e-4,
-                               1.77123249e-03,
-                               1.00997634e+00,
-                               2.89760310e+00,
-                               3.61881096e+00,
-                               3.93024374e+00,
-                               4.16063018e+00,
-                               4.34600620e+00,
-                               4.50155649e+00,
-                               4.63573160e+00])
         splinex = numpy.array([0.,
-                               0.01,
-                               0.1,
+                               1e-6,
+                               1e-5,
+                               1e-4,
+                               1e-3,
+                               1e-2,
+                               1e-1,
                                1.1,
                                2.1,
                                3.1,
@@ -90,6 +83,22 @@ class BayesianBackground(object):
                                6.1,
                                7.1,
                                8.1])
+
+        spliney = numpy.array([0.0,
+                               1e-12,
+                               1e-10,
+                               1e-8,
+                               1e-6,
+                               1e-4,
+                               1.77123249e-03,
+                               1.00997634,
+                               2.89760310,
+                               3.61881096,
+                               3.93024374,
+                               4.16063018,
+                               4.34600620,
+                               4.50155649,
+                               4.63573160])
         cls.spline = UnivariateSpline(splinex, spliney, s=0)
         cls.s1 = cls.spline(8.0) - numpy.log(8.0)
 
@@ -138,7 +147,7 @@ class BayesianBackground(object):
         """Test plot of log(likelihood)
         Similar to as figure 3 of Sivia and David, J. Appl. Cryst. (2001). 34, 318-324
         """
-        x = numpy.linspace(-5, 15, 501)
+        x = numpy.linspace(-5, 15, 2001)
         y = -cls.bayes_llk(x)
         return(x, y)
 
@@ -180,12 +189,59 @@ class BayesianBackground(object):
         x_obs = x[mask]
         y_obs = y[mask]
         w_obs = w_obs[mask]
-        x0 = numpy.linspace(x_obs.min(), x_obs.max(), npt)
+        x0 = numpy.linspace(x.min(), x.max(), npt)
         y0 = numpy.zeros(npt) + y_obs.mean()
         # Minimize
-        y1 = optimize.fmin_powell(self.func_min, y0, args=(x_obs, y_obs, w_obs, x0, k))
+        y1 = optimize.fmin_powell(self.func_min, y0,
+                                  args=(x_obs, y_obs, w_obs, x0, k),
+                                  disp=False)
         # Result
         y_calc = UnivariateSpline(x0, y1, s=0, k=k)(x)
         return y_calc
+
+#     @classmethod
+#     def func2d_min(cls, intensity, d0_pos, d1_pos, w_obs, x0, k0, k1):
+#         """ Function to optimize
+#
+#         :param y0: values of the background
+#         :param x_obs: experimental values
+#         :param y_obs: experimental values
+#         :param w_obs: weights of the experimental points
+#         :param x0: position of evaluation of the spline
+#         :param k: order of the spline, usually 3
+#         :return: sum of the log-likelihood to be minimized
+#         """
+#         spline = RectBivariateSpline(d0_pos, d1_pos, y0
+#
+#             k0, k1)
+#
+#         s = UnivariateSpline(x0, y0, s=0, k=k)
+#         tmp = cls.bayes_llk(w_obs * (y_obs - s(x_obs))).sum()
+#         return tmp
+#
+#
+#     def background_image(self, img, sigma=None, mask=None, nx=10, ny=10, kx=3, ky=3):
+#         shape = img.shape
+#         if sigma is not None:
+#             assert sigma.shape == shape
+#         else:
+#             sigma = numpy.sqrt(img)
+#
+#         w = 1 / sigma
+#
+#         mask_nan = numpy.isnan(w)
+#         if mask is not None:
+#             assert mask.shape == shape
+#             mask = numpy.logical_or(mask_nan, mask)
+#         else:
+#             mask = mask_nan
+#
+#         d0_pos = numpy.arange(shape[0])
+#         d1_pos = numpy.arange(shape[1])
+#
+#         y1 = optimize.fmin_powell(self.func_min, y0,
+#                                   args=(x_obs, y_obs, w_obs, x0, k),
+#                                   disp=False)
+
 
 background = BayesianBackground()
