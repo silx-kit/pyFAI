@@ -26,14 +26,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"test suite for Distortion correction class"
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for Distortion correction class"
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "06/10/2016"
 
 
 import unittest
@@ -62,7 +63,7 @@ class TestHalfCCD(unittest.TestCase):
         self.fit2d = fabio.open(self.fit2dFile).data
         self.ref = _distortion.Distortion(self.det)
         self.raw = fabio.open(self.halfFrelon).data
-        self.dis = distortion.Distortion(self.det)
+        self.dis = distortion.Distortion(self.det, method="LUT")
         self.larger = numpy.zeros(self.det.shape)
         self.larger[:-1, :] = self.raw
 
