@@ -88,7 +88,7 @@ class Spline(object):
         self.ySplineKnotsY = []
         self.ySplineCoeff = []
         self.pixelSize = None  # 2-tuple of float
-        self.grid = None  #
+        self.grid = None
         self.filename = None  # string
         if filename is not None:
             self.read(filename)
