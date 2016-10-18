@@ -28,12 +28,13 @@
 __doc__ = """Common Look-Up table datatypes"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/05/2016"
+__date__ = "18/10/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
 import cython
 import numpy
+cimport numpy as cnp
 
 cdef struct lut_point:
     int idx

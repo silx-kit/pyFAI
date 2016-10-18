@@ -28,7 +28,7 @@
 __doc__ = """Convertion between sparse matrix representations"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "18/10/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -110,3 +110,125 @@ def CSR_to_LUT(data, indices, indptr):
                 lut[i, nelt] = point
                 nelt += 1
     return numpy.asarray(lut)
+
+
+cdef class Vector:
+    """Variable size vector"""
+# --> see the associated PXD file
+#     cdef:
+#         float[:] coef
+#         int[:] idx
+#         int size, allocated
+
+    def __cinit__(self, int min_size=10):
+        self.allocated = min_size
+        self.coef = numpy.empty(self.allocated, dtype=numpy.float32)
+        self.idx = numpy.empty(self.allocated, dtype=numpy.int32)
+        self.size = 0
+
+    def __dealloc__(self):
+        self.coef = self.idx = None
+
+    def __len__(self):
+        return self.size
+
+    def get_data(self):
+        return numpy.asarray(self.idx[:self.size]), numpy.asarray(self.coef[:self.size])
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef inline void _append(self, int idx, float coef):
+        cdef:
+            int pos, new_allocated 
+            int[:] newidx
+            float[:] newcoef
+        pos = self.size
+        if pos >= self.allocated - 1:
+            new_allocated = self.allocated * 2
+            newcoef = numpy.empty(new_allocated, dtype=numpy.float32)
+            newcoef[:self.size] = self.coef[:self.size]
+            self.coef = newcoef
+            newidx = numpy.empty(new_allocated, dtype=numpy.int32)
+            newidx[:self.size] = self.idx[:self.size]
+            self.idx = newidx
+            self.allocated = new_allocated
+        self.coef[pos] = coef
+        self.idx[pos] = idx
+        self.size = pos + 1
+
+    def append(self, idx, coef):
+        "Python implementation of _append in cython"
+        self._append(<int> idx, <float> coef)
+
+
+cdef class ArrayLUT:
+# --> see the associated PXD file
+#     cdef:
+#         int size 
+#         readonly list lines
+        
+    def __cinit__(self, int nlines, min_size=10):
+        cdef int i
+        self.lines = [Vector(min_size=min_size) for i in range(nlines)]
+        self.size = nlines
+            
+    def __dealloc__(self):
+        while self.lines.__len__():
+            self.lines.pop()
+        self.lines = None
+        
+    def __len__(self):
+        return len(self.lines)
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef inline void _append(self, int line, int col, float value):
+        cdef: 
+            Vector vector
+        vector = self.lines[line]
+        vector._append(col, value)
+    
+    def append(self, line, col, value):
+        'Python wrapper for _append in cython'
+        self._append(<int> line, <int> col, <float> value)
+
+    def as_LUT(self):
+        cdef:
+            int i, max_size = 0
+            int[:] local_idx
+            float[:] local_coef
+            lut_point[:, :] lut
+            Vector vector
+        for i in range(len(self.lines)):
+            if len(self.lines[i]) > max_size:
+                max_size = len(self.lines[i])
+        lut = numpy.zeros((len(self.lines), max_size), dtype=dtype_lut)
+        for i in range(len(self.lines)):
+            vector = self.lines[i]
+            local_idx, local_coef = vector.get_data()
+            for j in range(len(vector)):
+                lut[i, j] = lut_point(local_idx[j], local_coef[j])
+        return numpy.asarray(lut, dtype=dtype_lut)
+
+    def as_CSR(self):
+        cdef:
+            int i, val, start, end, total_size = 0 
+            Vector vector
+            lut_point[:, :] lut
+            lut_point[:] data
+            int[:] idptr, idx, local_idx
+            float[:] coef, local_coef
+        idptr = numpy.zeros(len(self.lines) + 1, dtype=numpy.int32)
+        for i in range(len(self.lines)):
+            total_size += len(self.lines[i])
+            idptr[i + 1] = total_size
+        coef = numpy.zeros(total_size, dtype=numpy.float32)
+        idx = numpy.zeros(total_size, dtype=numpy.int32)
+        for i in range(len(self.lines)):
+            vector = self.lines[i]
+            local_idx, local_coef = vector.get_data()
+            start = idptr[i]
+            end = start + len(vector)
+            idx[start:end] = local_idx
+            coef[start:end] = local_coef
+        return numpy.asarray(idptr), numpy.asarray(idx), numpy.asarray(coef)
