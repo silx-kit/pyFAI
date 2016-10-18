@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2016"
+__date__ = "18/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -256,7 +256,8 @@ class BayesianBackground(object):
                                   args=(d0_sparse, d1_sparse, d0_pos, d1_pos, img, w, valid, k),
                                   disp=True, callback=lambda x: print(x))
 
-        spline = RectBivariateSpline(d0_sparse, d1_sparse, y1, k, k)
+        values = y1.reshape(d0_sparse.size, d1_sparse.size)
+        spline = RectBivariateSpline(d0_sparse, d1_sparse, values, k, k)
         bg = spline(d0_pos, d1_pos)
         return bg
 
