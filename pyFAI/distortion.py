@@ -332,7 +332,7 @@ class Distortion(object):
                         self.lut = lut
         return self.lut
 
-    def correct(self, image, dummy=None, delta_dummy=None, normalization_factor=1.0):
+    def correct(self, image, dummy=None, delta_dummy=None):
         """
         Correct an image based on the look-up table calculated ...
 

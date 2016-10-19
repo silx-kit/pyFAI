@@ -592,7 +592,7 @@ class PixelwiseWorker(object):
         if device is not None:
             logger.warning("GPU is not yet implemented")
 
-    def process(self, data, normalization=None):
+    def process(self, data, normalization_factor=None):
         """
         Process the data and apply a normalization factor
         @param data: input data
@@ -609,7 +609,7 @@ class PixelwiseWorker(object):
                                 mask=self.mask,
                                 dummy=self.dummy,
                                 delta_dummy=self.delta_dummy,
-                                normalization_factor=normalization,
+                                normalization_factor=normalization_factor,
                                 empty=None)
         else:
             if self.dummy is not None:
@@ -631,8 +631,8 @@ class PixelwiseWorker(object):
                 proc_data /= self.solidangle
             if self.polarization is not None:
                 proc_data /= self.polarization
-            if normalization is not None:
-                proc_data /= normalization
+            if normalization_factor is not None:
+                proc_data /= normalization_factor
             if do_mask:
                 proc_data[self.mask] = self.dummy or 0
         return proc_data
@@ -691,8 +691,45 @@ class DistortionWorker(object):
         @param normalization: normalization factor
         @return processed data
         """
+        if preproc is not None:
+            proc_data = preproc(data,
+                                dark=self.dark,
+                                flat=self.flat,
+                                solidangle=self.solidangle,
+                                polarization=self.polarization,
+                                absorption=None,
+                                mask=self.mask,
+                                dummy=self.dummy,
+                                delta_dummy=self.delta_dummy,
+                                normalization_factor=normalization_factor,
+                                empty=None)
+        else:
+            if self.dummy is not None:
+                if self.delta_dummy is None:
+                    self.mask = numpy.logical_or((data == self.dummy), self.mask)
+                else:
+                    self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
+                                                 self.mask)
+                do_mask = True
+            else:
+                do_mask = (self.mask is not False)
+            # Explicitly make an copy !
+            proc_data = numpy.array(data, dtype=numpy.float32)
+            if self.dark is not None:
+                proc_data -= self.dark
+            if self.flat is not None:
+                proc_data /= self.flat
+            if self.solidangle is not None:
+                proc_data /= self.solidangle
+            if self.polarization is not None:
+                proc_data /= self.polarization
+            if normalization_factor is not None:
+                proc_data /= normalization_factor
+            if do_mask:
+                proc_data[self.mask] = self.dummy or 0
+
         if self.distortion is not None:
-            return self.distortion.correct(data, self.dummy, self.delta_dummy, normalization_factor)
+            return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
         else:
             return data
 
