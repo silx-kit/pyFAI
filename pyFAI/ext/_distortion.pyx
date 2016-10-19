@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "27/09/2016"
+__date__ = "23/09/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -46,7 +46,7 @@ import types
 import os
 import sys
 import time
-logger = logging.getLogger("pyFAI._distortion")
+logger = logging.getLogger("pyFAI.ext._distortion")
 from ..detectors import detector_factory
 from ..utils import expand2d
 from ..decorators import timeit
@@ -56,7 +56,12 @@ except ImportError:
     import six
 import fabio
 
-include "sparse_common.pxi"
+#include "sparse_common.pxi"
+from sparse_utils cimport ArrayBuilder, lut_point 
+from sparse_utils import ArrayBuilder, dtype_lut
+# cdef struct lut_point:
+#     int idx
+#     float coef
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
@@ -686,10 +691,10 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
         bint do_mask = mask is not None
         lut_point[:, :] lut
     if do_mask:
-        assert shape_in0 == mask.shape[0], "shape_in0 == mask.shape[0]"
-        assert shape_in1 == mask.shape[1], "shape_in1 == mask.shape[1]"
+        assert shape_in0 == mask.shape[0]
+        assert shape_in1 == mask.shape[1]
 
-    #  count the number of pixel falling into every single bin
+    #count the number of pixel falling into every single bin
     pixel_count = numpy.zeros(bins, dtype=numpy.int32)
     idx_pixel = numpy.zeros(large_size, dtype=numpy.int32)
     idx_bin = numpy.zeros(large_size, dtype=numpy.int32)

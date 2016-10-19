@@ -31,11 +31,14 @@ Splitting is done on the pixel's bounding box similar to fit2D
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/10/2016"
+__date__ = "19/10/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
 include "regrid_common.pxi"
+
+import os
+from cython.parallel import prange
 
 try:
     from .fastcrc import crc32
@@ -46,7 +49,7 @@ import logging
 logger = logging.getLogger("pyFAI.splitBBox")
 
 from . import sparse_utils
-from .sparse_utils cimport ArrayLUT
+from .sparse_utils cimport ArrayBuilder
 
 
 @cython.cdivision(True)
@@ -814,7 +817,7 @@ class HistoBBox1d(object):
             bint check_mask, check_pos1
             float[:] cpos0_sup, cpos0_inf, cpos1_min, cpos1_max
             numpy.int8_t[:] cmask
-            ArrayLUT container
+            ArrayBuilder container
         size = self.size
         delta = self.delta
         pos0_min = self.pos0_min
@@ -822,7 +825,7 @@ class HistoBBox1d(object):
         bins = self.bins
         cpos0_sup = self.cpos0_sup
         cpos0_inf = self.cpos0_inf
-        container = ArrayLUT(bins)
+        container = ArrayBuilder(bins)
         if self.check_mask:
             cmask = self.cmask
             check_mask = True
@@ -838,8 +841,8 @@ class HistoBBox1d(object):
         else:
             check_pos1 = False
 
-        with nogil:
-            for idx in range(size):
+        #with nogil:
+        for idx in range(size):
                 if (check_mask) and (cmask[idx]):
                     continue
 

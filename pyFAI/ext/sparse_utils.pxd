@@ -25,19 +25,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Common Look-Up table/CSR object creaton tools """
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/05/2016"
-__status__ = "stable"
-__license__ = "MIT"
+include "sparse_common.pxi"
 
-import cython
-import numpy
-cimport numpy as cnp
 
-cdef struct lut_point:
-    int idx
-    float coef
+cdef class Vector:
+    cdef:
+        float[:] coef
+        int[:] idx
+        int size, allocated
+    #  Methods available at the C-level:
+    cdef inline void _append(self, int idx, float coef) 
 
-dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
+
+cdef class ArrayBuilder:
+    cdef:
+        int size 
+        readonly list lines
+    #  Methods available at the C-level:    
+    cdef inline void _append(self, int line, int col, float value) 

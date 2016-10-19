@@ -1908,8 +1908,8 @@ static char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cython.ar
 static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static char __pyx_k_home_kieffer_workspace_400_pyFA[] = "/home/kieffer/workspace-400/pyFAI/pyFAI/ext/preproc.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
+static char __pyx_k_users_kieffer_workspace_400_pyF[] = "/users/kieffer/workspace-400/pyFAI/pyFAI/ext/preproc.pyx";
 static char __pyx_k_Absorption_array_size_is_correct[] = "Absorption array size is correct";
 static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
 static char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
@@ -1999,7 +1999,6 @@ static PyObject *__pyx_n_s_format;
 static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
-static PyObject *__pyx_kp_s_home_kieffer_workspace_400_pyFA;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_int8;
@@ -2044,6 +2043,7 @@ static PyObject *__pyx_kp_s_unable_to_allocate_array_data;
 static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
+static PyObject *__pyx_kp_s_users_kieffer_workspace_400_pyF;
 static PyObject *__pyx_n_s_xrange;
 static PyObject *__pyx_n_s_zeros_like;
 static PyObject *__pyx_int_0;
@@ -2510,20 +2510,20 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_19, __pyx_t_12, __pyx_t_13, __pyx_t_18, __pyx_t_20, __pyx_t_17, __pyx_t_16, __pyx_t_14, __pyx_t_11, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_13, __pyx_t_10, __pyx_t_14, __pyx_t_20, __pyx_t_11, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_is_valid) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_value) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_result) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_one_value) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_result) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_is_valid = ((int)0xbad0bad0);
                               __pyx_v_one_value = ((float)__PYX_NAN());
-                              __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_is_valid = ((int)0xbad0bad0);
                               __pyx_v_one_result = ((float)__PYX_NAN());
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
 
                               /* "pyFAI/ext/preproc.pyx":113
  * 
@@ -17620,7 +17620,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 0, 1, 1},
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
-  {&__pyx_kp_s_home_kieffer_workspace_400_pyFA, __pyx_k_home_kieffer_workspace_400_pyFA, sizeof(__pyx_k_home_kieffer_workspace_400_pyFA), 0, 0, 1, 0},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_int8, __pyx_k_int8, sizeof(__pyx_k_int8), 0, 0, 1, 1},
@@ -17665,6 +17664,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_unable_to_allocate_shape_and_str, __pyx_k_unable_to_allocate_shape_and_str, sizeof(__pyx_k_unable_to_allocate_shape_and_str), 0, 0, 1, 0},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_unpack, __pyx_k_unpack, sizeof(__pyx_k_unpack), 0, 0, 1, 1},
+  {&__pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_k_users_kieffer_workspace_400_pyF, sizeof(__pyx_k_users_kieffer_workspace_400_pyF), 0, 0, 1, 0},
   {&__pyx_n_s_xrange, __pyx_k_xrange, sizeof(__pyx_k_xrange), 0, 0, 1, 1},
   {&__pyx_n_s_zeros_like, __pyx_k_zeros_like, sizeof(__pyx_k_zeros_like), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -17890,7 +17890,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__178 = PyTuple_Pack(23, __pyx_n_s_data, __pyx_n_s_dark, __pyx_n_s_flat, __pyx_n_s_solidangle, __pyx_n_s_polarization, __pyx_n_s_absorption, __pyx_n_s_mask, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_normalization_factor, __pyx_n_s_empty, __pyx_n_s_size, __pyx_n_s_check_dummy, __pyx_n_s_cmask, __pyx_n_s_cdata, __pyx_n_s_cdark, __pyx_n_s_cflat, __pyx_n_s_csolidangle, __pyx_n_s_cpolarization, __pyx_n_s_cabsorpt, __pyx_n_s_result, __pyx_n_s_cdummy, __pyx_n_s_ddummy); if (unlikely(!__pyx_tuple__178)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__178);
   __Pyx_GIVEREF(__pyx_tuple__178);
-  __pyx_codeobj__179 = (PyObject*)__Pyx_PyCode_New(11, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__178, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_400_pyFA, __pyx_n_s_preproc, 155, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__179)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__179 = (PyObject*)__Pyx_PyCode_New(11, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__178, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_preproc, 155, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__179)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":276
  *         return self.name

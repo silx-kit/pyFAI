@@ -25,10 +25,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-__doc__ = """Convertion between sparse matrix representations"""
+"""Common Look-Up table/CSR object creation tools and conversion"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "18/10/2016"
+__date__ = "19/10/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -142,26 +142,28 @@ cdef class Vector:
             int pos, new_allocated 
             int[:] newidx
             float[:] newcoef
+#         with gil:
         pos = self.size
+        self.size = pos + 1
         if pos >= self.allocated - 1:
             new_allocated = self.allocated * 2
             newcoef = numpy.empty(new_allocated, dtype=numpy.float32)
-            newcoef[:self.size] = self.coef[:self.size]
+            newcoef[:pos] = self.coef[:pos]
             self.coef = newcoef
             newidx = numpy.empty(new_allocated, dtype=numpy.int32)
-            newidx[:self.size] = self.idx[:self.size]
+            newidx[:pos] = self.idx[:pos]
             self.idx = newidx
             self.allocated = new_allocated
+            
         self.coef[pos] = coef
         self.idx[pos] = idx
-        self.size = pos + 1
-
+        
     def append(self, idx, coef):
         "Python implementation of _append in cython"
         self._append(<int> idx, <float> coef)
 
 
-cdef class ArrayLUT:
+cdef class ArrayBuilder:
 # --> see the associated PXD file
 #     cdef:
 #         int size 
