@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "20/09/2016"
+__date__ = "19/10/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -195,7 +195,7 @@ def preproc(data,
     size = data.size
     cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
     
-    if mask is not None:
+    if mask not in (None, False):
         assert mask.size == size, "Mask array size is correct"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
     else:
