@@ -195,11 +195,11 @@ def preproc(data,
     size = data.size
     cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
     
-    if mask not in (None, False):
+    if (mask is None) or (mask is False):
+        cmask = None
+    else:
         assert mask.size == size, "Mask array size is correct"
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-    else:
-        cmask = None
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
