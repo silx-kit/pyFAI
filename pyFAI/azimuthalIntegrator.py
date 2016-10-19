@@ -2659,10 +2659,10 @@ class AzimuthalIntegrator(Geometry):
             # not in place to make a copy
             qAxis = qAxis * pos0_scale
 
-        if normalization_factor:
-            I /= normalization_factor
-            if sigma is not None:
-                sigma /= normalization_factor
+#         if normalization_factor:
+#             I /= normalization_factor
+#             if sigma is not None:
+#                 sigma /= normalization_factor
 
         self.save1D(filename, qAxis, I, sigma, unit,
                     dark is not None, flat is not None, polarization_factor, normalization_factor)
