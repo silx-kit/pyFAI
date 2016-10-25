@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/08/2016"
+__date__ = "25/10/2016"
 __status__ = "development"
 
 import logging
@@ -45,7 +45,7 @@ import math
 import os.path as op
 import numpy
 logger = logging.getLogger("pyFAI.integrate_widget")
-from .gui_utils import QtCore, QtGui, uic, QtWebKit
+from .gui_utils import QtCore, QtGui, uic
 
 import fabio
 from . import worker
@@ -62,66 +62,6 @@ except ImportError:
 
 
 UIC = get_ui_file("integration.ui")
-
-FROM_PYMCA = "From PyMca"
-
-
-class Browser(QtGui.QMainWindow):
-
-    def __init__(self, default_url="http://google.com"):
-        """
-            Initialize the browser GUI and connect the events
-        """
-        QtGui.QMainWindow.__init__(self)
-        self.resize(800, 600)
-        self.centralwidget = QtGui.QWidget(self)
-
-        self.mainLayout = QtGui.QHBoxLayout(self.centralwidget)
-        self.mainLayout.setSpacing(0)
-        self.mainLayout.setMargin(1)
-
-        self.frame = QtGui.QFrame(self.centralwidget)
-
-        self.gridLayout = QtGui.QVBoxLayout(self.frame)
-        self.gridLayout.setMargin(0)
-        self.gridLayout.setSpacing(0)
-
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.tb_url = QtGui.QLineEdit(self.frame)
-        self.bt_back = QtGui.QPushButton(self.frame)
-        self.bt_ahead = QtGui.QPushButton(self.frame)
-
-        self.bt_back.setIcon(QtGui.QIcon().fromTheme("go-previous"))
-        self.bt_ahead.setIcon(QtGui.QIcon().fromTheme("go-next"))
-        self.horizontalLayout.addWidget(self.bt_back)
-        self.horizontalLayout.addWidget(self.bt_ahead)
-        self.horizontalLayout.addWidget(self.tb_url)
-        self.gridLayout.addLayout(self.horizontalLayout)
-
-        self.html = QtWebKit.QWebView()
-        self.gridLayout.addWidget(self.html)
-        self.mainLayout.addWidget(self.frame)
-        self.setCentralWidget(self.centralwidget)
-
-        self.tb_url.returnPressed.connect(self.browse)
-        self.bt_back.clicked.connect(self.html.back)
-        self.bt_ahead.clicked.connect(self.html.forward)
-
-        self.default_url = default_url
-        self.tb_url.setText(self.default_url)
-        self.browse()
-
-    def browse(self):
-        """
-        Make a web browse on a specific url and show the page on the
-        Webview widget.
-        """
-        print("browse " + self.tb_url.text())
-        url = QtCore.QUrl.fromUserInput(self.tb_url.text())
-        print(str(url))
-#         self.html.setUrl(url)
-        self.html.load(url)
-#         self.html.show()
 
 
 class AIWidget(QtGui.QWidget):
@@ -466,8 +406,7 @@ class AIWidget(QtGui.QWidget):
 
     def help(self):
         logger.debug("Please, help")
-        self.help_browser = Browser(self.URL)
-        self.help_browser.show()
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(self.URL))
 
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary

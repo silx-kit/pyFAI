@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2016"
+__date__ = "25/10/2016"
 __status__ = "production"
 
 import sys
@@ -42,7 +42,7 @@ import matplotlib
 import matplotlib.cm
 has_Qt = True
 if ('PySide' in sys.modules):
-    from PySide import QtGui, QtCore, QtUiTools, QtWebKit
+    from PySide import QtGui, QtCore, QtUiTools
     from PySide.QtCore import SIGNAL, Signal
 
     from .third_party.pyside_dynamic import loadUi as _loadUi
@@ -84,7 +84,7 @@ imports of custom widgets.
     Qt_version = QtCore.__version_info__
 else:
     try:
-        from PyQt4 import QtGui, QtCore, uic, QtWebKit
+        from PyQt4 import QtGui, QtCore, uic
         from PyQt4.QtCore import SIGNAL, pyqtSignal as Signal
     except ImportError:
         has_Qt = False
@@ -111,7 +111,7 @@ else:
     from matplotlib import pyplot
     from matplotlib import pylab
     from matplotlib.backends import backend
-    QtGui = QtCore = QtUiTools = QtWebKit = loadUi = None
+    QtGui = QtCore = QtUiTools = loadUi = None
     SIGNAL = Signal = None
 
 main_loop = False
