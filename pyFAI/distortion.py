@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2016"
+__date__ = "26/10/2016"
 __status__ = "development"
 
 import logging
@@ -823,7 +823,7 @@ def test():
 #    dis.calc_LUT()
 #    out = dis.correct(grid)
 #    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
-    from .gui_utils import pylab
+    from .gui.matplotlib import pylab
     pylab.imshow(out)  # , interpolation="nearest")
     pylab.show()
 

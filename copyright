@@ -62,6 +62,7 @@ Files:  version.py
         pyFAI/ext/watershed.pyx
         pyFAI/ext/*.pxi
         pyFAI/ext/src/*
+        pyFAI/gui/*
         pyFAI/benchmark/*
         pyFAI/test/test_mask.py
         pyFAI/test/test_integrate.py
@@ -99,6 +100,9 @@ Files:  version.py
 Copyright: 2015-2016 European Synchrotron Radiation Facility
 License: MIT/X11 (BSD like)
 
+Files: pyFAI/gui/_pyside_dynamic.py
+Copyright: Copyright (c) 2011 Sebastian Wiesner <lunaryorn@gmail.com>
+License: MIT
 
 License: BSD-3
  Redistribution and use in source and binary forms, with or without
