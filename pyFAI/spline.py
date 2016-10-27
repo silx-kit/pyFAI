@@ -1,38 +1,41 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# ##########################################################################
+#
 # Written 2009-12-22 by Jérôme Kieffer
-# Copyright (C) 2009 European Synchrotron Radiation Facility
-#                       Grenoble, France
+# Copyright (C) 2009-2016  European Synchrotron Radiation Facility
+#                          Grenoble, France
 #
 #    Principal authors: Jérôme Kieffer  (jerome.kieffer@esrf.fr)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# #######################################################################################
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-
-from __future__ import print_function, division
-__doc__ = """
-This is piece of software aims at manipulating spline files
+"""This is piece of software aims at manipulating spline files
 describing for geometric corrections of the 2D detectors using cubic-spline.
 
 Mainly used at ESRF with FReLoN CCD camera.
 """
 
+from __future__ import print_function, division
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __date__ = "27/10/2016"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 

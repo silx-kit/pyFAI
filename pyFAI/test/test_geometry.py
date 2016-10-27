@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/08/2016"
+__date__ = "27/10/2016"
 
 
 import unittest
@@ -337,7 +337,7 @@ class ParamTestGeometry(ParameterisedTestCase):
         logger.info("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
                     func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
-        self.assertAlmostEquals(delta, 0, 3, msg)
+        self.assertAlmostEqual(delta, 0, 3, msg)
         logger.debug(msg)
 
     def test_XYZ(self):

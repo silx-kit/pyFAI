@@ -119,12 +119,12 @@ class testPeakPicking(unittest.TestCase):
                 break
             last = delta2
         self.assertEquals(last < 1e-4, True, "residual error is less than 1e-4, got %s" % last)
-        self.assertAlmostEquals(gr.dist, 0.1, 2, "distance is OK, got %s, expected 0.1" % gr.dist)
-        self.assertAlmostEquals(gr.poni1, 3e-2, 2, "PONI1 is OK, got %s, expected 3e-2" % gr.poni1)
-        self.assertAlmostEquals(gr.poni2, 3e-2, 2, "PONI2 is OK, got %s, expected 3e-2" % gr.poni2)
-        self.assertAlmostEquals(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
-        self.assertAlmostEquals(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
-        self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
+        self.assertAlmostEqual(gr.dist, 0.1, 2, "distance is OK, got %s, expected 0.1" % gr.dist)
+        self.assertAlmostEqual(gr.poni1, 3e-2, 2, "PONI1 is OK, got %s, expected 3e-2" % gr.poni1)
+        self.assertAlmostEqual(gr.poni2, 3e-2, 2, "PONI2 is OK, got %s, expected 3e-2" % gr.poni2)
+        self.assertAlmostEqual(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
+        self.assertAlmostEqual(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
+        self.assertAlmostEqual(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
 
 
 class TestMassif(unittest.TestCase):

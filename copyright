@@ -41,6 +41,7 @@ Files:  version.py
         pyFAI/orderedset.py
         pyFAI/opencl.py
         pyFAI/multi_geometry.py
+        pyFAI/spline.py
         pyFAI/worker.py
         pyFAI/ocl_sort.py
         pyFAI/ext/splitPixelFull.pyx
