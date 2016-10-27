@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 
 import logging
@@ -264,7 +264,6 @@ class Distortion(object):
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup)
 
-#     @timeit
     def calc_LUT(self, use_common=True):
         """Calculate the Look-up table 
         

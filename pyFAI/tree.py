@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -170,7 +170,6 @@ class DataSet(object):
 
 class ListDataSet(list):
 
-    @timeit
     def commonroot(self):
         """
         @return: common directory 
@@ -180,7 +179,6 @@ class ListDataSet(list):
         if common:
             return os.sep.join(common + [""])
 
-    @timeit
     def as_tree(self, sep=os.path.sep):
         """Convert the list into a tree 
         
