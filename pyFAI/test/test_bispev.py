@@ -110,7 +110,7 @@ class TestBispev(unittest.TestCase):
             ax2.imshow(dx_loc)
             fig.show()
             six.moves.input()
-        self.assert_(abs(dx_loc - dx_ref).max() < 2e-5, "Result are similar")
+        self.assertTrue(abs(dx_loc - dx_ref).max() < 2e-5, "Result are similar")
 
 
 def suite():

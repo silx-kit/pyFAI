@@ -73,22 +73,22 @@ class TestSparseBBox(unittest.TestCase):
     def test_LUT(self):
         obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="LUT")[1]
         logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
-        self.assert_(numpy.allclose(obt, self.ref))
+        self.assertTrue(numpy.allclose(obt, self.ref))
 
         cython = self.ai._lut_integrator.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
             logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
-            self.assert_(numpy.allclose(obt, ref))
+            self.assertTrue(numpy.allclose(obt, ref))
 
     def test_CSR(self):
         obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="CSR")[1]
         logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
-        self.assert_(numpy.allclose(obt, self.ref))
+        self.assertTrue(numpy.allclose(obt, self.ref))
 
         cython = self.ai._csr_integrator.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
             logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
-            self.assert_(numpy.allclose(obt, ref))
+            self.assertTrue(numpy.allclose(obt, ref))
 
 
 class TestSparseUtils(unittest.TestCase):
@@ -121,13 +121,13 @@ class TestSparseUtils(unittest.TestCase):
         csr_ref = (dense[loc], idx, idptr)
 
         lut_out = sparse_utils.CSR_to_LUT(*csr_ref)
-        self.assert_(numpy.allclose(lut_out["coef"], lut_ref["coef"]), "coef are the same in LUT")
-        self.assert_(numpy.allclose(lut_out["idx"], lut_ref["idx"]), "idx are the same in LUT")
+        self.assertTrue(numpy.allclose(lut_out["coef"], lut_ref["coef"]), "coef are the same in LUT")
+        self.assertTrue(numpy.allclose(lut_out["idx"], lut_ref["idx"]), "idx are the same in LUT")
 
         csr_out = sparse_utils.LUT_to_CSR(lut_ref)
-        self.assert_(numpy.allclose(csr_out[2], csr_ref[2]), "idpts are the same in CSR")
-        self.assert_(numpy.allclose(csr_out[1], csr_ref[1]), "coef are the same in CSR")
-        self.assert_(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
+        self.assertTrue(numpy.allclose(csr_out[2], csr_ref[2]), "idpts are the same in CSR")
+        self.assertTrue(numpy.allclose(csr_out[1], csr_ref[1]), "coef are the same in CSR")
+        self.assertTrue(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
 
 
 def suite():

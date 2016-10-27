@@ -89,9 +89,9 @@ class TestUtils(unittest.TestCase):
         res = numpy.ones((11, 12))
         res[5, 7] = 5
         delta = (5 - 2, 7 - 3)
-        self.assert_(abs(utils.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
-        self.assert_(abs(utils.shiftFFT(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
-        self.assert_(utils.measure_offset(res, ref) == delta, "measure offset works")
+        self.assertTrue(abs(utils.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
+        self.assertTrue(abs(utils.shiftFFT(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
+        self.assertTrue(utils.measure_offset(res, ref) == delta, "measure offset works")
 
     def test_gaussian_filter(self):
         """
@@ -103,7 +103,7 @@ class TestUtils(unittest.TestCase):
                 blurred2 = utils.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
                 logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
-                self.assert_(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
+                self.assertTrue(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
 
     def test_set(self):
         s = utils.FixedParameters()
@@ -122,8 +122,8 @@ class TestUtils(unittest.TestCase):
     def test_expand2d(self):
         vect = numpy.arange(10.)
         size2 = 11
-        self.assert_((numpy.outer(vect, numpy.ones(size2)) == utils.expand2d(vect, size2, False)).all(), "horizontal vector expand")
-        self.assert_((numpy.outer(numpy.ones(size2), vect) == utils.expand2d(vect, size2, True)).all(), "vertical vector expand")
+        self.assertTrue((numpy.outer(vect, numpy.ones(size2)) == utils.expand2d(vect, size2, False)).all(), "horizontal vector expand")
+        self.assertTrue((numpy.outer(numpy.ones(size2), vect) == utils.expand2d(vect, size2, True)).all(), "vertical vector expand")
 
     def test_hexversion(self):
         # print(_version, type(_version))

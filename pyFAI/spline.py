@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "17/10/2016"
+__date__ = "27/10/2016"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -196,7 +196,8 @@ class Spline(object):
         if not os.path.isfile(filename):
             raise IOError("Spline File does not exist %s" % filename)
         self.filename = filename
-        stringSpline = [i.rstrip() for i in open(filename)]
+        with open(filename) as opened_file:
+            stringSpline = [i.rstrip() for i in opened_file]
         try:
             indexLine = 0
             for oneLine in stringSpline:
@@ -272,8 +273,8 @@ class Spline(object):
         maxErrY = abs(deltay).max()
         curvX = scipy.interpolate.interp1d(histXdr, histX[0] - histX[0].max() / 2.0)
         curvY = scipy.interpolate.interp1d(histYdr, histY[0] - histY[0].max() / 2.0)
-        fFWHM_X = scipy.optimize.bisect(curvX , histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX , histXdr[0], histXmax)
-        fFWHM_Y = scipy.optimize.bisect(curvY , histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY , histYdr[0], histYmax)
+        fFWHM_X = scipy.optimize.bisect(curvX, histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX, histXdr[0], histXmax)
+        fFWHM_Y = scipy.optimize.bisect(curvY, histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY, histYdr[0], histYmax)
         logger.info("Analysis of the difference between two splines")
         logger.info("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels.", maxErrX, maxErrY)
         logger.info("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels.", histXmax, histYmax)

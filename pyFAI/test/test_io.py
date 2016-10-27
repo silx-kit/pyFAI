@@ -53,12 +53,12 @@ from pyFAI import io
 
 class TestIsoTime(unittest.TestCase):
     def test_get(self):
-        self.assert_(len(io.get_isotime()), 25)
+        self.assertTrue(len(io.get_isotime()), 25)
 
     def test_from(self):
         t0 = time.time()
         isotime = io.get_isotime(t0)
-        self.assert_(abs(t0 - io.from_isotime(isotime)) < 1, "timing are precise to the second")
+        self.assertTrue(abs(t0 - io.from_isotime(isotime)) < 1, "timing are precise to the second")
 
 
 class TestNexus(unittest.TestCase):
@@ -84,7 +84,7 @@ class TestNexus(unittest.TestCase):
         nxs.new_detector()
         nxs.close()
 
-        self.assert_(io.is_hdf5(fname), "nexus file is an HDF5")
+        self.assertTrue(io.is_hdf5(fname), "nexus file is an HDF5")
 #        os.system("h5ls -r -a %s" % fname)
 
 
@@ -121,7 +121,7 @@ class testHDF5Writer(unittest.TestCase):
         t = time.time() - t0
         logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
-        self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
+        self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
 
 
 class testFabIOWriter(unittest.TestCase):
@@ -153,7 +153,7 @@ class testFabIOWriter(unittest.TestCase):
         t = time.time() - t0
         logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)", n, shape, nmbytes, t, nmbytes / t)
         statinfo = os.stat(h5file)
-        self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
+        self.assertTrue(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
 
 
 def suite():

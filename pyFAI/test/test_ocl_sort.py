@@ -78,7 +78,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_vertical(self.ary).get()
-        self.assert_(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -92,7 +92,7 @@ class TestOclSort(unittest.TestCase):
 #         pylab.legend()
 #         pylab.show()
 #         six.moves.input()
-        self.assert_(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
+        self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -100,7 +100,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_horizontal(self.ary).get()
-        self.assert_(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -114,7 +114,7 @@ class TestOclSort(unittest.TestCase):
 #         pylab.legend()
 #         pylab.show()
 #         six.moves.input()
-        self.assert_(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
+        self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()

@@ -124,10 +124,10 @@ class TestHistogram1d(unittest.TestCase):
         logger.info("Numpy: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - self.data_sum) / self.data_sum
         logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
-        self.assert_(delta == 0, msg="check all pixels were counted")
+        self.assertTrue(delta == 0, msg="check all pixels were counted")
         summed_weight_hist = self.weight_numpy.sum(dtype="float64")
-        self.assert_(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
-        self.assert_(v < self.epsilon, msg="checks delta is lower than %s, got %s" % (self.epsilon, v))
+        self.assertTrue(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
+        self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s, got %s" % (self.epsilon, v))
 
     def test_count_cython(self):
         """
@@ -140,9 +140,9 @@ class TestHistogram1d(unittest.TestCase):
         logger.info("Cython: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - self.data_sum) / self.data_sum
         logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
-        self.assert_(delta == 0, msg="check all pixels were counted expected %s got %s" % (self.size, sump))
+        self.assertTrue(delta == 0, msg="check all pixels were counted expected %s got %s" % (self.size, sump))
         summed_weight_hist = self.weight_cython.sum(dtype="float64")
-        self.assert_(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
+        self.assertTrue(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
     def test_count_csr(self):
@@ -156,9 +156,9 @@ class TestHistogram1d(unittest.TestCase):
         logger.info("CSR: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - self.data_sum) / self.data_sum
         logger.info("CSR: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
-        self.assert_(delta == 0, msg="check all pixels were counted expected %s got %s" % (self.size, sump))
+        self.assertTrue(delta == 0, msg="check all pixels were counted expected %s got %s" % (self.size, sump))
         summed_weight_hist = self.weight_csr.sum(dtype="float64")
-        self.assert_(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
+        self.assertTrue(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
     def test_numpy_vs_cython_vs_csr_1d(self):
@@ -167,19 +167,19 @@ class TestHistogram1d(unittest.TestCase):
         """
         max_delta = abs(self.bins_numpy - self.bins_cython).max()
         logger.info("Bin-center position for cython/numpy, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy, max delta=%s" % max_delta)
+        self.assertTrue(max_delta < self.epsilon, "Bin-center position for cython/numpy, max delta=%s" % max_delta)
 
         max_delta = abs(self.bins_numpy - self.bins_csr).max()
         logger.info("Bin-center position for csr/numpy, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
+        self.assertTrue(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
 
         rwp1 = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp Cython/Numpy = %.3f", rwp1)
-        self.assert_(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
+        self.assertTrue(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
 
         rwp2 = Rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp CSR/Numpy = %.3f", rwp2)
-        self.assert_(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
+        self.assertTrue(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -199,17 +199,17 @@ class TestHistogram1d(unittest.TestCase):
 
         if delta_max > 0:
             logger.warning("1d pixel count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max <= self.err_max_cnt, "1d pixel count difference numpy/cython : max delta=%s" % delta_max)
+        self.assertTrue(delta_max <= self.err_max_cnt, "1d pixel count difference numpy/cython : max delta=%s" % delta_max)
 
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
+        self.assertTrue(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
 
         delta_max = abs(self.unweight_numpy - self.unweight_csr).max()
 
-        self.assert_(delta_max <= self.err_max_cnt_csr, "numpy_vs_csr_1d max delta unweight = %s" % delta_max)
+        self.assertTrue(delta_max <= self.err_max_cnt_csr, "numpy_vs_csr_1d max delta unweight = %s" % delta_max)
         delta_max = abs(self.I_csr - self.I_numpy).max()
-        self.assert_(delta_max < self.epsilon_csr, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assertTrue(delta_max < self.epsilon_csr, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 class TestHistogram2d(unittest.TestCase):
@@ -287,8 +287,8 @@ class TestHistogram2d(unittest.TestCase):
         logger.info("Numpy: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - self.data_sum) / self.data_sum
         logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
-        self.assert_(delta == 0, "Numpy: Total number of points: %s (%s expected), delta = %s" % (sump, self.size, delta))
-        self.assert_(v < self.epsilon, "Numpy: Total Intensity: %s (%s expected), variation = %s" % (intensity_obt, self.data_sum, v))
+        self.assertTrue(delta == 0, "Numpy: Total number of points: %s (%s expected), delta = %s" % (sump, self.size, delta))
+        self.assertTrue(v < self.epsilon, "Numpy: Total Intensity: %s (%s expected), variation = %s" % (intensity_obt, self.data_sum, v))
 
     def test_count_cython(self):
         """
@@ -301,8 +301,8 @@ class TestHistogram2d(unittest.TestCase):
         logger.info("Cython: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - self.data_sum) / self.data_sum
         logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
-        self.assert_(delta == 0, msg="check all pixels were counted")
-        self.assert_(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
+        self.assertTrue(delta == 0, msg="check all pixels were counted")
+        self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
     def test_count_csr(self):
         """
@@ -315,8 +315,8 @@ class TestHistogram2d(unittest.TestCase):
         logger.info("CSR: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - self.data_sum) / self.data_sum
         logger.info("CSR: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
-        self.assert_(delta == 0, msg="check all pixels were counted")
-        self.assert_(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
+        self.assertTrue(delta == 0, msg="check all pixels were counted")
+        self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
     def test_numpy_vs_cython_vs_csr_2d(self):
         """
@@ -324,35 +324,35 @@ class TestHistogram2d(unittest.TestCase):
         """
         max_delta = abs(self.tth_numpy - self.tth_cython).max()
         logger.info("Bin-center position for cython/numpy tth, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy tth, max delta=%s" % max_delta)
+        self.assertTrue(max_delta < self.epsilon, "Bin-center position for cython/numpy tth, max delta=%s" % max_delta)
         max_delta = abs(self.chi_numpy - self.chi_cython).max()
         logger.info("Bin-center position for cython/numpy chi, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy chi, max delta=%s" % max_delta)
+        self.assertTrue(max_delta < self.epsilon, "Bin-center position for cython/numpy chi, max delta=%s" % max_delta)
 
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
         logger.info("2d pixel count difference numpy/cython : max delta=%s", delta_max)
         if delta_max > 0:
             logger.warning("2d pixel count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max <= self.err_max_cnt, "2d pixel count difference numpy/cython : max delta=%s" % delta_max)
+        self.assertTrue(delta_max <= self.err_max_cnt, "2d pixel count difference numpy/cython : max delta=%s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < (self.err_max_cnt + self.epsilon) * self.maxI, "Intensity count difference numpy/cython : max delta=%s>%s" % (delta_max, (self.err_max_cnt + self.epsilon) * self.maxI))
+        self.assertTrue(delta_max < (self.err_max_cnt + self.epsilon) * self.maxI, "Intensity count difference numpy/cython : max delta=%s>%s" % (delta_max, (self.err_max_cnt + self.epsilon) * self.maxI))
 
         max_delta = abs(self.tth_numpy - self.tth_csr).max()
         logger.info("Bin-center position for csr/numpy tth, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy tth, max delta=%s" % max_delta)
+        self.assertTrue(max_delta < self.epsilon, "Bin-center position for csr/numpy tth, max delta=%s" % max_delta)
         max_delta = abs(self.chi_numpy - self.chi_csr).max()
         logger.info("Bin-center position for csr/numpy chi, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy chi, max delta=%s" % max_delta)
+        self.assertTrue(max_delta < self.epsilon, "Bin-center position for csr/numpy chi, max delta=%s" % max_delta)
 
         delta_max = abs(self.unweight_numpy - self.unweight_csr.T).max()
         if delta_max > self.err_max_cnt:
             logger.warning("pixel count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max <= self.err_max_cnt, "pixel count difference numpy/csr : max delta=%s" % delta_max)
+        self.assertTrue(delta_max <= self.err_max_cnt, "pixel count difference numpy/csr : max delta=%s" % delta_max)
         delta_max = abs(self.I_csr.T - self.I_numpy).max()
         if delta_max > self.epsilon_csr:
             logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max <= self.epsilon_csr, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assertTrue(delta_max <= self.epsilon_csr, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 def suite():

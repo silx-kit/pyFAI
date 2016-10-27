@@ -69,8 +69,8 @@ class TestAzimPilatus(unittest.TestCase):
 
     def test_separate(self):
         bragg, amorphous = self.ai.separate(self.data)
-        self.assert_(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
-        self.assert_(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
+        self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
+        self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
 
 
 class TestAzimHalfFrelon(unittest.TestCase):
@@ -238,8 +238,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
         "test separate with a mask. issue #209 regression test"
         msk = self.data < 100
         bragg, amorphous = self.ai.separate(self.data, mask=msk)
-        self.assert_(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
-        self.assert_(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
+        self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
+        self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
 
 
 class TestFlatimage(unittest.TestCase):
@@ -302,8 +302,8 @@ class test_saxs(unittest.TestCase):
         """test the generation of mask"""
         data = fabio.open(self.edfPilatus).data
         mask = fabio.open(self.maskFile).data
-        self.assert_(abs(self.ai.create_mask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
-#         self.assert_(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
+        self.assertTrue(abs(self.ai.create_mask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
+#         self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
 
 
 class TestSetter(unittest.TestCase):
@@ -327,13 +327,13 @@ class TestSetter(unittest.TestCase):
 
     def test_flat(self):
         self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
-        self.assert_(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
-        self.assert_(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
+        self.assertTrue(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
+        self.assertTrue(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
 
     def test_dark(self):
         self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
-        self.assert_(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
-        self.assert_(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
+        self.assertTrue(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
+        self.assertTrue(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
 
 
 def suite():
