@@ -378,6 +378,7 @@ class Calibrant(object):
         self._filename = "Modified"
         if self._wavelength:
             self._calc_2th()
+
     dSpacing = property(get_dSpacing, set_dSpacing)
 
     def append_dSpacing(self, value):
@@ -431,6 +432,7 @@ class Calibrant(object):
 
     def get_wavelength(self):
         return self._wavelength
+
     wavelength = property(get_wavelength, set_wavelength)
 
     def _calc_2th(self):
@@ -514,7 +516,7 @@ class Calibrant(object):
 
 class calibrant_factory(object):
     """Behaves like a dict but is actually a factory:
-    
+
     Each time one retrieves an object it is a new geniune new calibrant (unmodified)
     """
     def __init__(self, basedir=None):

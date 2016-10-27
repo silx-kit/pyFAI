@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 
 import os
@@ -1352,7 +1352,7 @@ class AbstractCalibration(object):
                 self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
 
         if self.geoRef:
-#             reset geoRef object
+            # reset geoRef object
             self.geoRef.set_dist_min(0)
             self.geoRef.set_dist_max(100)
             self.geoRef.set_dist(self.ai.dist)
@@ -2084,7 +2084,7 @@ class MultiCalib(object):
                 centerX = fabimg.data.shape[1] // 2
             if centerY is None:
                 centerY = fabimg.data.shape[0] // 2
-            self.results[fn] = {"wavelength":wavelength, "dist":dist}
+            self.results[fn] = {"wavelength": wavelength, "dist": dist}
             rec = Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
                                                   detector=self.detector, calibrant=self.calibrant, wavelength=wavelength)
             rec.outfile = os.path.splitext(fn)[0] + ".proc.edf"

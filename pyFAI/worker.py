@@ -88,7 +88,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/10/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 
 import threading
@@ -285,7 +285,7 @@ class Worker(object):
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
                  "method": self.method,
-                 "polarization_factor":self.polarization,
+                 "polarization_factor": self.polarization,
                  # "filename": None,
                  "safe": self.is_safe,
                  "data": data,
@@ -732,6 +732,3 @@ class DistortionWorker(object):
             return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
         else:
             return data
-
-
-

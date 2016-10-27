@@ -699,9 +699,9 @@ class Geometry(object):
             if (ary is not None) and (shape == ary.shape[:2]):
                 return ary
         key = space + "_corner_"
-        if self._cached_array.get(key) is  None or shape != self._cached_array.get(key).shape[:2]:
+        if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
-                if self._cached_array.get(key) is  None or shape != self._cached_array.get(key).shape[:2]:
+                if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
                     corners = None
                     if use_cython:
                         if self.detector.IS_CONTIGUOUS:
@@ -981,7 +981,7 @@ class Geometry(object):
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
 
-        if not typ in ("center", "corner", "delta"):
+        if typ not in ("center", "corner", "delta"):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
@@ -1453,8 +1453,8 @@ class Geometry(object):
             self.chiDiscAtPi = False
             self._cached_array["chi_center"] = None
             for key in list(self._cached_array.keys()):
-                 if key.startswith("corner"):
-                     self._cached_array[key] = None
+                if key.startswith("corner"):
+                    self._cached_array[key] = None
 
     def setChiDiscAtPi(self):
         """
@@ -1465,8 +1465,8 @@ class Geometry(object):
             self.chiDiscAtPi = True
             self._cached_array["chi_center"] = None
             for key in list(self._cached_array.keys()):
-                 if key.startswith("corner"):
-                     self._cached_array[key] = None
+                if key.startswith("corner"):
+                    self._cached_array[key] = None
 
     @deprecated
     def setOversampling(self, iOversampling):
@@ -1527,9 +1527,9 @@ class Geometry(object):
 
         if self._polarization is not None:
             with self._sem:
-                if ((factor == self._polarization_factor)
-                   and (shape == self._polarization.shape)
-                   and (axis_offset == self._polarization_axis_offset)):
+                if ((factor == self._polarization_factor) and
+                        (shape == self._polarization.shape) and
+                        (axis_offset == self._polarization_axis_offset)):
                     return self._polarization
 
         tth = self.twoThetaArray(shape)
@@ -1565,8 +1565,8 @@ class Geometry(object):
 
         with self._sem:
             if (t0 == self._transmission_normal) \
-                and (shape is None
-                     or (shape == self._transmission_corr.shape)):
+                and (shape is None or
+                     (shape == self._transmission_corr.shape)):
                 return self._transmission_corr
 
             if shape is None:
@@ -1661,7 +1661,7 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      ]
-        array = [ "_dssa",
+        array = ["_dssa",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1680,7 +1680,7 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      ]
-        array = [ "_dssa",
+        array = ["_dssa",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         if memo is None:
             memo = {}

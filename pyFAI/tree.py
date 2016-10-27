@@ -37,13 +37,12 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
 
-Module with list <-> tree conversion 
+Module with list <-> tree conversion
 
 """
 import os
 import logging
 from .io import is_hdf5
-from .decorators import timeit
 logger = logging.getLogger("tree")
 
 from collections import namedtuple
@@ -53,6 +52,7 @@ try:
     from .ext._tree import TreeItem
 except:
     logger.error("pyFAI.ext._tree did not import")
+
     class TreeItem(object):
         """
         Node of a tree ... Needs synchronization with Cython code
@@ -97,7 +97,7 @@ except:
         def sort(self):
             for child in self.children:
                 child.sort()
-            self.children.sort(key=lambda x:x.label)
+            self.children.sort(key=lambda x: x.label)
 
         @property
         def name(self):
@@ -172,7 +172,7 @@ class ListDataSet(list):
 
     def commonroot(self):
         """
-        @return: common directory 
+        @return: common directory
         """
         l = [j.path.split(os.sep) for j in self]
         common = os.path.commonprefix(l)
@@ -180,8 +180,8 @@ class ListDataSet(list):
             return os.sep.join(common + [""])
 
     def as_tree(self, sep=os.path.sep):
-        """Convert the list into a tree 
-        
+        """Convert the list into a tree
+
         @param sep: separator in the filenames
         @return: Root of the tree
         """

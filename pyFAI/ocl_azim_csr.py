@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -137,7 +137,7 @@ class OCL_CSR_Integrator(object):
 
     def __copy__(self):
         """Shallow copy of the object
-        
+
         :return: copy of the object
         """
         return self.__class__((self._data, self._indices, self._indptr),
@@ -149,7 +149,7 @@ class OCL_CSR_Integrator(object):
 
     def __deepcopy__(self, memo=None):
         """deep copy of the object
-        
+
         :return: deepcopy of the object
         """
         if memo is None:
@@ -158,7 +158,7 @@ class OCL_CSR_Integrator(object):
         memo[id(self._data)] = new_csr[0]
         memo[id(self._indices)] = new_csr[1]
         memo[id(self._indptr)] = new_csr[2]
-        new_obj = self.__class__(new_csr, self.size, 
+        new_obj = self.__class__(new_csr, self.size,
                                  block_size=self.BLOCK_SIZE,
                                  platformid=self.platform.id,
                                  deviceid=self.device.id,
@@ -253,7 +253,6 @@ class OCL_CSR_Integrator(object):
         self._cl_kernel_args["u32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
         self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
 
-
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
                             dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
                             preprocess_only=False, safe=True, normalization_factor=1.0):
@@ -312,7 +311,7 @@ class OCL_CSR_Integrator(object):
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
-                if delta_dummy == None:
+                if delta_dummy is None:
                     delta_dummy = numpy.float32(0.0)
                 else:
                     delta_dummy = numpy.float32(abs(delta_dummy))
@@ -414,6 +413,5 @@ class OCL_CSR_Integrator(object):
                     print("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
-        print("_"*80)
+        print("_" * 80)
         print("%50s:\t%.3fms" % ("Total execution time", t))
-
