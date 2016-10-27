@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -38,7 +38,6 @@ try:
     from .third_party import six
 except ImportError:
     import six
-StringTypes = (six.binary_type, six.text_type)
 import fabio
 logger = logging.getLogger("pyFAI.grid")
 

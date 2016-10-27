@@ -40,12 +40,11 @@ import time
 from . import detectors
 from . import units
 from .decorators import deprecated
-from .utils import expand2d
+from . import utils
 try:
     from .third_party import six
 except ImportError:
     import six
-StringTypes = (six.binary_type, six.text_type)
 
 logger = logging.getLogger("pyFAI.geometry")
 
@@ -217,7 +216,7 @@ class Geometry(object):
         self._transmission_crc = None
 
         if detector:
-            if isinstance(detector, StringTypes):
+            if isinstance(detector, utils.StringTypes):
                 self.detector = detectors.detector_factory(detector)
             else:
                 self.detector = detector
@@ -706,8 +705,8 @@ class Geometry(object):
                     corners = None
                     if use_cython:
                         if self.detector.IS_CONTIGUOUS:
-                            d1 = expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
-                            d2 = expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+                            d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+                            d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
                             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
                         else:
                             det_corners = self.detector.get_pixel_corners()
