@@ -36,6 +36,7 @@ Files:  version.py
         pyFAI/diffmap.py
         pyFAI/decorators.py
         pyFAI/distortion.py
+		pyFAI/integrate_widget.py
         pyFAI/tree.py
         pyFAI/orderedset.py
         pyFAI/opencl.py
