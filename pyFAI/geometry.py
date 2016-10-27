@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1171,17 +1171,18 @@ class Geometry(object):
         @type filename: string
         """
         data = {}
-        for line in open(filename):
-            if line.startswith("#") or (":" not in line):
-                continue
-            words = line.split(":", 1)
+        with open(filename) as opened_file:
+            for line in opened_file:
+                if line.startswith("#") or (":" not in line):
+                    continue
+                words = line.split(":", 1)
 
-            key = words[0].strip().lower()
-            try:
-                value = words[1].strip()
-            except Exception as error:  # IGNORE:W0703:
-                logger.error("Error %s with line: %s", error, line)
-            data[key] = value
+                key = words[0].strip().lower()
+                try:
+                    value = words[1].strip()
+                except Exception as error:  # IGNORE:W0703:
+                    logger.error("Error %s with line: %s", error, line)
+                data[key] = value
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"])
         else:
