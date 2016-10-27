@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2016"
+__date__ = "26/10/2016"
 
 import unittest
 import numpy
@@ -44,8 +44,6 @@ logger = getLogger(__file__)
 from .. import utils
 from .. import _version
 
-# if logger.getEffectiveLevel() <= logging.INFO:
-#    from pyFAI.gui_utils import pylab
 import scipy.ndimage
 
 # TODO Test:

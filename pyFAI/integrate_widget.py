@@ -26,14 +26,14 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __doc__ = """pyFAI-integrate
 
-A graphical tool (based on PyQt4) for performing azimuthal integration on series of files.
+A graphical tool for performing azimuthal integration on series of files.
 """
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/10/2016"
+__date__ = "26/10/2016"
 __status__ = "development"
 
 import logging
@@ -45,8 +45,7 @@ import math
 import os.path as op
 import numpy
 logger = logging.getLogger("pyFAI.integrate_widget")
-from .gui_utils import QtCore, QtGui, uic
-
+from .gui import qt
 import fabio
 from . import worker
 from .detectors import ALL_DETECTORS, detector_factory
@@ -64,7 +63,7 @@ except ImportError:
 UIC = get_ui_file("integration.ui")
 
 
-class AIWidget(QtGui.QWidget):
+class AIWidget(qt.QWidget):
     """
     """
     URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
@@ -79,9 +78,9 @@ class AIWidget(QtGui.QWidget):
         self.name = None
         self._sem = threading.Semaphore()
         self.json_file = json_file
-        QtGui.QWidget.__init__(self)
+        qt.QWidget.__init__(self)
         try:
-            uic.loadUi(UIC, self)
+            qt.loadUi(UIC, self)
         except AttributeError as _error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
@@ -96,10 +95,10 @@ class AIWidget(QtGui.QWidget):
         self.file_dark_current.clicked.connect(self.select_darkcurrent)
         self.file_flat_field.clicked.connect(self.select_flatfield)
         # connect button bar
-        self.okButton = self.buttonBox.button(QtGui.QDialogButtonBox.Ok)
-        self.saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
-        self.resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.cancelButton = self.buttonBox.button(QtGui.QDialogButtonBox.Cancel)
+        self.okButton = self.buttonBox.button(qt.QDialogButtonBox.Ok)
+        self.saveButton = self.buttonBox.button(qt.QDialogButtonBox.Save)
+        self.resetButton = self.buttonBox.button(qt.QDialogButtonBox.Reset)
+        self.cancelButton = self.buttonBox.button(qt.QDialogButtonBox.Cancel)
         self.okButton.clicked.connect(self.proceed)
         self.saveButton.clicked.connect(self.save_config)
         self.buttonBox.helpRequested.connect(self.help)
@@ -139,31 +138,31 @@ class AIWidget(QtGui.QWidget):
         """
         Set all validators for text entries
         """
-        npt_validator = QtGui.QIntValidator()
+        npt_validator = qt.QIntValidator()
         npt_validator.setBottom(1)
         self.nbpt_rad.setValidator(npt_validator)
         self.nbpt_azim.setValidator(npt_validator)
 
-        wl_validator = QtGui.QDoubleValidator(self)
+        wl_validator = qt.QDoubleValidator(self)
         wl_validator.setBottom(1e-15)
         wl_validator.setTop(1e-6)
         self.wavelength.setValidator(wl_validator)
 
-        distance_validator = QtGui.QDoubleValidator(self)
+        distance_validator = qt.QDoubleValidator(self)
         distance_validator.setBottom(0)
         self.pixel1.setValidator(distance_validator)
         self.pixel2.setValidator(distance_validator)
         self.poni1.setValidator(distance_validator)
         self.poni2.setValidator(distance_validator)
 
-        angle_validator = QtGui.QDoubleValidator(self)
+        angle_validator = qt.QDoubleValidator(self)
         distance_validator.setBottom(-math.pi)
         distance_validator.setTop(math.pi)
         self.rot1.setValidator(angle_validator)
         self.rot2.setValidator(angle_validator)
         self.rot3.setValidator(angle_validator)
         # done at widget level
-#        self.polarization_factor.setValidator(QtGui.QDoubleValidator(-1, 1, 3))
+#        self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
 
     def __get_unit(self):
         for unit, widget in self.units.items():
@@ -262,7 +261,7 @@ class AIWidget(QtGui.QWidget):
 
             if kwarg["npt_rad"] is None:
                 message = "You must provide the number of output radial bins !"
-                QtGui.QMessageBox.warning(self, "PyFAI integrate", message)
+                qt.QMessageBox.warning(self, "PyFAI integrate", message)
                 return {}
 
             if self.do_2D.isChecked():
@@ -302,7 +301,7 @@ class AIWidget(QtGui.QWidget):
                     w.radial_range = self.__get_radial_range()
                     w.azimuth_range = self.__get_azimuth_range()
                 except RuntimeError as e:
-                    QtGui.QMessageBox.warning(self, "PyFAI integrate", e.message + ". Action aboreded.")
+                    qt.QMessageBox.warning(self, "PyFAI integrate", e.message + ". Action aboreded.")
                     return {}
 
                 if self.do_2D.isChecked():
@@ -406,7 +405,7 @@ class AIWidget(QtGui.QWidget):
 
     def help(self):
         logger.debug("Please, help")
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl(self.URL))
+        qt.QDesktopServices.openUrl(qt.QUrl(self.URL))
 
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
@@ -552,12 +551,12 @@ class AIWidget(QtGui.QWidget):
             self.openCL_changed()
 
     def select_ponifile(self):
-        ponifile = QtGui.QFileDialog.getOpenFileName()
+        ponifile = qt.QFileDialog.getOpenFileName()
         self.set_ponifile(str_(ponifile))
 
     def select_splinefile(self):
         logger.debug("select_splinefile")
-        splinefile = str_(QtGui.QFileDialog.getOpenFileName())
+        splinefile = str_(qt.QFileDialog.getOpenFileName())
         if splinefile:
             try:
                 ai = AzimuthalIntegrator()
@@ -570,21 +569,21 @@ class AIWidget(QtGui.QWidget):
 
     def select_maskfile(self):
         logger.debug("select_maskfile")
-        maskfile = str_(QtGui.QFileDialog.getOpenFileName())
+        maskfile = str_(qt.QFileDialog.getOpenFileName())
         if maskfile:
             self.mask_file.setText(maskfile or "")
             self.do_mask.setChecked(True)
 
     def select_darkcurrent(self):
         logger.debug("select_darkcurrent")
-        darkcurrent = str_(QtGui.QFileDialog.getOpenFileName())
+        darkcurrent = str_(qt.QFileDialog.getOpenFileName())
         if darkcurrent:
             self.dark_current.setText(str_(darkcurrent))
             self.do_dark.setChecked(True)
 
     def select_flatfield(self):
         logger.debug("select_flatfield")
-        flatfield = str_(QtGui.QFileDialog.getOpenFileName())
+        flatfield = str_(qt.QFileDialog.getOpenFileName())
         if flatfield:
             self.flat_field.setText(str_(flatfield))
             self.do_flat.setChecked(True)
@@ -695,7 +694,7 @@ class AIWidget(QtGui.QWidget):
 
     def save_config(self):
         logger.debug("save_config")
-        json_file = str_(QtGui.QFileDialog.getSaveFileName(caption="Save configuration as json",
+        json_file = str_(qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
                                                            directory=self.json_file,
                                                            filter="Config (*.json)"))
         if json_file:

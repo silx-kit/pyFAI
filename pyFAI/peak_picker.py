@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "26/10/2016"
 __status__ = "production"
 
 import os
@@ -39,12 +39,17 @@ import types
 import array
 import operator
 import numpy
+
 try:
-    from . import gui_utils
-except ImportError:  # mainly for tests
-    gui_utils = None
-if gui_utils and gui_utils.has_Qt:
-    from .gui_utils import update_fig, maximize_fig, QtGui, matplotlib, pyplot, pylab
+    from .gui import qt
+except ImportError:
+    qt = None
+
+if qt is not None:
+    from .gui.utils import update_fig, maximize_fig
+    from .gui.matplotlib import matplotlib, pyplot, pylab
+    from .gui import utils as gui_utils
+
 import fabio
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
@@ -254,9 +259,9 @@ class PeakPicker(object):
             a = toolbar.addAction('Opts', self.on_option_clicked)
             a.setToolTip('open options window')
             if pick:
-                label = QtGui.QLabel("Ring #", toolbar)
+                label = qt.QLabel("Ring #", toolbar)
                 toolbar.addWidget(label)
-                self.spinbox = QtGui.QSpinBox(toolbar)
+                self.spinbox = qt.QSpinBox(toolbar)
                 self.spinbox.setMinimum(0)
                 self.sb_action = toolbar.addWidget(self.spinbox)
                 a = toolbar.addAction('Refine', self.on_refine_clicked)

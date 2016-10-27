@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "26/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module with GUI for diffraction mapping experiments"""
@@ -424,11 +424,11 @@ If the number of files is too large, use double quotes like "*.edf" """
         if not self.stats:
             return
         try:
-            from .gui_utils import pyplot as plt
+            from .gui.matplotlib import pyplot
         except ImportError:
             logger.error("Unable to start matplotlib for display")
             return
-        fig = plt.figure()
+        fig = pyplot.figure()
         ax = fig.add_subplot(1, 1, 1)
         ax.hist(self.timing, 500, facecolor='green', alpha=0.75)
         ax.set_xlabel('Execution time (seconds)')

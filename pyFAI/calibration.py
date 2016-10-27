@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/08/2016"
+__date__ = "26/10/2016"
 __status__ = "production"
 
 import os
@@ -53,7 +53,9 @@ else:
 
 logger = logging.getLogger("pyFAI.calibration")
 import numpy
-from .gui_utils import pylab, update_fig, matplotlib
+from .gui.matplotlib import pylab, matplotlib
+from .gui.utils import update_fig
+from .gui import utils as gui_utils
 from scipy.stats import linregress
 import fabio
 from . import utils
@@ -64,7 +66,7 @@ except (ImportError, Exception):
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
-from . import units, gui_utils
+from . import units
 from . import average
 from .utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, roundfft, \

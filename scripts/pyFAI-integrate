@@ -26,7 +26,7 @@
 """
 pyFAI-integrate
 
-A graphical tool (based on PyQt4) for performing azimuthal integration on series of files.
+A graphical tool for performing azimuthal integration on series of files.
 
 
 """
@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/08/2016"
+__date__ = "26/10/2016"
 __satus__ = "production"
 import sys, logging, json, os, time, types, threading
 import os.path
@@ -45,7 +45,6 @@ logger = logging.getLogger("pyFAI")
 import pyFAI, fabio
 from pyFAI.opencl import ocl
 import pyFAI.utils
-from pyFAI.integrate_widget import AIWidget
 import pyFAI.worker
 from pyFAI.io import DefaultAiWriter
 from pyFAI.io import HDF5Writer
@@ -65,11 +64,13 @@ except ImportError:
 
 
 def integrate_gui(options, args):
-    from PyQt4 import QtCore, QtGui, uic
-    app = QtGui.QApplication([])
+    from pyFAI.gui import qt
+    from pyFAI.integrate_widget import AIWidget
+
+    app = qt.QApplication([])
     if not args:
-        dia = QtGui.QFileDialog(directory=os.getcwd())
-        dia.setFileMode(QtGui.QFileDialog.ExistingFiles)
+        dia = qt.QFileDialog(directory=os.getcwd())
+        dia.setFileMode(qt.QFileDialog.ExistingFiles)
         dia.exec_()
         try:
             args = [str(i) for i in  dia.selectedFiles()]
