@@ -100,15 +100,15 @@ class TestConversion(unittest.TestCase):
         # print(y.dtype, x.dtype)
         pos = bilinear.convert_corner_2D_to_4D(3, numpy.ascontiguousarray(y), numpy.ascontiguousarray(x))
         y1, x1, z1 = bilinear.calc_cartesian_positions(y.ravel(), x.ravel(), pos)
-        self.assert_(numpy.allclose(y.ravel(), y1), "Maximum error on y is %s" % (abs(y.ravel() - y1).max()))
-        self.assert_(numpy.allclose(x.ravel(), x1), "Maximum error on x is %s" % (abs(x.ravel() - x1).max()))
+        self.assertTrue(numpy.allclose(y.ravel(), y1), "Maximum error on y is %s" % (abs(y.ravel() - y1).max()))
+        self.assertTrue(numpy.allclose(x.ravel(), x1), "Maximum error on x is %s" % (abs(x.ravel() - x1).max()))
         self.assertEqual(z1, None, "flat detector")
         x = x[:-1, :-1] + 0.5
         y = y[:-1, :-1] + 0.5
         y1, x1, z1 = bilinear.calc_cartesian_positions((y).ravel(), (x).ravel(), pos)
 
-        self.assert_(numpy.allclose(y.ravel(), y1), "Maximum error on y_center is %s" % (abs(y.ravel() - y1).max()))
-        self.assert_(numpy.allclose(x.ravel(), x1), "Maximum error on x_center is %s" % (abs(x.ravel() - x1).max()))
+        self.assertTrue(numpy.allclose(y.ravel(), y1), "Maximum error on y_center is %s" % (abs(y.ravel() - y1).max()))
+        self.assertTrue(numpy.allclose(x.ravel(), x1), "Maximum error on x_center is %s" % (abs(x.ravel() - x1).max()))
         self.assertEqual(z1, None, "flat detector")
 
 

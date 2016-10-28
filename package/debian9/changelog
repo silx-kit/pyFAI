@@ -1,0 +1,55 @@
+pyfai (0.11.0+dfsg-3) unstable; urgency=medium
+
+  * debian/path
+    + 0002-fix-from-upstream-python3-installation.patch (Closes: #794221)
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 11 Sep 2015 14:25:10 +0200
+
+pyfai (0.11.0+dfsg-2) unstable; urgency=medium
+
+  * Split pyfai package to follow the Debian modules name policy.
+  * Added python-pyfai, python-pyfai-dbg, python3-pyfai,
+    python3-pyfai-dbg, python-pyfai-doc
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Mon, 27 Jul 2015 16:18:27 +0200
+
+pyfai (0.11.0+dfsg-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.11.0+dfsg
+  * debian/control
+    - Added Build-Depends fabio (>= 0.2.2+dfsg~)
+  * debian/watch
+    - use the pypi redirector
+  * debian/copyright
+    - use Files-Exclude to repack sources
+  * debian/patches
+    + 0001-fix-pyFAI-when-third_party-is-missing.patch
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 24 Jul 2015 10:57:04 +0200
+
+pyfai (0.10.2-2~exp1) experimental; urgency=medium
+
+  * switch to dh-python
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 02 Jan 2015 15:13:07 +0100
+
+pyfai (0.10.2-1) unstable; urgency=medium
+
+  * Import new upstream version (0.10.2)
+  * debian/control
+    - Bump Standrad-Version 3.9.6 (nothing to do)
+    - fix Build-Depends/Depends with cme
+    - prepare for Debian-Science team maintenance.
+  * debian/copyright
+    - use copyright-format/1.0
+  * debian/rules
+    - cythonize files during the build
+    - use dh_numpy for better binary dependency.
+
+ -- Picca Frédéric-Emmanuel <picca@debian.org>  Fri, 24 Oct 2014 09:01:53 +0100
+
+pyfai (0.3.5-1) unstable; urgency=low
+
+  * Initial release (Closes: #656633)
+
+ -- Jerome Kieffer <jerome.kieffer@esrf.fr>  Fri, 20 Jan 2012 22:00:20 +0100

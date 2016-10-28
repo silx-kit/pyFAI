@@ -158,7 +158,7 @@ class TestDetector(unittest.TestCase):
                 else:
                     self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
             if (det.mask is not None) or (new_det.mask is not None):
-                self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+                self.assertTrue(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
 
             if det.shape[0] > 2000:
                 continue
@@ -178,11 +178,11 @@ class TestDetector(unittest.TestCase):
             if err2 > 1e-6:
                 logger.error("%s precision on pixel position 1 is better than 1µm, got %e", det_name, err2)
 
-            self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err1))
-            self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
+            self.assertTrue(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err1))
+            self.assertTrue(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
             if not det.IS_FLAT:
                 err = abs(r[2] - o[2]).max()
-                self.assert_(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
+                self.assertTrue(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
 
         # check Pilatus with displacement maps
         # check spline
@@ -228,8 +228,8 @@ class TestDetector(unittest.TestCase):
         d = detector_factory("Xpad S540 flat")
         cy = d.calc_cartesian_positions(use_cython=True)
         np = d.calc_cartesian_positions(use_cython=False)
-        self.assert_(numpy.allclose(cy[0], np[0]), "max_delta1=" % abs(cy[0] - np[0]).max())
-        self.assert_(numpy.allclose(cy[1], np[1]), "max_delta2=" % abs(cy[1] - np[1]).max())
+        self.assertTrue(numpy.allclose(cy[0], np[0]), "max_delta1=" % abs(cy[0] - np[0]).max())
+        self.assertTrue(numpy.allclose(cy[1], np[1]), "max_delta2=" % abs(cy[1] - np[1]).max())
 
     def test_non_flat(self):
         """
@@ -245,7 +245,7 @@ class TestDetector(unittest.TestCase):
         c = a.get_pixel_corners(use_cython=True)
         t2 = time.time()
         logger.info("Aarhus.get_pixel_corners timing Numpy: %.3fs Cython: %.3fs", t1 - t0, t2 - t1)
-        self.assert_(abs(n - c).max() < 1e-6, "get_pixel_corners cython == numpy")
+        self.assertTrue(abs(n - c).max() < 1e-6, "get_pixel_corners cython == numpy")
         # test pixel center coordinates
         t0 = time.time()
         n1, n2, n3 = a.calc_cartesian_positions(use_cython=False)
@@ -253,9 +253,9 @@ class TestDetector(unittest.TestCase):
         c1, c2, c3 = a.calc_cartesian_positions(use_cython=True)
         t2 = time.time()
         logger.info("Aarhus.calc_cartesian_positions timing Numpy: %.3fs Cython: %.3fs", t1 - t0, t2 - t1)
-        self.assert_(abs(n1 - c1).max() < 1e-6, "cartesian coord1 cython == numpy")
-        self.assert_(abs(n2 - c2).max() < 1e-6, "cartesian coord2 cython == numpy")
-        self.assert_(abs(n3 - c3).max() < 1e-6, "cartesian coord3 cython == numpy")
+        self.assertTrue(abs(n1 - c1).max() < 1e-6, "cartesian coord1 cython == numpy")
+        self.assertTrue(abs(n2 - c2).max() < 1e-6, "cartesian coord2 cython == numpy")
+        self.assertTrue(abs(n3 - c3).max() < 1e-6, "cartesian coord3 cython == numpy")
 
 
 def suite():

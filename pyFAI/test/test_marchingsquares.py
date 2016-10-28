@@ -58,7 +58,7 @@ class TestMarchingSquares(unittest.TestCase):
             c = isocontour(r, ref)
             self.assertNotEqual(0, len(c), "controur plot contains not point")
             i = numpy.round(c).astype(numpy.int32)
-            self.assert_(abs(r[(i[:, 0], i[:, 1])] - ref).max() < 0.05, "contour plot not working correctly")
+            self.assertTrue(abs(r[(i[:, 0], i[:, 1])] - ref).max() < 0.05, "contour plot not working correctly")
             if logger.getEffectiveLevel() <= logging.INFO:
                 pylab.imshow(r)
                 pylab.plot(c[:, 1], c[:, 0], ",")

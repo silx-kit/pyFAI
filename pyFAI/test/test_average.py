@@ -26,14 +26,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""test suite for average library
+"""
+
 from __future__ import division, print_function, absolute_import
 
-__doc__ = "test suite for average library"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2016"
+__date__ = "27/10/2016"
 
 import unittest
 import numpy
@@ -83,7 +85,7 @@ class TestAverage(unittest.TestCase):
         self.assertEqual(abs(numpy.ones_like(self.dark) - five).max(), 0, "data are the same: max test")
 
         six = average.average_dark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark], "median", .001)
-        self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
+        self.assertTrue(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
 
     def test_quantile(self):
         shape = (100, 100)
@@ -101,7 +103,7 @@ class TestAverage(unittest.TestCase):
             filter_="quantiles",
             fformat=None)
 
-        self.assert_(numpy.allclose(result, expected),
+        self.assertTrue(numpy.allclose(result, expected),
                      "average with quantiles gives bad results")
 
     def test_output_file(self):
@@ -110,7 +112,7 @@ class TestAverage(unittest.TestCase):
         file_name = average.average_images([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
         result = fabio.open(file_name).data
         expected = numpy.ones_like(self.dark)
-        self.assert_(abs(expected - result).mean() < 1e-2, "average_images")
+        self.assertTrue(abs(expected - result).mean() < 1e-2, "average_images")
 
     def test_min_filter(self):
         algorith = average.MinAveraging()
