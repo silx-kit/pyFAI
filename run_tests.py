@@ -57,7 +57,29 @@ else:
     old_importer = False
 
 
-logging.basicConfig(level=logging.WARNING)
+class StreamHandlerUnittestReady(logging.StreamHandler):
+    """The unittest class TestResult redefine sys.stdout/err to capture
+    stdout/err from tests and to display them only when a test fail.
+
+    This class allow to use unittest stdout-capture by using the last sys.stdout
+    and not a cached one.
+    """
+
+    def emit(self, record):
+        """
+        @type record: logging.LogRecord
+        """
+        self.stream = sys.stderr
+        super(StreamHandlerUnittestReady, self).emit(record)
+
+    def flush(self):
+        pass
+
+# Same as basicConfig with a custom handler but portable Python 2 and 3
+root = logging.getLogger()
+root.addHandler(StreamHandlerUnittestReady())
+root.setLevel(logging.WARNING)
+
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
 
@@ -278,8 +300,8 @@ parser.add_argument("-v", "--verbose", default=0,
                     help="Increase verbosity. Option -v prints additional " +
                          "INFO messages. Use -vv for full verbosity, " +
                          "including debug messages and test help strings.")
-parser.add_argument("-n", "--noisy", default=False,
-                    action="store_true", dest="noisy",
+parser.add_argument("-n", "--noisy", default=True,
+                    action="store_false", dest="display_buffer",
                     help="Display all warnings from the system")
 
 # parser.add_argument("-x", "--no-gui", dest="gui", default=True,
@@ -319,10 +341,6 @@ elif options.verbose > 1:
 #
 # if options.low_mem:isy
 #    os.environ["SILX_TEST_LOW_MEM"] = "True"
-if options.noisy:
-    display_buffer = False
-else:
-    display_buffer = True
 
 
 if options.coverage:
@@ -366,9 +384,9 @@ PROJECT_PATH = module.__path__[0]
 
 # Run the tests
 if options.memprofile:
-    runner = ProfileTestRunner(buffer=display_buffer)
+    runner = ProfileTestRunner(buffer=options.display_buffer)
 else:
-    runner = unittest.TextTestRunner(buffer=display_buffer)
+    runner = unittest.TextTestRunner(buffer=options.display_buffer)
 
 logger.warning("Test %s %s from %s",
                PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH)
