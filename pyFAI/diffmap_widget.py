@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -84,7 +84,6 @@ class TreeModel(qt.QAbstractItemModel):
         self._win = win
         self._current_branch = None
 
-    @timeit
     def update(self, new_root):
         self.beginResetModel()
         new_labels = [i.label for i in new_root.children]

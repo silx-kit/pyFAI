@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "27/09/2016"
+__date__ = "27/10/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1307,7 +1307,6 @@ class Distortion(object):
                 lout[i] += lin[idx] * coef
         return out[:img_shape[0], :img_shape[1]]
 
-    @timeit
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)

@@ -26,19 +26,18 @@
 import cython
 import os
 import sys
-#import time
 from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
-from libc.string cimport memset,memcpy
+from libc.string cimport memset, memcpy
 from cython cimport view
 import numpy
 cimport numpy
 from libc.math cimport fabs, M_PI
-cdef float pi = <float> M_PI 
+cdef float pi = <float> M_PI
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
-dtype_lut=numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
+dtype_lut = numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
 try:
     from .ext.fastcrc import crc32
 except:
@@ -46,14 +45,14 @@ except:
 cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
 
+
 class OCLFullSplit1d(object):
     """
     1D histogramming with full pixel splitting
     based on a Look-up table in CSR format
-    
-    
+
     The initialization of the class can take quite a while (operation are not parallelized)
-    but each integrate is parallelized and quite efficient. 
+    but each integrate is parallelized and quite efficient.
     """
 
     @cython.boundscheck(False)
@@ -67,18 +66,18 @@ class OCLFullSplit1d(object):
                  allow_pos0_neg=False,
                  unit="undefined"):
         """
-        @param pos: 4D array with the coodrinates of all pixels: tth or q_vect or r ...
+        @param pos: 4D array with the coodrinates of all pixels: tth or q_vect or r...
         @param bins: number of output bins, 100 by default
         @param pos0Range: minimum and maximum  of the 2th range
         @param pos1Range: minimum and maximum  of the chi range
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible,      NOT USED  
+        @param allow_pos0_neg: enforce the q<0 is usually not possible,      NOT USED
         @param unit: can be 2th_deg or r_nm^-1 ...
         """
 
         self.bins = bins
         self.lut_size = 0
-        self.allow_pos0_neg =  allow_pos0_neg
+        self.allow_pos0_neg = allow_pos0_neg
 
         if len(pos.shape) == 3:
             assert pos.shape[1] == 4
@@ -88,9 +87,9 @@ class OCLFullSplit1d(object):
             assert pos.shape[3] == 2
         else:
             raise ValueError("Pos array dimentions are wrong")
-        self.size = pos.size/8
+        self.size = pos.size / 8
 
-        if  mask is not None:
+        if mask is not None:
             assert mask.size == self.size
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
@@ -101,7 +100,6 @@ class OCLFullSplit1d(object):
         else:
             self.check_mask = False
             self.mask_checksum = None
-
 
         self.pos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
         self.pos0Range = pos0Range
@@ -121,22 +119,21 @@ class OCLFullSplit1d(object):
             self.check_pos1 = False
             self.cpos1_min = None
             self.pos1_max = None
-            
+
         self.delta = (self.pos0_max - self.pos0_min) / bins
-        self._lut=None
+        self._lut = None
         self.lut_max_idx = None
-        self.calc_lut()   
-        self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
+        self.calc_lut()
+        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta, self.pos0_maxin - 0.5 * self.delta, self.bins)
         self.lut_checksum = None
-        self.unit=unit
+        self.unit = unit
         self.lut_nbytes = self._lut.nbytes
-        
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def calc_boundaries(self,pos0Range):
+    def calc_boundaries(self, pos0Range):
         """
-        Called by constructor to calculate the boundaries and the bin position 
+        Called by constructor to calculate the boundaries and the bin position
         """
         cdef int size = self.cpos0.size
         cdef bint check_mask = self.check_mask
@@ -149,8 +146,8 @@ class OCLFullSplit1d(object):
         cpos0_inf = self.cpos0_inf
         cpos0 = self.cpos0
         dpos0 = self.dpos0
-        pos0_min=cpos0[0]
-        pos0_max=cpos0[0]
+        pos0_min = cpos0[0]
+        pos0_max = cpos0[0]
 
         if check_mask:
             cmask = self.cmask
@@ -186,8 +183,7 @@ class OCLFullSplit1d(object):
     @cython.wraparound(False)
     def calc_lut(self):
         """
-        calculate the max number of elements in the LUT and populate it
-        
+        Calculate the max number of elements in the LUT and populate it
         """
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef numpy.int32_t k,idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
@@ -316,10 +312,10 @@ class OCLFullSplit1d(object):
                             lut[i, k].idx = idx
                             lut[i, k].coef = (deltaA)
                             outMax[i] += 1
-        
+
         self.lut_max_idx = outMax
         self._lut = lut 
-        
+
     def get_lut(self):
         """Getter for the LUT as actual numpy array""" 
         cdef int rc_before, rc_after
@@ -342,7 +338,7 @@ class OCLFullSplit1d(object):
                                         copy=True)
 
 
-    lut = property(get_lut)         
+    lut = property(get_lut)
 
 
     @cython.cdivision(True)
@@ -477,15 +473,9 @@ class OCLFullSplit1d(object):
                 outMerge[i] += sum_data / sum_count
             else:
                 outMerge[i] += cdummy
-        
+
         #Ugly against bug#89
         if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
             print("Decref needed")
             Py_XDECREF(<PyObject *> self._lut)
         return  self.outPos, outMerge, outData, outCount
-
-
-
-################################################################################
-# Bidimensionnal regrouping
-################################################################################

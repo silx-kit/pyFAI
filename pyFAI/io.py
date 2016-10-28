@@ -25,15 +25,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-
 from __future__ import absolute_import, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module for "high-performance" writing in either 1D with Ascii , 
@@ -107,7 +105,7 @@ def from_isotime(text, use_tz=False):
         return
     base = text[:19]
     if use_tz and len(text) == 25:
-        sgn = 1 if  text[:19] == "+" else -1
+        sgn = 1 if text[:19] == "+" else -1
         tz = 60 * (60 * int(text[20:22]) + int(text[23:25])) * sgn
     else:
         tz = 0
@@ -659,6 +657,7 @@ class DefaultAiWriter(Writer):
     def close(self):
         pass
 
+
 class AsciiWriter(Writer):
     """
     Ascii file writer (.xy or .dat)
@@ -771,29 +770,29 @@ class FabioWriter(Writer):
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-#            dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
-            header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
-#                           "chi_min", "chi_max",
-#                           dim1_unit.REPR + "_min",
-#                           dim1_unit.REPR + "_max",
-#                           "pixelX", "pixelY",
-#                           "dark", "flat", "polarization_factor", "normalization_factor"
+            # dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
+            _header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
+                            # "chi_min", "chi_max",
+                            # dim1_unit.REPR + "_min",
+                            # dim1_unit.REPR + "_max",
+                            # "pixelX", "pixelY",
+                            # "dark", "flat", "polarization_factor", "normalization_factor"
                             ]
-            header = {"dist": str(fai_cfg.get("dist")),
-                      "poni1": str(fai_cfg.get("poni1")),
-                      "poni2": str(fai_cfg.get("poni2")),
-                      "rot1": str(fai_cfg.get("rot1")),
-                      "rot2": str(fai_cfg.get("rot2")),
-                      "rot3": str(fai_cfg.get("rot3")),
-#                      "chi_min": str(fai_cfg.get("chi_min")),
-#                      "chi_max": str(fai_cfg.get("chi_max")),
-#                      dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
-#                      dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
-#                      "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
-#                      "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
-#                      "polarization_factor": str(fai_cfg.get("dist")),
-#                      "normalization_factor":str(fai_cfg.get("dist")),
-                      }
+            _header = {"dist": str(fai_cfg.get("dist")),
+                       "poni1": str(fai_cfg.get("poni1")),
+                       "poni2": str(fai_cfg.get("poni2")),
+                       "rot1": str(fai_cfg.get("rot1")),
+                       "rot2": str(fai_cfg.get("rot2")),
+                       "rot3": str(fai_cfg.get("rot3")),
+                       # "chi_min": str(fai_cfg.get("chi_min")),
+                       # "chi_max": str(fai_cfg.get("chi_max")),
+                       # dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
+                       # dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
+                       # "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
+                       # "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
+                       # "polarization_factor": str(fai_cfg.get("dist")),
+                       # "normalization_factor":str(fai_cfg.get("dist")),
+                       }
 
 #            if self.splineFile:
 #                header["spline"] = str(self.splineFile)
@@ -1012,7 +1011,7 @@ class Nexus(object):
         """
         perform a deep copy:
         create a "name" entry in self containing a copy of the object
-        
+
         @param where: path to the toplevel object (i.e. root)
         @param  toplevel: firectly the top level Group
         @param excluded: list of keys to be excluded
@@ -1042,13 +1041,13 @@ class Nexus(object):
     @classmethod
     def get_attr(cls, dset, name, default=None):
         """Return the attribute of the dataset
-        
+
         Handles the ascii -> unicode issue in python3 #275
-        
+
         @param dset: a HDF5 dataset (or a group)
         @param name: name of the attribute
         @param default: default value to be returned
-        @return: attribute value decoded in python3 or default 
+        @return: attribute value decoded in python3 or default
         """
         dec = default
         if name in dset.attrs:

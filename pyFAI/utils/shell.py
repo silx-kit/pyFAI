@@ -29,12 +29,13 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/09/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module containing utilitary around shell"""
 
 import sys
+import codecs
 
 
 class ProgressBar:
@@ -69,6 +70,23 @@ class ProgressBar:
         self.bar_width = bar_width
         self.last_size = 0
 
+        # sys.stdout.encoding can't be used in unittest context with some
+        # configurations of TestRunner. It does not exists in Python2 StringIO
+        # and is None in Python3 StringIO
+        encoding = None
+        if hasattr(sys.stdout, "encoding"):
+            encoding = sys.stdout.encoding
+        if encoding is None:
+            import locale
+            _lang, encoding = locale.getdefaultlocale()
+        try:
+            self.progress_char = u'\u25A0'
+            _byte = codecs.encode(self.progress_char, encoding)
+        except (ValueError, LookupError):
+            # In case the char is not supported by the encoding,
+            # or if the encoding does not exists
+            self.progress_char = '#'
+
     def clear(self):
         """
         Remove the progress bar from the display and move the cursor
@@ -98,7 +116,7 @@ class ProgressBar:
             bar_position = self.bar_width
 
         # line to display
-        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, u'\u25A0' * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
+        line = '\r%15s [%s%s] % 3d%%  %s' % (self.title, self.progress_char * bar_position, ' ' * (self.bar_width - bar_position), percent, message)
 
         # trailing to mask the previous message
         line_size = len(line)

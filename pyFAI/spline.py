@@ -36,14 +36,13 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "27/10/2016"
+__date__ = "28/10/2016"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
 import time
 import sys
 import numpy
-import scipy
 import logging
 import scipy.optimize
 import scipy.interpolate
@@ -243,7 +242,7 @@ class Spline(object):
                             break
                     self.ySplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
                     self.ySplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
-                    self.ySplineCoeff = numpy.array(databloc[ splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
+                    self.ySplineCoeff = numpy.array(databloc[splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
     # Keep this at the end
                 indexLine += 1
         except:
@@ -370,7 +369,7 @@ class Spline(object):
                    self.xSplineKnotsY,
                    self.xSplineCoeff,
                    self.splineOrder,
-                   self.splineOrder ],
+                   self.splineOrder],
             dx=0, dy=0)
         if list_of_points and x.ndim == 1:
             return xDispArray[x_unordered, y_unordered]
@@ -414,7 +413,7 @@ class Spline(object):
                    self.ySplineKnotsY,
                    self.ySplineCoeff,
                    self.splineOrder,
-                   self.splineOrder ],
+                   self.splineOrder],
             dx=0, dy=0)
         if list_of_points and x.ndim == 1:
             return yDispArray[x_unordered, y_unordered]
@@ -715,7 +714,7 @@ class Spline(object):
 
     def fliplr(self):
         """
-        Flip the spline 
+        Flip the spline
         @return: new spline object
         """
         self.spline2array()

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2016"
+__date__ = "27/10/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -49,7 +49,7 @@ from .geometry import Geometry
 from . import average
 from . import units
 from . import utils
-from .utils import StringTypes, EPS32, deg2rad
+from .utils import EPS32, deg2rad
 from .decorators import deprecated
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
@@ -3385,7 +3385,7 @@ class AzimuthalIntegrator(Geometry):
         Set the dark current from one or mutliple files, avaraged
         according to the method provided
         """
-        if type(files) in StringTypes:
+        if type(files) in utils.StringTypes:
             files = [i.strip() for i in files.split(",")]
         elif not files:
             files = []
@@ -3408,7 +3408,7 @@ class AzimuthalIntegrator(Geometry):
         Set the flat field from one or mutliple files, averaged
         according to the method provided
         """
-        if type(files) in StringTypes:
+        if type(files) in utils.StringTypes:
             files = [i.strip() for i in files.split(",")]
         elif not files:
             files = []

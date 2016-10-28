@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -46,6 +46,7 @@ try:
 except:
     from zlib import crc32
 logger = logging.getLogger("pyFAI.ocl_azim_csr")
+
 
 class OCL_Hist_Pixelsplit(object):
     def __init__(self, pos, bins, image_size, pos0Range=None, pos1Range=None, devicetype="all",
@@ -81,19 +82,19 @@ class OCL_Hist_Pixelsplit(object):
             self.pos0Range[0][1] = max(pos0Range)
         else:
             self.pos0Range[0][0] = -float("inf")
-            self.pos0Range[0][1] =  float("inf")
+            self.pos0Range[0][1] = +float("inf")
 
         if (pos1Range is not None) and (len(pos1Range) is 2):
             self.pos1Range[0][0] = min(pos1Range)
             self.pos1Range[0][1] = max(pos1Range)
         else:
             self.pos1Range[0][0] = -float("inf")
-            self.pos1Range[0][1] =  float("inf")
+            self.pos1Range[0][1] = +float("inf")
 
         self.profile = profile
         if not checksum:
             checksum = crc32(self.pos)
-        self.on_device = {"pos":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
+        self.on_device = {"pos": checksum, "dark": None, "flat": None, "polarization": None, "solidangle": None}
         self._cl_kernel_args = {}
         self._cl_mem = {}
         self.events = []
@@ -111,7 +112,7 @@ class OCL_Hist_Pixelsplit(object):
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
-            #self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+            # self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             self._ctx = pyopencl.create_some_context()
             if self.profile:
                 self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
@@ -123,21 +124,22 @@ class OCL_Hist_Pixelsplit(object):
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos"], self.pos)
-        if self.profile: self.events.append(("copy pos data",ev))
+        if self.profile:
+            self.events.append(("copy pos data", ev))
         reduction_wg_size = 256
-        reduce1 = self._program.reduce1(self._queue, (reduction_wg_size*reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce1"])
-        self.events.append(("reduce1",reduce1))
+        reduce1 = self._program.reduce1(self._queue, (reduction_wg_size * reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce1"])
+        self.events.append(("reduce1", reduce1))
         reduce2 = self._program.reduce2(self._queue, (reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce2"])
-        self.events.append(("reduce2",reduce2))
+        self.events.append(("reduce2", reduce2))
 
-        result = numpy.ndarray(4,dtype=numpy.float32)
-        pyopencl.enqueue_copy(self._queue,result, self._cl_mem["minmax"])
+        result = numpy.ndarray(4, dtype=numpy.float32)
+        pyopencl.enqueue_copy(self._queue, result, self._cl_mem["minmax"])
         print(result)
         min0 = pos[:, :, 0].min()
         max0 = pos[:, :, 0].max()
         min1 = pos[:, :, 1].min()
         max1 = pos[:, :, 1].max()
-        minmax=(min0,max0,min1,max1)
+        minmax = (min0, max0, min1, max1)
 
         print(minmax)
 
@@ -236,26 +238,26 @@ class OCL_Hist_Pixelsplit(object):
         self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_u16", "image"]]
         self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image", "image"]]
 
-    def  integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None, dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
+    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None, dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
         events = []
         with self._sem:
             if data.dtype == numpy.uint16:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_u16"], numpy.ascontiguousarray(data))
                 cast_u16_to_float = self._program.u16_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["u16_to_float"])
-                events+=[("copy image",copy_image),("cast", cast_u16_to_float)]
+                events += [("copy image", copy_image), ("cast", cast_u16_to_float)]
             elif data.dtype == numpy.int32:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data))
                 cast_s32_to_float = self._program.s32_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s32_to_float"])
-                events+=[("copy image",copy_image),("cast", cast_s32_to_float)]
+                events += [("copy image", copy_image), ("cast", cast_s32_to_float)]
             else:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
-                events+=[("copy image",copy_image)]
+                events += [("copy image", copy_image)]
             memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
-            events+=[("memset",memset)]
+            events += [("memset", memset)]
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
-                if delta_dummy == None:
+                if delta_dummy is None:
                     delta_dummy = numpy.float32(0)
                 else:
                     delta_dummy = numpy.float32(abs(delta_dummy))
@@ -275,7 +277,7 @@ class OCL_Hist_Pixelsplit(object):
                     dark_checksum = crc32(dark)
                 if dark_checksum != self.on_device["dark"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    events.append("copy dark",ev)
+                    events.append("copy dark", ev)
                     self.on_device["dark"] = dark_checksum
             else:
                 do_dark = numpy.int32(0)
@@ -285,8 +287,8 @@ class OCL_Hist_Pixelsplit(object):
                 if not flat_checksum:
                     flat_checksum = crc32(flat)
                 if self.on_device["flat"] != flat_checksum:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                    events.append("copy flat",ev)
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
+                    events.append("copy flat", ev)
                     self.on_device["flat"] = flat_checksum
             else:
                 do_flat = numpy.int32(0)
@@ -297,8 +299,8 @@ class OCL_Hist_Pixelsplit(object):
                 if not solidAngle_checksum:
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-                    events.append(("copy solidangle",ev))
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
+                    events.append(("copy solidangle", ev))
                     self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
@@ -309,8 +311,8 @@ class OCL_Hist_Pixelsplit(object):
                 if not polarization_checksum:
                     polarization_checksum = crc32(polarization)
                 if polarization_checksum != self.on_device["polarization"]:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
-                    events.append(("copy polarization",ev))
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
+                    events.append(("copy polarization", ev))
                     self.on_device["polarization"] = polarization_checksum
             else:
                 do_polarization = numpy.int32(0)
@@ -318,27 +320,27 @@ class OCL_Hist_Pixelsplit(object):
             copy_image.wait()
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
-                events.append(("corrections",ev))
+                events.append(("corrections", ev))
             integrate1 = self._program.integrate1(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["integrate1"])
-            events.append(("integrate1",integrate1))
+            events.append(("integrate1", integrate1))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
             outCount = numpy.empty(self.bins, dtype=numpy.float32)
-            ev=pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"])
-            events.append(("copy D->H outData",ev))
-            ev=pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
-            events.append(("copy D->H outCount",ev))
+            ev = pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"])
+            events.append(("copy D->H outData", ev))
+            ev = pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
+            events.append(("copy D->H outCount", ev))
             global_size_integrate2 = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
             integrate2 = self._program.integrate2(self._queue, global_size_integrate2, self.workgroup_size, *self._cl_kernel_args["integrate2"])
-            events.append(("integrate2",integrate2))
-            ev=pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
-            events.append(("copy D->H outMerge",ev))
+            events.append(("integrate2", integrate2))
+            ev = pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
+            events.append(("copy D->H outMerge", ev))
             ev.wait()
         if self.profile:
-            self.events+=events
+            self.events += events
         return outMerge, outData, outCount
 
-    def  log_profile(self):
+    def log_profile(self):
         """
         If we are in profiling mode, prints out all timing for every single OpenCL call
         """
@@ -350,5 +352,5 @@ class OCL_Hist_Pixelsplit(object):
                     print("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
-        print("_"*80)
+        print("_" * 80)
         print("%50s:\t%.3fms" % ("Total execution time", t))

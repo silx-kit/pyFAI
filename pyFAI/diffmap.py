@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module with GUI for diffraction mapping experiments"""
@@ -508,9 +508,10 @@ If the number of files is too large, use double quotes like "*.edf" """
               (cnt, tot, 1000. * tot / cnt))
         self.nxs.close()
 
-
     def get_use_gpu(self):
         return ("gpu" in self.method)
+
     def set_use_gpu(self, value):
         self.method = "csr_ocl_gpu" if value else "csr"
+
     use_gpu = property(get_use_gpu, set_use_gpu)

@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/08/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 
 import os
@@ -79,5 +79,3 @@ else:
                 os.makedirs(testimages)
             except OSError as err:
                 logger.warning("Creating test_directory %s ended in error %s, probably a race condition", testimages, err)
-
-
