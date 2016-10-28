@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/06/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -126,7 +126,7 @@ def eq_logq(x, y, z, wavelength):
 
 
 TTH_DEG = TTH = Enum(REPR="2th_deg",
-#                      corner="cornerArray",
+                     # corner="cornerArray",
                      center="twoThetaArray",
                      delta="delta2Theta",
                      scale=180.0 / numpy.pi,
@@ -134,7 +134,7 @@ TTH_DEG = TTH = Enum(REPR="2th_deg",
                      equation=eq_2th)
 
 TTH_RAD = Enum(REPR="2th_rad",
-#                corner="cornerArray",
+               # corner="cornerArray",
                center="twoThetaArray",
                delta="delta2Theta",
                scale=1.0,
@@ -143,7 +143,7 @@ TTH_RAD = Enum(REPR="2th_rad",
 
 Q = Q_NM = Enum(REPR="q_nm^-1",
                 center="qArray",
-#                 corner="cornerQArray",
+                # corner="cornerQArray",
                 delta="deltaQ",
                 scale=1.0,
                 label=r"Scattering vector $q$ ($nm^{-1}$)",
@@ -151,7 +151,7 @@ Q = Q_NM = Enum(REPR="q_nm^-1",
 
 Q_A = Enum(REPR="q_A^-1",
            center="qArray",
-#            corner="cornerQArray",
+           # corner="cornerQArray",
            delta="deltaQ",
            scale=0.1,
            label=r"Scattering vector $q$ ($\AA ^{-1}$)",
@@ -159,7 +159,7 @@ Q_A = Enum(REPR="q_A^-1",
 
 RecD2_A = Enum(REPR="d*2_A^-2",
                center="rd2Array",
-#                corner="cornerRd2Array",
+               # corner="cornerRd2Array",
                delta="deltaRd2",
                scale=0.01,
                label=r"Reciprocal spacing squared $d^{*2}$ ($\AA ^{-2}$)",
@@ -167,7 +167,7 @@ RecD2_A = Enum(REPR="d*2_A^-2",
 
 RecD2_NM = Enum(REPR="d*2_nm^-2",
                 center="rd2Array",
-#                 corner="cornerRd2Array",
+                # corner="cornerRd2Array",
                 delta="deltaRd2",
                 scale=1.0,
                 label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)",
@@ -175,7 +175,7 @@ RecD2_NM = Enum(REPR="d*2_nm^-2",
 
 R = R_MM = Enum(REPR="r_mm",
                 center="rArray",
-#                 corner="cornerRArray",
+                # corner="cornerRArray",
                 delta="deltaR",
                 scale=1000.0,
                 label=r"Radius $r$ ($mm$)",
@@ -183,7 +183,7 @@ R = R_MM = Enum(REPR="r_mm",
 
 R_M = Enum(REPR="r_m",
                 center="rArray",
-#                 corner="cornerRArray",
+                # corner="cornerRArray",
                 delta="deltaR",
                 scale=1.0,
                 label=r"Radius $r$ ($m$)",

@@ -36,7 +36,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "GPLv3"
-__date__ = "25/01/2016"
+__date__ = "27/10/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -58,6 +58,7 @@ class Integrator1d(object):
     Attempt to implements ocl_azim using pyopencl
     """
     BLOCK_SIZE = 128
+
     def __init__(self, filename=None):
         """
 
@@ -140,7 +141,7 @@ class Integrator1d(object):
         """
         if self.logfile:
             for key, event in kwarg.items():
-#                if  event is an event
+                # if event is an event
                 event.wait()
                 self.logfile.write(
                     " %s: %.3fms\t" %
@@ -229,7 +230,7 @@ class Integrator1d(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Compile the kernel
-        
+
         @param kernel_file: filename of the kernel (to test other kernels)
         """
         kernel_file = kernel_file or "ocl_azim_kernel_2.cl"

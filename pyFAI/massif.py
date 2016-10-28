@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 
 import sys
@@ -51,11 +51,6 @@ if os.name != "nt":
     WindowsError = RuntimeError
 
 
-
-################################################################################
-# Massif
-################################################################################
-
 class Massif(object):
     """
     A massif is defined as an area around a peak, it is used to find neighboring peaks
@@ -68,7 +63,7 @@ class Massif(object):
         """
         if isinstance(data, six.string_types) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
-        elif  isinstance(data, fabio.fabioimage.fabioimage):
+        elif isinstance(data, fabio.fabioimage.fabioimage):
             self.data = data.data.astype("float32")
         else:
             try:
@@ -99,7 +94,7 @@ class Massif(object):
         elif isinstance(out, numpy.ndarray):
             res = tuple(out)
         else:
-            res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx] ]
+            res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx]]
         if (len(res) != 2) or not((0 <= out[0] < self.data.shape[0]) and (0 <= res[1] < self.data.shape[1])):
             logger.error("in nearest_peak %s -> %s", x, out)
             return
@@ -143,7 +138,7 @@ class Massif(object):
                 try:
                     annotate(xinit, x)
                 except Exception as error:
-                    logger.error("Error in annotate %i: %i %i. %s" , len(listpeaks), xinit[0], xinit[1], error)
+                    logger.error("Error in annotate %i: %i %i. %s", len(listpeaks), xinit[0], xinit[1], error)
 
         listpeaks.append(xinit)
         mean = self.data[region].mean(dtype=numpy.float64)
@@ -221,13 +216,15 @@ class Massif(object):
         if self._valley_size is None:
             self.initValleySize()
         return self._valley_size
+
     def setValleySize(self, size):
         new_size = float(size)
         if self._valley_size != new_size:
             self._valley_size = new_size
-#            self.getLabeledMassif()
+            # self.getLabeledMassif()
             t = threading.Thread(target=self.getLabeledMassif)
             t.start()
+
     def delValleySize(self):
         self._valley_size = None
         self._blured_data = None
@@ -279,8 +276,8 @@ class Massif(object):
         if self._blured_data is None:
             with self._sem:
                 if self._blured_data is None:
-                    logger.debug("Blurring image with kernel size: %s" , self.valley_size)
-                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
+                    logger.debug("Blurring image with kernel size: %s", self.valley_size)
+                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in self.binning], mode="reflect")
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._blured_data).write("blured_data.edf")
         return self._blured_data

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -46,7 +46,8 @@ import time
 import json
 import threading
 import numpy
-from .gui_utils import QtGui, QtCore, Signal, uic, pyplot, update_fig
+from .gui import qt
+from .gui.matplotlib import pyplot
 from .utils import float_, int_, str_, get_ui_file
 from .decorators import timeit
 from .units import to_unit
@@ -58,11 +59,11 @@ import logging
 logger = logging.getLogger("pyFAI.diffmap_widget")
 
 
-class IntegrateWidget(QtGui.QDialog):
+class IntegrateWidget(qt.QDialog):
     def __init__(self, parent=None):
-        QtGui.QDialog.__init__(self)
+        qt.QDialog.__init__(self)
         self.widget = AIWidget()
-        self.layout = QtGui.QGridLayout(self)
+        self.layout = qt.QGridLayout(self)
         self.layout.addWidget(self.widget)
         self.widget.okButton.clicked.disconnect()
         self.widget.do_2D.setEnabled(False)
@@ -76,14 +77,13 @@ class IntegrateWidget(QtGui.QDialog):
         return res
 
 
-class TreeModel(QtCore.QAbstractItemModel):
+class TreeModel(qt.QAbstractItemModel):
     def __init__(self, win, root_item):
         super(TreeModel, self).__init__(win)
         self._root_item = root_item
         self._win = win
         self._current_branch = None
 
-    @timeit
     def update(self, new_root):
         self.beginResetModel()
         new_labels = [i.label for i in new_root.children]
@@ -111,7 +111,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def flags(self, midx):
 #        if midx.column()==1:
-        return QtCore.Qt.ItemIsEnabled
+        return qt.Qt.ItemIsEnabled
 
     def index(self, row, column, parent):
         pitem = parent.internalPointer()
@@ -120,7 +120,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         try:
             item = pitem.children[row]
         except IndexError:
-            return QtCore.QModelIndex()
+            return qt.QModelIndex()
         return self.createIndex(row, column, item)
 
     def data(self, midx, role):
@@ -128,11 +128,11 @@ class TreeModel(QtCore.QAbstractItemModel):
         What to display depending on model_index and role
         """
         leaf = midx.internalPointer()
-        if midx.column() == 0 and role == QtCore.Qt.DisplayRole:
+        if midx.column() == 0 and role == qt.Qt.DisplayRole:
             return leaf.label
 
     def headerData(self, section, orientation, role):
-        if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
+        if role == qt.Qt.DisplayRole and orientation == qt.Qt.Horizontal:
             # return ["Path", "shape"][section]
             return ["Path"][section]
 
@@ -143,25 +143,25 @@ class TreeModel(QtCore.QAbstractItemModel):
             return  # QtCore.QModelIndex()
         pitem = item.parent
         if pitem is self._root_item:
-            return QtCore.QModelIndex()
+            return qt.QModelIndex()
         row_idx = pitem.parent.children.index(pitem)
         return self.createIndex(row_idx, 0, pitem)
 
 
-class DiffMapWidget(QtGui.QWidget):
-    progressbarChanged = Signal(int, int)
+class DiffMapWidget(qt.QWidget):
+    progressbarChanged = qt.Signal(int, int)
 #     progressbarAborted = Signal()
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
     URL = "http://pyfai.readthedocs.org/en/latest/man/scripts.html"
     def __init__(self):
-        QtGui.QWidget.__init__(self)
+        qt.QWidget.__init__(self)
 
         self.integration_config = {}
         self.list_dataset = ListDataSet()  # Contains all datasets to be treated.
 
         try:
-            uic.loadUi(get_ui_file(self.uif), self)
+            qt.loadUi(get_ui_file(self.uif), self)
         except AttributeError as error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
@@ -169,8 +169,8 @@ class DiffMapWidget(QtGui.QWidget):
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
         self.listFiles.setModel(self.list_model)
-        self.listFiles.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.listFiles.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listFiles.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
+        self.listFiles.setSelectionMode(qt.QAbstractItemView.ExtendedSelection)
         self.create_connections()
         self.set_validator()
         self.update_number_of_frames()
@@ -197,12 +197,12 @@ class DiffMapWidget(QtGui.QWidget):
         self._menu_file()
 
     def set_validator(self):
-        validator = QtGui.QIntValidator(0, 999999, self)
+        validator = qt.QIntValidator(0, 999999, self)
         self.fastMotorPts.setValidator(validator)
         self.slowMotorPts.setValidator(validator)
         self.offset.setValidator(validator)
 
-        float_valid = QtGui.QDoubleValidator(self)
+        float_valid = qt.QDoubleValidator(self)
         self.rMin.setValidator(float_valid)
         self.rMax.setValidator(float_valid)
 
@@ -224,17 +224,17 @@ class DiffMapWidget(QtGui.QWidget):
 
     def _menu_file(self):
         # Drop-down file menu
-        self.files_menu = QtGui.QMenu("Files")
+        self.files_menu = qt.QMenu("Files")
 
-        action_more = QtGui.QAction("add files", self.files)
+        action_more = qt.QAction("add files", self.files)
         self.files_menu.addAction(action_more)
         action_more.triggered.connect(self.input_filer)
 
-        action_sort = QtGui.QAction("sort files", self.files)
+        action_sort = qt.QAction("sort files", self.files)
         self.files_menu.addAction(action_sort)
         action_sort.triggered.connect(self.sort_input)
 
-        action_clear = QtGui.QAction("clear selected files", self.files)
+        action_clear = qt.QAction("clear selected files", self.files)
         self.files_menu.addAction(action_clear)
         action_clear.triggered.connect(self.clear_selection)
 
@@ -258,9 +258,9 @@ class DiffMapWidget(QtGui.QWidget):
             "CBF files (*.cbf)",
             "MarCCD image files (*.mccd)",
             "Any file (*)"]
-        fnames = QtGui.QFileDialog.getOpenFileNames(self,
+        fnames = qt.QFileDialog.getOpenFileNames(self,
                          "Select one or more diffraction image files",
-                         QtCore.QDir.currentPath(),
+                         qt.QDir.currentPath(),
                          filter=self.tr(";;".join(filters)))
         for i in fnames:
             self.list_dataset.append(DataSet(str_(i), None, None, None))
@@ -285,7 +285,7 @@ class DiffMapWidget(QtGui.QWidget):
         if self.integration_config:
             iw.widget.set_config(self.integration_config)
         res = iw.exec_()
-        if res == QtGui.QDialog.Accepted:
+        if res == qt.QDialog.Accepted:
             iw.widget.input_data = [i.path for i in self.list_dataset]
             self.integration_config = iw.get_config()
         print(json.dumps(self.integration_config, indent=2))
@@ -294,22 +294,22 @@ class DiffMapWidget(QtGui.QWidget):
         """
         called when clicking on "outputFileSelector"
         """
-        fname = QtGui.QFileDialog.getSaveFileName(self, "Output file",
-                                                  QtCore.QDir.currentPath(),
+        fname = qt.QFileDialog.getSaveFileName(self, "Output file",
+                                                  qt.QDir.currentPath(),
                                                   filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
         self.outputFile.setText(fname)
 
     def start_processing(self, *arg, **kwarg):
         logger.info("in start_processing")
         if not self.integration_config:
-            result = QtGui.QMessageBox.warning(self, "Azimuthal Integration",
+            result = qt.QMessageBox.warning(self, "Azimuthal Integration",
                                                    "You need to configure first the Azimuthal integration")
             if result:
                 self.configure_diffraction()
             else:
                 return
         if not str(self.outputFile.text()):
-            result = QtGui.QMessageBox.warning(self, "Destination",
+            result = qt.QMessageBox.warning(self, "Destination",
                                                    "You need to configure first the destination file")
             if result:
                 self.configure_output()
@@ -414,7 +414,7 @@ class DiffMapWidget(QtGui.QWidget):
 
     def save_config(self):
         logger.debug("save_config")
-        json_file = str_(QtGui.QFileDialog.getSaveFileName(caption="Save configuration as json",
+        json_file = str_(qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
                                                            directory=self.json_file,
                                                            filter="Config (*.json)"))
         if json_file:
@@ -508,7 +508,7 @@ class DiffMapWidget(QtGui.QWidget):
                 self.img.set_data(img)
             self.last_idx = idx_img
             self.fig.canvas.draw()
-            QtCore.QCoreApplication.processEvents()
+            qt.QCoreApplication.processEvents()
             time.sleep(0.1)
 
     def update_slice(self, *args):

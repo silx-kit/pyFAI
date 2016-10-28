@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 
 import os
@@ -39,12 +39,17 @@ import types
 import array
 import operator
 import numpy
+
 try:
-    from . import gui_utils
-except ImportError:  # mainly for tests
-    gui_utils = None
-if gui_utils and gui_utils.has_Qt:
-    from .gui_utils import update_fig, maximize_fig, QtGui, matplotlib, pyplot, pylab
+    from .gui import qt
+except ImportError:
+    qt = None
+
+if qt is not None:
+    from .gui.utils import update_fig, maximize_fig
+    from .gui.matplotlib import matplotlib, pyplot, pylab
+    from .gui import utils as gui_utils
+
 import fabio
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
@@ -254,9 +259,9 @@ class PeakPicker(object):
             a = toolbar.addAction('Opts', self.on_option_clicked)
             a.setToolTip('open options window')
             if pick:
-                label = QtGui.QLabel("Ring #", toolbar)
+                label = qt.QLabel("Ring #", toolbar)
                 toolbar.addWidget(label)
-                self.spinbox = QtGui.QSpinBox(toolbar)
+                self.spinbox = qt.QSpinBox(toolbar)
                 self.spinbox.setMinimum(0)
                 self.sb_action = toolbar.addWidget(self.spinbox)
                 a = toolbar.addAction('Refine', self.on_refine_clicked)
@@ -288,7 +293,7 @@ class PeakPicker(object):
             s2 -= 1
             self.ax.set_xlim(0, s2)
             self.ax.set_ylim(0, s1)
-            d1 = numpy.array([0, s1, s1, 0 ])
+            d1 = numpy.array([0, s1, s1, 0])
             d2 = numpy.array([0, 0, s2, s2])
             p1, p2, _ = self.detector.calc_cartesian_positions(d1=d1, d2=d2)
             ax = self.fig.add_subplot(1, 1, 1,
@@ -306,11 +311,11 @@ class PeakPicker(object):
             ax.xaxis.label.set_color('blue')
             ax.tick_params(colors="blue", labelbottom='off', labeltop='on',
                            labelleft='off', labelright='on')
-#             ax.autoscale_view(False, False, False)
+            # ax.autoscale_view(False, False, False)
 
         else:
-            cbar = self.fig.colorbar(im, label=txt)
-#         self.ax.autoscale_view(False, False, False)
+            _cbar = self.fig.colorbar(im, label=txt)
+        # self.ax.autoscale_view(False, False, False)
         update_fig(self.fig)
         if maximize:
             maximize_fig(self.fig)
@@ -335,7 +340,7 @@ class PeakPicker(object):
                 self.ax.texts = []
                 self.ax.lines = []
 
-            for lbl, gpt in self.points._groups.items():
+            for _lbl, gpt in self.points._groups.items():
                 idx = gpt.ring
                 if idx < minIndex:
                     continue

@@ -8,22 +8,26 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
-"""
-Calibrant
+
+"""Calibrant
 
 A module containing classical calibrant and also tools to generate d-spacing.
 
@@ -35,9 +39,9 @@ from __future__ import absolute_import, print_function, with_statement
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/10/2016"
 __status__ = "production"
 
 
@@ -70,10 +74,10 @@ class Cell(object):
 
         Crystalographic units are Angstrom for distances and degrees for angles !
 
-        @param a,b,c: unit cell length in Angstrom
-        @param alpha, beta, gamma: unit cell angle in degrees
-        @param lattice: "cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"
-        @param lattice_type: P, I, F, C or R
+        :param a,b,c: unit cell length in Angstrom
+        :param alpha, beta, gamma: unit cell angle in degrees
+        :param lattice: "cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"
+        :param lattice_type: P, I, F, C or R
         """
         self.a = a
         self.b = b
@@ -102,7 +106,7 @@ class Cell(object):
     def cubic(cls, a, lattice_type="P"):
         """Factory for cubic lattices
 
-        @param a: unit cell length
+        :param a: unit cell length
         """
         a = float(a)
         self = cls(a, a, a, 90, 90, 90,
@@ -113,8 +117,8 @@ class Cell(object):
     def tetragonal(cls, a, c, lattice_type="P"):
         """Factory for tetragonal lattices
 
-        @param a: unit cell length
-        @param c: unit cell length
+        :param a: unit cell length
+        :param c: unit cell length
         """
         a = float(a)
         self = cls(a, a, float(c), 90, 90, 90,
@@ -125,9 +129,9 @@ class Cell(object):
     def orthorhombic(cls, a, b, c, lattice_type="P"):
         """Factory for orthorhombic lattices
 
-        @param a: unit cell length
-        @param b: unit cell length
-        @param c: unit cell length
+        :param a: unit cell length
+        :param b: unit cell length
+        :param c: unit cell length
         """
         self = cls(float(a), float(b), float(c), 90, 90, 90,
                    lattice="orthorhombic", lattice_type=lattice_type)
@@ -137,8 +141,8 @@ class Cell(object):
     def hexagonal(cls, a, c, lattice_type="P"):
         """Factory for hexagonal lattices
 
-        @param a: unit cell length
-        @param c: unit cell length
+        :param a: unit cell length
+        :param c: unit cell length
         """
         a = float(a)
         self = cls(a, a, float(c), 90, 90, 120,
@@ -149,10 +153,10 @@ class Cell(object):
     def monoclinic(cls, a, b, c, beta, lattice_type="P"):
         """Factory for hexagonal lattices
 
-        @param a: unit cell length
-        @param b: unit cell length
-        @param c: unit cell length
-        @param beta: unit cell angle
+        :param a: unit cell length
+        :param b: unit cell length
+        :param c: unit cell length
+        :param beta: unit cell angle
         """
         self = cls(float(a), float(b), float(c), 90, float(beta), 90,
                    lattice_type=lattice_type, lattice="monoclinic")
@@ -162,8 +166,8 @@ class Cell(object):
     def rhombohedral(cls, a, alpha, lattice_type="P"):
         """Factory for hexagonal lattices
 
-        @param a: unit cell length
-        @param alpha: unit cell angle
+        :param a: unit cell length
+        :param alpha: unit cell angle
         """
         a = float(a)
         alpha = float(a)
@@ -175,7 +179,7 @@ class Cell(object):
     def diamond(cls, a):
         """Factory for Diamond type FCC like Si and Ge
 
-        @param a: unit cell length
+        :param a: unit cell length
         """
         self = cls.cubic(a, lattice_type="F")
         self.selection_rules.append(lambda h, k, l: not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0)))
@@ -191,7 +195,6 @@ class Cell(object):
                 cosg = cos(self.gamma * pi / 180.)
                 self._volume *= sqrt(1 - cosa ** 2 - cosb ** 2 - cosg ** 2 + 2 * cosa * cosb * cosg)
         return self._volume
-
 
     def get_type(self):
         return self._type
@@ -212,8 +215,8 @@ class Cell(object):
         Calculate the actual d-spacing for a 3-tuple of integer representing a
         family of Miller plans
 
-        @param hkl: 3-tuple of integers
-        @return: the inter-planar distance
+        :param hkl: 3-tuple of integers
+        :return: the inter-planar distance
         """
         h, k, l = hkl
         if self.lattice in ["cubic", "tetragonal", "orthorhombic"]:
@@ -251,8 +254,8 @@ class Cell(object):
 
         applies selection rules
 
-        @param dmin: minimum value of spacing requested
-        @return: dict d-spacing as string, list of tuple with Miller indices
+        :param dmin: minimum value of spacing requested
+        :return: dict d-spacing as string, list of tuple with Miller indices
                 preceded with the numerical value
         """
         hmax = int(ceil(self.a / dmin))
@@ -284,10 +287,10 @@ class Cell(object):
     def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
         """Save informations about the cell in a d-spacing file, usable as Calibrant
 
-        @param name: name of the calibrant
-        @param doi: reference of the publication used to parametrize the cell
-        @param dmin: minimal d-spacing
-        @param dest_dir: name of the directory where to save the result
+        :param name: name of the calibrant
+        :param doi: reference of the publication used to parametrize the cell
+        :param dmin: minimal d-spacing
+        :param dest_dir: name of the directory where to save the result
         """
         fname = name + ".D"
         if dest_dir:
@@ -356,7 +359,7 @@ class Calibrant(object):
         save the d-spacing to a file
 
         """
-        if filename == None and self._filename is not None:
+        if (filename is None) and (self._filename is not None):
             filename = self._filename
         else:
             return
@@ -375,6 +378,7 @@ class Calibrant(object):
         self._filename = "Modified"
         if self._wavelength:
             self._calc_2th()
+
     dSpacing = property(get_dSpacing, set_dSpacing)
 
     def append_dSpacing(self, value):
@@ -384,6 +388,7 @@ class Calibrant(object):
                 self._dSpacing.append(value)
                 self._dSpacing.sort(reverse=True)
                 self._calc_2th()
+
     def append_2th(self, value):
         with self._sem:
             if value not in self._2th:
@@ -427,6 +432,7 @@ class Calibrant(object):
 
     def get_wavelength(self):
         return self._wavelength
+
     wavelength = property(get_wavelength, set_wavelength)
 
     def _calc_2th(self):
@@ -477,9 +483,9 @@ class Calibrant(object):
         """
         Generates a fake calibration image from an azimuthal integrator
 
-        @param ai: azimuthal integrator
-        @param Imax: maximum intensity of rings
-        @param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
+        :param ai: azimuthal integrator
+        :param Imax: maximum intensity of rings
+        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
 
         """
         if shape is None:
@@ -509,15 +515,15 @@ class Calibrant(object):
 
 
 class calibrant_factory(object):
-    """
-    Behaves like a dict but is actually a factory:
+    """Behaves like a dict but is actually a factory:
+
     Each time one retrieves an object it is a new geniune new calibrant (unmodified)
     """
     def __init__(self, basedir=None):
         """
         Constructor
 
-        @param basedir: directory name where to search for the calibrants
+        :param basedir: directory name where to search for the calibrants
         """
         if basedir is None:
             basedir = get_calibration_dir()

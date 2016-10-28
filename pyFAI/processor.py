@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/08/2016"
+__date__ = "27/10/2016"
 __status__ = "DEPRECATED -> see worker"
 __docformat__ = 'restructuredtext'
 
@@ -132,12 +132,10 @@ class Processor(object):
         self.ai.rot2 = config.get("rot2", 0)
         self.ai.rot3 = config.get("rot3", 0)
 
-
         if config.get("chi_discontinuity_at_0"):
             self.ai.setChiDiscAtZero()
         else:
             self.ai.setChiDiscAtPi()
-
 
         mask_file = config.get("mask_file")
         do_mask = config.get("do_mask")
@@ -233,7 +231,6 @@ class Processor(object):
     def save_config(self, filename=None):
         if not filename:
             filename = self.config_file
-
 
     def warmup(self):
         """

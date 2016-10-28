@@ -40,10 +40,13 @@ except:
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
-    'sphinx.ext.pngmath',
     'sphinxcontrib.programoutput',
     'sphinx.ext.mathjax'
 ]
+
+import sphinx
+if sphinx.__version__ < "1.4":
+    extensions.append('sphinx.ext.pngmath')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -61,7 +64,7 @@ master_doc = 'index'
 project = u'pyFAI'
 from pyFAI._version import strictversion, version, __date__ as pyfai_date
 year = pyfai_date.split("/")[-1]
-copyright = u'2012-%s, Jerome Kieffer'% (year)
+copyright = u'2012-%s, Jerome Kieffer' % (year)
 
 # Configure the environment to be able to use sphinxcontrib.programoutput
 # NOTE: Must be done after pyFAI._version import which at the end of the end imports PyMCA
@@ -69,16 +72,16 @@ copyright = u'2012-%s, Jerome Kieffer'% (year)
 import glob
 root_dir = os.path.abspath("../..")
 build_dir = glob.glob('../../build/lib*')
-os.environ["PATH"] = os.path.abspath(os.path.join(root_dir,"scripts")) + os.pathsep + os.environ.get("PATH","")
+os.environ["PATH"] = os.path.abspath(os.path.join(root_dir, "scripts")) + os.pathsep + os.environ.get("PATH", "")
 if build_dir:
-    os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH","")
+    os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-#version = '0.11'
+# version = '0.11'
 # The full version, including alpha/beta/rc tags.
 release = strictversion
 
@@ -278,7 +281,7 @@ re_field = re.compile('@(param|type|rtype|return)')
 
 
 def fix_docstring(app, what, name, obj, options, lines):
-    for i in xrange(len(lines)):
+    for i in range(len(lines)):
         lines[i] = re_field.sub(r':\1', lines[i])
 
 

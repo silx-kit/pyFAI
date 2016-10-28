@@ -230,7 +230,7 @@ class TestSort(unittest.TestCase):
         logger.info("Reference sort time: %s ms, err=%s ", 1e-6 * (evt.profile.end - evt.profile.start), err)
         # this test works under linux:
         if platform.system() == "Linux":
-            self.assert_(err == 0.0)
+            self.assertTrue(err == 0.0)
         else:
             logger.warning("Measured error on %s is %s", platform.system(), err)
 
@@ -248,7 +248,7 @@ class TestSort(unittest.TestCase):
         logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
         logger.info("Reference sort time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
         # this test works anywhere !
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
     def test_sort_all(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
@@ -263,7 +263,7 @@ class TestSort(unittest.TestCase):
         logger.info("test_sort_all")
         logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
         logger.info("modified function execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
     def test_sort_horizontal(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -276,7 +276,7 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy horizontal sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
         logger.info("Horizontal execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
     def test_sort_vertical(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -289,7 +289,7 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy vertical sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
         logger.info("Vertical execution time: %s ms, err=%s ", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
 
 def suite():

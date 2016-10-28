@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -40,12 +40,11 @@ import time
 from . import detectors
 from . import units
 from .decorators import deprecated
-from .utils import expand2d
+from . import utils
 try:
     from .third_party import six
 except ImportError:
     import six
-StringTypes = (six.binary_type, six.text_type)
 
 logger = logging.getLogger("pyFAI.geometry")
 
@@ -217,7 +216,7 @@ class Geometry(object):
         self._transmission_crc = None
 
         if detector:
-            if isinstance(detector, StringTypes):
+            if isinstance(detector, utils.StringTypes):
                 self.detector = detectors.detector_factory(detector)
             else:
                 self.detector = detector
@@ -700,14 +699,14 @@ class Geometry(object):
             if (ary is not None) and (shape == ary.shape[:2]):
                 return ary
         key = space + "_corner_"
-        if self._cached_array.get(key) is  None or shape != self._cached_array.get(key).shape[:2]:
+        if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
-                if self._cached_array.get(key) is  None or shape != self._cached_array.get(key).shape[:2]:
+                if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
                     corners = None
                     if use_cython:
                         if self.detector.IS_CONTIGUOUS:
-                            d1 = expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
-                            d2 = expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+                            d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+                            d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
                             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
                         else:
                             det_corners = self.detector.get_pixel_corners()
@@ -982,7 +981,7 @@ class Geometry(object):
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
 
-        if not typ in ("center", "corner", "delta"):
+        if typ not in ("center", "corner", "delta"):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
@@ -1171,17 +1170,18 @@ class Geometry(object):
         @type filename: string
         """
         data = {}
-        for line in open(filename):
-            if line.startswith("#") or (":" not in line):
-                continue
-            words = line.split(":", 1)
+        with open(filename) as opened_file:
+            for line in opened_file:
+                if line.startswith("#") or (":" not in line):
+                    continue
+                words = line.split(":", 1)
 
-            key = words[0].strip().lower()
-            try:
-                value = words[1].strip()
-            except Exception as error:  # IGNORE:W0703:
-                logger.error("Error %s with line: %s", error, line)
-            data[key] = value
+                key = words[0].strip().lower()
+                try:
+                    value = words[1].strip()
+                except Exception as error:  # IGNORE:W0703:
+                    logger.error("Error %s with line: %s", error, line)
+                data[key] = value
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"])
         else:
@@ -1453,8 +1453,8 @@ class Geometry(object):
             self.chiDiscAtPi = False
             self._cached_array["chi_center"] = None
             for key in list(self._cached_array.keys()):
-                 if key.startswith("corner"):
-                     self._cached_array[key] = None
+                if key.startswith("corner"):
+                    self._cached_array[key] = None
 
     def setChiDiscAtPi(self):
         """
@@ -1465,8 +1465,8 @@ class Geometry(object):
             self.chiDiscAtPi = True
             self._cached_array["chi_center"] = None
             for key in list(self._cached_array.keys()):
-                 if key.startswith("corner"):
-                     self._cached_array[key] = None
+                if key.startswith("corner"):
+                    self._cached_array[key] = None
 
     @deprecated
     def setOversampling(self, iOversampling):
@@ -1527,9 +1527,9 @@ class Geometry(object):
 
         if self._polarization is not None:
             with self._sem:
-                if ((factor == self._polarization_factor)
-                   and (shape == self._polarization.shape)
-                   and (axis_offset == self._polarization_axis_offset)):
+                if ((factor == self._polarization_factor) and
+                        (shape == self._polarization.shape) and
+                        (axis_offset == self._polarization_axis_offset)):
                     return self._polarization
 
         tth = self.twoThetaArray(shape)
@@ -1565,8 +1565,8 @@ class Geometry(object):
 
         with self._sem:
             if (t0 == self._transmission_normal) \
-                and (shape is None
-                     or (shape == self._transmission_corr.shape)):
+                and (shape is None or
+                     (shape == self._transmission_corr.shape)):
                 return self._transmission_corr
 
             if shape is None:
@@ -1661,7 +1661,7 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      ]
-        array = [ "_dssa",
+        array = ["_dssa",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1680,7 +1680,7 @@ class Geometry(object):
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
                      ]
-        array = [ "_dssa",
+        array = ["_dssa",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         if memo is None:
             memo = {}

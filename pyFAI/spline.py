@@ -1,46 +1,48 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# ##########################################################################
+#
 # Written 2009-12-22 by Jérôme Kieffer
-# Copyright (C) 2009 European Synchrotron Radiation Facility
-#                       Grenoble, France
+# Copyright (C) 2009-2016  European Synchrotron Radiation Facility
+#                          Grenoble, France
 #
 #    Principal authors: Jérôme Kieffer  (jerome.kieffer@esrf.fr)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# #######################################################################################
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-
-from __future__ import print_function, division
-__doc__ = """
-This is piece of software aims at manipulating spline files
+"""This is piece of software aims at manipulating spline files
 describing for geometric corrections of the 2D detectors using cubic-spline.
 
 Mainly used at ESRF with FReLoN CCD camera.
 """
 
+from __future__ import print_function, division
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
-__license__ = "GPLv3+"
-__date__ = "02/08/2016"
+__license__ = "MIT"
+__date__ = "28/10/2016"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
 import time
 import sys
 import numpy
-import scipy
 import logging
 import scipy.optimize
 import scipy.interpolate
@@ -87,9 +89,9 @@ class Spline(object):
         self.ySplineKnotsX = []
         self.ySplineKnotsY = []
         self.ySplineCoeff = []
-        self.pixelSize = None #2-tuple of float
-        self.grid = None #
-        self.filename = None #string
+        self.pixelSize = None  # 2-tuple of float
+        self.grid = None
+        self.filename = None  # string
         if filename is not None:
             self.read(filename)
 
@@ -110,20 +112,20 @@ class Spline(object):
 
     def __copy__(self):
         """@return: Shallow copy of the spline"""
-        unmutable =  "splineOrder", "lenStrFloat","xmin","ymin","xmax","ymax","filename","pixelSize","grid"
-        arrays = "xDispArray","yDispArray"
-        lists = "xSplineKnotsX","xSplineKnotsY","xSplineCoeff","ySplineKnotsX","ySplineKnotsY","ySplineCoeff"
+        unmutable = "splineOrder", "lenStrFloat", "xmin", "ymin", "xmax", "ymax", "filename", "pixelSize", "grid"
+        arrays = "xDispArray", "yDispArray"
+        lists = "xSplineKnotsX", "xSplineKnotsY", "xSplineCoeff", "ySplineKnotsX", "ySplineKnotsY", "ySplineCoeff"
         new = self.__class__()
-        for key in unmutable+arrays+lists:
+        for key in unmutable + arrays + lists:
             new.__setattr__(key, self.__getattribute__(key))
         return new
 
     def __deepcopy__(self, memo=None):
         """@return: deep copy of the spline"""
-        unmutable =  "splineOrder", "lenStrFloat","xmin","ymin","xmax","ymax","filename","pixelSize","grid"
-        arrays = "xDispArray","yDispArray"
-        lists = "xSplineKnotsX","xSplineKnotsY","xSplineCoeff","ySplineKnotsX","ySplineKnotsY","ySplineCoeff"
-        
+        unmutable = "splineOrder", "lenStrFloat", "xmin", "ymin", "xmax", "ymax", "filename", "pixelSize", "grid"
+        arrays = "xDispArray", "yDispArray"
+        lists = "xSplineKnotsX", "xSplineKnotsY", "xSplineCoeff", "ySplineKnotsX", "ySplineKnotsY", "ySplineCoeff"
+
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -196,7 +198,8 @@ class Spline(object):
         if not os.path.isfile(filename):
             raise IOError("Spline File does not exist %s" % filename)
         self.filename = filename
-        stringSpline = [i.rstrip() for i in open(filename)]
+        with open(filename) as opened_file:
+            stringSpline = [i.rstrip() for i in opened_file]
         try:
             indexLine = 0
             for oneLine in stringSpline:
@@ -239,7 +242,7 @@ class Spline(object):
                             break
                     self.ySplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
                     self.ySplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
-                    self.ySplineCoeff = numpy.array(databloc[ splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
+                    self.ySplineCoeff = numpy.array(databloc[splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
     # Keep this at the end
                 indexLine += 1
         except:
@@ -272,8 +275,8 @@ class Spline(object):
         maxErrY = abs(deltay).max()
         curvX = scipy.interpolate.interp1d(histXdr, histX[0] - histX[0].max() / 2.0)
         curvY = scipy.interpolate.interp1d(histYdr, histY[0] - histY[0].max() / 2.0)
-        fFWHM_X = scipy.optimize.bisect(curvX , histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX , histXdr[0], histXmax)
-        fFWHM_Y = scipy.optimize.bisect(curvY , histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY , histYdr[0], histYmax)
+        fFWHM_X = scipy.optimize.bisect(curvX, histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX, histXdr[0], histXmax)
+        fFWHM_Y = scipy.optimize.bisect(curvY, histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY, histYdr[0], histYmax)
         logger.info("Analysis of the difference between two splines")
         logger.info("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels.", maxErrX, maxErrY)
         logger.info("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels.", histXmax, histYmax)
@@ -366,7 +369,7 @@ class Spline(object):
                    self.xSplineKnotsY,
                    self.xSplineCoeff,
                    self.splineOrder,
-                   self.splineOrder ],
+                   self.splineOrder],
             dx=0, dy=0)
         if list_of_points and x.ndim == 1:
             return xDispArray[x_unordered, y_unordered]
@@ -410,7 +413,7 @@ class Spline(object):
                    self.ySplineKnotsY,
                    self.ySplineCoeff,
                    self.splineOrder,
-                   self.splineOrder ],
+                   self.splineOrder],
             dx=0, dy=0)
         if list_of_points and x.ndim == 1:
             return yDispArray[x_unordered, y_unordered]
@@ -675,25 +678,21 @@ class Spline(object):
         self.xDispArray = None
         self.yDispArray = None
 
-
     def correct(self, pos):
-        delta1 = fitpack.bisplev(pos[1], pos[0],
-                                        [self.xSplineKnotsX,
-                                         self.xSplineKnotsY,
-                                         self.xSplineCoeff,
-                                         self.splineOrder,
-                                         self.splineOrder],
+        delta1 = fitpack.bisplev(pos[1], pos[0], [self.xSplineKnotsX,
+                                                  self.xSplineKnotsY,
+                                                  self.xSplineCoeff,
+                                                  self.splineOrder,
+                                                  self.splineOrder],
                                  dx=0, dy=0)
 
         delta0 = fitpack.bisplev(pos[1], pos[0], [self.ySplineKnotsX,
-                                         self.ySplineKnotsY,
-                                         self.ySplineCoeff,
-                                         self.splineOrder,
-                                         self.splineOrder],
+                                                  self.ySplineKnotsY,
+                                                  self.ySplineCoeff,
+                                                  self.splineOrder,
+                                                  self.splineOrder],
                                  dx=0, dy=0)
         return delta0 + pos[0], delta1 + pos[1]
-
-
 
     def flipud(self):
         """
@@ -715,7 +714,7 @@ class Spline(object):
 
     def fliplr(self):
         """
-        Flip the spline 
+        Flip the spline
         @return: new spline object
         """
         self.spline2array()
@@ -763,7 +762,7 @@ def main():
         if os.path.isfile(keyword):
             spline_file = keyword
         elif keyword.lower().find("center=") in [0, 1, 2]:
-            center = [float(i) for i in  keyword.split("=")[1].split("x")]
+            center = [float(i) for i in keyword.split("=")[1].split("x")]
         elif keyword.lower().find("dist=") in [0, 1, 2]:
             distance = float(keyword.split("=")[1])
         elif keyword.lower().find("tilt=") in [0, 1, 2]:

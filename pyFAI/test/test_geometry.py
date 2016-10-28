@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/08/2016"
+__date__ = "27/10/2016"
 
 
 import unittest
@@ -106,16 +106,16 @@ class TestSolidAngle(unittest.TestCase):
         delta_tth = abs(tth - self.tth_fit2d).max()
         delta_I = abs(I_nogood - self.I_fit2d).max()
         I = abs(I_nogood - self.I_fit2d).mean()
-        self.assert_(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assert_(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
-        self.assert_(I > 2, 'Error on (wrong) I are large: %s >2' % I)
+        self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
+        self.assertTrue(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
+        self.assertTrue(I > 2, 'Error on (wrong) I are large: %s >2' % I)
         tth, I_good = self.ai.integrate1d(self.data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=3)
         delta_tth = abs(tth - self.tth_fit2d).max()
         delta_I = abs(I_good - self.I_fit2d).max()
         I = abs(I_good - self.I_fit2d).mean()
-        self.assert_(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assert_(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
-        self.assert_(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
+        self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
+        self.assertTrue(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
+        self.assertTrue(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
 
     def test_nonflat_center(self):
         """
@@ -130,8 +130,8 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assert_(mini > 0.99, 'Cos solid angle is %s >0.99' % mini)
+        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertTrue(mini > 0.99, 'Cos solid angle is %s >0.99' % mini)
 
     def test_nonflat_outside(self):
         """
@@ -146,9 +146,9 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assert_(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assert_(mini < 0.92, 'Cos solid angle min is %s <0.92' % mini)
+        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertTrue(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assertTrue(mini < 0.92, 'Cos solid angle min is %s <0.92' % mini)
 
     def test_nonflat_inside(self):
         """
@@ -163,9 +163,9 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assert_(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assert_(mini < 0.87, 'Cos solid angle min is %s <0.86' % mini)
+        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertTrue(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assertTrue(mini < 0.87, 'Cos solid angle min is %s <0.86' % mini)
 
 
 class TestBug88SolidAngle(unittest.TestCase):
@@ -202,13 +202,13 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
     def test_center(self):
         rd2 = self.geo.rd2Array(self.shape)
         q = self.geo.qArray(self.shape)
-        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "center rd2 = (q/2pi)**2")
+        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "center rd2 = (q/2pi)**2")
 
     def test_corner(self):
         rd2 = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
         q = self.geo.cornerQArray(self.shape)[:, :, :, 0]
         delta = rd2 - (q / (2 * numpy.pi)) ** 2
-        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
+        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
 
     def test_delta(self):
 
@@ -216,9 +216,9 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         rd2 = self.geo.rd2Array(self.shape)
         rc = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
         drd2 = self.geo.deltaRd2(self.shape)
-        self.assert_(numpy.allclose(drd2, drd2a, atol=1e-5), "delta rd2 = (q/2pi)**2, one formula with another")
+        self.assertTrue(numpy.allclose(drd2, drd2a, atol=1e-5), "delta rd2 = (q/2pi)**2, one formula with another")
         delta2 = abs(rc - numpy.atleast_3d(rd2)).max(axis=-1)
-        self.assert_(numpy.allclose(drd2, delta2, atol=1e-5), "delta rd2 = (q/2pi)**2")
+        self.assertTrue(numpy.allclose(drd2, delta2, atol=1e-5), "delta rd2 = (q/2pi)**2")
 
 
 class ParamFastPath(ParameterisedTestCase):
@@ -278,8 +278,8 @@ class ParamFastPath(ParameterisedTestCase):
         cnt_delta_a = (delta[..., 1] > self.epsilon_a).sum()
         logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
                     space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
-        self.assert_(delta_r < self.epsilon_r, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
-        self.assert_(cnt_delta_a < self.count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
+        self.assertTrue(delta_r < self.epsilon_r, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
+        self.assertTrue(cnt_delta_a < self.count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""
@@ -294,7 +294,7 @@ class ParamFastPath(ParameterisedTestCase):
         logger.info("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
                     kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
-        self.assert_(numpy.alltrue(delta.max() < self.epsilon), msg)
+        self.assertTrue(numpy.alltrue(delta.max() < self.epsilon), msg)
         logger.debug(msg)
 
 
@@ -337,7 +337,7 @@ class ParamTestGeometry(ParameterisedTestCase):
         logger.info("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
                     func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
-        self.assertAlmostEquals(delta, 0, 3, msg)
+        self.assertAlmostEqual(delta, 0, 3, msg)
         logger.debug(msg)
 
     def test_XYZ(self):
@@ -353,7 +353,7 @@ class ParamTestGeometry(ParameterisedTestCase):
         logger.info("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s",
                     corners, t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "delta=%s, geo= \n%s" % (delta, geo)
-        self.assert_(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
+        self.assertTrue(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
         logger.debug(msg)
 
 

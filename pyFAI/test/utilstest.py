@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "26/10/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -335,19 +335,19 @@ def diff_img(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(2, 2, 1)
         ax2 = fig.add_subplot(2, 2, 2)
         ax3 = fig.add_subplot(2, 2, 3)
         im_ref = ax1.imshow(ref)
-        plt.colorbar(im_ref)
+        pyplot.colorbar(im_ref)
         ax1.set_title("%s ref" % comment)
         im_obt = ax2.imshow(obt)
-        plt.colorbar(im_obt)
+        pyplot.colorbar(im_obt)
         ax2.set_title("%s obt" % comment)
         im_delta = ax3.imshow(delta)
-        plt.colorbar(im_delta)
+        pyplot.colorbar(im_delta)
         ax3.set_title("delta")
         imax = delta.argmax()
         x = imax % ref.shape[-1]
@@ -364,8 +364,8 @@ def diff_crv(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2)
         im_ref = ax1.plot(ref, label="%s ref" % comment)

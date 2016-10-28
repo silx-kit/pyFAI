@@ -79,9 +79,9 @@ class TestBlobDetection(unittest.TestCase):
     def test_local_max(self):
         bd = BlobDetection(self.img)
         bd._one_octave(shrink=False, refine=False, n_5=False)
-        self.assert_(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) == \
+        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) == \
                                    local_max(bd.dogs, bd.cur_mask, False)), "max test, 3x3x3")
-        self.assert_(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) == \
+        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) == \
                                    local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
 
 

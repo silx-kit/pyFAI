@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/08/2016"
+__date__ = "27/10/2016"
 __status__ = "stable"
 
 import os
@@ -89,14 +89,14 @@ class Device(object):
                  cores=None, frequency=None, flop_core=None, idx=0, workgroup=1):
         """
         Simple container with some important data for the OpenCL device description:
-        
+
         @param name: name of the device
         @param dtype: device type: CPU/GPU/ACC...
         @param version: driver version
-        @param driver_version: 
+        @param driver_version:
         @param extensions: List of opencl extensions
         @param memory: maximum memory available on the device
-        @param available: is the device desactivated or not 
+        @param available: is the device desactivated or not
         @param cores: number of SM/cores
         @param frequency: frequency of the device
         @param flop_cores: Flopating Point operation per core per cycle
@@ -127,7 +127,7 @@ class Device(object):
     def pretty_print(self):
         """
         Complete device description
-        
+
         @return: string
         """
         lst = ["Name\t\t:\t%s" % self.name,
@@ -148,7 +148,7 @@ class Platform(object):
     def __init__(self, name="None", vendor="None", version=None, extensions=None, idx=0):
         """
         Class containing all descriptions of a platform and all devices description within that platform.
-        
+
         @param name: platform name
         @param vendor: name of the brand/vendor
         @param version:
@@ -198,7 +198,7 @@ class OpenCL(object):
     Simple class that wraps the structure ocl_tools_extended.h
 
     This is a static class.
-    ocl should be the only instance and shared among all python modules. 
+    ocl should be the only instance and shared among all python modules.
     """
     platforms = []
     nb_devices = 0
@@ -243,7 +243,6 @@ class OpenCL(object):
                 nb_devices += 1
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
-
 
     def __repr__(self):
         out = ["OpenCL devices:"]
@@ -347,9 +346,9 @@ class OpenCL(object):
     def device_from_context(self, context):
         """
         Retrieves the Device from the context
-        
+
         @param context: OpenCL context
-        @return: instance of Device  
+        @return: instance of Device
         """
         odevice = context.devices[0]
         oplat = odevice.platform
@@ -423,5 +422,3 @@ def allocate_cl_buffers(buffers, device=None, context=None):
         raise MemoryError(error)
 
     return mem
-
-

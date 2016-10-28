@@ -64,24 +64,24 @@ class TestConvolution(unittest.TestCase):
 
     def test_gaussian(self):
         gauss = _convolution.gaussian(self.sigma)
-        self.assert_(numpy.allclose(gauss, self.gauss), "gaussian curves are the same")
+        self.assertTrue(numpy.allclose(gauss, self.gauss), "gaussian curves are the same")
 
     def test_horizontal_convolution(self):
         gauss = self.gauss.astype(numpy.float32)
         ref = scipy.ndimage.filters.convolve1d(self.lena, self.gauss, axis=-1)
         obt = _convolution.horizontal_convolution(self.lena, gauss)
-        self.assert_(numpy.allclose(ref, obt), "horizontal filtered images are the same")
+        self.assertTrue(numpy.allclose(ref, obt), "horizontal filtered images are the same")
 
     def test_vertical_convolution(self):
         gauss = self.gauss.astype(numpy.float32)
         ref = scipy.ndimage.filters.convolve1d(self.lena, self.gauss, axis=0)
         obt = _convolution.vertical_convolution(self.lena, gauss)
-        self.assert_(numpy.allclose(ref, obt), "vertical filtered images are the same")
+        self.assertTrue(numpy.allclose(ref, obt), "vertical filtered images are the same")
 
     def test_gaussian_filter(self):
         ref = scipy.ndimage.filters.gaussian_filter(self.lena, self.sigma)
         obt = _convolution.gaussian_filter(self.lena, self.sigma)
-        self.assert_(numpy.allclose(ref, obt), "gaussian filtered images are the same")
+        self.assertTrue(numpy.allclose(ref, obt), "gaussian filtered images are the same")
 
 
 def suite():

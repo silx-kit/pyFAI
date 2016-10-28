@@ -30,7 +30,7 @@
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "27/10/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -276,7 +276,6 @@ class InverseWatershed(object):
 #        self.merge_intense(self.thres)
         logger.info("found %s regions, after merge remains %s" % (len(self.regions), len(set(self.regions.values()))))
 
-    @timeit
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -294,7 +293,6 @@ class InverseWatershed(object):
                 if idx == res:
                     regions[res] = Region(res) 
 
-    @timeit 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -327,7 +325,6 @@ class InverseWatershed(object):
                     neighb |= 1 << 7
                 borders[i, j] = neighb
 
-    @timeit
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -368,7 +365,6 @@ class InverseWatershed(object):
                 elif get_bit(neighb, 6):
                     region.neighbors.append(labels[i + 1, j - 1])
 
-    @timeit
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -385,7 +381,6 @@ class InverseWatershed(object):
             if region.init_values(flat):
                 regions.pop(region.index)
 
-    @timeit
     def merge_singleton(self):
         "merge single pixel region"
         cdef:
@@ -451,7 +446,6 @@ class InverseWatershed(object):
                     cnt += 1
         logger.info("Did %s merge_singleton" % cnt)
 
-    @timeit
     def merge_twins(self):
         """
         Twins are two peak region which are best linked together:
@@ -483,8 +477,7 @@ class InverseWatershed(object):
                     regions[key] = region
                 cnt += 1
         logger.info("Did %s merge_twins" % cnt)
-        
-    @timeit
+
     def merge_intense(self, thres=1.0):
         """
         Merge groups then (pass-mini)/(maxi-mini) >=thres

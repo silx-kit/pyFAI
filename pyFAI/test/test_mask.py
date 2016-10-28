@@ -296,7 +296,7 @@ class TestMaskBeamstop(unittest.TestCase):
         With a mask with and without limits
         """
         tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl")
-        self.assert_(tth[0] > 3.5, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
+        self.assertTrue(tth[0] > 3.5, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
         tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 

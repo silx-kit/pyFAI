@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "03/08/2016"
+__date__ = "26/10/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -52,7 +52,8 @@ from ..test import utilstest
 from ..opencl import pyopencl, ocl
 
 try:
-    from ..gui_utils import pylab, update_fig
+    from ..gui.matplotlib import pylab
+    from ..gui.utils import update_fig
 except:
     pylab = None
     def update_fig(*ag, **kwarg):
