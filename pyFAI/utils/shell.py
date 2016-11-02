@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "02/11/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module containing utilitary around shell"""
@@ -82,7 +82,7 @@ class ProgressBar:
         try:
             self.progress_char = u'\u25A0'
             _byte = codecs.encode(self.progress_char, encoding)
-        except (ValueError, LookupError):
+        except (ValueError, TypeError, LookupError):
             # In case the char is not supported by the encoding,
             # or if the encoding does not exists
             self.progress_char = '#'
