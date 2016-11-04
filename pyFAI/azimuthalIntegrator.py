@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "04/11/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -176,14 +176,28 @@ class AzimuthalIntegrator(Geometry):
         @type rot2: float
         @param rot3: third rotation from sample ref to detector's ref, in radians
         @type rot3: float
-        @param pixel1: pixel size of the fist dimension of the detector,  in meter
+        @param pixel1: Deprecated. Pixel size of the fist dimension of the detector,  in meter.
+            If both pixel1 and pixel2 are not None, detector pixel size is overwritten.
+            Prefer defining the detector pixel size on the provided detector object.
+            Prefer defining the detector pixel size on the provided detector
+            object (``detector.pixel1 = 5e-6``).
         @type pixel1: float
-        @param pixel2: pixel size of the second dimension of the detector,  in meter
+        @param pixel2: Deprecated. Pixel size of the second dimension of the detector,  in meter.
+            If both pixel1 and pixel2 are not None, detector pixel size is overwritten.
+            Prefer defining the detector pixel size on the provided detector
+            object (``detector.pixel2 = 5e-6``).
         @type pixel2: float
-        @param splineFile: file containing the geometric distortion of the detector. Overrides the pixel size.
+        @param splineFile: Deprecated. File containing the geometric distortion of the detector.
+            If not None, pixel1 and pixel2 are ignored and detector spline is overwritten.
+            Prefer defining the detector spline manually
+            (``detector.splineFile = "file.spline"``).
         @type splineFile: str
-        @param detector: name of the detector or Detector instance.
+        @param detector: name of the detector or Detector instance. String
+            description is deprecated. Prefer using the result of the detector
+            factory: ``pyFAI.detector_factory("eiger4m")``
         @type detector: str or pyFAI.Detector
+        @param wavelength: Wave length used in meter
+        @type wavelength: float
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
