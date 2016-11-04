@@ -284,6 +284,11 @@ def fix_docstring(app, what, name, obj, options, lines):
     for i in range(len(lines)):
         lines[i] = re_field.sub(r':\1', lines[i])
 
+def skip(app, what, name, obj, skip, options):
+    if name == "__init__":
+        return False
+    return skip
 
 def setup(app):
     app.connect('autodoc-process-docstring', fix_docstring)
+    app.connect("autodoc-skip-member", skip)
