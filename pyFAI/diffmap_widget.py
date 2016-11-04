@@ -436,6 +436,7 @@ class DiffMapWidget(qt.QWidget):
             print(config_ai)
             diffmap.ai = worker.make_ai(config_ai)
             diffmap.method = config_ai.get("method", "csr")
+            diffmap.unit = to_unit(config_ai.get("unit", "2th_deg"))
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data = diffmap.init_ai()
             self.data_h5 = diffmap.dataset
