@@ -54,7 +54,7 @@ from . import worker
 from .diffmap import DiffMap
 from .tree import ListDataSet, DataSet
 import logging
-logger = logging.getLogger("pyFAI.diffmap_widget")
+logger = logging.getLogger(__name__)
 
 
 class IntegrateWidget(qt.QDialog):
