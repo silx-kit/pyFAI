@@ -88,7 +88,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "04/11/2016"
 __status__ = "development"
 
 import threading
@@ -122,6 +122,9 @@ def make_ai(config):
     poni = config.get("poni")
     if poni and os.path.isfile(poni):
         ai = AzimuthalIntegrator.sload(poni)
+    else:
+        ai = AzimuthalIntegrator()
+
     detector = config.get("detector", None)
     if detector:
         ai.detector = detector_factory(detector)
@@ -456,6 +459,7 @@ class Worker(object):
 
     def get_unit(self):
         return self._unit
+
     unit = property(get_unit, set_unit)
 
     def set_error_model(self, value):
