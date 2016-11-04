@@ -37,7 +37,7 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
 
-Module with GUI for diffraction mapping experiments 
+Module with GUI for diffraction mapping experiments
 
 
 """
@@ -108,7 +108,7 @@ class TreeModel(qt.QAbstractItemModel):
         return 1
 
     def flags(self, midx):
-#        if midx.column()==1:
+        # if midx.column()==1:
         return qt.Qt.ItemIsEnabled
 
     def index(self, row, column, parent):
@@ -152,6 +152,7 @@ class DiffMapWidget(qt.QWidget):
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
     URL = "http://pyfai.readthedocs.org/en/latest/man/scripts.html"
+
     def __init__(self):
         qt.QWidget.__init__(self)
 
@@ -160,7 +161,7 @@ class DiffMapWidget(qt.QWidget):
 
         try:
             qt.loadUi(get_ui_file(self.uif), self)
-        except AttributeError as error:
+        except AttributeError as _error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.aborted = False
@@ -218,7 +219,7 @@ class DiffMapWidget(qt.QWidget):
         self.progressbarChanged.connect(self.update_processing)
         self.rMin.editingFinished.connect(self.update_slice)
         self.rMax.editingFinished.connect(self.update_slice)
-#         self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
+        # self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
 
     def _menu_file(self):
         # Drop-down file menu
@@ -238,13 +239,12 @@ class DiffMapWidget(qt.QWidget):
 
         self.files.setMenu(self.files_menu)
 
-
     def do_abort(self):
         self.aborted = True
 
     def input_filer(self, *args, **kwargs):
         """
-        Called when addFiles clicked: opens a file-brower and populates the 
+        Called when addFiles clicked: opens a file-browser and populates the
         listFiles object
         """
         filters = [
@@ -293,22 +293,24 @@ class DiffMapWidget(qt.QWidget):
         called when clicking on "outputFileSelector"
         """
         fname = qt.QFileDialog.getSaveFileName(self, "Output file",
-                                                  qt.QDir.currentPath(),
-                                                  filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
+                                               qt.QDir.currentPath(),
+                                               filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
         self.outputFile.setText(fname)
 
     def start_processing(self, *arg, **kwarg):
         logger.info("in start_processing")
         if not self.integration_config:
-            result = qt.QMessageBox.warning(self, "Azimuthal Integration",
-                                                   "You need to configure first the Azimuthal integration")
+            result = qt.QMessageBox.warning(self,
+                                            "Azimuthal Integration",
+                                            "You need to configure first the Azimuthal integration")
             if result:
                 self.configure_diffraction()
             else:
                 return
         if not str(self.outputFile.text()):
-            result = qt.QMessageBox.warning(self, "Destination",
-                                                   "You need to configure first the destination file")
+            result = qt.QMessageBox.warning(self,
+                                            "Destination",
+                                            "You need to configure first the destination file")
             if result:
                 self.configure_output()
             else:
@@ -345,10 +347,9 @@ class DiffMapWidget(qt.QWidget):
         self.list_model.update(self.list_dataset.as_tree())
 
     def get_config(self):
-        """Return a dict with the plugin configuration which is JSON-serializable 
+        """Return a dict with the plugin configuration which is JSON-serializable
         """
-        res = {
-               "ai": self.integration_config,
+        res = {"ai": self.integration_config,
                "experiment_title": str_(self.experimentTitle.text()).strip(),
                "fast_motor_name": str_(self.fastMotorName.text()).strip(),
                "slow_motor_name": str_(self.slowMotorName.text()).strip(),
@@ -362,19 +363,19 @@ class DiffMapWidget(qt.QWidget):
 
     def set_config(self, dico):
         """Set up the widget from dictionary
-        
-        @param  dico: dictionary 
+
+        @param  dico: dictionary
         """
         self.integration_config = dico.get("ai", {})
         # TODO
         setup_data = {"experiment_title": self.experimentTitle.setText,
                       "fast_motor_name": self.fastMotorName.setText,
-                      "slow_motor_name":self.slowMotorName.setText,
-                      "fast_motor_points":lambda a:self.fastMotorPts.setText(str_(a)),
-                      "slow_motor_points":lambda a:self.slowMotorPts.setText(str_(a)),
-                      "offset":lambda a:self.offset.setText(str_(a)),
-                      "output_file":self.outputFile.setText
-                   }
+                      "slow_motor_name": self.slowMotorName.setText,
+                      "fast_motor_points": lambda a: self.fastMotorPts.setText(str_(a)),
+                      "slow_motor_points": lambda a: self.slowMotorPts.setText(str_(a)),
+                      "offset": lambda a: self.offset.setText(str_(a)),
+                      "output_file": self.outputFile.setText
+                      }
         for key, value in setup_data.items():
             if key in dico:
                 value(dico[key])
@@ -386,8 +387,8 @@ class DiffMapWidget(qt.QWidget):
 
     def dump(self, fname=None):
         """Save the configuration in a JSON file
-        
-        @param fname: file where the config is saved as JSON 
+
+        @param fname: file where the config is saved as JSON
         """
         if fname is None:
             fname = self.json_file
@@ -398,7 +399,7 @@ class DiffMapWidget(qt.QWidget):
 
     def restore(self, fname=None):
         """Restore the widget from saved config
-        
+
         @param fname: file where the config is saved as JSON
         """
         if fname is None:
@@ -413,14 +414,14 @@ class DiffMapWidget(qt.QWidget):
     def save_config(self):
         logger.debug("save_config")
         json_file = str_(qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
-                                                           directory=self.json_file,
-                                                           filter="Config (*.json)"))
+                                                        directory=self.json_file,
+                                                        filter="Config (*.json)"))
         if json_file:
             self.dump(json_file)
 
     def process(self, config=None):
         """
-        Called in a separate thread 
+        Called in a separate thread
         """
         logger.info("process")
         t0 = time.time()
@@ -456,7 +457,7 @@ class DiffMapWidget(qt.QWidget):
 
     def display_processing(self, config):
         """Setup the display for visualizing the processing
-        
+
         @param config: configuration of the processing ongoing
         """
         self.fig = pyplot.figure(figsize=(12, 5))
@@ -474,8 +475,8 @@ class DiffMapWidget(qt.QWidget):
         self.fig.show()
 
     def update_processing(self, idx_file, idx_img):
-        """ Update the process bar and the images 
-        
+        """ Update the process bar and the images
+
         @param idx_file: file number
         @parm idx_img: frame number
         """
@@ -528,4 +529,3 @@ class DiffMapWidget(qt.QWidget):
         stop = (self.radial_data <= qmax).sum()
         self.slice = slice(start, stop)
         self.update_processing(-1, self.last_idx)
-
