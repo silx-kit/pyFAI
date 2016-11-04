@@ -658,32 +658,33 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     bench = Bench(number, repeat, memprof, max_size=max_size)
     bench.init_curve()
 
-    if ocl and not isinstance(devices, (list, tuple)):
+    ocl_devices = []
+    if ocl:
         res = []
         for i in ocl.platforms:
             if devices == "all":
                 res += [(i.id, j.id) for j in i.devices]
             else:
                 if "cpu" in devices:
-                    res += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
+                    ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
                 if "gpu" in devices:
-                    res += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
+                    ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
                 if "acc" in devices:
-                    res += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
-        devices = res
-        print("Devices:", devices)
+                    ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
+        print("Devices:", ocl_devices)
     if do_1d:
         bench.bench_1d("splitBBox")
         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True)
-        for device in devices:
+        for device in ocl_devices:
+            print(device, type(device))
             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     if do_2d:
         bench.bench_2d("splitBBox")
         bench.bench_2d("lut", True)
-        for device in devices:
+        for device in ocl_devices:
             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
