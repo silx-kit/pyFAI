@@ -21,12 +21,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"Benchmark for Azimuthal integration of PyFAI"
+
+
 from __future__ import print_function, division
 
 
-__doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "04/11/2016"
+__date__ = "07/11/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -49,7 +51,7 @@ from .. import load
 from .. import AzimuthalIntegrator
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
-
+from ..utils import six
 try:
     from ..gui.matplotlib import pylab
     from ..gui.utils import update_fig
@@ -241,6 +243,8 @@ class Bench(object):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
                 self._cpu = proc.stdout.read().strip()
+                if six.PY3:
+                    self._cpu = self._cpu.decode("ASCII")
             old = self._cpu
             self._cpu = old.replace("  ", " ")
             while old != self._cpu:
