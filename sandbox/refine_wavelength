@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/07/2011"
+__date__ = "29/07/2016"
 __doc__ = """
 Refine the wavelength from a set of images taken with various geometries.
 For numerical efficiency, the wavelength has to be in ANGSTROM
@@ -41,6 +41,10 @@ import numpy
 from numpy import sin, arcsin
 from scipy.optimize import fmin_slsqp
 from pyFAI.geometryRefinement import GeometryRefinement
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 
 class RefineWavelength(object):
     def __init__(self, wavelength, listFiles=None):
@@ -174,7 +178,7 @@ if __name__ == "__main__":
         elif os.path.isfile(arg):
             listFiles.append(arg)
     if wavelength is None:
-        wavelength = raw_input("WaveLength (A) ? ")
+        wavelength = six.moves.input("WaveLength (A) ? ")
     refinement = RefineWavelength(wavelength, listFiles)
     print refinement
     last = refinement.chi2() + 1

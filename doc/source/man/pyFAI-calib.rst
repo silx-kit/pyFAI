@@ -23,6 +23,7 @@ LaB6_SRM660a, LaB6_SRM660b, LaB6_SRM660c, TiO2, ZnO, Al, Au
 You will need in addition:
  * The radiation energy (in keV) or its wavelength (in A)
  * The description of the detector:
+
   - it name or
   - it's pixel size or
   - the spline file describing its distortion or

@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
+# /*##########################################################################
 #
-#    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
-#
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
-#
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +21,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-
-from __future__ import absolute_import, print_function, division
-
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2016"
-__status__ = "production"
-__docformat__ = 'restructuredtext'
-__doc__ = """
-
-Module for version handling:
+#
+# ###########################################################################*/
+"""Unique place where the version number is defined.
 
 provides:
 * version = "1.2.3" or "1.2.3-beta4"
 * version_info = named tuple (1,2,3,"beta",4)
 * hexversion: 0x010203B4
 * strictversion = "1.2.3b4
+* debianversion = "1.2.3~beta4"
+* calc_hexversion: the function to transform a version_tuple into an integer
 
 This is called hexversion since it only really looks meaningful when viewed as the
 result of passing it to the built-in hex() function.
@@ -61,19 +48,27 @@ Bits (big endian order)     Meaning
 Thus 2.1.0a3 is hexversion 0x020100a3.
 
 """
-__all__ = ["date", "version_info", "strictversion", "hexversion"]
+
+from __future__ import absolute_import, print_function, division
+__authors__ = ["Jérôme Kieffer"]
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "29/07/2016"
+__status__ = "production"
+__docformat__ = 'restructuredtext'
+__all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion", "calc_hexversion"]
 
 RELEASE_LEVEL_VALUE = {"dev": 0,
                        "alpha": 10,
                        "beta": 11,
                        "gamma": 11,
                        "rc": 12,
-                       "final":15}
+                       "final": 15}
 
 MAJOR = 0
-MINOR = 12
+MINOR = 13
 MICRO = 0
-RELEV = "final"  # <16
+RELEV = "dev"  # <16
 SERIAL = 0  # <16
 
 date = __date__
@@ -83,21 +78,41 @@ _version_info = namedtuple("version_info", ["major", "minor", "micro", "releasel
 
 version_info = _version_info(MAJOR, MINOR, MICRO, RELEV, SERIAL)
 
-strictversion = version = "%d.%d.%d" % version_info[:3]
-
+strictversion = version = debianversion = "%d.%d.%d" % version_info[:3]
 if version_info.releaselevel != "final":
     version += "-%s%s" % version_info[-2:]
+    debianversion += "~adev%i" % version_info[-1] if RELEV == "dev" else "~%s%i" % version_info[-2:]
     prerel = "a" if RELEASE_LEVEL_VALUE.get(version_info[3], 0) < 10 else "b"
     if prerel not in "ab":
         prerel = "a"
     strictversion += prerel + str(version_info[-1])
 
-hexversion = version_info[4]
-hexversion |= RELEASE_LEVEL_VALUE.get(version_info[3], 0) * 1 << 4
-hexversion |= version_info[2] * 1 << 8
-hexversion |= version_info[1] * 1 << 16
-hexversion |= version_info[0] * 1 << 24
 
+def calc_hexversion(major=0, minor=0, micro=0, releaselevel="dev", serial=0):
+    """Calculate the hexadecimal version number from the tuple version_info:
+    
+    :param major: integer
+    :param minor: integer
+    :param micro: integer
+    :param relev: integer or string
+    :param serial: integer
+    :return: integerm always increasing with revision numbers  
+    """
+    global RELEASE_LEVEL_VALUE
+    try:
+        releaselevel = int(releaselevel)
+    except ValueError:
+        releaselevel = RELEASE_LEVEL_VALUE.get(releaselevel, 0)
+
+    hex_version = int(serial)
+    hex_version |= releaselevel * 1 << 4
+    hex_version |= int(micro) * 1 << 8
+    hex_version |= int(minor) * 1 << 16
+    hex_version |= int(major) * 1 << 24
+    return hex_version
+
+
+hexversion = calc_hexversion(*version_info)
 
 if __name__ == "__main__":
     print(version)

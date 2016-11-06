@@ -26,7 +26,7 @@ Some Cythonized function for blob detection function
 """
 __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/10/2014"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "GPLv3+"
 import cython
@@ -34,9 +34,10 @@ import numpy
 cimport numpy
 from cython.parallel import prange
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):
+def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
     """
     Calculate if a point is a maximum in a 3D space: (scale, y, x)
     
@@ -54,8 +55,8 @@ def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):
     ny = dogs.shape[1]
     nx = dogs.shape[2]
     if do_mask:
-        assert mask.shape[0] == ny
-        assert mask.shape[1] == nx
+        assert mask.shape[0] == ny, "mask shape 0/y"
+        assert mask.shape[1] == nx, "mask shape 1/x"
         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
 
     cdef numpy.ndarray[numpy.int8_t, ndim=3] is_max = numpy.zeros((ns,ny,nx), dtype=numpy.int8)

@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -38,23 +38,22 @@ try:
     from .third_party import six
 except ImportError:
     import six
-StringTypes = (six.binary_type, six.text_type)
 import fabio
 logger = logging.getLogger("pyFAI.grid")
 
 
 class Grid(object):
     """
-    This class handles a regular grid in front of a detector to calibrate the 
-    geometrical distortion of the detector 
+    This class handles a regular grid in front of a detector to calibrate the
+    geometrical distortion of the detector
     """
     def __init__(self, detector, image, mask=None, pitch=None, invert=False):
         """
         @param detector: instance of Detector or its name
-        @parma image: 2d array representing the image  
+        @parma image: 2d array representing the image
         @param mask:
         @param pitch: 2-tuple representing the grid spacing in (y, x) coordinates, in meter
-        @param invert: set to true if the image of the grid has regular dark spots (instead of bright points) 
+        @param invert: set to true if the image of the grid has regular dark spots (instead of bright points)
         """
         if isinstance(detector, detectors.Detector):
             self.detector = detectors.detector_factory(detector)
@@ -82,12 +81,9 @@ class Grid(object):
     def threshold(self, level=None, percentile=None):
         """
         Segment the image with a single threshold
-        
-        @param 
-        @param 
         """
         if percentile and not level:
             data = self.image[self.mask]
             data.sort()
             level = data[int(len(data) * percentile / 100.)]
-        raise NotImplemented("TODO")
+        raise NotImplementedError("TODO")

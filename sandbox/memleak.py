@@ -27,14 +27,14 @@
 # THE SOFTWARE.
 
 from __future__ import absolute_import, print_function, division, with_statement
-import utilstest
-import sys, os
+
+import os
 import numpy
-import pyFAI
-print(pyFAI)
 import sys
 import gc
+import pyFAI
 
+print(pyFAI)
 
 def get_mem():
         """

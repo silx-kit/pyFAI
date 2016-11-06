@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/06/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 
 import logging
@@ -38,7 +38,6 @@ import threading
 import os
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
-logging.basicConfig(level=logging.INFO)
 from math import ceil, floor
 from . import detectors
 from .opencl import ocl
@@ -53,9 +52,22 @@ except ImportError:
     import six
 try:
     from .ext import _distortion
+    from .ext import sparse_utils
 except ImportError:
     logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
     _distortion = None
+
+try:
+    from scipy.sparse import linalg, csr_matrix
+except IOError:
+    logger.warning("Scipy is missing ... uncorrection will be handled the old way")
+    linalg = None
+else:
+    import scipy
+    v = tuple(int(i) for i in scipy.version.short_version.split("."))
+    if v < (0, 11):
+        logger.warning("Scipy is too old ... uncorrection will be handled the old way")
+        linalg = None
 
 
 class Distortion(object):
@@ -65,7 +77,7 @@ class Distortion(object):
     New version compatible both with CSR and LUT...
     """
     def __init__(self, detector="detector", shape=None, resize=False, empty=0,
-                 mask=None, method="LUT", device=None, workgroup=8):
+                 mask=None, method="CSR", device=None, workgroup=8):
         """
         @param detector: detector instance or detector name
         @param shape: shape of the output image
@@ -252,7 +264,6 @@ class Distortion(object):
                                                                       platformid=self.device[0], deviceid=self.device[1],
                                                                       block_size=self.workgroup)
 
-#     @timeit
     def calc_LUT(self, use_common=True):
         """Calculate the Look-up table 
         
@@ -320,7 +331,7 @@ class Distortion(object):
                         self.lut = lut
         return self.lut
 
-    def correct(self, image, dummy=None, delta_dummy=None, normalization_factor=1.0):
+    def correct(self, image, dummy=None, delta_dummy=None):
         """
         Correct an image based on the look-up table calculated ...
 
@@ -330,7 +341,7 @@ class Distortion(object):
         @return: corrected 2D image
         """
         if image.shape != self.shape_in:
-            logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ..." % (image.shape, self.shape_in))
+            logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
             new_img = numpy.zeros(self.shape_in, dtype=image.dtype)
             common_shape = [min(i, j) for i, j in zip(image.shape, self.shape_in)]
             new_img[:common_shape[0], :common_shape[1]] = image[:common_shape[0], :common_shape[1]]
@@ -362,42 +373,52 @@ class Distortion(object):
         try:
             out.shape = self._shape_out
         except ValueError as _err:
-            logger.error("Requested in_shape=%s out_shape=%s and " % (self.shape_in, self.shape_out))
+            logger.error("Requested in_shape=%s out_shape=%s and ", self.shape_in, self.shape_out)
             raise
         return out
 
-    def uncorrect(self, image):
+    def uncorrect(self, image, use_cython=False):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
 
         @param image: 2D-array with the image
-        @return: uncorrected 2D image and a mask (pixels in raw image
+        @return: uncorrected 2D image
+        
+        Nota: to retrieve the input mask on can do:
+
+        >>> msk =  dis.uncorrect(numpy.ones(dis._shape_out)) <= 0
         """
+        assert image.shape == self._shape_out
         if self.lut is None:
             self.calc_LUT()
-        if self.method == "lut":
-            if _distortion is not None:
-                out, mask = _distortion.uncorrect_LUT(image, self._shape_out, self.lut)
+        if (linalg is not None) and (use_cython is False):
+            if self.method == "lut":
+                csr = csr_matrix(sparse_utils.LUT_to_CSR(self.lut))
             else:
-                out = numpy.zeros(self._shape_out, dtype=numpy.float32)
-                mask = numpy.zeros(self._shape_out, dtype=numpy.int8)
-                lmask = mask.ravel()
-                lout = out.ravel()
-                lin = image.ravel()
-                tot = self.lut.coef.sum(axis=-1)
-                for idx in range(self.lut.shape[0]):
-                    t = tot[idx]
-                    if t <= 0:
-                        lmask[idx] = 1
-                        continue
-                    val = lin[idx] / t
-                    lout[self.lut[idx].idx] += val * self.lut[idx].coef
-        elif self.method == "csr":
-            if _distortion is not None:
-                out = _distortion.uncorrect_CSR(image, self._shape_out, self.lut)
+                csr = csr_matrix(self.lut)
+            res = linalg.lsmr(csr, image.ravel())
+            out = res[0].reshape(self.shape_in)
+        else:  # This is deprecated and does not work with resise=True
+            if self.method == "lut":
+                if _distortion is not None:
+                    out, mask = _distortion.uncorrect_LUT(image, self.shape_in, self.lut)
+                else:
+                    out = numpy.zeros(self.shape_in, dtype=numpy.float32)
+                    lout = out.ravel()
+                    lin = image.ravel()
+                    tot = self.lut.coef.sum(axis=-1)
+                    for idx in range(self.lut.shape[0]):
+                        t = tot[idx]
+                        if t <= 0:
+                            continue
+                        val = lin[idx] / t
+                        lout[self.lut[idx].idx] += val * self.lut[idx].coef
+            elif self.method == "csr":
+                if _distortion is not None:
+                    out, mask = _distortion.uncorrect_CSR(image, self.shape_in, self.lut)
             else:
                 raise NotImplementedError()
-        return out, mask
+        return out
 
 
 class Quad(object):
@@ -801,7 +822,7 @@ def test():
 #    dis.calc_LUT()
 #    out = dis.correct(grid)
 #    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
-    from .gui_utils import pylab
+    from .gui.matplotlib import pylab
     pylab.imshow(out)  # , interpolation="nearest")
     pylab.show()
 

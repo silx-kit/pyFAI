@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "30/04/2016"
+__date__ = "26/10/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -52,7 +52,8 @@ from ..test import utilstest
 from ..opencl import pyopencl, ocl
 
 try:
-    from ..gui_utils import pylab, update_fig
+    from ..gui.matplotlib import pylab
+    from ..gui.utils import update_fig
 except:
     pylab = None
     def update_fig(*ag, **kwarg):
@@ -67,12 +68,12 @@ ds_list = ["Pilatus1M.poni",
            "Fairchild.poni"]
 
 
-datasets = {"Fairchild.poni": "1880/Fairchild.edf",
-            "halfccd.poni": "1882/halfccd.edf",
-            "Frelon2k.poni": "1881/Frelon2k.edf",
-            "Pilatus6M.poni": "1884/Pilatus6M.cbf",
-            "Pilatus1M.poni": "1883/Pilatus1M.edf",
-            "Mar3450.poni": "2201/LaB6_260210.mar3450"
+datasets = {"Fairchild.poni": "Fairchild.edf",
+            "halfccd.poni": "halfccd.edf",
+            "Frelon2k.poni": "Frelon2k.edf",
+            "Pilatus6M.poni": "Pilatus6M.cbf",
+            "Pilatus1M.poni": "Pilatus1M.edf",
+            "Mar3450.poni": "LaB6_260210.mar3450"
             }
 
 PONIS = {

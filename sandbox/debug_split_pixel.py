@@ -27,6 +27,10 @@
 # THE SOFTWARE.
 import utilstest
 import pyFAI, numpy
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 img = numpy.zeros((512,512))
 for i in range(1,6):img[i*100,i*100]=1
 det = pyFAI.detectors.Detector(1e-4,1e-4)
@@ -46,4 +50,4 @@ print("split_full R=%.3f" % Rwp(results["csr_full"], results["splitpixel"]))
 pylab.legend()
 pylab.ion()
 pylab.show()
-raw_input("enter_to_quit")
+six.moves.input("enter_to_quit")

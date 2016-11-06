@@ -1,9 +1,9 @@
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,15 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import with_statement, print_function, division
-
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/06/2016"
-__status__ = "development"
-__doc__ = """This module contains the Worker class:
+"""This module contains the Worker class:
 
 A tool able to perform azimuthal integration with:
 additional saving capabilities like
@@ -89,17 +81,34 @@ Here are the valid keys:
 
 """
 
+
+from __future__ import with_statement, print_function, division
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "27/10/2016"
+__status__ = "development"
+
 import threading
 import os.path
 import logging
+import json
+
 logger = logging.getLogger("pyFAI.worker")
+
 import numpy
 import fabio
 from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
-import json
+try:
+    from .ext.preproc import preproc
+except ImportError as err:
+    logger.warning("Unable to import preproc: %s", err)
+    preproc = None
 # from .io import h5py, HDF5Writer
 
 
@@ -120,7 +129,7 @@ def make_ai(config):
     wavelength = config.get("wavelength", 0)
     if wavelength:
         if wavelength <= 0 or wavelength > 1e-6:
-            logger.warning("Wavelength is in meter ... unlikely value %s" % wavelength)
+            logger.warning("Wavelength is in meter ... unlikely value %s", wavelength)
         ai.wavelength = wavelength
 
     splinefile = config.get("splineFile")
@@ -140,7 +149,7 @@ def make_ai(config):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 ai.mask = mask
 
@@ -158,20 +167,27 @@ def make_ai(config):
 
 
 class Worker(object):
-    def __init__(self, azimuthalIntgrator=None,
+    def __init__(self, azimuthalIntegrator=None,
                  shapeIn=(2048, 2048), shapeOut=(360, 500),
-                 unit="r_mm", dummy=None, delta_dummy=None):
+                 unit="r_mm", dummy=None, delta_dummy=None,
+                 azimuthalIntgrator=None):
         """
-        @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
+        @param azimuthalIntegrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance
+        @param azimuthalIntgrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance (deprecated)
         @param shapeIn: image size in input
         @param shapeOut: Integrated size: can be (1,2000) for 1D integration
         @param unit: can be "2th_deg, r_mm or q_nm^-1 ...
         """
+        # TODO remove it in few month (added on 2016-08-04)
+        if azimuthalIntgrator is not None:
+            logger.warning("'Worker(azimuthalIntgrator=...)' parameter is deprecated cause it contains a typo. Please use 'azimuthalIntegrator='")
+            azimuthalIntegrator = azimuthalIntgrator
+
         self._sem = threading.Semaphore()
-        if azimuthalIntgrator is None:
+        if azimuthalIntegrator is None:
             self.ai = AzimuthalIntegrator()
         else:
-            self.ai = azimuthalIntgrator
+            self.ai = azimuthalIntegrator
 #        self.config = {}
 #        self.config_file = "azimInt.json"
 #        self.nbpt_azim = 0
@@ -253,13 +269,14 @@ class Worker(object):
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data, normalization_factor=1.0):
+    def process(self, data, normalization_factor=1.0, writer=None):
         """
         Process a frame
         #TODO:
         dark, flat, sa are missing
 
-        @param: data: numpy array containing the input image
+        @param data: numpy array containing the input image
+        @param writer: An open writer in which 'write' will be called with the result of the integration
         """
 
         with self._sem:
@@ -268,7 +285,7 @@ class Worker(object):
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
                  "method": self.method,
-                 "polarization_factor":self.polarization,
+                 "polarization_factor": self.polarization,
                  # "filename": None,
                  "safe": self.is_safe,
                  "data": data,
@@ -306,12 +323,15 @@ class Worker(object):
 
         try:
             if self.do_2D():
-                rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
+                integrated_result = self.ai.integrate2d(**kwarg)
+                self.radial = integrated_result.radial
+                self.azimuthal = integrated_result.azimuthal
+                result = integrated_result.intensity
             else:
-                rData = self.ai.integrate1d(**kwarg)
-                self.radial = rData[0]
+                integrated_result = self.ai.integrate1d(**kwarg)
+                self.radial = integrated_result.radial
                 self.azimuthal = None
-                rData = numpy.vstack(rData).T
+                result = numpy.vstack(integrated_result).T
 
         except Exception as err:
             err2 = ["error in integration",
@@ -324,11 +344,14 @@ class Worker(object):
                     # str(self.ai._csr_integrator),
                     # "csr size: %s" % self.ai._lut_integrator.size
                     ]
-            logger.error(err2)
+            logger.error("; ".join(err2))
             raise err
 
+        if writer is not None:
+            writer.write(integrated_result)
+
         if self.output == "numpy":
-            return rData
+            return result
 
     def setSubdir(self, path):
         """
@@ -372,10 +395,10 @@ class Worker(object):
             try:
                 fwavelength = float(wavelength)
             except ValueError:
-                logger.error("Unable to convert wavelength to float: %s" % wavelength)
+                logger.error("Unable to convert wavelength to float: %s", wavelength)
             else:
                 if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+                    logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
                 self.ai.wavelength = fwavelength
 
         splineFile = config.get("splineFile")
@@ -401,7 +424,7 @@ class Worker(object):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 self.ai.mask = mask
                 self.mask_image = os.path.abspath(mask_file)
@@ -560,48 +583,59 @@ class PixelwiseWorker(object):
         if mask is None:
             self.mask = False
         elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
-            self.mask = (mask < 0)
+            self.mask = (mask < 0).astype(numpy.int8)
         else:
-            self.mask = mask.astype(bool)
+            self.mask = mask.astype(numpy.int8)
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
         if device is not None:
             logger.warning("GPU is not yet implemented")
 
-    def process(self, data, normalization=None):
+    def process(self, data, normalization_factor=None):
         """
         Process the data and apply a normalization factor
         @param data: input data
         @param normalization: normalization factor
         @return processed data
         """
-        _shape = data.shape
-        #        ^^^^   this is why data is mandatory !
-        if self.dummy is not None:
-            if self.delta_dummy is None:
-                self.mask = numpy.logical_or((data == self.dummy), self.mask)
-            else:
-                self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
-                                             self.mask)
-            do_mask = True
+        if preproc is not None:
+            proc_data = preproc(data,
+                                dark=self.dark,
+                                flat=self.flat,
+                                solidangle=self.solidangle,
+                                polarization=self.polarization,
+                                absorption=None,
+                                mask=self.mask,
+                                dummy=self.dummy,
+                                delta_dummy=self.delta_dummy,
+                                normalization_factor=normalization_factor,
+                                empty=None)
         else:
-            do_mask = (self.mask is not False)
-        # Explicitly make an copy !
-        data = numpy.array(data, dtype=numpy.float32)
-        if self.dark is not None:
-            data -= self.dark
-        if self.flat is not None:
-            data /= self.flat
-        if self.solidangle is not None:
-            data /= self.solidangle
-        if self.polarization is not None:
-            data /= self.polarization
-        if normalization is not None:
-            data /= normalization
-        if do_mask:
-            data[self.mask] = self.dummy or 0
-        return data
+            if self.dummy is not None:
+                if self.delta_dummy is None:
+                    self.mask = numpy.logical_or((data == self.dummy), self.mask)
+                else:
+                    self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
+                                                 self.mask)
+                do_mask = True
+            else:
+                do_mask = (self.mask is not False)
+            # Explicitly make an copy !
+            proc_data = numpy.array(data, dtype=numpy.float32)
+            if self.dark is not None:
+                proc_data -= self.dark
+            if self.flat is not None:
+                proc_data /= self.flat
+            if self.solidangle is not None:
+                proc_data /= self.solidangle
+            if self.polarization is not None:
+                proc_data /= self.polarization
+            if normalization_factor is not None:
+                proc_data /= normalization_factor
+            if do_mask:
+                proc_data[self.mask] = self.dummy or 0
+        return proc_data
 
 
 class DistortionWorker(object):
@@ -657,10 +691,44 @@ class DistortionWorker(object):
         @param normalization: normalization factor
         @return processed data
         """
+        if preproc is not None:
+            proc_data = preproc(data,
+                                dark=self.dark,
+                                flat=self.flat,
+                                solidangle=self.solidangle,
+                                polarization=self.polarization,
+                                absorption=None,
+                                mask=self.mask,
+                                dummy=self.dummy,
+                                delta_dummy=self.delta_dummy,
+                                normalization_factor=normalization_factor,
+                                empty=None)
+        else:
+            if self.dummy is not None:
+                if self.delta_dummy is None:
+                    self.mask = numpy.logical_or((data == self.dummy), self.mask)
+                else:
+                    self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
+                                                 self.mask)
+                do_mask = True
+            else:
+                do_mask = (self.mask is not False)
+            # Explicitly make an copy !
+            proc_data = numpy.array(data, dtype=numpy.float32)
+            if self.dark is not None:
+                proc_data -= self.dark
+            if self.flat is not None:
+                proc_data /= self.flat
+            if self.solidangle is not None:
+                proc_data /= self.solidangle
+            if self.polarization is not None:
+                proc_data /= self.polarization
+            if normalization_factor is not None:
+                proc_data /= normalization_factor
+            if do_mask:
+                proc_data[self.mask] = self.dummy or 0
+
         if self.distortion is not None:
-            return self.distortion.correct(data, self.dummy, self.delta_dummy, normalization_factor)
+            return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
         else:
             return data
-
-
-

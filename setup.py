@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2016"
+__date__ = "26/10/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -39,24 +39,23 @@ import sys
 import glob
 import shutil
 import platform
-import subprocess
 import numpy
+import distutils.dir_util
 
 try:
     # setuptools allows the creation of wheels
     from setuptools import setup, Command
     from setuptools.command.sdist import sdist
     from setuptools.command.build_ext import build_ext
-    from setuptools.command.install_data import install_data
     from setuptools.command.install import install
     from setuptools.command.build_py import build_py as _build_py
 except ImportError:
     from distutils.core import setup, Command
     from distutils.command.sdist import sdist
     from distutils.command.build_ext import build_ext
-    from distutils.command.install_data import install_data
     from distutils.command.install import install
     from distutils.command.build_py import build_py as _build_py
+
 from numpy.distutils.core import Extension as _Extension
 
 
@@ -212,7 +211,8 @@ ext_modules = [
     Extension('marchingsquares'),
     Extension('watershed'),
     Extension('_tree'),
-    Extension('sparse_utils')
+    Extension('sparse_utils'),
+    Extension('preproc', can_use_openmp=True),
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):
@@ -230,8 +230,8 @@ class build_ext_pyFAI(build_ext):
         # Compiler
         # name, compileflag, linkflag
         'msvc': {
-            'openmp': ('/openmp', ' '),
-            'debug': ('/Zi', ' '),
+            'openmp': ('/openmp', ''),
+            'debug': ('/Zi', ''),
             'OpenCL': 'OpenCL',
         },
         'mingw32': {
@@ -292,14 +292,13 @@ def download_images():
 
 installDir = PROJECT
 
-data_files = [(os.path.join(installDir, "openCL"), glob.glob("openCL/*.cl")),
-              (os.path.join(installDir, "gui"), glob.glob("gui/*.ui")),
-              (os.path.join(installDir, "calibration"), glob.glob("calibration/*.D"))]
+data_files = []
 
 if sys.platform == "win32":
     # This is for mingw32/gomp
     if tuple.__itemsize__ == 4:
-        data_files[0][1].append(os.path.join("dll", "pthreadGC2.dll"))
+        rule = (installDir, glob.glob("packages/win32/*.dll"))
+        data_files.append(rule)
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
     script_files = []
@@ -317,19 +316,6 @@ if sys.platform == "win32":
 
 else:
     script_files = glob.glob("scripts/*")
-
-
-class smart_install_data(install_data):
-    def run(self):
-        global installDir
-
-        install_cmd = self.get_finalized_command('install')
-#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
-        self.install_dir = getattr(install_cmd, 'install_lib')
-        print("DATA to be installed in %s" % self.install_dir)
-        installDir = os.path.join(self.install_dir, installDir)
-        return install_data.run(self)
-cmdclass['install_data'] = smart_install_data
 
 
 # #################################### #
@@ -372,9 +358,15 @@ class sdist_debian(sdist):
     * remove auto-generated doc
     * remove cython generated .c files
     """
+    @staticmethod
+    def get_debian_name():
+        import version
+        name = "%s_%s" % (PROJECT, version.debianversion)
+        return name
+
     def prune_file_list(self):
         sdist.prune_file_list(self)
-        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc"]
+        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc", "pyFAI/third_party"]
         print("Removing files for debian")
         for rm in to_remove:
             self.filelist.exclude_pattern(pattern="*", anchor=False, prefix=rm)
@@ -403,10 +395,10 @@ class sdist_debian(sdist):
             dest = "".join((base, ext))
         else:
             dest = base
-        sp = dest.split("-")
-        base = sp[:-1]
-        nr = sp[-1]
-        debian_arch = os.path.join(dirname, "-".join(base) + "_" + nr + ".orig.tar.gz")
+#         sp = dest.split("-")
+#         base = sp[:-1]
+#         nr = sp[-1]
+        debian_arch = os.path.join(dirname, self.get_debian_name() + ".orig.tar.gz")
         os.rename(self.archive_files[0], debian_arch)
         self.archive_files = [debian_arch]
         print("Building debian .orig.tar.gz in %s" % self.archive_files[0])
@@ -482,16 +474,11 @@ if sphinx:
             build = self.get_finalized_command('build')
             sys.path.insert(0, os.path.abspath(build.build_lib))
 
-            # Copy gui files to the path:
-            dst = os.path.join(os.path.abspath(build.build_lib), PROJECT, "gui")
-            if not os.path.isdir(dst):
-                os.makedirs(dst)
-            for i in os.listdir("gui"):
-                if i.endswith(".ui"):
-                    src = os.path.join("gui", i)
-                    idst = os.path.join(dst, i)
-                    if not os.path.exists(idst):
-                        shutil.copy(src, idst)
+            # Copy resource files to the path
+            # NOTE: UI files are needed to be able to execute scripts when using sphinxcontrib.programoutput
+            source = os.path.join(PROJECT, "resources")
+            destination = os.path.join(os.path.abspath(build.build_lib), PROJECT, "resources")
+            distutils.dir_util.copy_tree(source, destination, update=1)
 
             # Build the Users Guide in HTML and TeX format
             for builder in ('html', 'latex'):
@@ -536,8 +523,9 @@ def get_version():
 def get_readme():
     dirname = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(dirname, "README.rst"), "rb") as fp:
-        long_description = fp.read().decode("utf-8")
-    return long_description
+        long_description = fp.read()
+    return long_description.decode("utf-8")
+
 
 # double check classifiers on https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = ["Development Status :: 5 - Production/Stable",
@@ -561,19 +549,22 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
 setup_requires = ["numpy", "cython"]
 
-packages = ["pyFAI", "pyFAI.ext", "pyFAI.test", "pyFAI.benchmark"]
+packages = ["pyFAI", "pyFAI.ext", "pyFAI.gui", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
 package_dir = {"pyFAI": "pyFAI",
                "pyFAI.ext": "pyFAI/ext",
+               "pyFAI.gui": "pyFAI/gui",
+               "pyFAI.utils": "pyFAI/utils",
                "pyFAI.test": "pyFAI/test",
-               "pyFAI.benchmark": "pyFAI/benchmark"}
+               "pyFAI.benchmark": "pyFAI/benchmark",
+               "pyFAI.resources": "pyFAI/resources"}
 
-if os.path.isdir("third_party"):
-    package_dir["pyFAI.third_party"] = "third_party"
+if os.path.isdir("pyFAI/third_party"):
+    package_dir["pyFAI.third_party"] = "pyFAI/third_party"
     packages.append("pyFAI.third_party")
 
 
 if __name__ == "__main__":
-    setup(name='pyFAI',
+    setup(name=PROJECT,
           version=get_version(),
           author="Jérôme Kieffer (python), \
           Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
@@ -597,4 +588,6 @@ if __name__ == "__main__":
           license="GPL",
           install_requires=install_requires,
           setup_requires=setup_requires,
+          package_data={  # Add here all resources files
+                        'pyFAI.resources': ['calibration/*.D', 'gui/*.ui', 'openCL/*.cl'], },
           )

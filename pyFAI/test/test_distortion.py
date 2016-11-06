@@ -26,14 +26,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"test suite for Distortion correction class"
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for Distortion correction class"
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2016"
+__date__ = "06/10/2016"
 
 
 import unittest
@@ -49,9 +50,9 @@ from ..ext import sparse_utils
 
 class TestHalfCCD(unittest.TestCase):
     """basic test"""
-    halfFrelon = "1464/LaB6_0020.edf"
-    splineFile = "1461/halfccd.spline"
-    fit2d_cor = "2454/halfccd.fit2d.edf"
+    halfFrelon = "LaB6_0020.edf"
+    splineFile = "halfccd.spline"
+    fit2d_cor = "halfccd.fit2d.edf"
 
     def setUp(self):
         """Download files"""
@@ -62,7 +63,7 @@ class TestHalfCCD(unittest.TestCase):
         self.fit2d = fabio.open(self.fit2dFile).data
         self.ref = _distortion.Distortion(self.det)
         self.raw = fabio.open(self.halfFrelon).data
-        self.dis = distortion.Distortion(self.det)
+        self.dis = distortion.Distortion(self.det, method="LUT")
         self.larger = numpy.zeros(self.det.shape)
         self.larger[:-1, :] = self.raw
 
@@ -127,8 +128,8 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
     def test_lut_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -150,8 +151,8 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
     def test_csr_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -173,14 +174,14 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
 
 class TestImplementations(unittest.TestCase):
     """Ensure equivalence of implementation between numpy & Cython"""
-    halfFrelon = "1464/LaB6_0020.edf"
-    splineFile = "1461/halfccd.spline"
+    halfFrelon = "LaB6_0020.edf"
+    splineFile = "halfccd.spline"
 
     def setUp(self):
         """Download files"""
@@ -230,17 +231,17 @@ class TestImplementations(unittest.TestCase):
         self.assertEqual(csr1[2].size, csr3[2].size, "right shape 1-3")
         self.assertEqual(csr1[2].size, csr4[2].size, "right shape 1-4")
 
-        self.assert_(numpy.allclose(csr1[2], csr2[2]), "same indptr 1-2")
-        self.assert_(numpy.allclose(csr1[2], csr3[2]), "same indptr 1-3")
-        self.assert_(numpy.allclose(csr1[2], csr4[2]), "same indptr 1-4")
+        self.assertTrue(numpy.allclose(csr1[2], csr2[2]), "same indptr 1-2")
+        self.assertTrue(numpy.allclose(csr1[2], csr3[2]), "same indptr 1-3")
+        self.assertTrue(numpy.allclose(csr1[2], csr4[2]), "same indptr 1-4")
 
-        self.assert_(numpy.allclose(csr1[1], csr2[1]), "same indices1-2")
-        self.assert_(numpy.allclose(csr1[1], csr3[1]), "same indices1-3")
-        self.assert_(numpy.allclose(csr1[1], csr4[1]), "same indices1-4")
+        self.assertTrue(numpy.allclose(csr1[1], csr2[1]), "same indices1-2")
+        self.assertTrue(numpy.allclose(csr1[1], csr3[1]), "same indices1-3")
+        self.assertTrue(numpy.allclose(csr1[1], csr4[1]), "same indices1-4")
 
-        self.assert_(numpy.allclose(csr1[0], csr2[0], atol=2e-7), "same data 1-2")
-        self.assert_(numpy.allclose(csr1[0], csr3[0], atol=2e-7), "same data 1-3")
-        self.assert_(numpy.allclose(csr1[0], csr4[0], atol=2e-7), "same data 1-4")
+        self.assertTrue(numpy.allclose(csr1[0], csr2[0], atol=2e-7), "same data 1-2")
+        self.assertTrue(numpy.allclose(csr1[0], csr3[0], atol=2e-7), "same data 1-3")
+        self.assertTrue(numpy.allclose(csr1[0], csr4[0], atol=2e-7), "same data 1-4")
 
 
 def suite():

@@ -25,6 +25,6 @@
 import fabio, pyFAI, numpy
 shape = (1000, 1000)
 a = numpy.ones(shape)
-ai = pyFAI.load("moke.poni")
+ai = pyFAI.load("mock.poni")
 print(ai)
 ai.xrpd_OpenCL(a, 1000, devicetype="gpu")

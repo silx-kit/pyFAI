@@ -19,6 +19,7 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    :maxdepth: 1
 
    Introduction/introduction
+   Geometry/geometry
    Distortion/Distortion
    Calibrant/index
    multi-geometry

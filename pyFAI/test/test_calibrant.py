@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 
 import unittest
 import logging
@@ -58,15 +58,15 @@ class TestCalibrant(unittest.TestCase):
     def test_factory(self):
         # by default we provide 11 calibrants
         l = len(ALL_CALIBRANTS)
-        self.assert_(l > 10, "at least 11 calibrants are available, got %s" % l)
+        self.assertTrue(l > 10, "at least 11 calibrants are available, got %s" % l)
 
-        self.assert_("LaB6" in ALL_CALIBRANTS, "LaB6 is a calibrant")
+        self.assertTrue("LaB6" in ALL_CALIBRANTS, "LaB6 is a calibrant")
 
         # ensure each calibrant instance is unique
         cal1 = ALL_CALIBRANTS["LaB6"]
         cal1.wavelength = 1e-10
         cal2 = ALL_CALIBRANTS["LaB6"]
-        self.assert_(cal2.wavelength is None, "calibrant is delivered without wavelength")
+        self.assertTrue(cal2.wavelength is None, "calibrant is delivered without wavelength")
 
         # check that it is possible to instanciate all calibrant
         for k, v in ALL_CALIBRANTS.items():
@@ -76,13 +76,13 @@ class TestCalibrant(unittest.TestCase):
         lab6 = ALL_CALIBRANTS["LaB6"]
         lab6.wavelength = 1.54e-10
         tth = lab6.get_2th()
-        self.assert_(len(tth) == 25, "We expect 25 rings for LaB6")
+        self.assertTrue(len(tth) == 25, "We expect 25 rings for LaB6")
         lab6.setWavelength_change2th(1e-10)
         tth = lab6.get_2th()
-        self.assert_(len(tth) == 25, "We still expect 25 rings for LaB6 (some are missing lost)")
+        self.assertTrue(len(tth) == 25, "We still expect 25 rings for LaB6 (some are missing lost)")
         lab6.setWavelength_change2th(2e-10)
         tth = lab6.get_2th()
-        self.assert_(len(tth) == 15, "Only 15 remaining out of 25 rings for LaB6 (some additional got lost)")
+        self.assertTrue(len(tth) == 15, "Only 15 remaining out of 25 rings for LaB6 (some additional got lost)")
 
     def test_fake(self):
         """test for fake image generation"""
@@ -115,9 +115,9 @@ class TestCalibrant(unittest.TestCase):
                 ax.imshow(img, interpolation='nearest')
                 fig.show()
                 six.moves.input("enter> ")
-            logger.info("%s min: %s max: %s " % (det.name, img.min(), img.max()))
-            self.assert_(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
-            self.assert_(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
+            logger.info("%s min: %s max: %s ", det.name, img.min(), img.max())
+            self.assertTrue(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
+            self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")
 
 
@@ -160,14 +160,14 @@ class TestCell(unittest.TestCase):
         a = 4.242
         href = "A.F. Schuch and R.L. Mills, Phys. Rev. Lett., 1961, 6, 596."
         he = Cell.cubic(a)
-        self.assert_(len(he.d_spacing(1)) == 15, msg="got 15 lines for He")
+        self.assertTrue(len(he.d_spacing(1)) == 15, msg="got 15 lines for He")
         he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
 
     def test_hydrogen(self):
         href = "DOI: 10.1126/science.239.4844.1131"
         h = Cell.hexagonal(2.6590, 4.3340)
         self.assertAlmostEqual(h.volume, 26.537, msg="Volume for H cell is correct")
-        self.assert_(len(h.d_spacing(1)) == 14, msg="got 14 lines for H")
+        self.assertTrue(len(h.d_spacing(1)) == 14, msg="got 14 lines for H")
         h.save("H", "Hydrogen", href, 1.0, UtilsTest.tempdir)
 
 

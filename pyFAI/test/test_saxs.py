@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 
 
 import unittest
@@ -49,13 +49,17 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 
 class TestSaxs(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        img = UtilsTest.getimage("1883/Pilatus1M.edf")
+        img = UtilsTest.getimage("Pilatus1M.edf")
         self.data = fabio.open(img).data
         self.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         self.ai.wavelength = 1e-10
@@ -80,7 +84,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("Numpy has R=%s" % R)
+        if R > 20: logger.error("Numpy has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="Numpy R=%.1f" % R)
             pylab.yscale("log")
@@ -96,7 +100,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("Cython has R=%s" % R)
+        if R > 20: logger.error("Cython has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="Cython R=%.1f" % R)
             pylab.yscale("log")
@@ -112,7 +116,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("SplitPixel has R=%s" % R)
+        if R > 20: logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="SplitBBox R=%.1f" % R)
             pylab.yscale("log")
@@ -128,7 +132,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("SplitPixel has R=%s" % R)
+        if R > 20: logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="SplitPixel R=%.1f" % R)
             pylab.yscale("log")
@@ -155,5 +159,5 @@ if __name__ == '__main__':
     if logger.getEffectiveLevel() == logging.DEBUG:
         pylab.legend()
         pylab.show()
-        raw_input()
+        six.moves.input()
         pylab.clf()

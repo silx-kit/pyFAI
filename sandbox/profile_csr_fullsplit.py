@@ -36,7 +36,10 @@ import sys, numpy, time
 from pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
-from six.moves import input
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
@@ -46,8 +49,8 @@ from pyFAI import ocl_azim_csr
 # logger = utilstest.getLogger("profile")
 
 
-ponifile = utilstest.UtilsTest.getimage("1893/Pilatus1M.poni")
-datafile = utilstest.UtilsTest.getimage("1883/Pilatus1M.edf")
+ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")
+datafile = utilstest.UtilsTest.getimage("Pilatus1M.edf")
 ai = pyFAI.load(ponifile)
 data = fabio.open(datafile).data
 
@@ -69,5 +72,4 @@ plot(boo, label="csr_fullsplit")
 plot(boo2, label="ocl_csr_fullsplit")
 legend()
 show()
-input()
-
+six.moves.input()

@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "13/05/2016"
+__date__ = "27/10/2016"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -391,8 +391,8 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
     size = bin_size.max()
     shape0, shape1 = shape
     if do_mask:
-        assert shape0 == mask.shape[0]
-        assert shape1 == mask.shape[1]
+        assert shape0 == mask.shape[0], "mask shape dim0"
+        assert shape1 == mask.shape[1], "mask shape dim1"
     delta0, delta1 = max_pixel_size
     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
     outMax[:, :] = 0
@@ -535,8 +535,8 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
         float[:, ::1] buffer
         bint do_mask = mask is not None
     if do_mask:
-        assert shape0 == mask.shape[0]
-        assert shape1 == mask.shape[1]
+        assert shape0 == mask.shape[0], "mask shape dim0"
+        assert shape1 == mask.shape[1], "mask shape dim1"
 
     outMax[:, :] = 0
     indptr = numpy.empty(bins + 1, dtype=numpy.int32)
@@ -686,10 +686,10 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
         bint do_mask = mask is not None
         lut_point[:, :] lut
     if do_mask:
-        assert shape_in0 == mask.shape[0]
-        assert shape_in1 == mask.shape[1]
+        assert shape_in0 == mask.shape[0], "shape_in0 == mask.shape[0]"
+        assert shape_in1 == mask.shape[1], "shape_in1 == mask.shape[1]"
 
-    #count the number of pixel falling into every single bin
+    #  count the number of pixel falling into every single bin
     pixel_count = numpy.zeros(bins, dtype=numpy.int32)
     idx_pixel = numpy.zeros(large_size, dtype=numpy.int32)
     idx_bin = numpy.zeros(large_size, dtype=numpy.int32)
@@ -868,7 +868,7 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
     shape_out0, shape_out1 = shape_out
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
-    assert shape_out0 * shape_out1 == LUT.shape[0]
+    assert shape_out0 * shape_out1 == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
     shape_img0, shape_img1 = image.shape
     if (shape_img0 != shape_in0) or (shape_img1 != shape_in1):
         new_image = numpy.zeros((shape_in0, shape_in1), dtype=numpy.float32)
@@ -890,7 +890,7 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
-    assert size == shape_in0 * shape_in1
+    assert size == shape_in0 * shape_in1, "size == shape_in0 * shape_in1"
     for i in prange(lshape0, nogil=True, schedule="static"):
         sum = 0.0
         error = 0.0  # Implement Kahan summation
@@ -968,7 +968,7 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
-    assert size == shape_in0 * shape_in1
+    assert size == shape_in0 * shape_in1, "size == shape_in0 * shape_in1"
 
     for i in prange(bins, nogil=True, schedule="static"):
         sum = 0.0    # Implement Kahan summation
@@ -1307,7 +1307,6 @@ class Distortion(object):
                 lout[i] += lin[idx] * coef
         return out[:img_shape[0], :img_shape[1]]
 
-    @timeit
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)

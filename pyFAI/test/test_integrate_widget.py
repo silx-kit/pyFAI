@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/06/2016"
+__date__ = "26/10/2016"
 
 import os
 import sys
@@ -45,9 +45,15 @@ from .utilstest import getLogger
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..gui_utils import has_Qt
-if has_Qt:
+
+try:
+    from ..gui import qt
+except ImportError:
+    qt = None
+
+if qt is not None:
     from ..integrate_widget import AIWidget
+
 from .utilstest import UtilsTest
 
 logger = getLogger(__file__)
@@ -63,12 +69,11 @@ class TestAIWidget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from ..gui_utils import QtGui
-        if has_Qt:
-            cls.app = QtGui.QApplication([])
+        if qt is not None:
+            cls.app = qt.QApplication([])
 
     def setUp(self):
-        if not has_Qt:
+        if qt is None:
             self.skipTest("Qt is not available")
 
     @classmethod
@@ -77,13 +82,13 @@ class TestAIWidget(unittest.TestCase):
 
     def test_process_no_data(self):
         widget = AIWidget(json_file=None)
-        widget.set_ponifile(UtilsTest.getimage("1893/Pilatus1M.poni"))
+        widget.set_ponifile(UtilsTest.getimage("Pilatus1M.poni"))
         widget.nbpt_rad.setText("2")
         result = widget.proceed()
         self.assertIsNone(result)
 
     def test_process_numpy_1d(self):
-        ponifile = UtilsTest.getimage("1893/Pilatus1M.poni")
+        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[23.5, 9.9]]
 
@@ -96,7 +101,7 @@ class TestAIWidget(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
     def test_process_numpy_2d(self):
-        ponifile = UtilsTest.getimage("1893/Pilatus1M.poni")
+        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[7.5, 5.3], [50.1, 12.6]]]
 
@@ -110,7 +115,7 @@ class TestAIWidget(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
     def test_process_array_1d(self):
-        ponifile = UtilsTest.getimage("1893/Pilatus1M.poni")
+        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[1.9, 1.9], [23.5, 9.9]]]
 
@@ -123,7 +128,7 @@ class TestAIWidget(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(result, expected, decimal=1)
 
     def test_process_array_2d(self):
-        ponifile = UtilsTest.getimage("1893/Pilatus1M.poni")
+        ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
         expected = [[[[7.5, 5.3], [50.1, 12.6]], [2.0, 2.0], [-124.5, -124.2]]]
 

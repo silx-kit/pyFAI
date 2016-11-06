@@ -32,13 +32,13 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "26/05/2016"
+__date__ = "27/10/2016"
 __license__ = "MIT"
 
 import distutils.util
+import distutils.dir_util
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -57,7 +57,29 @@ else:
     old_importer = False
 
 
-logging.basicConfig(level=logging.WARNING)
+class StreamHandlerUnittestReady(logging.StreamHandler):
+    """The unittest class TestResult redefine sys.stdout/err to capture
+    stdout/err from tests and to display them only when a test fail.
+
+    This class allow to use unittest stdout-capture by using the last sys.stdout
+    and not a cached one.
+    """
+
+    def emit(self, record):
+        """
+        @type record: logging.LogRecord
+        """
+        self.stream = sys.stderr
+        super(StreamHandlerUnittestReady, self).emit(record)
+
+    def flush(self):
+        pass
+
+# Same as basicConfig with a custom handler but portable Python 2 and 3
+root = logging.getLogger()
+root.addHandler(StreamHandlerUnittestReady())
+root.setLevel(logging.WARNING)
+
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
 
@@ -86,7 +108,7 @@ else:
 try:
     import h5py
 except Exception as error:
-    logger.warning("h5py missing: %s" % error)
+    logger.warning("h5py missing: %s", error)
 else:
     print("h5py %s" % h5py.version.version)
 
@@ -104,60 +126,49 @@ def get_project_name(root_dir):
     :param str root_dir: Directory where to run the command.
     :return: The name of the project stored in root_dir
     """
-    logger.debug("Getting project name in %s" % root_dir)
+    logger.debug("Getting project name in %s", root_dir)
     p = subprocess.Popen([sys.executable, "setup.py", "--name"],
                          shell=False, cwd=root_dir, stdout=subprocess.PIPE)
-    name, stderr_data = p.communicate()
-    logger.debug("subprocess ended with rc= %s" % p.returncode)
+    name, _stderr_data = p.communicate()
+    logger.debug("subprocess ended with rc= %s", p.returncode)
     return name.split()[-1].decode('ascii')
 
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_NAME = get_project_name(PROJECT_DIR)
-logger.info('Project name: %s' % PROJECT_NAME)
+logger.info("Project name: %s", PROJECT_NAME)
 
 
-def _copy(infile, outfile):
-    "link or copy file according to the OS. Nota those are HARD_LINKS"
-    if "link" in dir(os):
-        os.link(infile, outfile)
-    else:
-        shutil.copy(infile, outfile)
+class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
 
-
-def _copy_files(source, dest, extn):
-    """
-    copy all files with a given extension from source to destination
-    """
-    if not os.path.isdir(dest):
-        os.makedirs(dest)
-    full_src = os.path.join(PROJECT_DIR, source)
-    for clf in os.listdir(full_src):
-        if clf.endswith(extn) and clf not in os.listdir(dest):
-            _copy(os.path.join(full_src, clf), os.path.join(dest, clf))
-
-
-class TestResult(unittest.TestResult):
-
-    def __init__(self):
+    def __init__(self, *arg, **kwarg):
+        unittest.TextTestRunner.resultclass.__init__(self, *arg, **kwarg)
         self.logger = logging.getLogger("memProf")
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(min(logging.INFO, logging.root.level))
         self.logger.handlers.append(logging.FileHandler("profile.log"))
 
     def startTest(self, test):
         if resource:
-            self.__mem_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            self.__mem_start = \
+                resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        self.logger.debug("Start %s", test.id())
         self.__time_start = time.time()
         unittest.TestResult.startTest(self, test)
 
     def stopTest(self, test):
         unittest.TestResult.stopTest(self, test)
+        # see issue 311. For other platform, get size of ru_maxrss in "man getrusage"
+        if sys.platform == "darwin":
+            ratio = 1e-6
+        else:
+            ratio = 1e-3
         if resource:
-            memusage = (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - self.__mem_start) * 0.001
+            memusage = (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss -
+                        self.__mem_start) * ratio
         else:
             memusage = 0
-        self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s" % (
-                        time.time() - self.__time_start, memusage, test.id()))
+        self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s",
+            time.time() - self.__time_start, memusage, test.id())
 
 
 if sys.hexversion < 34013184:  # 2.7
@@ -174,19 +185,24 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
     """
     Generate a report of test coverage in RST (for Sphinx inclusion)
 
-    @param cov: test coverage instance
-    @return: RST string
+    :param cov: test coverage instance
+    :param str package: Name of the package
+    :param str base: base directory of modules to include in the report
+    :return: RST string
     """
     import tempfile
     fd, fn = tempfile.mkstemp(suffix=".xml")
     os.close(fd)
     cov.xml_report(outfile=fn)
+
     from lxml import etree
     xml = etree.parse(fn)
     classes = xml.xpath("//class")
+
     line0 = "Test coverage report for %s" % package
     res = [line0, "=" * len(line0), ""]
-    res.append("Measured on *%s* version %s, %s" % (package, version, time.strftime("%d/%m/%Y")))
+    res.append("Measured on *%s* version %s, %s" %
+               (package, version, time.strftime("%d/%m/%Y")))
     res += ["",
             ".. csv-table:: Test suite coverage",
             '   :header: "Name", "Stmts", "Exec", "Cover"',
@@ -194,6 +210,7 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
             '']
     tot_sum_lines = 0
     tot_sum_hits = 0
+
     for cl in classes:
         name = cl.get("name")
         fname = cl.get("filename")
@@ -207,7 +224,11 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
 
         cover = 100.0 * sum_hits / sum_lines if sum_lines else 0
 
-        res.append('   "%s", "%s", "%s", "%.1f %%"' % (name, sum_lines, sum_hits, cover))
+        if base:
+            name = os.path.relpath(fname, base)
+
+        res.append('   "%s", "%s", "%s", "%.1f %%"' %
+                   (name, sum_lines, sum_hits, cover))
         tot_sum_lines += sum_lines
         tot_sum_hits += sum_hits
     res.append("")
@@ -240,14 +261,12 @@ def build_project(name, root_dir):
     else:
         home = os.path.join(root_dir, "build", architecture)
 
-    logger.warning("Building %s to %s" % (name, home))
+    logger.warning("Building %s to %s", name, home)
     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                          shell=False, cwd=root_dir)
-    logger.debug("subprocess ended with rc= %s" % p.wait())
+    logger.debug("subprocess ended with rc= %s", p.wait())
 
-    _copy_files("openCL", os.path.join(home, PROJECT_NAME, "openCL"), ".cl")
-    _copy_files("gui", os.path.join(home, PROJECT_NAME, "gui"), ".ui")
-    _copy_files("calibration", os.path.join(home, PROJECT_NAME, "calibration"), ".D")
+    distutils.dir_util.copy_tree("pyFAI/resources", os.path.join(home, PROJECT_NAME, "resources"), update=1)
 
     return home
 
@@ -255,21 +274,48 @@ def build_project(name, root_dir):
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from third_party.argparse import ArgumentParser
-parser = ArgumentParser(description='Run the tests.')
+    from pyFAI.third_party.argparse import ArgumentParser
+
+epilog = """Environment variables: None"""
+# WITH_QT_TEST=False to disable graphical tests,
+# SILX_OPENCL=False to disable OpenCL tests.
+# SILX_TEST_LOW_MEM=True to disable tests taking large amount of memory
+# GPU=False to disable the use of a GPU with OpenCL test
+# """
+parser = ArgumentParser(description='Run the tests.',
+                        epilog=epilog)
 
 parser.add_argument("-i", "--insource",
                     action="store_true", dest="insource", default=False,
                     help="Use the build source and not the installed version")
 parser.add_argument("-c", "--coverage", dest="coverage",
                     action="store_true", default=False,
-                    help="Report code coverage (requires 'coverage' and 'lxml' module)")
+                    help=("Report code coverage" +
+                          "(requires 'coverage' and 'lxml' module)"))
 parser.add_argument("-m", "--memprofile", dest="memprofile",
                     action="store_true", default=False,
                     help="Report memory profiling")
 parser.add_argument("-v", "--verbose", default=0,
                     action="count", dest="verbose",
-                    help="Increase verbosity")
+                    help="Increase verbosity. Option -v prints additional " +
+                         "INFO messages. Use -vv for full verbosity, " +
+                         "including debug messages and test help strings.")
+parser.add_argument("-n", "--noisy", default=True,
+                    action="store_false", dest="display_buffer",
+                    help="Display all warnings from the system")
+
+# parser.add_argument("-x", "--no-gui", dest="gui", default=True,
+#                    action="store_false",
+#                    help="Disable the test of the graphical use interface")
+# parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
+#                    action="store_false",
+#                    help="Disable the test of the OpenCL part")
+# parser.add_argument("-l", "--low-mem", dest="low_mem", default=False,
+#                    action="store_true",
+#                    help="Disable test with large memory consumption (>100Mbyte")
+# parser.add_argument("--qt-binding", dest="qt_binding", default=None,
+#                    help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
+
 default_test_name = "%s.test.suite" % PROJECT_NAME
 parser.add_argument("test_name", nargs='*',
                     default=(default_test_name,),
@@ -278,12 +324,23 @@ options = parser.parse_args()
 sys.argv = [sys.argv[0]]
 
 
+test_verbosity = 1
 if options.verbose == 1:
     logging.root.setLevel(logging.INFO)
     logger.info("Set log level: INFO")
 elif options.verbose > 1:
     logging.root.setLevel(logging.DEBUG)
     logger.info("Set log level: DEBUG")
+    test_verbosity = 2
+
+# if not options.gui:
+#    os.environ["WITH_QT_TEST"] = "False"
+#
+# if not options.opencl:
+#    os.environ["SILX_OPENCL"] = "False"
+#
+# if options.low_mem:isy
+#    os.environ["SILX_TEST_LOW_MEM"] = "True"
 
 
 if options.coverage:
@@ -300,7 +357,7 @@ if options.coverage:
 if (os.path.dirname(os.path.abspath(__file__)) ==
         os.path.abspath(sys.path[0])):
     removed_from_sys_path = sys.path.pop(0)
-    logger.info("Patched sys.path, removed: '%s'" % removed_from_sys_path)
+    logger.info("Patched sys.path, removed: '%s'", removed_from_sys_path)
 
 
 # import module
@@ -317,7 +374,7 @@ if options.insource:
     build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
 
     sys.path.insert(0, build_dir)
-    logger.warning("Patched sys.path, added: '%s'" % build_dir)
+    logger.warning("Patched sys.path, added: '%s'", build_dir)
     module = importer(PROJECT_NAME)
 
 
@@ -327,9 +384,9 @@ PROJECT_PATH = module.__path__[0]
 
 # Run the tests
 if options.memprofile:
-    runner = ProfileTestRunner()
+    runner = ProfileTestRunner(buffer=options.display_buffer)
 else:
-    runner = unittest.TextTestRunner()
+    runner = unittest.TextTestRunner(buffer=options.display_buffer)
 
 logger.warning("Test %s %s from %s",
                PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH)
@@ -359,7 +416,12 @@ else:
         unittest.defaultTestLoader.loadTestsFromNames(options.test_name))
 
 
-if runner.run(test_suite).wasSuccessful():
+result = runner.run(test_suite)
+for test, reason in result.skipped:
+    logger.warning('Skipped %s (%s): %s',
+                   test.id(), test.shortDescription() or '', reason)
+
+if result.wasSuccessful():
     logger.info("Test suite succeeded")
     exit_status = 0
 else:

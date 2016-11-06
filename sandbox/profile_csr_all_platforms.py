@@ -31,8 +31,11 @@ import sys, numpy, time
 from  pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 from six.moves import range
-from six.moves import input
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitBBox
@@ -57,8 +60,8 @@ def prof_inte(csr, data, device, block_size, repeat=10, nbr=3, platformid=None, 
     return numpy.min(runtimes)
 
 if __name__ == "__main__":
-    ponifile = utilstest.UtilsTest.getimage("1893/Pilatus1M.poni")
-    datafile = utilstest.UtilsTest.getimage("1883/Pilatus1M.edf")
+    ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")
+    datafile = utilstest.UtilsTest.getimage("Pilatus1M.edf")
 
     ai = pyFAI.load(ponifile)
     data = fabio.open(datafile).data
@@ -85,4 +88,4 @@ if __name__ == "__main__":
         plot(block_sizes, timimgs[i], label=str(i))
     legend()
     show()
-    input()
+    six.moves.input()

@@ -36,15 +36,18 @@ import sys, numpy, time
 from pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
-from six.moves import input
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 # from pyFAI import splitBBox
 # from pyFAI import splitBBoxLUT
 # from pyFAI import splitBBoxCSR
 # logger = utilstest.getLogger("profile")
-ponifile = utilstest.UtilsTest.getimage("1893/Pilatus1M.poni")
-datafile = utilstest.UtilsTest.getimage("1883/Pilatus1M.edf")
+ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")
+datafile = utilstest.UtilsTest.getimage("Pilatus1M.edf")
 ai = pyFAI.load(ponifile)
 data = fabio.open(datafile).data
 # ref = ai.xrpd_LUT(data, 1000)[1]
@@ -60,5 +63,5 @@ plot(ref.ravel(), label="ocl_lut")
 plot(obt.ravel(), label="ocl_csr")
 legend()
 show()
-input()
+six.moves.input()
 

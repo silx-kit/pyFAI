@@ -34,16 +34,22 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/06/2016"
+__date__ = "18/07/2016"
 
 
+import tempfile
+import os
 import unittest
 import numpy
+import numpy.testing
 import logging
 import fabio
 from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..containers import Integrate1dResult
+from ..containers import Integrate2dResult
+from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
@@ -54,7 +60,7 @@ class TestIntegrate1D(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.npt = 1000
-        self.img = UtilsTest.getimage("1883/Pilatus1M.edf")
+        self.img = UtilsTest.getimage("Pilatus1M.edf")
         self.data = fabio.open(self.img).data
         self.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         self.ai.wavelength = 1e-10
@@ -106,12 +112,29 @@ class TestIntegrate1D(unittest.TestCase):
                     logger.info(mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
 
+    def test_filename(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        self.ai.integrate1d(self.data, self.npt, filename=f.name)
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
+
+    def test_defaultwriter(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        result = self.ai.integrate1d(self.data, self.npt)
+        writer = DefaultAiWriter(f.name, self.ai)
+        writer.write(result)
+        writer.close()
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
+
 
 class TestIntegrate2D(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.npt = 500
-        cls.img = UtilsTest.getimage("1883/Pilatus1M.edf")
+        cls.img = UtilsTest.getimage("Pilatus1M.edf")
         cls.data = fabio.open(cls.img).data
         cls.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         cls.ai.wavelength = 1e-10
@@ -178,6 +201,89 @@ class TestIntegrate2D(unittest.TestCase):
                     logger.info(mesg)
                 self.assertTrue(delta_pos_rad <= 0.01, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
+
+    def test_filename(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        self.ai.integrate2d(self.data, self.npt, filename=f.name)
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
+
+    def test_defaultwriter(self):
+        f = tempfile.NamedTemporaryFile(delete=True)
+        self.assertEquals(os.path.getsize(f.name), 0)
+        result = self.ai.integrate2d(self.data, self.npt)
+        writer = DefaultAiWriter(f.name, self.ai)
+        writer.write(result)
+        writer.close()
+        self.assertGreater(os.path.getsize(f.name), 40)
+        f.close()
+
+
+class TestIntegrateResult(unittest.TestCase):
+
+    def setUp(self):
+        self.I = numpy.array([[1, 2], [3, 4]])
+        self.radial = numpy.array([[3, 2], [3, 4]])
+        self.azimuthal = numpy.array([[2, 2], [3, 4]])
+        self.sigma = numpy.array([[4, 2], [3, 4]])
+
+    def test_result_1d(self):
+        result = Integrate1dResult(self.radial, self.I)
+        # as tuple
+        radial, I = result
+        numpy.testing.assert_equal((self.I, self.radial), (I, radial))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        self.assertIsNone(result.sigma)
+
+    def test_result_2d(self):
+        result = Integrate2dResult(self.I, self.radial, self.azimuthal)
+        # as tuple
+        I, radial, azimuthal = result
+        numpy.testing.assert_equal((self.I, self.radial, self.azimuthal), (I, radial, azimuthal))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        numpy.testing.assert_array_equal(self.azimuthal, result.azimuthal)
+        self.assertIsNone(result.sigma)
+
+    def test_result_1d_with_sigma(self):
+        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        # as tuple
+        radial, I, sigma = result
+        numpy.testing.assert_equal((self.radial, self.I, self.sigma), (radial, I, sigma))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        numpy.testing.assert_array_equal(self.sigma, result.sigma)
+
+    def test_result_2d_with_sigma(self):
+        result = Integrate2dResult(self.I, self.radial, self.azimuthal, self.sigma)
+        # as tuple
+        I, radial, azimuthal, sigma = result
+        numpy.testing.assert_equal((self.I, self.radial, self.azimuthal, self.sigma), (I, radial, azimuthal, sigma))
+        # as attributes
+        numpy.testing.assert_array_equal(self.I, result.intensity)
+        numpy.testing.assert_array_equal(self.radial, result.radial)
+        numpy.testing.assert_array_equal(self.azimuthal, result.azimuthal)
+        numpy.testing.assert_array_equal(self.sigma, result.sigma)
+
+    def test_result_1d_unit(self):
+        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        result._set_unit("foobar")
+        numpy.testing.assert_array_equal("foobar", result.unit)
+
+    def test_result_1d_count(self):
+        result = Integrate1dResult(self.radial, self.I, self.sigma)
+        result._set_count(self.sigma)
+        numpy.testing.assert_array_equal(self.sigma, result.count)
+
+    def test_result_2d_sum(self):
+        result = Integrate2dResult(self.I, self.radial, self.azimuthal, self.sigma)
+        result._set_sum(self.sigma)
+        numpy.testing.assert_array_equal(self.sigma, result.sum)
 
 
 def suite():

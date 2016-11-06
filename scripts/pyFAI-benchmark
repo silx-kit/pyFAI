@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/03/2016"
+__date__ = "29/07/2016"
 __status__ = "development"
 
 try:
@@ -38,6 +38,10 @@ try:
     rconsole.spawn_server()
 except ImportError:
     print("No socket opened for debugging -> please install rfoo")
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 
 import pyFAI.benchmark
 
@@ -99,4 +103,4 @@ if __name__ == "__main__":
               do_1d=options.onedim, do_2d=options.twodim, devices=devices)
 
     pyFAI.benchmark.pylab.ion()
-    raw_input("Enter to quit")
+    six.moves.input("Enter to quit")

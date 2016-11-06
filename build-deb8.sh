@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -31,7 +31,8 @@ project=pyFAI
 debian=$(grep -o '[0-9]*' /etc/issue)
 version=$(python -c"import version; print(version.version)")
 strictversion=$(python -c"import version; print(version.strictversion)")
-tarname=${project}_${strictversion}.orig.tar.gz
+debianversion=$(python -c"import version; print(version.debianversion)")
+tarname=${project}_${debianversion}.orig.tar.gz
 deb_name=$(echo "$project" | tr '[:upper:]' '[:lower:]')
 
 if [ -d /usr/lib/ccache ];
@@ -39,6 +40,10 @@ then
    export PATH=/usr/lib/ccache:$PATH
 fi
 
+if [ -z ${debian} ]
+then 
+   debian=9
+fi 
 
 python setup.py debian_src
 cp -f dist/${tarname} package
@@ -50,7 +55,7 @@ fi
 
 cd package
 tar -xzf ${tarname}
-newname=${deb_name}_${strictversion}.orig.tar.gz
+newname=${deb_name}_${debianversion}.orig.tar.gz
 directory=${project}-${strictversion}
 echo tarname $tarname newname $newname
 if [ $tarname != $newname ]
@@ -64,25 +69,25 @@ fi
 
 if [ -f ${project}-testimages.tar.gz ]
 then
-  if [ ! -h  ${deb_name}_${strictversion}.orig-testimages.tar.gz ]
+  if [ ! -h  ${deb_name}_${debianversion}.orig-testimages.tar.gz ]
   then
-    ln -s ${project}-testimages.tar.gz ${deb_name}_${strictversion}.orig-testimages.tar.gz
+    ln -s ${project}-testimages.tar.gz ${deb_name}_${debianversion}.orig-testimages.tar.gz
   fi
 fi
 
 cd ${directory}
-cp -r ../debian .
+cp -r ../debian${debian} debian
 cp ../../copyright debian
 
 #handle test images
-if [ -f ../${deb_name}_${strictversion}.orig-testimages.tar.gz ]
+if [ -f ../${deb_name}_${debianversion}.orig-testimages.tar.gz ]
 then
   if [ ! -d testimages ]
   then
     mkdir testimages
   fi
   cd testimages
-  tar -xzf  ../../${deb_name}_${strictversion}.orig-testimages.tar.gz
+  tar -xzf  ../../${deb_name}_${debianversion}.orig-testimages.tar.gz
   cd ..
 else
   # Disable to skip tests during build
@@ -91,7 +96,7 @@ else
   export DEB_BUILD_OPTIONS=nocheck
 fi
 
-dch -v ${strictversion}-1 "upstream development build of ${project} ${version}"
+dch -v ${debianversion}-1 "upstream development build of ${project} ${version}"
 dch --bpo "${project} snapshot ${version} built for debian ${debian}"
 dpkg-buildpackage -r
 rc=$?

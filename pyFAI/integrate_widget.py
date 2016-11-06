@@ -1,39 +1,43 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Fast Azimuthal integration
-#             https://github.com/kif/pyFAI
-#
+#    Project: Azimuthal integration
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-from __future__ import absolute_import, print_function, with_statement, division
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
-__doc__ = """pyFAI-integrate
+"""pyFAI-integrate
 
-A graphical tool (based on PyQt4) for performing azimuthal integration on series of files.
+A graphical tool for performing azimuthal integration on series of files.
+
 """
+from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/05/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 
 import logging
@@ -44,10 +48,8 @@ import threading
 import math
 import os.path as op
 import numpy
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.integrate_widget")
-from .gui_utils import QtCore, QtGui, uic, QtWebKit
-
+from .gui import qt
 import fabio
 from . import worker
 from .detectors import ALL_DETECTORS, detector_factory
@@ -64,68 +66,8 @@ except ImportError:
 
 UIC = get_ui_file("integration.ui")
 
-FROM_PYMCA = "From PyMca"
 
-
-class Browser(QtGui.QMainWindow):
-
-    def __init__(self, default_url="http://google.com"):
-        """
-            Initialize the browser GUI and connect the events
-        """
-        QtGui.QMainWindow.__init__(self)
-        self.resize(800, 600)
-        self.centralwidget = QtGui.QWidget(self)
-
-        self.mainLayout = QtGui.QHBoxLayout(self.centralwidget)
-        self.mainLayout.setSpacing(0)
-        self.mainLayout.setMargin(1)
-
-        self.frame = QtGui.QFrame(self.centralwidget)
-
-        self.gridLayout = QtGui.QVBoxLayout(self.frame)
-        self.gridLayout.setMargin(0)
-        self.gridLayout.setSpacing(0)
-
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.tb_url = QtGui.QLineEdit(self.frame)
-        self.bt_back = QtGui.QPushButton(self.frame)
-        self.bt_ahead = QtGui.QPushButton(self.frame)
-
-        self.bt_back.setIcon(QtGui.QIcon().fromTheme("go-previous"))
-        self.bt_ahead.setIcon(QtGui.QIcon().fromTheme("go-next"))
-        self.horizontalLayout.addWidget(self.bt_back)
-        self.horizontalLayout.addWidget(self.bt_ahead)
-        self.horizontalLayout.addWidget(self.tb_url)
-        self.gridLayout.addLayout(self.horizontalLayout)
-
-        self.html = QtWebKit.QWebView()
-        self.gridLayout.addWidget(self.html)
-        self.mainLayout.addWidget(self.frame)
-        self.setCentralWidget(self.centralwidget)
-
-        self.tb_url.returnPressed.connect(self.browse)
-        self.bt_back.clicked.connect(self.html.back)
-        self.bt_ahead.clicked.connect(self.html.forward)
-
-        self.default_url = default_url
-        self.tb_url.setText(self.default_url)
-        self.browse()
-
-    def browse(self):
-        """
-        Make a web browse on a specific url and show the page on the
-        Webview widget.
-        """
-        print("browse " + self.tb_url.text())
-        url = QtCore.QUrl.fromUserInput(self.tb_url.text())
-        print(str(url))
-#         self.html.setUrl(url)
-        self.html.load(url)
-#         self.html.show()
-
-
-class AIWidget(QtGui.QWidget):
+class AIWidget(qt.QWidget):
     """
     """
     URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
@@ -140,9 +82,9 @@ class AIWidget(QtGui.QWidget):
         self.name = None
         self._sem = threading.Semaphore()
         self.json_file = json_file
-        QtGui.QWidget.__init__(self)
+        qt.QWidget.__init__(self)
         try:
-            uic.loadUi(UIC, self)
+            qt.loadUi(UIC, self)
         except AttributeError as _error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
@@ -157,10 +99,10 @@ class AIWidget(QtGui.QWidget):
         self.file_dark_current.clicked.connect(self.select_darkcurrent)
         self.file_flat_field.clicked.connect(self.select_flatfield)
         # connect button bar
-        self.okButton = self.buttonBox.button(QtGui.QDialogButtonBox.Ok)
-        self.saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
-        self.resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.cancelButton = self.buttonBox.button(QtGui.QDialogButtonBox.Cancel)
+        self.okButton = self.buttonBox.button(qt.QDialogButtonBox.Ok)
+        self.saveButton = self.buttonBox.button(qt.QDialogButtonBox.Save)
+        self.resetButton = self.buttonBox.button(qt.QDialogButtonBox.Reset)
+        self.cancelButton = self.buttonBox.button(qt.QDialogButtonBox.Cancel)
         self.okButton.clicked.connect(self.proceed)
         self.saveButton.clicked.connect(self.save_config)
         self.buttonBox.helpRequested.connect(self.help)
@@ -194,37 +136,37 @@ class AIWidget(QtGui.QWidget):
             elif unit.REPR == "r_mm":
                 self.units[unit] = self.r_mm
             else:
-                logger.debug("Unit unknown to GUI %s" % unit)
+                logger.debug("Unit unknown to GUI %s", unit)
 
     def set_validators(self):
         """
         Set all validators for text entries
         """
-        npt_validator = QtGui.QIntValidator()
+        npt_validator = qt.QIntValidator()
         npt_validator.setBottom(1)
         self.nbpt_rad.setValidator(npt_validator)
         self.nbpt_azim.setValidator(npt_validator)
 
-        wl_validator = QtGui.QDoubleValidator(self)
+        wl_validator = qt.QDoubleValidator(self)
         wl_validator.setBottom(1e-15)
         wl_validator.setTop(1e-6)
         self.wavelength.setValidator(wl_validator)
 
-        distance_validator = QtGui.QDoubleValidator(self)
+        distance_validator = qt.QDoubleValidator(self)
         distance_validator.setBottom(0)
         self.pixel1.setValidator(distance_validator)
         self.pixel2.setValidator(distance_validator)
         self.poni1.setValidator(distance_validator)
         self.poni2.setValidator(distance_validator)
 
-        angle_validator = QtGui.QDoubleValidator(self)
+        angle_validator = qt.QDoubleValidator(self)
         distance_validator.setBottom(-math.pi)
         distance_validator.setTop(math.pi)
         self.rot1.setValidator(angle_validator)
         self.rot2.setValidator(angle_validator)
         self.rot3.setValidator(angle_validator)
         # done at widget level
-#        self.polarization_factor.setValidator(QtGui.QDoubleValidator(-1, 1, 3))
+#        self.polarization_factor.setValidator(qt.QDoubleValidator(-1, 1, 3))
 
     def __get_unit(self):
         for unit, widget in self.units.items():
@@ -264,7 +206,7 @@ class AIWidget(QtGui.QWidget):
             rad_min = float_(self.radial_range_min.text())
             rad_max = float_(self.radial_range_max.text())
         except ValueError as error:
-            logger.error("error in parsing radial range: %s" % error)
+            logger.error("error in parsing radial range: %s", error)
             return None
         result = (rad_min, rad_max)
         if result == (None, None):
@@ -278,7 +220,7 @@ class AIWidget(QtGui.QWidget):
             azim_min = float_(self.azimuth_range_min.text())
             azim_max = float_(self.azimuth_range_max.text())
         except ValueError as error:
-            logger.error("error in parsing azimuthal range: %s" % error)
+            logger.error("error in parsing azimuthal range: %s", error)
             return None
         result = (azim_min, azim_max)
         if result == (None, None):
@@ -323,7 +265,7 @@ class AIWidget(QtGui.QWidget):
 
             if kwarg["npt_rad"] is None:
                 message = "You must provide the number of output radial bins !"
-                QtGui.QMessageBox.warning(self, "PyFAI integrate", message)
+                qt.QMessageBox.warning(self, "PyFAI integrate", message)
                 return {}
 
             if self.do_2D.isChecked():
@@ -336,15 +278,15 @@ class AIWidget(QtGui.QWidget):
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                         os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
-            logger.debug("processing %s" % self.input_data)
+            logger.debug("processing %s", self.input_data)
             start_time = time.time()
-            if self.input_data in [None, []]:
+            if self.input_data is None or len(self.input_data) == 0:
                 logger.warning("No input data to process")
                 return
 
             elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
                 # We have a numpy array of dim3
-                w = worker.Worker(azimuthalIntgrator=ai)
+                w = worker.Worker(azimuthalIntegrator=ai)
                 try:
                     w.nbpt_rad = self.__get_nbpt_rad()
                     w.unit = self.__get_unit()
@@ -363,7 +305,7 @@ class AIWidget(QtGui.QWidget):
                     w.radial_range = self.__get_radial_range()
                     w.azimuth_range = self.__get_azimuth_range()
                 except RuntimeError as e:
-                    QtGui.QMessageBox.warning(self, "PyFAI integrate", e.message + ". Action aboreded.")
+                    qt.QMessageBox.warning(self, "PyFAI integrate", e.message + ". Action aboreded.")
                     return {}
 
                 if self.do_2D.isChecked():
@@ -411,7 +353,7 @@ class AIWidget(QtGui.QWidget):
 
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
-                    logger.debug("processing %s" % item)
+                    logger.debug("processing %s", item)
                     if isinstance(item, (six.text_type, six.binary_type)) and op.exists(item):
                         fab_img = fabio.open(item)
                         multiframe = (fab_img.nframes > 1)
@@ -456,7 +398,7 @@ class AIWidget(QtGui.QWidget):
                     out.append(res)
 
                     #TODO manage HDF5 stuff !!!
-            logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
+            logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
         self.die()
         return out
@@ -467,8 +409,7 @@ class AIWidget(QtGui.QWidget):
 
     def help(self):
         logger.debug("Please, help")
-        self.help_browser = Browser(self.URL)
-        self.help_browser.show()
+        qt.QDesktopServices.openUrl(qt.QUrl(self.URL))
 
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
@@ -532,12 +473,12 @@ class AIWidget(QtGui.QWidget):
         if filename is None:
             filename = self.json_file
         if filename is not None:
-            logger.info("Dump to %s" % filename)
+            logger.info("Dump to %s", filename)
             try:
                 with open(filename, "w") as myFile:
                     json.dump(to_save, myFile, indent=4)
             except IOError as error:
-                logger.error("Error while saving config: %s" % error)
+                logger.error("Error while saving config: %s", error)
             else:
                 logger.debug("Saved")
         return to_save
@@ -548,9 +489,9 @@ class AIWidget(QtGui.QWidget):
         @param filename: path where the config was saved
         @type filename: str
         """
-        logger.debug("Restore from %s" % filename)
+        logger.debug("Restore from %s", filename)
         if not op.isfile(filename):
-            logger.error("No such file: %s" % filename)
+            logger.error("No such file: %s", filename)
             return
         data = json.load(open(filename))
         self.set_config(data)
@@ -614,12 +555,12 @@ class AIWidget(QtGui.QWidget):
             self.openCL_changed()
 
     def select_ponifile(self):
-        ponifile = QtGui.QFileDialog.getOpenFileName()
+        ponifile = qt.QFileDialog.getOpenFileName()
         self.set_ponifile(str_(ponifile))
 
     def select_splinefile(self):
         logger.debug("select_splinefile")
-        splinefile = str_(QtGui.QFileDialog.getOpenFileName())
+        splinefile = str_(qt.QFileDialog.getOpenFileName())
         if splinefile:
             try:
                 ai = AzimuthalIntegrator()
@@ -628,25 +569,25 @@ class AIWidget(QtGui.QWidget):
                 self.pixel2.setText(str(ai.pixel2))
                 self.splineFile.setText(ai.detector.splineFile or "")
             except Exception as error:
-                logger.error("failed %s on %s" % (error, splinefile))
+                logger.error("failed %s on %s", error, splinefile)
 
     def select_maskfile(self):
         logger.debug("select_maskfile")
-        maskfile = str_(QtGui.QFileDialog.getOpenFileName())
+        maskfile = str_(qt.QFileDialog.getOpenFileName())
         if maskfile:
             self.mask_file.setText(maskfile or "")
             self.do_mask.setChecked(True)
 
     def select_darkcurrent(self):
         logger.debug("select_darkcurrent")
-        darkcurrent = str_(QtGui.QFileDialog.getOpenFileName())
+        darkcurrent = str_(qt.QFileDialog.getOpenFileName())
         if darkcurrent:
             self.dark_current.setText(str_(darkcurrent))
             self.do_dark.setChecked(True)
 
     def select_flatfield(self):
         logger.debug("select_flatfield")
-        flatfield = str_(QtGui.QFileDialog.getOpenFileName())
+        flatfield = str_(qt.QFileDialog.getOpenFileName())
         if flatfield:
             self.flat_field.setText(str_(flatfield))
             self.do_flat.setChecked(True)
@@ -666,7 +607,7 @@ class AIWidget(QtGui.QWidget):
             ai = AzimuthalIntegrator.sload(ponifile)
         except Exception as error:
             ai = AzimuthalIntegrator()
-            logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
+            logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
             return
         self.pixel1.setText(str_(ai.pixel1))
         self.pixel2.setText(str_(ai.pixel2))
@@ -696,7 +637,7 @@ class AIWidget(QtGui.QWidget):
             try:
                 fval = float(txtval)
             except ValueError:
-                logger.error("Unable to convert %s to float: %s" % (kw, txtval))
+                logger.error("Unable to convert %s to float: %s", kw, txtval)
         return fval
 
     def detector_changed(self):
@@ -714,7 +655,7 @@ class AIWidget(QtGui.QWidget):
                 self.pixel1.setText(str(inst.pixel1))
                 self.pixel2.setText(str(inst.pixel2))
             else:
-                logger.warning("No such spline file %s" % splineFile)
+                logger.warning("No such spline file %s", splineFile)
 
     def openCL_changed(self):
         logger.debug("do_OpenCL")
@@ -757,7 +698,7 @@ class AIWidget(QtGui.QWidget):
 
     def save_config(self):
         logger.debug("save_config")
-        json_file = str_(QtGui.QFileDialog.getSaveFileName(caption="Save configuration as json",
+        json_file = str_(qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
                                                            directory=self.json_file,
                                                            filter="Config (*.json)"))
         if json_file:

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2016"
+__date__ = "26/10/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -54,7 +54,11 @@ import numpy
 import shutil
 import json
 import tempfile
-logging.basicConfig(level=logging.WARNING)
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
+
 logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
@@ -84,7 +88,7 @@ class UtilsTest(object):
     try:
         pyFAI = __import__("%s.directories" % name)
     except Exception as error:
-        logger.warning("Unable to loading %s %s" % (name, error))
+        logger.warning("Unable to loading %s %s", name, error)
         image_home = None
     else:
         image_home = pyFAI.directories.testimages
@@ -111,7 +115,7 @@ class UtilsTest(object):
     @classmethod
     def deep_reload(cls):
         cls.pyFAI = __import__(cls.name)
-        logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
+        logger.info("%s loaded from %s", cls.name, cls.pyFAI.__file__)
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
         import pyFAI.decorators
@@ -134,7 +138,7 @@ class UtilsTest(object):
             just raise an Exception.
             """
             if imagename is None:
-                imagename = "2252/testimages.tar.bz2 unzip it "
+                imagename = "testimages.tar.bz2 unzip it "
             raise RuntimeError("Could not automatically \
                 download test images!\n \ If you are behind a firewall, \
                 please set both environment variable http_proxy and https_proxy.\
@@ -144,13 +148,11 @@ class UtilsTest(object):
     @classmethod
     def getimage(cls, imagename):
         """
-        Downloads the requested image from Forge.EPN-campus.eu
+        Downloads the requested image from a file set available at http://www.silx.org/pub/pyFAI/testimages/
 
-        @param: name of the image.
-        For the RedMine forge, the filename contains a directory name that is removed
-        @return: full path of the locally saved file
+        @param: relative name of the image.
+        @return: full path of the locally saved file.
         """
-        imagename = os.path.basename(imagename)
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
             image_list = list(cls.ALL_DOWNLOADED_FILES)
@@ -160,7 +162,7 @@ class UtilsTest(object):
                     json.dump(image_list, fp, indent=4)
             except IOError:
                 logger.debug("Unable to save JSON list")
-        logger.info("UtilsTest.getimage('%s')" % imagename)
+        logger.info("UtilsTest.getimage('%s')", imagename)
         if not os.path.exists(cls.image_home):
             os.makedirs(cls.image_home)
 
@@ -180,11 +182,11 @@ class UtilsTest(object):
             else:
                 opener = urlopen
 
-            logger.info("wget %s/%s" % (cls.url_base, imagename))
+            logger.info("wget %s/%s", cls.url_base, imagename)
             try:
                 data = opener("%s/%s" % (cls.url_base, imagename),
                               data=None, timeout=cls.timeout).read()
-                logger.info("Image %s successfully downloaded." % imagename)
+                logger.info("Image %s successfully downloaded.", imagename)
             except URLError:
                 raise unittest.SkipTest("network unreachable.")
 
@@ -253,7 +255,7 @@ class UtilsTest(object):
         mylogger = logging.getLogger(basename)
         logger.setLevel(level)
         mylogger.setLevel(level)
-        mylogger.debug("tests loaded from file: %s" % basename)
+        mylogger.debug("tests loaded from file: %s", basename)
         return mylogger
 
     @classmethod
@@ -333,27 +335,26 @@ def diff_img(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(2, 2, 1)
         ax2 = fig.add_subplot(2, 2, 2)
         ax3 = fig.add_subplot(2, 2, 3)
         im_ref = ax1.imshow(ref)
-        plt.colorbar(im_ref)
+        pyplot.colorbar(im_ref)
         ax1.set_title("%s ref" % comment)
         im_obt = ax2.imshow(obt)
-        plt.colorbar(im_obt)
+        pyplot.colorbar(im_obt)
         ax2.set_title("%s obt" % comment)
         im_delta = ax3.imshow(delta)
-        plt.colorbar(im_delta)
+        pyplot.colorbar(im_delta)
         ax3.set_title("delta")
         imax = delta.argmax()
         x = imax % ref.shape[-1]
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -363,16 +364,15 @@ def diff_crv(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2)
         im_ref = ax1.plot(ref, label="%s ref" % comment)
         im_obt = ax1.plot(obt, label="%s obt" % comment)
         im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 class ParameterisedTestCase(unittest.TestCase):

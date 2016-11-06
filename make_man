@@ -12,7 +12,7 @@ CHECK_CALIB_DESCRIPTION="Is the poni correct?"
 DETECTOR2NEXUS_DESCRIPTION="Create NeXus detector definition"
 DIFF_MAP_DESCRIPTION="Azimuthal integration for diffraction imaging"
 DIFF_TOMO_DESCRIPTION="Azimuthal integration for diffraction tomograph"
-DRAWMASK_PYMCA_DESCRIPTION="Draw a mask for integration"
+PYFAI_DRAWMASK_DESCRIPTION="Draw a mask for integration"
 EIGER_MASK_DESCRIPTION="Extract mask from an Eiger detector file"
 MX_CALIBRATE_DESCRIPTION="Validate detector position for MX beamlines"
 PYFAI_AVERAGE_DESCRIPTION="Image preprocessing tool"
@@ -31,6 +31,10 @@ if [ ! -d $OUTPUT_DIR ]
 python setup.py build
 version=$(./bootstrap.py ./version.py |tail -n 1)
 echo $version
+
+export PATH=./build/scripts-2.7:$PATH
+export PYTHONPATH=./build/lib.linux-x86_64-2.7
+
 for i in scripts/*;
     do
     script_name=$(basename $i)

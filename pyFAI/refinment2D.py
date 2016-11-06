@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "27/10/2016"
 __status__ = "beta"
 
 import logging
@@ -34,7 +34,6 @@ import numpy
 
 logger = logging.getLogger("pyFAI.refinment2D")
 
-#from utils import timeit
 from .azimuthalIntegrator import AzimuthalIntegrator
 from PyMca import SGModule
 
@@ -147,7 +146,7 @@ class Refinment2D(object):
             / (tth[1] - tth[0])
         dImg = self.reconstruct(tth, dI)
         f = self.ai.getFit2D()
-        tth2d_ref = self.ai.twoThetaArray(self.shape)  # useless variable ???
+        _tth2d_ref = self.ai.twoThetaArray(self.shape)  # useless variable ???
 
         keys = ["centerX", "centerY", "tilt", "tiltPlanRotation"]
         if axis != "all":
@@ -242,7 +241,7 @@ class Refinment2D(object):
         @return: ???
         @rtype: ???
         """
-        logger.info("Scanning along axis %s" % axis)
+        logger.info("Scanning along axis %s", axis)
         f = self.ai.getFit2D()
         out = []
         meas_pts = numpy.linspace(f[axis] - width / 2.0,

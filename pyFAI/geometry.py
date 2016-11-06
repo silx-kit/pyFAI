@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/04/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -40,12 +40,11 @@ import time
 from . import detectors
 from . import units
 from .decorators import deprecated
-from .utils import expand2d
+from . import utils
 try:
     from .third_party import six
 except ImportError:
     import six
-StringTypes = (six.binary_type, six.text_type)
 
 logger = logging.getLogger("pyFAI.geometry")
 
@@ -84,9 +83,7 @@ class Geometry(object):
     - The third dimension is chose such as the referential is
       orthonormal, so dim3 is along incoming X-ray beam
 
-
-    Demonstration of the equation done using Mathematica.
-    -----------------------------------------------------
+    Demonstration of the equation done using Mathematica:
 
     Axis 1 is along first dimension of detector (when not tilted),
     this is the slow dimension of the image array in C or Y
@@ -205,8 +202,6 @@ class Geometry(object):
         self._dssa = None
         self._dssa_crc = None  # checksum associated with _dssa
         self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
-        self._corner4Da = None  # actual 4d corner array
-        self._corner4Ds = None  # space for the corner array, 2th, q, r, ...
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
@@ -221,7 +216,7 @@ class Geometry(object):
         self._transmission_crc = None
 
         if detector:
-            if isinstance(detector, StringTypes):
+            if isinstance(detector, utils.StringTypes):
                 self.detector = detectors.detector_factory(detector)
             else:
                 self.detector = detector
@@ -694,23 +689,24 @@ class Geometry(object):
         if shape is None:
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
-
         if unit:
             unit = units.to_unit(unit)
             space = unit.REPR.split("_")[0]
         else:
             unit = None
-            space = None
-            if (self._corner4Da is not None) and (shape == self._corner4Da.shape[:2]):
-                return self._corner4Da
-        if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
+            space = "2th"  # there must be a default one
+            ary = self._cached_array.get(space + "_corner_")
+            if (ary is not None) and (shape == ary.shape[:2]):
+                return ary
+        key = space + "_corner_"
+        if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
-                if self._corner4Da is None or self._corner4Ds != space or shape != self._corner4Da.shape[:2]:
+                if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
                     corners = None
                     if use_cython:
                         if self.detector.IS_CONTIGUOUS:
-                            d1 = expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
-                            d2 = expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
+                            d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
+                            d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
                             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2, center=False, use_cython=True)
                         else:
                             det_corners = self.detector.get_pixel_corners()
@@ -760,9 +756,9 @@ class Geometry(object):
                                 corners[..., 0] = rad
                             else:
                                 corners[:shape[0], :shape[1], :, 0] = rad[:shape[0], :shape[1], :]
-                    self._corner4Da = corners
-                    self._corner4Ds = space
-        return self._corner4Da
+                    self._cached_array[key] = corners
+
+        return self._cached_array[key]
 
     @deprecated
     def cornerArray(self, shape=None):
@@ -824,21 +820,11 @@ class Geometry(object):
            * dim3[0]: radial angle 2th, q, r, ...
            * dim3[1]: azimuthal angle chi
         """
-        space_name_map = {  # space -> array name
-                           # "2th_center": "_ttha",
-                           # "chi_center":"_chia",
-                           # "q_center":"_qa",
-                           # "r_center": "_ra",
-                           # "d*2_center": "_rd2a"
-                           }
 
         unit = units.to_unit(unit)
-        space = unit.REPR.split("_")[0] + "_center"
-        ary = None
-        if (space in space_name_map):
-            ary = self.__getattribute__(space_name_map[space])
-        elif space in self._cached_array:
-            ary = self._cached_array[space]
+        space = unit.REPR.split("_")[0]
+        key = space + "_center"
+        ary = self._cached_array.get(key)
 
         shape = self.get_shape(shape)
         if shape is None:
@@ -853,12 +839,7 @@ class Geometry(object):
         y = pos[..., 1]
         z = pos[..., 0]
         ary = unit.equation(x, y, z, self.wavelength)
-
-        if (space in space_name_map):
-            self.__setattr__(space_name_map[space], ary)
-        else:
-            self._cached_array[space] = ary
-
+        self._cached_array[key] = ary
         return ary
 
     def delta_array(self, shape=None, unit="2th"):
@@ -1000,7 +981,7 @@ class Geometry(object):
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
 
-        if not typ in ("center", "corner", "delta"):
+        if typ not in ("center", "corner", "delta"):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
@@ -1164,7 +1145,7 @@ class Geometry(object):
                 if self._wavelength is not None:
                     f.write("Wavelength: %s\n" % self._wavelength)
         except IOError:
-            logger.error("IOError while writing to file %s" % filename)
+            logger.error("IOError while writing to file %s", filename)
     write = save
 
     @classmethod
@@ -1189,17 +1170,18 @@ class Geometry(object):
         @type filename: string
         """
         data = {}
-        for line in open(filename):
-            if line.startswith("#") or (":" not in line):
-                continue
-            words = line.split(":", 1)
+        with open(filename) as opened_file:
+            for line in opened_file:
+                if line.startswith("#") or (":" not in line):
+                    continue
+                words = line.split(":", 1)
 
-            key = words[0].strip().lower()
-            try:
-                value = words[1].strip()
-            except Exception as error:  # IGNORE:W0703:
-                logger.error("Error %s with line: %s" % (error, line))
-            data[key] = value
+                key = words[0].strip().lower()
+                try:
+                    value = words[1].strip()
+                except Exception as error:  # IGNORE:W0703:
+                    logger.error("Error %s with line: %s", error, line)
+                data[key] = value
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"])
         else:
@@ -1470,11 +1452,9 @@ class Geometry(object):
         with self._sem:
             self.chiDiscAtPi = False
             self._cached_array["chi_center"] = None
-            self._corner4Da = None
-            self._corner4Ds = None
-#             self._corner4Dqa = None
-#             self._corner4Dra = None
-#             self._corner4Drd2a = None
+            for key in list(self._cached_array.keys()):
+                if key.startswith("corner"):
+                    self._cached_array[key] = None
 
     def setChiDiscAtPi(self):
         """
@@ -1484,11 +1464,9 @@ class Geometry(object):
         with self._sem:
             self.chiDiscAtPi = True
             self._cached_array["chi_center"] = None
-            self._corner4Da = None
-            self._corner4Ds = None
-#             self._corner4Dqa = None
-#             self._corner4Dra = None
-#             self._corner4Drd2a = None
+            for key in list(self._cached_array.keys()):
+                if key.startswith("corner"):
+                    self._cached_array[key] = None
 
     @deprecated
     def setOversampling(self, iOversampling):
@@ -1549,9 +1527,9 @@ class Geometry(object):
 
         if self._polarization is not None:
             with self._sem:
-                if ((factor == self._polarization_factor)
-                   and (shape == self._polarization.shape)
-                   and (axis_offset == self._polarization_axis_offset)):
+                if ((factor == self._polarization_factor) and
+                        (shape == self._polarization.shape) and
+                        (axis_offset == self._polarization_axis_offset)):
                     return self._polarization
 
         tth = self.twoThetaArray(shape)
@@ -1582,13 +1560,13 @@ class Geometry(object):
         """
         shape = self.get_shape(shape)
         if t0 < 0 or t0 > 1:
-            logger.error("Impossible value for normal transmission: %s" % t0)
+            logger.error("Impossible value for normal transmission: %s", t0)
             return
 
         with self._sem:
             if (t0 == self._transmission_normal) \
-                and (shape is None
-                     or (shape == self._transmission_corr.shape)):
+                and (shape is None or
+                     (shape == self._transmission_corr.shape)):
                 return self._transmission_corr
 
             if shape is None:
@@ -1611,8 +1589,6 @@ class Geometry(object):
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self._dssa = None
-        self._corner4Da = None
-        self._corner4Ds = None
         self._polarization = None
         self._polarization_factor = None
         self._transmission_normal = None
@@ -1684,9 +1660,8 @@ class Geometry(object):
                      '_oversampling', '_correct_solid_angle_for_spline',
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
-                     "_corner4Ds"]
-        array = [ "_dssa",
-                 "_corner4Da",
+                     ]
+        array = ["_dssa",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1704,9 +1679,8 @@ class Geometry(object):
                      '_oversampling', '_correct_solid_angle_for_spline',
                      '_polarization_factor', '_polarization_axis_offset',
                      '_polarization_crc', '_transmission_crc', '_transmission_normal',
-                     "_corner4Ds"]
-        array = [ "_dssa",
-                 "_corner4Da",
+                     ]
+        array = ["_dssa",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         if memo is None:
             memo = {}
@@ -1845,20 +1819,20 @@ class Geometry(object):
             self._wavelength = float(value[0])
         else:
             self._wavelength = float(value)
-        qa = dqa = corner4Da = corner4Ds = None
+        qa = dqa = q_corner = None
         if old_wl and self._wavelength:
             if self._cached_array.get("q_center") is not None:
                 qa = self._cached_array["q_center"] * old_wl / self._wavelength
-            if self._corner4Ds and ("d" in self._corner4Ds or "q" in self._corner4Ds):
-                corner4Da = self._corner4Da.copy()
-                corner4Da[..., 0] = self._corner4Da[..., 0] * old_wl / self._wavelength
-                corner4Ds = self._corner4Ds
+
+            q_corner = self._cached_array.get("q_corner")
+            if q_corner is not None:
+                q_corner[..., 0] = q_corner * old_wl / self._wavelength
+
         self.reset()
         # restore updated values
         self._cached_array["q_delta"] = dqa
         self._cached_array["q_center"] = qa
-        self._corner4Da = corner4Da
-        self._corner4Ds = corner4Ds
+        self._cached_array["q_corner"] = q_corner
 
     def get_wavelength(self):
         if self._wavelength is None:

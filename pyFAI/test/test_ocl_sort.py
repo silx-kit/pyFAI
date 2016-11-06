@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __doc__ = """Test for OpenCL sorting on GPU"""
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/01/2016"
+__date__ = "02/08/2016"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -39,6 +39,10 @@ import unittest
 import numpy
 import logging
 from .utilstest import UtilsTest, getLogger
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 logger = getLogger(__file__)
 
@@ -46,7 +50,7 @@ logger = getLogger(__file__)
 try:
     import pyopencl
 except ImportError as error:
-    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s." % error)
+    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
     skip = True
 else:
     skip = False
@@ -74,7 +78,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_vertical(self.ary).get()
-        self.assert_(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -87,8 +91,8 @@ class TestOclSort(unittest.TestCase):
 #         pylab.plot(res, label="obt")
 #         pylab.legend()
 #         pylab.show()
-#         raw_input()
-        self.assert_(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
+#         six.moves.input()
+        self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -96,7 +100,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_horizontal(self.ary).get()
-        self.assert_(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -109,8 +113,8 @@ class TestOclSort(unittest.TestCase):
 #         pylab.plot(res, label="obt")
 #         pylab.legend()
 #         pylab.show()
-#         raw_input()
-        self.assert_(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
+#         six.moves.input()
+        self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()

@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "23/06/2016"
 
 import unittest
 import os
@@ -141,7 +141,7 @@ class TestGeometryRefinement(unittest.TestCase):
 
     def test_Spline(self):
         """tests geometric refinements with spline"""
-        splineFine = UtilsTest.getimage("1900/frelon.spline")
+        splineFine = UtilsTest.getimage("frelon.spline")
         data = [[795, 288, 0.3490658503988659],
                 [890, 260, 0.3490658503988659],
                 [948, 249, 0.3490658503988659],

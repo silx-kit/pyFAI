@@ -43,7 +43,7 @@ class PyFAILink(Core.Processlib.LinkTask):
             data = fabio.open(imagefile).data
         except Exception as error:
             data = None
-            logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
+            logger.warning("setDarkcurrentFile: Unable to read file %s: %s", imagefile, error)
         else:
             self.ai.set_darkcurrent = data
 
@@ -52,7 +52,7 @@ class PyFAILink(Core.Processlib.LinkTask):
             data = fabio.open(imagefile).data
         except Exception as error:
             data = None
-            logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
+            logger.warning("setFlatfieldFile: Unable to read file %s: %s", imagefile, error)
         self.ai.set_flatfield(data)
 
 if __name__ == "__main__":

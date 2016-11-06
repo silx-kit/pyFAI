@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "14/03/2015"
+__date__ = "27/10/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -174,7 +174,6 @@ class OCL_CSR_Integrator(object):
         free all memory allocated on the device
         """
         self._cl_mem = release_cl_buffers(self._cl_mem)
-
 
     def _compile_kernels(self, kernel_file=None):
         """
@@ -382,5 +381,5 @@ class OCL_CSR_Integrator(object):
                     print("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
-        print("_"*80)
+        print("_" * 80)
         print("%50s:\t%.3fms" % ("Total execution time", t))

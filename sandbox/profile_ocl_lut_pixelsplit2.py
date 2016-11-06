@@ -12,7 +12,10 @@ from . import utilstest
 import fabio
 import pyopencl as cl
 from pylab import *
-from six.moves import input
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
@@ -182,5 +185,5 @@ plot(*ref, label="ref_merge")
 ###plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()
-input()
+six.moves.input()
 

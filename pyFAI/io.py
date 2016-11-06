@@ -25,15 +25,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-
 from __future__ import absolute_import, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module for "high-performance" writing in either 1D with Ascii , 
@@ -103,11 +101,11 @@ def from_isotime(text, use_tz=False):
     except:
         text = str(text)
     if len(text) < 19:
-        logger.warning("Not a iso-time string: %s" % text)
+        logger.warning("Not a iso-time string: %s", text)
         return
     base = text[:19]
     if use_tz and len(text) == 25:
-        sgn = 1 if  text[:19] == "+" else -1
+        sgn = 1 if text[:19] == "+" else -1
         tz = 60 * (60 * int(text[20:22]) + int(text[23:25])) * sgn
     else:
         tz = 0
@@ -141,7 +139,7 @@ class Writer(object):
         """
         self.filename = filename
         if os.path.exists(filename):
-            logger.warning("Destination file %s exists" % filename)
+            logger.warning("Destination file %s exists", filename)
         self._sem = threading.Semaphore()
         self.dirname = None
         self.subdir = None
@@ -170,7 +168,7 @@ class Writer(object):
                     try:
                         os.makedirs(dirname)
                     except Exception as err:
-                        logger.info("Problem while creating directory %s: %s" % (dirname, err))
+                        logger.info("Problem while creating directory %s: %s", dirname, err)
 
     def flush(self, *arg, **kwarg):
         """
@@ -374,7 +372,7 @@ class HDF5Writer(Writer):
         Minimalistic method to limit the overhead.
         @param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
-        logger.debug("In write, index %s" % index)
+        logger.debug("In write, index %s", index)
         radial = None
         azimuthal = None
         if isinstance(data, numpy.ndarray):
@@ -415,6 +413,249 @@ class HDF5Writer(Writer):
                self.radial_values is not None:
                 self.radial_values[:] = radial
                 self.has_radial_values = True
+
+
+class DefaultAiWriter(Writer):
+
+    def __init__(self, filename, ai):
+        """
+        Constructor of the historical writer of azimuthalIntegrator.
+        """
+        self._filename = filename
+        self._ai = ai
+        self._header = None
+        self._already_written = False
+
+    def set_filename(self, filename):
+        """
+        Define the filename while will be used
+        """
+        self._filename = filename
+        self._already_written = False
+
+    def make_headers(self, hdr="#", has_dark=False, has_flat=False,
+                    polarization_factor=None, normalization_factor=None):
+        """
+        @param hdr: string used as comment in the header
+        @type hdr: str
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
+        @param has_flat: save the flat filenames (default: no)
+        @type has_flat: bool
+        @param polarization_factor: the polarization factor
+        @type polarization_factor: float
+
+        @return: the header
+        @rtype: str
+        """
+        if self._header is None:
+            ai = self._ai
+            headerLst = ["== pyFAI calibration =="]
+            headerLst.append("SplineFile: %s" % ai.splineFile)
+            headerLst.append("PixelSize: %.3e, %.3e m" %
+                             (ai.pixel1, ai.pixel2))
+            headerLst.append("PONI: %.3e, %.3e m" % (ai.poni1, ai.poni2))
+            headerLst.append("Distance Sample to Detector: %s m" %
+                             ai.dist)
+            headerLst.append("Rotations: %.6f %.6f %.6f rad" %
+                             (ai.rot1, ai.rot2, ai.rot3))
+            headerLst += ["", "== Fit2d calibration =="]
+
+            f2d = ai.getFit2D()
+            headerLst.append("Distance Sample-beamCenter: %.3f mm" %
+                             f2d["directDist"])
+            headerLst.append("Center: x=%.3f, y=%.3f pix" %
+                             (f2d["centerX"], f2d["centerY"]))
+            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" %
+                             (f2d["tilt"], f2d["tiltPlanRotation"]))
+            headerLst.append("")
+
+            if ai._wavelength is not None:
+                headerLst.append("Wavelength: %s" % ai.wavelength)
+            if ai.maskfile is not None:
+                headerLst.append("Mask File: %s" % ai.maskfile)
+            if has_dark or (ai.darkcurrent is not None):
+                if ai.darkfiles:
+                    headerLst.append("Dark current: %s" % ai.darkfiles)
+                else:
+                    headerLst.append("Dark current: Done with unknown file")
+            if has_flat or (ai.flatfield is not None):
+                if ai.flatfiles:
+                    headerLst.append("Flat field: %s" % ai.flatfiles)
+                else:
+                    headerLst.append("Flat field: Done with unknown file")
+            if polarization_factor is None and ai._polarization is not None:
+                polarization_factor = ai._polarization_factor
+            headerLst.append("Polarization factor: %s" % polarization_factor)
+            headerLst.append("Normalization factor: %s" % normalization_factor)
+            self._header = "\n".join([hdr + " " + i for i in headerLst])
+
+        return self._header
+
+    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
+        """
+        @param filename: the filename used to save the 1D integration
+        @type filename: str
+        @param dim1: the x coordinates of the integrated curve
+        @type dim1: numpy.ndarray
+        @param I: The integrated intensity
+        @type I: numpy.mdarray
+        @param error: the error bar for each intensity
+        @type error: numpy.ndarray or None
+        @param dim1_unit: the unit of the dim1 array
+        @type dim1_unit: pyFAI.units.Unit
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
+        @param has_flat: save the flat filenames (default: no)
+        @type has_flat: bool
+        @param polarization_factor: the polarization factor
+        @type polarization_factor: float, None
+        @param normalization_factor: the monitor value
+        @type normalization_factor: float, None
+
+        This method save the result of a 1D integration.
+        """
+        dim1_unit = units.to_unit(dim1_unit)
+        with open(filename, "w") as f:
+            f.write(self.make_headers(has_dark=has_dark, has_flat=has_flat,
+                                     polarization_factor=polarization_factor,
+                                     normalization_factor=normalization_factor))
+            try:
+                f.write("\n# --> %s\n" % (filename))
+            except UnicodeError:
+                f.write("\n# --> %s\n" % (filename.encode("utf8")))
+            if error is None:
+                f.write("#%14s %14s\n" % (dim1_unit.REPR, "I "))
+                f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
+            else:
+                f.write("#%14s  %14s  %14s\n" %
+                        (dim1_unit.REPR, "I ", "sigma "))
+                f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
+            f.write("\n")
+
+    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
+        """
+        @param filename: the filename used to save the 2D histogram
+        @type filename: str
+        @param dim1: the 1st coordinates of the histogram
+        @type dim1: numpy.ndarray
+        @param dim1: the 2nd coordinates of the histogram
+        @type dim1: numpy.ndarray
+        @param I: The integrated intensity
+        @type I: numpy.mdarray
+        @param error: the error bar for each intensity
+        @type error: numpy.ndarray or None
+        @param dim1_unit: the unit of the dim1 array
+        @type dim1_unit: pyFAI.units.Unit
+        @param has_dark: save the darks filenames (default: no)
+        @type has_dark: bool
+        @param has_flat: save the flat filenames (default: no)
+        @type has_flat: bool
+        @param polarization_factor: the polarization factor
+        @type polarization_factor: float, None
+        @param normalization_factor: the monitor value
+        @type normalization_factor: float, None
+
+        This method save the result of a 2D integration.
+        """
+        dim1_unit = units.to_unit(dim1_unit)
+        # TODO: propoerly manage ordered dict
+        try:
+            from collections import OrderedDict
+        except:
+            header = {}
+        else:
+            header = OrderedDict()
+
+        ai = self._ai
+        header["dist"] = str(ai._dist)
+        header["poni1"] = str(ai._poni1)
+        header["poni2"] = str(ai._poni2)
+        header["rot1"] = str(ai._rot1)
+        header["rot2"] = str(ai._rot2)
+        header["rot3"] = str(ai._rot3)
+        header["chi_min"] = str(dim2.min())
+        header["chi_max"] = str(dim2.max())
+        header[dim1_unit.REPR + "_min"] = str(dim1.min())
+        header[dim1_unit.REPR + "_max"] = str(dim1.max())
+        header["pixelX"] = str(ai.pixel2)  # this is not a bug ... most people expect dim1 to be X
+        header["pixelY"] = str(ai.pixel1)  # this is not a bug ... most people expect dim2 to be Y
+        header["polarization_factor"] = str(polarization_factor)
+        header["normalization_factor"] = str(normalization_factor)
+
+        if ai.splineFile:
+            header["spline"] = str(ai.splineFile)
+
+        if has_dark:
+            if ai.darkfiles:
+                header["dark"] = ai.darkfiles
+            else:
+                header["dark"] = 'unknown dark applied'
+        if has_flat:
+            if ai.flatfiles:
+                header["flat"] = ai.flatfiles
+            else:
+                header["flat"] = 'unknown flat applied'
+        f2d = ai.getFit2D()
+        for key in f2d:
+            header["key"] = f2d[key]
+        try:
+            img = fabio.edfimage.edfimage(data=I.astype("float32"),
+                                          header=header)
+
+            if error is not None:
+                img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
+            img.write(filename)
+        except IOError:
+            logger.error("IOError while writing %s", filename)
+
+    def write(self, data):
+        """
+        Minimalistic method to limit the overhead.
+
+        @param data: array with intensities or tuple (2th,I) or (I,2th,chi)\
+        @type data: Integrate1dResult, Integrate2dResult
+        """
+
+        if self._already_written:
+            raise Exception("This file format do not support multi frame. You have to change the filename.")
+        self._already_written = True
+
+        from .containers import Integrate1dResult
+        from .containers import Integrate2dResult
+
+        if isinstance(data, Integrate1dResult):
+            self.save1D(self._filename,
+                        data.radial,
+                        data.intensity,
+                        data.sigma,
+                        data.unit,
+                        data.has_dark_correction,
+                        data.has_flat_correction,
+                        data.polarization_factor,
+                        data.normalization_factor)
+
+        elif isinstance(data, Integrate2dResult):
+            self.save2D(self._filename,
+                        data.intensity,
+                        data.radial,
+                        data.azimuthal,
+                        data.sigma,
+                        data.unit,
+                        data.has_dark_correction,
+                        data.has_flat_correction,
+                        data.polarization_factor,
+                        data.normalization_factor)
+        else:
+            raise Exception("Unsupported data type: %s" % type(data))
+
+    def flush(self):
+        pass
+
+    def close(self):
+        pass
 
 
 class AsciiWriter(Writer):
@@ -487,11 +728,11 @@ class AsciiWriter(Writer):
         else:
             self.directory = os.path.join(lima_cfg.get("directory", self.directory), self.subdir)
         if not os.path.exists(self.directory):
-            logger.warning("Output directory: %s does not exist,creating it" % self.directory)
+            logger.warning("Output directory: %s does not exist,creating it", self.directory)
             try:
                 os.makedirs(self.directory)
             except Exception as error:
-                logger.info("Problem while creating directory %s: %s" % (self.directory, error))
+                logger.info("Problem while creating directory %s: %s", self.directory, error)
 
     def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
@@ -529,29 +770,29 @@ class FabioWriter(Writer):
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-#            dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
-            header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
-#                           "chi_min", "chi_max",
-#                           dim1_unit.REPR + "_min",
-#                           dim1_unit.REPR + "_max",
-#                           "pixelX", "pixelY",
-#                           "dark", "flat", "polarization_factor", "normalization_factor"
+            # dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
+            _header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
+                            # "chi_min", "chi_max",
+                            # dim1_unit.REPR + "_min",
+                            # dim1_unit.REPR + "_max",
+                            # "pixelX", "pixelY",
+                            # "dark", "flat", "polarization_factor", "normalization_factor"
                             ]
-            header = {"dist": str(fai_cfg.get("dist")),
-                      "poni1": str(fai_cfg.get("poni1")),
-                      "poni2": str(fai_cfg.get("poni2")),
-                      "rot1": str(fai_cfg.get("rot1")),
-                      "rot2": str(fai_cfg.get("rot2")),
-                      "rot3": str(fai_cfg.get("rot3")),
-#                      "chi_min": str(fai_cfg.get("chi_min")),
-#                      "chi_max": str(fai_cfg.get("chi_max")),
-#                      dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
-#                      dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
-#                      "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
-#                      "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
-#                      "polarization_factor": str(fai_cfg.get("dist")),
-#                      "normalization_factor":str(fai_cfg.get("dist")),
-                      }
+            _header = {"dist": str(fai_cfg.get("dist")),
+                       "poni1": str(fai_cfg.get("poni1")),
+                       "poni2": str(fai_cfg.get("poni2")),
+                       "rot1": str(fai_cfg.get("rot1")),
+                       "rot2": str(fai_cfg.get("rot2")),
+                       "rot3": str(fai_cfg.get("rot3")),
+                       # "chi_min": str(fai_cfg.get("chi_min")),
+                       # "chi_max": str(fai_cfg.get("chi_max")),
+                       # dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
+                       # dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
+                       # "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
+                       # "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
+                       # "polarization_factor": str(fai_cfg.get("dist")),
+                       # "normalization_factor":str(fai_cfg.get("dist")),
+                       }
 
 #            if self.splineFile:
 #                header["spline"] = str(self.splineFile)
@@ -579,11 +820,11 @@ class FabioWriter(Writer):
         else:
             self.directory = os.path.join(directory, self.subdir)
         if not os.path.exists(self.directory):
-            logger.warning("Output directory: %s does not exist,creating it" % self.directory)
+            logger.warning("Output directory: %s does not exist,creating it", self.directory)
             try:
                 os.makedirs(self.directory)
             except Exception as error:
-                logger.info("Problem while creating directory %s: %s" % (self.directory, error))
+                logger.info("Problem while creating directory %s: %s", self.directory, error)
 
     def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
@@ -770,7 +1011,7 @@ class Nexus(object):
         """
         perform a deep copy:
         create a "name" entry in self containing a copy of the object
-        
+
         @param where: path to the toplevel object (i.e. root)
         @param  toplevel: firectly the top level Group
         @param excluded: list of keys to be excluded
@@ -789,9 +1030,9 @@ class Nexus(object):
             if name in toplevel:
                 if overwrite:
                     del toplevel[name]
-                    logger.warning("Overwriting %s in %s" % (toplevel[name].name, self.filename))
+                    logger.warning("Overwriting %s in %s", toplevel[name].name, self.filename)
                 else:
-                    logger.warning("Not overwriting %s in %s" % (toplevel[name].name, self.filename))
+                    logger.warning("Not overwriting %s in %s", toplevel[name].name, self.filename)
                     return
             toplevel[name] = obj.value
             for k, v in obj.attrs.items():
@@ -800,13 +1041,13 @@ class Nexus(object):
     @classmethod
     def get_attr(cls, dset, name, default=None):
         """Return the attribute of the dataset
-        
+
         Handles the ascii -> unicode issue in python3 #275
-        
+
         @param dset: a HDF5 dataset (or a group)
         @param name: name of the attribute
         @param default: default value to be returned
-        @return: attribute value decoded in python3 or default 
+        @return: attribute value decoded in python3 or default
         """
         dec = default
         if name in dset.attrs:

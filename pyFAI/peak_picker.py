@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 
 import os
@@ -39,12 +39,17 @@ import types
 import array
 import operator
 import numpy
+
 try:
-    from . import gui_utils
-except ImportError:  # mainly for tests
-    gui_utils = None
-if gui_utils and gui_utils.has_Qt:
-    from .gui_utils import update_fig, maximize_fig, QtGui, matplotlib, pyplot, pylab
+    from .gui import qt
+except ImportError:
+    qt = None
+
+if qt is not None:
+    from .gui.utils import update_fig, maximize_fig
+    from .gui.matplotlib import matplotlib, pyplot, pylab
+    from .gui import utils as gui_utils
+
 import fabio
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
@@ -129,7 +134,7 @@ class PeakPicker(object):
         self.callback = None
         self.method = None
         if method not in self.VALID_METHODS:
-            logger.error("Not a valid peak-picker method: %s should be part of %s" % (method, self.VALID_METHODS))
+            logger.error("Not a valid peak-picker method: %s should be part of %s", method, self.VALID_METHODS)
             method = self.VALID_METHODS[0]
         self.init(method, False)
 
@@ -254,9 +259,9 @@ class PeakPicker(object):
             a = toolbar.addAction('Opts', self.on_option_clicked)
             a.setToolTip('open options window')
             if pick:
-                label = QtGui.QLabel("Ring #", toolbar)
+                label = qt.QLabel("Ring #", toolbar)
                 toolbar.addWidget(label)
-                self.spinbox = QtGui.QSpinBox(toolbar)
+                self.spinbox = qt.QSpinBox(toolbar)
                 self.spinbox.setMinimum(0)
                 self.sb_action = toolbar.addWidget(self.spinbox)
                 a = toolbar.addAction('Refine', self.on_refine_clicked)
@@ -288,7 +293,7 @@ class PeakPicker(object):
             s2 -= 1
             self.ax.set_xlim(0, s2)
             self.ax.set_ylim(0, s1)
-            d1 = numpy.array([0, s1, s1, 0 ])
+            d1 = numpy.array([0, s1, s1, 0])
             d2 = numpy.array([0, 0, s2, s2])
             p1, p2, _ = self.detector.calc_cartesian_positions(d1=d1, d2=d2)
             ax = self.fig.add_subplot(1, 1, 1,
@@ -306,11 +311,11 @@ class PeakPicker(object):
             ax.xaxis.label.set_color('blue')
             ax.tick_params(colors="blue", labelbottom='off', labeltop='on',
                            labelleft='off', labelright='on')
-#             ax.autoscale_view(False, False, False)
+            # ax.autoscale_view(False, False, False)
 
         else:
-            cbar = self.fig.colorbar(im, label=txt)
-#         self.ax.autoscale_view(False, False, False)
+            _cbar = self.fig.colorbar(im, label=txt)
+        # self.ax.autoscale_view(False, False, False)
         update_fig(self.fig)
         if maximize:
             maximize_fig(self.fig)
@@ -335,7 +340,7 @@ class PeakPicker(object):
                 self.ax.texts = []
                 self.ax.lines = []
 
-            for lbl, gpt in self.points._groups.items():
+            for _lbl, gpt in self.points._groups.items():
                 idx = gpt.ring
                 if idx < minIndex:
                     continue
@@ -415,7 +420,7 @@ class PeakPicker(object):
             if points:
                 gpt = common_creation(points)
                 annontate(points[0], [event.ydata, event.xdata], gpt=gpt)
-                logger.info("Created group #%2s with %i points" % (gpt.label, len(gpt)))
+                logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
             else:
                 logger.warning("No peak found !!!")
 
@@ -425,7 +430,7 @@ class PeakPicker(object):
             if newpeak:
                 gpt = common_creation([newpeak])
                 annontate(newpeak, [event.ydata, event.xdata], gpt=gpt)
-                logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f" % (gpt.label, newpeak[1], newpeak[0]))
+                logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
             else:
                 logger.warning("No peak found !!!")
 
@@ -446,7 +451,7 @@ class PeakPicker(object):
                                               self.massif_contour)
             if listpeak:
                 gpt.points += listpeak
-                logger.info("Added %i points to group #%2s (now %i points)" % (len(listpeak), len(gpt.label), len(gpt)))
+                logger.info("Added %i points to group #%2s (now %i points)", len(listpeak), len(gpt.label), len(gpt))
             else:
                 logger.warning("No peak found !!!")
             common_creation(gpt.points, gpt)
@@ -464,7 +469,7 @@ class PeakPicker(object):
             newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
             if newpeak:
                 gpt.points.append(newpeak)
-                logger.info("x=%5.1f, y=%5.1f added to group #%2s" % (newpeak[1], newpeak[0], gpt.label))
+                logger.info("x=%5.1f, y=%5.1f added to group #%2s", newpeak[1], newpeak[0], gpt.label)
             else:
                 logger.warning("No peak found !!!")
             common_creation(gpt.points, gpt)
@@ -474,7 +479,7 @@ class PeakPicker(object):
             ring = self.spinbox.value()
             gpt = self.points.pop(ring)
             if not gpt:
-                logger.warning("No group of points for ring %s" % ring)
+                logger.warning("No group of points for ring %s", ring)
                 return
 #            print("Remove group from ring %s label %s" % (ring, gpt.label))
             if gpt.annotate:
@@ -484,7 +489,7 @@ class PeakPicker(object):
                 if gpt.plot[0] in self.ax.lines:
                     self.ax.lines.remove(gpt.plot[0])
             if len(gpt) > 0:
-                logger.info("Removing group #%2s containing %i points" % (gpt.label, len(gpt)))
+                logger.info("Removing group #%2s containing %i points", gpt.label, len(gpt))
             else:
                 logger.info("No groups to remove")
             update_fig(self.fig)
@@ -495,7 +500,7 @@ class PeakPicker(object):
             ring = self.spinbox.value()
             gpt = self.points.get(ring)
             if not gpt:
-                logger.warning("No group of points for ring %s" % ring)
+                logger.warning("No group of points for ring %s", ring)
                 return
 #            print("Remove 1 point from group from ring %s label %s" % (ring, gpt.label))
             if gpt.annotate:
@@ -512,14 +517,14 @@ class PeakPicker(object):
                 # index and distance of smallest distance:
                 indexMin = min(enumerate(distsq), key=operator.itemgetter(1))
                 removedPt = gpt.points.pop(indexMin[0])
-                logger.info("x=%5.1f, y=%5.1f removed from group #%2s (%i points left)" % (removedPt[1], removedPt[0], gpt.label, len(gpt)))
+                logger.info("x=%5.1f, y=%5.1f removed from group #%2s (%i points left)", removedPt[1], removedPt[0], gpt.label, len(gpt))
                 # annotate (new?) 1st point and add remaining points back
                 pt = (gpt.points[0][0], gpt.points[0][1])
                 gpt.annotate = annontate(pt, (pt[0] + 10, pt[1] + 10))
                 npl = numpy.array(gpt.points)
                 gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
             elif len(gpt) == 1:
-                logger.info("Removing group #%2s containing 1 point" % (gpt.label))
+                logger.info("Removing group #%2s containing 1 point", gpt.label)
                 gpt = self.points.pop(ring)
             else:
                 logger.info("No groups to remove")
@@ -527,7 +532,7 @@ class PeakPicker(object):
             sys.stdout.flush()
 
         with self._sem:
-            logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
+            logger.debug("Button: %i, Key modifier: %s", event.button, event.key)
 
             if ((event.button == 3) and (event.key == 'shift')) or \
                ((event.button == 1) and (event.key == 'v')):
@@ -548,7 +553,7 @@ class PeakPicker(object):
             elif (event.button == 2) or (event.button == 1 and event.key == "d"):
                 erase_grp(event)
             else:
-                logger.info("Unknown combination: Button: %i, Key modifier: %s" % (event.button, event.key))
+                logger.info("Unknown combination: Button: %i, Key modifier: %s", event.button, event.key)
 
     def finish(self, filename=None, callback=None):
         """
@@ -714,11 +719,11 @@ class ControlPoints(object):
                 elif os.path.isfile(calibrant):
                     self.calibrant = Calibrant(calibrant)
                 else:
-                    logger.error("Unable to handle such calibrant: %s" % calibrant)
+                    logger.error("Unable to handle such calibrant: %s", calibrant)
             elif isinstance(self.dSpacing, (numpy.ndarray, list, tuple, array)):
                 self.calibrant = Calibrant(dSpacing=list(calibrant))
             else:
-                logger.error("Unable to handle such calibrant: %s" % calibrant)
+                logger.error("Unable to handle such calibrant: %s", calibrant)
         if not self.calibrant.wavelength:
             self.calibrant.set_wavelength(wavelength)
 
@@ -793,13 +798,13 @@ class ControlPoints(object):
                 lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
                 lst.sort(key=lambda item: self._groups[item].code)
                 if not lst:
-                    logger.warning("No group for ring %s in ControlPoints.get" % (ring))
+                    logger.warning("No group for ring %s in ControlPoints.get", ring)
                     return
                 lbl = lst[-1]
             if lbl in self._groups:
                 out = self._groups.get(lbl)
             else:
-                logger.warning("No such group %s in ControlPoints.pop" % (lbl))
+                logger.warning("No such group %s in ControlPoints.pop", lbl)
         return out
 
     def pop(self, ring=None, lbl=None):
@@ -823,13 +828,13 @@ class ControlPoints(object):
                     lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
                     lst.sort(key=lambda item: self._groups[item].code)
                     if not lst:
-                        logger.warning("No group for ring %s in ControlPoints.pop" % (ring))
+                        logger.warning("No group for ring %s in ControlPoints.pop", ring)
                         return
                     lbl = lst[-1]
             if lbl in self._groups:
                 out = self._groups.pop(lbl)
             else:
-                logger.warning("No such group %s in ControlPoints.pop" % (lbl))
+                logger.warning("No such group %s in ControlPoints.pop", lbl)
         return out
 
     def save(self, filename):
@@ -925,7 +930,7 @@ class ControlPoints(object):
                             x = float(vx)
                             y = float(vy)
                         except Exception as error:
-                            logger.error("ControlPoints.load: unable to convert to float %s (point)", value, error)
+                            logger.error("ControlPoints.load: unable to convert to float %s (point): %s", value, error)
                         else:
                             points.append([y, x])
                 elif key.startswith("new"):
@@ -1018,7 +1023,7 @@ class ControlPoints(object):
                         gpt.ring = inputRing
                         bOk = True
                     else:
-                        logging.error("Invalid ring number %i (range 0 -> %2i)" % (inputRing, len(self.calibrant.dSpacing) - 1))
+                        logging.error("Invalid ring number %i (range 0 -> %2i)", inputRing, len(self.calibrant.dSpacing) - 1)
 
     def setWavelength_change2th(self, value=None):
         with self._sem:
@@ -1136,7 +1141,7 @@ class PointGroup(object):
 
     def set_ring(self, value):
         if type(value) != int:
-            logger.error("Ring: %s" % value)
+            logger.error("Ring: %s", value)
             import traceback
             traceback.print_stack()
             self._ring = int(value)

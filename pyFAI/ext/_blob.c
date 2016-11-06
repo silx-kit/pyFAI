@@ -1226,7 +1226,7 @@ static int __Pyx_ValidateAndInit_memviewslice(
                 __Pyx_memviewslice *memviewslice,
                 PyObject *original_obj);
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_float(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_d_d_dc_float(PyObject *);
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value);
 
@@ -1582,7 +1582,7 @@ static char __pyx_k_itemsize[] = "itemsize";
 static char __pyx_k_TypeError[] = "TypeError";
 static char __pyx_k_enumerate[] = "enumerate";
 static char __pyx_k_local_max[] = "local_max";
-static char __pyx_k_20_10_2014[] = "20/10/2014";
+static char __pyx_k_27_09_2016[] = "27/09/2016";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
@@ -1590,6 +1590,8 @@ static char __pyx_k_MemoryError[] = "MemoryError";
 static char __pyx_k_RuntimeError[] = "RuntimeError";
 static char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static char __pyx_k_Jerome_Kieffer[] = "Jerome Kieffer";
+static char __pyx_k_mask_shape_0_y[] = "mask shape 0/y";
+static char __pyx_k_mask_shape_1_x[] = "mask shape 1/x";
 static char __pyx_k_allocate_buffer[] = "allocate_buffer";
 static char __pyx_k_dtype_is_object[] = "dtype_is_object";
 static char __pyx_k_pyFAI_ext__blob[] = "pyFAI.ext._blob";
@@ -1630,7 +1632,7 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_20_10_2014;
+static PyObject *__pyx_kp_s_27_09_2016;
 static PyObject *__pyx_kp_s_Aurore_Deschildre;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
 static PyObject *__pyx_kp_s_Can_only_create_a_buffer_that_is;
@@ -1690,6 +1692,8 @@ static PyObject *__pyx_n_s_local_max;
 static PyObject *__pyx_n_s_m;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_mask;
+static PyObject *__pyx_kp_s_mask_shape_0_y;
+static PyObject *__pyx_kp_s_mask_shape_1_x;
 static PyObject *__pyx_n_s_memview;
 static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_n_5;
@@ -1758,10 +1762,10 @@ static PyObject *__pyx_tuple__23;
 static PyObject *__pyx_tuple__24;
 static PyObject *__pyx_codeobj__19;
 
-/* "pyFAI/ext/_blob.pyx":39
+/* "pyFAI/ext/_blob.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
+ * def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
  *     """
  *     Calculate if a point is a maximum in a 3D space: (scale, y, x)
  */
@@ -1811,7 +1815,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_5_blob_1local_max(PyObject *__pyx_self, Py
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "local_max") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "local_max") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -1822,17 +1826,17 @@ static PyObject *__pyx_pw_5pyFAI_3ext_5_blob_1local_max(PyObject *__pyx_self, Py
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_dogs = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_float(values[0]); if (unlikely(!__pyx_v_dogs.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_dogs = __Pyx_PyObject_to_MemoryviewSlice_d_d_dc_float(values[0]); if (unlikely(!__pyx_v_dogs.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     __pyx_v_mask = values[1];
     if (values[2]) {
-      __pyx_v_n_5 = __Pyx_PyObject_IsTrue(values[2]); if (unlikely((__pyx_v_n_5 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_v_n_5 = __Pyx_PyObject_IsTrue(values[2]); if (unlikely((__pyx_v_n_5 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     } else {
       __pyx_v_n_5 = ((int)0);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("local_max", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("local_max", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyFAI.ext._blob.local_max", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2116,7 +2120,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   __pyx_pybuffernd_is_max.data = NULL;
   __pyx_pybuffernd_is_max.rcbuffer = &__pyx_pybuffer_is_max;
 
-  /* "pyFAI/ext/_blob.pyx":48
+  /* "pyFAI/ext/_blob.pyx":49
  *     @return: 3d_array with 1 where is_max
  *     """
  *     cdef bint do_mask = mask is not None             # <<<<<<<<<<<<<<
@@ -2126,7 +2130,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   __pyx_t_1 = (__pyx_v_mask != Py_None);
   __pyx_v_do_mask = __pyx_t_1;
 
-  /* "pyFAI/ext/_blob.pyx":53
+  /* "pyFAI/ext/_blob.pyx":54
  *     cdef float c
  *     cdef numpy.int8_t[:,:] cmask
  *     ns = dogs.shape[0]             # <<<<<<<<<<<<<<
@@ -2135,7 +2139,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
  */
   __pyx_v_ns = (__pyx_v_dogs.shape[0]);
 
-  /* "pyFAI/ext/_blob.pyx":54
+  /* "pyFAI/ext/_blob.pyx":55
  *     cdef numpy.int8_t[:,:] cmask
  *     ns = dogs.shape[0]
  *     ny = dogs.shape[1]             # <<<<<<<<<<<<<<
@@ -2144,114 +2148,114 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
  */
   __pyx_v_ny = (__pyx_v_dogs.shape[1]);
 
-  /* "pyFAI/ext/_blob.pyx":55
+  /* "pyFAI/ext/_blob.pyx":56
  *     ns = dogs.shape[0]
  *     ny = dogs.shape[1]
  *     nx = dogs.shape[2]             # <<<<<<<<<<<<<<
  *     if do_mask:
- *         assert mask.shape[0] == ny
+ *         assert mask.shape[0] == ny, "mask shape 0/y"
  */
   __pyx_v_nx = (__pyx_v_dogs.shape[2]);
 
-  /* "pyFAI/ext/_blob.pyx":56
+  /* "pyFAI/ext/_blob.pyx":57
  *     ny = dogs.shape[1]
  *     nx = dogs.shape[2]
  *     if do_mask:             # <<<<<<<<<<<<<<
- *         assert mask.shape[0] == ny
- *         assert mask.shape[1] == nx
+ *         assert mask.shape[0] == ny, "mask shape 0/y"
+ *         assert mask.shape[1] == nx, "mask shape 1/x"
  */
   __pyx_t_1 = (__pyx_v_do_mask != 0);
   if (__pyx_t_1) {
 
-    /* "pyFAI/ext/_blob.pyx":57
+    /* "pyFAI/ext/_blob.pyx":58
  *     nx = dogs.shape[2]
  *     if do_mask:
- *         assert mask.shape[0] == ny             # <<<<<<<<<<<<<<
- *         assert mask.shape[1] == nx
+ *         assert mask.shape[0] == ny, "mask shape 0/y"             # <<<<<<<<<<<<<<
+ *         assert mask.shape[1] == nx, "mask shape 1/x"
  *         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
     if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_2, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(__pyx_t_3 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+      __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_2, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(__pyx_t_3 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_ny); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_ny); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_4 = PyObject_RichCompare(__pyx_t_3, __pyx_t_2, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyObject_RichCompare(__pyx_t_3, __pyx_t_2, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (unlikely(!__pyx_t_1)) {
-        PyErr_SetNone(PyExc_AssertionError);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      }
-    }
-    #endif
-
-    /* "pyFAI/ext/_blob.pyx":58
- *     if do_mask:
- *         assert mask.shape[0] == ny
- *         assert mask.shape[1] == nx             # <<<<<<<<<<<<<<
- *         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
- * 
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_shape); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_4, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_nx); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = PyObject_RichCompare(__pyx_t_2, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (unlikely(!__pyx_t_1)) {
-        PyErr_SetNone(PyExc_AssertionError);
+        PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_mask_shape_0_y);
         {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
     }
     #endif
 
     /* "pyFAI/ext/_blob.pyx":59
- *         assert mask.shape[0] == ny
- *         assert mask.shape[1] == nx
+ *     if do_mask:
+ *         assert mask.shape[0] == ny, "mask shape 0/y"
+ *         assert mask.shape[1] == nx, "mask shape 1/x"             # <<<<<<<<<<<<<<
+ *         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
+ * 
+ */
+    #ifndef CYTHON_WITHOUT_ASSERTIONS
+    if (unlikely(!Py_OptimizeFlag)) {
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_shape); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_4, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_nx); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_3 = PyObject_RichCompare(__pyx_t_2, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (unlikely(!__pyx_t_1)) {
+        PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_mask_shape_1_x);
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
+    }
+    #endif
+
+    /* "pyFAI/ext/_blob.pyx":60
+ *         assert mask.shape[0] == ny, "mask shape 0/y"
+ *         assert mask.shape[1] == nx, "mask shape 1/x"
  *         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)             # <<<<<<<<<<<<<<
  * 
  *     cdef numpy.ndarray[numpy.int8_t, ndim=3] is_max = numpy.zeros((ns,ny,nx), dtype=numpy.int8)
  */
-    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_INCREF(__pyx_v_mask);
     PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_v_mask);
     __Pyx_GIVEREF(__pyx_v_mask);
-    __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_int8); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_int8); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(__pyx_t_6);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_v_cmask = __pyx_t_7;
     __pyx_t_7.memview = NULL;
@@ -2260,25 +2264,25 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   }
   __pyx_L3:;
 
-  /* "pyFAI/ext/_blob.pyx":61
+  /* "pyFAI/ext/_blob.pyx":62
  *         cmask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
  * 
  *     cdef numpy.ndarray[numpy.int8_t, ndim=3] is_max = numpy.zeros((ns,ny,nx), dtype=numpy.int8)             # <<<<<<<<<<<<<<
  *     if ns<3 or ny<3 or nx<3:
  *         return is_max
  */
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyInt_From_int(__pyx_v_ns); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyInt_From_int(__pyx_v_ns); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_ny); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_ny); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_nx); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_nx); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_6);
   __Pyx_GIVEREF(__pyx_t_6);
@@ -2289,32 +2293,32 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   __pyx_t_6 = 0;
   __pyx_t_3 = 0;
   __pyx_t_4 = 0;
-  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_5);
   __pyx_t_5 = 0;
-  __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_int8); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_int8); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_8 = ((PyArrayObject *)__pyx_t_6);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
     if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_is_max.rcbuffer->pybuffer, (PyObject*)__pyx_t_8, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int8_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 3, 0, __pyx_stack) == -1)) {
       __pyx_v_is_max = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_is_max.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     } else {__pyx_pybuffernd_is_max.diminfo[0].strides = __pyx_pybuffernd_is_max.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_is_max.diminfo[0].shape = __pyx_pybuffernd_is_max.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_is_max.diminfo[1].strides = __pyx_pybuffernd_is_max.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_is_max.diminfo[1].shape = __pyx_pybuffernd_is_max.rcbuffer->pybuffer.shape[1]; __pyx_pybuffernd_is_max.diminfo[2].strides = __pyx_pybuffernd_is_max.rcbuffer->pybuffer.strides[2]; __pyx_pybuffernd_is_max.diminfo[2].shape = __pyx_pybuffernd_is_max.rcbuffer->pybuffer.shape[2];
     }
   }
@@ -2322,7 +2326,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   __pyx_v_is_max = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "pyFAI/ext/_blob.pyx":62
+  /* "pyFAI/ext/_blob.pyx":63
  * 
  *     cdef numpy.ndarray[numpy.int8_t, ndim=3] is_max = numpy.zeros((ns,ny,nx), dtype=numpy.int8)
  *     if ns<3 or ny<3 or nx<3:             # <<<<<<<<<<<<<<
@@ -2346,7 +2350,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   __pyx_L5_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "pyFAI/ext/_blob.pyx":63
+    /* "pyFAI/ext/_blob.pyx":64
  *     cdef numpy.ndarray[numpy.int8_t, ndim=3] is_max = numpy.zeros((ns,ny,nx), dtype=numpy.int8)
  *     if ns<3 or ny<3 or nx<3:
  *         return is_max             # <<<<<<<<<<<<<<
@@ -2359,7 +2363,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_blob.pyx":64
+  /* "pyFAI/ext/_blob.pyx":65
  *     if ns<3 or ny<3 or nx<3:
  *         return is_max
  *     for s in range(1,ns-1):             # <<<<<<<<<<<<<<
@@ -2370,7 +2374,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   for (__pyx_t_11 = 1; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
     __pyx_v_s = __pyx_t_11;
 
-    /* "pyFAI/ext/_blob.pyx":65
+    /* "pyFAI/ext/_blob.pyx":66
  *         return is_max
  *     for s in range(1,ns-1):
  *         for y in range(1,ny-1):             # <<<<<<<<<<<<<<
@@ -2381,7 +2385,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
     for (__pyx_t_13 = 1; __pyx_t_13 < __pyx_t_12; __pyx_t_13+=1) {
       __pyx_v_y = __pyx_t_13;
 
-      /* "pyFAI/ext/_blob.pyx":66
+      /* "pyFAI/ext/_blob.pyx":67
  *     for s in range(1,ns-1):
  *         for y in range(1,ny-1):
  *             for x in range(1,nx-1):             # <<<<<<<<<<<<<<
@@ -2392,7 +2396,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
       for (__pyx_t_15 = 1; __pyx_t_15 < __pyx_t_14; __pyx_t_15+=1) {
         __pyx_v_x = __pyx_t_15;
 
-        /* "pyFAI/ext/_blob.pyx":67
+        /* "pyFAI/ext/_blob.pyx":68
  *         for y in range(1,ny-1):
  *             for x in range(1,nx-1):
  *                 c =  dogs[s,y,x]             # <<<<<<<<<<<<<<
@@ -2402,9 +2406,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
         __pyx_t_16 = __pyx_v_s;
         __pyx_t_17 = __pyx_v_y;
         __pyx_t_18 = __pyx_v_x;
-        __pyx_v_c = (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_16 * __pyx_v_dogs.strides[0]) ) + __pyx_t_17 * __pyx_v_dogs.strides[1]) ) + __pyx_t_18 * __pyx_v_dogs.strides[2]) )));
+        __pyx_v_c = (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_16 * __pyx_v_dogs.strides[0]) ) + __pyx_t_17 * __pyx_v_dogs.strides[1]) )) + __pyx_t_18)) )));
 
-        /* "pyFAI/ext/_blob.pyx":68
+        /* "pyFAI/ext/_blob.pyx":69
  *             for x in range(1,nx-1):
  *                 c =  dogs[s,y,x]
  *                 if do_mask and cmask[y,x]:             # <<<<<<<<<<<<<<
@@ -2417,7 +2421,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_1 = __pyx_t_9;
           goto __pyx_L15_bool_binop_done;
         }
-        if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundLocalError("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
+        if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundLocalError("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
         __pyx_t_19 = __pyx_v_y;
         __pyx_t_20 = __pyx_v_x;
         __pyx_t_9 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cmask.data + __pyx_t_19 * __pyx_v_cmask.strides[0]) ) + __pyx_t_20 * __pyx_v_cmask.strides[1]) ))) != 0);
@@ -2425,7 +2429,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
         __pyx_L15_bool_binop_done:;
         if (__pyx_t_1) {
 
-          /* "pyFAI/ext/_blob.pyx":69
+          /* "pyFAI/ext/_blob.pyx":70
  *                 c =  dogs[s,y,x]
  *                 if do_mask and cmask[y,x]:
  *                     m = 0             # <<<<<<<<<<<<<<
@@ -2437,7 +2441,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
         }
         /*else*/ {
 
-          /* "pyFAI/ext/_blob.pyx":71
+          /* "pyFAI/ext/_blob.pyx":72
  *                     m = 0
  *                 else:
  *                     m = (c>dogs[s,y,x-1]) and (c>dogs[s,y,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2447,7 +2451,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_22 = __pyx_v_s;
           __pyx_t_23 = __pyx_v_y;
           __pyx_t_24 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_22 * __pyx_v_dogs.strides[0]) ) + __pyx_t_23 * __pyx_v_dogs.strides[1]) ) + __pyx_t_24 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_22 * __pyx_v_dogs.strides[0]) ) + __pyx_t_23 * __pyx_v_dogs.strides[1]) )) + __pyx_t_24)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2456,14 +2460,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_25 = __pyx_v_s;
           __pyx_t_26 = __pyx_v_y;
           __pyx_t_27 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_25 * __pyx_v_dogs.strides[0]) ) + __pyx_t_26 * __pyx_v_dogs.strides[1]) ) + __pyx_t_27 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_25 * __pyx_v_dogs.strides[0]) ) + __pyx_t_26 * __pyx_v_dogs.strides[1]) )) + __pyx_t_27)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":72
+          /* "pyFAI/ext/_blob.pyx":73
  *                 else:
  *                     m = (c>dogs[s,y,x-1]) and (c>dogs[s,y,x+1]) and\
  *                         (c>dogs[s,y-1,x]) and (c>dogs[s,y+1,x]) and\             # <<<<<<<<<<<<<<
@@ -2473,7 +2477,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_28 = __pyx_v_s;
           __pyx_t_29 = (__pyx_v_y - 1);
           __pyx_t_30 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_28 * __pyx_v_dogs.strides[0]) ) + __pyx_t_29 * __pyx_v_dogs.strides[1]) ) + __pyx_t_30 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_28 * __pyx_v_dogs.strides[0]) ) + __pyx_t_29 * __pyx_v_dogs.strides[1]) )) + __pyx_t_30)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2482,14 +2486,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_31 = __pyx_v_s;
           __pyx_t_32 = (__pyx_v_y + 1);
           __pyx_t_33 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_31 * __pyx_v_dogs.strides[0]) ) + __pyx_t_32 * __pyx_v_dogs.strides[1]) ) + __pyx_t_33 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_31 * __pyx_v_dogs.strides[0]) ) + __pyx_t_32 * __pyx_v_dogs.strides[1]) )) + __pyx_t_33)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":73
+          /* "pyFAI/ext/_blob.pyx":74
  *                     m = (c>dogs[s,y,x-1]) and (c>dogs[s,y,x+1]) and\
  *                         (c>dogs[s,y-1,x]) and (c>dogs[s,y+1,x]) and\
  *                         (c>dogs[s,y-1,x-1]) and (c>dogs[s,y-1,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2499,7 +2503,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_34 = __pyx_v_s;
           __pyx_t_35 = (__pyx_v_y - 1);
           __pyx_t_36 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_34 * __pyx_v_dogs.strides[0]) ) + __pyx_t_35 * __pyx_v_dogs.strides[1]) ) + __pyx_t_36 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_34 * __pyx_v_dogs.strides[0]) ) + __pyx_t_35 * __pyx_v_dogs.strides[1]) )) + __pyx_t_36)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2508,14 +2512,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_37 = __pyx_v_s;
           __pyx_t_38 = (__pyx_v_y - 1);
           __pyx_t_39 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_37 * __pyx_v_dogs.strides[0]) ) + __pyx_t_38 * __pyx_v_dogs.strides[1]) ) + __pyx_t_39 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_37 * __pyx_v_dogs.strides[0]) ) + __pyx_t_38 * __pyx_v_dogs.strides[1]) )) + __pyx_t_39)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":74
+          /* "pyFAI/ext/_blob.pyx":75
  *                         (c>dogs[s,y-1,x]) and (c>dogs[s,y+1,x]) and\
  *                         (c>dogs[s,y-1,x-1]) and (c>dogs[s,y-1,x+1]) and\
  *                         (c>dogs[s,y+1,x-1]) and (c>dogs[s,y+1,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2525,7 +2529,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_40 = __pyx_v_s;
           __pyx_t_41 = (__pyx_v_y + 1);
           __pyx_t_42 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_40 * __pyx_v_dogs.strides[0]) ) + __pyx_t_41 * __pyx_v_dogs.strides[1]) ) + __pyx_t_42 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_40 * __pyx_v_dogs.strides[0]) ) + __pyx_t_41 * __pyx_v_dogs.strides[1]) )) + __pyx_t_42)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2534,14 +2538,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_43 = __pyx_v_s;
           __pyx_t_44 = (__pyx_v_y + 1);
           __pyx_t_45 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_43 * __pyx_v_dogs.strides[0]) ) + __pyx_t_44 * __pyx_v_dogs.strides[1]) ) + __pyx_t_45 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_43 * __pyx_v_dogs.strides[0]) ) + __pyx_t_44 * __pyx_v_dogs.strides[1]) )) + __pyx_t_45)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":75
+          /* "pyFAI/ext/_blob.pyx":76
  *                         (c>dogs[s,y-1,x-1]) and (c>dogs[s,y-1,x+1]) and\
  *                         (c>dogs[s,y+1,x-1]) and (c>dogs[s,y+1,x+1]) and\
  *                         (c>dogs[s-1,y,x]) and (c>dogs[s-1,y,x]) and\             # <<<<<<<<<<<<<<
@@ -2551,7 +2555,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_46 = (__pyx_v_s - 1);
           __pyx_t_47 = __pyx_v_y;
           __pyx_t_48 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_46 * __pyx_v_dogs.strides[0]) ) + __pyx_t_47 * __pyx_v_dogs.strides[1]) ) + __pyx_t_48 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_46 * __pyx_v_dogs.strides[0]) ) + __pyx_t_47 * __pyx_v_dogs.strides[1]) )) + __pyx_t_48)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2560,14 +2564,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_49 = (__pyx_v_s - 1);
           __pyx_t_50 = __pyx_v_y;
           __pyx_t_51 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_49 * __pyx_v_dogs.strides[0]) ) + __pyx_t_50 * __pyx_v_dogs.strides[1]) ) + __pyx_t_51 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_49 * __pyx_v_dogs.strides[0]) ) + __pyx_t_50 * __pyx_v_dogs.strides[1]) )) + __pyx_t_51)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":76
+          /* "pyFAI/ext/_blob.pyx":77
  *                         (c>dogs[s,y+1,x-1]) and (c>dogs[s,y+1,x+1]) and\
  *                         (c>dogs[s-1,y,x]) and (c>dogs[s-1,y,x]) and\
  *                         (c>dogs[s-1,y,x-1]) and (c>dogs[s-1,y,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2577,7 +2581,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_52 = (__pyx_v_s - 1);
           __pyx_t_53 = __pyx_v_y;
           __pyx_t_54 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_52 * __pyx_v_dogs.strides[0]) ) + __pyx_t_53 * __pyx_v_dogs.strides[1]) ) + __pyx_t_54 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_52 * __pyx_v_dogs.strides[0]) ) + __pyx_t_53 * __pyx_v_dogs.strides[1]) )) + __pyx_t_54)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2586,14 +2590,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_55 = (__pyx_v_s - 1);
           __pyx_t_56 = __pyx_v_y;
           __pyx_t_57 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_55 * __pyx_v_dogs.strides[0]) ) + __pyx_t_56 * __pyx_v_dogs.strides[1]) ) + __pyx_t_57 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_55 * __pyx_v_dogs.strides[0]) ) + __pyx_t_56 * __pyx_v_dogs.strides[1]) )) + __pyx_t_57)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":77
+          /* "pyFAI/ext/_blob.pyx":78
  *                         (c>dogs[s-1,y,x]) and (c>dogs[s-1,y,x]) and\
  *                         (c>dogs[s-1,y,x-1]) and (c>dogs[s-1,y,x+1]) and\
  *                         (c>dogs[s-1,y-1,x]) and (c>dogs[s-1,y+1,x]) and\             # <<<<<<<<<<<<<<
@@ -2603,7 +2607,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_58 = (__pyx_v_s - 1);
           __pyx_t_59 = (__pyx_v_y - 1);
           __pyx_t_60 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_58 * __pyx_v_dogs.strides[0]) ) + __pyx_t_59 * __pyx_v_dogs.strides[1]) ) + __pyx_t_60 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_58 * __pyx_v_dogs.strides[0]) ) + __pyx_t_59 * __pyx_v_dogs.strides[1]) )) + __pyx_t_60)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2612,14 +2616,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_61 = (__pyx_v_s - 1);
           __pyx_t_62 = (__pyx_v_y + 1);
           __pyx_t_63 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_61 * __pyx_v_dogs.strides[0]) ) + __pyx_t_62 * __pyx_v_dogs.strides[1]) ) + __pyx_t_63 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_61 * __pyx_v_dogs.strides[0]) ) + __pyx_t_62 * __pyx_v_dogs.strides[1]) )) + __pyx_t_63)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":78
+          /* "pyFAI/ext/_blob.pyx":79
  *                         (c>dogs[s-1,y,x-1]) and (c>dogs[s-1,y,x+1]) and\
  *                         (c>dogs[s-1,y-1,x]) and (c>dogs[s-1,y+1,x]) and\
  *                         (c>dogs[s-1,y-1,x-1]) and (c>dogs[s-1,y-1,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2629,7 +2633,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_64 = (__pyx_v_s - 1);
           __pyx_t_65 = (__pyx_v_y - 1);
           __pyx_t_66 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_64 * __pyx_v_dogs.strides[0]) ) + __pyx_t_65 * __pyx_v_dogs.strides[1]) ) + __pyx_t_66 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_64 * __pyx_v_dogs.strides[0]) ) + __pyx_t_65 * __pyx_v_dogs.strides[1]) )) + __pyx_t_66)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2638,14 +2642,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_67 = (__pyx_v_s - 1);
           __pyx_t_68 = (__pyx_v_y - 1);
           __pyx_t_69 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_67 * __pyx_v_dogs.strides[0]) ) + __pyx_t_68 * __pyx_v_dogs.strides[1]) ) + __pyx_t_69 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_67 * __pyx_v_dogs.strides[0]) ) + __pyx_t_68 * __pyx_v_dogs.strides[1]) )) + __pyx_t_69)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":79
+          /* "pyFAI/ext/_blob.pyx":80
  *                         (c>dogs[s-1,y-1,x]) and (c>dogs[s-1,y+1,x]) and\
  *                         (c>dogs[s-1,y-1,x-1]) and (c>dogs[s-1,y-1,x+1]) and\
  *                         (c>dogs[s-1,y+1,x-1]) and (c>dogs[s-1,y+1,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2655,7 +2659,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_70 = (__pyx_v_s - 1);
           __pyx_t_71 = (__pyx_v_y + 1);
           __pyx_t_72 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_70 * __pyx_v_dogs.strides[0]) ) + __pyx_t_71 * __pyx_v_dogs.strides[1]) ) + __pyx_t_72 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_70 * __pyx_v_dogs.strides[0]) ) + __pyx_t_71 * __pyx_v_dogs.strides[1]) )) + __pyx_t_72)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2664,14 +2668,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_73 = (__pyx_v_s - 1);
           __pyx_t_74 = (__pyx_v_y + 1);
           __pyx_t_75 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_73 * __pyx_v_dogs.strides[0]) ) + __pyx_t_74 * __pyx_v_dogs.strides[1]) ) + __pyx_t_75 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_73 * __pyx_v_dogs.strides[0]) ) + __pyx_t_74 * __pyx_v_dogs.strides[1]) )) + __pyx_t_75)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":80
+          /* "pyFAI/ext/_blob.pyx":81
  *                         (c>dogs[s-1,y-1,x-1]) and (c>dogs[s-1,y-1,x+1]) and\
  *                         (c>dogs[s-1,y+1,x-1]) and (c>dogs[s-1,y+1,x+1]) and\
  *                         (c>dogs[s+1,y,x-1]) and (c>dogs[s+1,y,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2681,7 +2685,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_76 = (__pyx_v_s + 1);
           __pyx_t_77 = __pyx_v_y;
           __pyx_t_78 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_76 * __pyx_v_dogs.strides[0]) ) + __pyx_t_77 * __pyx_v_dogs.strides[1]) ) + __pyx_t_78 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_76 * __pyx_v_dogs.strides[0]) ) + __pyx_t_77 * __pyx_v_dogs.strides[1]) )) + __pyx_t_78)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2690,14 +2694,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_79 = (__pyx_v_s + 1);
           __pyx_t_80 = __pyx_v_y;
           __pyx_t_81 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_79 * __pyx_v_dogs.strides[0]) ) + __pyx_t_80 * __pyx_v_dogs.strides[1]) ) + __pyx_t_81 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_79 * __pyx_v_dogs.strides[0]) ) + __pyx_t_80 * __pyx_v_dogs.strides[1]) )) + __pyx_t_81)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":81
+          /* "pyFAI/ext/_blob.pyx":82
  *                         (c>dogs[s-1,y+1,x-1]) and (c>dogs[s-1,y+1,x+1]) and\
  *                         (c>dogs[s+1,y,x-1]) and (c>dogs[s+1,y,x+1]) and\
  *                         (c>dogs[s+1,y-1,x]) and (c>dogs[s+1,y+1,x]) and\             # <<<<<<<<<<<<<<
@@ -2707,7 +2711,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_82 = (__pyx_v_s + 1);
           __pyx_t_83 = (__pyx_v_y - 1);
           __pyx_t_84 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_82 * __pyx_v_dogs.strides[0]) ) + __pyx_t_83 * __pyx_v_dogs.strides[1]) ) + __pyx_t_84 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_82 * __pyx_v_dogs.strides[0]) ) + __pyx_t_83 * __pyx_v_dogs.strides[1]) )) + __pyx_t_84)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2716,14 +2720,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_85 = (__pyx_v_s + 1);
           __pyx_t_86 = (__pyx_v_y + 1);
           __pyx_t_87 = __pyx_v_x;
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_85 * __pyx_v_dogs.strides[0]) ) + __pyx_t_86 * __pyx_v_dogs.strides[1]) ) + __pyx_t_87 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_85 * __pyx_v_dogs.strides[0]) ) + __pyx_t_86 * __pyx_v_dogs.strides[1]) )) + __pyx_t_87)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":82
+          /* "pyFAI/ext/_blob.pyx":83
  *                         (c>dogs[s+1,y,x-1]) and (c>dogs[s+1,y,x+1]) and\
  *                         (c>dogs[s+1,y-1,x]) and (c>dogs[s+1,y+1,x]) and\
  *                         (c>dogs[s+1,y-1,x-1]) and (c>dogs[s+1,y-1,x+1]) and\             # <<<<<<<<<<<<<<
@@ -2733,7 +2737,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_88 = (__pyx_v_s + 1);
           __pyx_t_89 = (__pyx_v_y - 1);
           __pyx_t_90 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_88 * __pyx_v_dogs.strides[0]) ) + __pyx_t_89 * __pyx_v_dogs.strides[1]) ) + __pyx_t_90 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_88 * __pyx_v_dogs.strides[0]) ) + __pyx_t_89 * __pyx_v_dogs.strides[1]) )) + __pyx_t_90)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2742,14 +2746,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_91 = (__pyx_v_s + 1);
           __pyx_t_92 = (__pyx_v_y - 1);
           __pyx_t_93 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_91 * __pyx_v_dogs.strides[0]) ) + __pyx_t_92 * __pyx_v_dogs.strides[1]) ) + __pyx_t_93 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_91 * __pyx_v_dogs.strides[0]) ) + __pyx_t_92 * __pyx_v_dogs.strides[1]) )) + __pyx_t_93)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
             goto __pyx_L17_bool_binop_done;
           }
 
-          /* "pyFAI/ext/_blob.pyx":83
+          /* "pyFAI/ext/_blob.pyx":84
  *                         (c>dogs[s+1,y-1,x]) and (c>dogs[s+1,y+1,x]) and\
  *                         (c>dogs[s+1,y-1,x-1]) and (c>dogs[s+1,y-1,x+1]) and\
  *                         (c>dogs[s+1,y+1,x-1]) and (c>dogs[s+1,y+1,x+1])             # <<<<<<<<<<<<<<
@@ -2759,7 +2763,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_94 = (__pyx_v_s + 1);
           __pyx_t_95 = (__pyx_v_y + 1);
           __pyx_t_96 = (__pyx_v_x - 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_94 * __pyx_v_dogs.strides[0]) ) + __pyx_t_95 * __pyx_v_dogs.strides[1]) ) + __pyx_t_96 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_94 * __pyx_v_dogs.strides[0]) ) + __pyx_t_95 * __pyx_v_dogs.strides[1]) )) + __pyx_t_96)) ))));
           if (__pyx_t_1) {
           } else {
             __pyx_t_21 = __pyx_t_1;
@@ -2768,12 +2772,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_97 = (__pyx_v_s + 1);
           __pyx_t_98 = (__pyx_v_y + 1);
           __pyx_t_99 = (__pyx_v_x + 1);
-          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_97 * __pyx_v_dogs.strides[0]) ) + __pyx_t_98 * __pyx_v_dogs.strides[1]) ) + __pyx_t_99 * __pyx_v_dogs.strides[2]) ))));
+          __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_97 * __pyx_v_dogs.strides[0]) ) + __pyx_t_98 * __pyx_v_dogs.strides[1]) )) + __pyx_t_99)) ))));
           __pyx_t_21 = __pyx_t_1;
           __pyx_L17_bool_binop_done:;
           __pyx_v_m = __pyx_t_21;
 
-          /* "pyFAI/ext/_blob.pyx":84
+          /* "pyFAI/ext/_blob.pyx":85
  *                         (c>dogs[s+1,y-1,x-1]) and (c>dogs[s+1,y-1,x+1]) and\
  *                         (c>dogs[s+1,y+1,x-1]) and (c>dogs[s+1,y+1,x+1])
  *                     if not m:             # <<<<<<<<<<<<<<
@@ -2783,7 +2787,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_1 = ((!(__pyx_v_m != 0)) != 0);
           if (__pyx_t_1) {
 
-            /* "pyFAI/ext/_blob.pyx":85
+            /* "pyFAI/ext/_blob.pyx":86
  *                         (c>dogs[s+1,y+1,x-1]) and (c>dogs[s+1,y+1,x+1])
  *                     if not m:
  *                         continue             # <<<<<<<<<<<<<<
@@ -2793,7 +2797,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             goto __pyx_L12_continue;
           }
 
-          /* "pyFAI/ext/_blob.pyx":86
+          /* "pyFAI/ext/_blob.pyx":87
  *                     if not m:
  *                         continue
  *                     if n_5:             # <<<<<<<<<<<<<<
@@ -2803,7 +2807,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
           __pyx_t_1 = (__pyx_v_n_5 != 0);
           if (__pyx_t_1) {
 
-            /* "pyFAI/ext/_blob.pyx":87
+            /* "pyFAI/ext/_blob.pyx":88
  *                         continue
  *                     if n_5:
  *                         if x>1:             # <<<<<<<<<<<<<<
@@ -2813,7 +2817,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             __pyx_t_1 = ((__pyx_v_x > 1) != 0);
             if (__pyx_t_1) {
 
-              /* "pyFAI/ext/_blob.pyx":88
+              /* "pyFAI/ext/_blob.pyx":89
  *                     if n_5:
  *                         if x>1:
  *                             m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\             # <<<<<<<<<<<<<<
@@ -2828,7 +2832,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_100 = __pyx_v_s;
               __pyx_t_101 = __pyx_v_y;
               __pyx_t_102 = (__pyx_v_x - 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_100 * __pyx_v_dogs.strides[0]) ) + __pyx_t_101 * __pyx_v_dogs.strides[1]) ) + __pyx_t_102 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_100 * __pyx_v_dogs.strides[0]) ) + __pyx_t_101 * __pyx_v_dogs.strides[1]) )) + __pyx_t_102)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -2837,14 +2841,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_103 = __pyx_v_s;
               __pyx_t_104 = (__pyx_v_y - 1);
               __pyx_t_105 = (__pyx_v_x - 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_103 * __pyx_v_dogs.strides[0]) ) + __pyx_t_104 * __pyx_v_dogs.strides[1]) ) + __pyx_t_105 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_103 * __pyx_v_dogs.strides[0]) ) + __pyx_t_104 * __pyx_v_dogs.strides[1]) )) + __pyx_t_105)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L46_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":89
+              /* "pyFAI/ext/_blob.pyx":90
  *                         if x>1:
  *                             m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\
  *                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\             # <<<<<<<<<<<<<<
@@ -2855,21 +2859,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_107 = (__pyx_v_y + 1);
               __pyx_t_108 = (__pyx_v_x - 2);
 
-              /* "pyFAI/ext/_blob.pyx":88
+              /* "pyFAI/ext/_blob.pyx":89
  *                     if n_5:
  *                         if x>1:
  *                             m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\
  *                                   and (c>dogs[s+1,y,x-2]) and (c>dogs[s+1,y-1,x-2]) and (c>dogs[s+1,y+1,x-2])
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_106 * __pyx_v_dogs.strides[0]) ) + __pyx_t_107 * __pyx_v_dogs.strides[1]) ) + __pyx_t_108 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_106 * __pyx_v_dogs.strides[0]) ) + __pyx_t_107 * __pyx_v_dogs.strides[1]) )) + __pyx_t_108)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L46_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":89
+              /* "pyFAI/ext/_blob.pyx":90
  *                         if x>1:
  *                             m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\
  *                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\             # <<<<<<<<<<<<<<
@@ -2879,7 +2883,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_109 = (__pyx_v_s - 1);
               __pyx_t_110 = __pyx_v_y;
               __pyx_t_111 = (__pyx_v_x - 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_109 * __pyx_v_dogs.strides[0]) ) + __pyx_t_110 * __pyx_v_dogs.strides[1]) ) + __pyx_t_111 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_109 * __pyx_v_dogs.strides[0]) ) + __pyx_t_110 * __pyx_v_dogs.strides[1]) )) + __pyx_t_111)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -2888,14 +2892,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_112 = (__pyx_v_s - 1);
               __pyx_t_113 = (__pyx_v_y - 1);
               __pyx_t_114 = (__pyx_v_x - 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_112 * __pyx_v_dogs.strides[0]) ) + __pyx_t_113 * __pyx_v_dogs.strides[1]) ) + __pyx_t_114 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_112 * __pyx_v_dogs.strides[0]) ) + __pyx_t_113 * __pyx_v_dogs.strides[1]) )) + __pyx_t_114)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L46_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":90
+              /* "pyFAI/ext/_blob.pyx":91
  *                             m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\
  *                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\
  *                                   and (c>dogs[s+1,y,x-2]) and (c>dogs[s+1,y-1,x-2]) and (c>dogs[s+1,y+1,x-2])             # <<<<<<<<<<<<<<
@@ -2906,21 +2910,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_116 = (__pyx_v_y + 1);
               __pyx_t_117 = (__pyx_v_x - 2);
 
-              /* "pyFAI/ext/_blob.pyx":89
+              /* "pyFAI/ext/_blob.pyx":90
  *                         if x>1:
  *                             m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\
  *                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s+1,y,x-2]) and (c>dogs[s+1,y-1,x-2]) and (c>dogs[s+1,y+1,x-2])
  *                             if y>1:
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_115 * __pyx_v_dogs.strides[0]) ) + __pyx_t_116 * __pyx_v_dogs.strides[1]) ) + __pyx_t_117 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_115 * __pyx_v_dogs.strides[0]) ) + __pyx_t_116 * __pyx_v_dogs.strides[1]) )) + __pyx_t_117)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L46_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":90
+              /* "pyFAI/ext/_blob.pyx":91
  *                             m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\
  *                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\
  *                                   and (c>dogs[s+1,y,x-2]) and (c>dogs[s+1,y-1,x-2]) and (c>dogs[s+1,y+1,x-2])             # <<<<<<<<<<<<<<
@@ -2930,7 +2934,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_118 = (__pyx_v_s + 1);
               __pyx_t_119 = __pyx_v_y;
               __pyx_t_120 = (__pyx_v_x - 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_118 * __pyx_v_dogs.strides[0]) ) + __pyx_t_119 * __pyx_v_dogs.strides[1]) ) + __pyx_t_120 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_118 * __pyx_v_dogs.strides[0]) ) + __pyx_t_119 * __pyx_v_dogs.strides[1]) )) + __pyx_t_120)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -2939,7 +2943,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_121 = (__pyx_v_s + 1);
               __pyx_t_122 = (__pyx_v_y - 1);
               __pyx_t_123 = (__pyx_v_x - 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_121 * __pyx_v_dogs.strides[0]) ) + __pyx_t_122 * __pyx_v_dogs.strides[1]) ) + __pyx_t_123 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_121 * __pyx_v_dogs.strides[0]) ) + __pyx_t_122 * __pyx_v_dogs.strides[1]) )) + __pyx_t_123)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -2948,12 +2952,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_124 = (__pyx_v_s + 1);
               __pyx_t_125 = (__pyx_v_y + 1);
               __pyx_t_126 = (__pyx_v_x - 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_124 * __pyx_v_dogs.strides[0]) ) + __pyx_t_125 * __pyx_v_dogs.strides[1]) ) + __pyx_t_126 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_124 * __pyx_v_dogs.strides[0]) ) + __pyx_t_125 * __pyx_v_dogs.strides[1]) )) + __pyx_t_126)) ))));
               __pyx_t_21 = __pyx_t_1;
               __pyx_L46_bool_binop_done:;
               __pyx_v_m = __pyx_t_21;
 
-              /* "pyFAI/ext/_blob.pyx":91
+              /* "pyFAI/ext/_blob.pyx":92
  *                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\
  *                                   and (c>dogs[s+1,y,x-2]) and (c>dogs[s+1,y-1,x-2]) and (c>dogs[s+1,y+1,x-2])
  *                             if y>1:             # <<<<<<<<<<<<<<
@@ -2963,7 +2967,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_1 = ((__pyx_v_y > 1) != 0);
               if (__pyx_t_1) {
 
-                /* "pyFAI/ext/_blob.pyx":92
+                /* "pyFAI/ext/_blob.pyx":93
  *                                   and (c>dogs[s+1,y,x-2]) and (c>dogs[s+1,y-1,x-2]) and (c>dogs[s+1,y+1,x-2])
  *                             if y>1:
  *                                 m = m and (c>dogs[s,y-2,x-2])and (c>dogs[s-1,y-2,x-2]) and (c>dogs[s,y-2,x-2])             # <<<<<<<<<<<<<<
@@ -2978,7 +2982,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_127 = __pyx_v_s;
                 __pyx_t_128 = (__pyx_v_y - 2);
                 __pyx_t_129 = (__pyx_v_x - 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_127 * __pyx_v_dogs.strides[0]) ) + __pyx_t_128 * __pyx_v_dogs.strides[1]) ) + __pyx_t_129 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_127 * __pyx_v_dogs.strides[0]) ) + __pyx_t_128 * __pyx_v_dogs.strides[1]) )) + __pyx_t_129)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -2987,7 +2991,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_130 = (__pyx_v_s - 1);
                 __pyx_t_131 = (__pyx_v_y - 2);
                 __pyx_t_132 = (__pyx_v_x - 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_130 * __pyx_v_dogs.strides[0]) ) + __pyx_t_131 * __pyx_v_dogs.strides[1]) ) + __pyx_t_132 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_130 * __pyx_v_dogs.strides[0]) ) + __pyx_t_131 * __pyx_v_dogs.strides[1]) )) + __pyx_t_132)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -2996,7 +3000,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_133 = __pyx_v_s;
                 __pyx_t_134 = (__pyx_v_y - 2);
                 __pyx_t_135 = (__pyx_v_x - 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_133 * __pyx_v_dogs.strides[0]) ) + __pyx_t_134 * __pyx_v_dogs.strides[1]) ) + __pyx_t_135 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_133 * __pyx_v_dogs.strides[0]) ) + __pyx_t_134 * __pyx_v_dogs.strides[1]) )) + __pyx_t_135)) ))));
                 __pyx_t_21 = __pyx_t_1;
                 __pyx_L57_bool_binop_done:;
                 __pyx_v_m = __pyx_t_21;
@@ -3004,7 +3008,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               }
               __pyx_L56:;
 
-              /* "pyFAI/ext/_blob.pyx":93
+              /* "pyFAI/ext/_blob.pyx":94
  *                             if y>1:
  *                                 m = m and (c>dogs[s,y-2,x-2])and (c>dogs[s-1,y-2,x-2]) and (c>dogs[s,y-2,x-2])
  *                             if y<ny-2:             # <<<<<<<<<<<<<<
@@ -3014,7 +3018,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_1 = ((__pyx_v_y < (__pyx_v_ny - 2)) != 0);
               if (__pyx_t_1) {
 
-                /* "pyFAI/ext/_blob.pyx":94
+                /* "pyFAI/ext/_blob.pyx":95
  *                                 m = m and (c>dogs[s,y-2,x-2])and (c>dogs[s-1,y-2,x-2]) and (c>dogs[s,y-2,x-2])
  *                             if y<ny-2:
  *                                 m = m and (c>dogs[s,y+2,x-2])and (c>dogs[s-1,y+2,x-2]) and (c>dogs[s,y+2,x-2])             # <<<<<<<<<<<<<<
@@ -3029,7 +3033,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_136 = __pyx_v_s;
                 __pyx_t_137 = (__pyx_v_y + 2);
                 __pyx_t_138 = (__pyx_v_x - 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_136 * __pyx_v_dogs.strides[0]) ) + __pyx_t_137 * __pyx_v_dogs.strides[1]) ) + __pyx_t_138 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_136 * __pyx_v_dogs.strides[0]) ) + __pyx_t_137 * __pyx_v_dogs.strides[1]) )) + __pyx_t_138)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -3038,7 +3042,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_139 = (__pyx_v_s - 1);
                 __pyx_t_140 = (__pyx_v_y + 2);
                 __pyx_t_141 = (__pyx_v_x - 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_139 * __pyx_v_dogs.strides[0]) ) + __pyx_t_140 * __pyx_v_dogs.strides[1]) ) + __pyx_t_141 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_139 * __pyx_v_dogs.strides[0]) ) + __pyx_t_140 * __pyx_v_dogs.strides[1]) )) + __pyx_t_141)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -3047,7 +3051,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_142 = __pyx_v_s;
                 __pyx_t_143 = (__pyx_v_y + 2);
                 __pyx_t_144 = (__pyx_v_x - 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_142 * __pyx_v_dogs.strides[0]) ) + __pyx_t_143 * __pyx_v_dogs.strides[1]) ) + __pyx_t_144 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_142 * __pyx_v_dogs.strides[0]) ) + __pyx_t_143 * __pyx_v_dogs.strides[1]) )) + __pyx_t_144)) ))));
                 __pyx_t_21 = __pyx_t_1;
                 __pyx_L62_bool_binop_done:;
                 __pyx_v_m = __pyx_t_21;
@@ -3058,7 +3062,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             }
             __pyx_L45:;
 
-            /* "pyFAI/ext/_blob.pyx":95
+            /* "pyFAI/ext/_blob.pyx":96
  *                             if y<ny-2:
  *                                 m = m and (c>dogs[s,y+2,x-2])and (c>dogs[s-1,y+2,x-2]) and (c>dogs[s,y+2,x-2])
  *                         if x<nx-2:             # <<<<<<<<<<<<<<
@@ -3068,7 +3072,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             __pyx_t_1 = ((__pyx_v_x < (__pyx_v_nx - 2)) != 0);
             if (__pyx_t_1) {
 
-              /* "pyFAI/ext/_blob.pyx":96
+              /* "pyFAI/ext/_blob.pyx":97
  *                                 m = m and (c>dogs[s,y+2,x-2])and (c>dogs[s-1,y+2,x-2]) and (c>dogs[s,y+2,x-2])
  *                         if x<nx-2:
  *                             m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\             # <<<<<<<<<<<<<<
@@ -3083,7 +3087,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_145 = __pyx_v_s;
               __pyx_t_146 = __pyx_v_y;
               __pyx_t_147 = (__pyx_v_x + 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_145 * __pyx_v_dogs.strides[0]) ) + __pyx_t_146 * __pyx_v_dogs.strides[1]) ) + __pyx_t_147 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_145 * __pyx_v_dogs.strides[0]) ) + __pyx_t_146 * __pyx_v_dogs.strides[1]) )) + __pyx_t_147)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3092,14 +3096,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_148 = __pyx_v_s;
               __pyx_t_149 = (__pyx_v_y - 1);
               __pyx_t_150 = (__pyx_v_x + 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_148 * __pyx_v_dogs.strides[0]) ) + __pyx_t_149 * __pyx_v_dogs.strides[1]) ) + __pyx_t_150 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_148 * __pyx_v_dogs.strides[0]) ) + __pyx_t_149 * __pyx_v_dogs.strides[1]) )) + __pyx_t_150)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L67_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":97
+              /* "pyFAI/ext/_blob.pyx":98
  *                         if x<nx-2:
  *                             m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\
  *                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\             # <<<<<<<<<<<<<<
@@ -3110,21 +3114,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_152 = (__pyx_v_y + 1);
               __pyx_t_153 = (__pyx_v_x + 2);
 
-              /* "pyFAI/ext/_blob.pyx":96
+              /* "pyFAI/ext/_blob.pyx":97
  *                                 m = m and (c>dogs[s,y+2,x-2])and (c>dogs[s-1,y+2,x-2]) and (c>dogs[s,y+2,x-2])
  *                         if x<nx-2:
  *                             m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\
  *                                   and (c>dogs[s+1,y,x+2]) and (c>dogs[s+1,y-1,x+2]) and (c>dogs[s+1,y+1,x+2])
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_151 * __pyx_v_dogs.strides[0]) ) + __pyx_t_152 * __pyx_v_dogs.strides[1]) ) + __pyx_t_153 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_151 * __pyx_v_dogs.strides[0]) ) + __pyx_t_152 * __pyx_v_dogs.strides[1]) )) + __pyx_t_153)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L67_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":97
+              /* "pyFAI/ext/_blob.pyx":98
  *                         if x<nx-2:
  *                             m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\
  *                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\             # <<<<<<<<<<<<<<
@@ -3134,7 +3138,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_154 = (__pyx_v_s - 1);
               __pyx_t_155 = __pyx_v_y;
               __pyx_t_156 = (__pyx_v_x + 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_154 * __pyx_v_dogs.strides[0]) ) + __pyx_t_155 * __pyx_v_dogs.strides[1]) ) + __pyx_t_156 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_154 * __pyx_v_dogs.strides[0]) ) + __pyx_t_155 * __pyx_v_dogs.strides[1]) )) + __pyx_t_156)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3143,14 +3147,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_157 = (__pyx_v_s - 1);
               __pyx_t_158 = (__pyx_v_y - 1);
               __pyx_t_159 = (__pyx_v_x + 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_157 * __pyx_v_dogs.strides[0]) ) + __pyx_t_158 * __pyx_v_dogs.strides[1]) ) + __pyx_t_159 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_157 * __pyx_v_dogs.strides[0]) ) + __pyx_t_158 * __pyx_v_dogs.strides[1]) )) + __pyx_t_159)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L67_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":98
+              /* "pyFAI/ext/_blob.pyx":99
  *                             m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\
  *                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\
  *                                   and (c>dogs[s+1,y,x+2]) and (c>dogs[s+1,y-1,x+2]) and (c>dogs[s+1,y+1,x+2])             # <<<<<<<<<<<<<<
@@ -3161,21 +3165,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_161 = (__pyx_v_y + 1);
               __pyx_t_162 = (__pyx_v_x + 2);
 
-              /* "pyFAI/ext/_blob.pyx":97
+              /* "pyFAI/ext/_blob.pyx":98
  *                         if x<nx-2:
  *                             m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\
  *                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s+1,y,x+2]) and (c>dogs[s+1,y-1,x+2]) and (c>dogs[s+1,y+1,x+2])
  *                             if y>1:
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_160 * __pyx_v_dogs.strides[0]) ) + __pyx_t_161 * __pyx_v_dogs.strides[1]) ) + __pyx_t_162 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_160 * __pyx_v_dogs.strides[0]) ) + __pyx_t_161 * __pyx_v_dogs.strides[1]) )) + __pyx_t_162)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L67_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":98
+              /* "pyFAI/ext/_blob.pyx":99
  *                             m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\
  *                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\
  *                                   and (c>dogs[s+1,y,x+2]) and (c>dogs[s+1,y-1,x+2]) and (c>dogs[s+1,y+1,x+2])             # <<<<<<<<<<<<<<
@@ -3185,7 +3189,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_163 = (__pyx_v_s + 1);
               __pyx_t_164 = __pyx_v_y;
               __pyx_t_165 = (__pyx_v_x + 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_163 * __pyx_v_dogs.strides[0]) ) + __pyx_t_164 * __pyx_v_dogs.strides[1]) ) + __pyx_t_165 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_163 * __pyx_v_dogs.strides[0]) ) + __pyx_t_164 * __pyx_v_dogs.strides[1]) )) + __pyx_t_165)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3194,7 +3198,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_166 = (__pyx_v_s + 1);
               __pyx_t_167 = (__pyx_v_y - 1);
               __pyx_t_168 = (__pyx_v_x + 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_166 * __pyx_v_dogs.strides[0]) ) + __pyx_t_167 * __pyx_v_dogs.strides[1]) ) + __pyx_t_168 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_166 * __pyx_v_dogs.strides[0]) ) + __pyx_t_167 * __pyx_v_dogs.strides[1]) )) + __pyx_t_168)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3203,12 +3207,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_169 = (__pyx_v_s + 1);
               __pyx_t_170 = (__pyx_v_y + 1);
               __pyx_t_171 = (__pyx_v_x + 2);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_169 * __pyx_v_dogs.strides[0]) ) + __pyx_t_170 * __pyx_v_dogs.strides[1]) ) + __pyx_t_171 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_169 * __pyx_v_dogs.strides[0]) ) + __pyx_t_170 * __pyx_v_dogs.strides[1]) )) + __pyx_t_171)) ))));
               __pyx_t_21 = __pyx_t_1;
               __pyx_L67_bool_binop_done:;
               __pyx_v_m = __pyx_t_21;
 
-              /* "pyFAI/ext/_blob.pyx":99
+              /* "pyFAI/ext/_blob.pyx":100
  *                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\
  *                                   and (c>dogs[s+1,y,x+2]) and (c>dogs[s+1,y-1,x+2]) and (c>dogs[s+1,y+1,x+2])
  *                             if y>1:             # <<<<<<<<<<<<<<
@@ -3218,7 +3222,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_1 = ((__pyx_v_y > 1) != 0);
               if (__pyx_t_1) {
 
-                /* "pyFAI/ext/_blob.pyx":100
+                /* "pyFAI/ext/_blob.pyx":101
  *                                   and (c>dogs[s+1,y,x+2]) and (c>dogs[s+1,y-1,x+2]) and (c>dogs[s+1,y+1,x+2])
  *                             if y>1:
  *                                 m = m and (c>dogs[s,y-2,x+2])and (c>dogs[s-1,y-2,x+2]) and (c>dogs[s,y-2,x+2])             # <<<<<<<<<<<<<<
@@ -3233,7 +3237,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_172 = __pyx_v_s;
                 __pyx_t_173 = (__pyx_v_y - 2);
                 __pyx_t_174 = (__pyx_v_x + 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_172 * __pyx_v_dogs.strides[0]) ) + __pyx_t_173 * __pyx_v_dogs.strides[1]) ) + __pyx_t_174 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_172 * __pyx_v_dogs.strides[0]) ) + __pyx_t_173 * __pyx_v_dogs.strides[1]) )) + __pyx_t_174)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -3242,7 +3246,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_175 = (__pyx_v_s - 1);
                 __pyx_t_176 = (__pyx_v_y - 2);
                 __pyx_t_177 = (__pyx_v_x + 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_175 * __pyx_v_dogs.strides[0]) ) + __pyx_t_176 * __pyx_v_dogs.strides[1]) ) + __pyx_t_177 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_175 * __pyx_v_dogs.strides[0]) ) + __pyx_t_176 * __pyx_v_dogs.strides[1]) )) + __pyx_t_177)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -3251,7 +3255,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_178 = __pyx_v_s;
                 __pyx_t_179 = (__pyx_v_y - 2);
                 __pyx_t_180 = (__pyx_v_x + 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_178 * __pyx_v_dogs.strides[0]) ) + __pyx_t_179 * __pyx_v_dogs.strides[1]) ) + __pyx_t_180 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_178 * __pyx_v_dogs.strides[0]) ) + __pyx_t_179 * __pyx_v_dogs.strides[1]) )) + __pyx_t_180)) ))));
                 __pyx_t_21 = __pyx_t_1;
                 __pyx_L78_bool_binop_done:;
                 __pyx_v_m = __pyx_t_21;
@@ -3259,7 +3263,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               }
               __pyx_L77:;
 
-              /* "pyFAI/ext/_blob.pyx":101
+              /* "pyFAI/ext/_blob.pyx":102
  *                             if y>1:
  *                                 m = m and (c>dogs[s,y-2,x+2])and (c>dogs[s-1,y-2,x+2]) and (c>dogs[s,y-2,x+2])
  *                             if y<ny-2:             # <<<<<<<<<<<<<<
@@ -3269,7 +3273,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_1 = ((__pyx_v_y < (__pyx_v_ny - 2)) != 0);
               if (__pyx_t_1) {
 
-                /* "pyFAI/ext/_blob.pyx":102
+                /* "pyFAI/ext/_blob.pyx":103
  *                                 m = m and (c>dogs[s,y-2,x+2])and (c>dogs[s-1,y-2,x+2]) and (c>dogs[s,y-2,x+2])
  *                             if y<ny-2:
  *                                 m = m and (c>dogs[s,y+2,x+2])and (c>dogs[s-1,y+2,x+2]) and (c>dogs[s,y+2,x+2])             # <<<<<<<<<<<<<<
@@ -3284,7 +3288,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_181 = __pyx_v_s;
                 __pyx_t_182 = (__pyx_v_y + 2);
                 __pyx_t_183 = (__pyx_v_x + 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_181 * __pyx_v_dogs.strides[0]) ) + __pyx_t_182 * __pyx_v_dogs.strides[1]) ) + __pyx_t_183 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_181 * __pyx_v_dogs.strides[0]) ) + __pyx_t_182 * __pyx_v_dogs.strides[1]) )) + __pyx_t_183)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -3293,7 +3297,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_184 = (__pyx_v_s - 1);
                 __pyx_t_185 = (__pyx_v_y + 2);
                 __pyx_t_186 = (__pyx_v_x + 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_184 * __pyx_v_dogs.strides[0]) ) + __pyx_t_185 * __pyx_v_dogs.strides[1]) ) + __pyx_t_186 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_184 * __pyx_v_dogs.strides[0]) ) + __pyx_t_185 * __pyx_v_dogs.strides[1]) )) + __pyx_t_186)) ))));
                 if (__pyx_t_1) {
                 } else {
                   __pyx_t_21 = __pyx_t_1;
@@ -3302,7 +3306,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
                 __pyx_t_187 = __pyx_v_s;
                 __pyx_t_188 = (__pyx_v_y + 2);
                 __pyx_t_189 = (__pyx_v_x + 2);
-                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_187 * __pyx_v_dogs.strides[0]) ) + __pyx_t_188 * __pyx_v_dogs.strides[1]) ) + __pyx_t_189 * __pyx_v_dogs.strides[2]) ))));
+                __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_187 * __pyx_v_dogs.strides[0]) ) + __pyx_t_188 * __pyx_v_dogs.strides[1]) )) + __pyx_t_189)) ))));
                 __pyx_t_21 = __pyx_t_1;
                 __pyx_L83_bool_binop_done:;
                 __pyx_v_m = __pyx_t_21;
@@ -3313,7 +3317,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             }
             __pyx_L66:;
 
-            /* "pyFAI/ext/_blob.pyx":104
+            /* "pyFAI/ext/_blob.pyx":105
  *                                 m = m and (c>dogs[s,y+2,x+2])and (c>dogs[s-1,y+2,x+2]) and (c>dogs[s,y+2,x+2])
  * 
  *                         if y>1:             # <<<<<<<<<<<<<<
@@ -3323,7 +3327,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             __pyx_t_1 = ((__pyx_v_y > 1) != 0);
             if (__pyx_t_1) {
 
-              /* "pyFAI/ext/_blob.pyx":105
+              /* "pyFAI/ext/_blob.pyx":106
  * 
  *                         if y>1:
  *                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\             # <<<<<<<<<<<<<<
@@ -3338,7 +3342,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_190 = __pyx_v_s;
               __pyx_t_191 = (__pyx_v_y - 2);
               __pyx_t_192 = __pyx_v_x;
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_190 * __pyx_v_dogs.strides[0]) ) + __pyx_t_191 * __pyx_v_dogs.strides[1]) ) + __pyx_t_192 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_190 * __pyx_v_dogs.strides[0]) ) + __pyx_t_191 * __pyx_v_dogs.strides[1]) )) + __pyx_t_192)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3347,14 +3351,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_193 = __pyx_v_s;
               __pyx_t_194 = (__pyx_v_y - 2);
               __pyx_t_195 = (__pyx_v_x - 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_193 * __pyx_v_dogs.strides[0]) ) + __pyx_t_194 * __pyx_v_dogs.strides[1]) ) + __pyx_t_195 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_193 * __pyx_v_dogs.strides[0]) ) + __pyx_t_194 * __pyx_v_dogs.strides[1]) )) + __pyx_t_195)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L88_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":106
+              /* "pyFAI/ext/_blob.pyx":107
  *                         if y>1:
  *                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\
  *                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\             # <<<<<<<<<<<<<<
@@ -3365,21 +3369,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_197 = (__pyx_v_y - 2);
               __pyx_t_198 = (__pyx_v_x + 1);
 
-              /* "pyFAI/ext/_blob.pyx":105
+              /* "pyFAI/ext/_blob.pyx":106
  * 
  *                         if y>1:
  *                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\
  *                                   and (c>dogs[s+1,y-2,x]) and (c>dogs[s+1,y-2,x-1]) and (c>dogs[s+1,y+2,x+1])
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_196 * __pyx_v_dogs.strides[0]) ) + __pyx_t_197 * __pyx_v_dogs.strides[1]) ) + __pyx_t_198 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_196 * __pyx_v_dogs.strides[0]) ) + __pyx_t_197 * __pyx_v_dogs.strides[1]) )) + __pyx_t_198)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L88_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":106
+              /* "pyFAI/ext/_blob.pyx":107
  *                         if y>1:
  *                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\
  *                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\             # <<<<<<<<<<<<<<
@@ -3389,7 +3393,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_199 = (__pyx_v_s - 1);
               __pyx_t_200 = (__pyx_v_y - 2);
               __pyx_t_201 = __pyx_v_x;
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_199 * __pyx_v_dogs.strides[0]) ) + __pyx_t_200 * __pyx_v_dogs.strides[1]) ) + __pyx_t_201 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_199 * __pyx_v_dogs.strides[0]) ) + __pyx_t_200 * __pyx_v_dogs.strides[1]) )) + __pyx_t_201)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3398,14 +3402,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_202 = (__pyx_v_s - 1);
               __pyx_t_203 = (__pyx_v_y - 2);
               __pyx_t_204 = (__pyx_v_x - 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_202 * __pyx_v_dogs.strides[0]) ) + __pyx_t_203 * __pyx_v_dogs.strides[1]) ) + __pyx_t_204 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_202 * __pyx_v_dogs.strides[0]) ) + __pyx_t_203 * __pyx_v_dogs.strides[1]) )) + __pyx_t_204)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L88_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":107
+              /* "pyFAI/ext/_blob.pyx":108
  *                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\
  *                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\
  *                                   and (c>dogs[s+1,y-2,x]) and (c>dogs[s+1,y-2,x-1]) and (c>dogs[s+1,y+2,x+1])             # <<<<<<<<<<<<<<
@@ -3416,21 +3420,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_206 = (__pyx_v_y - 2);
               __pyx_t_207 = (__pyx_v_x + 1);
 
-              /* "pyFAI/ext/_blob.pyx":106
+              /* "pyFAI/ext/_blob.pyx":107
  *                         if y>1:
  *                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\
  *                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s+1,y-2,x]) and (c>dogs[s+1,y-2,x-1]) and (c>dogs[s+1,y+2,x+1])
  * 
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_205 * __pyx_v_dogs.strides[0]) ) + __pyx_t_206 * __pyx_v_dogs.strides[1]) ) + __pyx_t_207 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_205 * __pyx_v_dogs.strides[0]) ) + __pyx_t_206 * __pyx_v_dogs.strides[1]) )) + __pyx_t_207)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L88_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":107
+              /* "pyFAI/ext/_blob.pyx":108
  *                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\
  *                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\
  *                                   and (c>dogs[s+1,y-2,x]) and (c>dogs[s+1,y-2,x-1]) and (c>dogs[s+1,y+2,x+1])             # <<<<<<<<<<<<<<
@@ -3440,7 +3444,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_208 = (__pyx_v_s + 1);
               __pyx_t_209 = (__pyx_v_y - 2);
               __pyx_t_210 = __pyx_v_x;
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_208 * __pyx_v_dogs.strides[0]) ) + __pyx_t_209 * __pyx_v_dogs.strides[1]) ) + __pyx_t_210 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_208 * __pyx_v_dogs.strides[0]) ) + __pyx_t_209 * __pyx_v_dogs.strides[1]) )) + __pyx_t_210)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3449,7 +3453,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_211 = (__pyx_v_s + 1);
               __pyx_t_212 = (__pyx_v_y - 2);
               __pyx_t_213 = (__pyx_v_x - 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_211 * __pyx_v_dogs.strides[0]) ) + __pyx_t_212 * __pyx_v_dogs.strides[1]) ) + __pyx_t_213 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_211 * __pyx_v_dogs.strides[0]) ) + __pyx_t_212 * __pyx_v_dogs.strides[1]) )) + __pyx_t_213)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3458,7 +3462,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_214 = (__pyx_v_s + 1);
               __pyx_t_215 = (__pyx_v_y + 2);
               __pyx_t_216 = (__pyx_v_x + 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_214 * __pyx_v_dogs.strides[0]) ) + __pyx_t_215 * __pyx_v_dogs.strides[1]) ) + __pyx_t_216 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_214 * __pyx_v_dogs.strides[0]) ) + __pyx_t_215 * __pyx_v_dogs.strides[1]) )) + __pyx_t_216)) ))));
               __pyx_t_21 = __pyx_t_1;
               __pyx_L88_bool_binop_done:;
               __pyx_v_m = __pyx_t_21;
@@ -3466,7 +3470,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             }
             __pyx_L87:;
 
-            /* "pyFAI/ext/_blob.pyx":109
+            /* "pyFAI/ext/_blob.pyx":110
  *                                   and (c>dogs[s+1,y-2,x]) and (c>dogs[s+1,y-2,x-1]) and (c>dogs[s+1,y+2,x+1])
  * 
  *                         if y<ny-2:             # <<<<<<<<<<<<<<
@@ -3476,7 +3480,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
             __pyx_t_1 = ((__pyx_v_y < (__pyx_v_ny - 2)) != 0);
             if (__pyx_t_1) {
 
-              /* "pyFAI/ext/_blob.pyx":110
+              /* "pyFAI/ext/_blob.pyx":111
  * 
  *                         if y<ny-2:
  *                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\             # <<<<<<<<<<<<<<
@@ -3491,7 +3495,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_217 = __pyx_v_s;
               __pyx_t_218 = (__pyx_v_y + 2);
               __pyx_t_219 = __pyx_v_x;
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_217 * __pyx_v_dogs.strides[0]) ) + __pyx_t_218 * __pyx_v_dogs.strides[1]) ) + __pyx_t_219 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_217 * __pyx_v_dogs.strides[0]) ) + __pyx_t_218 * __pyx_v_dogs.strides[1]) )) + __pyx_t_219)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3500,14 +3504,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_220 = __pyx_v_s;
               __pyx_t_221 = (__pyx_v_y + 2);
               __pyx_t_222 = (__pyx_v_x - 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_220 * __pyx_v_dogs.strides[0]) ) + __pyx_t_221 * __pyx_v_dogs.strides[1]) ) + __pyx_t_222 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_220 * __pyx_v_dogs.strides[0]) ) + __pyx_t_221 * __pyx_v_dogs.strides[1]) )) + __pyx_t_222)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L99_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":111
+              /* "pyFAI/ext/_blob.pyx":112
  *                         if y<ny-2:
  *                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\
  *                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\             # <<<<<<<<<<<<<<
@@ -3518,21 +3522,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_224 = (__pyx_v_y + 2);
               __pyx_t_225 = (__pyx_v_x + 1);
 
-              /* "pyFAI/ext/_blob.pyx":110
+              /* "pyFAI/ext/_blob.pyx":111
  * 
  *                         if y<ny-2:
  *                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\
  *                                   and (c>dogs[s+1,y+2,x]) and (c>dogs[s+1,y+2,x-1]) and (c>dogs[s+1,y+2,x+1])
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_223 * __pyx_v_dogs.strides[0]) ) + __pyx_t_224 * __pyx_v_dogs.strides[1]) ) + __pyx_t_225 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_223 * __pyx_v_dogs.strides[0]) ) + __pyx_t_224 * __pyx_v_dogs.strides[1]) )) + __pyx_t_225)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L99_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":111
+              /* "pyFAI/ext/_blob.pyx":112
  *                         if y<ny-2:
  *                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\
  *                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\             # <<<<<<<<<<<<<<
@@ -3542,7 +3546,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_226 = (__pyx_v_s - 1);
               __pyx_t_227 = (__pyx_v_y + 2);
               __pyx_t_228 = __pyx_v_x;
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_226 * __pyx_v_dogs.strides[0]) ) + __pyx_t_227 * __pyx_v_dogs.strides[1]) ) + __pyx_t_228 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_226 * __pyx_v_dogs.strides[0]) ) + __pyx_t_227 * __pyx_v_dogs.strides[1]) )) + __pyx_t_228)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3551,14 +3555,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_229 = (__pyx_v_s - 1);
               __pyx_t_230 = (__pyx_v_y + 2);
               __pyx_t_231 = (__pyx_v_x - 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_229 * __pyx_v_dogs.strides[0]) ) + __pyx_t_230 * __pyx_v_dogs.strides[1]) ) + __pyx_t_231 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_229 * __pyx_v_dogs.strides[0]) ) + __pyx_t_230 * __pyx_v_dogs.strides[1]) )) + __pyx_t_231)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L99_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":112
+              /* "pyFAI/ext/_blob.pyx":113
  *                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\
  *                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\
  *                                   and (c>dogs[s+1,y+2,x]) and (c>dogs[s+1,y+2,x-1]) and (c>dogs[s+1,y+2,x+1])             # <<<<<<<<<<<<<<
@@ -3569,21 +3573,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_233 = (__pyx_v_y + 2);
               __pyx_t_234 = (__pyx_v_x + 1);
 
-              /* "pyFAI/ext/_blob.pyx":111
+              /* "pyFAI/ext/_blob.pyx":112
  *                         if y<ny-2:
  *                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\
  *                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\             # <<<<<<<<<<<<<<
  *                                   and (c>dogs[s+1,y+2,x]) and (c>dogs[s+1,y+2,x-1]) and (c>dogs[s+1,y+2,x+1])
  * 
  */
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_232 * __pyx_v_dogs.strides[0]) ) + __pyx_t_233 * __pyx_v_dogs.strides[1]) ) + __pyx_t_234 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_232 * __pyx_v_dogs.strides[0]) ) + __pyx_t_233 * __pyx_v_dogs.strides[1]) )) + __pyx_t_234)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
                 goto __pyx_L99_bool_binop_done;
               }
 
-              /* "pyFAI/ext/_blob.pyx":112
+              /* "pyFAI/ext/_blob.pyx":113
  *                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\
  *                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\
  *                                   and (c>dogs[s+1,y+2,x]) and (c>dogs[s+1,y+2,x-1]) and (c>dogs[s+1,y+2,x+1])             # <<<<<<<<<<<<<<
@@ -3593,7 +3597,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_235 = (__pyx_v_s + 1);
               __pyx_t_236 = (__pyx_v_y + 2);
               __pyx_t_237 = __pyx_v_x;
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_235 * __pyx_v_dogs.strides[0]) ) + __pyx_t_236 * __pyx_v_dogs.strides[1]) ) + __pyx_t_237 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_235 * __pyx_v_dogs.strides[0]) ) + __pyx_t_236 * __pyx_v_dogs.strides[1]) )) + __pyx_t_237)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3602,7 +3606,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_238 = (__pyx_v_s + 1);
               __pyx_t_239 = (__pyx_v_y + 2);
               __pyx_t_240 = (__pyx_v_x - 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_238 * __pyx_v_dogs.strides[0]) ) + __pyx_t_239 * __pyx_v_dogs.strides[1]) ) + __pyx_t_240 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_238 * __pyx_v_dogs.strides[0]) ) + __pyx_t_239 * __pyx_v_dogs.strides[1]) )) + __pyx_t_240)) ))));
               if (__pyx_t_1) {
               } else {
                 __pyx_t_21 = __pyx_t_1;
@@ -3611,7 +3615,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
               __pyx_t_241 = (__pyx_v_s + 1);
               __pyx_t_242 = (__pyx_v_y + 2);
               __pyx_t_243 = (__pyx_v_x + 1);
-              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_241 * __pyx_v_dogs.strides[0]) ) + __pyx_t_242 * __pyx_v_dogs.strides[1]) ) + __pyx_t_243 * __pyx_v_dogs.strides[2]) ))));
+              __pyx_t_1 = (__pyx_v_c > (*((float *) ( /* dim=2 */ ((char *) (((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dogs.data + __pyx_t_241 * __pyx_v_dogs.strides[0]) ) + __pyx_t_242 * __pyx_v_dogs.strides[1]) )) + __pyx_t_243)) ))));
               __pyx_t_21 = __pyx_t_1;
               __pyx_L99_bool_binop_done:;
               __pyx_v_m = __pyx_t_21;
@@ -3624,7 +3628,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
         }
         __pyx_L14:;
 
-        /* "pyFAI/ext/_blob.pyx":114
+        /* "pyFAI/ext/_blob.pyx":115
  *                                   and (c>dogs[s+1,y+2,x]) and (c>dogs[s+1,y+2,x-1]) and (c>dogs[s+1,y+2,x+1])
  * 
  *                 is_max[s,y,x] = m             # <<<<<<<<<<<<<<
@@ -3639,7 +3643,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
     }
   }
 
-  /* "pyFAI/ext/_blob.pyx":115
+  /* "pyFAI/ext/_blob.pyx":116
  * 
  *                 is_max[s,y,x] = m
  *     return is_max             # <<<<<<<<<<<<<<
@@ -3649,10 +3653,10 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_blob_local_max(CYTHON_UNUSED PyObject *_
   __pyx_r = ((PyObject *)__pyx_v_is_max);
   goto __pyx_L0;
 
-  /* "pyFAI/ext/_blob.pyx":39
+  /* "pyFAI/ext/_blob.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
+ * def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
  *     """
  *     Calculate if a point is a maximum in a 3D space: (scale, y, x)
  */
@@ -16993,7 +16997,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_20_10_2014, __pyx_k_20_10_2014, sizeof(__pyx_k_20_10_2014), 0, 0, 1, 0},
+  {&__pyx_kp_s_27_09_2016, __pyx_k_27_09_2016, sizeof(__pyx_k_27_09_2016), 0, 0, 1, 0},
   {&__pyx_kp_s_Aurore_Deschildre, __pyx_k_Aurore_Deschildre, sizeof(__pyx_k_Aurore_Deschildre), 0, 0, 1, 0},
   {&__pyx_kp_s_Buffer_view_does_not_expose_stri, __pyx_k_Buffer_view_does_not_expose_stri, sizeof(__pyx_k_Buffer_view_does_not_expose_stri), 0, 0, 1, 0},
   {&__pyx_kp_s_Can_only_create_a_buffer_that_is, __pyx_k_Can_only_create_a_buffer_that_is, sizeof(__pyx_k_Can_only_create_a_buffer_that_is), 0, 0, 1, 0},
@@ -17053,6 +17057,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_m, __pyx_k_m, sizeof(__pyx_k_m), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_mask, __pyx_k_mask, sizeof(__pyx_k_mask), 0, 0, 1, 1},
+  {&__pyx_kp_s_mask_shape_0_y, __pyx_k_mask_shape_0_y, sizeof(__pyx_k_mask_shape_0_y), 0, 0, 1, 0},
+  {&__pyx_kp_s_mask_shape_1_x, __pyx_k_mask_shape_1_x, sizeof(__pyx_k_mask_shape_1_x), 0, 0, 1, 0},
   {&__pyx_n_s_memview, __pyx_k_memview, sizeof(__pyx_k_memview), 0, 0, 1, 1},
   {&__pyx_n_s_mode, __pyx_k_mode, sizeof(__pyx_k_mode), 0, 0, 1, 1},
   {&__pyx_n_s_n_5, __pyx_k_n_5, sizeof(__pyx_k_n_5), 0, 0, 1, 1},
@@ -17096,7 +17102,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -17306,17 +17312,17 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
 
-  /* "pyFAI/ext/_blob.pyx":39
+  /* "pyFAI/ext/_blob.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
+ * def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
  *     """
  *     Calculate if a point is a maximum in a 3D space: (scale, y, x)
  */
-  __pyx_tuple__18 = PyTuple_Pack(14, __pyx_n_s_dogs, __pyx_n_s_mask, __pyx_n_s_n_5, __pyx_n_s_do_mask, __pyx_n_s_ns, __pyx_n_s_ny, __pyx_n_s_nx, __pyx_n_s_s, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_m, __pyx_n_s_c, __pyx_n_s_cmask, __pyx_n_s_is_max); if (unlikely(!__pyx_tuple__18)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__18 = PyTuple_Pack(14, __pyx_n_s_dogs, __pyx_n_s_mask, __pyx_n_s_n_5, __pyx_n_s_do_mask, __pyx_n_s_ns, __pyx_n_s_ny, __pyx_n_s_nx, __pyx_n_s_s, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_m, __pyx_n_s_c, __pyx_n_s_cmask, __pyx_n_s_is_max); if (unlikely(!__pyx_tuple__18)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
-  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(3, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_local_max, 39, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(3, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_local_max, 40, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":276
  *         return self.name
@@ -17530,7 +17536,7 @@ PyMODINIT_FUNC PyInit__blob(void)
  * """
  * __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "20/10/2014"
+ * __date__ = "27/09/2016"
  */
   __pyx_t_1 = PyList_New(2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -17547,7 +17553,7 @@ PyMODINIT_FUNC PyInit__blob(void)
  * """
  * __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "20/10/2014"
+ * __date__ = "27/09/2016"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -17555,15 +17561,15 @@ PyMODINIT_FUNC PyInit__blob(void)
   /* "pyFAI/ext/_blob.pyx":29
  * __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "20/10/2014"             # <<<<<<<<<<<<<<
+ * __date__ = "27/09/2016"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "GPLv3+"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_20_10_2014) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_27_09_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/_blob.pyx":30
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "20/10/2014"
+ * __date__ = "27/09/2016"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "GPLv3+"
  * import cython
@@ -17571,7 +17577,7 @@ PyMODINIT_FUNC PyInit__blob(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/_blob.pyx":31
- * __date__ = "20/10/2014"
+ * __date__ = "27/09/2016"
  * __status__ = "stable"
  * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
  * import cython
@@ -17591,16 +17597,16 @@ PyMODINIT_FUNC PyInit__blob(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/_blob.pyx":39
+  /* "pyFAI/ext/_blob.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
+ * def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):             # <<<<<<<<<<<<<<
  *     """
  *     Calculate if a point is a maximum in a 3D space: (scale, y, x)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_5_blob_1local_max, NULL, __pyx_n_s_pyFAI_ext__blob); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_5_blob_1local_max, NULL, __pyx_n_s_pyFAI_ext__blob); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_local_max, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_local_max, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyFAI/ext/_blob.pyx":1
@@ -19812,17 +19818,17 @@ no_fail:
     return retval;
 }
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_float(PyObject *obj) {
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_d_d_dc_float(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
-    int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
+    int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_FOLLOW), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_FOLLOW), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_CONTIG) };
     int retcode;
     if (obj == Py_None) {
         result.memview = (struct __pyx_memoryview_obj *) Py_None;
         return result;
     }
-    retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
-                                                 PyBUF_RECORDS, 3,
+    retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, __Pyx_IS_C_CONTIG,
+                                                 (PyBUF_C_CONTIGUOUS | PyBUF_FORMAT | PyBUF_WRITABLE), 3,
                                                  &__Pyx_TypeInfo_float, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))

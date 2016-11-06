@@ -27,12 +27,11 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "27/10/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
-import itertools
 import logging
 logger = logging.getLogger("pyFAI.blob_detection")
 import numpy
@@ -55,7 +54,7 @@ else:
 
 from .ext.bilinear import Bilinear
 
-from math import sqrt, cos, sin, pow
+from math import sqrt
 
 from .utils import binning, is_far_from_group
 
@@ -71,9 +70,10 @@ def image_test():
         cpt = cpt + 1
     return img
 
+
 def make_gaussian(im, sigma, xc, yc):
     size = int(8 * sigma + 1)
-    if size % 2 == 0 :
+    if size % 2 == 0:
         size += 1
     x = numpy.arange(0, size, 1, float)
     y = x[:, numpy.newaxis] * 4
@@ -82,10 +82,11 @@ def make_gaussian(im, sigma, xc, yc):
     im[xc - size / 2:xc + size / 2 + 1, yc - size / 2:yc + size / 2 + 1] = gaus
     return im
 
+
 def local_max(dogs, mask=None, n_5=True):
     """
     @param dogs: 3d array with (sigma,y,x) containing difference of gaussians
-    @parm mask: mask out keypoint next to the mask (or inside the mask)
+    @param mask: mask out keypoint next to the mask (or inside the mask)
     @param n_5: look for a larger neighborhood
     """
     if mask is not None:
@@ -116,7 +117,6 @@ def local_max(dogs, mask=None, n_5=True):
         kpm[1:-1, 1:-1] += (slic > prev_dog[:-2, :-2]) * (slic > prev_dog[2:, 2:])
         kpm[1:-1, 1:-1] += (slic > prev_dog[2:, :-2]) * (slic > prev_dog[:-2, 2:])
         kpm[1:-1, 1:-1] += (slic >= prev_dog[1:-1, 1:-1])
-
 
         if n_5:
             target = 38
@@ -168,6 +168,7 @@ class BlobDetection(object):
 
     """
     tresh = 0.6
+
     def __init__(self, img, cur_sigma=0.25, init_sigma=0.5, dest_sigma=1, scale_per_octave=2, mask=None):
         """
         Performs a blob detection:
@@ -271,7 +272,7 @@ class BlobDetection(object):
             increase = previous * sqrt((self.dest_sigma / self.init_sigma) ** (2.0 / self.scale_per_octave) - 1.0)
             self.sigmas.append((sigma_abs, increase))
             previous = sigma_abs
-        logger.debug("Sigma= %s" % self.sigmas)
+        logger.debug("Sigma= %s", self.sigmas)
 
     def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
@@ -296,10 +297,10 @@ class BlobDetection(object):
         idx = 0
         i = 0
         for _sigma_abs, sigma_rel in self.sigmas:
-#             if self.already_blurred != [] and i < 3:
-#                 sigma_rel = 0
-#                 if i > 0 : previous = self.already_blurred[i-1]
-            if  sigma_rel == 0:
+            # if self.already_blurred != [] and i < 3:
+            #    sigma_rel = 0
+            #    if i > 0: previous = self.already_blurred[i-1]
+            if sigma_rel == 0:
                 self.blurs.append(previous)
             else:
                 new_blur = gaussian_filter(previous, sigma_rel)
@@ -308,7 +309,6 @@ class BlobDetection(object):
                 previous = new_blur
                 idx += 1
             i += 1
-
 
         if self.dogs[0].shape == self.raw.shape:
             self.dogs_init = self.dogs
@@ -322,7 +322,7 @@ class BlobDetection(object):
 
         if refine:
             if "startswith" in dir(refine) and refine.startswith("SG"):
-                kpx, kpy, kps,_delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
+                kpx, kpy, kps, _delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
                 l = kpx.size
                 peak_val = self.dogs[(numpy.around(kps).astype(int),
                                       numpy.around(kpy).astype(int),
@@ -340,14 +340,12 @@ class BlobDetection(object):
 
         keypoints = numpy.recarray((l,), dtype=self.dtype)
 
-
         if l != 0:
             keypoints[:].x = (kpx[valid] + 0.5) * self.curr_reduction - 0.5  # Place ourselves at the center of the pixel, and back
             keypoints[:].y = (kpy[valid] + 0.5) * self.curr_reduction - 0.5  # Place ourselves at the center of the pixel, and back
             sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
-
 
         if shrink:
             # shrink data so that they can be treated by next octave
@@ -372,8 +370,7 @@ class BlobDetection(object):
                 self.cur_mask = (binning(self.cur_mask, 2) > 0).astype(numpy.int8)
                 self.cur_mask = morphology.binary_dilation(self.cur_mask, self.grow)
 
-
-        if len(self.keypoints) == 0 :
+        if len(self.keypoints) == 0:
             self.keypoints = keypoints
         else:
             old_size = self.keypoints.size
@@ -382,7 +379,6 @@ class BlobDetection(object):
             new_keypoints[:old_size] = self.keypoints
             new_keypoints[old_size:] = keypoints
             self.keypoints = new_keypoints
-
 
     def refine_Hessian(self, kpx, kpy, kps):
         """
@@ -460,19 +456,18 @@ class BlobDetection(object):
         kds = []
 
         # Hessian patch 3 ordre 2
-        SGX0Y0 = [-0.11111111 , 0.22222222 , -0.11111111 , 0.22222222 , 0.55555556 , 0.22222222 , -0.11111111 , 0.22222222 , -0.11111111]
-        SGX1Y0 = [-0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 ]
-        SGX2Y0 = [0.16666667 , -0.33333333 , 0.16666667 , 0.16666667 , -0.33333333 , 0.16666667 , 0.16666667, -0.33333333, 0.16666667 ]
+        SGX0Y0 = [-0.11111111, 0.22222222, -0.11111111, 0.22222222, 0.55555556, 0.22222222, -0.11111111, 0.22222222, -0.11111111]
+        SGX1Y0 = [-0.16666667, 0.00000000, 0.16666667, -0.16666667, 0.00000000, 0.16666667, -0.16666667, 0.00000000, 0.16666667]
+        SGX2Y0 = [0.16666667, -0.33333333, 0.16666667, 0.16666667, -0.33333333, 0.16666667, 0.16666667, -0.33333333, 0.16666667]
         SGX0Y1 = [-0.16666667, -0.16666667, -0.16666667, 0.00000000, 0.00000000, 0.00000000, 0.16666667, 0.16666667, 0.16666667]
         SGX1Y1 = [0.25000000, 0.00000000, -0.25000000, 0.00000000, 0.00000000, 0.00000000, -0.25000000, 0.00000000, 0.25000000]
-        SGX0Y2 = [0.16666667 , 0.16666667 , 0.16666667 , -0.33333333 , -0.33333333 , -0.33333333 , 0.16666667 , 0.16666667 , 0.16666667]
+        SGX0Y2 = [0.16666667, 0.16666667, 0.16666667, -0.33333333, -0.33333333, -0.33333333, 0.16666667, 0.16666667, 0.16666667]
 
-#         SGX0Y0 = [0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0]
-#         SGX1Y0 = [0.0,0.0,0.0,-0.5,0.0,0.5,0.0,0.0,0.0]
-#         SGX2Y0 = [0.0,0.0,0.0,0.33333333,-0.66666667,0.33333333,0.0,0.0,0.0]
-#         SGX0Y1 = [0.0,-0.5,0.0,0.0,0.0,0.0,0.0,0.5,0.0]
-#         SGX0Y2 = [0.0, 0.33333333 , 0.0 , 0.0 , -0.66666667,0.0, 0.0 , 0.33333333 , 0.0]
-
+        # SGX0Y0 = [0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0]
+        # SGX1Y0 = [0.0,0.0,0.0,-0.5,0.0,0.5,0.0,0.0,0.0]
+        # SGX2Y0 = [0.0,0.0,0.0,0.33333333,-0.66666667,0.33333333,0.0,0.0,0.0]
+        # SGX0Y1 = [0.0,-0.5,0.0,0.0,0.0,0.0,0.0,0.5,0.0]
+        # SGX0Y2 = [0.0, 0.33333333 , 0.0 , 0.0 , -0.66666667,0.0, 0.0 , 0.33333333 , 0.0]
 
         for y, x, sigma in zip(kpy, kpx, kps):
 
@@ -480,8 +475,7 @@ class BlobDetection(object):
             prev_dog = self.dogs[sigma - 1]
             next_dog = self.dogs[sigma + 1]
 
-#             if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
-
+            # if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
 
             patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
             patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
@@ -515,8 +509,9 @@ class BlobDetection(object):
             delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
             print(y, x)
             print(delta)
-#                 err = numpy.linalg.norm(delta[:-1])
-            if  numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:
+            # err = numpy.linalg.norm(delta[:-1])
+
+            if numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:
                 k2x.append(x + delta[1])
                 k2y.append(y + delta[0])
                 sigmas.append(sigma + delta[2])
@@ -547,10 +542,11 @@ class BlobDetection(object):
         for y, x, s in zip(kpy, kpx, sigma):
             s_patch = numpy.trunc(s * 2)
 
-            if s_patch % 2 == 0 :
+            if s_patch % 2 == 0:
                 s_patch += 1
 
-            if s_patch < 3 : s_patch = 3
+            if s_patch < 3:
+                s_patch = 3
 
             if (x > s_patch / 2 and x < img.shape[1] - s_patch / 2 - 1 and y > s_patch / 2 and y < img.shape[0] - s_patch / 2):
 
@@ -578,14 +574,13 @@ class BlobDetection(object):
 #                 print val
 #                 print vect
 #                 print numpy.dot(vect[0],vect[1])
-                e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
+                _e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
                 j += 1
 #                 print j
 #                 print e
                 if numpy.abs(val[1]) < numpy.abs(val[0]):  # reorganisation des valeurs propres et vecteurs propres
                     val[0], val[1] = val[1], val[0]
                     vect = vect[-1::-1, :]
-
 
                 pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
                                        arrowprops=dict(facecolor='red', shrink=0.05),)
@@ -598,7 +593,7 @@ class BlobDetection(object):
         return vals, vects
 
     def refinement(self):
-        from numpy import sqrt, cos, sin, power, arctan2, abs, pi
+        from numpy import cos, sin, arctan2, pi
         val, vect = self.direction()
 
         L = 0.114
@@ -621,7 +616,6 @@ class BlobDetection(object):
 #         print "phi exp"
 #         print phi_exp * 180/ pi
 
-
         cosrot1 = cos(rot1)
         cosrot2 = cos(rot2)
         cosrot3 = cos(rot3)
@@ -630,7 +624,7 @@ class BlobDetection(object):
         sinrot3 = sin(rot3)
 
         L = -L
-        dy = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * cosrot2 * cosrot3 * (d1 * cosrot2 * cosrot3 + \
+        _dy = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * cosrot2 * cosrot3 * (d1 * cosrot2 * cosrot3 + \
                         d2 * (cosrot3 * sinrot1 * sinrot2 - cosrot1 * sinrot3) + L * (cosrot1 * cosrot3 * sinrot2 + \
                         sinrot1 * sinrot3)) + 2 * cosrot2 * sinrot3 * (d1 * cosrot2 * sinrot3 + \
                         L * (-(cosrot3 * sinrot1) + cosrot1 * sinrot2 * sinrot3) + d2 * (cosrot1 * cosrot3 + \
@@ -649,7 +643,7 @@ class BlobDetection(object):
                         L * (cosrot1 * cosrot3 * sinrot2 + sinrot1 * sinrot3)) ** 2 + (d1 * cosrot2 * sinrot3 + L * (-(cosrot3 * sinrot1) + \
                         cosrot1 * sinrot2 * sinrot3) + d2 * (cosrot1 * cosrot3 + sinrot1 * sinrot2 * sinrot3)) ** 2)
 
-        dx = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * (cosrot3 * sinrot1 * sinrot2 - \
+        _dx = ((L * cosrot1 * cosrot2 + d2 * cosrot2 * sinrot1 - d1 * sinrot2) * (2 * (cosrot3 * sinrot1 * sinrot2 - \
                         cosrot1 * sinrot3) * (d1 * cosrot2 * cosrot3 + d2 * (cosrot3 * sinrot1 * sinrot2 - cosrot1 * sinrot3) + \
                         L * (cosrot1 * cosrot3 * sinrot2 + sinrot1 * sinrot3)) + 2 * (cosrot1 * cosrot3 + \
                         sinrot1 * sinrot2 * sinrot3) * (d1 * cosrot2 * sinrot3 + L * (-(cosrot3 * sinrot1) + cosrot1 * sinrot2 * sinrot3) + \
@@ -667,7 +661,6 @@ class BlobDetection(object):
                         d2 * cosrot2 * sinrot1 - d1 * sinrot2) ** 2 + (d1 * cosrot2 * cosrot3 + d2 * (cosrot3 * sinrot1 * sinrot2 - \
                         cosrot1 * sinrot3) + L * (cosrot1 * cosrot3 * sinrot2 + sinrot1 * sinrot3)) ** 2 + (d1 * cosrot2 * sinrot3 + \
                         L * (-(cosrot3 * sinrot1) + cosrot1 * sinrot2 * sinrot3) + d2 * (cosrot1 * cosrot3 + sinrot1 * sinrot2 * sinrot3)) ** 2)
-
 
         phi_th = arctan2(d1, d2)
 #         print "phi th"
@@ -696,7 +689,7 @@ class BlobDetection(object):
                 finished = True
             else:
                 finished = (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0)
-        logger.warning("Blob detection found %i keypoints" % len(self.keypoints))
+        logger.warning("Blob detection found %i keypoints", len(self.keypoints))
 
     def nearest_peak(self, p, refine=True, Imin=None):
         """
@@ -816,8 +809,7 @@ if __name__ == "__main__":
     dx = []
     dy = []
 
-
-    import fabio, pylab
+    import fabio
 #     img = fabio.open("../test/testimages/LaB6_0003.mar3450").data
 #     img = fabio.open("../test/testimages/grid2k0000.edf").data
     img = fabio.open("../test/testimages/halfccd.edf").data
@@ -830,6 +822,7 @@ if __name__ == "__main__":
     print(bd.sigmas)
 #
 #     #building histogram with the corrected sigmas
+#     import pylab
 #     sigma = numpy.asarray(sigma)
 #     pylab.figure(2)
 #     pylab.clf()
@@ -888,4 +881,3 @@ if __name__ == "__main__":
 #     pylab.imshow((img), interpolation='nearest')
 #     pylab.plot(x, y, 'or')
 #     pylab.show()
-
