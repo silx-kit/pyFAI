@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "26/10/2016"
+__date__ = "04/11/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -44,10 +44,9 @@ import os.path as op
 import logging
 
 # To use use the locally build version of PyFAI, use ../bootstrap.py
-try:
-    from .. import load
-except:
-    from pyFAI import pyFAI
+
+from .. import load
+from .. import AzimuthalIntegrator
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
 
@@ -56,6 +55,7 @@ try:
     from ..gui.utils import update_fig
 except:
     pylab = None
+
     def update_fig(*ag, **kwarg):
         pass
 
@@ -77,16 +77,118 @@ datasets = {"Fairchild.poni": "Fairchild.edf",
             }
 
 PONIS = {
-"Pilatus6M.poni": {'dist': 0.3, 'poni2': 0.2115772, 'poni1': 0.225406, 'detector': 'Pilatus6M'},
-"Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1':-0.506766875792, 'rot3':-1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
-"halfccd.poni": {'dist': 0.0994744403007, 'poni2': 0.0481217639198, 'rot1':-0.000125830018938, 'rot3': 1.57079531561, 'rot2':-0.0160719674782, 'poni1': 0.026453455358, 'pixel2': 4.684483e-05, 'pixel1': 4.8422519999999994e-05},
-"Pilatus1M.poni": {'dist': 1.58323111834, 'poni2': 0.0412277798782, 'rot1': 0.00648735642526, 'rot3': 4.12987220385e-08, 'rot2': 0.00755810191106, 'poni1': 0.0334170169115, 'detector': 'Pilatus1M'},
-"Mar3450.poni": {'dist': 0.222549826201, 'poni2': 0.172625538874, 'rot1': 0.00164880041469, 'rot3':-1.43412739468e-08, 'rot2': 0.0438631777747, 'wavelength': 3.738e-11, 'splineFile': None, 'poni1': 0.161137340974, 'detector': 'Mar345'},
-"Frelon2k.poni": {'dist': 0.1057363, 'poni2': 0.05660461, 'rot1': 0.027767, 'rot3':-1.8e-05, 'rot2': 0.016991, 'poni1': 0.05301968, 'pixel2': 4.722437999999999e-05, 'pixel1': 4.6831519999999995e-05}
+    "Pilatus6M.poni": {'dist': 0.3, 'poni2': 0.2115772, 'poni1': 0.225406, 'detector': 'Pilatus6M'},
+    "Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1': -0.506766875792, 'rot3': -1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
+    "halfccd.poni": {'dist': 0.0994744403007, 'poni2': 0.0481217639198, 'rot1': -0.000125830018938, 'rot3': 1.57079531561, 'rot2': -0.0160719674782, 'poni1': 0.026453455358, 'pixel2': 4.684483e-05, 'pixel1': 4.8422519999999994e-05},
+    "Pilatus1M.poni": {'dist': 1.58323111834, 'poni2': 0.0412277798782, 'rot1': 0.00648735642526, 'rot3': 4.12987220385e-08, 'rot2': 0.00755810191106, 'poni1': 0.0334170169115, 'detector': 'Pilatus1M'},
+    "Mar3450.poni": {'dist': 0.222549826201, 'poni2': 0.172625538874, 'rot1': 0.00164880041469, 'rot3': -1.43412739468e-08, 'rot2': 0.0438631777747, 'wavelength': 3.738e-11, 'splineFile': None, 'poni1': 0.161137340974, 'detector': 'Mar345'},
+    "Frelon2k.poni": {'dist': 0.1057363, 'poni2': 0.05660461, 'rot1': 0.027767, 'rot3': -1.8e-05, 'rot2': 0.016991, 'poni1': 0.05301968, 'pixel2': 4.722437999999999e-05, 'pixel1': 4.6831519999999995e-05}
 }
 
 # Handle to the Bench instance: allows debugging from outside if needed
 bench = None
+
+
+class BenchTest(object):
+    """Generic class for benchmarking with `timeit.Timer`"""
+
+    def setup(self):
+        """Setup.
+
+        The method do not have arguments. Everything must be set before, from
+        the constructor for example.
+        """
+        pass
+
+    def stmt(self):
+        """Statement.
+
+        The method do not have arguments. Everything must be set before, from
+        the constructor, loaded from the `setup` to a class attribute.
+        """
+        pass
+
+    def setup_and_stmt(self):
+        """Execute the setup then the statement."""
+        self.setup()
+        return self.stmt()
+
+    def clean(self):
+        """Clean up stored data"""
+        pass
+
+
+class BenchTest1D(BenchTest):
+    """Test 1d integration"""
+
+    def __init__(self, azimuthal_params, file_name, unit, method):
+        BenchTest.__init__(self)
+        self.azimuthal_params = azimuthal_params
+        self.file_name = file_name
+        self.unit = unit
+        self.method = method
+
+    def setup(self):
+        self.ai = AzimuthalIntegrator(**self.azimuthal_params)
+        self.data = fabio.open(self.file_name).data
+        self.N = min(self.data.shape)
+
+    def stmt(self):
+        return self.ai.integrate1d(self.data, self.N, safe=False, unit=self.unit, method=self.method)
+
+    def clean(self):
+        self.ai = None
+        self.data = None
+
+
+class BenchTest2D(BenchTest):
+    """Test 2d integration"""
+
+    def __init__(self, azimuthal_params, file_name, unit, method, output_size):
+        BenchTest.__init__(self)
+        self.azimuthal_params = azimuthal_params
+        self.file_name = file_name
+        self.unit = unit
+        self.method = method
+        self.output_size = output_size
+
+    def setup(self):
+        self.ai = AzimuthalIntegrator(**self.azimuthal_params)
+        self.data = fabio.open(self.file_name).data
+        self.N = self.output_size
+
+    def stmt(self):
+        return self.ai.integrate2d(self.data, self.output_size[0], self.output_size[1], unit=self.unit, method=self.method)
+
+    def clean(self):
+        self.ai = None
+        self.data = None
+
+
+class BenchTestGpu(BenchTest):
+    """Test XRPD in OpenCL"""
+
+    def __init__(self, azimuthal_params, file_name, devicetype, useFp64, platformid, deviceid):
+        BenchTest.__init__(self)
+        self.azimuthal_params = azimuthal_params
+        self.file_name = file_name
+        self.devicetype = devicetype
+        self.useFp64 = useFp64
+        self.platformid = platformid
+        self.deviceid = deviceid
+
+    def setup(self):
+        self.ai = load(self.azimuthal_params)
+        self.data = fabio.open(self.file_name).data
+        self.N = min(self.data.shape)
+        self.ai.xrpd_OpenCL(self.data, self.N, devicetype=self.devicetype, useFp64=self.useFp64, platformid=self.platformid, deviceid=self.deviceid)
+
+    def stmt(self):
+        self.ai.xrpd_OpenCL(self.data, self.N, safe=False)
+
+    def clean(self):
+        self.ai = None
+        self.data = None
 
 
 class Bench(object):
@@ -125,14 +227,6 @@ class Bench(object):
         self.unit = unit
         self.out_2d = (500, 360)
         self.max_size = max_size or sys.maxunicode
-        self.setup = """import pyFAI,fabio
-ai=pyFAI.AzimuthalIntegrator(**%s)
-data = fabio.open(r"%s").data
-"""
-        self.setup_1d = self.setup + "N=min(data.shape)" + os.linesep
-        self.setup_2d = self.setup + "N=(%i,%i)%s" % (self.out_2d[0], self.out_2d[0], os.linesep)
-        self.stmt_1d = "ai.integrate1d(data, N, safe=False, unit='" + self.unit + "', method='%s')"
-        self.stmt_2d = ("ai.integrate2d(data, %i, %i, unit='" % self.out_2d) + self.unit + "', method='%s')"
 
     def get_cpu(self):
         if self._cpu is None:
@@ -191,13 +285,13 @@ data = fabio.open(r"%s").data
 
     def get_ref(self, param):
         if param not in self.reference_1d:
-            fn = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            setup = self.setup_1d % (poni, fn)
-            exec(setup)
-            res = eval(self.stmt_1d % ("splitBBox"))
+            bench_test = BenchTest1D(poni, file_name, self.unit, "splitBBox")
+            bench_test.setup()
+            res = bench_test.stmt()
             self.reference_1d[param] = res
-            del ai, data
+            bench_test.clean()
         return self.reference_1d[param]
 
     def bench_1d(self, method="splitBBox", check=False, opencl=None):
@@ -240,18 +334,17 @@ data = fabio.open(r"%s").data
         first = True
         for param in ds_list:
             self.update_mp()
-            fn = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            setup = self.setup_1d % (poni, fn)
-            stmt = self.stmt_1d % method
-            exec(setup)
-            size = data.size / 1.0e6
+            bench_test = BenchTest1D(poni, file_name, self.unit, method)
+            bench_test.setup()
+            size = bench_test.data.size / 1.0e6
             if size > self.max_size:
                 continue
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size, N))
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(file_name), size, bench_test.N))
             try:
                 t0 = time.time()
-                res = eval(stmt)
+                res = bench_test.stmt()
                 self.print_init(time.time() - t0)
             except memory_error as error:
                 print(error)
@@ -260,19 +353,19 @@ data = fabio.open(r"%s").data
             if check:
                 if "lut" in method:
                     try:
-                        print("lut: shape= %s \t nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.lut_nbytes / 2 ** 20))
+                        print("lut: shape= %s \t nbytes %.3f MB " % (bench_test.ai._lut_integrator.lut.shape, bench_test.ai._lut_integrator.lut_nbytes / 2 ** 20))
                     except MemoryError as error:
                         print(error)
                 elif "csr" in method:
                     try:
-                        print("csr: size= %s \t nbytes %.3f MB " % (ai._csr_integrator.data.size, ai._csr_integrator.lut_nbytes / 2 ** 20))
+                        print("csr: size= %s \t nbytes %.3f MB " % (bench_test.ai._csr_integrator.data.size, bench_test.ai._csr_integrator.lut_nbytes / 2 ** 20))
                     except MemoryError as error:
                         print(error)
 
-            del ai, data
+            bench_test.clean()
             self.update_mp()
             try:
-                t = timeit.Timer(stmt, setup + stmt)
+                t = timeit.Timer(bench_test.stmt, bench_test.setup_and_stmt)
                 tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             except memory_error as error:
                 print(error)
@@ -341,27 +434,26 @@ data = fabio.open(r"%s").data
         first = True
         for param in ds_list:
             self.update_mp()
-            fn = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
-            setup = self.setup_2d % (poni, fn)
-            stmt = self.stmt_2d % method
-            exec(setup)
-            size = data.size / 1.0e6
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size, N))
+            bench_test = BenchTest2D(poni, file_name, self.unit, method, self.out_2d)
+            bench_test.setup()
+            size = bench_test.data.size / 1.0e6
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(file_name), size, bench_test.N))
             try:
                 t0 = time.time()
-                res = eval(stmt)
+                _res = bench_test.stmt()
                 self.print_init(time.time() - t0)
             except memory_error as error:
                 print(error)
                 break
             self.update_mp()
             if check:
-                print("lut.shape= %s \t lut.nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.size * 8.0 / 1e6))
-            ai.reset()
-            del ai, data
+                print("lut.shape= %s \t lut.nbytes %.3f MB " % (bench_test.ai._lut_integrator.lut.shape, bench_test.ai._lut_integrator.size * 8.0 / 1e6))
+            bench_test.ai.reset()
+            bench_test.clean()
             try:
-                t = timeit.Timer(stmt, setup + stmt)
+                t = timeit.Timer(bench_test.stmt, bench_test.setup_and_stmt)
                 tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             except memory_error as error:
                 print(error)
@@ -394,12 +486,12 @@ data = fabio.open(r"%s").data
         first = True
         for param in ds_list:
             self.update_mp()
-            fn = utilstest.UtilsTest.getimage(datasets[param])
+            file_name = utilstest.UtilsTest.getimage(datasets[param])
             ai = load(param)
-            data = fabio.open(fn).data
+            data = fabio.open(file_name).data
             size = data.size
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(fn), size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
+            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(file_name), size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
 
             try:
                 t0 = time.time()
@@ -413,13 +505,8 @@ data = fabio.open(r"%s").data
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
-            setup = """
-import pyFAI,fabio
-ai=pyFAI.load(r"%s")
-data = fabio.open(r"%s").data
-N=min(data.shape)
-out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
-            t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
+            test = BenchTestGpu(param, file_name, devicetype, useFp64, platformid, deviceid)
+            t = timeit.Timer(test.stmt, test.setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             del t
             self.update_mp()
@@ -571,32 +658,33 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     bench = Bench(number, repeat, memprof, max_size=max_size)
     bench.init_curve()
 
-    if ocl and not isinstance(devices, (list, tuple)):
+    ocl_devices = []
+    if ocl:
         res = []
         for i in ocl.platforms:
             if devices == "all":
                 res += [(i.id, j.id) for j in i.devices]
             else:
                 if "cpu" in devices:
-                    res += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
+                    ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
                 if "gpu" in devices:
-                    res += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
+                    ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "GPU"]
                 if "acc" in devices:
-                    res += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
-        devices = res
-        print("Devices:", devices)
+                    ocl_devices += [(i.id, j.id) for j in i.devices if j.type == "ACC"]
+        print("Devices:", ocl_devices)
     if do_1d:
         bench.bench_1d("splitBBox")
         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True)
-        for device in devices:
+        for device in ocl_devices:
+            print(device, type(device))
             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
     if do_2d:
         bench.bench_2d("splitBBox")
         bench.bench_2d("lut", True)
-        for device in devices:
+        for device in ocl_devices:
             bench.bench_1d("lut_ocl", True, {"platformid": device[0], "deviceid": device[1]})
             bench.bench_1d("csr_ocl", True, {"platformid": device[0], "deviceid": device[1]})
 
@@ -609,67 +697,3 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
 
 
 run = run_benchmark
-
-
-if __name__ == "__main__":
-    try:
-        from argparse import ArgumentParser
-    except:
-        from pyFAI.third_party.argparse import ArgumentParser
-    description = """Benchmark for Azimuthal integration
-    """
-    epilog = """  """
-    usage = """benchmark [options] """
-    version = "pyFAI benchmark version " + pyFAI.version
-    parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
-    parser.add_argument("-v", "--version", action='version', version=version)
-    parser.add_argument("-d", "--debug",
-                        action="store_true", dest="debug", default=False,
-                        help="switch to verbose/debug mode")
-    parser.add_argument("-c", "--cpu",
-                        action="store_true", dest="opencl_cpu", default=False,
-                        help="perform benchmark using OpenCL on the CPU")
-    parser.add_argument("-g", "--gpu",
-                        action="store_true", dest="opencl_gpu", default=False,
-                        help="perform benchmark using OpenCL on the GPU")
-    parser.add_argument("-a", "--acc",
-                        action="store_true", dest="opencl_acc", default=False,
-                        help="perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC)")
-    parser.add_argument("-s", "--size", type=float,
-                        dest="size", default=1000,
-                        help="Limit the size of the dataset to X Mpixel images (for computer with limited memory)")
-    parser.add_argument("-n", "--number",
-                        dest="number", default=10, type=int,
-                        help="Number of repetition of the test, by default 10")
-    parser.add_argument("-2d", "--2dimention",
-                        action="store_true", dest="twodim", default=False,
-                        help="Benchmark also algorithm for 2D-regrouping")
-    parser.add_argument("--no-1dimention",
-                        action="store_false", dest="onedim", default=True,
-                        help="Do not benchmark algorithms for 1D-regrouping")
-
-    parser.add_argument("-m", "--memprof",
-                        action="store_true", dest="memprof", default=False,
-                        help="Perfrom memory profiling (Linux only)")
-    parser.add_argument("-r", "--repeat",
-                        dest="repeat", default=1, type=int,
-                        help="Repeat each benchmark x times to take the best")
-
-    options = parser.parse_args()
-    if options.small:
-        ds_list = ds_list[:4]
-    if options.debug:
-            pyFAI.logger.setLevel(logging.DEBUG)
-    devices = ""
-    if options.opencl_cpu:
-        devices += "cpu,"
-    if options.opencl_gpu:
-        devices += "gpu,"
-    if options.opencl_acc:
-        devices += "acc,"
-    run_benchmark(number=options.number, repeat=options.repeat,
-                  memprof=options.memprof, max_size=options.size,
-                  do_1d=options.onedim, do_2d=options.twodim, devices=devices)
-
-    pylab.ion()
-    raw_input("Enter to quit")
