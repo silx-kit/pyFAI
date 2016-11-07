@@ -38,7 +38,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import logging
-logger = logging.getLogger("pyFAI.azimuthalIntegrator")
+logger = logging.getLogger(__name__)
 import tempfile
 import threading
 import gc
@@ -59,9 +59,10 @@ error = None
 
 try:
     from .ext import splitBBoxLUT
-except ImportError as error:  # IGNORE:W0703
-    logger.warning("Unable to import pyFAI.splitBBoxLUT for"
+except ImportError as error:
+    logger.warning("Unable to import pyFAI.ext.splitBBoxLUT for"
                    " Look-up table based azimuthal integration")
+    logger.debug("Backtrace", exc_info=True)
     splitBBoxLUT = None
 
 try:
@@ -71,10 +72,11 @@ except ImportError:
 
 try:
     # Used for 1D integration
-    from .ext import splitPixel  # IGNORE:F0401
+    from .ext import splitPixel
 except ImportError as error:
-    logger.error("Unable to import pyFAI.splitPixel"
+    logger.error("Unable to import pyFAI.ext.splitPixel"
                  " full pixel splitting: %s" % error)
+    logger.debug("Backtrace", exc_info=True)
     splitPixel = None
 
 # try:
