@@ -151,7 +151,7 @@ def check_openmp():
     return True
 
 
-USE_OPENMP = "openmp" if check_openmp() else ""
+USE_OPENMP = check_openmp()
 USE_CYTHON = check_cython()
 if USE_CYTHON:
     from Cython.Build import cythonize
@@ -180,12 +180,13 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
                         os.path.join(PROJECT, "ext"), numpy.get_include()]
 
     if can_use_openmp and USE_OPENMP:
+        openmp_arg = "openmp" if USE_OPENMP else ""
         extra_compile_args = set(kwargs.pop("extra_compile_args", []))
-        extra_compile_args.add(USE_OPENMP)
+        extra_compile_args.add(openmp_arg)
         kwargs["extra_compile_args"] = list(extra_compile_args)
 
         extra_link_args = set(kwargs.pop("extra_link_args", []))
-        extra_link_args.add(USE_OPENMP)
+        extra_link_args.add(openmp_arg)
         kwargs["extra_link_args"] = list(extra_link_args)
 
     ext = _Extension(name=PROJECT + ".ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
@@ -193,7 +194,7 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
     if USE_CYTHON:
         cext = cythonize([ext],
                          force=(os.environ.get("FORCE_CYTHON") is "True"),
-                         compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
+                         compile_time_env={"HAVE_OPENMP": USE_OPENMP})
         if cext:
             ext = cext[0]
     return ext
