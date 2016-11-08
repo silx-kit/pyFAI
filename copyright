@@ -29,7 +29,8 @@ Files: doc/source/mathjax.py
 Copyright: 2007-2013 by the Sphinx team
 License: BSD-3
 
-Files:  version.py
+Files:  setup.py
+        version.py
         pyFAI/azimuthalIntegrator.py
         pyFAI/io.py
         pyFAI/calibrant.py
