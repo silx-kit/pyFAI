@@ -10,7 +10,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "08/11/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -94,7 +94,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         """
         this is just to force the integrator to initialize
         """
-        print "did a reset"
+        print("did a reset")
         self.ai.reset()
         # print self.__repr__()
 
@@ -179,10 +179,10 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
             else:
                 self.ai.integrate1d(**kwarg)
         except:
-            print data.buffer.shape, data.buffer.size
-            print self.ai
-            print self.ai._lut_integrator
-            print self.ai._lut_integrator.size
+            print(data.buffer.shape, data.buffer.size)
+            print(self.ai)
+            print(self.ai._lut_integrator)
+            print(self.ai._lut_integrator.size)
             raise
         # return rData
 
