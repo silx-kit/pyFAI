@@ -221,7 +221,7 @@ ext_modules = [
     Extension('relabel'),
     Extension("bilinear", can_use_openmp=True),
     Extension('_distortion', can_use_openmp=True),
-#     Extension('_distortionCSR', can_use_openmp=True),
+    # Extension('_distortionCSR', can_use_openmp=True),
     Extension('_bispev', can_use_openmp=True),
     Extension('_convolution', can_use_openmp=True),
     Extension('_blob'),
