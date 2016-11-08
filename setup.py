@@ -138,6 +138,7 @@ def check_openmp():
 
     if platform.system() == "Darwin":
         # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
+        print("OpenMP is not supported by Darwin platform")
         osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
         if osx >= (10, 8):
             return False
