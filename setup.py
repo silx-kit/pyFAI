@@ -21,14 +21,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+"Setup script for python Fast Azimuthal Integration"
+
 from __future__ import print_function, division, with_statement, absolute_import
 
-__doc__ = "Setup script for python Fast Azimuthal Integration"
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "08/11/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -80,6 +82,11 @@ def copy(infile, outfile, folder=None):
         os.link(infile, outfile)
     else:
         shutil.copy(infile, outfile)
+
+
+def touch(fname, times=None):
+    with open(fname, 'a'):
+        os.utime(fname, times)
 
 
 cmdclass = {}
@@ -135,7 +142,7 @@ def check_openmp():
         print("OpenMP requested by command line")
         return True
 
-    if platform.system() == "Darwin":
+    if sys.platform == "darwin":
         # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
         osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
         if osx >= (10, 8):
@@ -183,6 +190,8 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
     ext = _Extension(name=PROJECT + ".ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
 
     if USE_CYTHON:
+        if sys.platform == "darwin":
+            touch(sources[0])
         cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
         if cext:
             ext = cext[0]
