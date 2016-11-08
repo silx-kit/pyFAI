@@ -94,6 +94,12 @@ def check_cython():
     Check if cython must be activated fron te command line or the environment.
     """
 
+    if not USE_OPENMP:
+        # By default generated Cython files used in the repo using OpenMP
+        print("OpenMP is not used. Cython files have to be re-generated")
+        os.environ["FORCE_CYTHON"] = "True"
+        return True
+
     if ("--no-cython" in sys.argv):
         sys.argv.remove("--no-cython")
         os.environ["WITH_CYTHON"] = "False"
@@ -151,6 +157,7 @@ def check_openmp():
     return True
 
 
+# It must be done in this order
 USE_OPENMP = check_openmp()
 USE_CYTHON = check_cython()
 if USE_CYTHON:
