@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "08/11/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -94,14 +94,14 @@ def check_cython():
     Check if cython must be activated fron te command line or the environment.
     """
 
-    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
-        print("No Cython requested by environment")
-        return False
-
     if ("--no-cython" in sys.argv):
         sys.argv.remove("--no-cython")
         os.environ["WITH_CYTHON"] = "False"
         print("No Cython requested by command line")
+        return False
+
+    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+        print("No Cython requested by environment")
         return False
 
     try:
@@ -118,12 +118,6 @@ def check_openmp():
     """
     Do we compile with OpenMP ?
     """
-    if "WITH_OPENMP" in os.environ:
-        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
-        if os.environ["WITH_OPENMP"] == "False":
-            return False
-        else:
-            return True
     if ("--no-openmp" in sys.argv):
         sys.argv.remove("--no-openmp")
         os.environ["WITH_OPENMP"] = "False"
@@ -135,11 +129,19 @@ def check_openmp():
         print("OpenMP requested by command line")
         return True
 
+    if "WITH_OPENMP" in os.environ:
+        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
+        if os.environ["WITH_OPENMP"] == "False":
+            return False
+        else:
+            return True
+
     if platform.system() == "Darwin":
         # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
         osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
         if osx >= (10, 8):
             return False
+
     return True
 
 
