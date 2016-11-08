@@ -99,6 +99,11 @@ def check_cython():
         os.environ["WITH_CYTHON"] = "False"
         print("No Cython requested by command line")
         return False
+    elif "--force-cython" in sys.argv:
+        sys.argv.remove("--force-cython")
+        print("Force Cython re-generation requested by command line")
+        os.environ["FORCE_CYTHON"] = "True"
+        return True
 
     if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
         print("No Cython requested by environment")
@@ -186,7 +191,9 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
     ext = _Extension(name=PROJECT + ".ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
 
     if USE_CYTHON:
-        cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
+        cext = cythonize([ext],
+                         force=(os.environ.get("FORCE_CYTHON") is "True"),
+                         compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
         if cext:
             ext = cext[0]
     return ext
