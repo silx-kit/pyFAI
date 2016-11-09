@@ -72,7 +72,7 @@ if __name__ == "__main__":
     acq.setAcqExpoTime(EXPO)
     ctrl.prepareAcq()
     ctrl.startAcq()
-    print ctrl.getStatus()
+    print(ctrl.getStatus())
     time.sleep(1)
     base_img = ctrl.ReadBaseImage()
     proc_img = ctrl.ReadImage()

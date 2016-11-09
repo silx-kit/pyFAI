@@ -27,7 +27,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "08/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -798,86 +798,3 @@ class BlobDetection(object):
         for i in range(self.keypoints.x.size):
             pylab.annotate("", xy=(nghx[i], nghy[i]),
                            xytext=(self.keypoints.x[i], self.keypoints.y[i]), arrowprops=dict(facecolor='red', shrink=0.05),)
-
-
-if __name__ == "__main__":
-
-    kx = []
-    ky = []
-    k2x = []
-    k2y = []
-    dx = []
-    dy = []
-
-    import fabio
-#     img = fabio.open("../test/testimages/LaB6_0003.mar3450").data
-#     img = fabio.open("../test/testimages/grid2k0000.edf").data
-    img = fabio.open("../test/testimages/halfccd.edf").data
-    img = numpy.log1p(img)
-#     img = img[img.shape[0]/2-256:img.shape[0]/2+256,img.shape[1]/2-256:img.shape[1]/2+256]
-#     img = image_test()
-
-    bd = BlobDetection(img)
-    kx, ky, dx, dy, sigma = bd._one_octave()
-    print(bd.sigmas)
-#
-#     #building histogram with the corrected sigmas
-#     import pylab
-#     sigma = numpy.asarray(sigma)
-#     pylab.figure(2)
-#     pylab.clf()
-#     pylab.hist(sigma, bins=500)
-#     pylab.show()
-#
-#
-#     h = pylab.hist(sigma, bins=500)
-#     n = h[0].__len__()
-#     Proba = h[0] / float(numpy.sum(h[0]))
-# #     print Proba.size,numpy.max(Proba)
-#
-#     max = 0.0
-# #     print n
-#
-#     for cpt in range(n):
-# #         print cpt
-#         Proba1 = Proba[: cpt]
-#         Proba2 = Proba[cpt :]
-#         P1 = numpy.sum(Proba1)
-#         P2 = numpy.sum(Proba2)
-# #         print P1,P2
-#
-#         n1 = numpy.arange(cpt)
-#         n2 = numpy.arange(cpt, n)
-#         Moy1 = sum(n1 * Proba1) / P1
-#         Moy2 = sum(n2 * Proba2) / P2
-# #         print "Moyennes"
-# #         print Moy1,Moy2
-#
-#         VarInterC = P1 * P2 * (Moy1 - Moy2) ** 2
-# #         print "Variance IC"
-# #         print VarInterC
-#
-#         if VarInterC > max :
-#             max = VarInterC
-#             index = cpt
-#
-# #     print max,cpt
-#     print 'sigma pour la separation'
-#     print h[1][index]
-# #  building arrays x and y containing all the coordinates of the keypoints, only for vizualisation
-#     x = []
-#     y = []
-#     print bd.keypoints.__len__()
-#     for j in range(bd.keypoints.__len__()):
-#         k = bd.keypoints[j]
-#         x.extend(numpy.transpose(k)[0])
-#         y.extend(numpy.transpose(k)[1])
-#
-#
-#     print x.__len__(), y.__len__(), kx.__len__(), ky.__len__()
-#
-#     pylab.figure(1)
-#     pylab.clf()
-#     pylab.imshow((img), interpolation='nearest')
-#     pylab.plot(x, y, 'or')
-#     pylab.show()
