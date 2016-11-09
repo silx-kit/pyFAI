@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "08/11/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -94,14 +94,25 @@ def check_cython():
     Check if cython must be activated fron te command line or the environment.
     """
 
-    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
-        print("No Cython requested by environment")
-        return False
+    if not USE_OPENMP:
+        # By default generated Cython files used in the repo using OpenMP
+        print("OpenMP is not used. Cython files have to be re-generated")
+        os.environ["FORCE_CYTHON"] = "True"
+        return True
 
     if ("--no-cython" in sys.argv):
         sys.argv.remove("--no-cython")
         os.environ["WITH_CYTHON"] = "False"
         print("No Cython requested by command line")
+        return False
+    elif "--force-cython" in sys.argv:
+        sys.argv.remove("--force-cython")
+        print("Force Cython re-generation requested by command line")
+        os.environ["FORCE_CYTHON"] = "True"
+        return True
+
+    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+        print("No Cython requested by environment")
         return False
 
     try:
@@ -118,12 +129,6 @@ def check_openmp():
     """
     Do we compile with OpenMP ?
     """
-    if "WITH_OPENMP" in os.environ:
-        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
-        if os.environ["WITH_OPENMP"] == "False":
-            return False
-        else:
-            return True
     if ("--no-openmp" in sys.argv):
         sys.argv.remove("--no-openmp")
         os.environ["WITH_OPENMP"] = "False"
@@ -135,15 +140,25 @@ def check_openmp():
         print("OpenMP requested by command line")
         return True
 
+    if "WITH_OPENMP" in os.environ:
+        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
+        if os.environ["WITH_OPENMP"] == "False":
+            return False
+        else:
+            return True
+
     if platform.system() == "Darwin":
         # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
+        print("OpenMP is not supported by Darwin platform")
         osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
         if osx >= (10, 8):
             return False
+
     return True
 
 
-USE_OPENMP = "openmp" if check_openmp() else ""
+# It must be done in this order
+USE_OPENMP = check_openmp()
 USE_CYTHON = check_cython()
 if USE_CYTHON:
     from Cython.Build import cythonize
@@ -172,18 +187,21 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
                         os.path.join(PROJECT, "ext"), numpy.get_include()]
 
     if can_use_openmp and USE_OPENMP:
+        openmp_arg = "openmp" if USE_OPENMP else ""
         extra_compile_args = set(kwargs.pop("extra_compile_args", []))
-        extra_compile_args.add(USE_OPENMP)
+        extra_compile_args.add(openmp_arg)
         kwargs["extra_compile_args"] = list(extra_compile_args)
 
         extra_link_args = set(kwargs.pop("extra_link_args", []))
-        extra_link_args.add(USE_OPENMP)
+        extra_link_args.add(openmp_arg)
         kwargs["extra_link_args"] = list(extra_link_args)
 
     ext = _Extension(name=PROJECT + ".ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
 
     if USE_CYTHON:
-        cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
+        cext = cythonize([ext],
+                         force=(os.environ.get("FORCE_CYTHON") is "True"),
+                         compile_time_env={"HAVE_OPENMP": USE_OPENMP})
         if cext:
             ext = cext[0]
     return ext
@@ -203,7 +221,7 @@ ext_modules = [
     Extension('relabel'),
     Extension("bilinear", can_use_openmp=True),
     Extension('_distortion', can_use_openmp=True),
-#     Extension('_distortionCSR', can_use_openmp=True),
+    # Extension('_distortionCSR', can_use_openmp=True),
     Extension('_bispev', can_use_openmp=True),
     Extension('_convolution', can_use_openmp=True),
     Extension('_blob'),
