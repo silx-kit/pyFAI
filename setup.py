@@ -101,6 +101,10 @@ def check_cython():
         print("No Cython requested by command line")
         return False
 
+    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+        print("No Cython requested by environment")
+        return False
+
     if not USE_OPENMP:
         # By default generated Cython files used in the repo using OpenMP
         print("OpenMP is not used. Cython files have to be re-generated")
@@ -112,10 +116,6 @@ def check_cython():
         print("Force Cython re-generation requested by command line")
         os.environ["FORCE_CYTHON"] = "True"
         return True
-
-    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
-        print("No Cython requested by environment")
-        return False
 
     try:
         import Cython.Compiler.Version
