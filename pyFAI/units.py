@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "10/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -114,15 +114,52 @@ def eq_rd2(x, y, z, wavelength):
     return (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2
 
 
-def eq_logq(x, y, z, wavelength):
+def eq_log10q(x, y, z, wavelength):
     """Calculates the log (decimal) of the scattering vector
 
     :param x: horizontal position, towards the center of the ring, from sample position
     :param y: Vertical position, to the roof, from sample position
     :param z: distance from sample along the beam
     :param wavelength: in meter
+    :return: decimal logarithm of q in inverse meter
     """
     return numpy.log10(eq_q(x, y, z, wavelength) * 1e9)  # convert in meter
+
+
+def eq_logq(x, y, z, wavelength):
+    """Calculates the log (natural) of the scattering vector in inverse nm
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :return: decimal logarithm of q in inverse meter
+    """
+    return numpy.log(eq_q(x, y, z, wavelength))
+
+
+def eq_log1pqnm(x, y, z, wavelength):
+    """Calculates the log 1 plus of the scattering vector in nm
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :return: log 1 plus of the scattering vector in inverse nm
+    """
+    return numpy.log1p(eq_q(x, y, z, wavelength))  # convert in meter
+
+
+def eq_log1pqa(x, y, z, wavelength):
+    """Calculates the log 1 plus of the scattering vector in A
+
+    :param x: horizontal position, towards the center of the ring, from sample position
+    :param y: Vertical position, to the roof, from sample position
+    :param z: distance from sample along the beam
+    :param wavelength: in meter
+    :return: log 1 plus of the scattering vector in inverse A
+    """
+    return numpy.log1p(eq_q(x, y, z, wavelength) * 10.0)  # convert in meter
 
 
 TTH_DEG = TTH = Enum(REPR="2th_deg",
@@ -189,16 +226,40 @@ R_M = Enum(REPR="r_m",
                 label=r"Radius $r$ ($m$)",
                 equation=eq_r)
 
-LogQ = Enum(REPR="log(q)_m",
+Log10Qm = Enum(REPR="log10(q.m)_None",
             # center="rArray",
             # corner="cornerRArray",
             # delta="deltaR",
             scale=1.0,
-            label=r"log10($q$)",
+            label=r"log10($q$.m)",
+            equation=eq_log10q)
+
+LogQnm = Enum(REPR="log(q.nm)_None",
+            # center="rArray",
+            # corner="cornerRArray",
+            # delta="deltaR",
+            scale=1.0,
+            label=r"log($q$.nm)",
             equation=eq_logq)
 
+Log1pQnm = Enum(REPR="log(1+q.nm)_None",
+            # center="rArray",
+            # corner="cornerRArray",
+            # delta="deltaR",
+            scale=1.0,
+            label=r"log(1+$q$.nm)",
+            equation=eq_log1pqnm)
 
-RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, R_M, RecD2_A, RecD2_NM, LogQ)
+
+Log1pQA = Enum(REPR="log(1+q.A)_None",
+            # center="rArray",
+            # corner="cornerRArray",
+            # delta="deltaR",
+            scale=1.0,
+            label=r"log(1+$q$.A)",
+            equation=eq_log1pqa)
+
+RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, R_M, RecD2_A, RecD2_NM, Log10Qm, Log1pQnm, Log1pQA, LogQnm)
 
 l_m = Enum(REPR="m",
            scale=1.,
