@@ -212,7 +212,7 @@ class MultiGeometry(object):
         sum_ = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
         count = numpy.zeros_like(sum_)
         sigma2 = None
-        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, monitors, lst_variance, lst_mask; lst_flat):
+        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, monitors, lst_variance, lst_mask, lst_flat):
             res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
                                  correctSolidAngle=correctSolidAngle,
                                  variance=variance, error_model=error_model,
