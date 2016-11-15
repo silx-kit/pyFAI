@@ -4,6 +4,7 @@
 #             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C)      2016 Synchrotron SOLEIL - L'Orme des Merisiers Saint-Aubin
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +97,8 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    monitors=None, all=False):
+                    monitors=None, all=False,
+                    lst_mask=None):
         """Perform 1D azimuthal integration
 
         :param lst_data: list of numpy array
@@ -109,6 +111,7 @@ class MultiGeometry(object):
         :param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
         :param monitors: normalization monitors value (list of floats)
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate1dResult).
+        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :return: 2th/I or a dict with everything depending on "all"
         :rtype: Integrate1dResult, dict
         """
@@ -116,17 +119,22 @@ class MultiGeometry(object):
             monitors = [1.0] * len(self.ais)
         if lst_variance is None:
             lst_variance = [None] * len(self.ais)
+        if lst_mask is None:
+            lst_mask = [None] * len(self.ais)
+        elif isinstance(lst_mask, numpy.ndarray):
+            lst_mask = [lst_mask] * len(self.ais)
         sum_ = numpy.zeros(npt, dtype=numpy.float64)
         count = numpy.zeros(npt, dtype=numpy.float64)
         sigma2 = None
-        for ai, data, monitor, variance in zip(self.ais, lst_data, monitors, lst_variance):
+        for ai, data, monitor, variance, mask in zip(self.ais, lst_data, monitors, lst_variance, lst_mask):
             res = ai.integrate1d(data, npt=npt,
                                  correctSolidAngle=correctSolidAngle,
                                  variance=variance, error_model=error_model,
                                  polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
-                                 method="splitpixel", unit=self.unit, safe=True)
+                                 method="splitpixel", unit=self.unit, safe=True,
+                                 mask=mask)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count * sac
             sum_ += res.sum / monitor
@@ -166,7 +174,7 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    monitors=None, all=False):
+                    monitors=None, all=False, lst_mask=None):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
         :param lst_data: list of numpy array
@@ -179,6 +187,7 @@ class MultiGeometry(object):
         :param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
         :param monitors: normalization monitors value (list of floats)
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate2dResult).
+        :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :return: I/2th/chi or a dict with everything depending on "all"
         :rtype: Integrate2dResult, dict
         """
@@ -186,17 +195,22 @@ class MultiGeometry(object):
             monitors = [1.0] * len(self.ais)
         if lst_variance is None:
             lst_variance = [None] * len(self.ais)
+        if lst_mask is None:
+            lst_mask = [None] * len(self.ais)
+        elif isinstance(lst_mask, numpy.ndarray):
+            lst_mask = [lst_mask] * len(self.ais)
         sum_ = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
         count = numpy.zeros_like(sum_)
         sigma2 = None
-        for ai, data, monitor, variance in zip(self.ais, lst_data, monitors, lst_variance):
+        for ai, data, monitor, variance, mask in zip(self.ais, lst_data, monitors, lst_variance, lst_mask):
             res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
                                  correctSolidAngle=correctSolidAngle,
                                  variance=variance, error_model=error_model,
                                  polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
-                                 method="splitpixel", unit=self.unit, safe=True)
+                                 method="splitpixel", unit=self.unit, safe=True,
+                                 mask=mask)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count * sac
             sum_ += res.sum / monitor
