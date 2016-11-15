@@ -98,7 +98,7 @@ class MultiGeometry(object):
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
                     monitors=None, all=False,
-                    lst_mask=None):
+                    lst_mask=None, lst_flat=None):
         """Perform 1D azimuthal integration
 
         :param lst_data: list of numpy array
@@ -112,6 +112,7 @@ class MultiGeometry(object):
         :param monitors: normalization monitors value (list of floats)
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate1dResult).
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
+        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :return: 2th/I or a dict with everything depending on "all"
         :rtype: Integrate1dResult, dict
         """
@@ -123,10 +124,14 @@ class MultiGeometry(object):
             lst_mask = [None] * len(self.ais)
         elif isinstance(lst_mask, numpy.ndarray):
             lst_mask = [lst_mask] * len(self.ais)
+        if lst_flat is None:
+            lst_flat = [None] * len(self.ais)
+        elif isinstance(lst_flat, numpy.ndarray):
+            lst_flat = [lst_flat] * len(self.ais)
         sum_ = numpy.zeros(npt, dtype=numpy.float64)
         count = numpy.zeros(npt, dtype=numpy.float64)
         sigma2 = None
-        for ai, data, monitor, variance, mask in zip(self.ais, lst_data, monitors, lst_variance, lst_mask):
+        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, monitors, lst_variance, lst_mask, lst_flat):
             res = ai.integrate1d(data, npt=npt,
                                  correctSolidAngle=correctSolidAngle,
                                  variance=variance, error_model=error_model,
@@ -134,7 +139,7 @@ class MultiGeometry(object):
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
                                  method="splitpixel", unit=self.unit, safe=True,
-                                 mask=mask)
+                                 mask=mask, flat=flat)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count * sac
             sum_ += res.sum / monitor
@@ -174,7 +179,7 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    monitors=None, all=False, lst_mask=None):
+                    monitors=None, all=False, lst_mask=None, lst_flat=None):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
         :param lst_data: list of numpy array
@@ -188,6 +193,7 @@ class MultiGeometry(object):
         :param monitors: normalization monitors value (list of floats)
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate2dResult).
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
+        :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :return: I/2th/chi or a dict with everything depending on "all"
         :rtype: Integrate2dResult, dict
         """
@@ -199,10 +205,14 @@ class MultiGeometry(object):
             lst_mask = [None] * len(self.ais)
         elif isinstance(lst_mask, numpy.ndarray):
             lst_mask = [lst_mask] * len(self.ais)
+        if lst_flat is None:
+            lst_flat = [None] * len(self.ais)
+        elif isinstance(lst_flat, numpy.ndarray):
+            lst_flat = [lst_flat] * len(self.ais)
         sum_ = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
         count = numpy.zeros_like(sum_)
         sigma2 = None
-        for ai, data, monitor, variance, mask in zip(self.ais, lst_data, monitors, lst_variance, lst_mask):
+        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, monitors, lst_variance, lst_mask; lst_flat):
             res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
                                  correctSolidAngle=correctSolidAngle,
                                  variance=variance, error_model=error_model,
@@ -210,7 +220,7 @@ class MultiGeometry(object):
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
                                  method="splitpixel", unit=self.unit, safe=True,
-                                 mask=mask)
+                                 mask=mask, flat=flat)
             sac = (ai.pixel1 * ai.pixel2 / ai.dist ** 2) if correctSolidAngle else 1.0
             count += res.count * sac
             sum_ += res.sum / monitor
