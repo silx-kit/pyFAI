@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2016"
+__date__ = "16/11/2016"
 __status__ = "production"
 
 import logging
@@ -93,6 +93,7 @@ def calc_checksum(ary, safe=True):
     else:
         return ary.__array_interface__['data'][0]
 
+
 def float_(val):
     """
     Convert anything to a float ... or None if not applicable
@@ -120,7 +121,7 @@ def str_(val):
     Convert anything to a string ... but None -> ""
     """
     s = ""
-    if val != None:
+    if val is not None:
         try:
             s = str(val)
         except UnicodeError:

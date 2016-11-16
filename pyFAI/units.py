@@ -307,3 +307,13 @@ def to_unit(obj, type_=None):
         logger.error("Unable to recognize this type unit '%s' of type %s. "
                      "Valid units are %s" % (obj, type(obj), ", ".join([i.REPR for i in type_])))
     return rad_unit
+
+# def define_new_radial_unit():
+#     TODO
+#     REPR="q_A^-1",
+#            center="qArray",
+#            # corner="cornerQArray",
+#            delta="deltaQ",
+#            scale=0.1,
+#            label=r"Scattering vector $q$ ($\AA ^{-1}$)",
+#            equation=eq_q

@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2016"
+__date__ = "16/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -320,14 +320,17 @@ class Geometry(object):
         else:
             dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
-        if (not corners) and ((d1 is None) or (d2 is None)):
-            raise RuntimeError("input corrdiate d1 and d2 are mandatory")
+#        if (not corners) and ((d1 is None) or (d2 is None)):
+#            raise RuntimeError("input corrdiate d1 and d2 are mandatory")
         if d0 is None:
             L = dist
         else:
             L = dist + d0
         if corners:
+#             if (d1 is not None) or (d2 is not None):
+#                 raise RuntimeError("Makes little sense to calculate the pixel corner array on a few pixels")
             tmp = self.detector.get_pixel_corners()
+
             p1 = tmp[..., 1]
             p2 = tmp[..., 2]
             p3 = tmp[..., 0]
@@ -693,7 +696,7 @@ class Geometry(object):
             tpos[..., idx] = pos[idx]
         return tpos
 
-    def corner_array(self, shape=None, unit="2th", use_cython=True):
+    def corner_array(self, shape=None, unit=None, use_cython=True):
         """
         Generate a 3D array of the given shape with (i,j) (radial
         angle 2th, azimuthal angle chi ) for all elements.

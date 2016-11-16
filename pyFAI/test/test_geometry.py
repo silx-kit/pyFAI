@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "16/11/2016"
 
 
 import unittest
@@ -307,8 +307,7 @@ class ParamTestGeometry(ParameterisedTestCase):
                  ("tth", ("tan", "cython")),
                  ("qFunction", ("numpy", "cython")),
                  ("rFunction", ("numpy", "cython"))]
-    pixels = {"pixel1": 1,
-              "pixel2": 1,
+    pixels = {"detector": "Pilatus100k",
               "wavelength": 1e-10}
     geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
                   {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
@@ -316,13 +315,13 @@ class ParamTestGeometry(ParameterisedTestCase):
                   {'dist': 1, 'rot1':-1, 'rot2':-.2, 'rot3': 1},
                   {'dist': 1, 'rot1': 1, 'rot2': 5, 'rot3': .4},
                   {'dist': 1, 'rot1':-1.2, 'rot2': 1, 'rot3': 1},
-                  {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1},
+                  {'dist': 100, 'rot1':-2, 'rot2': 2, 'rot3': 1},
                   ]
     for g in geometries:
         g.update(pixels)
 
     TESTCASES_FUNCT = [(k[0], k[1], g) for k, g in itertools.product(functions, geometries)]
-    TESTCASES_XYZ = itertools.product((False,), geometries)
+    TESTCASES_XYZ = itertools.product((False, True), geometries)
 
     def test_geometry_functions(self):
         "test functions like tth, qFunct, rfunction, ... fake detectors"
