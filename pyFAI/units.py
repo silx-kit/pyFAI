@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2016"
+__date__ = "16/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -292,7 +292,9 @@ A_rad = Enum(REPR="rad",
 ANGLE_UNITS = (A_deg, A_rad)
 
 
-def to_unit(obj, type_=RADIAL_UNITS):
+def to_unit(obj, type_=None):
+    if type_ is None:
+        type_ = RADIAL_UNITS
     rad_unit = None
     if isinstance(obj, six.string_types):
         for one_unit in type_:
