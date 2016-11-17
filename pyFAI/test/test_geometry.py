@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2016"
+__date__ = "17/11/2016"
 
 
 import unittest
@@ -256,7 +256,7 @@ class ParamFastPath(ParameterisedTestCase):
             dico = geo.copy()
             dico["detector"] = det
             geometries.append(dico)
-    dunits = dict((u.REPR.split("_")[0], u) for u in units.RADIAL_UNITS)
+    dunits = dict((u.split("_")[0], v) for u, v in units.RADIAL_UNITS.items())
     TESTSPACE = itertools.product(geometries, dunits.values())
 
     def test_corner_array(self):

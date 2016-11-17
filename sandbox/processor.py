@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "17/11/2016"
 __status__ = "DEPRECATED -> see worker"
 __docformat__ = 'restructuredtext'
 
@@ -70,17 +70,17 @@ class Processor(object):
         pretty print of myself
         """
         lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
-                "Input image shape: %s" % list(self.shapeIn),
-                "Number of points in radial direction: %s" % self.nbpt_rad,
-                "Number of points in azimuthal direction: %s" % self.nbpt_azim,
-                "Unit in radial dimension: %s" % self.unit.REPR,
-                "Correct for solid angle: %s" % self.correct_solid_angle,
-                "Polarization factor: %s" % self.polarization,
-                "Dark current image: %s" % self.dark_current_image,
-                "Flat field image: %s" % self.flat_field_image,
-                "Mask image: %s" % self.mask_image,
-                "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
-                "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
+                  "Input image shape: %s" % list(self.shapeIn),
+                  "Number of points in radial direction: %s" % self.nbpt_rad,
+                  "Number of points in azimuthal direction: %s" % self.nbpt_azim,
+                  "Unit in radial dimension: %s" % self.unit.REPR,
+                  "Correct for solid angle: %s" % self.correct_solid_angle,
+                  "Polarization factor: %s" % self.polarization,
+                  "Dark current image: %s" % self.dark_current_image,
+                  "Flat field image: %s" % self.flat_field_image,
+                  "Mask image: %s" % self.mask_image,
+                  "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
+                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
         return os.linesep.join(lstout)
 
     def do_2D(self):

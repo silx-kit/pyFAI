@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2016"
+__date__ = "17/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -263,13 +263,13 @@ class Geometry(object):
         lstTxt = [self.detector.__repr__()]
         if self._wavelength:
             lstTxt.append("Wavelength= %.6e%s" %
-                          (self._wavelength * wl_unit.scale, wl_unit.REPR))
+                          (self._wavelength * wl_unit.scale, wl_unit))
         lstTxt.append(("SampleDetDist= %.6e%s\tPONI= %.6e, %.6e%s\trot1=%.6f"
                        "  rot2= %.6f  rot3= %.6f %s") %
-                      (self._dist * dist_unit.scale, dist_unit.REPR, self._poni1 * dist_unit.scale,
-                       self._poni2 * dist_unit.scale, dist_unit.REPR,
+                      (self._dist * dist_unit.scale, dist_unit, self._poni1 * dist_unit.scale,
+                       self._poni2 * dist_unit.scale, dist_unit,
                       self._rot1 * ang_unit.scale, self._rot2 * ang_unit.scale,
-                      self._rot3 * ang_unit.scale, ang_unit.REPR))
+                      self._rot3 * ang_unit.scale, ang_unit))
         if self.detector.pixel1:
             f2d = self.getFit2D()
             lstTxt.append(("DirectBeamDist= %.3fmm\tCenter: x=%.3f, y=%.3f pix"
@@ -713,7 +713,7 @@ class Geometry(object):
                          "neither in the detector: %s", self.detector)
         if unit:
             unit = units.to_unit(unit)
-            space = unit.REPR.split("_")[0]
+            space = unit.name.split("_")[0]
         else:
             unit = None
             space = "2th"  # there must be a default one
@@ -844,7 +844,7 @@ class Geometry(object):
         """
 
         unit = units.to_unit(unit)
-        space = unit.REPR.split("_")[0]
+        space = unit.name.split("_")[0]
         key = space + "_center"
         ary = self._cached_array.get(key)
 
@@ -877,7 +877,7 @@ class Geometry(object):
         """
 
         unit = units.to_unit(unit)
-        space = unit.REPR.split("_")[0] + "_delta"
+        space = unit.name.split("_")[0] + "_delta"
         ary = self._cached_array.get(space)
 
         shape = self.get_shape(shape)

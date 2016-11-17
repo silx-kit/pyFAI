@@ -88,7 +88,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2016"
+__date__ = "17/11/2016"
 __status__ = "development"
 
 import threading
@@ -235,7 +235,7 @@ class Worker(object):
                   "Input image shape: %s" % list(self.shape),
                   "Number of points in radial direction: %s" % self.nbpt_rad,
                   "Number of points in azimuthal direction: %s" % self.nbpt_azim,
-                  "Unit in radial dimension: %s" % self.unit.REPR,
+                  "Unit in radial dimension: %s" % self.unit,
                   "Correct for solid angle: %s" % self.correct_solid_angle,
                   "Polarization factor: %s" % self.polarization,
                   "Dark current image: %s" % self.dark_current_image,

@@ -25,16 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, print_function, division
-
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
-__status__ = "production"
-__docformat__ = 'restructuredtext'
-__doc__ = """Module for "high-performance" writing in either 1D with Ascii , 
+"""Module for "high-performance" writing in either 1D with Ascii , 
 or 2D with FabIO or even nD with n varying from  2 to 4 using HDF5
 
 Stand-alone module which tries to offer interface to HDF5 via H5Py and
@@ -45,6 +36,18 @@ Can be imported without h5py but then limited to fabio & ascii formats.
 TODO:
 * add monitor to HDF5
 """
+
+
+from __future__ import absolute_import, print_function, division
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "17/11/2016"
+__status__ = "production"
+__docformat__ = 'restructuredtext'
+
 import fabio
 import json
 import logging
@@ -492,7 +495,7 @@ class DefaultAiWriter(Writer):
 
         return self._header
 
-    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+    def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg",
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 1D integration
@@ -526,15 +529,15 @@ class DefaultAiWriter(Writer):
             except UnicodeError:
                 f.write("\n# --> %s\n" % (filename.encode("utf8")))
             if error is None:
-                f.write("#%14s %14s\n" % (dim1_unit.REPR, "I "))
+                f.write("#%14s %14s\n" % (dim1_unit, "I "))
                 f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
             else:
                 f.write("#%14s  %14s  %14s\n" %
-                        (dim1_unit.REPR, "I ", "sigma "))
+                        (dim1_unit, "I ", "sigma "))
                 f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
             f.write("\n")
 
-    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 2D histogram
@@ -578,8 +581,8 @@ class DefaultAiWriter(Writer):
         header["rot3"] = str(ai._rot3)
         header["chi_min"] = str(dim2.min())
         header["chi_max"] = str(dim2.max())
-        header[dim1_unit.REPR + "_min"] = str(dim1.min())
-        header[dim1_unit.REPR + "_max"] = str(dim1.max())
+        header[dim1_unit.name + "_min"] = str(dim1.min())
+        header[dim1_unit.name + "_max"] = str(dim1.max())
         header["pixelX"] = str(ai.pixel2)  # this is not a bug ... most people expect dim1 to be X
         header["pixelY"] = str(ai.pixel1)  # this is not a bug ... most people expect dim2 to be Y
         header["polarization_factor"] = str(polarization_factor)
@@ -772,11 +775,6 @@ class FabioWriter(Writer):
         with self._sem:
             # dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
             _header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
-                            # "chi_min", "chi_max",
-                            # dim1_unit.REPR + "_min",
-                            # dim1_unit.REPR + "_max",
-                            # "pixelX", "pixelY",
-                            # "dark", "flat", "polarization_factor", "normalization_factor"
                             ]
             _header = {"dist": str(fai_cfg.get("dist")),
                        "poni1": str(fai_cfg.get("poni1")),

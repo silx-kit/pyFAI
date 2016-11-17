@@ -2514,16 +2514,16 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_result) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_value) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_one_result) lastprivate(__pyx_v_one_value) lastprivate(__pyx_v_is_valid) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_one_flat = ((float)__PYX_NAN());
                               __pyx_v_one_result = ((float)__PYX_NAN());
-                              __pyx_v_is_valid = ((int)0xbad0bad0);
                               __pyx_v_one_value = ((float)__PYX_NAN());
+                              __pyx_v_is_valid = ((int)0xbad0bad0);
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
 
                               /* "pyFAI/ext/preproc.pyx":113
  * 

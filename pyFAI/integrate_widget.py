@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "17/11/2016"
 __status__ = "development"
 
 import logging
@@ -57,7 +57,7 @@ from .opencl import ocl
 from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
 from .azimuthalIntegrator import AzimuthalIntegrator
-from .units import RADIAL_UNITS, TTH_DEG
+from .units import RADIAL_UNITS
 try:
     from .third_party import six
 except ImportError:
@@ -125,15 +125,15 @@ class AIWidget(qt.QWidget):
         """
         self.units = {}
         for unit in RADIAL_UNITS:
-            if unit.REPR == "2th_deg":
+            if unit == "2th_deg":
                 self.units[unit] = self.tth_deg
-            elif unit.REPR == "2th_rad":
+            elif unit == "2th_rad":
                 self.units[unit] = self.tth_rad
-            elif unit.REPR == "q_nm^-1":
+            elif unit == "q_nm^-1":
                 self.units[unit] = self.q_nm
-            elif unit.REPR == "q_A^-1":
+            elif unit == "q_A^-1":
                 self.units[unit] = self.q_A
-            elif unit.REPR == "r_mm":
+            elif unit == "r_mm":
                 self.units[unit] = self.r_mm
             else:
                 logger.debug("Unit unknown to GUI %s", unit)
@@ -173,7 +173,7 @@ class AIWidget(qt.QWidget):
             if widget is not None and widget.isChecked():
                 return unit
         logger.warning("Undefined unit !!! falling back on 2th_deg")
-        return TTH_DEG
+        return RADIAL_UNITS["2th_deg"]
 
     def __get_correct_solid_angle(self):
         return bool(self.do_solid_angle.isChecked())
@@ -455,7 +455,7 @@ class AIWidget(qt.QWidget):
                    }
         for unit, widget in self.units.items():
             if widget is not None and widget.isChecked():
-                to_save["unit"] = unit.REPR
+                to_save["unit"] = unit.name
                 break
         else:
             logger.info("Undefined unit !!!")
@@ -544,7 +544,7 @@ class AIWidget(qt.QWidget):
                 value(dico[key])
         if "unit" in dico:
             for unit, widget in self.units.items():
-                if unit.REPR == dico["unit"] and widget is not None:
+                if str(unit) == dico["unit"] and widget is not None:
                     widget.setChecked(True)
                     break
         if "detector" in dico:
