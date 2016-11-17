@@ -2,29 +2,42 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+"""This modules contrains only one (large) class in charge of
+
+* calculating the geometry, i.e. the position in the detector space of each pixel of the detector
+* manages caches to store intermediate results
+
+"""
+
+from __future__ import division, print_function
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "17/11/2016"
 __status__ = "production"
@@ -179,34 +192,34 @@ class Geometry(object):
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None):
         """
-        @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
-        @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
-        @param poni2: coordinate of the point of normal incidence along the detector's second dimension, in meter
-        @param rot1: first rotation from sample ref to detector's ref, in radians
-        @param rot2: second rotation from sample ref to detector's ref, in radians
-        @param rot3: third rotation from sample ref to detector's ref, in radians
-        @param pixel1: Deprecated. Pixel size of the fist dimension of the detector,  in meter.
+        :param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
+        :param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
+        :param poni2: coordinate of the point of normal incidence along the detector's second dimension, in meter
+        :param rot1: first rotation from sample ref to detector's ref, in radians
+        :param rot2: second rotation from sample ref to detector's ref, in radians
+        :param rot3: third rotation from sample ref to detector's ref, in radians
+        :param pixel1: Deprecated. Pixel size of the fist dimension of the detector,  in meter.
             If both pixel1 and pixel2 are not None, detector pixel size is overwritten.
             Prefer defining the detector pixel size on the provided detector object.
             Prefer defining the detector pixel size on the provided detector
             object (``detector.pixel1 = 5e-6``).
-        @type pixel1: float
-        @param pixel2: Deprecated. Pixel size of the second dimension of the detector,  in meter.
+        :type pixel1: float
+        :param pixel2: Deprecated. Pixel size of the second dimension of the detector,  in meter.
             If both pixel1 and pixel2 are not None, detector pixel size is overwritten.
             Prefer defining the detector pixel size on the provided detector
             object (``detector.pixel2 = 5e-6``).
-        @type pixel2: float
-        @param splineFile: Deprecated. File containing the geometric distortion of the detector.
+        :type pixel2: float
+        :param splineFile: Deprecated. File containing the geometric distortion of the detector.
             If not None, pixel1 and pixel2 are ignored and detector spline is overwritten.
             Prefer defining the detector spline manually
             (``detector.splineFile = "file.spline"``).
-        @type splineFile: str
-        @param detector: name of the detector or Detector instance. String
+        :type splineFile: str
+        :param detector: name of the detector or Detector instance. String
             description is deprecated. Prefer using the result of the detector
             factory: ``pyFAI.detector_factory("eiger4m")``
-        @type detector: str or pyFAI.Detector
-        @param wavelength: Wave length used in meter
-        @type wavelength: float
+        :type detector: str or pyFAI.Detector
+        :param wavelength: Wave length used in meter
+        :type wavelength: float
         """
         self._dist = dist
         self._poni1 = poni1
@@ -250,10 +263,10 @@ class Geometry(object):
     def __repr__(self, dist_unit="m", ang_unit="rad", wl_unit="m"):
         """Nice representation of the class
 
-        @param dist_unit: units for distances
-        @param ang_unit: units used for angles
-        @param wl_unit: units used for wavelengths
-        @return: nice string representing the configuration in use
+        :param dist_unit: units for distances
+        :param ang_unit: units used for angles
+        :param wl_unit: units used for wavelengths
+        :return: nice string representing the configuration in use
         """
         dist_unit = units.to_unit(dist_unit, units.LENGTH_UNITS) or units.l_m
         ang_unit = units.to_unit(ang_unit, units.ANGLE_UNITS) or units.A_rad
@@ -284,11 +297,11 @@ class Geometry(object):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: ndarray of dimention 1/2 containing the Y pixel positions
-        @param d2: ndarray of dimention 1/2 containing the X pixel positions
-        @param poni1: value in the Y direction of the poni coordinate (meter)
-        @param poni2: value in the X direction of the poni coordinate (meter)
-        @return: 2-arrays of same shape as d1 & d2 with the position in meter
+        :param d1: ndarray of dimention 1/2 containing the Y pixel positions
+        :param d2: ndarray of dimention 1/2 containing the X pixel positions
+        :param poni1: value in the Y direction of the poni coordinate (meter)
+        :param poni2: value in the X direction of the poni coordinate (meter)
+        :return: 2-arrays of same shape as d1 & d2 with the position in meter
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -307,30 +320,30 @@ class Geometry(object):
         This is usually used for calculating the pixel position in space.
 
 
-        @param d0: altitude on the point compared to the detector (i.e. z), may be None
-        @param d1: position on the detector along the slow dimention (i.e. y)
-        @param d2: position on the detector along the fastest dimention (i.e. x)
-        @param corners: return positions on the corners (instead of center)
+        :param d0: altitude on the point compared to the detector (i.e. z), may be None
+        :param d1: position on the detector along the slow dimention (i.e. y)
+        :param d2: position on the detector along the fastest dimention (i.e. x)
+        :param corners: return positions on the corners (instead of center)
         @return 3-tuple of nd-array,  with  dim0=along the beam,
                                             dim1=along slowest dimension
                                             dim2=along fastest dimension
         """
         if param is None:
-            dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3
+            dist = self._dist
+            poni1 = self._poni1
+            poni2 = self._poni2
+            rot1 = self._rot1
+            rot2 = self._rot2
+            rot3 = self._rot3
         else:
             dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
-#        if (not corners) and ((d1 is None) or (d2 is None)):
-#            raise RuntimeError("input corrdiate d1 and d2 are mandatory")
         if d0 is None:
             L = dist
         else:
             L = dist + d0
         if corners:
-#             if (d1 is not None) or (d2 is not None):
-#                 raise RuntimeError("Makes little sense to calculate the pixel corner array on a few pixels")
             tmp = self.detector.get_pixel_corners()
-
             p1 = tmp[..., 1]
             p2 = tmp[..., 2]
             p3 = tmp[..., 0]
@@ -365,12 +378,12 @@ class Geometry(object):
         Calculates the 2theta value for the center of a given pixel
         (or set of pixels)
 
-        @param d1: position(s) in pixel in first dimension (c order)
-        @type d1: scalar or array of scalar
-        @param d2: position(s) in pixel in second dimension (c order)
-        @type d2: scalar or array of scalar
-        @param path: can be "cos", "tan" or "cython"
-        @return: 2theta in radians
+        :param d1: position(s) in pixel in first dimension (c order)
+        :type d1: scalar or array of scalar
+        :param d2: position(s) in pixel in second dimension (c order)
+        :type d2: scalar or array of scalar
+        :param path: can be "cos", "tan" or "cython"
+        :return: 2theta in radians
         @rtype: float or array of floats.
         """
 
@@ -403,11 +416,11 @@ class Geometry(object):
 
         q = 4pi/lambda sin( 2theta / 2 )
 
-        @param d1: position(s) in pixel in first dimension (c order)
-        @type d1: scalar or array of scalar
-        @param d2: position(s) in pixel in second dimension (c order)
-        @type d2: scalar or array of scalar
-        @return: q in in nm^(-1)
+        :param d1: position(s) in pixel in first dimension (c order)
+        :type d1: scalar or array of scalar
+        :param d2: position(s) in pixel in second dimension (c order)
+        :type d2: scalar or array of scalar
+        :return: q in in nm^(-1)
         @rtype: float or array of floats.
         """
         if not self.wavelength:
@@ -442,11 +455,11 @@ class Geometry(object):
 
           r = distance to the incident beam
 
-        @param d1: position(s) in pixel in first dimension (c order)
-        @type d1: scalar or array of scalar
-        @param d2: position(s) in pixel in second dimension (c order)
-        @type d2: scalar or array of scalar
-        @return: r in in m
+        :param d1: position(s) in pixel in first dimension (c order)
+        :type d1: scalar or array of scalar
+        :param d2: position(s) in pixel in second dimension (c order)
+        :type d2: scalar or array of scalar
+        :return: r in in m
         @rtype: float or array of floats.
         """
 
@@ -496,8 +509,8 @@ class Geometry(object):
         """Generate an array of the given shape with r(i,j) for all elements;
         The radius r being  in meters.
 
-        @param shape: expected shape of the detector
-        @return: 2d array of the given shape with radius in m from beam center on detector.
+        :param shape: expected shape of the detector
+        :return: 2d array of the given shape with radius in m from beam center on detector.
         """
         shape = self.get_shape(shape)
         if shape is None:
@@ -516,8 +529,8 @@ class Geometry(object):
 
         d*^2 is the reciprocal spacing squared in inverse nm squared
 
-        @param shape: expected shape of the detector
-        @return:2d array of the given shape with reciprocal spacing squared
+        :param shape: expected shape of the detector
+        :return:2d array of the given shape with reciprocal spacing squared
         """
         qArray = self.qArray(shape)
         if self._cached_array.get("d*2_center") is None:
@@ -530,7 +543,7 @@ class Geometry(object):
     def qCornerFunct(self, d1, d2):
         """Calculate the q_vector for any pixel corner (in nm^-1)
 
-        @param shape: expected shape of the detector
+        :param shape: expected shape of the detector
         """
         return self.qFunction(d1 - 0.5, d2 - 0.5)
 
@@ -547,11 +560,11 @@ class Geometry(object):
         Calculates the 2theta value for the corner of a given pixel
         (or set of pixels)
 
-        @param d1: position(s) in pixel in first dimension (c order)
-        @type d1: scalar or array of scalar
-        @param d2: position(s) in pixel in second dimension (c order)
-        @type d2: scalar or array of scalar
-        @return: 2theta in radians
+        :param d1: position(s) in pixel in first dimension (c order)
+        :type d1: scalar or array of scalar
+        :param d2: position(s) in pixel in second dimension (c order)
+        :type d2: scalar or array of scalar
+        :return: 2theta in radians
         @rtype: floar or array of floats.
         """
         return self.tth(d1 - 0.5, d2 - 0.5)
@@ -561,8 +574,8 @@ class Geometry(object):
 
         the 2theta array values are in radians
 
-        @param shape: shape of the detector
-        @return: array of 2theta position in radians
+        :param shape: shape of the detector
+        :return: array of 2theta position in radians
         """
         shape = self.get_shape(shape)
         if shape is None:
@@ -588,12 +601,12 @@ class Geometry(object):
         X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
         hence tan(Chi) =  X2 / X1
 
-        @param d1: pixel coordinate along the 1st dimention (C convention)
-        @type d1: float or array of them
-        @param d2: pixel coordinate along the 2nd dimention (C convention)
-        @type d2: float or array of them
-        @param path: can be "tan" (i.e via numpy) or "cython"
-        @return: chi, the azimuthal angle in rad
+        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :type d1: float or array of them
+        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :type d2: float or array of them
+        :param path: can be "tan" (i.e via numpy) or "cython"
+        :return: chi, the azimuthal angle in rad
         """
         p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2)
 
@@ -631,11 +644,11 @@ class Geometry(object):
         X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
         hence tan(Chi) =  X2 / X1
 
-        @param d1: pixel coordinate along the 1st dimention (C convention)
-        @type d1: float or array of them
-        @param d2: pixel coordinate along the 2nd dimention (C convention)
-        @type d2: float or array of them
-        @return: chi, the azimuthal angle in rad
+        :param d1: pixel coordinate along the 1st dimention (C convention)
+        :type d1: float or array of them
+        :param d2: pixel coordinate along the 2nd dimention (C convention)
+        :type d2: float or array of them
+        :return: chi, the azimuthal angle in rad
         """
         return self.chi(d1 - 0.5, d2 - 0.5)
 
@@ -646,8 +659,8 @@ class Geometry(object):
 
         Nota: Refers to the pixel centers !
 
-        @param shape: the shape of the chi array
-        @return: the chi array as numpy.ndarray
+        :param shape: the shape of the chi array
+        :return: the chi array as numpy.ndarray
         """
         shape = self.get_shape(shape)
         if shape is None:
@@ -662,7 +675,7 @@ class Geometry(object):
             self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
-    def positionArray(self, shape=None, corners=False, dtype=numpy.float64):
+    def positionArray(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True):
         """Generate an array for the pixel position given the shape of the detector.
 
         if corners is False, the coordinates of the center of the pixel
@@ -675,10 +688,11 @@ class Geometry(object):
         If is True, the corner of each pixels are then returned.
         the output shape is then (shape[0], shape[1], 4, 3)
 
-        @param shape: shape of the array expected
-        @param corners: set to true to receive a (...,4,3) array of corner positions
-        @param dtype: output format requested
-        @return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
+        :param shape: shape of the array expected
+        :param corners: set to true to receive a (...,4,3) array of corner positions
+        :param dtype: output format requested. Double precision is needed for fitting the geometry
+        :param (bool) use_cython: set to false to test the Python path (slower) 
+        :return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
 
         Nota: this value is not cached and actually generated on demand (costly)
         """
@@ -687,7 +701,9 @@ class Geometry(object):
             logger.error("Shape is neither specified in the method call, "
                          "neither in the detector: %s", self.detector)
 
-        pos = numpy.fromfunction(lambda d1, d2: self.calc_pos_zyx(None, d1, d2, corners=corners),
+        pos = numpy.fromfunction(lambda d1, d2: self.calc_pos_zyx(d0=None, d1=d1, d2=d2,
+                                                                  corners=corners,
+                                                                  use_cython=use_cython),
                                  shape,
                                  dtype=dtype)
         outshape = pos[0].shape + (3,)
@@ -701,9 +717,9 @@ class Geometry(object):
         Generate a 3D array of the given shape with (i,j) (radial
         angle 2th, azimuthal angle chi ) for all elements.
 
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are:
+        :param shape: expected shape
+        :type shape: 2-tuple of integer
+        :return: 3d array with shape=(*shape,4,2) the two elements are:
            * dim3[0]: radial angle 2th, q, r, ...
            * dim3[1]: azimuthal angle chi
         """
@@ -787,9 +803,9 @@ class Geometry(object):
         """Generate a 4D array of the given shape with (i,j) (radial
         angle 2th, azimuthal angle chi ) for all elements.
 
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are:
+        :param shape: expected shape
+        :type shape: 2-tuple of integer
+        :return: 3d array with shape=(*shape,4,2) the two elements are:
            * dim3[0]: radial angle 2th
            * dim3[1]: azimuthal angle chi
         """
@@ -801,9 +817,9 @@ class Geometry(object):
         Generate a 3D array of the given shape with (i,j) (azimuthal
         angle) for all elements.
 
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
+        :param shape: expected shape
+        :type shape: 2-tuple of integer
+        :return: 3d array with shape=(*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.Q, use_cython=False)
 
@@ -813,9 +829,9 @@ class Geometry(object):
         Generate a 3D array of the given shape with (i,j) (azimuthal
         angle) for all elements.
 
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
+        :param shape: expected shape
+        :type shape: 2-tuple of integer
+        :return: 3d array with shape=(*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.R, use_cython=False)
 
@@ -825,9 +841,9 @@ class Geometry(object):
         Generate a 3D array of the given shape with (i,j) (azimuthal
         angle) for all elements.
 
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
+        :param shape: expected shape
+        :type shape: 2-tuple of integer
+        :return: 3d array with shape=(*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
         """
         return self.corner_array(shape, unit=units.RecD2_NM)
 
@@ -836,9 +852,9 @@ class Geometry(object):
         Generate a 2D array of the given shape with (i,j) (radial
         angle ) for all elements.
 
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are:
+        :param shape: expected shape
+        :type shape: 2-tuple of integer
+        :return: 3d array with shape=(*shape,4,2) the two elements are:
            * dim3[0]: radial angle 2th, q, r, ...
            * dim3[1]: azimuthal angle chi
         """
@@ -869,9 +885,9 @@ class Geometry(object):
         Generate a 2D array of the given shape with (i,j) (delta-radial
         angle) for all elements.
 
-        @param shape: expected shape
-        @type shape: 2-tuple of integer
-        @return: 3d array with shape=(*shape,4,2) the two elements are:
+        :param shape: expected shape
+        :type shape: 2-tuple of integer
+        :return: 3d array with shape=(*shape,4,2) the two elements are:
            * dim3[0]: radial angle 2th, q, r, ...
            * dim3[1]: azimuthal angle chi
         """
@@ -899,8 +915,8 @@ class Geometry(object):
         Generate a 3D array of the given shape with (i,j) with the max
         distance between the center and any corner in 2 theta
 
-        @param shape: The shape of the detector array: 2-tuple of integer
-        @return: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
+        :param shape: The shape of the detector array: 2-tuple of integer
+        :return: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
         """
 
         if self._cached_array.get("2th_delta") is None:
@@ -917,8 +933,8 @@ class Geometry(object):
         Generate a 3D array of the given shape with (i,j) with the max
         distance between the center and any corner in chi-angle (rad)
 
-        @param shape: The shape of the detector array: 2-tuple of integer
-        @return: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
+        :param shape: The shape of the detector array: 2-tuple of integer
+        :return: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
         """
         if self._cached_array.get("chi_delta") is None:
             center = numpy.atleast_3d(self.chiArray(shape))
@@ -937,8 +953,8 @@ class Geometry(object):
         distance between the center and any corner in q_vector unit
         (nm^-1)
 
-        @param shape: The shape of the detector array: 2-tuple of integer
-        @return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+        :param shape: The shape of the detector array: 2-tuple of integer
+        :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
         if self._cached_array.get("q_delta") is None:
             center = self.qArray(shape)
@@ -954,8 +970,8 @@ class Geometry(object):
         Generate a 2D array of the given shape with (i,j) with the max
         distance between the center and any corner in radius unit (mm)
 
-        @param shape: The shape of the detector array: 2-tuple of integer
-        @return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+        :param shape: The shape of the detector array: 2-tuple of integer
+        :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
         if self._cached_array.get("r_delta") is None:
             center = self.rArray(shape)
@@ -971,8 +987,8 @@ class Geometry(object):
         Generate a 2D array of the given shape with (i,j) with the max
         distance between the center and any corner in unit: reciprocal spacing squarred (1/nm^2)
 
-        @param shape: The shape of the detector array: 2-tuple of integer
-        @return: array 2D containing the max delta (d*)^2 between a pixel center and any corner in reciprocal spacing squarred (1/nm^2)
+        :param shape: The shape of the detector array: 2-tuple of integer
+        :return: array 2D containing the max delta (d*)^2 between a pixel center and any corner in reciprocal spacing squarred (1/nm^2)
         """
         if self._cached_array.get("d*2_delta") is None:
             center = self.center_array(shape, unit=units.RecD2_NM)
@@ -988,14 +1004,14 @@ class Geometry(object):
         Generate an array of position in different dimentions (R, Q,
         2Theta)
 
-        @param shape: shape of the expected array
-        @type shape: ndarray.shape
-        @param typ: "center", "corner" or "delta"
-        @type typ: str
-        @param unit: can be Q, TTH, R for now
-        @type unit: pyFAI.units.Enum
+        :param shape: shape of the expected array
+        :type shape: ndarray.shape
+        :param typ: "center", "corner" or "delta"
+        :type typ: str
+        :param unit: can be Q, TTH, R for now
+        :type unit: pyFAI.units.Enum
 
-        @return: R, Q or 2Theta array depending on unit
+        :return: R, Q or 2Theta array depending on unit
         @rtype: ndarray
         """
         shape = self.get_shape(shape)
@@ -1028,16 +1044,16 @@ class Geometry(object):
         The poni being the point of normal incidence,
         it's incidence angle is $\{alpha} = 0$ hence $cos(\{alpha}) = 1$
 
-        @param d1: 1d or 2d set of points in pixel coord
-        @param d2:  1d or 2d set of points in pixel coord
-        @return: cosine of the incidence angle
+        :param d1: 1d or 2d set of points in pixel coord
+        :param d2:  1d or 2d set of points in pixel coord
+        :return: cosine of the incidence angle
         """
         p1, p2, p3 = self._calc_cartesian_positions(d1, d2)
         if p3 is not None:
             # case for non-planar detector ...
 
             # Calculate the sample-pixel vector (center of pixel) and norm it
-            z, y, x = self.calc_pos_zyx(None, d1, d2)
+            z, y, x = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False)
             t = numpy.zeros((z.size, 3))
             for i, v in enumerate((z, y, x)):
                 t[..., i] = v.ravel()
@@ -1046,7 +1062,7 @@ class Geometry(object):
             length.strides = (length.strides[0], 0)
             t /= length
             # extract the 4 corners of each pixel and calculate the cross product of the diagonal to get the normal
-            z, y, x = self.calc_pos_zyx(None, d1, d2, corners=True)
+            z, y, x = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=True)
             corners = numpy.zeros(z.shape + (3,))
             for i, v in enumerate((z, y, x)):
                 corners[..., i] = v
@@ -1082,9 +1098,9 @@ class Geometry(object):
 
         cos(a) = SC/SP
 
-        @param d1: 1d or 2d set of points
-        @param d2: 1d or 2d set of points (same size&shape as d1)
-        @return: solid angle correction array
+        :param d1: 1d or 2d set of points
+        :param d2: 1d or 2d set of points (same size&shape as d1)
+        :return: solid angle correction array
         """
         ds = 1.0
 
@@ -1116,9 +1132,9 @@ class Geometry(object):
 
         solid_angle = cos(incidence)^3
 
-        @param shape: shape of the array expected
-        @param order: should be 3, power of the formula just obove
-        @param absolute: the absolute solid angle is calculated as:
+        :param shape: shape of the array expected
+        :param order: should be 3, power of the formula just obove
+        :param absolute: the absolute solid angle is calculated as:
 
         SA = pix1*pix2/dist^2 * cos(incidence)^3
 
@@ -1140,8 +1156,8 @@ class Geometry(object):
         """
         Save the geometry parameters.
 
-        @param filename: name of the file where to save the parameters
-        @type filename: string
+        :param filename: name of the file where to save the parameters
+        :type filename: string
         """
         try:
             with open(filename, "a") as f:
@@ -1176,9 +1192,9 @@ class Geometry(object):
         A static method combining the constructor and the loader from
         a file
 
-        @param filename: name of the file to load
-        @type filename: string
-        @return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
+        :param filename: name of the file to load
+        :type filename: string
+        :return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
         """
         inst = cls()
         inst.load(filename)
@@ -1188,8 +1204,8 @@ class Geometry(object):
         """
         Load the refined parameters from a file.
 
-        @param filename: name of the file to load
-        @type filename: string
+        :param filename: name of the file to load
+        :type filename: string
         """
         data = {}
         with open(filename) as opened_file:
@@ -1241,7 +1257,7 @@ class Geometry(object):
         """
         Export geometry setup with the geometry of PyFAI
 
-        @return: dict with the parameter-set of the PyFAI geometry
+        :return: dict with the parameter-set of the PyFAI geometry
         """
         with self._sem:
             out = self.detector.getPyFAI()
@@ -1283,7 +1299,7 @@ class Geometry(object):
         """
         Export geometry setup with the geometry of Fit2D
 
-        @return: dict with parameters compatible with fit2D geometry
+        :return: dict with parameters compatible with fit2D geometry
         """
         with self._sem:
             cosTilt = cos(self._rot1) * cos(self._rot2)
@@ -1327,17 +1343,17 @@ class Geometry(object):
         By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
         To obtaine correct result you will have to flip images using numpy.flipud.
 
-        @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
-        @param tilt: tilt in degrees
-        @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+        :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
+        :param tilt: tilt in degrees
+        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
                 * 0deg -> Y does not move, +X goes to Z<0
                 * 90deg -> X does not move, +Y goes to Z<0
                 * 180deg -> Y does not move, +X goes to Z>0
                 * 270deg -> X does not move, +Y goes to Z>0
 
-        @param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
-        @param centerX, centerY: pixel position of the beam center
-        @param splineFile: name of the file containing the spline
+        :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
+        :param centerX, centerY: pixel position of the beam center
+        :param splineFile: name of the file containing the spline
         """
         with self._sem:
             try:
@@ -1386,18 +1402,18 @@ class Geometry(object):
 
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
-        @param SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
-        @param Center_1, pixel position of the PONI along fastest axis
-        @param Center_2: pixel position of the PONI along slowest axis
-        @param Rot_1: rotation around the fastest axis (x)
-        @param Rot_2: rotation around the slowest axis (y)
-        @param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
-        @param PSize_1: pixel size in meter along the fastest dimention
-        @param PSize_2: pixel size in meter along the slowst dimention
-        @param splineFile: name of the file containing the spline
-        @param BSize_1: pixel binning factor along the fastest dimention
-        @param BSize_2: pixel binning factor along the slowst dimention
-        @param WaveLength: wavelength used
+        :param SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
+        :param Center_1, pixel position of the PONI along fastest axis
+        :param Center_2: pixel position of the PONI along slowest axis
+        :param Rot_1: rotation around the fastest axis (x)
+        :param Rot_2: rotation around the slowest axis (y)
+        :param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
+        :param PSize_1: pixel size in meter along the fastest dimention
+        :param PSize_2: pixel size in meter along the slowst dimention
+        :param splineFile: name of the file containing the spline
+        :param BSize_1: pixel binning factor along the fastest dimention
+        :param BSize_2: pixel binning factor along the slowst dimention
+        :param WaveLength: wavelength used
         """
         # first define the detector
         if splineFile:
@@ -1434,7 +1450,7 @@ class Geometry(object):
 
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
-        @return: dictionnary with those parameters:
+        :return: dictionnary with those parameters:
             SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
             Center_1, pixel position of the PONI along fastest axis
             Center_2: pixel position of the PONI along slowest axis
@@ -1532,9 +1548,9 @@ class Geometry(object):
 
         The axis_offset parameter allows correction for the misalignement of the polarization plane (or ellipse main axis) and the the detector's X axis.
 
-        @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure at 2th=90, chi=0)
-        @param axis_offset: Angle between the polarization main axis and detector X direction (in radians !!!)
-        @return: 2D array with polarization correction array (intensity/polarisation)
+        :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure at 2th=90, chi=0)
+        :param axis_offset: Angle between the polarization main axis and detector X direction (in radians !!!)
+        :return: 2D array with polarization correction array (intensity/polarisation)
 
         """
         shape = self.get_shape(shape)
@@ -1576,9 +1592,9 @@ class Geometry(object):
         See reference on:
         J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
 
-        @param t0: value of the normal transmission (from 0 to 1)
-        @param shape: shape of the array
-        @return: actual
+        :param t0: value of the normal transmission (from 0 to 1)
+        :param shape: shape of the array
+        :return: actual
         """
         shape = self.get_shape(shape)
         if t0 < 0 or t0 > 1:
@@ -1627,16 +1643,16 @@ class Geometry(object):
         """
         Computes a 2D image from a 1D integrated profile
 
-        @param tth: 1D array with radial unit
-        @param I: scattering intensity
-        @param shape: shape of the image (if not defined by the detector)
-        @param dim1_unit: unit for the "tth" array
-        @param correctSolidAngle:
-        @param dummy: value for masked pixels
-        @param polarization_factor: set to true to use previously used value
-        @param dark: dark current correction
-        @param flat: flatfield corrction
-        @return: 2D image reconstructed
+        :param tth: 1D array with radial unit
+        :param I: scattering intensity
+        :param shape: shape of the image (if not defined by the detector)
+        :param dim1_unit: unit for the "tth" array
+        :param correctSolidAngle:
+        :param dummy: value for masked pixels
+        :param polarization_factor: set to true to use previously used value
+        :param dark: dark current correction
+        :param flat: flatfield corrction
+        :return: 2D image reconstructed
 
         """
         dim1_unit = units.to_unit(dim1_unit)
@@ -1673,7 +1689,7 @@ class Geometry(object):
         return calcimage
 
     def __copy__(self):
-        """@return a shallow copy of itself.
+        """:return: a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
         # transfer numerical values:
@@ -1694,8 +1710,8 @@ class Geometry(object):
 
     def __deepcopy__(self, memo=None):
         """deep copy
-        @param memo: dict with modified objects
-        @return: a deep copy of itself."""
+        :param memo: dict with modified objects
+        :return: a deep copy of itself."""
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
@@ -1739,8 +1755,9 @@ class Geometry(object):
 # ############################################
     def get_shape(self, shape=None):
         """Guess what is the best shape ....
-        @param shape: force this value (2-tuple of int)
-        @return: 2-tuple of int
+        
+        :param shape: force this value (2-tuple of int)
+        :return: 2-tuple of int
         """
         if shape is None:
             shape = self.detector.shape
