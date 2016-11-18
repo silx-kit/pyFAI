@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2016"
+__date__ = "18/11/2016"
 
 
 import unittest
@@ -356,8 +356,22 @@ class ParamTestGeometry(ParameterisedTestCase):
         logger.debug(msg)
 
 
+class TestBug474(unittest.TestCase):
+    """This bug is about PONI coordinates not subtracted from x&y coodinates in Cython"""
+
+    def test_regression(self):
+        detector = detector_factory("Pilatus100K")  # small detectors makes calculation faster
+        geo = geometry.Geometry(detector=detector)
+        geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
+        rc = geo.position_array(use_cython=True)
+        rp = geo.position_array(use_cython=False)
+        delta = abs(rp - rc).max()
+        self.assertLess(delta, 1e-5, "error on position is %s" % delta)
+
+
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(TestBug474("test_regression"))
     testsuite.addTest(TestSolidAngle("testSolidAngle"))
     testsuite.addTest(TestSolidAngle("test_nonflat_center"))
     testsuite.addTest(TestSolidAngle("test_nonflat_outside"))

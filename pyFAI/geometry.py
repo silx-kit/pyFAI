@@ -26,7 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""This modules contrains only one (large) class in charge of
+"""This modules contrains only one (large) class in charge of:
 
 * calculating the geometry, i.e. the position in the detector space of each pixel of the detector
 * manages caches to store intermediate results
@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2016"
+__date__ = "18/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -675,7 +675,7 @@ class Geometry(object):
             self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
-    def positionArray(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True):
+    def position_array(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True):
         """Generate an array for the pixel position given the shape of the detector.
 
         if corners is False, the coordinates of the center of the pixel
@@ -711,6 +711,11 @@ class Geometry(object):
         for idx in range(3):
             tpos[..., idx] = pos[idx]
         return tpos
+
+    @deprecated
+    def positionArray(self, *arg, **kwarg):
+        """Derecated version of positionArray, left for compatibility see doc of position_array"""
+        return self.position_array(*arg, **kwarg)
 
     def corner_array(self, shape=None, unit=None, use_cython=True):
         """
@@ -777,7 +782,7 @@ class Geometry(object):
 
                     if corners is None:
                         # In case the fast-path is not implemented
-                        pos = self.positionArray(shape, corners=True)
+                        pos = self.position_array(shape, corners=True)
                         x = pos[..., 2]
                         y = pos[..., 1]
                         z = pos[..., 0]
@@ -872,7 +877,7 @@ class Geometry(object):
         if (ary is not None) and (ary.shape == shape):
             return ary
 
-        pos = self.positionArray(shape, corners=False)
+        pos = self.position_array(shape, corners=False)
         x = pos[..., 2]
         y = pos[..., 1]
         z = pos[..., 0]
