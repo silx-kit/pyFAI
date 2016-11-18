@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2016"
+__date__ = "18/11/2016"
 __status__ = "development"
 
 import logging
@@ -331,25 +331,25 @@ class AIWidget(qt.QWidget):
                     if self.fast_dim:
                         if "npt_azim" in kwarg:
                             _ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                     dtype=numpy.float32,
-                                                     chunks=(1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                     maxshape=(None, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]))
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
+                                                      maxshape=(None, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
                             _ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_rad"]),
-                                                     dtype=numpy.float32,
-                                                     chunks=(1, self.fast_dim, kwarg["npt_rad"]),
-                                                     maxshape=(None, self.fast_dim, kwarg["npt_rad"]))
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, self.fast_dim, kwarg["npt_rad"]),
+                                                      maxshape=(None, self.fast_dim, kwarg["npt_rad"]))
                     else:
                         if "npt_azim" in kwarg:
                             _ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                     dtype=numpy.float32,
-                                                     chunks=(1, kwarg["npt_azim"], kwarg["npt_rad"]),
-                                                     maxshape=(None, kwarg["npt_azim"], kwarg["npt_rad"]))
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, kwarg["npt_azim"], kwarg["npt_rad"]),
+                                                      maxshape=(None, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
                             _ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_rad"]),
-                                                     dtype=numpy.float32,
-                                                     chunks=(1, kwarg["npt_rad"]),
-                                                     maxshape=(None, kwarg["npt_rad"]))
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, kwarg["npt_rad"]),
+                                                      maxshape=(None, kwarg["npt_rad"]))
 
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
@@ -455,7 +455,7 @@ class AIWidget(qt.QWidget):
                    }
         for unit, widget in self.units.items():
             if widget is not None and widget.isChecked():
-                to_save["unit"] = unit.name
+                to_save["unit"] = str(unit)
                 break
         else:
             logger.info("Undefined unit !!!")
