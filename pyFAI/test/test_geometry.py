@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "18/11/2016"
 
 
 import unittest
@@ -256,7 +256,7 @@ class ParamFastPath(ParameterisedTestCase):
             dico = geo.copy()
             dico["detector"] = det
             geometries.append(dico)
-    dunits = dict((u.REPR.split("_")[0], u) for u in units.RADIAL_UNITS)
+    dunits = dict((u.split("_")[0], v) for u, v in units.RADIAL_UNITS.items())
     TESTSPACE = itertools.product(geometries, dunits.values())
 
     def test_corner_array(self):
@@ -307,8 +307,7 @@ class ParamTestGeometry(ParameterisedTestCase):
                  ("tth", ("tan", "cython")),
                  ("qFunction", ("numpy", "cython")),
                  ("rFunction", ("numpy", "cython"))]
-    pixels = {"pixel1": 1,
-              "pixel2": 1,
+    pixels = {"detector": "Pilatus100k",
               "wavelength": 1e-10}
     geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
                   {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
@@ -316,13 +315,13 @@ class ParamTestGeometry(ParameterisedTestCase):
                   {'dist': 1, 'rot1':-1, 'rot2':-.2, 'rot3': 1},
                   {'dist': 1, 'rot1': 1, 'rot2': 5, 'rot3': .4},
                   {'dist': 1, 'rot1':-1.2, 'rot2': 1, 'rot3': 1},
-                  {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1},
+                  {'dist': 100, 'rot1':-2, 'rot2': 2, 'rot3': 1},
                   ]
     for g in geometries:
         g.update(pixels)
 
     TESTCASES_FUNCT = [(k[0], k[1], g) for k, g in itertools.product(functions, geometries)]
-    TESTCASES_XYZ = itertools.product((False,), geometries)
+    TESTCASES_XYZ = itertools.product((False, True), geometries)
 
     def test_geometry_functions(self):
         "test functions like tth, qFunct, rfunction, ... fake detectors"
@@ -357,8 +356,22 @@ class ParamTestGeometry(ParameterisedTestCase):
         logger.debug(msg)
 
 
+class TestBug474(unittest.TestCase):
+    """This bug is about PONI coordinates not subtracted from x&y coodinates in Cython"""
+
+    def test_regression(self):
+        detector = detector_factory("Pilatus100K")  # small detectors makes calculation faster
+        geo = geometry.Geometry(detector=detector)
+        geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
+        rc = geo.position_array(use_cython=True)
+        rp = geo.position_array(use_cython=False)
+        delta = abs(rp - rc).max()
+        self.assertLess(delta, 1e-5, "error on position is %s" % delta)
+
+
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(TestBug474("test_regression"))
     testsuite.addTest(TestSolidAngle("testSolidAngle"))
     testsuite.addTest(TestSolidAngle("test_nonflat_center"))
     testsuite.addTest(TestSolidAngle("test_nonflat_outside"))

@@ -37,7 +37,9 @@ Files:  setup.py
         pyFAI/diffmap_widget.py
         pyFAI/diffmap.py
         pyFAI/decorators.py
+        pyFAI/detectors.py
         pyFAI/distortion.py
+        pyFAI/geometry.py
 		pyFAI/integrate_widget.py
         pyFAI/tree.py
         pyFAI/orderedset.py

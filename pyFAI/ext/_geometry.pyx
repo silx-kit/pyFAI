@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "31/05/2016"
+__date__ = "18/11/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -208,8 +208,8 @@ def calc_pos_zyx(double L, double poni1, double poni2,
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
-            p1 = c1[i]
-            p2 = c2[i]
+            p1 = c1[i] - poni1
+            p2 = c2[i] - poni2
             t1[i] = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t2[i] = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t3[i] = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
