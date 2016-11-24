@@ -274,21 +274,10 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
 
-# still use the epydoc markup for now
-import re
-
-re_field = re.compile('@(param|type|rtype|return)')
-
-
-def fix_docstring(app, what, name, obj, options, lines):
-    for i in range(len(lines)):
-        lines[i] = re_field.sub(r':\1', lines[i])
-
 def skip(app, what, name, obj, skip, options):
     if name == "__init__":
         return False
     return skip
 
 def setup(app):
-    app.connect('autodoc-process-docstring', fix_docstring)
     app.connect("autodoc-skip-member", skip)
