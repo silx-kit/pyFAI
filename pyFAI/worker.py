@@ -1,4 +1,5 @@
-# coding: utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
@@ -29,6 +30,7 @@
 
 A tool able to perform azimuthal integration with:
 additional saving capabilities like
+
 - save as 2/3D structure in a HDF5 File
 - read from HDF5 files
 
@@ -36,49 +38,44 @@ Aims at being integrated into a plugin like LImA or as model for the GUI
 
 The configuration of this class is mainly done via a dictionary transmitted as a JSON string:
 Here are the valid keys:
-    "dist",
-    "poni1",
-    "poni2",
-    "rot1"
-    "rot3"
-    "rot2"
-    "pixel1"
-    "pixel2"
 
-    "splineFile"
-    "wavelength"
-
-    "poni" #path of the file
-
-    "chi_discontinuity_at_0"
-    "do_mask"
-    "do_dark"
-    "do_azimuthal_range"
-    "do_flat"
-    "do_2D"
-    "azimuth_range_min"
-    "azimuth_range_max"
-
-    "polarization_factor"
-    "nbpt_rad"
-    "do_solid_angle"
-    "do_radial_range"
-    "do_poisson"
-    "delta_dummy"
-    "nbpt_azim"
-    "flat_field"
-    "radial_range_min"
-    "dark_current"
-    "do_polarization"
-    "mask_file"
-    "detector"
-    "unit"
-    "radial_range_max"
-    "val_dummy"
-    "do_dummy"
-    "method"
-}
-
+- "dist"
+- "poni1"
+- "poni2"
+- "rot1"
+- "rot3"
+- "rot2"
+- "pixel1"
+- "pixel2"
+- "splineFile"
+- "wavelength"
+- "poni" #path of the file
+- "chi_discontinuity_at_0"
+- "do_mask"
+- "do_dark"
+- "do_azimuthal_range"
+- "do_flat"
+- "do_2D"
+- "azimuth_range_min"
+- "azimuth_range_max"
+- "polarization_factor"
+- "nbpt_rad"
+- "do_solid_angle"
+- "do_radial_range"
+- "do_poisson"
+- "delta_dummy"
+- "nbpt_azim"
+- "flat_field"
+- "radial_range_min"
+- "dark_current"
+- "do_polarization"
+- "mask_file"
+- "detector"
+- "unit"
+- "radial_range_max"
+- "val_dummy"
+- "do_dummy"
+- "method"
 """
 
 
@@ -88,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2016"
+__date__ = "24/11/2016"
 __status__ = "development"
 
 import threading

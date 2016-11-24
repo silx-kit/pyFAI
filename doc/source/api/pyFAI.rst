@@ -103,7 +103,7 @@
     :members:
     :undoc-members:
     :show-inheritance:
-    
+
 :mod:`ocl_azim_csr_dis` Module
 ------------------------------
 

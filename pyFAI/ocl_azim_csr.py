@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "27/10/2016"
+__date__ = "24/11/2016"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -257,9 +257,11 @@ class OCL_CSR_Integrator(object):
                             dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
                             preprocess_only=False, safe=True, normalization_factor=1.0):
         """
-        Before performing azimuthal integration, the preprocessing is :
+        Before performing azimuthal integration, the preprocessing is:
 
-        data = (data - dark) / (flat*solidAngle*polarization)
+        .. math::
+
+            data = (data - dark) / (flat * solidAngle * polarization)
 
         Integration is performed using the CSR representation of the look-up table
 
@@ -274,7 +276,7 @@ class OCL_CSR_Integrator(object):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidAngle & polarization corrected image, else
         :param normalization_factor: divide result by this value
-        :return averaged data, weighted histogram, unweighted histogram
+        :return: averaged data, weighted histogram, unweighted histogram
         """
         events = []
         with self._sem:

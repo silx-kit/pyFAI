@@ -34,7 +34,8 @@ capabilities to write EDF or other formats using fabio.
 Can be imported without h5py but then limited to fabio & ascii formats.
 
 TODO:
-* add monitor to HDF5
+
+- Add monitor to HDF5
 """
 
 
@@ -44,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -835,12 +836,16 @@ class FabioWriter(Writer):
 class Nexus(object):
     """
     Writer class to handle Nexus/HDF5 data
-    Manages:
-    entry
-        pyFAI-subentry
-            detector
 
-    #TODO: make it thread-safe !!!
+    Manages:
+
+    - entry
+
+        - pyFAI-subentry
+
+            - detector
+
+    TODO: make it thread-safe !!!
     """
 
     def __init__(self, filename, mode="r"):
@@ -929,7 +934,7 @@ class Nexus(object):
         :param entry: name of the entry
         :param program_name: value of the field as string
         :param title: value of the field as string
-        @force_time: enforce the start_time (as string!)
+        :param force_time: enforce the start_time (as string!)
         :return: the corresponding HDF5 group
         """
         nb_entries = len(self.get_entries())

@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 
 import sys
@@ -86,7 +86,7 @@ class Massif(object):
     def nearest_peak(self, x):
         """
         :param x: coordinates of the peak
-        :returns the coordinates of the nearest peak
+        :returns: the coordinates of the nearest peak
         """
         out = self._bilin.local_maxi(x)
         if isinstance(out, tuple):

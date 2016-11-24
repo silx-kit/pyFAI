@@ -382,13 +382,14 @@ class BlobDetection(object):
 
     def refine_Hessian(self, kpx, kpy, kps):
         """
-
-        Refine the keypoint location based on a 3 point derivative, and delete uncoherent keypoints
+        Refine the keypoint location based on a 3 point derivative, and delete
+        non-coherent keypoints.
 
         :param kpx: x_pos of keypoint
         :param kpy: y_pos of keypoint
         :param kps: s_pos of keypoint
-        :return arrays of corrected coordinates of keypoints, values and locations of keypoints
+        :return: arrays of corrected coordinates of keypoints, values and
+            locations of keypoints
         """
         curr = self.dogs[(kps, kpy, kpx)]
         nx = self.dogs[(kps, kpy, kpx + 1)]

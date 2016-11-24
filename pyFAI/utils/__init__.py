@@ -134,17 +134,22 @@ def expand2d(vect, size2, vertical=True):
     """
     This expands a vector to a 2d-array.
 
-    The resul is the same as
-    if vertical:
-        numpy.outer(numpy.ones(size2), vect)
-    else:
-         numpy.outer(vect, numpy.ones( size2))
+    The result is the same as:
 
-    This is a ninja optimization: replace *1 with a memcopy, saves 50% of time at the ms level.
+    .. code-block:: python
+
+        if vertical:
+            numpy.outer(numpy.ones(size2), vect)
+        else:
+            numpy.outer(vect, numpy.ones(size2))
+
+    This is a ninja optimization: replace \\*1 with a memcopy, saves 50% of
+    time at the ms level.
 
     :param vect: 1d vector
-    :param size2: size
-    :param vertical: if False,
+    :param size2: size of the expanded dimension
+    :param vertical: if False the vector is expanded to the first dimension.
+        If True, it is expanded to the second dimension.
     """
     size1 = vect.size
     size2 = int(size2)
@@ -294,12 +299,11 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
 
 
 def expand(input_img, sigma, mode="constant", cval=0.0):
-
     """Expand array a with its reflection on boundaries
 
     :param a: 2D array
     :param sigma: float or 2-tuple of floats.
-    :param mode:"constant", "nearest", "reflect" or mirror
+    :param mode: "constant", "nearest", "reflect" or "mirror"
     :param cval: filling value used for constant, 0.0 by default
 
     Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian
@@ -373,11 +377,11 @@ def relabel(label, data, blured, max_size=None):
     Relabel limits the number of region in the label array.
     They are ranked relatively to their max(I0)-max(blur(I0)
 
-    :param label: a label array coming out of scipy.ndimage.measurement.label
+    :param label: a label array coming out of ``scipy.ndimage.measurement.label``
     :param data: an array containing the raw data
-    :param blured: an array containing the blured data
+    :param blured: an array containing the blurred data
     :param max_size: the max number of label wanted
-    :return array like label
+    :return: array like label
     """
     if _relabel:
         max_label = label.max()
@@ -561,7 +565,8 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
 
 def expand_args(args):
     """
-    Takes an argv and expand it (under Windows, cmd does not convert *.tif into a list of files.
+    Takes an argv and expand it (under Windows, cmd does not convert ``*.tif``
+    into a list of files.
     Keeps only valid files (thanks to glob)
 
     :param args: list of files or wilcards
