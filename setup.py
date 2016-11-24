@@ -21,14 +21,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+"Setup script for python Fast Azimuthal Integration"
+
 from __future__ import print_function, division, with_statement, absolute_import
 
-__doc__ = "Setup script for python Fast Azimuthal Integration"
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2016"
+__date__ = "10/11/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -93,6 +95,15 @@ def check_cython():
     """
     Check if cython must be activated fron te command line or the environment.
     """
+    if ("--no-cython" in sys.argv):
+        sys.argv.remove("--no-cython")
+        os.environ["WITH_CYTHON"] = "False"
+        print("No Cython requested by command line")
+        return False
+
+    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+        print("No Cython requested by environment")
+        return False
 
     if not USE_OPENMP:
         # By default generated Cython files used in the repo using OpenMP
@@ -100,20 +111,11 @@ def check_cython():
         os.environ["FORCE_CYTHON"] = "True"
         return True
 
-    if ("--no-cython" in sys.argv):
-        sys.argv.remove("--no-cython")
-        os.environ["WITH_CYTHON"] = "False"
-        print("No Cython requested by command line")
-        return False
-    elif "--force-cython" in sys.argv:
+    if "--force-cython" in sys.argv:
         sys.argv.remove("--force-cython")
         print("Force Cython re-generation requested by command line")
         os.environ["FORCE_CYTHON"] = "True"
         return True
-
-    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
-        print("No Cython requested by environment")
-        return False
 
     try:
         import Cython.Compiler.Version
@@ -147,13 +149,12 @@ def check_openmp():
         else:
             return True
 
-    if platform.system() == "Darwin":
+    if sys.platform == "darwin":
         # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
-        print("OpenMP is not supported by Darwin platform")
         osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
         if osx >= (10, 8):
+            print("OpenMP is not supported on Apple computers for OSX newer than 10.8")
             return False
-
     return True
 
 
