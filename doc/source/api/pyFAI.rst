@@ -193,11 +193,10 @@
     :undoc-members:
     :show-inheritance:
 
-:mod:`gui_utils` Module
------------------------
+:mod:`gui.gui_utils` Module
+---------------------------
 
-.. automodule:: pyFAI.gui_utils
+.. automodule:: pyFAI.gui.utils
     :members:
     :undoc-members:
     :show-inheritance:
-    
