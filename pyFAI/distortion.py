@@ -45,7 +45,6 @@ if ocl:
     from . import ocl_azim_lut, ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
-from .decorators import timeit
 try:
     from .third_party import six
 except ImportError:
@@ -265,8 +264,8 @@ class Distortion(object):
                                                                       block_size=self.workgroup)
 
     def calc_LUT(self, use_common=True):
-        """Calculate the Look-up table 
-        
+        """Calculate the Look-up table
+
         :return: look up table either in CSR or LUT format depending on serl.method
         """
         if self.pos is None:
@@ -383,7 +382,7 @@ class Distortion(object):
 
         :param image: 2D-array with the image
         :return: uncorrected 2D image
-        
+
         Nota: to retrieve the input mask on can do:
 
         >>> msk =  dis.uncorrect(numpy.ones(dis._shape_out)) <= 0
@@ -694,7 +693,7 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[i - 1 , h] += sign * dA
+                            self.box[i - 1, h] += sign * dA
                             AA -= dA
                             h += 1
                 # Section Pn->B

@@ -27,7 +27,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -182,7 +182,7 @@ class BlobDetection(object):
         :param scale_per_octave: Number of scale to be performed per octave
         :param mask: mask where pixel are not valid
         """
-#        self.raw = numpy.log(img.astype(numpy.float32))
+        # self.raw = numpy.log(img.astype(numpy.float32))
         self.raw = img.astype(numpy.float32)
         self.cur_sigma = float(cur_sigma)
         self.init_sigma = float(init_sigma)
@@ -515,9 +515,9 @@ class BlobDetection(object):
                 k2x.append(x + delta[1])
                 k2y.append(y + delta[0])
                 sigmas.append(sigma + delta[2])
-#                         kds.append(delta[2])
-#                         kdx.append(delta[1])
-#                         kdy.append(delta[0])
+                # kds.append(delta[2])
+                # kdx.append(delta[1])
+                # kdy.append(delta[0])
 
         return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
 
@@ -569,15 +569,15 @@ class BlobDetection(object):
                 H = numpy.array([[d2y, dxy], [dxy, d2x]])
                 val, vect = numpy.linalg.eig(H)
 
-#                 print 'new point'
-#                 print x, y
-#                 print val
-#                 print vect
-#                 print numpy.dot(vect[0],vect[1])
+                # print 'new point'
+                # print x, y
+                # print val
+                # print vect
+                # print numpy.dot(vect[0],vect[1])
                 _e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
                 j += 1
-#                 print j
-#                 print e
+                # print j
+                # print e
                 if numpy.abs(val[1]) < numpy.abs(val[0]):  # reorganisation des valeurs propres et vecteurs propres
                     val[0], val[1] = val[1], val[0]
                     vect = vect[-1::-1, :]
@@ -597,24 +597,24 @@ class BlobDetection(object):
         val, vect = self.direction()
 
         L = 0.114
-#         L = 1.0
+        # L = 1.0
 
         poni1 = self.raw.shape[0] / 2.0
         poni2 = self.raw.shape[1] / 2.0
-#         poni1 = 0.0599/100.0 * power(10,6)
-#         poni2 = -0.07623/100.0 * power(10,6)
+        # poni1 = 0.0599/100.0 * power(10,6)
+        # poni2 = -0.07623/100.0 * power(10,6)
 
         d1 = self.keypoints.y - poni1
         d2 = self.keypoints.x - poni2
         rot1 = rot2 = rot3 = 0
-#         rot1 = -0.22466
-#         rot2 = -0.07476
-#         rot3 = 0.00000005
+        # rot1 = -0.22466
+        # rot2 = -0.07476
+        # rot3 = 0.00000005
 
         valy, valx = numpy.transpose(vect)[0]
         phi_exp = arctan2(valy, valx) % pi
-#         print "phi exp"
-#         print phi_exp * 180/ pi
+        # print "phi exp"
+        # print phi_exp * 180/ pi
 
         cosrot1 = cos(rot1)
         cosrot2 = cos(rot2)
@@ -663,8 +663,8 @@ class BlobDetection(object):
                         L * (-(cosrot3 * sinrot1) + cosrot1 * sinrot2 * sinrot3) + d2 * (cosrot1 * cosrot3 + sinrot1 * sinrot2 * sinrot3)) ** 2)
 
         phi_th = arctan2(d1, d2)
-#         print "phi th"
-#         print phi_th_2
+        # print "phi th"
+        # print phi_th_2
         err = numpy.sum((phi_th - phi_exp) ** 2) / self.keypoints.x.size
         print("err")
         print(err)
