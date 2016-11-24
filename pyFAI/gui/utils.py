@@ -44,7 +44,7 @@ def update_fig(fig=None):
     """
     Update a matplotlib figure with a Qt4 backend
 
-    @param fig: pylab figure
+    :param fig: pylab figure
     """
     if fig and "canvas" in dir(fig) and fig.canvas:
         fig.canvas.draw()

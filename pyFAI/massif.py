@@ -85,8 +85,8 @@ class Massif(object):
 
     def nearest_peak(self, x):
         """
-        @param x: coordinates of the peak
-        @returns the coordinates of the nearest peak
+        :param x: coordinates of the peak
+        :returns the coordinates of the nearest peak
         """
         out = self._bilin.local_maxi(x)
         if isinstance(out, tuple):
@@ -113,12 +113,12 @@ class Massif(object):
         """
         All in one function that finds a maximum from the given seed (x)
         then calculates the region extension and extract position of the neighboring peaks.
-        @param x: seed for the calculation, input coordinates
-        @param nmax: maximum number of peak per region
-        @param annotate: call back method taking number of points + coordinate as input.
-        @param massif_contour: callback to show the contour of a massif with the given index.
-        @param stdout: this is the file where output is written by default.
-        @return: list of peaks
+        :param x: seed for the calculation, input coordinates
+        :param nmax: maximum number of peak per region
+        :param annotate: call back method taking number of points + coordinate as input.
+        :param massif_contour: callback to show the contour of a massif with the given index.
+        :param stdout: this is the file where output is written by default.
+        :return: list of peaks
         """
         listpeaks = []
         region = self.calculate_massif(x)
@@ -171,13 +171,13 @@ class Massif(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask.
-        @param Imin: minimum of intensity above the background to keep the point
-        @param keep: maximum number of points to keep
-        @param kwarg: ignored parameters
-        @param dmin: minimum distance to another peak
-        @param seed: list of good guesses to start with
-        @return: list of peaks [y,x], [y,x], ...]
+        :param mask: 2d array with mask.
+        :param Imin: minimum of intensity above the background to keep the point
+        :param keep: maximum number of points to keep
+        :param kwarg: ignored parameters
+        :param dmin: minimum distance to another peak
+        :param seed: list of good guesses to start with
+        :return: list of peaks [y,x], [y,x], ...]
         """
         all_points = numpy.vstack(numpy.where(mask)).T
         res = []
@@ -232,7 +232,7 @@ class Massif(object):
 
     def getBinnedData(self):
         """
-        @return binned data
+        :return binned data
         """
         if self._binned_data is None:
             with self._sem_binning:
@@ -256,7 +256,7 @@ class Massif(object):
 
     def getMedianData(self):
         """
-        @return: a spacial median filtered image
+        :return: a spacial median filtered image
         """
         if self._median_data is None:
             with self._sem_median:
@@ -270,7 +270,7 @@ class Massif(object):
 
     def getBluredData(self):
         """
-        @return: a blurred image
+        :return: a blurred image
         """
 
         if self._blured_data is None:
@@ -284,7 +284,7 @@ class Massif(object):
 
     def getLabeledMassif(self, pattern=None):
         """
-        @return: an image composed of int with a different value for each massif
+        :return: an image composed of int with a different value for each massif
         """
         if self._labeled_massif is None:
             with self._sem_label:

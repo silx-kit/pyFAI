@@ -45,10 +45,10 @@ class Refinment2D(object):
     """
     def __init__(self, img, ai=None):
         """
-        @param img: raw image we are working on
-        @type img: ndarray
-        @param ai: azimuhal integrator we are working on
-        @type ai: pyFAI.azimuthalIntegrator.AzimutalIntegrator
+        :param img: raw image we are working on
+        :type img: ndarray
+        :param ai: azimuhal integrator we are working on
+        :type ai: pyFAI.azimuthalIntegrator.AzimutalIntegrator
         """
         self.img = img
         if ai is None:
@@ -65,13 +65,13 @@ class Refinment2D(object):
         Reconstruct a perfect image according to 2th / I given in
         input
 
-        @param tth: 2 theta array
-        @type tth: ndarray
-        @param I: intensity array
-        @type I: ndarray
+        :param tth: 2 theta array
+        :type tth: ndarray
+        :param I: intensity array
+        :type I: ndarray
 
-        @return: a reconstructed image
-        @rtype: ndarray
+        :return: a reconstructed image
+        :rtype: ndarray
         """
         return numpy.interp(self.ai.twoThetaArray(self.shape), tth, I)
 
@@ -79,11 +79,11 @@ class Refinment2D(object):
         """
         Jerome peux-tu décrire de quoi il retourne ???
 
-        @param dx: ???
-        @type: float ???
+        :param dx: ???
+        :type: float ???
 
-        @return: ???
-        @rtype: ???
+        :return: ???
+        :rtype: ???
         """
         f = self.ai.getFit2D()
         fp = f.copy()
@@ -106,11 +106,11 @@ class Refinment2D(object):
         """
         idem ici ???
 
-        @param dx: ???
-        @type dx: float ???
+        :param dx: ???
+        :type dx: float ???
 
-        @return: ???
-        @rtype: ???
+        :return: ???
+        :rtype: ???
         """
         f = self.ai.getFit2D()
         fp = f.copy()
@@ -133,13 +133,13 @@ class Refinment2D(object):
         """
         ???
 
-        @param axis: ???
-        @type axis: ???
-        @param dx: ???
-        @type dx: ???
+        :param axis: ???
+        :type axis: ???
+        :param dx: ???
+        :type dx: ???
 
-        @return: ???
-        @rtype: ???
+        :return: ???
+        :rtype: ???
         """
         tth, I = self.ai.xrpd(self.img, max(self.shape))
         dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1)\
@@ -169,13 +169,13 @@ class Refinment2D(object):
         """
         ???
 
-        @param width: ???
-        @type width: float ???
-        @param points: ???
-        @type points: int ???
+        :param width: ???
+        :type width: float ???
+        :param points: ???
+        :type points: int ???
 
-        @return: ???
-        @rtype: ???
+        :return: ???
+        :rtype: ???
         """
         f = self.ai.getFit2D()
         out = []
@@ -199,13 +199,13 @@ class Refinment2D(object):
         """
         ???
 
-        @param width: ???
-        @type width: float ???
-        @param points: ???
-        @type points: int ???
+        :param width: ???
+        :type width: float ???
+        :param points: ???
+        :type points: int ???
 
-        @return: ???
-        @rtype: ???
+        :return: ???
+        :rtype: ???
         """
         f = self.ai.getFit2D()
         out = []
@@ -229,17 +229,17 @@ class Refinment2D(object):
         """
         ???
 
-        @param width: ???
-        @type width: float ???
-        @param points: ???
-        @type points: int ???
-        @param axis: ???
-        @type axis: str ???
-        @param dx: ???
-        @type dx: float ???
+        :param width: ???
+        :type width: float ???
+        :param points: ???
+        :type points: int ???
+        :param axis: ???
+        :type axis: str ???
+        :param dx: ???
+        :type dx: float ???
 
-        @return: ???
-        @rtype: ???
+        :return: ???
+        :rtype: ???
         """
         logger.info("Scanning along axis %s", axis)
         f = self.ai.getFit2D()

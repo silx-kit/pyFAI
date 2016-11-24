@@ -87,7 +87,7 @@ class DistortionDS(PyTango.Device_4Impl) :
 
     def setDarkcurrentImage(self, filepath):
         """
-        @param imagefile: filename with the path to the dark image
+        :param imagefile: filename with the path to the dark image
         """
 
         self.__darkcurrent_filename = filepath
@@ -97,7 +97,7 @@ class DistortionDS(PyTango.Device_4Impl) :
 
     def setFlatfieldImage(self, filepath):
         """
-        @param filepath: filename with the path to the flatfield image
+        :param filepath: filename with the path to the flatfield image
         """
         self.__flatfield_filename = filepath
         if(self.__pyFAISink) :
@@ -106,7 +106,7 @@ class DistortionDS(PyTango.Device_4Impl) :
 
     def setSplineFile(self, filepath):
         """
-        @param filepath: filename with the path to the spline distortion file
+        :param filepath: filename with the path to the spline distortion file
         """
 
         self.__spline_filename = filepath

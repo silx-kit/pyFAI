@@ -237,9 +237,9 @@ class Geometry(object):
         :param d1: position on the detector along the slow dimention (i.e. y)
         :param d2: position on the detector along the fastest dimention (i.e. x)
         :param corners: return positions on the corners (instead of center)
-        :return: 3-tuple of nd-array,  with  dim0=along the beam,
-                                            dim1=along slowest dimension
-                                            dim2=along fastest dimension
+        :return: 3-tuple of nd-array, with dim0=along the beam,
+                                           dim1=along slowest dimension
+                                           dim2=along fastest dimension
         """
         if param is None:
             dist = self._dist
@@ -297,7 +297,7 @@ class Geometry(object):
         :type d2: scalar or array of scalar
         :param path: can be "cos", "tan" or "cython"
         :return: 2theta in radians
-        @rtype: float or array of floats.
+        :rtype: float or array of floats.
         """
 
         if path == "cython" and _geometry:
@@ -334,7 +334,7 @@ class Geometry(object):
         :param d2: position(s) in pixel in second dimension (c order)
         :type d2: scalar or array of scalar
         :return: q in in nm^(-1)
-        @rtype: float or array of floats.
+        :rtype: float or array of floats.
         """
         if not self.wavelength:
             raise RuntimeError(("Scattering vector q cannot be calculated"
@@ -373,7 +373,7 @@ class Geometry(object):
         :param d2: position(s) in pixel in second dimension (c order)
         :type d2: scalar or array of scalar
         :return: r in in m
-        @rtype: float or array of floats.
+        :rtype: float or array of floats.
         """
 
         if _geometry and path == "cython":
@@ -478,7 +478,7 @@ class Geometry(object):
         :param d2: position(s) in pixel in second dimension (c order)
         :type d2: scalar or array of scalar
         :return: 2theta in radians
-        @rtype: floar or array of floats.
+        :rtype: floar or array of floats.
         """
         return self.tth(d1 - 0.5, d2 - 0.5)
 
@@ -931,7 +931,7 @@ class Geometry(object):
         :type unit: pyFAI.units.Enum
 
         :return: R, Q or 2Theta array depending on unit
-        @rtype: ndarray
+        :rtype: ndarray
         """
         shape = self.get_shape(shape)
         if shape is None:

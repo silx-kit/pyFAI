@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 
 import logging
@@ -142,9 +142,9 @@ def expand2d(vect, size2, vertical=True):
 
     This is a ninja optimization: replace *1 with a memcopy, saves 50% of time at the ms level.
 
-    @param vect: 1d vector
-    @param size2: size
-    @param vertical: if False,
+    :param vect: 1d vector
+    :param size2: size
+    :param vertical: if False,
     """
     size1 = vect.size
     size2 = int(size2)
@@ -168,8 +168,8 @@ def gaussian(M, std):
     - The default for sym=False (needed for gaussian filtering without shift)
     - This implementation is normalized
 
-    @param M: length of the windows (int)
-    @param std: standatd deviation sigma
+    :param M: length of the windows (int)
+    :param std: standatd deviation sigma
 
     The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
 
@@ -182,17 +182,17 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
     """
     2-dimensional Gaussian filter implemented with FFT
 
-    @param input_img:    input array to filter
-    @type input_img: array-like
-    @param sigma: standard deviation for Gaussian kernel.
+    :param input_img:    input array to filter
+    :type input_img: array-like
+    :param sigma: standard deviation for Gaussian kernel.
         The standard deviations of the Gaussian filter are given for each axis as a sequence,
         or as a single number, in which case it is equal for all axes.
-    @type sigma: scalar or sequence of scalars
-    @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
+    :type sigma: scalar or sequence of scalars
+    :param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
         The ``mode`` parameter determines how the array borders are
         handled, where ``cval`` is the value when mode is equal to
         'constant'. Default is 'reflect'
-    @param cval: scalar, optional
+    :param cval: scalar, optional
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
     if use_scipy:
@@ -223,9 +223,9 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
 def shift(input_img, shift_val):
     """
     Shift an array like  scipy.ndimage.interpolation.shift(input_img, shift_val, mode="wrap", order=0) but faster
-    @param input_img: 2d numpy array
-    @param shift_val: 2-tuple of integers
-    @return: shifted image
+    :param input_img: 2d numpy array
+    :param shift_val: 2-tuple of integers
+    :return: shifted image
     """
     re = numpy.zeros_like(input_img)
     s0, s1 = input_img.shape
@@ -259,17 +259,17 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
     """
     2-dimensional Difference of Gaussian filter implemented with FFT
 
-    @param input_img:    input_img array to filter
-    @type input_img: array-like
-    @param sigma: standard deviation for Gaussian kernel.
+    :param input_img:    input_img array to filter
+    :type input_img: array-like
+    :param sigma: standard deviation for Gaussian kernel.
         The standard deviations of the Gaussian filter are given for each axis as a sequence,
         or as a single number, in which case it is equal for all axes.
-    @type sigma: scalar or sequence of scalars
-    @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
+    :type sigma: scalar or sequence of scalars
+    :param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
         The ``mode`` parameter determines how the array borders are
         handled, where ``cval`` is the value when mode is equal to
         'constant'. Default is 'reflect'
-    @param cval: scalar, optional
+    :param cval: scalar, optional
             Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
 
@@ -297,10 +297,10 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
 
     """Expand array a with its reflection on boundaries
 
-    @param a: 2D array
-    @param sigma: float or 2-tuple of floats.
-    @param mode:"constant", "nearest", "reflect" or mirror
-    @param cval: filling value used for constant, 0.0 by default
+    :param a: 2D array
+    :param sigma: float or 2-tuple of floats.
+    :param mode:"constant", "nearest", "reflect" or mirror
+    :param cval: filling value used for constant, 0.0 by default
 
     Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian
     """
@@ -373,11 +373,11 @@ def relabel(label, data, blured, max_size=None):
     Relabel limits the number of region in the label array.
     They are ranked relatively to their max(I0)-max(blur(I0)
 
-    @param label: a label array coming out of scipy.ndimage.measurement.label
-    @param data: an array containing the raw data
-    @param blured: an array containing the blured data
-    @param max_size: the max number of label wanted
-    @return array like label
+    :param label: a label array coming out of scipy.ndimage.measurement.label
+    :param data: an array containing the raw data
+    :param blured: an array containing the blured data
+    :param max_size: the max number of label wanted
+    :return array like label
     """
     if _relabel:
         max_label = label.max()
@@ -397,10 +397,10 @@ def relabel(label, data, blured, max_size=None):
 
 def binning(input_img, binsize, norm=True):
     """
-    @param input_img: input ndarray
-    @param binsize: int or 2-tuple representing the size of the binning
-    @param norm: if False, do average instead of sum
-    @return: binned input ndarray
+    :param input_img: input ndarray
+    :param binsize: int or 2-tuple representing the size of the binning
+    :param norm: if False, do average instead of sum
+    :return: binned input ndarray
     """
     inputSize = input_img.shape
     outputSize = []
@@ -427,10 +427,10 @@ def binning(input_img, binsize, norm=True):
 
 def unBinning(binnedArray, binsize, norm=True):
     """
-    @param binnedArray: input ndarray
-    @param binsize: 2-tuple representing the size of the binning
-    @param norm: if True (default) decrease the intensity by binning factor. If False, it is non-conservative
-    @return: unBinned input ndarray
+    :param binnedArray: input ndarray
+    :param binsize: 2-tuple representing the size of the binning
+    :param norm: if True (default) decrease the intensity by binning factor. If False, it is non-conservative
+    :return: unBinned input ndarray
     """
     if isinstance(binsize, int):
         binsize = (binsize, binsize)
@@ -450,9 +450,9 @@ def shiftFFT(input_img, shift_val, method="fft"):
     """Do shift using FFTs
     
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
-    @param input_img: 2d numpy array
-    @param shift_val: 2-tuple of float
-    @return: shifted image
+    :param input_img: 2d numpy array
+    :param shift_val: 2-tuple of float
+    :return: shifted image
     """
     if method == "fft":
         d0, d1 = input_img.shape
@@ -474,8 +474,8 @@ def maximum_position(img):
     Same as scipy.ndimage.measurements.maximum_position:
     Find the position of the maximum of the values of the array.
 
-    @param img: 2-D image
-    @return: 2-tuple of int with the position of the maximum
+    :param img: 2-D image
+    :return: 2-tuple of int with the position of the maximum
     """
     maxarg = numpy.argmax(img)
     _, s1 = img.shape
@@ -486,8 +486,8 @@ def center_of_mass(img):
     """
     Calculate the center of mass of of the array.
     Like scipy.ndimage.measurements.center_of_mass
-    @param img: 2-D array
-    @return: 2-tuple of float with the center of mass
+    :param img: 2-D array
+    :return: 2-tuple of float with the center of mass
     """
     d0, d1 = img.shape
     a0, a1 = numpy.ogrid[:d0, :d1]
@@ -499,10 +499,10 @@ def center_of_mass(img):
 def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     """
     Measure the actual offset between 2 images
-    @param img1: ndarray, first image
-    @param img2: ndarray, second image, same shape as img1
-    @param withLog: shall we return logs as well ? boolean
-    @return: tuple of floats with the offsets
+    :param img1: ndarray, first image
+    :param img2: ndarray, second image, same shape as img1
+    :param withLog: shall we return logs as well ? boolean
+    :return: tuple of floats with the offsets
     """
     method = str(method)
     ################################################################################
@@ -564,8 +564,8 @@ def expand_args(args):
     Takes an argv and expand it (under Windows, cmd does not convert *.tif into a list of files.
     Keeps only valid files (thanks to glob)
 
-    @param args: list of files or wilcards
-    @return: list of actual args
+    :param args: list of files or wilcards
+    :return: list of actual args
     """
     new = []
     for afile in args:
@@ -578,8 +578,8 @@ def expand_args(args):
 
 def _get_data_path(filename):
     """
-    @param filename: the name of the requested data file.
-    @type filename: str
+    :param filename: the name of the requested data file.
+    :type filename: str
 
     Can search root of data directory in:
     - Environment variable PYFAI_DATA
@@ -617,7 +617,7 @@ def _get_data_path(filename):
 def get_calibration_dir():
     """get the full path of a calibration directory
 
-    @return: the full path of the calibrant file
+    :return: the full path of the calibrant file
     """
     return _get_data_path("calibration")
 
@@ -625,7 +625,7 @@ def get_calibration_dir():
 def get_cl_file(filename):
     """get the full path of a openCL file
 
-    @return: the full path of the openCL source file
+    :return: the full path of the openCL source file
     """
     return _get_data_path(os.path.join("openCL", filename))
 
@@ -633,15 +633,15 @@ def get_cl_file(filename):
 def get_ui_file(filename):
     """get the full path of a user-interface file
 
-    @return: the full path of the ui
+    :return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
 
 
 def read_cl_file(filename):
     """
-    @param filename: read an OpenCL file and apply a preprocessor
-    @return: preprocessed source code
+    :param filename: read an OpenCL file and apply a preprocessor
+    :return: preprocessed source code
     """
     with open(get_cl_file(filename), "r") as f:
         # Dummy preprocessor which removes the #include
@@ -651,8 +651,8 @@ def read_cl_file(filename):
 
 def concatenate_cl_kernel(filenames):
     """
-    @param filenames: filenames containing the kernels
-    @type kernel@: list of str which can be filename of kernel as a string.
+    :param filenames: filenames containing the kernels
+    :type filenames: list of str which can be filename of kernel as a string.
 
     this method concatenates all the kernel from the list
     """
@@ -667,7 +667,7 @@ def deg2rad(dd):
     """
     Convert degrees to radian in the range -pi->pi
 
-    @param dd: angle in degrees
+    :param dd: angle in degrees
 
     Nota: depending on the platform it could be 0<2pi
     A branch is cheaper than a trigo operation
@@ -849,8 +849,8 @@ def readFloatFromKeyboard(text, dictVar):
     """
     Read float from the keyboard ....
 
-    @param text: string to be displayed
-    @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
+    :param text: string to be displayed
+    :param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
     """
     fromkb = six.moves.input(text).strip()
     try:
@@ -876,9 +876,9 @@ class FixedParameters(set):
     def add_or_discard(self, key, value=True):
         """
         Add a value to a set if value, else discard it
-        @param key: element to added or discared from set
-        @type value: boolean. If None do nothing !
-        @return: None
+        :param key: element to added or discared from set
+        :type value: boolean. If None do nothing !
+        :return: None
         """
         if value is None:
             return
@@ -893,8 +893,8 @@ def roundfft(N):
     This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
     Credit: Alessandro Mirone, ESRF, 2012
 
-    @param N: interger on which one would like to do a Fourier transform
-    @return: integer with a better choice
+    :param N: interger on which one would like to do a Fourier transform
+    :return: integer with a better choice
     """
     MA, MB, MC, MD, ME, MF = 0, 0, 0, 0, 0, 0
     FA, FB, FC, FD, FE, FFF = 2, 3, 5, 7, 11, 13
@@ -940,10 +940,10 @@ def is_far_from_group(pt, lst_pts, d2):
     """
     Tells if a point is far from a group of points, distance greater than d2 (distance squared)
 
-    @param pt: point of interest
-    @param lst_pts: list of points
-    @param d2: minimum distance squarred
-    @return: True If the point is far from all others.
+    :param pt: point of interest
+    :param lst_pts: list of points
+    :param d2: minimum distance squarred
+    :return: True If the point is far from all others.
 
     """
     for apt in lst_pts:

@@ -85,9 +85,9 @@ def make_gaussian(im, sigma, xc, yc):
 
 def local_max(dogs, mask=None, n_5=True):
     """
-    @param dogs: 3d array with (sigma,y,x) containing difference of gaussians
-    @param mask: mask out keypoint next to the mask (or inside the mask)
-    @param n_5: look for a larger neighborhood
+    :param dogs: 3d array with (sigma,y,x) containing difference of gaussians
+    :param mask: mask out keypoint next to the mask (or inside the mask)
+    :param n_5: look for a larger neighborhood
     """
     if mask is not None:
         mask = mask.astype(bool)
@@ -175,12 +175,12 @@ class BlobDetection(object):
         http://en.wikipedia.org/wiki/Blob_detection
         using a Difference of Gaussian + Pyramid of Gaussians
 
-        @param img: input image
-        @param cur_sigma: estimated smoothing of the input image. 0.25 correspond to no interaction between pixels.
-        @param init_sigma: start searching at this scale (sigma=0.5: 10% interaction with first neighbor)
-        @param dest_sigma: sigma at which the resolution is lowered (change of octave)
-        @param scale_per_octave: Number of scale to be performed per octave
-        @param mask: mask where pixel are not valid
+        :param img: input image
+        :param cur_sigma: estimated smoothing of the input image. 0.25 correspond to no interaction between pixels.
+        :param init_sigma: start searching at this scale (sigma=0.5: 10% interaction with first neighbor)
+        :param dest_sigma: sigma at which the resolution is lowered (change of octave)
+        :param scale_per_octave: Number of scale to be performed per octave
+        :param mask: mask where pixel are not valid
         """
 #        self.raw = numpy.log(img.astype(numpy.float32))
         self.raw = img.astype(numpy.float32)
@@ -278,9 +278,9 @@ class BlobDetection(object):
         """
         Return the blob coordinates for an octave
 
-        @param shrink: perform the image shrinking after the octave processing
-        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calculation or Savitsky-Golay 2nd or 4th order fit.
-        @param n_5: use 5 points instead of 3 in y and x to determinate if a point is a maximum
+        :param shrink: perform the image shrinking after the octave processing
+        :param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calculation or Savitsky-Golay 2nd or 4th order fit.
+        :param n_5: use 5 points instead of 3 in y and x to determinate if a point is a maximum
 
         """
         if not self.sigmas:
@@ -385,10 +385,10 @@ class BlobDetection(object):
 
         Refine the keypoint location based on a 3 point derivative, and delete uncoherent keypoints
 
-        @param kpx: x_pos of keypoint
-        @param kpy: y_pos of keypoint
-        @param kps: s_pos of keypoint
-        @return arrays of corrected coordinates of keypoints, values and locations of keypoints
+        :param kpx: x_pos of keypoint
+        :param kpy: y_pos of keypoint
+        :param kps: s_pos of keypoint
+        :return arrays of corrected coordinates of keypoints, values and locations of keypoints
         """
         curr = self.dogs[(kps, kpy, kpx)]
         nx = self.dogs[(kps, kpy, kpx + 1)]
@@ -443,10 +443,10 @@ class BlobDetection(object):
     def refine_Hessian_SG(self, kpx, kpy, kps):
         """
         Savitzky Golay algorithm to check if a point is really the maximum
-        @param kpx: x_pos of keypoint
-        @param kpy: y_pos of keypoint
-        @param kps: s_pos of keypoint
-        @return array of corrected keypoints
+        :param kpx: x_pos of keypoint
+        :param kpy: y_pos of keypoint
+        :param kps: s_pos of keypoint
+        :return array of corrected keypoints
 
         """
 
@@ -674,7 +674,7 @@ class BlobDetection(object):
     def process(self, max_octave=None):
         """
         Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
-        @param max_octave: number of octave to process
+        :param max_octave: number of octave to process
         """
         finished = False
         if self.cur_mask is None:
@@ -695,9 +695,9 @@ class BlobDetection(object):
         """
         Return the nearest peak from a position
 
-        @param p: input position (y,x) 2-tuple of float
-        @param refine: shall the position be refined on the raw data
-        @param Imin: minimum of intensity above the background
+        :param p: input position (y,x) 2-tuple of float
+        :param refine: shall the position be refined on the raw data
+        :param Imin: minimum of intensity above the background
         """
         if Imin:
             valid = (self.keypoints.I >= Imin)
@@ -719,11 +719,11 @@ class BlobDetection(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask.
-        @param refine: shall the position be refined on the raw data
-        @param Imin: minimum of intensity above the background
-        @param kwarg: ignored parameters
-        @return: list of peaks [y,x], [y,x], ...]
+        :param mask: 2d array with mask.
+        :param refine: shall the position be refined on the raw data
+        :param Imin: minimum of intensity above the background
+        :param kwarg: ignored parameters
+        :return: list of peaks [y,x], [y,x], ...]
         """
         y = numpy.round(self.keypoints.y).astype(int)
         x = numpy.round(self.keypoints.x).astype(int)

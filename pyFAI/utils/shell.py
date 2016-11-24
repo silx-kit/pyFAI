@@ -58,12 +58,12 @@ class ProgressBar:
 
 
 
-        @param title: Title displayed before the progress bar
-        @type title: str
-        @param max_value: The maximum value of the progress bar
-        @type max_value: float
-        @param bar_width: Size of the progressbar in the screen
-        @type bar_width: int
+        :param title: Title displayed before the progress bar
+        :type title: str
+        :param max_value: The maximum value of the progress bar
+        :type max_value: float
+        :param bar_width: Size of the progressbar in the screen
+        :type bar_width: int
         """
         self.title = title
         self.max_value = max_value
@@ -104,10 +104,10 @@ class ProgressBar:
         first and then the content of the progress bar. The cursor is
         at the begining of the line.
 
-        @param value: progress bar's current value
-        @type value: float
-        @param message: message displayed after the progress bar
-        @type message: str
+        :param value: progress bar's current value
+        :type value: float
+        :param message: message displayed after the progress bar
+        :type message: str
         """
         coef = (1.0 * value) / self.max_value
         percent = round(coef * 100)

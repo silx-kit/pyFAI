@@ -67,7 +67,7 @@ class StreamHandlerUnittestReady(logging.StreamHandler):
 
     def emit(self, record):
         """
-        @type record: logging.LogRecord
+        :type record: logging.LogRecord
         """
         self.stream = sys.stderr
         super(StreamHandlerUnittestReady, self).emit(record)

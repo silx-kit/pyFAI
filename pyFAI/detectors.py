@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2016"
+__date__ = "24/11/2016"
 __status__ = "stable"
 
 
@@ -1626,7 +1626,7 @@ class Xpad_flat(ImXPadS10):
         :param d2: the X pixel positions (fast dimension)
         :type d2: ndarray (1D or 2D)
         :param center: retrieve the coordinate of the center of the pixel
-        @parm use_cython: set to False to test Numpy implementation
+        :param use_cython: set to False to test Numpy implementation
         :return: position in meter of the center of each pixels.
         :rtype: ndarray
 

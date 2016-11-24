@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 
 import os
@@ -95,9 +95,9 @@ from .ext.marchingsquares import isocontour
 def get_detector(detector, datafiles=None):
     """
     Detector factory taking into account the binning knowing the datafiles
-    @param detector: string or detector or other junk
-    @param datafiles: can be a list of images to be opened and their shape used.
-    @return pyFAI.detector.Detector instance
+    :param detector: string or detector or other junk
+    :param datafiles: can be a list of images to be opened and their shape used.
+    :return pyFAI.detector.Detector instance
     """
     res = None
     if type(detector) in utils.StringTypes:
@@ -160,14 +160,14 @@ class AbstractCalibration(object):
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """Constructor of AbstractCalibration
 
-        @param dataFiles: list of filenames containing data images
-        @param darkFiles: list of filenames containing dark current images
-        @param flatFiles: list of filenames containing flat images
-        @param pixelSize: size of the pixel in meter as 2 tuple
-        @param splineFile: file containing the distortion of the taper
-        @param detector: Detector name or instance
-        @param wavelength: radiation wavelength in meter
-        @param calibrant: pyFAI.calibrant.Calibrant instance
+        :param dataFiles: list of filenames containing data images
+        :param darkFiles: list of filenames containing dark current images
+        :param flatFiles: list of filenames containing flat images
+        :param pixelSize: size of the pixel in meter as 2 tuple
+        :param splineFile: file containing the distortion of the taper
+        :param detector: Detector name or instance
+        :param wavelength: radiation wavelength in meter
+        :param calibrant: pyFAI.calibrant.Calibrant instance
         """
         self.dataFiles = dataFiles
         self.darkFiles = darkFiles
@@ -384,7 +384,7 @@ class AbstractCalibration(object):
     def analyse_options(self, options=None, args=None):
         """Analyzes options and arguments
 
-        @return: option,arguments
+        :return: option,arguments
         """
         if (options is None) and (args is None):
             options = self.parser.parse_args()
@@ -619,8 +619,8 @@ class AbstractCalibration(object):
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
 
-        @param method: method for keypoint extraction
-        @param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
+        :param method: method for keypoint extraction
+        :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
         logger.info("in extract_cpt with method %s", method)
         assert self.ai
@@ -772,7 +772,7 @@ class AbstractCalibration(object):
         """
         prompt for commands to guide the calibration process
 
-        @return: True when the user is happy with what he has, False to request another refinement
+        :return: True when the user is happy with what he has, False to request another refinement
         """
 
         while True:
@@ -1052,7 +1052,7 @@ class AbstractCalibration(object):
         """
         plot delta_2theta/2theta = f(chi) and fit the curve.
 
-        @param rings: list of rings to consider
+        :param rings: list of rings to consider
         """
         from scipy.optimize import leastsq
         model = lambda x, mean, amp, phase: mean + amp * numpy.sin(x + phase)
@@ -1245,7 +1245,7 @@ class AbstractCalibration(object):
 
         Designed for orthogonal setup with centered beam...
 
-        @param slices: number of slices on which perform
+        :param slices: number of slices on which perform
         """
         if slices <= 0:
             logger.warning("The number of slices should be strictly positive")
@@ -1313,11 +1313,11 @@ class AbstractCalibration(object):
         """
         Reset the geometry: no tilt in all cases
 
-        @param how: multiple options
+        :param how: multiple options
             * center: set the PONI at the center of the detector
             * ring: center the poni at the middle of the inner-most ring
-            //* best: try both option and keeps the best
-        //@param refine: launch the refinement
+            * best: try both option and keeps the best (this option is not available)
+        :param refine: launch the refinement (argument not used)
         """
         if how not in ["center", "ring"]:  # ,"best"]:
             logger.warning("unknow geometry reset method: %s, fall back on detector center", how)
@@ -1392,14 +1392,14 @@ class Calibration(AbstractCalibration):
         """
         Constructor for calibration:
 
-        @param dataFiles: list of filenames containing data images
-        @param darkFiles: list of filenames containing dark current images
-        @param flatFiles: list of filenames containing flat images
-        @param pixelSize: size of the pixel in meter as 2 tuple
-        @param splineFile: file containing the distortion of the taper
-        @param detector: Detector name or instance
-        @param wavelength: radiation wavelength in meter
-        @param calibrant: pyFAI.calibrant.Calibrant instance
+        :param dataFiles: list of filenames containing data images
+        :param darkFiles: list of filenames containing dark current images
+        :param flatFiles: list of filenames containing flat images
+        :param pixelSize: size of the pixel in meter as 2 tuple
+        :param splineFile: file containing the distortion of the taper
+        :param detector: Detector name or instance
+        :param wavelength: radiation wavelength in meter
+        :param calibrant: pyFAI.calibrant.Calibrant instance
 
         """
         AbstractCalibration.__init__(self, dataFiles=dataFiles,
@@ -1600,14 +1600,14 @@ class Recalibration(AbstractCalibration):
         """
         Constructor for Recalibration:
 
-        @param dataFiles: list of filenames containing data images
-        @param darkFiles: list of filenames containing dark current images
-        @param flatFiles: list of filenames containing flat images
-        @param pixelSize: size of the pixel in meter as 2 tuple
-        @param splineFile: file containing the distortion of the taper
-        @param detector: Detector name or instance
-        @param wavelength: radiation wavelength in meter
-        @param calibrant: pyFAI.calibrant.Calibrant instance
+        :param dataFiles: list of filenames containing data images
+        :param darkFiles: list of filenames containing dark current images
+        :param flatFiles: list of filenames containing flat images
+        :param pixelSize: size of the pixel in meter as 2 tuple
+        :param splineFile: file containing the distortion of the taper
+        :param detector: Detector name or instance
+        :param wavelength: radiation wavelength in meter
+        :param calibrant: pyFAI.calibrant.Calibrant instance
         """
         AbstractCalibration.__init__(self, dataFiles=dataFiles,
                                      darkFiles=darkFiles,
@@ -1755,8 +1755,8 @@ class MultiCalib(object):
     def parse(self, exe=None, description=None, epilog=None):
         """
         parse options from command line
-        @param exe: name of the program (MX-calibrate)
-        @param description: Description of the program
+        :param exe: name of the program (MX-calibrate)
+        :param description: Description of the program
         """
         if exe is None:
             exe = "MX-Calibrate"
@@ -2260,7 +2260,7 @@ refinement process.
     def rebuild(self):
         """
         Rebuild the diffraction image and measures the offset with the reference
-        @return: offset
+        :return: offset
         """
         logger.debug("in rebuild")
         if self.r is None:
@@ -2333,15 +2333,15 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     """
     Procedural interfact for calibration
 
-    @param img: 2d array representing the calibration image
-    @param calibrant: Instance of Calibrant, set-up with wavelength
-    @param detector: Detector instance containing the mask
-    @param basename: output file base
-    @param recontruct: perform image reconstruction of masked pixel ?
-    @param dist: initial distance
-    @param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
-    @param interactive: set to False for testing
-    @return: AzimuthalIntegrator instance
+    :param img: 2d array representing the calibration image
+    :param calibrant: Instance of Calibrant, set-up with wavelength
+    :param detector: Detector instance containing the mask
+    :param basename: output file base
+    :param recontruct: perform image reconstruction of masked pixel ?
+    :param dist: initial distance
+    :param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
+    :param interactive: set to False for testing
+    :return: AzimuthalIntegrator instance
     """
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)

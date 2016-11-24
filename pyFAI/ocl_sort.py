@@ -60,9 +60,9 @@ class Separator(object):
     """
     def __init__(self, npt_height=512, npt_width=1024, ctx=None, max_workgroup_size=None, profile=False):
         """
-        @param ctx: context
-        @param max_workgroup_size: 1 on macOSX on CPU
-        @param profile: turn on profiling
+        :param ctx: context
+        :param max_workgroup_size: 1 on macOSX on CPU
+        :param profile: turn on profiling
         """
         self._sem = threading.Semaphore()
         self.npt_width = npt_width
@@ -141,7 +141,7 @@ class Separator(object):
         """
         Compile the kernel
 
-        @param kernel_file: filename of the kernel (to test other kernels)
+        :param kernel_file: filename of the kernel (to test other kernels)
         """
         kernel_file = sort_kernel or "bitonic.cl"
         separate_file = separate_kernel or "separate.cl"
@@ -185,9 +185,9 @@ class Separator(object):
         """
         Sort the data along the vertical axis (azimuthal)
 
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @return: pyopencl array
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :return: pyopencl array
         """
         events = []
         assert data.shape[1] == self.npt_width
@@ -234,9 +234,9 @@ class Separator(object):
         """
         Sort the data along the horizontal axis (radial)
 
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @return: pyopencl array
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :return: pyopencl array
         """
         events = []
         assert data.shape[1] == self.npt_width
@@ -282,10 +282,10 @@ class Separator(object):
         """
         Sort the data along the vertical axis (azimuthal)
 
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @param quantile:
-        @return: pyopencl array
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :param quantile:
+        :return: pyopencl array
         """
         if dummy is None:
             dummy = numpy.float32(data.min() - self.DUMMY)
@@ -306,10 +306,10 @@ class Separator(object):
         """
         Sort the data along the vertical axis (azimuthal)
 
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @param quantile:
-        @return: pyopencl array
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :param quantile:
+        :return: pyopencl array
         """
         if dummy is None:
             dummy = numpy.float32(data.min() - self.DUMMY)

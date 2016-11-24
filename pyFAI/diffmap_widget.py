@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2016"
+__date__ = "24/11/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -364,7 +364,7 @@ class DiffMapWidget(qt.QWidget):
     def set_config(self, dico):
         """Set up the widget from dictionary
 
-        @param  dico: dictionary
+        :param  dico: dictionary
         """
         self.integration_config = dico.get("ai", {})
         # TODO
@@ -388,7 +388,7 @@ class DiffMapWidget(qt.QWidget):
     def dump(self, fname=None):
         """Save the configuration in a JSON file
 
-        @param fname: file where the config is saved as JSON
+        :param fname: file where the config is saved as JSON
         """
         if fname is None:
             fname = self.json_file
@@ -400,7 +400,7 @@ class DiffMapWidget(qt.QWidget):
     def restore(self, fname=None):
         """Restore the widget from saved config
 
-        @param fname: file where the config is saved as JSON
+        :param fname: file where the config is saved as JSON
         """
         if fname is None:
             fname = self.json_file
@@ -459,7 +459,7 @@ class DiffMapWidget(qt.QWidget):
     def display_processing(self, config):
         """Setup the display for visualizing the processing
 
-        @param config: configuration of the processing ongoing
+        :param config: configuration of the processing ongoing
         """
         self.fig = pyplot.figure(figsize=(12, 5))
         self.aximg = self.fig.add_subplot(1, 2, 1,
@@ -478,8 +478,8 @@ class DiffMapWidget(qt.QWidget):
     def update_processing(self, idx_file, idx_img):
         """ Update the process bar and the images
 
-        @param idx_file: file number
-        @parm idx_img: frame number
+        :param idx_file: file number
+        :param idx_img: frame number
         """
         if idx_file >= 0:
             self.progressBar.setValue(idx_file)

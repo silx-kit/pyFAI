@@ -40,10 +40,10 @@ import fabio
 class SinkPyFAI(Core.Processlib.SinkTaskBase):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
         """
-        @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
-        @param shapeIn: image size in input
-        @param shapeOut: Integrated size: can be (1,2000) for 1D integration
-        @param unit: can be "2th_deg, r_mm or q_nm^-1 ...
+        :param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
+        :param shapeIn: image size in input
+        :param shapeOut: Integrated size: can be (1,2000) for 1D integration
+        :param unit: can be "2th_deg, r_mm or q_nm^-1 ...
         """
         Core.Processlib.SinkTaskBase.__init__(self)
         if azimuthalIntgrator is None:

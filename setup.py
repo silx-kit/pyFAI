@@ -345,7 +345,7 @@ def rewriteManifest(with_testimages=False):
     """
     Rewrite the "Manifest" file ... if needed
 
-    @param with_testimages: include
+    :param with_testimages: include
     """
     base = os.path.dirname(os.path.abspath(__file__))
     manifest_in = os.path.join(base, "MANIFEST.in")

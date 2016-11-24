@@ -116,8 +116,8 @@ def make_ai(config):
     """Create an Azimuthal integrator from the configuration
     stand alone function !
 
-    @param config: dict with all parameters
-    @return: configured (but uninitialized) AzimuthalIntgrator
+    :param config: dict with all parameters
+    :return: configured (but uninitialized) AzimuthalIntgrator
     """
     poni = config.get("poni")
     if poni and os.path.isfile(poni):
@@ -175,11 +175,11 @@ class Worker(object):
                  unit="r_mm", dummy=None, delta_dummy=None,
                  azimuthalIntgrator=None):
         """
-        @param azimuthalIntegrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance
-        @param azimuthalIntgrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance (deprecated)
-        @param shapeIn: image size in input
-        @param shapeOut: Integrated size: can be (1,2000) for 1D integration
-        @param unit: can be "2th_deg, r_mm or q_nm^-1 ...
+        :param azimuthalIntegrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance
+        :param azimuthalIntgrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance (deprecated)
+        :param shapeIn: image size in input
+        :param shapeOut: Integrated size: can be (1,2000) for 1D integration
+        :param unit: can be "2th_deg, r_mm or q_nm^-1 ...
         """
         # TODO remove it in few month (added on 2016-08-04)
         if azimuthalIntgrator is not None:
@@ -265,8 +265,8 @@ class Worker(object):
         """
         This is just to force the integrator to initialize with a given input image shape
 
-        @param shape: shape of the input image
-        @param sync: return only when synchronized
+        :param shape: shape of the input image
+        :param sync: return only when synchronized
         """
         self.shape = shape
         self.ai.reset()
@@ -278,8 +278,8 @@ class Worker(object):
         #TODO:
         dark, flat, sa are missing
 
-        @param data: numpy array containing the input image
-        @param writer: An open writer in which 'write' will be called with the result of the integration
+        :param data: numpy array containing the input image
+        :param writer: An open writer in which 'write' will be called with the result of the integration
         """
 
         with self._sem:
@@ -537,7 +537,7 @@ class Worker(object):
         """
         Process a dummy image to ensure everything is initialized
 
-        @param sync: wait for processing to be finished
+        :param sync: wait for processing to be finished
 
         """
         t = threading.Thread(target=self.process,
@@ -564,7 +564,7 @@ class PixelwiseWorker(object):
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """
-        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
         self.ctx = None
         if dark is not None:
@@ -599,9 +599,9 @@ class PixelwiseWorker(object):
     def process(self, data, normalization_factor=None):
         """
         Process the data and apply a normalization factor
-        @param data: input data
-        @param normalization: normalization factor
-        @return processed data
+        :param data: input data
+        :param normalization: normalization factor
+        :return processed data
         """
         if preproc is not None:
             proc_data = preproc(data,
@@ -649,7 +649,7 @@ class DistortionWorker(object):
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """
-        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
 
         self.ctx = None
@@ -691,9 +691,9 @@ class DistortionWorker(object):
     def process(self, data, normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
-        @param data: input data
-        @param normalization: normalization factor
-        @return processed data
+        :param data: input data
+        :param normalization: normalization factor
+        :return processed data
         """
         if preproc is not None:
             proc_data = preproc(data,

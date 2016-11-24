@@ -66,9 +66,9 @@ def parse():
 def bench_hdf5(n=1024, shape=(1024, 1024), dtype="float32", dirname=None, bsize=10):
     """
     Actually performs the HDF5 writing benchmark
-    @param n: number of frames to be written
-    @param shape: 2-tuple of integer describing the shape of the image
-    @param bsize: number of frames in buffer
+    :param n: number of frames to be written
+    :param shape: 2-tuple of integer describing the shape of the image
+    :param bsize: number of frames in buffer
     """
     tmp_dir = tempfile.mkdtemp(dir=dirname)
     h5file = os.path.join(tmp_dir, "junk.h5")

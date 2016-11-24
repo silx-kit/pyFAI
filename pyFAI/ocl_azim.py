@@ -62,7 +62,7 @@ class Integrator1d(object):
     def __init__(self, filename=None):
         """
 
-        @param filename: file in which profiling information are saved
+        :param filename: file in which profiling information are saved
         """
         self.BLOCK_SIZE = 128
         self.tdim = (self.BLOCK_SIZE,)
@@ -231,7 +231,7 @@ class Integrator1d(object):
         """
         Compile the kernel
 
-        @param kernel_file: filename of the kernel (to test other kernels)
+        :param kernel_file: filename of the kernel (to test other kernels)
         """
         kernel_file = kernel_file or "ocl_azim_kernel_2.cl"
         kernel_src = concatenate_cl_kernel([kernel_file])
@@ -295,9 +295,9 @@ class Integrator1d(object):
         """getConfiguration gets the description of the integrations
         to be performed and keeps an internal copy
 
-        @param Nimage: number of pixel in image
-        @param Nbins: number of bins in regrouped histogram
-        @param useFp64: use double precision. By default the same as init!
+        :param Nimage: number of pixel in image
+        :param Nbins: number of bins in regrouped histogram
+        :param useFp64: use double precision. By default the same as init!
         """
         if Nimage < 1 or Nbins < 1:
             raise RuntimeError(("getConfiguration with Nimage=%s and"
@@ -324,7 +324,7 @@ class Integrator1d(object):
         If a configuration exists and configure() is called, the
         configuration is cleaned up first to avoid OpenCL memory leaks
 
-        @param kernel_path: is the path to the actual kernel
+        :param kernel_path: is the path to the actual kernel
         """
         if self.nBins < 1 or self.nData < 1:
             raise RuntimeError(("configure() with Nimage=%s and"
@@ -417,8 +417,8 @@ class Integrator1d(object):
         If the SolidAngle array needs to be changes, one may just call
         setSolidAngle() again with that array
 
-        @param solidAngle: the solid angle of the given pixel
-        @type solidAngle: ndarray
+        :param solidAngle: the solid angle of the given pixel
+        :type solidAngle: ndarray
         """
         if not self._ctx:
             raise RuntimeError("You may not call Integrator1d.setSolidAngle()"
@@ -451,7 +451,7 @@ class Integrator1d(object):
         The Mask must be a PyFAI Mask. Pixels with 0 are masked
         out. TODO: check and invert!
 
-        @param mask: numpy.ndarray of integer.
+        :param mask: numpy.ndarray of integer.
         """
         if not self._ctx:
             raise RuntimeError("You may not call"
@@ -481,8 +481,8 @@ class Integrator1d(object):
 
         Image values that are similar to the dummy value are set to 0.
 
-        @param dummy: value in image of missing values (masked pixels?)
-        @param delta_dummy: precision for dummy values
+        :param dummy: value in image of missing values (masked pixels?)
+        :param delta_dummy: precision for dummy values
         """
         if not self._ctx:
             raise RuntimeError("You may not call"
@@ -525,10 +525,10 @@ class Integrator1d(object):
         setRange can be called at any point and as many times required
         after a valid configuration is created.
 
-        @param lowerBound: lower bound of the integration range
-        @type lowerBound: float
-        @param upperBound: upper bound of the integration range
-        @type upperBound: float
+        :param lowerBound: lower bound of the integration range
+        :type lowerBound: float
+        :param upperBound: upper bound of the integration range
+        :type upperBound: float
         """
         if self._ctx is None:
             raise RuntimeError("You may not call setRange() at this point."
@@ -588,8 +588,8 @@ class Integrator1d(object):
 
         Takes an image, integrate and return the histogram and weights
 
-        @param image: image to be processed as a numpy array
-        @return: tth_out, histogram, bins
+        :param image: image to be processed as a numpy array
+        :return: tth_out, histogram, bins
 
         TODO: to improve performances, the image should be casted to
         float32 in an optimal way: currently using numpy machinery but
@@ -670,10 +670,10 @@ class Integrator1d(object):
         fail. The AMD SDK kit (AMD APP) is required for CPU via
         OpenCL.
 
-        @param devicetype: string in ["cpu","gpu", "all", "acc"]
-        @param useFp64: boolean specifying if double precision will be used
-        @param platformid: integer
-        @param devid: integer
+        :param devicetype: string in ["cpu","gpu", "all", "acc"]
+        :param useFp64: boolean specifying if double precision will be used
+        :param platformid: integer
+        :param devid: integer
         """
         if self._ctx is None:
             self._ctx = ocl.create_context(devicetype, useFp64,
@@ -720,8 +720,8 @@ class Integrator1d(object):
         init or completely clean up OpenCL. Guard/Status flags that
         are set will be reset.
 
-        @param preserve_context: preserves or destroys all OpenCL resources
-        @type preserve_context: bool
+        :param preserve_context: preserves or destroys all OpenCL resources
+        :type preserve_context: bool
         """
 
         with self.lock:

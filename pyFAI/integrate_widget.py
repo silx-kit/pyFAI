@@ -414,7 +414,7 @@ class AIWidget(qt.QWidget):
     def get_config(self):
         """Read the configuration of the plugin and returns it as a dictionary
 
-        @return: dict with all information.
+        :return: dict with all information.
         """
         to_save = {"poni": str_(self.poni.text()).strip(),
                    "detector": str_(self.detector.currentText()).lower(),
@@ -465,9 +465,9 @@ class AIWidget(qt.QWidget):
         """
         Dump the status of the current widget to a file in JSON
 
-        @param filename: path where to save the config
-        @type filename: string
-        @return: dict with configuration
+        :param filename: path where to save the config
+        :type filename: string
+        :return: dict with configuration
         """
         to_save = self.get_config()
         if filename is None:
@@ -486,8 +486,8 @@ class AIWidget(qt.QWidget):
     def restore(self, filename=".azimint.json"):
         """Restore from JSON file the status of the current widget
 
-        @param filename: path where the config was saved
-        @type filename: str
+        :param filename: path where the config was saved
+        :type filename: str
         """
         logger.debug("Restore from %s", filename)
         if not op.isfile(filename):
@@ -499,8 +499,8 @@ class AIWidget(qt.QWidget):
     def set_config(self, dico):
         """Setup the widget from its description
 
-        @param dico: dictionary with description of the widget
-        @type dico: dict
+        :param dico: dictionary with description of the widget
+        :type dico: dict
         """
         setup_data = {"poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
