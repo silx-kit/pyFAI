@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2016"
+__date__ = "25/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -98,95 +98,8 @@ class Geometry(object):
 
     Demonstration of the equation done using Mathematica:
 
-    Axis 1 is along first dimension of detector (when not tilted),
-    this is the slow dimension of the image array in C or Y
-    x1={1,0,0}
-
-    Axis 2 is along second dimension of detector (when not tilted),
-    this is the fast dimension of the image in C or X
-    x2={0,1,0}
-
-    Axis 3 is along the incident X-Ray beam
-    x3={0,0,1}
-
-    We define the 3 rotation around axis 1, 2 and 3:
-
-    rotM1 = RotationMatrix[rot1,x1] =  {{1,0,0},{0,cos[rot1],-sin[rot1]},{0,sin[rot1],cos[rot1]}}
-    rotM2 =  RotationMatrix[rot2,x2] = {{cos[rot2],0,sin[rot2]},{0,1,0},{-sin[rot2],0,cos[rot2]}}
-    rotM3 =  RotationMatrix[rot3,x3] = {{cos[rot3],-sin[rot3],0},{sin[rot3],cos[rot3],0},{0,0,1}}
-
-    Rotations of the detector are applied first Rot around axis 1,
-    then axis 2 and finally around axis 3:
-
-    R = rotM3.rotM2.rotM1
-
-    R = {{cos[rot2] cos[rot3],cos[rot3] sin[rot1] sin[rot2]-cos[rot1] sin[rot3],cos[rot1] cos[rot3] sin[rot2]+sin[rot1] sin[rot3]},
-          {cos[rot2] sin[rot3],cos[rot1] cos[rot3]+sin[rot1] sin[rot2] sin[rot3],-cos[rot3] sin[rot1]+cos[rot1] sin[rot2] sin[rot3]},
-          {-sin[rot2],cos[rot2] sin[rot1],cos[rot1] cos[rot2]}}
-
-    In Python notation:
-
-    R.x1 = [cos(rot2)*cos(rot3),cos(rot2)*sin(rot3),-sin(rot2)]
-
-    R.x2 = [cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3),cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3), cos(rot2)*sin(rot1)]
-
-    R.x3 = [cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3),-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3), cos(rot1)*cos(rot2)]
-
-    * Coordinates of the Point of Normal Incidence:
-
-      PONI = R.{0,0,L}
-
-      PONI = [L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
-                   L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)),L*cos(rot1)*cos(rot2)]
-
-    * Any pixel on detector plan at coordinate (d1, d2) in
-      meters. Detector is at z=L
-
-      P={d1,d2,L}
-
-      R.P = [t1, t2, t3]
-      t1 = R.P.x1 = d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) + L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
-      t2 = R.P.x2 = d1*cos(rot2)*sin(rot3)  + d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3))
-      t3 = R.P.x3 = d2*cos(rot2)*sin(rot1) - d1*sin(rot2) + L*cos(rot1)*cos(rot2)
-
-    * Distance sample (origin) to detector point (d1,d2)
-
-      |R.P| = sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
-                        pow(Abs(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
-                        L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))),2) +
-                        pow(Abs(d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
-                        d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))),2))
-
-    *  cos(2theta) is defined as (R.P component along x3) over the distance from origin to data point |R.P|
-
-    tth = ArcCos [-(R.P).x3/|R.P|]
-
-    tth = Arccos((-(L*cos(rot1)*cos(rot2)) - d2*cos(rot2)*sin(rot1) + d1*sin(rot2))/
-                        sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
-                          pow(Abs(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
-                         L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))),2) +
-                          pow(Abs(d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
-                         d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))),2)))
-
-    * tan(2theta) is defined as sqrt(t1**2 + t2**2) / t3
-
-    tth = ArcTan2 [sqrt(t1**2 + t2**2) , t3 ]
-
-    Getting 2theta from it's tangeant seems both more precise (around
-    beam stop very far from sample) and faster by about 25% Currently
-    there is a swich in the method to follow one path or the other.
-
-    * Tangeant of angle chi is defined as (R.P component along x1)
-      over (R.P component along x2). Arctan2 should be used in actual
-      calculation
-
-     chi = ArcTan[((R.P).x1) / ((R.P).x2)]
-
-     chi = ArcTan2(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
-                            L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
-                          d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
-                            d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)))
-
+    .. literalinclude:: ../../mathematica/geometry.txt
+        :language: mathematica
     """
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
@@ -324,7 +237,7 @@ class Geometry(object):
         :param d1: position on the detector along the slow dimention (i.e. y)
         :param d2: position on the detector along the fastest dimention (i.e. x)
         :param corners: return positions on the corners (instead of center)
-        @return 3-tuple of nd-array,  with  dim0=along the beam,
+        :return: 3-tuple of nd-array,  with  dim0=along the beam,
                                             dim1=along slowest dimension
                                             dim2=along fastest dimension
         """
@@ -530,7 +443,7 @@ class Geometry(object):
         d*^2 is the reciprocal spacing squared in inverse nm squared
 
         :param shape: expected shape of the detector
-        :return:2d array of the given shape with reciprocal spacing squared
+        :return: 2d array of the given shape with reciprocal spacing squared
         """
         qArray = self.qArray(shape)
         if self._cached_array.get("d*2_center") is None:
@@ -724,9 +637,9 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are:
-           * dim3[0]: radial angle 2th, q, r, ...
-           * dim3[1]: azimuthal angle chi
+        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+            - dim3[0]: radial angle 2th, q, r...
+            - dim3[1]: azimuthal angle chi
         """
         shape = self.get_shape(shape)
         if shape is None:
@@ -859,9 +772,9 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are:
-           * dim3[0]: radial angle 2th, q, r, ...
-           * dim3[1]: azimuthal angle chi
+        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+            - dim3[0]: radial angle 2th, q, r...
+            - dim3[1]: azimuthal angle chi
         """
 
         unit = units.to_unit(unit)
@@ -892,9 +805,10 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are:
-           * dim3[0]: radial angle 2th, q, r, ...
-           * dim3[1]: azimuthal angle chi
+        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+
+            - dim3[0]: radial angle 2th, q, r...
+            - dim3[1]: azimuthal angle chi
         """
 
         unit = units.to_unit(unit)
@@ -1097,11 +1011,14 @@ class Geometry(object):
         """
         Calculate the solid angle of the current pixels (P) versus the PONI (C)
 
-                  Omega(P)    A cos(a)     SC^2         3       SC^3
-        dOmega = --------- = --------- x --------- = cos (a) = ------
-                  Omega(C)    SP^2        A cos(0)              SP^3
+        .. math::
 
-        cos(a) = SC/SP
+            dOmega = \\frac{Omega(P)}{Omega(C)}
+                   = \\frac{A \cdot cos(a)}{SP^2} \cdot \\frac{SC^2}{A \cdot cos(0)}
+                   = \\frac{3}{cos(a)}
+                   = \\frac{SC^3}{SP^3}
+
+            cos(a) = \\frac{SC}{SP}
 
         :param d1: 1d or 2d set of points
         :param d2: 1d or 2d set of points (same size&shape as d1)
@@ -1408,7 +1325,7 @@ class Geometry(object):
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
         :param SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
-        :param Center_1, pixel position of the PONI along fastest axis
+        :param Center_1: pixel position of the PONI along fastest axis
         :param Center_2: pixel position of the PONI along slowest axis
         :param Rot_1: rotation around the fastest axis (x)
         :param Rot_2: rotation around the slowest axis (y)
@@ -1590,10 +1507,12 @@ class Geometry(object):
         Defines the absorption correction for a phosphor screen or a scintillator
         from t0, the normal transmission of the screen.
 
-        Icor = Iobs(1-t0)/(1-exp(ln(t0)/cos(incidence)))
-                 1-exp(ln(t0)/cos(incidence)
-        let t = -----------------------------
-                          1 - t0
+        .. math::
+
+            Icor = \\frac{Iobs(1-t0)}{1-exp(ln(t0)/cos(incidence))}
+
+            let_t = \\frac{1-exp(ln(t0)/cos(incidence))}{1 - t0}
+
         See reference on:
         J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
 
