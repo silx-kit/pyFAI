@@ -2906,6 +2906,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                              dummy=dummy,
                                                                                              delta_dummy=delta_dummy,
                                                                                              polarization=polarization,
+                                                                                             normalization_factor=normalization_factor
                                                                                              )
 
         if (I is None) and ("csr" in method):
