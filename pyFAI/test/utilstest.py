@@ -150,8 +150,8 @@ class UtilsTest(object):
         """
         Downloads the requested image from a file set available at http://www.silx.org/pub/pyFAI/testimages/
 
-        @param: relative name of the image.
-        @return: full path of the locally saved file.
+        :param: relative name of the image.
+        :return: full path of the locally saved file.
         """
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
@@ -211,7 +211,7 @@ class UtilsTest(object):
         """
         Download all images needed for the test/benchmarks
 
-        @param imgs: list of files to download
+        :param imgs: list of files to download
         """
         if not imgs:
             imgs = cls.ALL_DOWNLOADED_FILES
@@ -287,11 +287,11 @@ def Rwp(obt, ref, comment="Rwp"):
 
     This is done for symmetry reason between obt and ref
 
-    @param obt: obtained data
-    @type obt: 2-list of array of the same size
-    @param obt: reference data
-    @type obt: 2-list of array of the same size
-    @return:  Rwp value, lineary interpolated
+    :param obt: obtained data
+    :type obt: 2-list of array of the same size
+    :param obt: reference data
+    :type obt: 2-list of array of the same size
+    :return:  Rwp value, lineary interpolated
     """
     ref0, ref1 = ref
     obt0, obt1 = obt
@@ -313,8 +313,8 @@ def recursive_delete(dirname):
     CAUTION:  This is dangerous!  For example, if top == '/', it
     could delete all your disk files.
 
-    @param dirname: top directory to delete
-    @type dirname: string
+    :param dirname: top directory to delete
+    :type dirname: string
     """
     if not os.path.isdir(dirname):
         return

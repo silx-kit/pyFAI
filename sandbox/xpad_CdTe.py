@@ -53,8 +53,8 @@ ny = 8
 
 def parse(fname):
     """
-    @param fname: name of the CSV definition file
-    @return numpy array containing x,y,z coordinates
+    :param fname: name of the CSV definition file
+    :return numpy array containing x,y,z coordinates
     """
     res = []
     with open(fname) as fd:
@@ -77,13 +77,13 @@ def parse(fname):
 
 def one_module(p1, p2, flat=False):
     """
-    @param p1: actual coordinate of the point close to the origin
-    @param p2:  actual coordinate of the point close to the end of first line
-    @param dx: number of pixel in a line
-    @param dy: number of pixel in a column
-    @param px: pixel size in x
-    @param py: pixel size in y
-    @return 2x (dy+1)x(dx+1) array of corner position
+    :param p1: actual coordinate of the point close to the origin
+    :param p2:  actual coordinate of the point close to the end of first line
+    :param dx: number of pixel in a line
+    :param dy: number of pixel in a column
+    :param px: pixel size in x
+    :param py: pixel size in y
+    :return 2x (dy+1)x(dx+1) array of corner position
     """
     xyz1 = p1[1:4] / 1000.0  # in meter
     xyz2 = p2[1:4] / 1000.0  # in meter
@@ -106,7 +106,7 @@ def one_module(p1, p2, flat=False):
 def display(data):
     """
     Display the plan
-    @param data: 3d array with coordinates
+    :param data: 3d array with coordinates
     """
     from matplotlib import pyplot
     fig = pyplot.figure()

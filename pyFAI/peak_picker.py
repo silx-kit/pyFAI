@@ -90,10 +90,10 @@ class PeakPicker(object):
                  pointfile=None, calibrant=None, wavelength=None, detector=None,
                  method="massif"):
         """
-        @param data: input image as numpy array
-        @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
-        @param mask: area in which keypoints will not be considered as valid
-        @param pointfile:
+        :param data: input image as numpy array
+        :param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
+        :param mask: area in which keypoints will not be considered as valid
+        :param pointfile:
         """
         if isinstance(data, six.string_types):
             self.data = fabio.open(data).data.astype("float32")
@@ -194,14 +194,14 @@ class PeakPicker(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask.
-        @param Imin: minimum of intensity above the background to keep the point
-        @param keep: maximum number of points to keep
-        @param method: enforce the use of detection using "massif" or "blob" or "watershed"
-        @param ring: ring number to which assign the  points
-        @param dmin: minimum distance between two peaks (in pixels)
-        @param seed: good starting points.
-        @return: list of peaks [y,x], [y,x], ...]
+        :param mask: 2d array with mask.
+        :param Imin: minimum of intensity above the background to keep the point
+        :param keep: maximum number of points to keep
+        :param method: enforce the use of detection using "massif" or "blob" or "watershed"
+        :param ring: ring number to which assign the  points
+        :param dmin: minimum distance between two peaks (in pixels)
+        :param seed: good starting points.
+        :return: list of peaks [y,x], [y,x], ...]
         """
         method = kwargs.get("method")
         ring = kwargs.get("ring", 0)
@@ -244,7 +244,7 @@ class PeakPicker(object):
 
     def gui(self, log=False, maximize=False, pick=True):
         """
-        @param log: show z in log scale
+        :param log: show z in log scale
         """
         if self.fig is None:
             self.fig = pyplot.figure()
@@ -332,8 +332,8 @@ class PeakPicker(object):
     def display_points(self, minIndex=0, reset=False):
         """
         display all points and their ring annotations
-        @param minIndex: ring index to start with
-        @param reset: remove all point before re-displaying them
+        :param minIndex: ring index to start with
+        :param reset: remove all point before re-displaying them
         """
         if self.ax is not None:
             if reset:
@@ -357,7 +357,7 @@ class PeakPicker(object):
         """
         remove a group of points
 
-        @param lbl: label of the group of points
+        :param lbl: label of the group of points
         """
         gpt = self.points.pop(lbl=lbl)
         if gpt and self.ax:
@@ -376,9 +376,9 @@ class PeakPicker(object):
         def annontate(x, x0=None, idx=None, gpt=None):
             """
             Call back method to annotate the figure while calculation are going on ...
-            @param x: coordinates
-            @param x0: coordinates of the starting point
-            @param gpt: group of point, instance of PointGroup
+            :param x: coordinates
+            :param x0: coordinates of the starting point
+            :param gpt: group of point, instance of PointGroup
             TODO
             """
             if x0 is None:
@@ -400,8 +400,8 @@ class PeakPicker(object):
             """
             plot new set of points
 
-            @param points: list of points
-            @param gpt: : group of point, instance of PointGroup
+            :param points: list of points
+            :param gpt: : group of point, instance of PointGroup
             """
             if points:
                 if not gpt:
@@ -559,7 +559,7 @@ class PeakPicker(object):
         """
         Ask the ring number for the given points
 
-        @param filename: file with the point coordinates saved
+        :param filename: file with the point coordinates saved
         """
         logging.info(os.linesep.join(self.help))
         if not callback:
@@ -587,7 +587,7 @@ class PeakPicker(object):
         """
         Overlay a contour-plot
 
-        @param data: 2darray with the 2theta values in radians...
+        :param data: 2darray with the 2theta values in radians...
         """
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
@@ -627,7 +627,7 @@ class PeakPicker(object):
         """
         Overlays a mask over a diffraction image
 
-        @param data: mask to be overlaid
+        :param data: mask to be overlaid
         """
 
         if self.fig is None:
@@ -758,11 +758,11 @@ class ControlPoints(object):
 
     def append(self, points, ring=None, annotate=None, plot=None):
         """
-        @param point: list of points
-        @param ring: ring number
-        @param annotate: matplotlib.annotate reference
-        @param plot: matplotlib.plot reference
-        @return: PointGroup instance
+        :param point: list of points
+        :param ring: ring number
+        :param annotate: matplotlib.annotate reference
+        :param plot: matplotlib.plot reference
+        :return: PointGroup instance
         """
         with self._sem:
             gpt = PointGroup(points, ring, annotate, plot)
@@ -771,8 +771,8 @@ class ControlPoints(object):
 
     def append_2theta_deg(self, points, angle=None, ring=None):
         """
-        @param point: list of points
-        @param angle: 2-theta angle in degrees
+        :param point: list of points
+        :param angle: 2-theta angle in degrees
         """
         if angle:
             self.append(points, numpy.deg2rad(angle), ring)
@@ -783,7 +783,7 @@ class ControlPoints(object):
         """
         retireves the last set of points for a given ring (by default the last)
 
-        @param ring: index of ring to search for
+        :param ring: index of ring to search for
         """
         out = None
         with self._sem:
@@ -811,8 +811,8 @@ class ControlPoints(object):
         """
         Remove the set of points, either from its code or from a given ring (by default the last)
 
-        @param ring: index of ring of which remove the last group
-        @param lbl: code of the ring to remove
+        :param ring: index of ring of which remove the last group
+        :param lbl: code of the ring to remove
         """
         out = None
         with self._sem:
@@ -840,8 +840,8 @@ class ControlPoints(object):
     def save(self, filename):
         """
         Save a set of control points to a file
-        @param filename: name of the file
-        @return: None
+        :param filename: name of the file
+        :return: None
         """
         self.check()
         with self._sem:
@@ -983,8 +983,8 @@ class ControlPoints(object):
     def getWeightedList(self, image):
         """
         Retrieve the list of control points suitable for geometry refinement with ring number and intensities
-        @param image:
-        @return: a (x,4) array with pos0, pos1, ring nr and intensity
+        :param image:
+        :return: a (x,4) array with pos0, pos1, ring nr and intensity
 
         #TODO: refine the value of the intensity using 2nd order polynomia
         """
@@ -1107,11 +1107,11 @@ class PointGroup(object):
         """
         Constructor
 
-        @param points: list of points
-        @param ring: ring number
-        @param annotate: reference to the matplotlib annotate output
-        @param plot: reference to the matplotlib plot
-        @param force_label: allows to enforce the label
+        :param points: list of points
+        :param ring: ring number
+        :param annotate: reference to the matplotlib annotate output
+        :param plot: reference to the matplotlib plot
+        :param force_label: allows to enforce the label
         """
         if points:
             self.points = points

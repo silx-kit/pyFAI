@@ -103,20 +103,11 @@
     :members:
     :undoc-members:
     :show-inheritance:
-    
+
 :mod:`ocl_azim_csr_dis` Module
 ------------------------------
 
 .. automodule:: pyFAI.ocl_azim_csr_dis
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-:mod:`worker` Module
---------------------
-
-.. automodule:: pyFAI.worker
     :members:
     :undoc-members:
     :show-inheritance:
@@ -202,11 +193,10 @@
     :undoc-members:
     :show-inheritance:
 
-:mod:`gui_utils` Module
------------------------
+:mod:`gui.gui_utils` Module
+---------------------------
 
-.. automodule:: pyFAI.gui_utils
+.. automodule:: pyFAI.gui.utils
     :members:
     :undoc-members:
     :show-inheritance:
-    

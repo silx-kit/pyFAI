@@ -59,8 +59,8 @@ class StartAcqCallback(Core.SoftCallback):
     def __init__(self, control, task=None):
         """
         
-        @param control: Lima.Core.CtControl instance
-        @param task: The task one wants to parametrize at startup. Can be a  Core.Processlib.LinkTask or a Core.Processlib.SinkTask
+        :param control: Lima.Core.CtControl instance
+        :param task: The task one wants to parametrize at startup. Can be a  Core.Processlib.LinkTask or a Core.Processlib.SinkTask
         """
         Core.SoftCallback.__init__(self)
         self._control = control
@@ -127,8 +127,8 @@ class LinkPyFAI(Core.Processlib.LinkTask):
     """
     def __init__(self, worker=None, writer=None):
         """
-        @param worker: pyFAI.worker.Worker instance
-        @param writer: pyFAI.io.Writer instance
+        :param worker: pyFAI.worker.Worker instance
+        :param writer: pyFAI.io.Writer instance
         """
         Core.Processlib.LinkTask.__init__(self)
         self._worker = worker

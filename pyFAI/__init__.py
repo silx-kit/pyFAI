@@ -56,7 +56,7 @@ def tests(deprecation=False):
     """
     Runs the test suite of the installed version
 
-    @param deprecation: enable/disables deprecation warning in the tests
+    :param deprecation: enable/disables deprecation warning in the tests
     """
     if deprecation:
         depreclog.setLevel(logging.DEBUG)

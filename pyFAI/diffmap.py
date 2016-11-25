@@ -78,10 +78,10 @@ class DiffMap(object):
     def __init__(self, npt_fast=0, npt_slow=1, npt_rad=1000, npt_azim=None):
         """Constructor of the class DiffMap for diffraction mapping
 
-        @param npt_fast: number of translations
-        @param npt_slow: number of translations
-        @param npt_rad: number of points in diffraction pattern (radial dimension)
-        @param npt_azim:  number of points in diffraction pattern (azimuthal dimension)
+        :param npt_fast: number of translations
+        :param npt_slow: number of translations
+        :param npt_rad: number of points in diffraction pattern (radial dimension)
+        :param npt_azim:  number of points in diffraction pattern (azimuthal dimension)
         """
         self.npt_fast = npt_fast
         self.npt_slow = npt_slow
@@ -121,7 +121,7 @@ class DiffMap(object):
         to_tuple("slice06/IRIS4_1_14749.edf")
         --> (6, 4, 1, 14749)
 
-        @param name: input string, often a filename
+        :param name: input string, often a filename
         """
         res = []
         cur = ""
@@ -137,7 +137,7 @@ class DiffMap(object):
         """
         parse options from command line: setup the object
 
-        @return: dictionary able to setup a DiffMapWidget
+        :return: dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction imaging.
 
@@ -387,7 +387,7 @@ If the number of files is too large, use double quotes like "*.edf" """
     def init_ai(self):
         """Force initialization of azimuthal intgrator
 
-        @return: radial position array
+        :return: radial position array
         """
         if not self.ai:
             self.setup_ai()
@@ -443,9 +443,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         Calculate the position in the sinogram of the file according
         to it's number
 
-        @param filename: name of current frame
-        @param idx: index of current frame
-        @return: namedtuple: index, rot, trans
+        :param filename: name of current frame
+        :param idx: index of current frame
+        :return: namedtuple: index, rot, trans
         """
         #         n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
         if idx is None:
@@ -456,8 +456,8 @@ If the number of files is too large, use double quotes like "*.edf" """
 
     def process_one_file(self, filename):
         """
-        @param filename: name of the input filename
-        @param idx: index of file
+        :param filename: name of the input filename
+        :param idx: index of file
         """
         if self.ai is None:
             self.setup_ai()
@@ -479,7 +479,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 
     def process_one_frame(self, frame):
         """
-        @param frame: 2d numpy array with an image to process
+        :param frame: 2d numpy array with an image to process
         """
         self._idx += 1
         pos = self.get_pos(None, self._idx)

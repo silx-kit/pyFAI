@@ -80,7 +80,7 @@ def calc_area(I1, I2, slope, intercept):
 def integrate(box, start, stop, slope, intercept):
     """Integrate in a box a line between start and stop, line defined by its slope & intercept
 
-    @param box: buffer
+    :param box: buffer
     """
     if start < stop:  # positive contribution
         P = ceil(start)

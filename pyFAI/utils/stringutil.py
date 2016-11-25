@@ -57,11 +57,11 @@ def safe_format(format_string, arguments):
     """Like default str.format but unmatching patterns will be
     still present into the result string.
 
-    @param format_string str: Format string as defined in the default
+    :param format_string str: Format string as defined in the default
         formatter.
-    @param arguments dict or tuple: Arbitrary set of positional and keyword
+    :param arguments dict or tuple: Arbitrary set of positional and keyword
         arguments.
-    @rtype: str
+    :rtype: str
     """
     if isinstance(arguments, dict):
         args = []

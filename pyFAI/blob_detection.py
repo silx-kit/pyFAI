@@ -27,7 +27,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -85,9 +85,9 @@ def make_gaussian(im, sigma, xc, yc):
 
 def local_max(dogs, mask=None, n_5=True):
     """
-    @param dogs: 3d array with (sigma,y,x) containing difference of gaussians
-    @param mask: mask out keypoint next to the mask (or inside the mask)
-    @param n_5: look for a larger neighborhood
+    :param dogs: 3d array with (sigma,y,x) containing difference of gaussians
+    :param mask: mask out keypoint next to the mask (or inside the mask)
+    :param n_5: look for a larger neighborhood
     """
     if mask is not None:
         mask = mask.astype(bool)
@@ -175,14 +175,14 @@ class BlobDetection(object):
         http://en.wikipedia.org/wiki/Blob_detection
         using a Difference of Gaussian + Pyramid of Gaussians
 
-        @param img: input image
-        @param cur_sigma: estimated smoothing of the input image. 0.25 correspond to no interaction between pixels.
-        @param init_sigma: start searching at this scale (sigma=0.5: 10% interaction with first neighbor)
-        @param dest_sigma: sigma at which the resolution is lowered (change of octave)
-        @param scale_per_octave: Number of scale to be performed per octave
-        @param mask: mask where pixel are not valid
+        :param img: input image
+        :param cur_sigma: estimated smoothing of the input image. 0.25 correspond to no interaction between pixels.
+        :param init_sigma: start searching at this scale (sigma=0.5: 10% interaction with first neighbor)
+        :param dest_sigma: sigma at which the resolution is lowered (change of octave)
+        :param scale_per_octave: Number of scale to be performed per octave
+        :param mask: mask where pixel are not valid
         """
-#        self.raw = numpy.log(img.astype(numpy.float32))
+        # self.raw = numpy.log(img.astype(numpy.float32))
         self.raw = img.astype(numpy.float32)
         self.cur_sigma = float(cur_sigma)
         self.init_sigma = float(init_sigma)
@@ -278,9 +278,9 @@ class BlobDetection(object):
         """
         Return the blob coordinates for an octave
 
-        @param shrink: perform the image shrinking after the octave processing
-        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calculation or Savitsky-Golay 2nd or 4th order fit.
-        @param n_5: use 5 points instead of 3 in y and x to determinate if a point is a maximum
+        :param shrink: perform the image shrinking after the octave processing
+        :param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calculation or Savitsky-Golay 2nd or 4th order fit.
+        :param n_5: use 5 points instead of 3 in y and x to determinate if a point is a maximum
 
         """
         if not self.sigmas:
@@ -382,13 +382,14 @@ class BlobDetection(object):
 
     def refine_Hessian(self, kpx, kpy, kps):
         """
+        Refine the keypoint location based on a 3 point derivative, and delete
+        non-coherent keypoints.
 
-        Refine the keypoint location based on a 3 point derivative, and delete uncoherent keypoints
-
-        @param kpx: x_pos of keypoint
-        @param kpy: y_pos of keypoint
-        @param kps: s_pos of keypoint
-        @return arrays of corrected coordinates of keypoints, values and locations of keypoints
+        :param kpx: x_pos of keypoint
+        :param kpy: y_pos of keypoint
+        :param kps: s_pos of keypoint
+        :return: arrays of corrected coordinates of keypoints, values and
+            locations of keypoints
         """
         curr = self.dogs[(kps, kpy, kpx)]
         nx = self.dogs[(kps, kpy, kpx + 1)]
@@ -443,10 +444,10 @@ class BlobDetection(object):
     def refine_Hessian_SG(self, kpx, kpy, kps):
         """
         Savitzky Golay algorithm to check if a point is really the maximum
-        @param kpx: x_pos of keypoint
-        @param kpy: y_pos of keypoint
-        @param kps: s_pos of keypoint
-        @return array of corrected keypoints
+        :param kpx: x_pos of keypoint
+        :param kpy: y_pos of keypoint
+        :param kps: s_pos of keypoint
+        :return array of corrected keypoints
 
         """
 
@@ -515,9 +516,9 @@ class BlobDetection(object):
                 k2x.append(x + delta[1])
                 k2y.append(y + delta[0])
                 sigmas.append(sigma + delta[2])
-#                         kds.append(delta[2])
-#                         kdx.append(delta[1])
-#                         kdy.append(delta[0])
+                # kds.append(delta[2])
+                # kdx.append(delta[1])
+                # kdy.append(delta[0])
 
         return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
 
@@ -569,15 +570,15 @@ class BlobDetection(object):
                 H = numpy.array([[d2y, dxy], [dxy, d2x]])
                 val, vect = numpy.linalg.eig(H)
 
-#                 print 'new point'
-#                 print x, y
-#                 print val
-#                 print vect
-#                 print numpy.dot(vect[0],vect[1])
+                # print 'new point'
+                # print x, y
+                # print val
+                # print vect
+                # print numpy.dot(vect[0],vect[1])
                 _e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
                 j += 1
-#                 print j
-#                 print e
+                # print j
+                # print e
                 if numpy.abs(val[1]) < numpy.abs(val[0]):  # reorganisation des valeurs propres et vecteurs propres
                     val[0], val[1] = val[1], val[0]
                     vect = vect[-1::-1, :]
@@ -597,24 +598,24 @@ class BlobDetection(object):
         val, vect = self.direction()
 
         L = 0.114
-#         L = 1.0
+        # L = 1.0
 
         poni1 = self.raw.shape[0] / 2.0
         poni2 = self.raw.shape[1] / 2.0
-#         poni1 = 0.0599/100.0 * power(10,6)
-#         poni2 = -0.07623/100.0 * power(10,6)
+        # poni1 = 0.0599/100.0 * power(10,6)
+        # poni2 = -0.07623/100.0 * power(10,6)
 
         d1 = self.keypoints.y - poni1
         d2 = self.keypoints.x - poni2
         rot1 = rot2 = rot3 = 0
-#         rot1 = -0.22466
-#         rot2 = -0.07476
-#         rot3 = 0.00000005
+        # rot1 = -0.22466
+        # rot2 = -0.07476
+        # rot3 = 0.00000005
 
         valy, valx = numpy.transpose(vect)[0]
         phi_exp = arctan2(valy, valx) % pi
-#         print "phi exp"
-#         print phi_exp * 180/ pi
+        # print "phi exp"
+        # print phi_exp * 180/ pi
 
         cosrot1 = cos(rot1)
         cosrot2 = cos(rot2)
@@ -663,8 +664,8 @@ class BlobDetection(object):
                         L * (-(cosrot3 * sinrot1) + cosrot1 * sinrot2 * sinrot3) + d2 * (cosrot1 * cosrot3 + sinrot1 * sinrot2 * sinrot3)) ** 2)
 
         phi_th = arctan2(d1, d2)
-#         print "phi th"
-#         print phi_th_2
+        # print "phi th"
+        # print phi_th_2
         err = numpy.sum((phi_th - phi_exp) ** 2) / self.keypoints.x.size
         print("err")
         print(err)
@@ -674,7 +675,7 @@ class BlobDetection(object):
     def process(self, max_octave=None):
         """
         Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
-        @param max_octave: number of octave to process
+        :param max_octave: number of octave to process
         """
         finished = False
         if self.cur_mask is None:
@@ -695,9 +696,9 @@ class BlobDetection(object):
         """
         Return the nearest peak from a position
 
-        @param p: input position (y,x) 2-tuple of float
-        @param refine: shall the position be refined on the raw data
-        @param Imin: minimum of intensity above the background
+        :param p: input position (y,x) 2-tuple of float
+        :param refine: shall the position be refined on the raw data
+        :param Imin: minimum of intensity above the background
         """
         if Imin:
             valid = (self.keypoints.I >= Imin)
@@ -719,11 +720,11 @@ class BlobDetection(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask.
-        @param refine: shall the position be refined on the raw data
-        @param Imin: minimum of intensity above the background
-        @param kwarg: ignored parameters
-        @return: list of peaks [y,x], [y,x], ...]
+        :param mask: 2d array with mask.
+        :param refine: shall the position be refined on the raw data
+        :param Imin: minimum of intensity above the background
+        :param kwarg: ignored parameters
+        :return: list of peaks [y,x], [y,x], ...]
         """
         y = numpy.round(self.keypoints.y).astype(int)
         x = numpy.round(self.keypoints.x).astype(int)

@@ -34,7 +34,8 @@ capabilities to write EDF or other formats using fabio.
 Can be imported without h5py but then limited to fabio & ascii formats.
 
 TODO:
-* add monitor to HDF5
+
+- Add monitor to HDF5
 """
 
 
@@ -44,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -78,10 +79,10 @@ else:
 
 def get_isotime(forceTime=None):
     """
-    @param forceTime: enforce a given time (current by default)
-    @type forceTime: float
-    @return: the current time as an ISO8601 string
-    @rtype: string
+    :param forceTime: enforce a given time (current by default)
+    :type forceTime: float
+    :return: the current time as an ISO8601 string
+    :rtype: string
     """
     if forceTime is None:
         forceTime = time.time()
@@ -94,7 +95,7 @@ def get_isotime(forceTime=None):
 
 def from_isotime(text, use_tz=False):
     """
-    @param text: string representing the time is iso format
+    :param text: string representing the time is iso format
     """
     if len(text) == 1:
         # just in case someone sets as a list
@@ -119,7 +120,7 @@ def is_hdf5(filename):
     """
     Check if a file is actually a HDF5 file
 
-    @param filename: this file has better to exist
+    :param filename: this file has better to exist
     """
     signature = [137, 72, 68, 70, 13, 10, 26, 10]
     if not os.path.exists(filename):
@@ -156,8 +157,8 @@ class Writer(object):
     def init(self, fai_cfg=None, lima_cfg=None):
         """
         Creates the directory that will host the output file(s)
-        @param fai_cfg: configuration for worker
-        @param lima_cfg: configuration for acquisition
+        :param fai_cfg: configuration for worker
+        :param lima_cfg: configuration for acquisition
         """
 
         with self._sem:
@@ -213,9 +214,9 @@ class HDF5Writer(Writer):
         """
         Constructor of an HDF5 writer:
 
-        @param filename: name of the file
-        @param hpath: name of the group: it will contain data (2-4D dataset), [tth|q|r] and pyFAI, group containing the configuration
-        @param fast_scan_width: set it to define the width of
+        :param filename: name of the file
+        :param hpath: name of the group: it will contain data (2-4D dataset), [tth|q|r] and pyFAI, group containing the configuration
+        :param fast_scan_width: set it to define the width of
         """
         Writer.__init__(self, filename)
         self.hpath = hpath
@@ -245,7 +246,7 @@ class HDF5Writer(Writer):
     def init(self, fai_cfg=None, lima_cfg=None):
         """
         Initializes the HDF5 file for writing
-        @param fai_cfg: the configuration of the worker as a dictionary
+        :param fai_cfg: the configuration of the worker as a dictionary
         """
         logger.debug("in init")
         Writer.init(self, fai_cfg, lima_cfg)
@@ -344,8 +345,8 @@ class HDF5Writer(Writer):
         """
         Update some data like axis units and so on.
 
-        @param radial: position in radial direction
-        @param  azimuthal: position in azimuthal direction
+        :param radial: position in radial direction
+        :param  azimuthal: position in azimuthal direction
         """
         with self._sem:
             if not self.hdf5:
@@ -373,7 +374,7 @@ class HDF5Writer(Writer):
     def write(self, data, index=0):
         """
         Minimalistic method to limit the overhead.
-        @param data: array with intensities or tuple (2th,I) or (I,2th,chi)
+        :param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
         logger.debug("In write, index %s", index)
         radial = None
@@ -439,17 +440,17 @@ class DefaultAiWriter(Writer):
     def make_headers(self, hdr="#", has_dark=False, has_flat=False,
                     polarization_factor=None, normalization_factor=None):
         """
-        @param hdr: string used as comment in the header
-        @type hdr: str
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float
+        :param hdr: string used as comment in the header
+        :type hdr: str
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
 
-        @return: the header
-        @rtype: str
+        :return: the header
+        :rtype: str
         """
         if self._header is None:
             ai = self._ai
@@ -498,24 +499,24 @@ class DefaultAiWriter(Writer):
     def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg",
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
-        @param filename: the filename used to save the 1D integration
-        @type filename: str
-        @param dim1: the x coordinates of the integrated curve
-        @type dim1: numpy.ndarray
-        @param I: The integrated intensity
-        @type I: numpy.mdarray
-        @param error: the error bar for each intensity
-        @type error: numpy.ndarray or None
-        @param dim1_unit: the unit of the dim1 array
-        @type dim1_unit: pyFAI.units.Unit
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float, None
-        @param normalization_factor: the monitor value
-        @type normalization_factor: float, None
+        :param filename: the filename used to save the 1D integration
+        :type filename: str
+        :param dim1: the x coordinates of the integrated curve
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float, None
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float, None
 
         This method save the result of a 1D integration.
         """
@@ -540,26 +541,26 @@ class DefaultAiWriter(Writer):
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
-        @param filename: the filename used to save the 2D histogram
-        @type filename: str
-        @param dim1: the 1st coordinates of the histogram
-        @type dim1: numpy.ndarray
-        @param dim1: the 2nd coordinates of the histogram
-        @type dim1: numpy.ndarray
-        @param I: The integrated intensity
-        @type I: numpy.mdarray
-        @param error: the error bar for each intensity
-        @type error: numpy.ndarray or None
-        @param dim1_unit: the unit of the dim1 array
-        @type dim1_unit: pyFAI.units.Unit
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float, None
-        @param normalization_factor: the monitor value
-        @type normalization_factor: float, None
+        :param filename: the filename used to save the 2D histogram
+        :type filename: str
+        :param dim1: the 1st coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param dim1: the 2nd coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float, None
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float, None
 
         This method save the result of a 2D integration.
         """
@@ -618,8 +619,8 @@ class DefaultAiWriter(Writer):
         """
         Minimalistic method to limit the overhead.
 
-        @param data: array with intensities or tuple (2th,I) or (I,2th,chi)\
-        @type data: Integrate1dResult, Integrate2dResult
+        :param data: array with intensities or tuple (2th,I) or (I,2th,chi)\
+        :type data: Integrate1dResult, Integrate2dResult
         """
 
         if self._already_written:
@@ -835,20 +836,24 @@ class FabioWriter(Writer):
 class Nexus(object):
     """
     Writer class to handle Nexus/HDF5 data
-    Manages:
-    entry
-        pyFAI-subentry
-            detector
 
-    #TODO: make it thread-safe !!!
+    Manages:
+
+    - entry
+
+        - pyFAI-subentry
+
+            - detector
+
+    TODO: make it thread-safe !!!
     """
 
     def __init__(self, filename, mode="r"):
         """
         Constructor
 
-        @param filename: name of the hdf5 file containing the nexus
-        @param mode: can be r or a
+        :param filename: name of the hdf5 file containing the nexus
+        :param mode: can be r or a
         """
         self.filename = os.path.abspath(filename)
         self.mode = mode
@@ -881,8 +886,8 @@ class Nexus(object):
         """
         Retrieves an entry from its name
 
-        @param name: name of the entry to retrieve
-        @return: HDF5 group of NXclass == NXentry
+        :param name: name of the entry to retrieve
+        :return: HDF5 group of NXclass == NXentry
         """
         for grp_name in self.h5:
             if grp_name == name:
@@ -896,7 +901,7 @@ class Nexus(object):
         """
         retrieves all entry sorted the latest first.
 
-        @return: list of HDF5 groups
+        :return: list of HDF5 groups
         """
         entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
                    for grp in self.h5
@@ -910,7 +915,7 @@ class Nexus(object):
         """
         Tries to find a detector within a NeXus file, takes the first compatible detector
 
-        @param all: return all detectors found as a list
+        :param all: return all detectors found as a list
         """
         result = []
         for entry in self.get_entries():
@@ -926,11 +931,11 @@ class Nexus(object):
         """
         Create a new entry
 
-        @param entry: name of the entry
-        @param program_name: value of the field as string
-        @param title: value of the field as string
-        @force_time: enforce the start_time (as string!)
-        @return: the corresponding HDF5 group
+        :param entry: name of the entry
+        :param program_name: value of the field as string
+        :param title: value of the field as string
+        :param force_time: enforce the start_time (as string!)
+        :return: the corresponding HDF5 group
         """
         nb_entries = len(self.get_entries())
         entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
@@ -957,10 +962,10 @@ class Nexus(object):
     def new_class(self, grp, name, class_type="NXcollection"):
         """
         create a new sub-group with  type class_type
-        @param grp: parent group
-        @param name: name of the sub-group
-        @param class_type: NeXus class name
-        @return: subgroup created
+        :param grp: parent group
+        :param name: name of the sub-group
+        :param class_type: NeXus class name
+        :return: subgroup created
         """
         sub = grp.require_group(name)
         sub.attrs["NX_class"] = numpy.string_(class_type)
@@ -970,9 +975,9 @@ class Nexus(object):
         """
         Create a new entry/pyFAI/Detector
 
-        @param detector: name of the detector
-        @param entry: name of the entry
-        @param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
+        :param detector: name of the detector
+        :param entry: name of the entry
+        :param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
         """
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
@@ -985,8 +990,8 @@ class Nexus(object):
         """
         return all sub-groups of the given type within a group
 
-        @param grp: HDF5 group
-        @param class_type: name of the NeXus class
+        :param grp: HDF5 group
+        :param class_type: name of the NeXus class
         """
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Group) and
@@ -997,8 +1002,8 @@ class Nexus(object):
         """
         return all dataset of the the NeXus class NXdata
 
-        @param grp: HDF5 group
-        @param class_type: name of the NeXus class
+        :param grp: HDF5 group
+        :param class_type: name of the NeXus class
         """
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Dataset) and
@@ -1010,10 +1015,10 @@ class Nexus(object):
         perform a deep copy:
         create a "name" entry in self containing a copy of the object
 
-        @param where: path to the toplevel object (i.e. root)
-        @param  toplevel: firectly the top level Group
-        @param excluded: list of keys to be excluded
-        @param overwrite: replace content if already existing
+        :param where: path to the toplevel object (i.e. root)
+        :param  toplevel: firectly the top level Group
+        :param excluded: list of keys to be excluded
+        :param overwrite: replace content if already existing
         """
         if (excluded is not None) and (name in excluded):
             return
@@ -1042,10 +1047,10 @@ class Nexus(object):
 
         Handles the ascii -> unicode issue in python3 #275
 
-        @param dset: a HDF5 dataset (or a group)
-        @param name: name of the attribute
-        @param default: default value to be returned
-        @return: attribute value decoded in python3 or default
+        :param dset: a HDF5 dataset (or a group)
+        :param name: name of the attribute
+        :param default: default value to be returned
+        :return: attribute value decoded in python3 or default
         """
         dec = default
         if name in dset.attrs:

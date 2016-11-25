@@ -45,7 +45,6 @@ if ocl:
     from . import ocl_azim_lut, ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
-from .decorators import timeit
 try:
     from .third_party import six
 except ImportError:
@@ -79,13 +78,13 @@ class Distortion(object):
     def __init__(self, detector="detector", shape=None, resize=False, empty=0,
                  mask=None, method="CSR", device=None, workgroup=8):
         """
-        @param detector: detector instance or detector name
-        @param shape: shape of the output image
-        @param resize: allow the output shape to be different from the input shape
-        @param empty: value to be given for empty bins
-        @param method: "lut" or "csr", the former is faster
-        @param device: Name of the device: None for OpenMP, "cpu" or "gpu" or the id of the OpenCL device a 2-tuple of integer
-        @param workgroup: workgroup size for CSR on OpenCL
+        :param detector: detector instance or detector name
+        :param shape: shape of the output image
+        :param resize: allow the output shape to be different from the input shape
+        :param empty: value to be given for empty bins
+        :param method: "lut" or "csr", the former is faster
+        :param device: Name of the device: None for OpenMP, "cpu" or "gpu" or the id of the OpenCL device a 2-tuple of integer
+        :param workgroup: workgroup size for CSR on OpenCL
         """
         self._shape_out = None
         if isinstance(detector, six.string_types):
@@ -133,10 +132,10 @@ class Distortion(object):
         """
         reset the distortion correction and re-calculate the look-up table
 
-        @param method: can be "lut" or "csr", "lut" looks faster
-        @param device: can be None, "cpu" or "gpu" or the id as a 2-tuple of integer
-        @param worgroup: enforce the workgroup size for CSR.
-        @param prepare: set to false to only reset and not re-initialize
+        :param method: can be "lut" or "csr", "lut" looks faster
+        :param device: can be None, "cpu" or "gpu" or the id as a 2-tuple of integer
+        :param worgroup: enforce the workgroup size for CSR.
+        :param prepare: set to false to only reset and not re-initialize
         """
         with self._sem:
             self.max_size = None
@@ -159,7 +158,7 @@ class Distortion(object):
         """
         Calculate/cache the output shape
 
-        @return output shape
+        :return output shape
         """
         if self._shape_out is None:
             self.calc_pos()
@@ -168,8 +167,8 @@ class Distortion(object):
     def calc_pos(self, use_cython=True):
         """Calculate the pixel boundary position on the regular grid
 
-        @return: pixel corner positions (in pixel units) on the regular grid
-        @rtyep: ndarray of shape (nrow, ncol, 4, 2)
+        :return: pixel corner positions (in pixel units) on the regular grid
+        :rtype: ndarray of shape (nrow, ncol, 4, 2)
         """
         if self.delta1 is None:
             with self._sem:
@@ -203,7 +202,7 @@ class Distortion(object):
     def calc_size(self, use_cython=True):
         """Calculate the number of pixels falling into every single bin and
 
-        @return: max of pixel falling into a single bin
+        :return: max of pixel falling into a single bin
 
         Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
         the physical location of pixels should go from:
@@ -265,9 +264,9 @@ class Distortion(object):
                                                                       block_size=self.workgroup)
 
     def calc_LUT(self, use_common=True):
-        """Calculate the Look-up table 
-        
-        @return: look up table either in CSR or LUT format depending on serl.method
+        """Calculate the Look-up table
+
+        :return: look up table either in CSR or LUT format depending on serl.method
         """
         if self.pos is None:
             self.calc_pos()
@@ -335,10 +334,10 @@ class Distortion(object):
         """
         Correct an image based on the look-up table calculated ...
 
-        @param image: 2D-array with the image
-        @param dummy: value suggested for bad pixels
-        @param delta_dummy: precision of the dummy value
-        @return: corrected 2D image
+        :param image: 2D-array with the image
+        :param dummy: value suggested for bad pixels
+        :param delta_dummy: precision of the dummy value
+        :return: corrected 2D image
         """
         if image.shape != self.shape_in:
             logger.error("The image shape (%s) is not the same as the detector (%s). Adapting shape ...", image.shape, self.shape_in)
@@ -381,9 +380,9 @@ class Distortion(object):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
 
-        @param image: 2D-array with the image
-        @return: uncorrected 2D image
-        
+        :param image: 2D-array with the image
+        :return: uncorrected 2D image
+
         Nota: to retrieve the input mask on can do:
 
         >>> msk =  dis.uncorrect(numpy.ones(dis._shape_out)) <= 0
@@ -694,7 +693,7 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[i - 1 , h] += sign * dA
+                            self.box[i - 1, h] += sign * dA
                             AA -= dA
                             h += 1
                 # Section Pn->B

@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "07/11/2016"
+__date__ = "24/11/2016"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -300,9 +300,9 @@ class Bench(object):
 
     def bench_1d(self, method="splitBBox", check=False, opencl=None):
         """
-        @param method: method to be bechmarked
-        @param check: check results vs ref if method is LUT based
-        @param opencl: dict containing platformid, deviceid and devicetype
+        :param method: method to be bechmarked
+        :param check: check results vs ref if method is LUT based
+        :param opencl: dict containing platformid, deviceid and devicetype
         """
         self.update_mp()
         if opencl:
@@ -567,9 +567,9 @@ class Bench(object):
         """
         Create a new curve within the current graph
 
-        @param results: dict with execution time in function of size
-        @param label: string with the title of the curve
-        @param style: the style of the line: "-" for plain line, "--" for dashed
+        :param results: dict with execution time in function of size
+        :param label: string with the title of the curve
+        :param style: the style of the line: "-" for plain line, "--" for dashed
         """
         self.update_mp()
         if not self.fig:
@@ -585,8 +585,8 @@ class Bench(object):
         """
         Add new point to current curve
 
-        @param size: of the system
-        @parm exec_time: execution time in ms
+        :param size: of the system
+        :param exec_time: execution time in ms
         """
         self.update_mp()
         if not self.plot:

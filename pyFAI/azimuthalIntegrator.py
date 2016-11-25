@@ -166,40 +166,40 @@ class AzimuthalIntegrator(Geometry):
                  pixel1=None, pixel2=None,
                  splineFile=None, detector=None, wavelength=None):
         """
-        @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
-        @type dist: float
-        @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
-        @type poni1: float
-        @param poni2: coordinate of the point of normal incidence along the detector's second dimension, in meter
-        @type poni2: float
-        @param rot1: first rotation from sample ref to detector's ref, in radians
-        @type rot1: float
-        @param rot2: second rotation from sample ref to detector's ref, in radians
-        @type rot2: float
-        @param rot3: third rotation from sample ref to detector's ref, in radians
-        @type rot3: float
-        @param pixel1: Deprecated. Pixel size of the fist dimension of the detector,  in meter.
+        :param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
+        :type dist: float
+        :param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
+        :type poni1: float
+        :param poni2: coordinate of the point of normal incidence along the detector's second dimension, in meter
+        :type poni2: float
+        :param rot1: first rotation from sample ref to detector's ref, in radians
+        :type rot1: float
+        :param rot2: second rotation from sample ref to detector's ref, in radians
+        :type rot2: float
+        :param rot3: third rotation from sample ref to detector's ref, in radians
+        :type rot3: float
+        :param pixel1: Deprecated. Pixel size of the fist dimension of the detector,  in meter.
             If both pixel1 and pixel2 are not None, detector pixel size is overwritten.
             Prefer defining the detector pixel size on the provided detector object.
             Prefer defining the detector pixel size on the provided detector
             object (``detector.pixel1 = 5e-6``).
-        @type pixel1: float
-        @param pixel2: Deprecated. Pixel size of the second dimension of the detector,  in meter.
+        :type pixel1: float
+        :param pixel2: Deprecated. Pixel size of the second dimension of the detector,  in meter.
             If both pixel1 and pixel2 are not None, detector pixel size is overwritten.
             Prefer defining the detector pixel size on the provided detector
             object (``detector.pixel2 = 5e-6``).
-        @type pixel2: float
-        @param splineFile: Deprecated. File containing the geometric distortion of the detector.
+        :type pixel2: float
+        :param splineFile: Deprecated. File containing the geometric distortion of the detector.
             If not None, pixel1 and pixel2 are ignored and detector spline is overwritten.
             Prefer defining the detector spline manually
             (``detector.splineFile = "file.spline"``).
-        @type splineFile: str
-        @param detector: name of the detector or Detector instance. String
+        :type splineFile: str
+        :param detector: name of the detector or Detector instance. String
             description is deprecated. Prefer using the result of the detector
             factory: ``pyFAI.detector_factory("eiger4m")``
-        @type detector: str or pyFAI.Detector
-        @param wavelength: Wave length used in meter
-        @type wavelength: float
+        :type detector: str or pyFAI.Detector
+        :param wavelength: Wave length used in meter
+        :type wavelength: float
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
@@ -249,19 +249,19 @@ class AzimuthalIntegrator(Geometry):
         """
         Combines various masks into another one.
 
-        @param data: input array of data
-        @type data: ndarray
-        @param mask: input mask (if none, self.mask is used)
-        @type mask: ndarray
-        @param dummy: value of dead pixels
-        @type dummy: float
-        @param delta_dumy: precision of dummy pixels
-        @type delta_dummy: float
-        @param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask
-        @type mode: str
+        :param data: input array of data
+        :type data: ndarray
+        :param mask: input mask (if none, self.mask is used)
+        :type mask: ndarray
+        :param dummy: value of dead pixels
+        :type dummy: float
+        :param delta_dumy: precision of dummy pixels
+        :type delta_dummy: float
+        :param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask
+        :type mode: str
 
-        @return: the new mask
-        @rtype: ndarray of bool
+        :return: the new mask
+        :rtype: ndarray of bool
 
         This method combine two masks (dynamic mask from *data &
         dummy* and *mask*) to generate a new one with the 'or' binary
@@ -318,9 +318,9 @@ class AzimuthalIntegrator(Geometry):
         Correct for Dark-current effects.
         If dark is not defined, correct for a dark set by "set_darkfiles"
 
-        @param data: input ndarray with the image
-        @param dark: ndarray with dark noise or None
-        @return: 2tuple: corrected_data, dark_actually used (or None)
+        :param data: input ndarray with the image
+        :param dark: ndarray with dark noise or None
+        :return: 2tuple: corrected_data, dark_actually used (or None)
         """
         if dark is not None:
             return data - dark, dark
@@ -333,9 +333,9 @@ class AzimuthalIntegrator(Geometry):
         Correct for flat field.
         If flat is not defined, correct for a flat set by "set_flatfiles"
 
-        @param data: input ndarray with the image
-        @param dark: ndarray with dark noise or None
-        @return: 2tuple: corrected_data, flat_actually used (or None)
+        :param data: input ndarray with the image
+        :param dark: ndarray with dark noise or None
+        :return: 2tuple: corrected_data, flat_actually used (or None)
         """
         if flat is not None:
             return data / flat, flat
@@ -357,31 +357,31 @@ class AzimuthalIntegrator(Geometry):
         to explain how other more sophisticated algorithms works.
         Use xrpd_splitBBox instead
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: integer
-        @param filename: file to save data in ascii format 2 column
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of the 2theta
-        @type tthRange: (float, float), optional
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: integer
+        :param filename: file to save data in ascii format 2 column
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of the 2theta
+        :type tthRange: (float, float), optional
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
 
-        @return: (2theta, I) in degrees
-        @rtype: 2-tuple of 1D arrays
+        :return: (2theta, I) in degrees
+        :rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
         given *data* image. The number of point of the pattern is
@@ -519,33 +519,33 @@ class AzimuthalIntegrator(Geometry):
 
         Cython implementation
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: integer
-        @param filename: file to save data in ascii format 2 column
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of the 2theta
-        @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), optional, disabled for now
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: integer
+        :param filename: file to save data in ascii format 2 column
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of the 2theta
+        :type tthRange: (float, float), optional
+        :param chiRange: The lower and upper range of the chi angle.
+        :type chiRange: (float, float), optional, disabled for now
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
 
-        @return: (2theta, I) in degrees
-        @rtype: 2-tuple of 1D arrays
+        :return: (2theta, I) in degrees
+        :rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
         given *data* image. The number of point of the pattern is
@@ -676,33 +676,33 @@ class AzimuthalIntegrator(Geometry):
 
         Cython implementation (single threaded)
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: integer
-        @param filename: file to save data in ascii format 2 column
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of the 2theta
-        @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), optional, disabled for now
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: integer
+        :param filename: file to save data in ascii format 2 column
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of the 2theta
+        :type tthRange: (float, float), optional
+        :param chiRange: The lower and upper range of the chi angle.
+        :type chiRange: (float, float), optional, disabled for now
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
 
-        @return: (2theta, I) in degrees
-        @rtype: 2-tuple of 1D arrays
+        :return: (2theta, I) in degrees
+        :rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
         given *data* image. The number of point of the pattern is
@@ -820,38 +820,38 @@ class AzimuthalIntegrator(Geometry):
         implementation is not slower than the previous Cython and is
         less problematic for compilation/installation.
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: integer
-        @param filename: file to save data in ascii format 2 column
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of the 2theta
-        @type tthRange: (float, float), optional
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: integer
+        :param filename: file to save data in ascii format 2 column
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of the 2theta
+        :type tthRange: (float, float), optional
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
 
         OpenCL specific parameters:
 
-        @param devicetype: possible values "cpu", "gpu", "all" or "def"
-        @type devicetype: str
-        @param useFp64: shall histogram be done in double precision (strongly adviced)
-        @type useFp64: bool
-        @param platformid: platform number
-        @type platformid: int
-        @param deviceid: device number
-        @type deviceid: int
-        @param safe: set to False if your GPU is already set-up correctly
-        @type safe: bool
+        :param devicetype: possible values "cpu", "gpu", "all" or "def"
+        :type devicetype: str
+        :param useFp64: shall histogram be done in double precision (strongly adviced)
+        :type useFp64: bool
+        :param platformid: platform number
+        :type platformid: int
+        :param deviceid: device number
+        :type deviceid: int
+        :param safe: set to False if your GPU is already set-up correctly
+        :type safe: bool
 
-        @return: (2theta, I) angle being in degrees
-        @rtype: 2-tuple of 1D arrays
+        :return: (2theta, I) angle being in degrees
+        :rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
         given *data* image. The number of point of the pattern is
@@ -1005,20 +1005,20 @@ class AzimuthalIntegrator(Geometry):
         """
         Prepare a look-up-table
 
-        @param shape: shape of the dataset
-        @type shape: (int, int)
-        @param npt: number of points in the the output pattern
-        @type npt: int or (int, int)
-        @param mask: array with masked pixel (1=masked)
-        @type mask: ndarray
-        @param pos0_range: range in radial dimension
-        @type pos0_range: (float, float)
-        @param pos1_range: range in azimuthal dimension
-        @type pos1_range: (float, float)
-        @param mask_checksum: checksum of the mask buffer
-        @type mask_checksum: int (or anything else ...)
-        @param unit: use to propagate the LUT object for further checkings
-        @type unit: pyFAI.units.Enum
+        :param shape: shape of the dataset
+        :type shape: (int, int)
+        :param npt: number of points in the the output pattern
+        :type npt: int or (int, int)
+        :param mask: array with masked pixel (1=masked)
+        :type mask: ndarray
+        :param pos0_range: range in radial dimension
+        :type pos0_range: (float, float)
+        :param pos1_range: range in azimuthal dimension
+        :type pos1_range: (float, float)
+        :param mask_checksum: checksum of the mask buffer
+        :type mask_checksum: int (or anything else ...)
+        :param unit: use to propagate the LUT object for further checkings
+        :type unit: pyFAI.units.Enum
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
@@ -1099,21 +1099,21 @@ class AzimuthalIntegrator(Geometry):
         """
         Prepare a look-up-table
 
-        @param shape: shape of the dataset
-        @type shape: (int, int)
-        @param npt: number of points in the the output pattern
-        @type npt: int or (int, int)
-        @param mask: array with masked pixel (1=masked)
-        @type mask: ndarray
-        @param pos0_range: range in radial dimension
-        @type pos0_range: (float, float)
-        @param pos1_range: range in azimuthal dimension
-        @type pos1_range: (float, float)
-        @param mask_checksum: checksum of the mask buffer
-        @type mask_checksum: int (or anything else ...)
-        @param unit: use to propagate the LUT object for further checkings
-        @type unit: pyFAI.units.Enum
-        @param split: Splitting scheme: valid options are "no", "bbox", "full"
+        :param shape: shape of the dataset
+        :type shape: (int, int)
+        :param npt: number of points in the the output pattern
+        :type npt: int or (int, int)
+        :param mask: array with masked pixel (1=masked)
+        :type mask: ndarray
+        :param pos0_range: range in radial dimension
+        :type pos0_range: (float, float)
+        :param pos1_range: range in azimuthal dimension
+        :type pos1_range: (float, float)
+        :param mask_checksum: checksum of the mask buffer
+        :type mask_checksum: int (or anything else ...)
+        :param unit: use to propagate the LUT object for further checkings
+        :type unit: pyFAI.units.Enum
+        :param split: Splitting scheme: valid options are "no", "bbox", "full"
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
@@ -1231,32 +1231,32 @@ class AzimuthalIntegrator(Geometry):
 
         Parallel Cython implementation using a Look-Up Table (OpenMP).
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: integer
-        @param filename: file to save data in ascii format 2 column
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of the 2theta angle
-        @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), optional
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: integer
+        :param filename: file to save data in ascii format 2 column
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of the 2theta angle
+        :type tthRange: (float, float), optional
+        :param chiRange: The lower and upper range of the chi angle.
+        :type chiRange: (float, float), optional
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
 
         LUT specific parameters:
 
-        @param safe: set to False if your LUT is already set-up correctly (mask, ranges, ...).
-        @type safe: bool
+        :param safe: set to False if your LUT is already set-up correctly (mask, ranges, ...).
+        :type safe: bool
 
-        @return: (2theta, I) with 2theta angle in degrees
-        @rtype: 2-tuple of 1D arrays
+        :return: (2theta, I) with 2theta angle in degrees
+        :rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
         given *data* image. The number of point of the pattern is
@@ -1349,41 +1349,41 @@ class AzimuthalIntegrator(Geometry):
         PyOpenCL implementation using a Look-Up Table (OpenCL). The
         look-up table is a Cython module.
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: integer
-        @param filename: file to save data in ascii format 2 column
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of 2theta
-        @type tthRange: (float, float)
-        @param chiRange: The lower and upper range of the chi angle in degrees.
-        @type chiRange: (float, float)
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: integer
+        :param filename: file to save data in ascii format 2 column
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of 2theta
+        :type tthRange: (float, float)
+        :param chiRange: The lower and upper range of the chi angle in degrees.
+        :type chiRange: (float, float)
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
 
         LUT specific parameters:
 
-        @param safe: set to False if your LUT & GPU is already set-up correctly
-        @type safe: bool
+        :param safe: set to False if your LUT & GPU is already set-up correctly
+        :type safe: bool
 
         OpenCL specific parameters:
 
-        @param devicetype: can be "all", "cpu", "gpu", "acc" or "def"
-        @type devicetype: str
-        @param platformid: platform number
-        @type platformid: int
-        @param deviceid: device number
-        @type deviceid: int
+        :param devicetype: can be "all", "cpu", "gpu", "acc" or "def"
+        :type devicetype: str
+        :param platformid: platform number
+        :type platformid: int
+        :param deviceid: device number
+        :type deviceid: int
 
-        @return: (2theta, I) in degrees
-        @rtype: 2-tuple of 1D arrays
+        :return: (2theta, I) in degrees
+        :rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
         given *data* image. The number of point of the pattern is
@@ -1482,45 +1482,45 @@ class AzimuthalIntegrator(Geometry):
         PyOpenCL implementation using a CSR version of the Look-Up Table (OpenCL). The
         look-up table is a Cython module.
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: integer
-        @param filename: file to save data in ascii format 2 column
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of 2theta
-        @type tthRange: (float, float)
-        @param chiRange: The lower and upper range of the chi angle in degrees.
-        @type chiRange: (float, float)
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: integer
+        :param filename: file to save data in ascii format 2 column
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of 2theta
+        :type tthRange: (float, float)
+        :param chiRange: The lower and upper range of the chi angle in degrees.
+        :type chiRange: (float, float)
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
 
         LUT specific parameters:
 
-        @param safe: set to False if your LUT & GPU is already set-up correctly
-        @type safe: bool
+        :param safe: set to False if your LUT & GPU is already set-up correctly
+        :type safe: bool
 
         OpenCL specific parameters:
 
-        @param devicetype: can be "all", "cpu", "gpu", "acc" or "def"
-        @type devicetype: str
-        @param platformid: platform number
-        @type platformid: int
-        @param deviceid: device number
-        @type deviceid: int
-        @param block_size: OpenCL grid size
-        @type block_size: int
+        :param devicetype: can be "all", "cpu", "gpu", "acc" or "def"
+        :type devicetype: str
+        :param platformid: platform number
+        :type platformid: int
+        :param deviceid: device number
+        :type deviceid: int
+        :param block_size: OpenCL grid size
+        :type block_size: int
         Unused/deprecated arguments:
-        @param padded: deprecated
+        :param padded: deprecated
 
-        @return: (2theta, I) in degrees
-        @rtype: 2-tuple of 1D arrays
+        :return: (2theta, I) in degrees
+        :rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
         given *data* image. The number of point of the pattern is
@@ -1627,29 +1627,29 @@ class AzimuthalIntegrator(Geometry):
 
         Pure numpy implementation (VERY SLOW !!!)
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
-        @type npt: int
-        @param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
-        @type npt_azim: int
-        @param filename: file to save data in
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of 2theta
-        @type tthRange: (float, float)
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), disabled for now
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
+        :type npt: int
+        :param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
+        :type npt_azim: int
+        :param filename: file to save data in
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of 2theta
+        :type tthRange: (float, float)
+        :param chiRange: The lower and upper range of the chi angle.
+        :type chiRange: (float, float), disabled for now
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
 
-        @return: azimuthaly regrouped data, 2theta pos and chipos
-        @rtype: 3-tuple of ndarrays
+        :return: azimuthaly regrouped data, 2theta pos and chipos
+        :rtype: 3-tuple of ndarrays
 
         This method convert the *data* image from the pixel
         coordinates to the 2theta, chi coordinates. This is simular to
@@ -1735,29 +1735,29 @@ class AzimuthalIntegrator(Geometry):
 
         Cython implementation: fast but incaccurate
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
-        @type npt: int
-        @param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
-        @type npt_azim: int
-        @param filename: file to save data in
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of 2theta
-        @type tthRange: (float, float)
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), disabled for now
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
+        :type npt: int
+        :param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
+        :type npt_azim: int
+        :param filename: file to save data in
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of 2theta
+        :type tthRange: (float, float)
+        :param chiRange: The lower and upper range of the chi angle.
+        :type chiRange: (float, float), disabled for now
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
 
-        @return: azimuthaly regrouped data, 2theta pos and chipos
-        @rtype: 3-tuple of ndarrays
+        :return: azimuthaly regrouped data, 2theta pos and chipos
+        :rtype: 3-tuple of ndarrays
 
         This method convert the *data* image from the pixel
         coordinates to the 2theta, chi coordinates. This is simular to
@@ -1850,35 +1850,35 @@ class AzimuthalIntegrator(Geometry):
 
         Split pixels according to their coordinate and a bounding box
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
-        @type npt: int
-        @param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
-        @type npt_azim: int
-        @param filename: file to save data in
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of 2theta
-        @type tthRange: (float, float)
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), disabled for now
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
+        :type npt: int
+        :param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
+        :type npt_azim: int
+        :param filename: file to save data in
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of 2theta
+        :type tthRange: (float, float)
+        :param chiRange: The lower and upper range of the chi angle.
+        :type chiRange: (float, float), disabled for now
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
 
-        @return: azimuthaly regrouped data, 2theta pos. and chi pos.
-        @rtype: 3-tuple of ndarrays
+        :return: azimuthaly regrouped data, 2theta pos. and chi pos.
+        :rtype: 3-tuple of ndarrays
 
         This method convert the *data* image from the pixel
         coordinates to the 2theta, chi coordinates. This is similar to
@@ -1994,35 +1994,35 @@ class AzimuthalIntegrator(Geometry):
 
         Split pixels according to their corner positions
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
-        @type npt: int
-        @param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
-        @type npt_azim: int
-        @param filename: file to save data in
-        @type filename: str
-        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
-        @type correctSolidAngle: bool or int
-        @param tthRange: The lower and upper range of 2theta
-        @type tthRange: (float, float)
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), disabled for now
-        @param mask: array with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels (dynamic mask)
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt_rad: number of bin of the Radial (horizontal) axis (2Theta)
+        :type npt: int
+        :param npt_azim: number of bin of the Azimuthal (vertical) axis (chi)
+        :type npt_azim: int
+        :param filename: file to save data in
+        :type filename: str
+        :param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        :type correctSolidAngle: bool or int
+        :param tthRange: The lower and upper range of 2theta
+        :type tthRange: (float, float)
+        :param chiRange: The lower and upper range of the chi angle.
+        :type chiRange: (float, float), disabled for now
+        :param mask: array with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels (dynamic mask)
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
 
-        @return: azimuthaly regrouped data, 2theta pos. and chi pos.
-        @rtype: 3-tuple of ndarrays
+        :return: azimuthaly regrouped data, 2theta pos. and chi pos.
+        :rtype: 3-tuple of ndarrays
 
         This method convert the *data* image from the pixel
         coordinates to the 2theta, chi coordinates. This is similar to
@@ -2142,48 +2142,48 @@ class AzimuthalIntegrator(Geometry):
 
 
 
-        @param data: 2D array from the Detector/CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: int
-        @param filename: output filename in 2/3 column ascii format
-        @type filename: str
-        @param correctSolidAngle: correct for solid angle of each pixel if True
-        @type correctSolidAngle: bool
-        @param variance: array containing the variance of the data. If not available, no error propagation is done
-        @type variance: ndarray
-        @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
-        @type error_model: str
-        @param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        @type radial_range: (float, float), optional
-        @param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        @type azimuth_range: (float, float), optional
-        @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
-        @type method: str
-        @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        @type unit: pyFAI.units.Enum
-        @param safe: Do some extra checks to ensure LUT/CSR is still valid. False is faster.
-        @type safe: bool
-        @param normalization_factor: Value of a normalization monitor
-        @type normalization_factor: float
-        @param block_size: size of the block for OpenCL integration (unused?)
-        @param profile: set to True to enable profiling in OpenCL
-        @param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
-        @type all: bool
-        @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
-        @rtype: Integrate1dResult, dict
+        :param data: 2D array from the Detector/CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: int
+        :param filename: output filename in 2/3 column ascii format
+        :type filename: str
+        :param correctSolidAngle: correct for solid angle of each pixel if True
+        :type correctSolidAngle: bool
+        :param variance: array containing the variance of the data. If not available, no error propagation is done
+        :type variance: ndarray
+        :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        :type error_model: str
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type radial_range: (float, float), optional
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type azimuth_range: (float, float), optional
+        :param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
+        :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        :type method: str
+        :param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
+        :type unit: pyFAI.units.Enum
+        :param safe: Do some extra checks to ensure LUT/CSR is still valid. False is faster.
+        :type safe: bool
+        :param normalization_factor: Value of a normalization monitor
+        :type normalization_factor: float
+        :param block_size: size of the block for OpenCL integration (unused?)
+        :param profile: set to True to enable profiling in OpenCL
+        :param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
+        :type all: bool
+        :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
+        :rtype: Integrate1dResult, dict
         """
         method = method.lower()
         unit = units.to_unit(unit)
@@ -2718,48 +2718,48 @@ class AzimuthalIntegrator(Geometry):
 
         Multi algorithm implementation (tries to be bullet proof)
 
-        @param data: 2D array from the Detector/CCD camera
-        @type data: ndarray
-        @param npt_rad: number of points in the radial direction
-        @type npt_rad: int
-        @param npt_azim: number of points in the azimuthal direction
-        @type npt_azim: int
-        @param filename: output image (as edf format)
-        @type filename: str
-        @param correctSolidAngle: correct for solid angle of each pixel if True
-        @type correctSolidAngle: bool
-        @param variance: array containing the variance of the data. If not available, no error propagation is done
-        @type variance: ndarray
-        @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
-        @type error_model: str
-        @param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        @type radial_range: (float, float), optional
-        @param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        @type azimuth_range: (float, float), optional
-        @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
-        @type method: str
-        @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        @type unit: pyFAI.units.Enum
-        @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
-        @type safe: bool
-        @param normalization_factor: Value of a normalization monitor
-        @type normalization_factor: float
-        @param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
-        @type all: bool
-        @return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
-        @rtype: Integrate2dResult, dict
+        :param data: 2D array from the Detector/CCD camera
+        :type data: ndarray
+        :param npt_rad: number of points in the radial direction
+        :type npt_rad: int
+        :param npt_azim: number of points in the azimuthal direction
+        :type npt_azim: int
+        :param filename: output image (as edf format)
+        :type filename: str
+        :param correctSolidAngle: correct for solid angle of each pixel if True
+        :type correctSolidAngle: bool
+        :param variance: array containing the variance of the data. If not available, no error propagation is done
+        :type variance: ndarray
+        :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        :type error_model: str
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type radial_range: (float, float), optional
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type azimuth_range: (float, float), optional
+        :param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
+        :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        :type method: str
+        :param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
+        :type unit: pyFAI.units.Enum
+        :param safe: Do some extra checks to ensure LUT is still valid. False is faster.
+        :type safe: bool
+        :param normalization_factor: Value of a normalization monitor
+        :type normalization_factor: float
+        :param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
+        :type all: bool
+        :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
+        :rtype: Integrate2dResult, dict
         """
         method = method.lower()
         npt = (npt_rad, npt_azim)
@@ -3164,39 +3164,39 @@ class AzimuthalIntegrator(Geometry):
 
         Wrapper for integrate1d emulating behavour of old saxs method
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param npt: number of points in the output pattern
-        @type npt: int
-        @param filename: file to save data to
-        @type filename: str
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
-        @type correctSolidAngle: bool
-        @param variance: array containing the variance of the data, if you know it
-        @type variance: ndarray
-        @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
-        @type error_model: str
-        @param qRange: The lower and upper range of the sctter vector q. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        @type qRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        @type chiRange: (float, float), optional
-        @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        @type mask: ndarray
-        @param dummy: value for dead/masked pixels
-        @type dummy: float
-        @param delta_dummy: precision for dummy value
-        @type delta_dummy: float
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
-        @type polarization_factor: float
-        @param dark: dark noise image
-        @type dark: ndarray
-        @param flat: flat field image
-        @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel"
-        @type method: str
+        :param data: 2D array from the CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: int
+        :param filename: file to save data to
+        :type filename: str
+        :param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        :type correctSolidAngle: bool
+        :param variance: array containing the variance of the data, if you know it
+        :type variance: ndarray
+        :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        :type error_model: str
+        :param qRange: The lower and upper range of the sctter vector q. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type qRange: (float, float), optional
+        :param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type chiRange: (float, float), optional
+        :param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
+        :param method: can be "numpy", "cython", "BBox" or "splitpixel"
+        :type method: str
 
-        @return: azimuthaly regrouped data, 2theta pos. and chi pos.
-        @rtype: 3-tuple of ndarrays
+        :return: azimuthaly regrouped data, 2theta pos. and chi pos.
+        :rtype: 3-tuple of ndarrays
         """
         out = self.integrate1d(data, npt,
                                filename=filename,
@@ -3232,24 +3232,24 @@ class AzimuthalIntegrator(Geometry):
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
-        @param filename: the filename used to save the 1D integration
-        @type filename: str
-        @param dim1: the x coordinates of the integrated curve
-        @type dim1: numpy.ndarray
-        @param I: The integrated intensity
-        @type I: numpy.mdarray
-        @param error: the error bar for each intensity
-        @type error: numpy.ndarray or None
-        @param dim1_unit: the unit of the dim1 array
-        @type dim1_unit: pyFAI.units.Unit
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float
-        @param normalization_factor: the monitor value
-        @type normalization_factor: float
+        :param filename: the filename used to save the 1D integration
+        :type filename: str
+        :param dim1: the x coordinates of the integrated curve
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float
 
         This method save the result of a 1D integration.
         """
@@ -3261,26 +3261,26 @@ class AzimuthalIntegrator(Geometry):
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
-        @param filename: the filename used to save the 2D histogram
-        @type filename: str
-        @param dim1: the 1st coordinates of the histogram
-        @type dim1: numpy.ndarray
-        @param dim1: the 2nd coordinates of the histogram
-        @type dim1: numpy.ndarray
-        @param I: The integrated intensity
-        @type I: numpy.mdarray
-        @param error: the error bar for each intensity
-        @type error: numpy.ndarray or None
-        @param dim1_unit: the unit of the dim1 array
-        @type dim1_unit: pyFAI.units.Unit
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float
-        @param normalization_factor: the monitor value
-        @type normalization_factor: float
+        :param filename: the filename used to save the 2D histogram
+        :type filename: str
+        :param dim1: the 1st coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param dim1: the 2nd coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float
 
         This method save the result of a 2D integration.
         """
@@ -3295,15 +3295,15 @@ class AzimuthalIntegrator(Geometry):
         Separate bragg signal from powder/amorphous signal using azimuthal integration,
         median filering and projected back before subtraction.
 
-        @param data: input image as numpy array
-        @param npt_rad: number of radial points
-        @param npt_azim: number of azimuthal points
-        @param unit: unit to be used for integration
-        @param method: pathway for integration and sort
-        @param percentile: which percentile use for cutting out
-        @param mask: masked out pixels array
-        @param restore_mask: masked pixels have the same value as input data provided
-        @return: bragg, amorphous
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param percentile: which percentile use for cutting out
+        :param mask: masked out pixels array
+        :param restore_mask: masked pixels have the same value as input data provided
+        :return: bragg, amorphous
         """
         if mask is None:
             mask = self.mask
@@ -3393,10 +3393,10 @@ class AzimuthalIntegrator(Geometry):
 
     def set_darkfiles(self, files=None, method="mean"):
         """
-        @param files: file(s) used to compute the dark.
-        @type files: str or list(str) or None
-        @param method: method used to compute the dark, "mean" or "median"
-        @type method: str
+        :param files: file(s) used to compute the dark.
+        :type files: str or list(str) or None
+        :param method: method used to compute the dark, "mean" or "median"
+        :type method: str
 
         Set the dark current from one or mutliple files, avaraged
         according to the method provided
@@ -3416,10 +3416,10 @@ class AzimuthalIntegrator(Geometry):
 
     def set_flatfiles(self, files, method="mean"):
         """
-        @param files: file(s) used to compute the dark.
-        @type files: str or list(str) or None
-        @param method: method used to compute the dark, "mean" or "median"
-        @type method: str
+        :param files: file(s) used to compute the dark.
+        :type files: str or list(str) or None
+        :param method: method used to compute the dark, "mean" or "median"
+        :type method: str
 
         Set the flat field from one or mutliple files, averaged
         according to the method provided

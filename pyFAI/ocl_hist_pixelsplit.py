@@ -54,18 +54,18 @@ class OCL_Hist_Pixelsplit(object):
                  platformid=None, deviceid=None,
                  checksum=None, profile=False):
         """
-        @param lut: 3-tuple of arrays
+        :param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
             indices: Column index position for the data (same size as data)
             indptr: row pointer indicates the start of a given row. len nbin+1
-        @param image_size: size of the image (for pre-processing)
-        @param devicetype: can be "cpu","gpu","acc" or "all"
-        @param platformid: number of the platform as given by clinfo
-        @type platformid: int
-        @param deviceid: number of the device as given by clinfo
-        @type deviceid: int
-        @param checksum: pre - calculated checksum to prevent re - calculating it :)
-        @param profile: store profiling elements
+        :param image_size: size of the image (for pre-processing)
+        :param devicetype: can be "cpu","gpu","acc" or "all"
+        :param platformid: number of the platform as given by clinfo
+        :type platformid: int
+        :param deviceid: number of the device as given by clinfo
+        :type deviceid: int
+        :param checksum: pre - calculated checksum to prevent re - calculating it :)
+        :param profile: store profiling elements
         """
         self.padded = padded
         self._sem = threading.Semaphore()
@@ -196,7 +196,7 @@ class OCL_Hist_Pixelsplit(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        @param kernel_file: path tothe
+        :param kernel_file: path tothe
         """
         kernel_file = kernel_file or "ocl_hist_pixelsplit.cl"
         kernel_src = concatenate_cl_kernel([kernel_file])

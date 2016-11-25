@@ -172,7 +172,7 @@ class ListDataSet(list):
 
     def commonroot(self):
         """
-        @return: common directory
+        :return: common directory
         """
         l = [j.path.split(os.sep) for j in self]
         common = os.path.commonprefix(l)
@@ -182,8 +182,8 @@ class ListDataSet(list):
     def as_tree(self, sep=os.path.sep):
         """Convert the list into a tree
 
-        @param sep: separator in the filenames
-        @return: Root of the tree
+        :param sep: separator in the filenames
+        :return: Root of the tree
         """
         prefix = self.commonroot()
         root = TreeItem()

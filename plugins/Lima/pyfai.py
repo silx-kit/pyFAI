@@ -17,7 +17,7 @@ EXPO = 0.1 #sec
 class PyFAILink(Core.Processlib.LinkTask):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(966, 1296), shapeOut=(360, 500), unit="r_mm"):
         """
-        @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
+        :param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
         
         """
         Core.Processlib.LinkTask.__init__(self)

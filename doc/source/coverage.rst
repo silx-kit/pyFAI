@@ -19,7 +19,7 @@ Measured on *pyFAI* version 0.12.0, 06/06/2016
    "pyFAI/ext/__init__", "0", "0", "0.0 %"
    "pyFAI/geometry", "961", "761", "79.2 %"
    "pyFAI/geometryRefinement", "481", "174", "36.2 %"
-   "pyFAI/gui_utils", "69", "33", "47.8 %"
+   "pyFAI/gui/utils", "69", "33", "47.8 %"
    "pyFAI/integrate_widget", "493", "273", "55.4 %"
    "pyFAI/io", "465", "250", "53.8 %"
    "pyFAI/massif", "201", "132", "65.7 %"

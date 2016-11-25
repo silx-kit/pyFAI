@@ -25,12 +25,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
 """Manages the different units
 
-Nota for developers: this module is used a singleton to store all units in a 
-unique maner. This explains the number of top-level variables on the one 
+Nota for developers: this module is used a singleton to store all units in a
+unique manner. This explains the number of top-level variables on the one
 hand and their CAPITALIZATION on the other.
 """
 
@@ -42,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -65,22 +64,22 @@ CONST_q = 1.602176565e-19
 
 
 class Unit(object):
-    """Represents a unit: 
-    
-    it has at least a name and a scale (in SI-unit)
+    """Represents a unit.
+
+    It has at least a name and a scale (in SI-unit)
     """
     def __init__(self, name, scale=1, label=None, equation=None,
                  center=None, corner=None, delta=None):
         """Constructor of a unit.
-        
-        :param (str) name: name of the unit 
+
+        :param (str) name: name of the unit
         :param (float) scale: scale of th unit to go to SI
-        :param (string) label: label for nice representation in matplotlib, 
+        :param (string) label: label for nice representation in matplotlib,
                                 can use latex representation
-        :param (funct) equation: equation to calculate the value from coordinates 
-                                 (x,y,z) in detector space. 
+        :param (funct) equation: equation to calculate the value from coordinates
+                                 (x,y,z) in detector space.
                                  Parameters of the function are x, y, z, lambda
-        :param (str) center: name of the fast-path function 
+        :param (str) center: name of the fast-path function
         """
         self.name = name
         self.scale = scale
@@ -92,7 +91,7 @@ class Unit(object):
 
     def get(self, key):
         """Mimic the dictionary interface
-        
+
         :param (str) key: key wanted
         :return: self.key
         """

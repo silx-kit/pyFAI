@@ -69,22 +69,22 @@ class GeometryRefinement(AzimuthalIntegrator):
                  pixel1=None, pixel2=None, splineFile=None, detector=None,
                  wavelength=None, calibrant=None):
         """
-        @param data: ndarray float64 shape = n, 3
+        :param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
             col1: pos in dim1 (in pixels)
             col2: ring index in calibrant object
-        @param dist: guessed sample-detector distance (optional, in m)
-        @param poni1: guessed PONI coordinate along the Y axis (optional, in m)
-        @param poni2: guessed PONI coordinate along the X axis (optional, in m)
-        @param rot1: guessed tilt of the detector around the Y axis (optional, in rad)
-        @param rot2: guessed tilt of the detector around the X axis (optional, in rad)
-        @param rot3: guessed tilt of the detector around the incoming beam axis (optional, in rad)
-        @param pixel1: Pixel size along the vertical direction of the detector (in m), almost mandatory
-        @param pixel2: Pixel size along the horizontal direction of the detector (in m), almost mandatory
-        @param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
-        @param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
-        @param wavelength: wavelength in m (1.54e-10)
-        @param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
+        :param dist: guessed sample-detector distance (optional, in m)
+        :param poni1: guessed PONI coordinate along the Y axis (optional, in m)
+        :param poni2: guessed PONI coordinate along the X axis (optional, in m)
+        :param rot1: guessed tilt of the detector around the Y axis (optional, in rad)
+        :param rot2: guessed tilt of the detector around the X axis (optional, in rad)
+        :param rot3: guessed tilt of the detector around the incoming beam axis (optional, in rad)
+        :param pixel1: Pixel size along the vertical direction of the detector (in m), almost mandatory
+        :param pixel2: Pixel size along the horizontal direction of the detector (in m), almost mandatory
+        :param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
+        :param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
+        :param wavelength: wavelength in m (1.54e-10)
+        :param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
 
         """
         self.data = numpy.array(data, dtype=numpy.float64)
@@ -159,7 +159,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         Set the tolerance for a refinement of the geometry; in percent of the original value
 
-        @param value: Tolerance as a percentage
+        :param value: Tolerance as a percentage
 
         """
         low = 1.0 - value / 100.
@@ -201,8 +201,8 @@ class GeometryRefinement(AzimuthalIntegrator):
 
     def calc_2th(self, rings, wavelength=None):
         """
-        @param rings: indices of the rings. starts at 0 and self.dSpacing should be long enough !!!
-        @param wavelength: wavelength in meter
+        :param rings: indices of the rings. starts at 0 and self.dSpacing should be long enough !!!
+        :param wavelength: wavelength in meter
         """
         if wavelength is None:
             wavelength = self.wavelength
@@ -451,8 +451,8 @@ class GeometryRefinement(AzimuthalIntegrator):
         """Refine the geometry and provide confidence interval
         Use curve_fit from scipy.optimize to not only refine the geometry (unconstrained fit)
 
-        @param with_rot: include rotation intro error measurment
-        @return: std_dev, confidence
+        :param with_rot: include rotation intro error measurment
+        :return: std_dev, confidence
         """
         if not curve_fit:
             import scipy
@@ -499,8 +499,8 @@ class GeometryRefinement(AzimuthalIntegrator):
 
         Note the confidence interval increases with the number of points which is "surprizing"
 
-        @param with_rot: if true include rot1 & rot2 in the parameter set.
-        @return: std_dev, confidence
+        :param with_rot: if true include rot1 & rot2 in the parameter set.
+        :return: std_dev, confidence
         """
         epsilon = 1e-5
         d1 = self.data[:, 0]
