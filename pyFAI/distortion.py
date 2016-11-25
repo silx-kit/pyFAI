@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "25/11/2016"
 __status__ = "development"
 
 import logging
@@ -423,35 +423,11 @@ class Distortion(object):
 
 class Quad(object):
     """
+    Quad modelisation.
 
-                                     |
-                                     |
-                                     |                       xxxxxA
-                                     |      xxxxxxxI'xxxxxxxx     x
-                             xxxxxxxxIxxxxxx       |               x
-                Bxxxxxxxxxxxx        |             |               x
-                x                    |             |               x
-                x                    |             |               x
-                 x                   |             |                x
-                 x                   |             |                x
-                 x                   |             |                x
-                 x                   |             |                x
-                 x                   |             |                x
-                  x                  |             |                 x
-                  x                  |             |                 x
-                  x                  |             |                 x
-                  x                 O|             P              A'  x
- -----------------J------------------+--------------------------------L-----------------------
-                  x                  |                                 x
-                  x                  |                                  x
-                  x                  |                                  x
-                   x                 |     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxD
-                   CxxxxxxxxxxxxxxxxxKxxxxx
-                                     |
-                                     |
-                                     |
-                                     |
-        """
+    .. image:: ../img/quad_model.svg
+        :alt: Modelization of the quad
+    """
     def __init__(self, buffer):
         self.box = buffer
         self.A0 = self.A1 = None
