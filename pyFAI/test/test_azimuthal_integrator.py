@@ -326,8 +326,6 @@ class TestSaxs(unittest.TestCase):
             ref2d[method + "_10"] = self.ai.integrate2d(copy.deepcopy(data), 100, method=method, normalization_factor=10).intensity.mean()
             ratio = ref2d[method + "_1"] / ref2d[method + "_10"]
             self.assertAlmostEqual(ratio, 10.0, places=4, msg="test_normalization_factor_2d Method: %s ratio: %s expected 10" % (method, ratio))
-            self.ai.reset()
-#         print (ref1d, ref2d)
 
 
 class TestSetter(unittest.TestCase):
@@ -373,7 +371,7 @@ def suite():
     testsuite.addTest(TestSetter("test_dark"))
     testsuite.addTest(TestAzimPilatus("test_separate"))
     testsuite.addTest(TestSaxs("test_mask"))
-    testsuite.addTest(TestSaxs("test_normalization_factor_1d"))
+    testsuite.addTest(TestSaxs("test_normalization_factor"))
     return testsuite
 
 if __name__ == '__main__':
