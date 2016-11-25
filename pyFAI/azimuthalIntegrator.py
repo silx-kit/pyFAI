@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2016"
+__date__ = "25/11/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2672,7 +2672,7 @@ class AzimuthalIntegrator(Geometry):
                 var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
                 sigma = numpy.sqrt(var1d) / count1 / normalization_factor
                 sigma[count == 0] = dummy if dummy is not None else self._empty
-            I = sum_ / count1
+            I = sum_ / count1 / normalization_factor
             I[count == 0] = dummy if dummy is not None else self._empty
 
         if pos0_scale:
