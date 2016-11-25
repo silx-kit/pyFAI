@@ -2185,6 +2185,9 @@ class AzimuthalIntegrator(Geometry):
         :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         :rtype: Integrate1dResult, dict
         """
+        if all:
+            logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
+
         method = method.lower()
         unit = units.to_unit(unit)
 
@@ -2761,6 +2764,8 @@ class AzimuthalIntegrator(Geometry):
         :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         :rtype: Integrate2dResult, dict
         """
+        if all:
+            logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
         method = method.lower()
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
