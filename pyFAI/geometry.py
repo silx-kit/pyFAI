@@ -237,7 +237,7 @@ class Geometry(object):
         :param d1: position on the detector along the slow dimention (i.e. y)
         :param d2: position on the detector along the fastest dimention (i.e. x)
         :param corners: return positions on the corners (instead of center)
-        @return 3-tuple of nd-array,  with  dim0=along the beam,
+        :return: 3-tuple of nd-array,  with  dim0=along the beam,
                                             dim1=along slowest dimension
                                             dim2=along fastest dimension
         """
@@ -443,7 +443,7 @@ class Geometry(object):
         d*^2 is the reciprocal spacing squared in inverse nm squared
 
         :param shape: expected shape of the detector
-        :return:2d array of the given shape with reciprocal spacing squared
+        :return: 2d array of the given shape with reciprocal spacing squared
         """
         qArray = self.qArray(shape)
         if self._cached_array.get("d*2_center") is None:
@@ -637,9 +637,9 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are:
-           * dim3[0]: radial angle 2th, q, r, ...
-           * dim3[1]: azimuthal angle chi
+        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+            - dim3[0]: radial angle 2th, q, r...
+            - dim3[1]: azimuthal angle chi
         """
         shape = self.get_shape(shape)
         if shape is None:
@@ -772,9 +772,9 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are:
-           * dim3[0]: radial angle 2th, q, r, ...
-           * dim3[1]: azimuthal angle chi
+        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+            - dim3[0]: radial angle 2th, q, r...
+            - dim3[1]: azimuthal angle chi
         """
 
         unit = units.to_unit(unit)
@@ -805,9 +805,10 @@ class Geometry(object):
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
-        :return: 3d array with shape=(*shape,4,2) the two elements are:
-           * dim3[0]: radial angle 2th, q, r, ...
-           * dim3[1]: azimuthal angle chi
+        :return: 3d array with shape=(\*shape,4,2) the two elements are:
+
+            - dim3[0]: radial angle 2th, q, r...
+            - dim3[1]: azimuthal angle chi
         """
 
         unit = units.to_unit(unit)
@@ -1010,11 +1011,14 @@ class Geometry(object):
         """
         Calculate the solid angle of the current pixels (P) versus the PONI (C)
 
-                  Omega(P)    A cos(a)     SC^2         3       SC^3
-        dOmega = --------- = --------- x --------- = cos (a) = ------
-                  Omega(C)    SP^2        A cos(0)              SP^3
+        .. math::
 
-        cos(a) = SC/SP
+            dOmega = \\frac{Omega(P)}{Omega(C)}
+                   = \\frac{A \cdot cos(a)}{SP^2} \cdot \\frac{SC^2}{A \cdot cos(0)}
+                   = \\frac{3}{cos(a)}
+                   = \\frac{SC^3}{SP^3}
+
+            cos(a) = \\frac{SC}{SP}
 
         :param d1: 1d or 2d set of points
         :param d2: 1d or 2d set of points (same size&shape as d1)
@@ -1321,7 +1325,7 @@ class Geometry(object):
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
         :param SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
-        :param Center_1, pixel position of the PONI along fastest axis
+        :param Center_1: pixel position of the PONI along fastest axis
         :param Center_2: pixel position of the PONI along slowest axis
         :param Rot_1: rotation around the fastest axis (x)
         :param Rot_2: rotation around the slowest axis (y)
@@ -1503,10 +1507,12 @@ class Geometry(object):
         Defines the absorption correction for a phosphor screen or a scintillator
         from t0, the normal transmission of the screen.
 
-        Icor = Iobs(1-t0)/(1-exp(ln(t0)/cos(incidence)))
-                 1-exp(ln(t0)/cos(incidence)
-        let t = -----------------------------
-                          1 - t0
+        .. math::
+
+            Icor = \\frac{Iobs(1-t0)}{1-exp(ln(t0)/cos(incidence))}
+
+            let_t = \\frac{1-exp(ln(t0)/cos(incidence))}{1 - t0}
+
         See reference on:
         J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
 
