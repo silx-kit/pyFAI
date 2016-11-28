@@ -109,6 +109,7 @@ if BACKEND == "SILX":
             AbstractMaskImageWidget.__init__(self)
 
             self.__plot2D = silx.gui.plot.Plot2D()
+            self.__plot2D.setKeepDataAspectRatio(True)
             self.__plot2D.maskAction.setVisible(False)
             self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(plot=self.__plot2D)
             try:
