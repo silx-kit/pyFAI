@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import sys, logging, json, os, time, types, threading
 import os.path as op
