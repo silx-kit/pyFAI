@@ -667,8 +667,9 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     bench = Bench(number, repeat, memprof, max_size=max_size)
     bench.init_curve()
 
+    ocl_devices = []
     if ocl:
-        if isinstance(devices, (tuple, list)):
+        if devices and isinstance(devices, (tuple, list)) and len(devices[0]) == 2:
             ocl_devices = devices
         else:
             ocl_devices = []
@@ -703,7 +704,7 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     bench.print_res()
     bench.update_mp()
 
-    bench.ax.set_ylim(0.5, 500)
+    bench.ax.set_ylim(0.5, 1000)
     return bench.results
 
 
