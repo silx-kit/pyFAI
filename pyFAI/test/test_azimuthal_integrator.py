@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
@@ -41,7 +41,7 @@ import os
 import numpy
 import logging
 import time
-import sys
+import copy
 import fabio
 import tempfile
 from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
@@ -285,11 +285,10 @@ class TestFlatimage(unittest.TestCase):
         assert abs(I.max() - 1.0) < self.epsilon
 
 
-class test_saxs(unittest.TestCase):
+class TestSaxs(unittest.TestCase):
     saxsPilatus = "bsa_013_01.edf"
     maskFile = "Pcon_01Apr_msk.edf"
     maskRef = "bioSaxsMaskOnly.edf"
-    ai = AzimuthalIntegrator(detector="Pilatus1M")
 
     def setUp(self):
         self.edfPilatus = UtilsTest.getimage(self.__class__.saxsPilatus)
@@ -298,13 +297,43 @@ class test_saxs(unittest.TestCase):
         if not os.path.isdir(tmp_dir):
             os.mkdir(tmp_dir)
 
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.edfPilatus = self.maskFile = self.maskRef = None
+
     def test_mask(self):
         """test the generation of mask"""
+        ai = AzimuthalIntegrator(detector="Pilatus1M")
+        ai.wavelength = 1e-10
+
         data = fabio.open(self.edfPilatus).data
         mask = fabio.open(self.maskFile).data
-        self.assertTrue(abs(self.ai.create_mask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
+        self.assertTrue(abs(ai.create_mask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
 #         self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
 
+    def test_normalization_factor(self):
+        ai = AzimuthalIntegrator(detector="Pilatus100k")
+        ai.wavelength = 1e-10
+        methods = ["cython", "numpy", "lut", "csr", "ocl_lut", "ocl_csr", "splitpixel"]
+        ref1d = {}
+        ref2d = {}
+
+        data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0], :ai.detector.shape[1]]
+        for method in methods:
+            ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, error_model="poisson")
+            ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
+            ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
+            ratio_s = ref1d[method + "_1"].sigma.mean() / ref1d[method + "_10"].sigma.mean()
+
+            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 1d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
+            self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 1d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
+
+            ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, method=method, error_model="poisson")
+            ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
+            ratio_i = ref2d[method + "_1"].intensity.mean() / ref2d[method + "_10"].intensity.mean()
+#             ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
+            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
+#             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
 
 class TestSetter(unittest.TestCase):
     def setUp(self):
@@ -348,7 +377,8 @@ def suite():
     testsuite.addTest(TestSetter("test_flat"))
     testsuite.addTest(TestSetter("test_dark"))
     testsuite.addTest(TestAzimPilatus("test_separate"))
-    testsuite.addTest(test_saxs("test_mask"))
+    testsuite.addTest(TestSaxs("test_mask"))
+    testsuite.addTest(TestSaxs("test_normalization_factor"))
     return testsuite
 
 if __name__ == '__main__':

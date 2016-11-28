@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2016"
+__date__ = "28/11/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2185,6 +2185,9 @@ class AzimuthalIntegrator(Geometry):
         :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         :rtype: Integrate1dResult, dict
         """
+        if all:
+            logger.warning("Deprecation: please use the object returned by ai.integrate1d, not the option `all`")
+
         method = method.lower()
         unit = units.to_unit(unit)
 
@@ -2339,7 +2342,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                  solidAngle=None,
                                                                                  dummy=dummy,
                                                                                  delta_dummy=delta_dummy)
-                                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1) / normalization_factor
                     else:
                         qAxis, I, sum_, count = self._lut_integrator.integrate(data, dark=dark, flat=flat,
                                                                                solidAngle=solidangle,
@@ -2461,7 +2464,8 @@ class AzimuthalIntegrator(Geometry):
                                                                             dummy=dummy,
                                                                             delta_dummy=delta_dummy,
                                                                             polarization=polarization,
-                                                                            polarization_checksum=self._polarization_crc)
+                                                                            polarization_checksum=self._polarization_crc,
+                                                                            normalization_factor=normalization_factor)
                             qAxis = self._csr_integrator.outPos  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2470,13 +2474,14 @@ class AzimuthalIntegrator(Geometry):
                                                                              solidAngle=None,
                                                                              dummy=dummy,
                                                                              delta_dummy=delta_dummy)
-                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1) / normalization_factor
                     else:
                         qAxis, I, sum_, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
                                                                                solidAngle=solidangle,
                                                                                dummy=dummy,
                                                                                delta_dummy=delta_dummy,
-                                                                               polarization=polarization)
+                                                                               polarization=polarization,
+                                                                               normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2485,7 +2490,7 @@ class AzimuthalIntegrator(Geometry):
                                                                             solidAngle=None,
                                                                             dummy=dummy,
                                                                             delta_dummy=delta_dummy)
-                            sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                            sigma = numpy.sqrt(a) / numpy.maximum(b, 1) / normalization_factor
 
 
         if (I is None) and ("splitpix" in method):
@@ -2508,7 +2513,8 @@ class AzimuthalIntegrator(Geometry):
                                                                    dark=dark,
                                                                    flat=flat,
                                                                    solidangle=solidangle,
-                                                                   polarization=polarization
+                                                                   polarization=polarization,
+                                                                   normalization_factor=normalization_factor
                                                                    )
                     if error_model == "azimuthal":
                         variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2672,7 +2678,7 @@ class AzimuthalIntegrator(Geometry):
                 var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
                 sigma = numpy.sqrt(var1d) / count1 / normalization_factor
                 sigma[count == 0] = dummy if dummy is not None else self._empty
-            I = sum_ / count1
+            I = sum_ / count1 / normalization_factor
             I[count == 0] = dummy if dummy is not None else self._empty
 
         if pos0_scale:
@@ -2761,6 +2767,8 @@ class AzimuthalIntegrator(Geometry):
         :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         :rtype: Integrate2dResult, dict
         """
+        if all:
+            logger.warning("Deprecation: please use the object returned by ai.integrate2d, not the option `all`")
         method = method.lower()
         npt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
@@ -2890,6 +2898,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                 delta_dummy=delta_dummy,
                                                                                 polarization=polarization,
                                                                                 polarization_checksum=self._polarization_crc,
+                                                                                normalization_factor=normalization_factor,
                                                                                 safe=safe)
                                 I.shape = npt
                                 I = I.T
@@ -2901,6 +2910,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                              dummy=dummy,
                                                                                              delta_dummy=delta_dummy,
                                                                                              polarization=polarization,
+                                                                                             normalization_factor=normalization_factor
                                                                                              )
 
         if (I is None) and ("csr" in method):
