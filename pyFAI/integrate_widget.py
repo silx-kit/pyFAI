@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2016"
+__date__ = "28/11/2016"
 __status__ = "development"
 
 import logging
@@ -305,7 +305,7 @@ class AIWidget(qt.QWidget):
                     w.radial_range = self.__get_radial_range()
                     w.azimuth_range = self.__get_azimuth_range()
                 except RuntimeError as e:
-                    qt.QMessageBox.warning(self, "PyFAI integrate", e.message + ". Action aboreded.")
+                    qt.QMessageBox.warning(self, "PyFAI integrate", e.args[0] + ". Action aboreded.")
                     return {}
 
                 if self.do_2D.isChecked():
