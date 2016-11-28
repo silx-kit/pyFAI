@@ -33,21 +33,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
 import os
 import numpy
-import logging
 import sys
-from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
+from .utilstest import UtilsTest, getLogger, recursive_delete
 logger = getLogger(__file__)
 from ..peak_picker import PeakPicker
 from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
 
 
 class testPeakPicking(unittest.TestCase):
@@ -58,14 +55,14 @@ class testPeakPicking(unittest.TestCase):
 
         self.calibFile = "mock.tif"
         self.ctrlPt = {0: (300, 230),
-                      1: (300, 212),
-                      2: (300, 195),
-                      3: (300, 177),
-                      4: (300, 159),
-                      5: (300, 140),
-                      6: (300, 123),
-                      7: (300, 105),
-                      8: (300, 87)}
+                       1: (300, 212),
+                       2: (300, 195),
+                       3: (300, 177),
+                       4: (300, 159),
+                       5: (300, 140),
+                       6: (300, 123),
+                       7: (300, 105),
+                       8: (300, 87)}
         self.tth = numpy.radians(numpy.arange(4, 13))
         self.wavelength = 1e-10
         self.ds = self.wavelength * 5e9 / numpy.sin(self.tth / 2)
@@ -130,7 +127,7 @@ class testPeakPicking(unittest.TestCase):
 class TestMassif(unittest.TestCase):
     """test for ring extraction algorithm with image which needs binning (non regression test)"""
     calibFile = "mock.tif"
-    #TODO !!!
+    # TODO !!!
 
 
 def suite():

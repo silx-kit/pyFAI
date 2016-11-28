@@ -26,13 +26,13 @@
 
 from __future__ import absolute_import, print_function, division
 
+__doc__ = """Test module for utils.shell module"""
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/09/2016"
+__date__ = "28/11/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """Test module for utils.shell module"""
 
 import unittest
 from .utilstest import UtilsTest, getLogger

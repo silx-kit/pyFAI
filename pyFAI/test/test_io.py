@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
@@ -42,9 +42,7 @@ import shutil
 import numpy
 import time
 import sys
-import fabio
-import tempfile
-from .utilstest import UtilsTest, Rwp, getLogger
+from .utilstest import UtilsTest, getLogger
 
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -74,7 +72,6 @@ class TestNexus(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
         self.tmpdir = None
 
-
     def test_new_detector(self):
         if io.h5py is None:
             logger.warning("H5py not present, skipping test_io.TestNexus")
@@ -85,8 +82,7 @@ class TestNexus(unittest.TestCase):
         nxs.close()
 
         self.assertTrue(io.is_hdf5(fname), "nexus file is an HDF5")
-#        os.system("h5ls -r -a %s" % fname)
-
+        # os.system("h5ls -r -a %s" % fname)
 
 
 class testHDF5Writer(unittest.TestCase):
@@ -100,7 +96,6 @@ class testHDF5Writer(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         shutil.rmtree(self.tmpdir)
         self.tmpdir = None
-
 
     def test_writer(self):
         if io.h5py is None:

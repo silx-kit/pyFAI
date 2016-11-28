@@ -36,19 +36,11 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "28/11/2016"
 
 
-import fabio
-import logging, time
-import numpy
-import os
-import sys
 import unittest
-from .utilstest import UtilsTest, Rwp, getLogger
+from .utilstest import UtilsTest, getLogger
 from ..azimuthalIntegrator import AzimuthalIntegrator
 
 logger = getLogger(__file__)
-
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
 
 
 def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, pixelY=60):
@@ -67,10 +59,11 @@ def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, 
             try:
                 if round(abs(float(refv) - float(obtv))) != 0:
                     res += "%s: %s != %s" % (key, refv, obtv)
-            except TypeError as error:
+            except TypeError:
                 if refv != obtv:
                     res += "%s: %s != %s" % (key, refv, obtv)
     return res
+
 
 class TestFIT2D(unittest.TestCase):
     poniFile = "Pilatus1M.poni"
@@ -90,10 +83,10 @@ class TestFIT2D(unittest.TestCase):
         for key in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "pixel1", "pixel2", "splineFile"]:
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
-            if refv is  None:
-                self.assertEqual(refv, obtv , "%s: %s != %s" % (key, refv, obtv))
+            if refv is None:
+                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
             else:
-                self.assertAlmostEqual(refv, obtv , 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
 
     def test_export(self):
         res = testExport()

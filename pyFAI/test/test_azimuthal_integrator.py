@@ -56,6 +56,7 @@ try:
 except (ImportError, Exception):
     import six
 
+
 class TestAzimPilatus(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -119,7 +120,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
         for fn in self.tmpfiles.values():
             if os.path.exists(fn):
                 os.unlink(fn)
-
 
     def test_numpy_vs_fit2d(self):
         """
@@ -225,8 +225,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
             sp = fig.add_subplot(111)
             sp.plot(self.fit2d.T[0], self.fit2d.T[1], "-y", label='fit2d')
             sp.plot(tth_np, I_np, "-b", label='numpy')
-            sp.plot(tth_cy, I_cy , "-r", label="cython")
-            sp.plot(tth_sp, I_sp , "-g", label="SplitPixel")
+            sp.plot(tth_cy, I_cy, "-r", label="cython")
+            sp.plot(tth_sp, I_sp, "-g", label="SplitPixel")
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
@@ -334,6 +334,7 @@ class TestSaxs(unittest.TestCase):
 #             ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
 #             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
+
 
 class TestSetter(unittest.TestCase):
     def setUp(self):

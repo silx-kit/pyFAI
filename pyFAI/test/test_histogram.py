@@ -33,16 +33,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 
 import unittest
 import time
 import numpy
 import logging
-import sys
-import os
 from numpy import cos
-from .utilstest import UtilsTest, Rwp, getLogger
+from .utilstest import Rwp, getLogger
 logger = getLogger(__file__)
 from ..ext.histogram import histogram, histogram2d
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
@@ -80,7 +78,7 @@ class TestHistogram1d(unittest.TestCase):
         self.data_sum = data.sum(dtype="float64")
         t0 = time.time()
         drange = (tth.min(), tth.max() * EPS32)
-        self.unweight_numpy, bin_edges = numpy.histogram(tth, npt, range=drange)
+        self.unweight_numpy, _bin_edges = numpy.histogram(tth, npt, range=drange)
         t1 = time.time()
         self.weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
         t2 = time.time()
@@ -231,14 +229,14 @@ class TestHistogram2d(unittest.TestCase):
         y, x = numpy.ogrid[:shape[0], :shape[1]]
         tth = numpy.sqrt(x * x + y * y).astype("float32")
         mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
-        data = (numpy.random.poisson(self.maxI, shape) * mod).astype("uint16")
+        _data = (numpy.random.poisson(self.maxI, shape) * mod).astype("uint16")
         data = (numpy.ones(shape) * self.maxI * mod).astype("uint16")
         self.data_sum = data.sum(dtype="float64")
         npt = (400, 360)
         chi = numpy.arctan2(y, x).astype("float32")
         drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
         t0 = time.time()
-        self.unweight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, range=drange)
+        self.unweight_numpy, _tth_edges, _chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, range=drange)
         t1 = time.time()
         self.weight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, weights=data.astype("float64").flatten(), range=drange)
         t2 = time.time()

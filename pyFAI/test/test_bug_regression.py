@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2016"
+__date__ = "28/11/2016"
 
 import sys
 import os
@@ -159,7 +159,7 @@ class TestBug232(unittest.TestCase):
         det = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(dist=1, detector=det)
         data = numpy.random.random(det.shape)
-        tth, I = ai.integrate1d(data, 100, unit="r_mm")
+        _result = ai.integrate1d(data, 100, unit="r_mm")
         import copy
         ai2 = copy.copy(ai)
         self.assertNotEqual(id(ai), id(ai2), "copy instances are different")
@@ -182,12 +182,12 @@ class TestBug174(unittest.TestCase):
         wl2 = 2e-10
         ai.wavelength = wl1
         q1, i1 = ai.integrate1d(data, 1000)
-#         ai.reset()
+        # ai.reset()
         ai.wavelength = wl2
         q2, i2 = ai.integrate1d(data, 1000)
         dq = (abs(q1 - q2).max())
-        di = (abs(i1 - i2).max())
-#         print(dq)
+        _di = (abs(i1 - i2).max())
+        # print(dq)
         self.assertAlmostEqual(dq, 3.79, 2, "Q-scale difference should be around 3.8, got %s" % dq)
 
 
@@ -203,5 +203,3 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-
-

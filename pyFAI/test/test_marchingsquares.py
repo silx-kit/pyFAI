@@ -33,16 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
-import os
 import numpy
-import logging, time
-import sys
-import fabio
-from .utilstest import UtilsTest, Rwp, getLogger
+import logging
+from .utilstest import getLogger
 logger = getLogger(__file__)
 from ..ext.marchingsquares import isocontour
 if logger.getEffectiveLevel() <= logging.INFO:
@@ -63,6 +60,7 @@ class TestMarchingSquares(unittest.TestCase):
                 pylab.imshow(r)
                 pylab.plot(c[:, 1], c[:, 0], ",")
                 pylab.show()
+
 
 def suite():
     testsuite = unittest.TestSuite()

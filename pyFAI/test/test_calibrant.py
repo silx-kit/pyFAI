@@ -33,12 +33,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 
 import unittest
 import logging
 import sys
-import os
 from .utilstest import getLogger, UtilsTest
 logger = getLogger(__file__)
 try:
@@ -68,8 +67,8 @@ class TestCalibrant(unittest.TestCase):
         cal2 = ALL_CALIBRANTS["LaB6"]
         self.assertTrue(cal2.wavelength is None, "calibrant is delivered without wavelength")
 
-        # check that it is possible to instanciate all calibrant
-        for k, v in ALL_CALIBRANTS.items():
+        # check that it is possible to instantiate all calibrant
+        for _k, v in ALL_CALIBRANTS.items():
             self.assertTrue(isinstance(v, Calibrant))
 
     def test_2th(self):
@@ -94,7 +93,7 @@ class TestCalibrant(unittest.TestCase):
             ax = fig.add_subplot(1, 1, 1)
 
         detectors = set(ALL_DETECTORS.values())
-        for idx, detector in enumerate(detectors):
+        for _idx, detector in enumerate(detectors):
             det = detector()
             # Skip generic detectors
             if "MAX_SHAPE" not in dir(det):
@@ -102,8 +101,7 @@ class TestCalibrant(unittest.TestCase):
             # skip the big detectors for now
             if max(det.MAX_SHAPE) > 2000:
                 continue
-            ai = AzimuthalIntegrator(dist=0.01, poni1=0, poni2=0,
-                                           detector=det)
+            ai = AzimuthalIntegrator(dist=0.01, poni1=0, poni2=0, detector=det)
             calibrant = ALL_CALIBRANTS["LaB6"]
             calibrant.set_wavelength(1e-10)
             img = calibrant.fake_calibration_image(ai)

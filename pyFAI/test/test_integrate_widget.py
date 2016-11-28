@@ -34,17 +34,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "28/11/2016"
 
 import os
 import sys
 import unittest
 import numpy
-import fabio
 from .utilstest import getLogger
-from .. import units
-from ..worker import Worker
-from ..azimuthalIntegrator import AzimuthalIntegrator
 
 try:
     from ..gui import qt
