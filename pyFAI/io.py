@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "28/11/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -274,10 +274,10 @@ class HDF5Writer(Writer):
                     continue
                 try:
                     self.pyFAI_grp[key] = value
-                except:
-                    print("Unable to set %s: %s" % (key, value))
-                    self.close()
-                    sys.exit(1)
+                except Exception as e:
+                    logger.error("Unable to set %s: %s", key, value)
+                    logger.debug("Backtrace", exc_info=True)
+                    raise RuntimeError(e.args[0])
             rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
             self.radial_values = self.group.require_dataset(rad_name, (self.fai_cfg["nbpt_rad"],), numpy.float32)
             if self.fai_cfg.get("nbpt_azim", 0) > 1:
