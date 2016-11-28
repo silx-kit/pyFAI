@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2016"
+__date__ = "28/11/2016"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2474,7 +2474,7 @@ class AzimuthalIntegrator(Geometry):
                                                                              solidAngle=None,
                                                                              dummy=dummy,
                                                                              delta_dummy=delta_dummy)
-                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1) / normalization_factor
                     else:
                         qAxis, I, sum_, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
                                                                                solidAngle=solidangle,

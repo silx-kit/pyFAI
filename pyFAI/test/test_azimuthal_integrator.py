@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
@@ -320,15 +320,20 @@ class TestSaxs(unittest.TestCase):
 
         data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0], :ai.detector.shape[1]]
         for method in methods:
-            ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method).intensity.mean()
-            ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10).intensity.mean()
-            ratio = ref1d[method + "_1"] / ref1d[method + "_10"]
-            self.assertAlmostEqual(ratio, 10.0, places=3, msg="test_normalization_factor_1d Method: %s ratio: %s expected 10" % (method, ratio))
-            ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, method=method).intensity.mean()
-            ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, method=method, normalization_factor=10).intensity.mean()
-            ratio = ref2d[method + "_1"] / ref2d[method + "_10"]
-            self.assertAlmostEqual(ratio, 10.0, places=3, msg="test_normalization_factor_2d Method: %s ratio: %s expected 10" % (method, ratio))
+            ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, error_model="poisson")
+            ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
+            ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
+            ratio_s = ref1d[method + "_1"].sigma.mean() / ref1d[method + "_10"].sigma.mean()
 
+            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 1d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
+            self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 1d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
+
+            ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, method=method, error_model="poisson")
+            ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
+            ratio_i = ref2d[method + "_1"].intensity.mean() / ref2d[method + "_10"].intensity.mean()
+#             ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
+            self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
+#             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
 
 class TestSetter(unittest.TestCase):
     def setUp(self):
