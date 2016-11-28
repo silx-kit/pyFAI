@@ -211,7 +211,7 @@ class AIWidget(qt.QWidget):
         result = (rad_min, rad_max)
         if result == (None, None):
             result = None
-        return None
+        return result
 
     def __get_azimuth_range(self):
         if not self.do_azimuthal_range.isChecked():
@@ -397,7 +397,7 @@ class AIWidget(qt.QWidget):
                             res = ai.integrate1d(**kwarg)
                     out.append(res)
 
-                    #TODO manage HDF5 stuff !!!
+                    # TODO manage HDF5 stuff !!!
             logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
         self.die()
@@ -503,7 +503,7 @@ class AIWidget(qt.QWidget):
         :type dico: dict
         """
         setup_data = {"poni": self.poni.setText,
-#        "detector": self.all_detectors[self.detector.getCurrentIndex()],
+                      # "detector": self.all_detectors[self.detector.getCurrentIndex()],
                       "wavelength": lambda a: self.wavelength.setText(str_(a)),
                       "splineFile": lambda a: self.splineFile.setText(str_(a)),
                       "pixel1": lambda a: self.pixel1.setText(str_(a)),
