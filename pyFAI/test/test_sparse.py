@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -33,20 +33,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
 import numpy
-import os
-import sys
-import time
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__name__)
 from .. import load
 from ..ext import splitBBox
-from ..ext import splitBBoxCSR
-from ..ext import splitBBoxLUT
 from ..ext import sparse_utils
 import fabio
 
@@ -95,7 +90,6 @@ class TestSparseUtils(unittest.TestCase):
     def test_conversion(self):
         dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
         shape = 99, 101
-        thres = 0.99
         nnz = 0
 
         # Ensures there is at least one non zero element

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -33,13 +33,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "28/11/2016"
 
-import sys
 import unittest
 import numpy
-import os
-from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
+from .utilstest import getLogger
 logger = getLogger(__file__)
 from ..detectors import detector_factory
 from ..azimuthalIntegrator import AzimuthalIntegrator
@@ -96,5 +94,3 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-
-

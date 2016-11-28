@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -35,10 +35,7 @@ FIXME : make some tests that the functions do what is expected
 
 import unittest
 import numpy
-import os
-import sys
-import time
-from .utilstest import UtilsTest, getLogger, diff_img, diff_crv
+from .utilstest import UtilsTest, getLogger, diff_img
 logger = getLogger(__file__)
 from .. import opencl
 from ..ext import splitBBox
@@ -145,8 +142,8 @@ def suite():
             testsuite.addTest(ParameterisedTestCase.parameterise(
                     ParamOpenclCSR, param))
     # if no opencl: no test
-#    testsuite.addTest(Test_CSR("test_2d_splitbbox"))
-#    testsuite.addTest(Test_CSR("test_2d_nosplit"))
+    # testsuite.addTest(Test_CSR("test_2d_splitbbox"))
+    # testsuite.addTest(Test_CSR("test_2d_nosplit"))
     return testsuite
 
 

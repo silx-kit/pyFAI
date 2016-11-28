@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -33,21 +33,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/04/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
-import os
 import numpy
-import logging
-import time
-import sys
-import fabio
-from .utilstest import UtilsTest, Rwp, getLogger
+from .utilstest import getLogger
 logger = getLogger(__file__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
 
 
 class TestPolarization(unittest.TestCase):
@@ -100,7 +93,7 @@ def suite():
     testsuite.addTest(TestPolarization("testHorizPol"))
     testsuite.addTest(TestPolarization("testVertPol"))
     testsuite.addTest(TestPolarization("testoffsetPol"))
-#    testsuite.addTest(TestPolarization("test2th"))
+    # testsuite.addTest(TestPolarization("test2th"))
     return testsuite
 
 

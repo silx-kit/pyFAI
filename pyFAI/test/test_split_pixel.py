@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -36,13 +36,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "28/11/2016"
 
 import unittest
 import numpy
-import os
-import sys
-import time
 from .utilstest import UtilsTest, getLogger, Rwp
 logger = getLogger(__file__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
@@ -55,7 +52,6 @@ class TestSplitPixel(unittest.TestCase):
     """
     def setUp(self):
         unittest.TestCase.setUp(self)
-        N = 10000
         img = numpy.zeros((512, 512))
         for i in range(1, 6):
             img[i * 100, i * 100] = 1

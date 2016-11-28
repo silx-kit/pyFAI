@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -33,13 +33,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
 import os
 import time
-import sys
 import fabio
 import gc
 import numpy
@@ -50,14 +49,10 @@ try:
     import pyopencl
 except ImportError as error:
     logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
-    skip = True
-else:
-    skip = False
+    pyopencl = None
 
 from ..opencl import ocl
-if ocl is None:
-    skip = True
-else:
+if ocl is not None:
     from ..opencl import pyopencl
     import pyopencl.array
 from .. import load
@@ -294,7 +289,7 @@ class TestSort(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    if skip:
+    if pyopencl is None or ocl is None:
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip tests")
     else:
         testsuite.addTest(TestMask("test_OpenCL"))

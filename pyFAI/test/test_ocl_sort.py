@@ -29,12 +29,10 @@ from __future__ import absolute_import, print_function, division
 __doc__ = """Test for OpenCL sorting on GPU"""
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import sys
-import os
 import unittest
 import numpy
 import logging
@@ -51,9 +49,8 @@ try:
     import pyopencl
 except ImportError as error:
     logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
-    skip = True
+    pyopencl = None
 else:
-    skip = False
     from .. import ocl_sort
 
 
@@ -122,7 +119,7 @@ class TestOclSort(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    if skip:
+    if pyopencl is None:
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip test_ocl_sort")
     else:
         testsuite.addTest(TestOclSort("test_sort_hor"))

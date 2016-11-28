@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2016"
+__date__ = "28/11/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -37,12 +37,9 @@ if __name__ == "__main__":
     __name__ = "pyFAI.test"
 
 import os
-import imp
 import sys
 import getpass
-import subprocess
 import threading
-import distutils.util
 import unittest
 import logging
 try:  # Python3
@@ -249,7 +246,7 @@ class UtilsTest(object):
         """
         small helper function that initialized the logger and returns it
         """
-        dirname, basename = os.path.split(os.path.abspath(filename))
+        _dirname, basename = os.path.split(os.path.abspath(filename))
         basename = os.path.splitext(basename)[0]
         level = logging.root.level
         mylogger = logging.getLogger(basename)
@@ -368,9 +365,9 @@ def diff_crv(ref, obt, comment=""):
         fig = pyplot.figure()
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2)
-        im_ref = ax1.plot(ref, label="%s ref" % comment)
-        im_obt = ax1.plot(obt, label="%s obt" % comment)
-        im_delta = ax2.plot(delta, label="delta")
+        _im_ref = ax1.plot(ref, label="%s ref" % comment)
+        _im_obt = ax1.plot(obt, label="%s obt" % comment)
+        _im_delta = ax2.plot(delta, label="delta")
         fig.show()
         six.moves.input()
 

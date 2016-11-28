@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #coding: utf-8
 #Class defining the link task for azimuthal regrouping in process lib for Lima
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
@@ -75,10 +75,10 @@ class TestHalfCCD(unittest.TestCase):
         """
         Compare position from _distortion.Distortion and distortion.Distortion.
         Nota the points, named ABCD have a different layout in those implementations:
-        _distortion.Distortion:  B C   distortion.Distortion: D C  
+        _distortion.Distortion:  B C   distortion.Distortion: D C
                                  A B                          A B
         So we compare only the position of A and C.
-        
+
         """
         self.dis.reset(prepare=False)
         onp = self.dis.calc_pos(use_cython=False)[:, :, ::2, :]
