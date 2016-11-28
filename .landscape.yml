@@ -1,0 +1,6 @@
+ignore-paths:
+  - ci/
+  - doc/
+  - package/
+  - plugins/
+  - sandbox/
