@@ -204,7 +204,7 @@ class Worker(object):
         self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
-        self.polarization = None
+        self.polarization_factor = None
         self.dummy = dummy
         self.delta_dummy = delta_dummy
         self.correct_solid_angle = True
@@ -234,7 +234,7 @@ class Worker(object):
                   "Number of points in azimuthal direction: %s" % self.nbpt_azim,
                   "Unit in radial dimension: %s" % self.unit,
                   "Correct for solid angle: %s" % self.correct_solid_angle,
-                  "Polarization factor: %s" % self.polarization,
+                  "Polarization factor: %s" % self.polarization_factor,
                   "Dark current image: %s" % self.dark_current_image,
                   "Flat field image: %s" % self.flat_field_image,
                   "Mask image: %s" % self.mask_image,
@@ -285,7 +285,7 @@ class Worker(object):
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
                  "method": self.method,
-                 "polarization_factor": self.polarization,
+                 "polarization_factor": self.polarization_factor,
                  # "filename": None,
                  "safe": self.is_safe,
                  "data": data,
@@ -444,9 +444,9 @@ class Worker(object):
         self.unit = units.to_unit(config.get("unit", units.TTH_DEG))
         self.do_poisson = config.get("do_poisson")
         if config.get("do_polarization"):
-            self.polarization = config.get("polarization")
+            self.polarization_factor = config.get("polarization_factor")
         else:
-            self.polarization = None
+            self.polarization_factor = None
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
@@ -481,7 +481,7 @@ class Worker(object):
                 config[key] = self.ai.__getattribute__(key)
             except:
                 pass
-        for key in ["nbpt_azim", "nbpt_rad", "polarization", "dummy", "delta_dummy",
+        for key in ["nbpt_azim", "nbpt_rad", "polarization_factor", "dummy", "delta_dummy",
                     "correct_solid_angle", "dark_current_image", "flat_field_image",
                     "mask_image", "do_poisson", "shape", "method"]:
             try:
@@ -560,7 +560,12 @@ class PixelwiseWorker(object):
     """
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
-        """
+        """Constructor of the worker
+        
+        :param dark: array 
+        :param flat: array
+        :param solidangle: solid-angle array
+        :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
         self.ctx = None
@@ -645,8 +650,13 @@ class DistortionWorker(object):
     """
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
-        """
+        """Constructor of the worker
+        :param dark: array 
+        :param flat: array
+        :param solidangle: solid-angle array
+        :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        
         """
 
         self.ctx = None
