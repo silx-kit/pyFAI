@@ -1495,12 +1495,12 @@ class Geometry(object):
         tth = self.twoThetaArray(shape)
         chi = self.chiArray(shape) + axis_offset
         with self._sem:
-                cos2_tth = numpy.cos(tth) ** 2
-                self._polarization = ((1 + cos2_tth - factor * numpy.cos(2 * chi) * (1 - cos2_tth)) / 2.0)  # .astype(numpy.float32)
-                self._polarization_factor = factor
-                self._polarization_axis_offset = axis_offset
-                self._polarization_crc = crc32(self._polarization)
-                return self._polarization
+            cos2_tth = numpy.cos(tth) ** 2
+            self._polarization = ((1 + cos2_tth - factor * numpy.cos(2 * chi) * (1 - cos2_tth)) / 2.0)  # .astype(numpy.float32)
+            self._polarization_factor = factor
+            self._polarization_axis_offset = axis_offset
+            self._polarization_crc = crc32(self._polarization)
+            return self._polarization
 
     def calc_transmission(self, t0, shape=None):
         """

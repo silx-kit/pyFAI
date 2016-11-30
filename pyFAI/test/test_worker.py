@@ -26,9 +26,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"Test suite for worker"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for worker"
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
@@ -107,7 +108,7 @@ class TestWorker(unittest.TestCase):
         worker.dummy = "b"
         worker.delta_dummy = "c"
         worker.method = "d"
-        worker.polarization = "e"
+        worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
         worker.nbpt_azim = 1
@@ -122,7 +123,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai_args["dummy"], worker.dummy)
         self.assertEquals(ai_args["delta_dummy"], worker.delta_dummy)
         self.assertEquals(ai_args["method"], worker.method)
-        self.assertEquals(ai_args["polarization_factor"], worker.polarization)
+        self.assertEquals(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEquals(ai_args["safe"], True)
         self.assertEquals(ai_args["data"], data)
         self.assertEquals(ai_args["correctSolidAngle"], worker.correct_solid_angle)
@@ -143,7 +144,7 @@ class TestWorker(unittest.TestCase):
         worker.dummy = "b"
         worker.delta_dummy = "c"
         worker.method = "d"
-        worker.polarization = "e"
+        worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
         worker.nbpt_azim = 2
@@ -158,7 +159,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai_args["dummy"], worker.dummy)
         self.assertEquals(ai_args["delta_dummy"], worker.delta_dummy)
         self.assertEquals(ai_args["method"], worker.method)
-        self.assertEquals(ai_args["polarization_factor"], worker.polarization)
+        self.assertEquals(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEquals(ai_args["safe"], True)
         self.assertEquals(ai_args["data"], data)
         self.assertEquals(ai_args["correctSolidAngle"], worker.correct_solid_angle)
@@ -179,7 +180,7 @@ class TestWorker(unittest.TestCase):
         worker.dummy = "b"
         worker.delta_dummy = "c"
         worker.method = "d"
-        worker.polarization = "e"
+        worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
         worker.nbpt_azim = 1
@@ -201,7 +202,7 @@ class TestWorker(unittest.TestCase):
         worker.dummy = "b"
         worker.delta_dummy = "c"
         worker.method = "d"
-        worker.polarization = "e"
+        worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
         worker.nbpt_azim = 1

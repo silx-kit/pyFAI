@@ -2164,7 +2164,10 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 
+               0 for circular polarization or random, 
+               None for no correction, 
+               True for using the former correction
         :type polarization_factor: float
         :param dark: dark noise image
         :type dark: ndarray
@@ -2222,6 +2225,8 @@ class AzimuthalIntegrator(Geometry):
 
         if polarization_factor is None:
             polarization = None
+        elif polarization_factor is True:
+            polarization = self._polarization
         else:
             polarization = self.polarization(shape, float(polarization_factor))
 
