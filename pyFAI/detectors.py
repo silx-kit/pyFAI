@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "30/11/2016"
 __status__ = "stable"
 
 
@@ -958,6 +958,7 @@ class Pilatus100k(Pilatus):
     Pilatus 100k detector
     """
     MAX_SHAPE = (195, 487)
+    aliases = ["Pilatus 100k"]
 
 
 class Pilatus200k(Pilatus):
@@ -965,6 +966,7 @@ class Pilatus200k(Pilatus):
     Pilatus 200k detector
     """
     MAX_SHAPE = (407, 487)
+    aliases = ["Pilatus 200k"]
 
 
 class Pilatus300k(Pilatus):
@@ -972,6 +974,7 @@ class Pilatus300k(Pilatus):
     Pilatus 300k detector
     """
     MAX_SHAPE = (619, 487)
+    aliases = ["Pilatus 300k"]
 
 
 class Pilatus300kw(Pilatus):
@@ -979,6 +982,7 @@ class Pilatus300kw(Pilatus):
     Pilatus 300k-wide detector
     """
     MAX_SHAPE = (195, 1475)
+    aliases = ["Pilatus 300kw"]
 
 
 class Pilatus1M(Pilatus):
@@ -986,6 +990,7 @@ class Pilatus1M(Pilatus):
     Pilatus 1M detector
     """
     MAX_SHAPE = (1043, 981)
+    aliases = ["Pilatus 1M"]
 
 
 class Pilatus2M(Pilatus):
@@ -994,6 +999,7 @@ class Pilatus2M(Pilatus):
     """
 
     MAX_SHAPE = 1679, 1475
+    aliases = ["Pilatus 2M"]
 
 
 class Pilatus6M(Pilatus):
@@ -1001,9 +1007,7 @@ class Pilatus6M(Pilatus):
     Pilatus 6M detector
     """
     MAX_SHAPE = (2527, 2463)
-
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    aliases = ["Pilatus 6M"]
 
 
 class PilatusCdTe(Pilatus):
@@ -1040,6 +1044,7 @@ class PilatusCdTe300k(PilatusCdTe):
     Pilatus CdTe 300k detector
     """
     MAX_SHAPE = (619, 487)
+    aliases = ["Pilatus CdTe 300k", "Pilatus 300k CdTe", "Pilatus300k CdTe", "Pilatus300kCdTe"]
 
 
 class PilatusCdTe300kw(PilatusCdTe):
@@ -1047,6 +1052,7 @@ class PilatusCdTe300kw(PilatusCdTe):
     Pilatus CdTe 300k-wide detector
     """
     MAX_SHAPE = (195, 1475)
+    aliases = ["Pilatus CdTe 300kw", "Pilatus 300kw CdTe", "Pilatus300kw CdTe", "Pilatus300kwCdTe"]
 
 
 class PilatusCdTe1M(PilatusCdTe):
@@ -1054,6 +1060,7 @@ class PilatusCdTe1M(PilatusCdTe):
     Pilatus CdTe 1M detector
     """
     MAX_SHAPE = (1043, 981)
+    aliases = ["Pilatus CdTe 1M", "Pilatus 1M CdTe", "Pilatus1M CdTe", "Pilatus1MCdTe"]
 
 
 class PilatusCdTe2M(PilatusCdTe):
@@ -1061,6 +1068,7 @@ class PilatusCdTe2M(PilatusCdTe):
     Pilatus CdTe 2M detector
     """
     MAX_SHAPE = 1679, 1475
+    aliases = ["Pilatus CdTe 2M", "Pilatus 2M CdTe", "Pilatus2M CdTe", "Pilatus2MCdTe"]
 
 
 class Eiger(Detector):
@@ -1165,11 +1173,20 @@ class Eiger(Detector):
         return p1, p2, None
 
 
+class Eiger500k(Eiger):
+    """
+    Eiger 1M detector
+    """
+    MAX_SHAPE = (512, 1030)
+    aliases = ["Eiger 500k"]
+
+
 class Eiger1M(Eiger):
     """
     Eiger 1M detector
     """
     MAX_SHAPE = (1065, 1030)
+    aliases = ["Eiger 1M"]
 
 
 class Eiger4M(Eiger):
@@ -1177,6 +1194,7 @@ class Eiger4M(Eiger):
     Eiger 4M detector
     """
     MAX_SHAPE = (2167, 2070)
+    aliases = ["Eiger 4M"]
 
 
 class Eiger9M(Eiger):
@@ -1184,6 +1202,7 @@ class Eiger9M(Eiger):
     Eiger 9M detector
     """
     MAX_SHAPE = (3269, 3110)
+    aliases = ["Eiger 9M"]
 
 
 class Eiger16M(Eiger):
@@ -1191,6 +1210,7 @@ class Eiger16M(Eiger):
     Eiger 16M detector
     """
     MAX_SHAPE = (4371, 4150)
+    aliases = ["Eiger 16M"]
 
 
 class Fairchild(Detector):
@@ -1916,7 +1936,7 @@ class RayonixLx170(Rayonix):
                          }
     MAX_SHAPE = (1920, 3840)
     force_pixel = True
-    aliases = ["Rayonix lx170"]
+    aliases = ["Rayonix LX170", "Rayonix LX170-HS", "Rayonix LX170 HS", "RayonixLX170HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1938,7 +1958,7 @@ class RayonixMx170(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (3840, 3840)
-    aliases = ["Rayonix mx170"]
+    aliases = ["Rayonix MX170", "Rayonix MX170-HS", "RayonixMX170HS", "Rayonix MX170 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1960,7 +1980,7 @@ class RayonixLx255(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (1920, 5760)
-    aliases = ["Rayonix lx255", "Rayonix lx255hs"]
+    aliases = ["Rayonix LX255", "Rayonix LX255-HS", "Rayonix LX 255HS", "RayonixLX225HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1981,7 +2001,7 @@ class RayonixMx225(Rayonix):
                          8: 292.969e-6
                          }
     MAX_SHAPE = (6144, 6144)
-    aliases = ["Rayonix mx225"]
+    aliases = ["Rayonix MX225"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2004,7 +2024,7 @@ class RayonixMx225hs(Rayonix):
                          10: 390.625e-6,
                          }
     MAX_SHAPE = (5760, 5760)
-    aliases = ["Rayonix mx225hs"]
+    aliases = ["Rayonix MX225HS", "Rayonix MX225 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2047,7 +2067,7 @@ class RayonixMx300hs(Rayonix):
                          10: 390.625e-6
                          }
     MAX_SHAPE = (7680, 7680)
-    aliases = ["Rayonix mx300hs"]
+    aliases = ["Rayonix MX300HS", "Rayonix MX300 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2070,7 +2090,7 @@ class RayonixMx340hs(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (7680, 7680)
-    aliases = ["Rayonix mx340hs"]
+    aliases = ["Rayonix MX340HS", "Rayonix MX340HS"]
 
     def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2092,7 +2112,7 @@ class RayonixSx30hs(Rayonix):
                          10: 156.25e-6
                          }
     MAX_SHAPE = (1920, 1920)
-    aliases = ["Rayonix Sx30hs"]
+    aliases = ["Rayonix SX30HS", "Rayonix SX30 HS"]
 
     def __init__(self, pixel1=15.625e-6, pixel2=15.625e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2114,7 +2134,7 @@ class RayonixSx85hs(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (1920, 1920)
-    aliases = ["Rayonix Sx85hs"]
+    aliases = ["Rayonix SX85HS", "Rayonix SX85 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2136,7 +2156,7 @@ class RayonixMx425hs(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (9600, 9600)
-    aliases = ["Rayonix mx425hs"]
+    aliases = ["Rayonix MX425HS", "Rayonix MX425 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2155,7 +2175,7 @@ class RayonixMx325(Rayonix):
                          8: 317.383e-6
                          }
     MAX_SHAPE = (8192, 8192)
-    aliases = ["Rayonix mx325"]
+    aliases = ["Rayonix MX325"]
 
     def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2534,16 +2554,28 @@ class Apex2(Detector):
             (self.name, self._pixel1, self._pixel2)
 
 
-class RaspberryPi(Detector):
+class RaspberryPi5M(Detector):
     """5 Mpix detector from Raspberry Pi
 
     """
-    aliases = ["Raspberry", "Pi"]
+    aliases = ["Picam v1"]
     force_pixel = True
     MAX_SHAPE = (1944, 2592)
 
     def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6):
-        super(RaspberryPi, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(RaspberryPi5M, self).__init__(pixel1=pixel1, pixel2=pixel2)
+
+
+class RaspberryPi8M(Detector):
+    """8 Mpix detector from Raspberry Pi
+
+    """
+    aliases = ["Picam v2"]
+    force_pixel = True
+    MAX_SHAPE = (2464, 3280)
+
+    def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6):
+        super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 ALL_DETECTORS = Detector.registry
