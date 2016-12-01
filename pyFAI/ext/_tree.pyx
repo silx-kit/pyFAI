@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "31/05/2016"
+__date__ = "01/12/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -39,13 +39,15 @@ cdef class TreeItem(object):
     """
     Node of a tree ...
 
-    Contains:
-    self.order: depth from root
-    add name: reconstitute the full name
-    add comment field for dirname and filenames
-    add reorder command which will sort all sub-trees
-    add size property which calculate the size of the subtree
-    add a next/previous method
+    Each node contains:
+    
+     * children: list 
+     * parent: TreeItem parent
+     * label: str 
+     * order: int
+     * type: str can be "dir", "file", "group" or "dataset"
+     * extra: any object
+
     """
     cdef public list children
     cdef public TreeItem parent

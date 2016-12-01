@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -201,6 +201,7 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
 
     if USE_CYTHON:
         cext = cythonize([ext],
+                         compiler_directives={'embedsignature': True},
                          force=(os.environ.get("FORCE_CYTHON") is "True"),
                          compile_time_env={"HAVE_OPENMP": USE_OPENMP})
         if cext:

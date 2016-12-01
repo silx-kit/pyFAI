@@ -30,7 +30,7 @@
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/10/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -80,11 +80,12 @@ cdef class Region:
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def init_values(self, float[:] flat):
+    @cython.initializedcheck(False)
+    def init_values(self, float[::1] flat):
         """
         Initialize the values : maxi, mini and pass both height and so on
-        @param flat: flat view on the data (intensity)
-        @return: True if there is a problem and the region should be removed
+        :param flat: flat view on the data (intensity)
+        :return: True if there is a problem and the region should be removed
         """
         cdef:
             int i, k, imax, imin
@@ -143,6 +144,7 @@ cdef class Region:
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def merge(self, Region other):
         """
         merge 2 regions
@@ -200,7 +202,7 @@ class InverseWatershed(object):
     
     def __init__(self, data not None, thres=1.0):
         """
-        @param data: 2d image as numpy array
+        :param data: 2d image as numpy array
 
         """
         assert data.ndim == 2, "data.ndim == 2"
@@ -279,6 +281,7 @@ class InverseWatershed(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def init_labels(self):
         cdef:
             int i, j, width = self.width, height = self.height, idx, res
@@ -296,6 +299,7 @@ class InverseWatershed(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def init_borders(self):
         cdef:
             int i, j, width = self.width, height = self.height, idx, res
@@ -328,11 +332,12 @@ class InverseWatershed(object):
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def init_regions(self):
         cdef:
             int i, j, idx, res
-            numpy.int32_t[:, :] labels = self.labels
-            numpy.uint8_t[:, :] borders = self.borders
+            numpy.int32_t[:, ::1] labels = self.labels
+            numpy.uint8_t[:, ::1] borders = self.borders
             numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
@@ -371,7 +376,7 @@ class InverseWatershed(object):
     def init_pass(self):
         cdef:
             int i, j, k, imax, imin
-            float[:] flat = self.data.ravel()
+            float[::1] flat = self.data.ravel()
             numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
@@ -390,8 +395,8 @@ class InverseWatershed(object):
             numpy.uint8_t neighb = 0
             float ref = 0.0            
             float[:, :] data = self.data
-            numpy.int32_t[:, :] labels = self.labels
-            numpy.uint8_t[:, :] borders = self.borders
+            numpy.int32_t[:, ::1] labels = self.labels
+            numpy.uint8_t[:, ::1] borders = self.borders
             int to_merge = -1
             int width = self.width
             int cnt = 0
@@ -513,11 +518,11 @@ class InverseWatershed(object):
     
     def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):
         """
-        @param mask: mask of data points valid
-        @param Imin: Minimum intensity for a peak 
-        @param keep: Number of  points to keep
-        @param refine: refine sub-pixel position
-        @param dmin: minimum distance from 
+        :param mask: mask of data points valid
+        :param Imin: Minimum intensity for a peak 
+        :param keep: Number of  points to keep
+        :param refine: refine sub-pixel position
+        :param dmin: minimum distance from 
         """
         cdef:
             int i, j, l, x, y, width = self.width
@@ -571,3 +576,4 @@ class InverseWatershed(object):
                             return output_points
                 output_points = (output_points + rej_lst)[:keep]
         return output_points
+    

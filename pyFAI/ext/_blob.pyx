@@ -26,7 +26,7 @@ Some Cythonized function for blob detection function
 """
 __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "01/12/2016" 
 __status__ = "stable"
 __license__ = "GPLv3+"
 import cython
@@ -34,23 +34,23 @@ import numpy
 cimport numpy
 from cython.parallel import prange
 
-
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
-    """
-    Calculate if a point is a maximum in a 3D space: (scale, y, x)
+    """Calculate if a point is a maximum in a 3D space: (scale, y, x)
     
-    @param dogs: 3D array of difference of gaussian
-    @param mask: mask with invalid pixels
-    @param N-5: take a neighborhood of 5x5 pixel in plane
-    @return: 3d_array with 1 where is_max 
+    :param dogs: 3D array of difference of gaussian
+    :param mask: mask with invalid pixels
+    :param N_5: take a neighborhood of 5x5 pixel in plane
+    :return: 3d_array with 1 where is_max 
     """
     cdef bint do_mask = mask is not None
     cdef int ns, ny, nx, s, x, y
     cdef numpy.int8_t m 
     cdef float c 
-    cdef numpy.int8_t[:,:] cmask
+    cdef numpy.int8_t[:, ::1] cmask
     ns = dogs.shape[0]
     ny = dogs.shape[1]
     nx = dogs.shape[2]

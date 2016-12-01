@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -27,9 +27,10 @@
 # THE SOFTWARE.
 
 """Implementation of a separable 2D convolution"""
+
 __authors__ = ["Pierre Paleo", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -41,21 +42,22 @@ from cython.parallel import prange
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def horizontal_convolution(float[:, :] img, float[:] filter):
+@cython.initializedcheck(False)
+def horizontal_convolution(float[:, ::1] img, float[::1] filter):
     """
     Implements a 1D horizontal convolution with a filter.
     The only implemented mode is "reflect" (default in scipy.ndimage.filter)
 
-    @param img: input image
-    @param filter: 1D array with the coefficients of the array
-    @return: array of the same shape as image with
+    :param img: input image
+    :param filter: 1D array with the coefficients of the array
+    :return: array of the same shape as image with
     """
     cdef:
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
         int x, y, pos, fIndex, newpos, c
         float sum, err, val, tmp
-        numpy.ndarray[numpy.float32_t, ndim = 2] output
+        float[:, ::1] output
 
     FILTER_SIZE = filter.shape[0]
     if FILTER_SIZE % 2 == 1:
@@ -83,27 +85,28 @@ def horizontal_convolution(float[:, :] img, float[:] filter):
                 err = (tmp - sum) - val
                 sum = tmp
             output[y, x] += sum
-    return output
+    return numpy.asarray(output)
 
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def vertical_convolution(float[:, :] img, float[:] filter):
+@cython.initializedcheck(False)
+def vertical_convolution(float[:, ::1] img, float[::1] filter):
     """
     Implements a 1D vertical convolution with a filter.
     The only implemented mode is "reflect" (default in scipy.ndimage.filter)
 
-    @param img: input image
-    @param filter: 1D array with the coefficients of the array
-    @return: array of the same shape as image with
+    :param img: input image
+    :param filter: 1D array with the coefficients of the array
+    :return: array of the same shape as image with
     """
     cdef:
         int FILTER_SIZE, HALF_FILTER_SIZE
         int IMAGE_H, IMAGE_W
         int x, y, pos, fIndex, newpos, c
         float sum, err, val, tmp
-        numpy.ndarray[numpy.float32_t, ndim=2] output
+        float[:, ::1] output
 
     FILTER_SIZE = filter.shape[0]
     if FILTER_SIZE % 2 == 1:
@@ -131,15 +134,16 @@ def vertical_convolution(float[:, :] img, float[:] filter):
                 err = (tmp - sum) - val
                 sum = tmp
             output[y, x] += sum
-    return output
+    return numpy.asarray(output)
 
 
+@cython.embedsignature(True)
 def gaussian(sigma, width=None):
     """
     Return a Gaussian window of length "width" with standard-deviation "sigma".
 
-    @param sigma: standard deviation sigma
-    @param width: length of the windows (int) By default 8*sigma+1,
+    :param sigma: standard deviation sigma
+    :param width: length of the windows (int) By default 8*sigma+1,
 
     Width should be odd.
 
@@ -157,12 +161,13 @@ def gaussian(sigma, width=None):
     return g / g.sum()
 
 
+@cython.embedsignature(True)
 def gaussian_filter(img, sigma):
     """
     Performs a gaussian bluring using a gaussian kernel.
 
-    @param img: input image
-    @param sigma:
+    :param img: input image
+    :param sigma: width parameter of the gaussian
     """
     raw = numpy.ascontiguousarray(img, dtype=numpy.float32)
     gauss = gaussian(sigma).astype(numpy.float32)

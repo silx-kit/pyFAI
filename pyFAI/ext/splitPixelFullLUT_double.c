@@ -1898,8 +1898,8 @@ static char __pyx_k_HistoLUT1dFullSplit_integrate[] = "HistoLUT1dFullSplit.integ
 static char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static char __pyx_k_Now_uses_CSR_Compressed_Sparse[] = "\n    Now uses CSR (Compressed Sparse raw) with main attributes:\n    * nnz: number of non zero elements\n    * data: coefficient of the matrix in a 1D vector of float64\n    * indices: Column index position for the data (same size as\n    * indptr: row pointer indicates the start of a given row. len nrow+1\n\n    Nota: nnz = indptr[-1]\n    ";
 static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static char __pyx_k_home_kieffer_workspace_pyFAI_py[] = "/home/kieffer/workspace/pyFAI/pyFAI/ext/splitPixelFullLUT_double.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
+static char __pyx_k_users_kieffer_workspace_400_pyF[] = "/users/kieffer/workspace-400/pyFAI/pyFAI/ext/splitPixelFullLUT_double.pyx";
 static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
 static char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
@@ -2038,7 +2038,6 @@ static PyObject *__pyx_n_s_format;
 static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
-static PyObject *__pyx_kp_s_home_kieffer_workspace_pyFAI_py;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_idx;
@@ -2144,6 +2143,7 @@ static PyObject *__pyx_n_s_undefined;
 static PyObject *__pyx_n_s_unit;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
+static PyObject *__pyx_kp_s_users_kieffer_workspace_400_pyF;
 static PyObject *__pyx_n_s_weights;
 static PyObject *__pyx_kp_s_weights_size;
 static PyObject *__pyx_n_s_xrange;
@@ -2335,7 +2335,7 @@ static double __pyx_f_5pyFAI_3ext_24splitPixelFullLUT_double_integrate(double __
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit___init__[] = "\n        @param pos: 3D or 4D array with the coordinates of each pixel point\n        @param bins: number of output bins, 100 by default\n        @param pos0Range: minimum and maximum  of the 2th range\n        @param pos1Range: minimum and maximum  of the chi range\n        @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n        @param allow_pos0_neg: enforce the q<0 is usually not possible\n        @param unit: can be 2th_deg or r_nm^-1 ...\n        ";
+static char __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit___init__[] = "HistoLUT1dFullSplit.__init__(self, ndarray pos, int bins=100, pos0Range=None, pos1Range=None, mask=None, mask_checksum=None, allow_pos0_neg=False, unit='undefined', bad_pixel=False)\n\n        @param pos: 3D or 4D array with the coordinates of each pixel point\n        @param bins: number of output bins, 100 by default\n        @param pos0Range: minimum and maximum  of the 2th range\n        @param pos1Range: minimum and maximum  of the chi range\n        @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n        @param allow_pos0_neg: enforce the q<0 is usually not possible\n        @param unit: can be 2th_deg or r_nm^-1 ...\n        ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_1__init__ = {"__init__", (PyCFunction)__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_1__init__, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit___init__};
 static PyObject *__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
@@ -3194,7 +3194,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_3calc_lut(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_3calc_lut = {"calc_lut", (PyCFunction)__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_3calc_lut, METH_O, 0};
+static char __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_2calc_lut[] = "HistoLUT1dFullSplit.calc_lut(self)";
+static PyMethodDef __pyx_mdef_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_3calc_lut = {"calc_lut", (PyCFunction)__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_3calc_lut, METH_O, __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_2calc_lut};
 static PyObject *__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_3calc_lut(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -5701,7 +5702,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_4integrate[] = "\n        Actually perform the integration which in this case looks more like a matrix-vector product\n\n        @param weights: input image\n        @type weights: ndarray\n        @param dummy: value for dead pixels (optional)\n        @type dummy: float\n        @param delta_dummy: precision for dead-pixel value in dynamic masking\n        @type delta_dummy: float\n        @param dark: array with the dark-current value to be subtracted (if any)\n        @type dark: ndarray\n        @param flat: array with the dark-current value to be divided by (if any)\n        @type flat: ndarray\n        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)\n        @type solidAngle: ndarray\n        @param polarization: array with the polarization correction values to be divided by (if any)\n        @type polarization: ndarray\n        @return : positions, pattern, weighted_histogram and unweighted_histogram\n        @rtype: 4-tuple of ndarrays\n        ";
+static char __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_4integrate[] = "HistoLUT1dFullSplit.integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None)\n\n        Actually perform the integration which in this case looks more like a matrix-vector product\n\n        @param weights: input image\n        @type weights: ndarray\n        @param dummy: value for dead pixels (optional)\n        @type dummy: float\n        @param delta_dummy: precision for dead-pixel value in dynamic masking\n        @type delta_dummy: float\n        @param dark: array with the dark-current value to be subtracted (if any)\n        @type dark: ndarray\n        @param flat: array with the dark-current value to be divided by (if any)\n        @type flat: ndarray\n        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)\n        @type solidAngle: ndarray\n        @param polarization: array with the polarization correction values to be divided by (if any)\n        @type polarization: ndarray\n        @return : positions, pattern, weighted_histogram and unweighted_histogram\n        @rtype: 4-tuple of ndarrays\n        ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_5integrate = {"integrate", (PyCFunction)__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_5integrate, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_4integrate};
 static PyObject *__pyx_pw_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
@@ -6809,8 +6810,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
             __pyx_t_2 = __pyx_v_size;
             if (1 == 0) abort();
             {
-                __pyx_t_5numpy_int32_t __pyx_parallel_temp0 = 0xbad0bad0;
-                double __pyx_parallel_temp1 = __PYX_NAN();
+                double __pyx_parallel_temp0 = __PYX_NAN();
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
                 const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
                 PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
                 int __pyx_parallel_why;
@@ -6825,7 +6826,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_19, __pyx_t_17, __pyx_t_18, __pyx_t_20, __pyx_t_22, __pyx_t_23, __pyx_t_13, __pyx_t_12, __pyx_t_21) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_19, __pyx_t_17, __pyx_t_18, __pyx_t_23, __pyx_t_20, __pyx_t_13, __pyx_t_12, __pyx_t_21, __pyx_t_22) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -6835,7 +6836,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                         Py_BEGIN_ALLOW_THREADS
                         #endif /* _OPENMP */
                         #ifdef _OPENMP
-                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
                             if (__pyx_parallel_why < 2)
@@ -7026,11 +7027,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates0)
+                                #pragma omp critical(__pyx_parallel_lastprivates4)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_i;
-                                    __pyx_parallel_temp1 = __pyx_v_data;
+                                    __pyx_parallel_temp0 = __pyx_v_data;
+                                    __pyx_parallel_temp1 = __pyx_v_i;
                                 }
                                 __pyx_L28:;
                                 #ifdef _OPENMP
@@ -7060,8 +7061,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_i = __pyx_parallel_temp0;
-                  __pyx_v_data = __pyx_parallel_temp1;
+                  __pyx_v_data = __pyx_parallel_temp0;
+                  __pyx_v_i = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L11_return;
                         case 4:
@@ -7137,8 +7138,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
             __pyx_t_16 = __pyx_v_size;
             if (1 == 0) abort();
             {
-                __pyx_t_5numpy_int32_t __pyx_parallel_temp0 = 0xbad0bad0;
-                double __pyx_parallel_temp1 = __PYX_NAN();
+                double __pyx_parallel_temp0 = __PYX_NAN();
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
                 const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
                 PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
                 int __pyx_parallel_why;
@@ -7153,7 +7154,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                 if (__pyx_t_2 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_29, __pyx_t_24, __pyx_t_26, __pyx_t_27, __pyx_t_25, __pyx_t_28, __pyx_t_12) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_29, __pyx_t_24, __pyx_t_26, __pyx_t_27, __pyx_t_12, __pyx_t_25, __pyx_t_28) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7163,7 +7164,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                         Py_BEGIN_ALLOW_THREADS
                         #endif /* _OPENMP */
                         #ifdef _OPENMP
-                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_2; __pyx_t_15++){
                             if (__pyx_parallel_why < 2)
@@ -7309,11 +7310,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates1)
+                                #pragma omp critical(__pyx_parallel_lastprivates5)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_i;
-                                    __pyx_parallel_temp1 = __pyx_v_data;
+                                    __pyx_parallel_temp0 = __pyx_v_data;
+                                    __pyx_parallel_temp1 = __pyx_v_i;
                                 }
                                 __pyx_L41:;
                                 #ifdef _OPENMP
@@ -7343,8 +7344,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_i = __pyx_parallel_temp0;
-                  __pyx_v_data = __pyx_parallel_temp1;
+                  __pyx_v_data = __pyx_parallel_temp0;
+                  __pyx_v_i = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L29_return;
                         case 4:
@@ -7540,11 +7541,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_31, __pyx_t_12, __pyx_t_32, __pyx_t_30, __pyx_t_13)
+                    #pragma omp parallel private(__pyx_t_12, __pyx_t_31, __pyx_t_32, __pyx_t_30, __pyx_t_13)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
-                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
                             {
@@ -7738,21 +7739,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
             if (__pyx_t_2 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_40, __pyx_t_41, __pyx_t_12, __pyx_t_37, __pyx_t_35, __pyx_t_13, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_36, __pyx_t_33)
+                #pragma omp parallel private(__pyx_t_40, __pyx_t_41, __pyx_t_33, __pyx_t_12, __pyx_t_37, __pyx_t_35, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_36, __pyx_t_13)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_j) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_sum_count) schedule(guided)
+                    #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_sum_count) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_2; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
                             __pyx_v_data = ((double)__PYX_NAN());
-                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_coef = ((double)__PYX_NAN());
-                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_sum_data = ((double)__PYX_NAN());
+                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
+                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_sum_count = ((double)__PYX_NAN());
 
                             /* "pyFAI/ext/splitPixelFullLUT_double.pyx":521
@@ -21475,7 +21476,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 0, 1, 1},
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
-  {&__pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_k_home_kieffer_workspace_pyFAI_py, sizeof(__pyx_k_home_kieffer_workspace_pyFAI_py), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_idx, __pyx_k_idx, sizeof(__pyx_k_idx), 0, 0, 1, 1},
@@ -21581,6 +21581,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_unit, __pyx_k_unit, sizeof(__pyx_k_unit), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_unpack, __pyx_k_unpack, sizeof(__pyx_k_unpack), 0, 0, 1, 1},
+  {&__pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_k_users_kieffer_workspace_400_pyF, sizeof(__pyx_k_users_kieffer_workspace_400_pyF), 0, 0, 1, 0},
   {&__pyx_n_s_weights, __pyx_k_weights, sizeof(__pyx_k_weights), 0, 0, 1, 1},
   {&__pyx_kp_s_weights_size, __pyx_k_weights_size, sizeof(__pyx_k_weights_size), 0, 0, 1, 0},
   {&__pyx_n_s_xrange, __pyx_k_xrange, sizeof(__pyx_k_xrange), 0, 0, 1, 1},
@@ -21906,7 +21907,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__34 = PyTuple_Pack(11, __pyx_n_s_self, __pyx_n_s_pos, __pyx_n_s_bins, __pyx_n_s_pos0Range, __pyx_n_s_pos1Range, __pyx_n_s_mask, __pyx_n_s_mask_checksum, __pyx_n_s_allow_pos0_neg, __pyx_n_s_unit, __pyx_n_s_bad_pixel, __pyx_n_s_i); if (unlikely(!__pyx_tuple__34)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__34);
   __Pyx_GIVEREF(__pyx_tuple__34);
-  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(10, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__34, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init, 96, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(10, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__34, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init, 96, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFullLUT_double.pyx":153
  *     @cython.boundscheck(False)
@@ -21918,7 +21919,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__36 = PyTuple_Pack(53, __pyx_n_s_self, __pyx_n_s_cpos, __pyx_n_s_cmask, __pyx_n_s_outMax, __pyx_n_s_indptr, __pyx_n_s_pos0_min, __pyx_n_s_pos0_max, __pyx_n_s_pos0_maxin, __pyx_n_s_pos1_min, __pyx_n_s_pos1_max, __pyx_n_s_pos1_maxin, __pyx_n_s_max0, __pyx_n_s_min0, __pyx_n_s_areaPixel, __pyx_n_s_delta, __pyx_n_s_areaPixel2, __pyx_n_s_A0, __pyx_n_s_B0, __pyx_n_s_C0, __pyx_n_s_D0, __pyx_n_s_A1, __pyx_n_s_B1, __pyx_n_s_C1, __pyx_n_s_D1, __pyx_n_s_A_lim, __pyx_n_s_B_lim, __pyx_n_s_C_lim, __pyx_n_s_D_lim, __pyx_n_s_oneOverArea, __pyx_n_s_partialArea, __pyx_n_s_tmp, __pyx_n_s_AB, __pyx_n_s_BC, __pyx_n_s_CD, __pyx_n_s_DA, __pyx_n_s_bins, __pyx_n_s_i, __pyx_n_s_idx, __pyx_n_s_bin, __pyx_n_s_bin0_max, __pyx_n_s_bin0_min, __pyx_n_s_pixel_bins, __pyx_n_s_k, __pyx_n_s_size, __pyx_n_s_check_pos1, __pyx_n_s_check_mask, __pyx_n_s_range1, __pyx_n_s_range2, __pyx_n_s_indices, __pyx_n_s_data, __pyx_n_s_areas, __pyx_n_s_oneOverPixelArea, __pyx_n_s_partialArea2); if (unlikely(!__pyx_tuple__36)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__36);
   __Pyx_GIVEREF(__pyx_tuple__36);
-  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 53, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_lut, 153, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 53, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_lut, 153, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFullLUT_double.pyx":417
  *     @cython.boundscheck(False)
@@ -21930,7 +21931,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__38 = PyTuple_Pack(37, __pyx_n_s_self, __pyx_n_s_weights, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_dark, __pyx_n_s_flat, __pyx_n_s_solidAngle, __pyx_n_s_polarization, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_idx, __pyx_n_s_bins, __pyx_n_s_size, __pyx_n_s_sum_data, __pyx_n_s_sum_count, __pyx_n_s_epsilon, __pyx_n_s_data, __pyx_n_s_coef, __pyx_n_s_cdummy, __pyx_n_s_cddummy, __pyx_n_s_do_dummy, __pyx_n_s_do_dark, __pyx_n_s_do_flat, __pyx_n_s_do_polarization, __pyx_n_s_do_solidAngle, __pyx_n_s_outData, __pyx_n_s_outCount, __pyx_n_s_outMerge, __pyx_n_s_ccoef, __pyx_n_s_cdata, __pyx_n_s_tdata, __pyx_n_s_cflat, __pyx_n_s_cdark, __pyx_n_s_csolidAngle, __pyx_n_s_cpolarization, __pyx_n_s_indices, __pyx_n_s_indptr); if (unlikely(!__pyx_tuple__38)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__38);
   __Pyx_GIVEREF(__pyx_tuple__38);
-  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(8, 0, 37, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_integrate, 417, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(8, 0, 37, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_integrate, 417, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__40 = PyTuple_Pack(6, ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__40)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__40);
   __Pyx_GIVEREF(__pyx_tuple__40);

@@ -1,7 +1,7 @@
 :Author: Jérôme Kieffer
-:Date: 28/06/2016
+:Date: 01/12/2016
 :Keywords: generic description of the geometry
-:Target: General audiance
+:Target: General audience
 
 PyFAI uses a 6-parameter geometry definition similar, while not rigorously
 identical to SPD:
@@ -50,7 +50,8 @@ Position of the observer
 
 There are two (main) conventions when representing images:
 
-* In imaging application, one can can replace the camera by the eye, the camera looks at the scene. In this convention, the origin is usually at the top of the image.
+* In imaging application, one can can replace the camera by the eye, the camera
+  looks at the scene. In this convention, the origin is usually at the top of the image.
 * In diffraction application, the observer is situated at the sample position and looks
   at the detector, hence on the other side of the detector.
 
@@ -72,7 +73,7 @@ In the (most common) case of *transmission diffraction setup* on synchrotrons
 
 Axis 3 is built in such a way to be orthogonal to the plane  (1,2).
 Due to constraints on the origin and orientation of the azimuthal angle, chi,
-(1, 2, 3) is inderect orientation.
+(1, 2, 3) is indirect orientation.
 This makes usually the PONI position with negative third coordiante (at z<0).
 
 
@@ -96,19 +97,22 @@ the detector surface called PONI (for Point Of Normal Incidence).
 For non planar detectors, the PONI is defined in the plan z=0 in detector's
 coordinate system.
 
-Poni1 and Poni2 are distances in meter (along the *y* and *x* axis of the detector),
+*Poni1* and *Poni2* are distances in meter (along the *y* and *x* axis of the detector),
 like the sample-detector distance, letting the calibration parameters be
 independent of the pixel size hence stable regarding the binning factor of the detector.
 
-In the same idea rot1, rot2 and rot3 are rotation along axis 1, 2 and 3, always expressed in radians.
+In the same idea *rot1*, *rot2* and *rot3* are rotation along axis 1, 2 and 3,
+always expressed in radians.
 Rotations applied in the same order: *rot1* then *rot2* and finally *rot3*.
-Due to the axial symmetry of the Debye-Scherrer cones, *rot3* cannot be optimized but can be adjusted manually in some cases like if
-the detector is not mounted horizontally and/or one cares about polarization correction.
+Due to the axial symmetry of the Debye-Scherrer cones, *rot3* cannot be optimized
+but can be adjusted manually in some cases like if
+the detector is not mounted horizontally and/or one cares about polarization
+correction.
 
 When all rotations are zero, the detector is in transmission mode with the
 incident beam orthogonal to the detector's surface.
 
-There is also a tutorial :ref:`tutorials` on the geomety which explains in detail
+There is also a tutorial :ref:`tutorials` on the geometry which explains in detail
 the orientations of the different rotations used by pyFAI.
 
 

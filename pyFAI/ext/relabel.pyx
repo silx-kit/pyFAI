@@ -25,7 +25,7 @@
 __doc__ = """A module to relabel regions"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -34,24 +34,26 @@ cimport numpy
 
 
 @cython.boundscheck(False)
+@cython.cdivision(True)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
 def countThem(numpy.ndarray label not None, \
               numpy.ndarray data not None, \
               numpy.ndarray blured not None):
-    """
-    @param label: 2D array containing labeled zones
-    @param data: 2D array containing the raw data
-    @param blured: 2D array containing the blured data
-    @return: 2D arrays containing:
+    """Count 
+    :param label: 2D array containing labeled zones
+    :param data: 2D array containing the raw data
+    :param blured: 2D array containing the blured data
+    :return: 2D arrays containing:
         * count pixels in labelled zone: label == index).sum()
         * max of data in that zone:      data[label == index].max()
         * max of blured in that zone:    blured[label == index].max()
         * data-blured where data is max.
     """
     cdef:
-        numpy.uint32_t[:] clabel = numpy.ascontiguousarray(label.ravel(), dtype=numpy.uint32)
-        float[:] cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
-        float[:] cblured = numpy.ascontiguousarray(blured.ravel(), dtype=numpy.float32)
+        numpy.uint32_t[::1] clabel = numpy.ascontiguousarray(label.ravel(), dtype=numpy.uint32)
+        float[::1] cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
+        float[::1] cblured = numpy.ascontiguousarray(blured.ravel(), dtype=numpy.float32)
         size_t maxLabel = label.max()
         numpy.ndarray[numpy.uint_t, ndim = 1] count = numpy.zeros(maxLabel + 1, dtype=numpy.uint)
         numpy.ndarray[numpy.float32_t, ndim = 1] maxData = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
@@ -74,6 +76,3 @@ def countThem(numpy.ndarray label not None, \
             if b > maxBlured[idx]:
                 maxBlured[idx] = b
     return count, maxData, maxBlured, maxDelta
-
-
-
