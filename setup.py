@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -592,8 +592,8 @@ if __name__ == "__main__":
           and Frederic-Emmanuel Picca",
           author_email="jerome.kieffer@esrf.fr",
           description='Python implementation of fast azimuthal integration',
-          url="https://github.com/pyFAI/pyFAI",
-          download_url="https://github.com/pyFAI/pyFAI/releases",
+          url="https://github.com/silx-kit/pyFAI",
+          download_url="https://github.com/silx-kit/pyFAI/releases",
           # ext_package="pyFAI.ext",
           scripts=script_files,
           ext_modules=ext_modules,

@@ -37,13 +37,13 @@ Repository:
 -----------
 
 The project is hosted on GitHub:
-https://github.com/pyFAI/pyFAI
+https://github.com/silx-kit/pyFAI
 
-Which provides the `issue tracker <https://github.com/kif/pyFAI/issues>`_ in
+Which provides the `issue tracker <https://github.com/silx-kit/pyFAI/issues>`_ in
 addition to Git hosting.
 Collaboration is done via Pull-Requests in github's web interface:
 
-Everybody is welcome to `fork the project <https://github.com/kif/pyFAI/fork>`_
+Everybody is welcome to `fork the project <https://github.com/silx-kit/pyFAI/fork>`_
 and adapt it to his own needs:
 CEA-Saclay, Synchrotrons Soleil, Desy and APS have already done so.
 Collaboration is encouraged and new developments can be submitted and merged

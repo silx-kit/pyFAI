@@ -7493,7 +7493,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox1d_10integrate(C
   __pyx_t_3 = 0;
 
   /* "pyFAI/ext/splitBBoxLUT.pyx":424
- *             #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
+ *             #Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
  *             int rc_before, rc_after
  *         rc_before = sys.getrefcount(self._lut)             # <<<<<<<<<<<<<<
  *         cdef lut_point[:, :] lut = self._lut
@@ -10121,7 +10121,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox1d_12integrate_k
   __pyx_t_3 = 0;
 
   /* "pyFAI/ext/splitBBoxLUT.pyx":581
- *         #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
+ *         #Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
  *         cdef int rc_before, rc_after
  *         rc_before = sys.getrefcount(self._lut)             # <<<<<<<<<<<<<<
  *         cdef lut_point[:,:] lut = self._lut

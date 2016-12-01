@@ -37,7 +37,7 @@ Repository:
 -----------
 
 The project is hosted on GitHub:
-https://github.com/pyFAI/pyFAI
+https://github.com/silx-kit/pyFAI
 
 Which provides the `issue tracker <https://github.com/kif/pyFAI/issues>`_ in
 addition to Git hosting.
