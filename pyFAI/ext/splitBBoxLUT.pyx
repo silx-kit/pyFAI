@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -419,7 +419,7 @@ class HistoBBox1d(object):
             numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
             float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
-            #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
+            #Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
             int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef lut_point[:, :] lut = self._lut
@@ -576,7 +576,7 @@ class HistoBBox1d(object):
             float c_data, y_data, t_data
             float c_count, y_count, t_count
 
-        #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
+        #Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef lut_point[:,:] lut = self._lut

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI
+#             https://github.com/silx-kit
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #

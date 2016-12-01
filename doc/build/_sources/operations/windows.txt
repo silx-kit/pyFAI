@@ -166,7 +166,7 @@ The latest stable release of pyFAI should also be PIP-installable (starting at v
 Install pyFAI from sources
 --------------------------
 
-The sources of pyFAI are available at https://github.com/pyFAI/pyFAI/releases
+The sources of pyFAI are available at https://github.com/silx-kit/pyFAI/releases
 the development is performed on https://github.com/kif/pyFAI
 
 In addition to the Python interpreter, you will need *the* C compiler compatible

@@ -33,8 +33,8 @@ The OpenCL code has been tested using:
 * Beignet OpenCL v1.2 on Linux (GPU device)
 * Pocl OpenCL v1.2 on Linux (CPU device)
 
-Repository:
------------
+Repository
+----------
 
 The project is hosted on GitHub:
 https://github.com/silx-kit/pyFAI
@@ -95,8 +95,8 @@ Run dependencies
 * pyopencl (optional)
 * PyQt4 or PySide (for the graphical user interface)
 
-Build dependencies:
--------------------
+Build dependencies
+------------------
 
 In addition to the run dependencies, pyFAI needs a C compiler.
 
