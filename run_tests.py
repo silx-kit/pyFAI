@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "27/10/2016"
+__date__ = "01/12/2016"
 __license__ = "MIT"
 
 import distutils.util
@@ -142,10 +142,10 @@ logger.info("Project name: %s", PROJECT_NAME)
 class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
 
     def __init__(self, *arg, **kwarg):
-        unittest.TextTestRunner.resultclass.__init__(self, *arg, **kwarg)
+        super(ProfileTextTestResult, self).__init__(*arg, **kwarg)
         self.logger = logging.getLogger("memProf")
         self.logger.setLevel(min(logging.INFO, logging.root.level))
-        self.logger.handlers.append(logging.FileHandler("profile.log"))
+        self.logger.handlers.append(logging.FileHandler("memprofile.log"))
 
     def startTest(self, test):
         if resource:
@@ -153,10 +153,10 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
                 resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         self.logger.debug("Start %s", test.id())
         self.__time_start = time.time()
-        unittest.TestResult.startTest(self, test)
+        super(ProfileTextTestResult, self).startTest(test)
 
     def stopTest(self, test):
-        unittest.TestResult.stopTest(self, test)
+        super(ProfileTextTestResult, self).stopTest(test)
         # see issue 311. For other platform, get size of ru_maxrss in "man getrusage"
         if sys.platform == "darwin":
             ratio = 1e-6
@@ -168,17 +168,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
         else:
             memusage = 0
         self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s",
-            time.time() - self.__time_start, memusage, test.id())
-
-
-if sys.hexversion < 34013184:  # 2.7
-    class ProfileTestRunner(unittest.TextTestRunner):
-        def _makeResult(self):
-            return TestResult()
-else:
-    class ProfileTestRunner(unittest.TextTestRunner):
-        def _makeResult(self):
-            return TestResult(stream=sys.stderr, descriptions=True, verbosity=1)
+                         time.time() - self.__time_start, memusage, test.id())
 
 
 def report_rst(cov, package="fabio", version="0.0.0", base=""):
@@ -383,10 +373,11 @@ PROJECT_PATH = module.__path__[0]
 
 
 # Run the tests
+runnerArgs = {}
+runnerArgs["verbosity"] = test_verbosity
 if options.memprofile:
-    runner = ProfileTestRunner(buffer=options.display_buffer)
-else:
-    runner = unittest.TextTestRunner(buffer=options.display_buffer)
+    runnerArgs["resultclass"] = ProfileTextTestResult
+runner = unittest.TextTestRunner(**runnerArgs)
 
 logger.warning("Test %s %s from %s",
                PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH)

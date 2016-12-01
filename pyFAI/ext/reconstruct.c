@@ -2913,7 +2913,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11reconstruct_reconstruct(CYTHON_UNUSED Py
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_p1) firstprivate(__pyx_v_p0) lastprivate(__pyx_v_p0) schedule(guided)
+                    #pragma omp for firstprivate(__pyx_v_p0) lastprivate(__pyx_v_p0) lastprivate(__pyx_v_p1) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_16 = 0; __pyx_t_16 < __pyx_t_17; __pyx_t_16++){
                         {

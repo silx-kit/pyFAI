@@ -6826,7 +6826,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_19, __pyx_t_17, __pyx_t_18, __pyx_t_23, __pyx_t_20, __pyx_t_13, __pyx_t_12, __pyx_t_21, __pyx_t_22) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_20, __pyx_t_22, __pyx_t_21, __pyx_t_23, __pyx_t_13, __pyx_t_12, __pyx_t_17, __pyx_t_19, __pyx_t_18) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7154,7 +7154,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                 if (__pyx_t_2 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_29, __pyx_t_24, __pyx_t_26, __pyx_t_27, __pyx_t_12, __pyx_t_25, __pyx_t_28) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_27, __pyx_t_25, __pyx_t_28, __pyx_t_29, __pyx_t_12, __pyx_t_24, __pyx_t_26) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7541,7 +7541,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_12, __pyx_t_31, __pyx_t_32, __pyx_t_30, __pyx_t_13)
+                    #pragma omp parallel private(__pyx_t_30, __pyx_t_13, __pyx_t_12, __pyx_t_31, __pyx_t_32)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7739,22 +7739,22 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
             if (__pyx_t_2 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_40, __pyx_t_41, __pyx_t_33, __pyx_t_12, __pyx_t_37, __pyx_t_35, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_36, __pyx_t_13)
+                #pragma omp parallel private(__pyx_t_39, __pyx_t_37, __pyx_t_38, __pyx_t_35, __pyx_t_36, __pyx_t_33, __pyx_t_34, __pyx_t_40, __pyx_t_41, __pyx_t_13, __pyx_t_12)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_sum_count) schedule(guided)
+                    #pragma omp for lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_data) lastprivate(__pyx_v_coef) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_2; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_data = ((double)__PYX_NAN());
-                            __pyx_v_coef = ((double)__PYX_NAN());
-                            __pyx_v_sum_data = ((double)__PYX_NAN());
+                            __pyx_v_sum_count = ((double)__PYX_NAN());
                             __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
-                            __pyx_v_sum_count = ((double)__PYX_NAN());
+                            __pyx_v_sum_data = ((double)__PYX_NAN());
+                            __pyx_v_data = ((double)__PYX_NAN());
+                            __pyx_v_coef = ((double)__PYX_NAN());
 
                             /* "pyFAI/ext/splitPixelFullLUT_double.pyx":521
  * 

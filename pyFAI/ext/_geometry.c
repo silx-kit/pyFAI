@@ -2813,18 +2813,18 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_calc_pos_zyx(CYTHON_UNUSED PyOb
               if (__pyx_t_15 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_16, __pyx_t_18, __pyx_t_20, __pyx_t_17, __pyx_t_19)
+                  #pragma omp parallel private(__pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_20, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_p2) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_p2) lastprivate(__pyx_v_p1) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_15; __pyx_t_14++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_14;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_p1 = ((double)__PYX_NAN());
                               __pyx_v_p2 = ((double)__PYX_NAN());
+                              __pyx_v_p1 = ((double)__PYX_NAN());
 
                               /* "pyFAI/ext/_geometry.pyx":211
  *     if pos3 is None:
@@ -3018,19 +3018,19 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_calc_pos_zyx(CYTHON_UNUSED PyOb
               if (__pyx_t_2 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_27, __pyx_t_22, __pyx_t_23, __pyx_t_25, __pyx_t_24, __pyx_t_26)
+                  #pragma omp parallel private(__pyx_t_24, __pyx_t_26, __pyx_t_27, __pyx_t_22, __pyx_t_23, __pyx_t_25)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_p3) lastprivate(__pyx_v_p2) lastprivate(__pyx_v_p1) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_p2) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_p3) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_2; __pyx_t_14++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_14;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_p3 = ((double)__PYX_NAN());
                               __pyx_v_p2 = ((double)__PYX_NAN());
                               __pyx_v_p1 = ((double)__PYX_NAN());
+                              __pyx_v_p3 = ((double)__PYX_NAN());
 
                               /* "pyFAI/ext/_geometry.pyx":220
  *         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
@@ -4120,7 +4120,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_2calc_tth(CYTHON_UNUSED PyObjec
               if (__pyx_t_13 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_16, __pyx_t_15, __pyx_t_14)
+                  #pragma omp parallel private(__pyx_t_14, __pyx_t_16, __pyx_t_15)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -4284,7 +4284,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_2calc_tth(CYTHON_UNUSED PyObjec
               if (__pyx_t_2 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_18, __pyx_t_20, __pyx_t_21, __pyx_t_19)
+                  #pragma omp parallel private(__pyx_t_20, __pyx_t_19, __pyx_t_21, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -4979,7 +4979,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_4calc_chi(CYTHON_UNUSED PyObjec
               if (__pyx_t_13 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_16, __pyx_t_15, __pyx_t_14)
+                  #pragma omp parallel private(__pyx_t_14, __pyx_t_16, __pyx_t_15)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -5143,7 +5143,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_4calc_chi(CYTHON_UNUSED PyObjec
               if (__pyx_t_2 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_18, __pyx_t_20, __pyx_t_21, __pyx_t_19)
+                  #pragma omp parallel private(__pyx_t_20, __pyx_t_19, __pyx_t_21, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -5846,7 +5846,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_6calc_q(CYTHON_UNUSED PyObject 
               if (__pyx_t_13 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_16, __pyx_t_15, __pyx_t_14)
+                  #pragma omp parallel private(__pyx_t_14, __pyx_t_16, __pyx_t_15)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -6010,7 +6010,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_6calc_q(CYTHON_UNUSED PyObject 
               if (__pyx_t_2 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_18, __pyx_t_20, __pyx_t_21, __pyx_t_19)
+                  #pragma omp parallel private(__pyx_t_20, __pyx_t_19, __pyx_t_21, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -6705,7 +6705,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_8calc_r(CYTHON_UNUSED PyObject 
               if (__pyx_t_13 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_16, __pyx_t_15, __pyx_t_14)
+                  #pragma omp parallel private(__pyx_t_14, __pyx_t_16, __pyx_t_15)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -6869,7 +6869,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_8calc_r(CYTHON_UNUSED PyObject 
               if (__pyx_t_2 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_18, __pyx_t_20, __pyx_t_21, __pyx_t_19)
+                  #pragma omp parallel private(__pyx_t_20, __pyx_t_19, __pyx_t_21, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -7477,7 +7477,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_10calc_cosa(CYTHON_UNUSED PyObj
               if (__pyx_t_13 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_16, __pyx_t_15, __pyx_t_14)
+                  #pragma omp parallel private(__pyx_t_14, __pyx_t_16, __pyx_t_15)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -7641,7 +7641,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_10calc_cosa(CYTHON_UNUSED PyObj
               if (__pyx_t_2 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_18, __pyx_t_20, __pyx_t_21, __pyx_t_19)
+                  #pragma omp parallel private(__pyx_t_20, __pyx_t_19, __pyx_t_21, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -8555,7 +8555,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_12calc_rad_azim(CYTHON_UNUSED P
               if (__pyx_t_14 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_27, __pyx_t_28, __pyx_t_20, __pyx_t_26, __pyx_t_21, __pyx_t_24, __pyx_t_23, __pyx_t_25, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18, __pyx_t_22)
+                  #pragma omp parallel private(__pyx_t_19, __pyx_t_15, __pyx_t_17, __pyx_t_16, __pyx_t_18, __pyx_t_28, __pyx_t_20, __pyx_t_27, __pyx_t_22, __pyx_t_23, __pyx_t_25, __pyx_t_24, __pyx_t_26, __pyx_t_21)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
@@ -8829,7 +8829,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9_geometry_12calc_rad_azim(CYTHON_UNUSED P
               if (__pyx_t_2 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_30, __pyx_t_46, __pyx_t_39, __pyx_t_37, __pyx_t_38, __pyx_t_35, __pyx_t_36, __pyx_t_42, __pyx_t_34, __pyx_t_44, __pyx_t_32, __pyx_t_41, __pyx_t_40, __pyx_t_33, __pyx_t_45, __pyx_t_31, __pyx_t_43)
+                  #pragma omp parallel private(__pyx_t_41, __pyx_t_45, __pyx_t_43, __pyx_t_42, __pyx_t_40, __pyx_t_33, __pyx_t_31, __pyx_t_46, __pyx_t_37, __pyx_t_30, __pyx_t_35, __pyx_t_44, __pyx_t_34, __pyx_t_39, __pyx_t_32, __pyx_t_38, __pyx_t_36)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP

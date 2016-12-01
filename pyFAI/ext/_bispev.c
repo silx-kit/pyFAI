@@ -3505,24 +3505,24 @@ static PyObject *__pyx_f_5pyFAI_3ext_7_bispev_cy_bispev(__Pyx_memviewslice __pyx
             if (__pyx_t_15 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_22, __pyx_t_18, __pyx_t_23, __pyx_t_26, __pyx_t_28, __pyx_t_27, __pyx_t_17, __pyx_t_20, __pyx_t_16, __pyx_t_21, __pyx_t_24, __pyx_t_25, __pyx_t_19)
+                #pragma omp parallel private(__pyx_t_17, __pyx_t_25, __pyx_t_16, __pyx_t_21, __pyx_t_24, __pyx_t_19, __pyx_t_22, __pyx_t_23, __pyx_t_28, __pyx_t_18, __pyx_t_26, __pyx_t_20, __pyx_t_27)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_i1) firstprivate(__pyx_v_j) lastprivate(__pyx_v_j) lastprivate(__pyx_v_err) lastprivate(__pyx_v_i) lastprivate(__pyx_v_tmp) lastprivate(__pyx_v_sp) lastprivate(__pyx_v_l2) lastprivate(__pyx_v_j1) lastprivate(__pyx_v_a)
+                    #pragma omp for lastprivate(__pyx_v_err) lastprivate(__pyx_v_i1) firstprivate(__pyx_v_j) lastprivate(__pyx_v_j) lastprivate(__pyx_v_a) lastprivate(__pyx_v_i) lastprivate(__pyx_v_sp) lastprivate(__pyx_v_j1) lastprivate(__pyx_v_l2) lastprivate(__pyx_v_tmp)
                     #endif /* _OPENMP */
                     for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_15; __pyx_t_14++){
                         {
                             __pyx_v_j = 0 + 1 * __pyx_t_14;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_i1 = ((int)0xbad0bad0);
                             __pyx_v_err = ((float)__PYX_NAN());
-                            __pyx_v_i = ((int)0xbad0bad0);
-                            __pyx_v_tmp = ((float)__PYX_NAN());
-                            __pyx_v_sp = ((float)__PYX_NAN());
-                            __pyx_v_l2 = ((int)0xbad0bad0);
-                            __pyx_v_j1 = ((int)0xbad0bad0);
+                            __pyx_v_i1 = ((int)0xbad0bad0);
                             __pyx_v_a = ((float)__PYX_NAN());
+                            __pyx_v_i = ((int)0xbad0bad0);
+                            __pyx_v_sp = ((float)__PYX_NAN());
+                            __pyx_v_j1 = ((int)0xbad0bad0);
+                            __pyx_v_l2 = ((int)0xbad0bad0);
+                            __pyx_v_tmp = ((float)__PYX_NAN());
 
                             /* "pyFAI/ext/_bispev.pyx":250
  * 

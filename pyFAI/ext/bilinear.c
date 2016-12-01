@@ -3309,12 +3309,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_4calc_cartesian_positions(CYTHON
         __pyx_t_3 = __pyx_v_size;
         if (1 == 0) abort();
         {
-            int __pyx_parallel_temp0 = 0xbad0bad0;
-            float __pyx_parallel_temp1 = __PYX_NAN();
-            int __pyx_parallel_temp2 = 0xbad0bad0;
+            float __pyx_parallel_temp0 = __PYX_NAN();
+            int __pyx_parallel_temp1 = 0xbad0bad0;
+            float __pyx_parallel_temp2 = __PYX_NAN();
             float __pyx_parallel_temp3 = __PYX_NAN();
             float __pyx_parallel_temp4 = __PYX_NAN();
-            float __pyx_parallel_temp5 = __PYX_NAN();
+            int __pyx_parallel_temp5 = 0xbad0bad0;
             float __pyx_parallel_temp6 = __PYX_NAN();
             float __pyx_parallel_temp7 = __PYX_NAN();
             float __pyx_parallel_temp8 = __PYX_NAN();
@@ -3342,7 +3342,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_4calc_cartesian_positions(CYTHON
             if (__pyx_t_15 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_30, __pyx_t_9, __pyx_t_32, __pyx_t_16, __pyx_t_72, __pyx_t_24, __pyx_t_53, __pyx_t_61, __pyx_t_42, __pyx_t_34, __pyx_t_59, __pyx_t_47, __pyx_t_37, __pyx_t_70, __pyx_t_26, __pyx_t_56, __pyx_t_48, __pyx_t_64, __pyx_t_67, __pyx_t_36, __pyx_t_52, __pyx_t_69, __pyx_t_65, __pyx_t_60, __pyx_t_28, __pyx_t_55, __pyx_t_66, __pyx_t_44, __pyx_t_29, __pyx_t_27, __pyx_t_68, __pyx_t_25, __pyx_t_51, __pyx_t_49, __pyx_t_39, __pyx_t_33, __pyx_t_40, __pyx_t_19, __pyx_t_22, __pyx_t_62, __pyx_t_18, __pyx_t_74, __pyx_t_54, __pyx_t_20, __pyx_t_31, __pyx_t_45, __pyx_t_17, __pyx_t_58, __pyx_t_21, __pyx_t_38, __pyx_t_35, __pyx_t_41, __pyx_t_23, __pyx_t_73, __pyx_t_50, __pyx_t_46, __pyx_t_63, __pyx_t_71, __pyx_t_57, __pyx_t_43) firstprivate(__pyx_t_5, __pyx_t_2, __pyx_t_4, __pyx_t_6, __pyx_t_1) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                #pragma omp parallel private(__pyx_t_30, __pyx_t_9, __pyx_t_32, __pyx_t_16, __pyx_t_72, __pyx_t_24, __pyx_t_66, __pyx_t_53, __pyx_t_61, __pyx_t_42, __pyx_t_34, __pyx_t_73, __pyx_t_59, __pyx_t_74, __pyx_t_47, __pyx_t_37, __pyx_t_70, __pyx_t_26, __pyx_t_56, __pyx_t_48, __pyx_t_64, __pyx_t_67, __pyx_t_36, __pyx_t_52, __pyx_t_69, __pyx_t_65, __pyx_t_60, __pyx_t_28, __pyx_t_55, __pyx_t_44, __pyx_t_29, __pyx_t_27, __pyx_t_25, __pyx_t_51, __pyx_t_49, __pyx_t_39, __pyx_t_33, __pyx_t_40, __pyx_t_19, __pyx_t_22, __pyx_t_62, __pyx_t_18, __pyx_t_54, __pyx_t_20, __pyx_t_31, __pyx_t_45, __pyx_t_17, __pyx_t_68, __pyx_t_58, __pyx_t_21, __pyx_t_38, __pyx_t_35, __pyx_t_41, __pyx_t_23, __pyx_t_50, __pyx_t_46, __pyx_t_63, __pyx_t_71, __pyx_t_57, __pyx_t_43) firstprivate(__pyx_t_5, __pyx_t_2, __pyx_t_1, __pyx_t_4, __pyx_t_6) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -3352,31 +3352,31 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_4calc_cartesian_positions(CYTHON
                     Py_BEGIN_ALLOW_THREADS
                     #endif /* _OPENMP */
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_p2) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_A1) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_delta2) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_delta1) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_B2) lastprivate(__pyx_v_B1) lastprivate(__pyx_v_f1) lastprivate(__pyx_v_C2) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_A2) lastprivate(__pyx_v_C0) lastprivate(__pyx_v_B0) lastprivate(__pyx_v_C1) schedule(static)
+                    #pragma omp for lastprivate(__pyx_v_A1) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_B0) lastprivate(__pyx_v_B1) lastprivate(__pyx_v_C0) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_C2) lastprivate(__pyx_v_C1) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_delta2) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_B2) lastprivate(__pyx_v_p2) lastprivate(__pyx_v_delta1) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_A2) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_f1) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_15; __pyx_t_14++){
                         if (__pyx_parallel_why < 2)
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_14;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_p2 = ((int)0xbad0bad0);
-                            __pyx_v_D2 = ((float)__PYX_NAN());
-                            __pyx_v_p1 = ((int)0xbad0bad0);
                             __pyx_v_A1 = ((float)__PYX_NAN());
-                            __pyx_v_A0 = ((float)__PYX_NAN());
+                            __pyx_v_p1 = ((int)0xbad0bad0);
+                            __pyx_v_B0 = ((float)__PYX_NAN());
+                            __pyx_v_B1 = ((float)__PYX_NAN());
+                            __pyx_v_C0 = ((float)__PYX_NAN());
+                            __pyx_v_C2 = ((float)__PYX_NAN());
+                            __pyx_v_C1 = ((float)__PYX_NAN());
+                            __pyx_v_D0 = ((float)__PYX_NAN());
                             __pyx_v_delta2 = ((float)__PYX_NAN());
-                            __pyx_v_f2 = ((float)__PYX_NAN());
-                            __pyx_v_delta1 = ((float)__PYX_NAN());
+                            __pyx_v_A0 = ((float)__PYX_NAN());
                             __pyx_v_D1 = ((float)__PYX_NAN());
                             __pyx_v_B2 = ((float)__PYX_NAN());
-                            __pyx_v_B1 = ((float)__PYX_NAN());
-                            __pyx_v_f1 = ((float)__PYX_NAN());
-                            __pyx_v_C2 = ((float)__PYX_NAN());
-                            __pyx_v_D0 = ((float)__PYX_NAN());
+                            __pyx_v_p2 = ((int)0xbad0bad0);
+                            __pyx_v_delta1 = ((float)__PYX_NAN());
+                            __pyx_v_f2 = ((float)__PYX_NAN());
                             __pyx_v_A2 = ((float)__PYX_NAN());
-                            __pyx_v_C0 = ((float)__PYX_NAN());
-                            __pyx_v_B0 = ((float)__PYX_NAN());
-                            __pyx_v_C1 = ((float)__PYX_NAN());
+                            __pyx_v_D2 = ((float)__PYX_NAN());
+                            __pyx_v_f1 = ((float)__PYX_NAN());
 
                             /* "pyFAI/ext/bilinear.pyx":76
  * 
@@ -4026,28 +4026,28 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_4calc_cartesian_positions(CYTHON
                             goto __pyx_L38;
                             __pyx_L38:;
                             #ifdef _OPENMP
-                            #pragma omp critical(__pyx_parallel_lastprivates0)
+                            #pragma omp critical(__pyx_parallel_lastprivates20)
                             #endif /* _OPENMP */
                             {
-                                __pyx_parallel_temp0 = __pyx_v_p2;
-                                __pyx_parallel_temp1 = __pyx_v_D2;
-                                __pyx_parallel_temp2 = __pyx_v_p1;
-                                __pyx_parallel_temp3 = __pyx_v_A1;
-                                __pyx_parallel_temp4 = __pyx_v_A0;
-                                __pyx_parallel_temp5 = __pyx_v_delta2;
-                                __pyx_parallel_temp6 = __pyx_v_f2;
-                                __pyx_parallel_temp7 = __pyx_v_delta1;
-                                __pyx_parallel_temp8 = __pyx_v_D1;
-                                __pyx_parallel_temp9 = __pyx_v_B2;
-                                __pyx_parallel_temp10 = __pyx_v_B1;
-                                __pyx_parallel_temp11 = __pyx_v_f1;
-                                __pyx_parallel_temp12 = __pyx_v_C2;
-                                __pyx_parallel_temp13 = __pyx_v_i;
-                                __pyx_parallel_temp14 = __pyx_v_D0;
-                                __pyx_parallel_temp15 = __pyx_v_A2;
-                                __pyx_parallel_temp16 = __pyx_v_C0;
-                                __pyx_parallel_temp17 = __pyx_v_B0;
-                                __pyx_parallel_temp18 = __pyx_v_C1;
+                                __pyx_parallel_temp0 = __pyx_v_A1;
+                                __pyx_parallel_temp1 = __pyx_v_p1;
+                                __pyx_parallel_temp2 = __pyx_v_B0;
+                                __pyx_parallel_temp3 = __pyx_v_B1;
+                                __pyx_parallel_temp4 = __pyx_v_C0;
+                                __pyx_parallel_temp5 = __pyx_v_i;
+                                __pyx_parallel_temp6 = __pyx_v_C2;
+                                __pyx_parallel_temp7 = __pyx_v_C1;
+                                __pyx_parallel_temp8 = __pyx_v_D0;
+                                __pyx_parallel_temp9 = __pyx_v_delta2;
+                                __pyx_parallel_temp10 = __pyx_v_A0;
+                                __pyx_parallel_temp11 = __pyx_v_D1;
+                                __pyx_parallel_temp12 = __pyx_v_B2;
+                                __pyx_parallel_temp13 = __pyx_v_p2;
+                                __pyx_parallel_temp14 = __pyx_v_delta1;
+                                __pyx_parallel_temp15 = __pyx_v_f2;
+                                __pyx_parallel_temp16 = __pyx_v_A2;
+                                __pyx_parallel_temp17 = __pyx_v_D2;
+                                __pyx_parallel_temp18 = __pyx_v_f1;
                             }
                             __pyx_L39:;
                             #ifdef _OPENMP
@@ -4068,12 +4068,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_4calc_cartesian_positions(CYTHON
                     __pyx_t_5 = NULL;
                     __Pyx_XDECREF(__pyx_t_2);
                     __pyx_t_2 = NULL;
+                    __Pyx_XDECREF(__pyx_t_1);
+                    __pyx_t_1 = NULL;
                     __Pyx_XDECREF(__pyx_t_4);
                     __pyx_t_4 = NULL;
                     __Pyx_XDECREF(__pyx_t_6);
                     __pyx_t_6 = NULL;
-                    __Pyx_XDECREF(__pyx_t_1);
-                    __pyx_t_1 = NULL;
                     #ifdef WITH_THREAD
                     PyGILState_Release(__pyx_gilstate_save);
                     #endif
@@ -4087,25 +4087,25 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_4calc_cartesian_positions(CYTHON
               __pyx_parallel_why = 4;
             }
             if (__pyx_parallel_why) {
-              __pyx_v_p2 = __pyx_parallel_temp0;
-              __pyx_v_D2 = __pyx_parallel_temp1;
-              __pyx_v_p1 = __pyx_parallel_temp2;
-              __pyx_v_A1 = __pyx_parallel_temp3;
-              __pyx_v_A0 = __pyx_parallel_temp4;
-              __pyx_v_delta2 = __pyx_parallel_temp5;
-              __pyx_v_f2 = __pyx_parallel_temp6;
-              __pyx_v_delta1 = __pyx_parallel_temp7;
-              __pyx_v_D1 = __pyx_parallel_temp8;
-              __pyx_v_B2 = __pyx_parallel_temp9;
-              __pyx_v_B1 = __pyx_parallel_temp10;
-              __pyx_v_f1 = __pyx_parallel_temp11;
-              __pyx_v_C2 = __pyx_parallel_temp12;
-              __pyx_v_i = __pyx_parallel_temp13;
-              __pyx_v_D0 = __pyx_parallel_temp14;
-              __pyx_v_A2 = __pyx_parallel_temp15;
-              __pyx_v_C0 = __pyx_parallel_temp16;
-              __pyx_v_B0 = __pyx_parallel_temp17;
-              __pyx_v_C1 = __pyx_parallel_temp18;
+              __pyx_v_A1 = __pyx_parallel_temp0;
+              __pyx_v_p1 = __pyx_parallel_temp1;
+              __pyx_v_B0 = __pyx_parallel_temp2;
+              __pyx_v_B1 = __pyx_parallel_temp3;
+              __pyx_v_C0 = __pyx_parallel_temp4;
+              __pyx_v_i = __pyx_parallel_temp5;
+              __pyx_v_C2 = __pyx_parallel_temp6;
+              __pyx_v_C1 = __pyx_parallel_temp7;
+              __pyx_v_D0 = __pyx_parallel_temp8;
+              __pyx_v_delta2 = __pyx_parallel_temp9;
+              __pyx_v_A0 = __pyx_parallel_temp10;
+              __pyx_v_D1 = __pyx_parallel_temp11;
+              __pyx_v_B2 = __pyx_parallel_temp12;
+              __pyx_v_p2 = __pyx_parallel_temp13;
+              __pyx_v_delta1 = __pyx_parallel_temp14;
+              __pyx_v_f2 = __pyx_parallel_temp15;
+              __pyx_v_A2 = __pyx_parallel_temp16;
+              __pyx_v_D2 = __pyx_parallel_temp17;
+              __pyx_v_f1 = __pyx_parallel_temp18;
               switch (__pyx_parallel_why) {
                     case 3: goto __pyx_L4_return;
                     case 4:
@@ -4754,24 +4754,24 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_6calc_cartesian_positions(CYTHON
         __pyx_t_3 = __pyx_v_size;
         if (1 == 0) abort();
         {
-            int __pyx_parallel_temp0 = 0xbad0bad0;
+            float __pyx_parallel_temp0 = __PYX_NAN();
             float __pyx_parallel_temp1 = __PYX_NAN();
             float __pyx_parallel_temp2 = __PYX_NAN();
             float __pyx_parallel_temp3 = __PYX_NAN();
             float __pyx_parallel_temp4 = __PYX_NAN();
-            float __pyx_parallel_temp5 = __PYX_NAN();
-            float __pyx_parallel_temp6 = __PYX_NAN();
-            int __pyx_parallel_temp7 = 0xbad0bad0;
+            int __pyx_parallel_temp5 = 0xbad0bad0;
+            int __pyx_parallel_temp6 = 0xbad0bad0;
+            float __pyx_parallel_temp7 = __PYX_NAN();
             float __pyx_parallel_temp8 = __PYX_NAN();
             float __pyx_parallel_temp9 = __PYX_NAN();
-            int __pyx_parallel_temp10 = 0xbad0bad0;
+            float __pyx_parallel_temp10 = __PYX_NAN();
             float __pyx_parallel_temp11 = __PYX_NAN();
             float __pyx_parallel_temp12 = __PYX_NAN();
             float __pyx_parallel_temp13 = __PYX_NAN();
             float __pyx_parallel_temp14 = __PYX_NAN();
             float __pyx_parallel_temp15 = __PYX_NAN();
             float __pyx_parallel_temp16 = __PYX_NAN();
-            float __pyx_parallel_temp17 = __PYX_NAN();
+            int __pyx_parallel_temp17 = 0xbad0bad0;
             float __pyx_parallel_temp18 = __PYX_NAN();
             const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
             PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
@@ -4787,7 +4787,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_6calc_cartesian_positions(CYTHON
             if (__pyx_t_15 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_30, __pyx_t_9, __pyx_t_32, __pyx_t_16, __pyx_t_72, __pyx_t_24, __pyx_t_53, __pyx_t_61, __pyx_t_42, __pyx_t_34, __pyx_t_59, __pyx_t_47, __pyx_t_37, __pyx_t_70, __pyx_t_26, __pyx_t_56, __pyx_t_48, __pyx_t_64, __pyx_t_67, __pyx_t_36, __pyx_t_52, __pyx_t_69, __pyx_t_65, __pyx_t_60, __pyx_t_28, __pyx_t_55, __pyx_t_66, __pyx_t_44, __pyx_t_29, __pyx_t_27, __pyx_t_68, __pyx_t_25, __pyx_t_51, __pyx_t_49, __pyx_t_39, __pyx_t_33, __pyx_t_40, __pyx_t_19, __pyx_t_22, __pyx_t_62, __pyx_t_18, __pyx_t_74, __pyx_t_54, __pyx_t_20, __pyx_t_31, __pyx_t_45, __pyx_t_17, __pyx_t_58, __pyx_t_21, __pyx_t_38, __pyx_t_35, __pyx_t_41, __pyx_t_23, __pyx_t_73, __pyx_t_50, __pyx_t_46, __pyx_t_63, __pyx_t_71, __pyx_t_57, __pyx_t_43) firstprivate(__pyx_t_5, __pyx_t_2, __pyx_t_4, __pyx_t_6, __pyx_t_1) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                #pragma omp parallel private(__pyx_t_30, __pyx_t_9, __pyx_t_32, __pyx_t_16, __pyx_t_72, __pyx_t_24, __pyx_t_66, __pyx_t_53, __pyx_t_61, __pyx_t_42, __pyx_t_34, __pyx_t_73, __pyx_t_59, __pyx_t_74, __pyx_t_47, __pyx_t_37, __pyx_t_70, __pyx_t_26, __pyx_t_56, __pyx_t_48, __pyx_t_64, __pyx_t_67, __pyx_t_36, __pyx_t_52, __pyx_t_69, __pyx_t_65, __pyx_t_60, __pyx_t_28, __pyx_t_55, __pyx_t_44, __pyx_t_29, __pyx_t_27, __pyx_t_25, __pyx_t_51, __pyx_t_49, __pyx_t_39, __pyx_t_33, __pyx_t_40, __pyx_t_19, __pyx_t_22, __pyx_t_62, __pyx_t_18, __pyx_t_54, __pyx_t_20, __pyx_t_31, __pyx_t_45, __pyx_t_17, __pyx_t_68, __pyx_t_58, __pyx_t_21, __pyx_t_38, __pyx_t_35, __pyx_t_41, __pyx_t_23, __pyx_t_50, __pyx_t_46, __pyx_t_63, __pyx_t_71, __pyx_t_57, __pyx_t_43) firstprivate(__pyx_t_5, __pyx_t_2, __pyx_t_1, __pyx_t_4, __pyx_t_6) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -4797,29 +4797,29 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_6calc_cartesian_positions(CYTHON
                     Py_BEGIN_ALLOW_THREADS
                     #endif /* _OPENMP */
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_p2) lastprivate(__pyx_v_B1) lastprivate(__pyx_v_delta2) lastprivate(__pyx_v_A2) lastprivate(__pyx_v_B2) lastprivate(__pyx_v_f1) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_C0) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_A1) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_delta1) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_C2) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_B0) lastprivate(__pyx_v_C1) schedule(static)
+                    #pragma omp for lastprivate(__pyx_v_f1) lastprivate(__pyx_v_delta1) lastprivate(__pyx_v_f2) lastprivate(__pyx_v_B1) lastprivate(__pyx_v_A2) lastprivate(__pyx_v_p2) lastprivate(__pyx_v_p1) lastprivate(__pyx_v_A1) lastprivate(__pyx_v_delta2) lastprivate(__pyx_v_C0) lastprivate(__pyx_v_D0) lastprivate(__pyx_v_D2) lastprivate(__pyx_v_D1) lastprivate(__pyx_v_A0) lastprivate(__pyx_v_B2) lastprivate(__pyx_v_C2) lastprivate(__pyx_v_B0) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_C1) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_15; __pyx_t_14++){
                         if (__pyx_parallel_why < 2)
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_14;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_p2 = ((int)0xbad0bad0);
-                            __pyx_v_B1 = ((float)__PYX_NAN());
-                            __pyx_v_delta2 = ((float)__PYX_NAN());
-                            __pyx_v_A2 = ((float)__PYX_NAN());
-                            __pyx_v_B2 = ((float)__PYX_NAN());
                             __pyx_v_f1 = ((float)__PYX_NAN());
-                            __pyx_v_D2 = ((float)__PYX_NAN());
-                            __pyx_v_p1 = ((int)0xbad0bad0);
-                            __pyx_v_f2 = ((float)__PYX_NAN());
-                            __pyx_v_C0 = ((float)__PYX_NAN());
-                            __pyx_v_A1 = ((float)__PYX_NAN());
-                            __pyx_v_D1 = ((float)__PYX_NAN());
                             __pyx_v_delta1 = ((float)__PYX_NAN());
+                            __pyx_v_f2 = ((float)__PYX_NAN());
+                            __pyx_v_B1 = ((float)__PYX_NAN());
+                            __pyx_v_A2 = ((float)__PYX_NAN());
+                            __pyx_v_p2 = ((int)0xbad0bad0);
+                            __pyx_v_p1 = ((int)0xbad0bad0);
+                            __pyx_v_A1 = ((float)__PYX_NAN());
+                            __pyx_v_delta2 = ((float)__PYX_NAN());
+                            __pyx_v_C0 = ((float)__PYX_NAN());
                             __pyx_v_D0 = ((float)__PYX_NAN());
-                            __pyx_v_C2 = ((float)__PYX_NAN());
+                            __pyx_v_D2 = ((float)__PYX_NAN());
+                            __pyx_v_D1 = ((float)__PYX_NAN());
                             __pyx_v_A0 = ((float)__PYX_NAN());
+                            __pyx_v_B2 = ((float)__PYX_NAN());
+                            __pyx_v_C2 = ((float)__PYX_NAN());
                             __pyx_v_B0 = ((float)__PYX_NAN());
                             __pyx_v_C1 = ((float)__PYX_NAN());
 
@@ -5471,27 +5471,27 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_6calc_cartesian_positions(CYTHON
                             goto __pyx_L38;
                             __pyx_L38:;
                             #ifdef _OPENMP
-                            #pragma omp critical(__pyx_parallel_lastprivates1)
+                            #pragma omp critical(__pyx_parallel_lastprivates21)
                             #endif /* _OPENMP */
                             {
-                                __pyx_parallel_temp0 = __pyx_v_p2;
-                                __pyx_parallel_temp1 = __pyx_v_B1;
-                                __pyx_parallel_temp2 = __pyx_v_delta2;
-                                __pyx_parallel_temp3 = __pyx_v_A2;
-                                __pyx_parallel_temp4 = __pyx_v_B2;
-                                __pyx_parallel_temp5 = __pyx_v_f1;
-                                __pyx_parallel_temp6 = __pyx_v_D2;
-                                __pyx_parallel_temp7 = __pyx_v_p1;
-                                __pyx_parallel_temp8 = __pyx_v_f2;
+                                __pyx_parallel_temp0 = __pyx_v_f1;
+                                __pyx_parallel_temp1 = __pyx_v_delta1;
+                                __pyx_parallel_temp2 = __pyx_v_f2;
+                                __pyx_parallel_temp3 = __pyx_v_B1;
+                                __pyx_parallel_temp4 = __pyx_v_A2;
+                                __pyx_parallel_temp5 = __pyx_v_p2;
+                                __pyx_parallel_temp6 = __pyx_v_p1;
+                                __pyx_parallel_temp7 = __pyx_v_A1;
+                                __pyx_parallel_temp8 = __pyx_v_delta2;
                                 __pyx_parallel_temp9 = __pyx_v_C0;
-                                __pyx_parallel_temp10 = __pyx_v_i;
-                                __pyx_parallel_temp11 = __pyx_v_A1;
+                                __pyx_parallel_temp10 = __pyx_v_D0;
+                                __pyx_parallel_temp11 = __pyx_v_D2;
                                 __pyx_parallel_temp12 = __pyx_v_D1;
-                                __pyx_parallel_temp13 = __pyx_v_delta1;
-                                __pyx_parallel_temp14 = __pyx_v_D0;
+                                __pyx_parallel_temp13 = __pyx_v_A0;
+                                __pyx_parallel_temp14 = __pyx_v_B2;
                                 __pyx_parallel_temp15 = __pyx_v_C2;
-                                __pyx_parallel_temp16 = __pyx_v_A0;
-                                __pyx_parallel_temp17 = __pyx_v_B0;
+                                __pyx_parallel_temp16 = __pyx_v_B0;
+                                __pyx_parallel_temp17 = __pyx_v_i;
                                 __pyx_parallel_temp18 = __pyx_v_C1;
                             }
                             __pyx_L39:;
@@ -5513,12 +5513,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_6calc_cartesian_positions(CYTHON
                     __pyx_t_5 = NULL;
                     __Pyx_XDECREF(__pyx_t_2);
                     __pyx_t_2 = NULL;
+                    __Pyx_XDECREF(__pyx_t_1);
+                    __pyx_t_1 = NULL;
                     __Pyx_XDECREF(__pyx_t_4);
                     __pyx_t_4 = NULL;
                     __Pyx_XDECREF(__pyx_t_6);
                     __pyx_t_6 = NULL;
-                    __Pyx_XDECREF(__pyx_t_1);
-                    __pyx_t_1 = NULL;
                     #ifdef WITH_THREAD
                     PyGILState_Release(__pyx_gilstate_save);
                     #endif
@@ -5532,24 +5532,24 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_6calc_cartesian_positions(CYTHON
               __pyx_parallel_why = 4;
             }
             if (__pyx_parallel_why) {
-              __pyx_v_p2 = __pyx_parallel_temp0;
-              __pyx_v_B1 = __pyx_parallel_temp1;
-              __pyx_v_delta2 = __pyx_parallel_temp2;
-              __pyx_v_A2 = __pyx_parallel_temp3;
-              __pyx_v_B2 = __pyx_parallel_temp4;
-              __pyx_v_f1 = __pyx_parallel_temp5;
-              __pyx_v_D2 = __pyx_parallel_temp6;
-              __pyx_v_p1 = __pyx_parallel_temp7;
-              __pyx_v_f2 = __pyx_parallel_temp8;
+              __pyx_v_f1 = __pyx_parallel_temp0;
+              __pyx_v_delta1 = __pyx_parallel_temp1;
+              __pyx_v_f2 = __pyx_parallel_temp2;
+              __pyx_v_B1 = __pyx_parallel_temp3;
+              __pyx_v_A2 = __pyx_parallel_temp4;
+              __pyx_v_p2 = __pyx_parallel_temp5;
+              __pyx_v_p1 = __pyx_parallel_temp6;
+              __pyx_v_A1 = __pyx_parallel_temp7;
+              __pyx_v_delta2 = __pyx_parallel_temp8;
               __pyx_v_C0 = __pyx_parallel_temp9;
-              __pyx_v_i = __pyx_parallel_temp10;
-              __pyx_v_A1 = __pyx_parallel_temp11;
+              __pyx_v_D0 = __pyx_parallel_temp10;
+              __pyx_v_D2 = __pyx_parallel_temp11;
               __pyx_v_D1 = __pyx_parallel_temp12;
-              __pyx_v_delta1 = __pyx_parallel_temp13;
-              __pyx_v_D0 = __pyx_parallel_temp14;
+              __pyx_v_A0 = __pyx_parallel_temp13;
+              __pyx_v_B2 = __pyx_parallel_temp14;
               __pyx_v_C2 = __pyx_parallel_temp15;
-              __pyx_v_A0 = __pyx_parallel_temp16;
-              __pyx_v_B0 = __pyx_parallel_temp17;
+              __pyx_v_B0 = __pyx_parallel_temp16;
+              __pyx_v_i = __pyx_parallel_temp17;
               __pyx_v_C1 = __pyx_parallel_temp18;
               switch (__pyx_parallel_why) {
                     case 3: goto __pyx_L4_return;
@@ -6744,7 +6744,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_10convert_corner_2D_to_4D(CYTHON
             if (__pyx_t_9 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_32, __pyx_t_17, __pyx_t_47, __pyx_t_43, __pyx_t_56, __pyx_t_22, __pyx_t_31, __pyx_t_36, __pyx_t_42, __pyx_t_52, __pyx_t_48, __pyx_t_55, __pyx_t_16, __pyx_t_59, __pyx_t_24, __pyx_t_30, __pyx_t_39, __pyx_t_58, __pyx_t_13, __pyx_t_51, __pyx_t_44, __pyx_t_34, __pyx_t_40, __pyx_t_28, __pyx_t_45, __pyx_t_25, __pyx_t_35, __pyx_t_33, __pyx_t_14, __pyx_t_19, __pyx_t_57, __pyx_t_38, __pyx_t_18, __pyx_t_12, __pyx_t_26, __pyx_t_54, __pyx_t_20, __pyx_t_41, __pyx_t_29, __pyx_t_11, __pyx_t_21, __pyx_t_46, __pyx_t_49, __pyx_t_23, __pyx_t_10, __pyx_t_15, __pyx_t_50, __pyx_t_37, __pyx_t_27, __pyx_t_53)
+                #pragma omp parallel private(__pyx_t_32, __pyx_t_35, __pyx_t_17, __pyx_t_47, __pyx_t_43, __pyx_t_54, __pyx_t_22, __pyx_t_31, __pyx_t_36, __pyx_t_42, __pyx_t_52, __pyx_t_48, __pyx_t_55, __pyx_t_16, __pyx_t_24, __pyx_t_30, __pyx_t_39, __pyx_t_13, __pyx_t_51, __pyx_t_34, __pyx_t_40, __pyx_t_28, __pyx_t_45, __pyx_t_25, __pyx_t_33, __pyx_t_14, __pyx_t_19, __pyx_t_56, __pyx_t_59, __pyx_t_38, __pyx_t_18, __pyx_t_57, __pyx_t_12, __pyx_t_26, __pyx_t_20, __pyx_t_41, __pyx_t_29, __pyx_t_11, __pyx_t_21, __pyx_t_46, __pyx_t_49, __pyx_t_23, __pyx_t_10, __pyx_t_15, __pyx_t_50, __pyx_t_58, __pyx_t_44, __pyx_t_37, __pyx_t_27, __pyx_t_53)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -7541,7 +7541,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_12convert_corner_2D_to_4D(CYTHON
             if (__pyx_t_9 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_32, __pyx_t_17, __pyx_t_47, __pyx_t_43, __pyx_t_56, __pyx_t_22, __pyx_t_31, __pyx_t_36, __pyx_t_42, __pyx_t_52, __pyx_t_48, __pyx_t_55, __pyx_t_16, __pyx_t_59, __pyx_t_24, __pyx_t_30, __pyx_t_39, __pyx_t_58, __pyx_t_13, __pyx_t_51, __pyx_t_44, __pyx_t_34, __pyx_t_40, __pyx_t_28, __pyx_t_45, __pyx_t_25, __pyx_t_35, __pyx_t_33, __pyx_t_14, __pyx_t_19, __pyx_t_57, __pyx_t_38, __pyx_t_18, __pyx_t_12, __pyx_t_26, __pyx_t_54, __pyx_t_20, __pyx_t_41, __pyx_t_29, __pyx_t_11, __pyx_t_21, __pyx_t_46, __pyx_t_49, __pyx_t_23, __pyx_t_10, __pyx_t_15, __pyx_t_50, __pyx_t_37, __pyx_t_27, __pyx_t_53)
+                #pragma omp parallel private(__pyx_t_32, __pyx_t_35, __pyx_t_17, __pyx_t_47, __pyx_t_43, __pyx_t_54, __pyx_t_22, __pyx_t_31, __pyx_t_36, __pyx_t_42, __pyx_t_52, __pyx_t_48, __pyx_t_55, __pyx_t_16, __pyx_t_24, __pyx_t_30, __pyx_t_39, __pyx_t_13, __pyx_t_51, __pyx_t_34, __pyx_t_40, __pyx_t_28, __pyx_t_45, __pyx_t_25, __pyx_t_33, __pyx_t_14, __pyx_t_19, __pyx_t_56, __pyx_t_59, __pyx_t_38, __pyx_t_18, __pyx_t_57, __pyx_t_12, __pyx_t_26, __pyx_t_20, __pyx_t_41, __pyx_t_29, __pyx_t_11, __pyx_t_21, __pyx_t_46, __pyx_t_49, __pyx_t_23, __pyx_t_10, __pyx_t_15, __pyx_t_50, __pyx_t_58, __pyx_t_44, __pyx_t_37, __pyx_t_27, __pyx_t_53)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
