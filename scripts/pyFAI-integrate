@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "02/12/2016"
 __satus__ = "production"
 import sys, logging, json, os, time, types, threading
 import os.path
@@ -194,7 +194,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         help="Files to be integrated")
     options = parser.parse_args()
 
-    # Analyse arguments and options
+    # Analysis arguments and options
     args = pyFAI.utils.expand_args(options.args)
 
     if options.verbose:
