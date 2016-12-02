@@ -197,5 +197,5 @@ When starting pyFAI you get a side-by-side error like::
 This means you are using a version of pyFAI which was compiled using the MSVC compiler
 (maybe not on your computer) but the Microsoft Visual C++ Redistributable Package is missing.
 For Python2.7, 64bits the missing DLL can be downloaded from::
-    http://www.microsoft.com/en-us/download/confirmation.aspx?id=2092
 
+    http://www.microsoft.com/en-us/download/confirmation.aspx?id=2092

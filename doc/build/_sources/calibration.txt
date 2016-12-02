@@ -1,7 +1,7 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2016
+:Date: 01/12/2016
 :Keywords: generic description of the calibration procedure
-:Target: General audiance
+:Target: General audience
 
 The determination of the geometry of the experimental setup for the diffraction pattern
 of a reference sample is called calibration in pyFAI.
@@ -28,7 +28,8 @@ easier to perform a calibration, using the Debye-Sherrer rings of a reference
 sample called calibrant.
 About 30 calibrants are provided by pyFAI like :math:`LaB_6`, ceria :math:`CeO_2`,
 silicon, corrundum or silver behenate.
-Among other simple compound, all of the NIST `Standard Reference Materials <http://www.nist.gov/mml/mmsd/sustainable-materials/diffraction-metrology.cfm>`_
+Among other simple compound, all of the NIST
+`Standard Reference Materials <http://www.nist.gov/mml/mmsd/sustainable-materials/diffraction-metrology.cfm>`_
 have been are tabulated and are directly available as calibrant.
 One can alternatively provide its own calibrant description files which is
 a simple text-file containing the largest d-spacing (in Angstrom) for a set of
@@ -42,18 +43,30 @@ Pre-processing of images:
 -------------------------
 The typical pre-processing consists of the averaging (or better median filtering) of darks images.
 Dark current images are then subtracted from data and corrected for flat.
+The pre-processing is best performed using the *pyFAI-average* tool, which documentation
+is available in the :ref:`manpage`.
 
 If saturated pixels exists, the are likely to be treated like peaks but their positions
 will be wrong.
 It is advised to either mask them out or to desaturate them (pyFAI provides an option,
 but it is expensive in calculation time).
+A Mask drawing tool, called *pyFAI-drawmask*, is installed together with pyFAI and
+its documentation available in the :ref:`manpage`.
+
+To start the calibration the *pyFAI-calib* tool will need:
+
+* an image with Debye-Sherrer rings
+* the energy or the wavelength
+* the calibrant name or the d-spacing file of the calibrant
+* the detector description.
 
 Peak-picking
 ------------
 
-
+Once started, *pyFAI-calib* will ask you to select rings.
 The Peak-picking consists in the identification of peaks and groups of peaks
-belonging to same ring. It can be performed by 4 methods described hereafter.
+belonging to same ring.
+It can be performed by 4 methods described hereafter.
 
 Massif detection
 ................
@@ -97,7 +110,8 @@ Refinement of the parameters
 ----------------------------
 
 After selecting groups of peaks, each of them is assigned to a Debye-Scherrer ring number
-and associated to a d-spacing value hence a theoritcal 2\theta value.
+(0-based numbering in python)
+and associated to a d-spacing value hence a theoretical 2\theta value.
 A supervised least-squares refinement, performed on the difference of peak position's
 2-theta values versus the expected ones from calibrant provides the 6-geometry parameters
 fitted.
@@ -120,7 +134,7 @@ of the scattering image.
 The average error per control point (delta 2\theta error in radian) is printed out
 and offers a quantitative measurement of the relative quality of the fit for similar
 setups/experiment.
-Neverthless its absolute value has no meaning, except the lower, the better.
+Nevertheless its absolute value has no meaning, except the lower, the better.
 
 Subsequently, pyFAI offers some validation options in to check the quality of the fit.
 some of them global, some of them limited to given rings.
