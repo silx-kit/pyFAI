@@ -1935,7 +1935,7 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_5pyFAI_3ext_9histogram_get_bin_n
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_9histogram_histogram[] = "\n    Calculates histogram of pos weighted by weights\n\n    @param pos: 2Theta array\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED\n    @param nthread: OpenMP is disabled. unused\n    @param empty: value given to empty bins\n    @param normalization_factor: divide the result by this value\n\n    @return 2theta, I, weighted histogram, raw histogram\n    ";
+static char __pyx_doc_5pyFAI_3ext_9histogram_histogram[] = "histogram(ndarray pos, ndarray weights, int bins=100, bin_range=None, pixelSize_in_Pos=None, nthread=None, double empty=0.0, double normalization_factor=1.0)\n\n    Calculates histogram of pos weighted by weights\n\n    @param pos: 2Theta array\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED\n    @param nthread: OpenMP is disabled. unused\n    @param empty: value given to empty bins\n    @param normalization_factor: divide the result by this value\n\n    @return 2theta, I, weighted histogram, raw histogram\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_9histogram_1histogram = {"histogram", (PyCFunction)__pyx_pw_5pyFAI_3ext_9histogram_1histogram, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_9histogram_histogram};
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
@@ -3005,21 +3005,21 @@ __pyx_t_19.strides[1] = __pyx_v_big_data.strides[1];
             if (__pyx_t_21 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_23, __pyx_t_4, __pyx_t_26, __pyx_t_27, __pyx_t_25, __pyx_t_15, __pyx_t_24, __pyx_t_22)
+                #pragma omp parallel private(__pyx_t_4, __pyx_t_25, __pyx_t_15, __pyx_t_24, __pyx_t_22, __pyx_t_23, __pyx_t_26, __pyx_t_27)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_fbin) lastprivate(__pyx_v_a) lastprivate(__pyx_v_bin) lastprivate(__pyx_v_thread) lastprivate(__pyx_v_d) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i)
+                    #pragma omp for lastprivate(__pyx_v_bin) lastprivate(__pyx_v_a) lastprivate(__pyx_v_d) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_fbin) lastprivate(__pyx_v_thread)
                     #endif /* _OPENMP */
                     for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_21; __pyx_t_20++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_20;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_fbin = ((double)__PYX_NAN());
-                            __pyx_v_a = ((double)__PYX_NAN());
                             __pyx_v_bin = ((int)0xbad0bad0);
-                            __pyx_v_thread = ((int)0xbad0bad0);
+                            __pyx_v_a = ((double)__PYX_NAN());
                             __pyx_v_d = ((double)__PYX_NAN());
+                            __pyx_v_fbin = ((double)__PYX_NAN());
+                            __pyx_v_thread = ((int)0xbad0bad0);
 
                             /* "pyFAI/ext/histogram_omp.pxi":119
  *     with nogil:
@@ -3153,19 +3153,19 @@ __pyx_t_19.strides[1] = __pyx_v_big_data.strides[1];
             if (__pyx_t_5 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_34, __pyx_t_4, __pyx_t_28, __pyx_t_31, __pyx_t_30, __pyx_t_29, __pyx_t_32, __pyx_t_36, __pyx_t_33, __pyx_t_35)
+                #pragma omp parallel private(__pyx_t_4, __pyx_t_32, __pyx_t_36, __pyx_t_33, __pyx_t_35, __pyx_t_34, __pyx_t_28, __pyx_t_31, __pyx_t_30, __pyx_t_29)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_tmp_count) lastprivate(__pyx_v_thread) lastprivate(__pyx_v_tmp_data) firstprivate(__pyx_v_idx) lastprivate(__pyx_v_idx)
+                    #pragma omp for lastprivate(__pyx_v_tmp_count) lastprivate(__pyx_v_tmp_data) lastprivate(__pyx_v_thread) firstprivate(__pyx_v_idx) lastprivate(__pyx_v_idx)
                     #endif /* _OPENMP */
                     for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_5; __pyx_t_20++){
                         {
                             __pyx_v_idx = 0 + 1 * __pyx_t_20;
                             /* Initialize private variables to invalid values */
                             __pyx_v_tmp_count = ((double)__PYX_NAN());
-                            __pyx_v_thread = ((int)0xbad0bad0);
                             __pyx_v_tmp_data = ((double)__PYX_NAN());
+                            __pyx_v_thread = ((int)0xbad0bad0);
 
                             /* "pyFAI/ext/histogram_omp.pxi":130
  * 
@@ -3443,7 +3443,7 @@ __pyx_t_19.strides[1] = __pyx_v_big_data.strides[1];
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_9histogram_2histogram2d[] = "\n    Calculate 2D histogram of pos0,pos1 weighted by weights\n\n    @param pos0: 2Theta array\n    @param pos1: Chi array\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param split: pixel splitting is disabled in histogram\n    @param nthread: maximum number of thread to use. By default: maximum available.\n    @param empty: value given to empty bins\n    @param normalization_factor: divide the result by this value\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n\n    One can also limit this with OMP_NUM_THREADS environment variable\n    ";
+static char __pyx_doc_5pyFAI_3ext_9histogram_2histogram2d[] = "histogram2d(ndarray pos0, ndarray pos1, bins, ndarray weights, split=False, nthread=None, double empty=0.0, double normalization_factor=1.0)\n\n    Calculate 2D histogram of pos0,pos1 weighted by weights\n\n    @param pos0: 2Theta array\n    @param pos1: Chi array\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param split: pixel splitting is disabled in histogram\n    @param nthread: maximum number of thread to use. By default: maximum available.\n    @param empty: value given to empty bins\n    @param normalization_factor: divide the result by this value\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n\n    One can also limit this with OMP_NUM_THREADS environment variable\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_9histogram_3histogram2d = {"histogram2d", (PyCFunction)__pyx_pw_5pyFAI_3ext_9histogram_3histogram2d, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_9histogram_2histogram2d};
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos0 = 0;
@@ -4768,11 +4768,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9histogram_2histogram2d(CYTHON_UNUSED PyOb
             if (__pyx_t_31 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_34, __pyx_t_39, __pyx_t_43, __pyx_t_38, __pyx_t_42, __pyx_t_22, __pyx_t_37, __pyx_t_32, __pyx_t_36, __pyx_t_33, __pyx_t_40, __pyx_t_41, __pyx_t_35)
+                #pragma omp parallel private(__pyx_t_32, __pyx_t_36, __pyx_t_33, __pyx_t_40, __pyx_t_41, __pyx_t_35, __pyx_t_34, __pyx_t_39, __pyx_t_43, __pyx_t_38, __pyx_t_42, __pyx_t_22, __pyx_t_37)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j)
+                    #pragma omp for lastprivate(__pyx_v_j) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i)
                     #endif /* _OPENMP */
                     for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_31; __pyx_t_5++){
                         {

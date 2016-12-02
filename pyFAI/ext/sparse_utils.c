@@ -421,7 +421,7 @@ static const char *__pyx_filename;
 
 static const char *__pyx_f[] = {
   "pyFAI/ext/sparse_utils.pyx",
-  "pyFAI/ext/stringsource",
+  "stringsource",
   "pyFAI/ext/sparse_common.pxi",
 };
 struct __pyx_memoryview_obj;
@@ -523,7 +523,7 @@ struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 struct __pyx_t_5pyFAI_3ext_12sparse_utils_lut_point;
 
-/* "sparse_common.pxi":38
+/* "pyFAI/ext/sparse_common.pxi":38
  * import numpy
  * 
  * cdef struct lut_point:             # <<<<<<<<<<<<<<
@@ -1396,7 +1396,7 @@ static PyObject *__pyx_codeobj__17;
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR(PyObject *__pyx_self, PyObject *__pyx_v_lut); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_12sparse_utils_LUT_to_CSR[] = "Conversion between sparse matrix representations\n\n    @param lut: Look-up table as 2D array of (int idx, float coef)\n    @return: the same matrix as CSR representation\n    @rtype: 3-tuple of numpy array (data, indices, indptr)\n    ";
+static char __pyx_doc_5pyFAI_3ext_12sparse_utils_LUT_to_CSR[] = "LUT_to_CSR(lut)\nConversion between sparse matrix representations\n\n    @param lut: Look-up table as 2D array of (int idx, float coef)\n    @return: the same matrix as CSR representation\n    @rtype: 3-tuple of numpy array (data, indices, indptr)\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR = {"LUT_to_CSR", (PyCFunction)__pyx_pw_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR, METH_O, __pyx_doc_5pyFAI_3ext_12sparse_utils_LUT_to_CSR};
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR(PyObject *__pyx_self, PyObject *__pyx_v_lut) {
   PyObject *__pyx_r = 0;
@@ -2060,7 +2060,7 @@ __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_t_25, 1, (PyObject *(*)(char *)) __
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT[] = "Conversion between sparse matrix representations\n\n    @param data: coef of the sparse matrix as 1D array\n    @param indices: index of the col position in input array as 1D array\n    @param indptr: index of the start of the row in the indices array\n    @return: the same matrix as LUT representation\n    @rtype: record array of (int idx, float coef)\n    ";
+static char __pyx_doc_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT[] = "CSR_to_LUT(data, indices, indptr)\nConversion between sparse matrix representations\n\n    @param data: coef of the sparse matrix as 1D array\n    @param indices: index of the col position in input array as 1D array\n    @param indptr: index of the start of the row in the indices array\n    @return: the same matrix as LUT representation\n    @rtype: record array of (int idx, float coef)\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT = {"CSR_to_LUT", (PyCFunction)__pyx_pw_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT};
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_data = 0;
@@ -14483,7 +14483,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "sparse_common.pxi":28
+  /* "pyFAI/ext/sparse_common.pxi":28
  * # THE SOFTWARE.
  * 
  * __doc__ = """Common Look-Up table datatypes"""             # <<<<<<<<<<<<<<
@@ -14492,7 +14492,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_doc, __pyx_kp_s_Common_Look_Up_table_datatypes) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "sparse_common.pxi":29
+  /* "pyFAI/ext/sparse_common.pxi":29
  * 
  * __doc__ = """Common Look-Up table datatypes"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
@@ -14501,7 +14501,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "sparse_common.pxi":30
+  /* "pyFAI/ext/sparse_common.pxi":30
  * __doc__ = """Common Look-Up table datatypes"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
@@ -14510,7 +14510,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "sparse_common.pxi":31
+  /* "pyFAI/ext/sparse_common.pxi":31
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "13/05/2016"             # <<<<<<<<<<<<<<
@@ -14519,7 +14519,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_13_05_2016) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "sparse_common.pxi":32
+  /* "pyFAI/ext/sparse_common.pxi":32
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __date__ = "13/05/2016"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
@@ -14528,7 +14528,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "sparse_common.pxi":33
+  /* "pyFAI/ext/sparse_common.pxi":33
  * __date__ = "13/05/2016"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
@@ -14537,7 +14537,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "sparse_common.pxi":36
+  /* "pyFAI/ext/sparse_common.pxi":36
  * 
  * import cython
  * import numpy             # <<<<<<<<<<<<<<
@@ -14549,7 +14549,7 @@ PyMODINIT_FUNC PyInit_sparse_utils(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "sparse_common.pxi":42
+  /* "pyFAI/ext/sparse_common.pxi":42
  *     float coef
  * 
  * dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])             # <<<<<<<<<<<<<<

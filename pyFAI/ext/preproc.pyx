@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "19/10/2016"
+__date__ = "01/12/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -57,6 +57,7 @@ ctypedef fused any_int_t:
     cnp.int16_t
     cnp.int32_t
     cnp.int64_t
+    
     
 @cython.boundscheck(False)
 @cython.cdivision(True)

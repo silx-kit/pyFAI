@@ -5,6 +5,41 @@
 ChangeLog of Versions
 =====================
 
+0.13.0: 01/12/2016
+------------------
+* Global improvement of tests, packaging, code quality, documentation and project tools
+* Scripts
+    - Add support for multiframe formats on pyFAI-average
+    - Add support for monitoring correction from header file (on pyFAI-average)
+    - Add progressbar in the shell (on pyFAI-average and pyFAI-integrate)
+    - Script drawMask_pymca is renamed into pyFAI-drawmask
+    - Rework of the drawmask GUI using silx
+    - pyFAI-drawmask do not have anymore hard dependency on PyMCA
+    - pyFAI-integrate can now be used without qt dependency (--no-gui)
+    - Fix the script to support both Python 2 and 3 (pyFAI-calib, pyFAI-benchmark)
+    - Fix selection of units on diff-map (the user selection was not propagated)
+* For users
+    - More source code in MIT license
+    - Update name and specification for cameras
+    - Add cameras: Eiger500k, RaspberryPi5M, RaspberryPi8M
+    - Fix Xpad S540 flat detector geometry
+    - Fix definition of CeO2 calibrant
+    - Add mask and flat on multi-geometry
+    - Fix solid angle of the multi-geometry
+    - Fix geometry processing for custom output space
+    - Fix normalization factor and variance
+    - Add support for Qt5
+    - Add support for Debian 9 packaging
+* For developers
+    - Create common preprocessing for distortion correction
+    - Create common image preprocessing using Cython (NaN filter, flatfield, dark, polarisation)
+    - Refactoring of units module. It allows to register custom units.
+    - Worker can now use Writer
+    - Worker polarization argument is renamed into polarization_factor
+    - Remove the dependency from python-fftw3, use numpy instead
+    - Remove QtWebKit dependency
+    - Fix un-correction of images using sparse matrix from scipy
+
 0.12.0: 06/06/2016
 ------------------
 * Continuous integration on linux, windows using Python 2.7 and 3.4+

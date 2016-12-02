@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -28,8 +28,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "18/11/2016"
-__copyright__ = "2011-2015, ESRF"
+__date__ = "01/12/2016"
+__copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 
@@ -42,11 +42,12 @@ from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
 cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """Calculate t2 (aka y) for 1 pixel
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param p3: distance sample - PONI
-    @param sinRot1,sinRot2,sinRot3: sine of the angles
-    @param cosRot1,cosRot2,cosRot3: cosine of the angles
+    
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param p3: distance sample - PONI
+    :param sinRot1,sinRot2,sinRot3: sine of the angles
+    :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
     return p1 * cosRot2 * cosRot3 + \
            p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
@@ -56,11 +57,11 @@ cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double 
 cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """Calculate t2 (aka y) for 1 pixel
 
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param p3: distance sample - PONI
-    @param sinRot1,sinRot2,sinRot3: sine of the angles
-    @param cosRot1,cosRot2,cosRot3: cosine of the angles
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param p3: distance sample - PONI
+    :param sinRot1,sinRot2,sinRot3: sine of the angles
+    :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
     return p1 * cosRot2 * sinRot3 + \
            p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
@@ -70,11 +71,11 @@ cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double 
 cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """Calculate t3 (aka -z) for 1 pixel
 
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param p3: distance sample - PONI
-    @param sinRot1,sinRot2,sinRot3: sine of the angles
-    @param cosRot1,cosRot2,cosRot3: cosine of the angles
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param p3: distance sample - PONI
+    :param sinRot1,sinRot2,sinRot3: sine of the angles
+    :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
 
     return p1 * sinRot2 - p2 * cosRot2 * sinRot1 + p3 * cosRot1 * cosRot2
@@ -82,15 +83,14 @@ cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double 
 
 @cython.cdivision(True)
 cdef inline double f_tth(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
-    """
-    Calculate 2 theta for 1 pixel
+    """Calculate 2 theta for 1 pixel
 
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param L: distance sample - PONI
-    @param sinRot1,sinRot2,sinRot3: sine of the angles
-    @param cosRot1,cosRot2,cosRot3: cosine of the angles
-    @return 2 theta
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param L: distance sample - PONI
+    :param sinRot1,sinRot2,sinRot3: sine of the angles
+    :param cosRot1,cosRot2,cosRot3: cosine of the angles
+    :return 2 theta
     """
     cdef:
         double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -104,11 +104,11 @@ cdef inline double f_q(double p1, double p2, double L, double sinRot1, double co
     """
     Calculate the scattering vector q for 1 pixel
 
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param L: distance sample - PONI
-    @param sinRot1,sinRot2,sinRot3: sine of the angles
-    @param cosRot1,cosRot2,cosRot3: cosine of the angles
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param L: distance sample - PONI
+    :param sinRot1,sinRot2,sinRot3: sine of the angles
+    :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
     return 4.0e-9 * M_PI / wavelength * sin(f_tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3) / 2.0)
 
@@ -117,11 +117,11 @@ cdef inline double f_q(double p1, double p2, double L, double sinRot1, double co
 cdef inline double f_chi(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """
     calculate chi for 1 pixel
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param L: distance sample - PONI
-    @param sinRot1,sinRot2,sinRot3: sine of the angles
-    @param cosRot1,cosRot2,cosRot3: cosine of the angles
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param L: distance sample - PONI
+    :param sinRot1,sinRot2,sinRot3: sine of the angles
+    :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
     cdef:
         double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -133,11 +133,11 @@ cdef inline double f_chi(double p1, double p2, double L, double sinRot1, double 
 cdef inline double f_r(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """
     calculate r for 1 pixel, radius from beam center to current
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param L: distance sample - PONI
-    @param sinRot1,sinRot2,sinRot3: sine of the angles
-    @param cosRot1,cosRot2,cosRot3: cosine of the angles
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param L: distance sample - PONI
+    :param sinRot1,sinRot2,sinRot3: sine of the angles
+    :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
     cdef:
         double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -153,9 +153,9 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
     """
     calculate cosine of the incidence angle for 1 pixel
 
-    @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI
-    @param L: distance sample - PONI
+    :param p1:distances in meter along dim1 from PONI
+    :param p2: distances in meter along dim2 from PONI
+    :param L: distance sample - PONI
     """
     return L / sqrt((L * L) + (p1 * p1) + (p2 * p2))
 
@@ -167,6 +167,8 @@ cdef inline double f_cosa(double p1, double p2, double L) nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def calc_pos_zyx(double L, double poni1, double poni2,
                  double rot1, double rot2, double rot3,
                  numpy.ndarray pos1 not None,
@@ -174,16 +176,16 @@ def calc_pos_zyx(double L, double poni1, double poni2,
                  numpy.ndarray pos3=None):
     """Calculate the 3D coordinates in the sample's referential
 
-    @param L: distance sample - PONI
-    @param poni1: PONI coordinate along y axis
-    @param poni2: PONI coordinate along x axis
-    @param rot1: angle1
-    @param rot2: angle2
-    @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
-    @param pos2: numpy array with distances in meter along dim2 from PONI (X)
-    @param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    @return: 3-tuple of ndarray of double with same shape and size as pos1
+    :param L: distance sample - PONI
+    :param poni1: PONI coordinate along y axis
+    :param poni2: PONI coordinate along x axis
+    :param rot1: angle1
+    :param rot2: angle2
+    :param rot3: angle3
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :return: 3-tuple of ndarray of double with same shape and size as pos1
 
     """
     cdef:
@@ -200,11 +202,9 @@ def calc_pos_zyx(double L, double poni1, double poni2,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float64_t, ndim = 1] t1, t2, t3
-
-    t1 = numpy.empty(size, dtype=numpy.float64)
-    t2 = numpy.empty(size, dtype=numpy.float64)
-    t3 = numpy.empty(size, dtype=numpy.float64)
+        double[::1] t1 = numpy.empty(size, dtype=numpy.float64)
+        double[::1] t2 = numpy.empty(size, dtype=numpy.float64)
+        double[::1] t3 = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
@@ -224,21 +224,27 @@ def calc_pos_zyx(double L, double poni1, double poni2,
             t2[i] = f_t2(p1, p2, p3, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
             t3[i] = f_t3(p1, p2, p3, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
+    r1 = numpy.asarray(t1)
+    r2 = numpy.asarray(t2)
+    r3 = numpy.asarray(t3)
+    
     if pos1.ndim == 3:
-        return t3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               t1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               t2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
+        return r3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
+               r1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
+               r2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
 
     if pos1.ndim == 2:
-        return t3.reshape(pos1.shape[0], pos1.shape[1]),\
-               t1.reshape(pos1.shape[0], pos1.shape[1]),\
-               t2.reshape(pos1.shape[0], pos1.shape[1])
+        return r3.reshape(pos1.shape[0], pos1.shape[1]),\
+               r1.reshape(pos1.shape[0], pos1.shape[1]),\
+               r2.reshape(pos1.shape[0], pos1.shape[1])
     else:
-        return t3, t1, t2
+        return r3, r1, r2
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def calc_tth(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None,
              numpy.ndarray pos2 not None,
@@ -246,14 +252,14 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
     """
     Calculate the 2theta array (radial angle) in parallel
 
-    @param L: distance sample - PONI
-    @param rot1: angle1
-    @param rot2: angle2
-    @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
-    @param pos2: numpy array with distances in meter along dim2 from PONI (X)
-    @param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    @return: ndarray of double with same shape and size as pos1
+    :param L: distance sample - PONI
+    :param rot1: angle1
+    :param rot2: angle2
+    :param rot3: angle3
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :return: ndarray of double with same shape and size as pos1
     """
     cdef:
         double sinRot1 = sin(rot1)
@@ -268,7 +274,7 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
+        double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
@@ -280,19 +286,20 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
             out[i] = f_tth(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
-        return out.reshape(pos1.shape[0], pos1.shape[1])
+        return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
     else:
-        return out
+        return numpy.asarray(out)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def calc_chi(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None,
              numpy.ndarray pos2 not None,
              numpy.ndarray pos3=None):
-    """
-    Calculate the chi array (azimuthal angles) in parallel
+    """Calculate the chi array (azimuthal angles) using OpenMP
 
     X1 = p1*cos(rot2)*cos(rot3) + p2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) -  L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
     X2 = p1*cos(rot2)*sin(rot3) - L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +  p2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))
@@ -300,14 +307,14 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
     tan(Chi) =  X2 / X1
 
 
-    @param L: distance sample - PONI
-    @param rot1: angle1
-    @param rot2: angle2
-    @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
-    @param pos2: numpy array with distances in meter along dim2 from PONI (X)
-    @param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    @return: ndarray of double with same shape and size as pos1
+    :param L: distance sample - PONI
+    :param rot1: angle1
+    :param rot2: angle2
+    :param rot3: angle3
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :return: ndarray of double with same shape and size as pos1
     """
     cdef:
         double sinRot1 = sin(rot1)
@@ -322,7 +329,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
+        double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
@@ -334,19 +341,21 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
             out[i] = f_chi(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
-        return out.reshape(pos1.shape[0], pos1.shape[1])
+        return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
     else:
-        return out
+        return numpy.asarray(out)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def calc_q(double L, double rot1, double rot2, double rot3,
            numpy.ndarray pos1 not None,
            numpy.ndarray pos2 not None,
            double wavelength, pos3=None):
     """
-    Calculate the q (scattering vector) array in parallel
+    Calculate the q (scattering vector) array using OpenMP
 
     X1 = p1*cos(rot2)*cos(rot3) + p2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) -  L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
     X2 = p1*cos(rot2)*sin(rot3) - L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +  p2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))
@@ -354,15 +363,15 @@ def calc_q(double L, double rot1, double rot2, double rot3,
     tan(Chi) =  X2 / X1
 
 
-    @param L: distance sample - PONI
-    @param rot1: angle1
-    @param rot2: angle2
-    @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
-    @param pos2: numpy array with distances in meter along dim2 from PONI (X)
-    @param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    @param wavelength: in meter to get q in nm-1
-    @return: ndarray of double with same shape and size as pos1
+    :param L: distance sample - PONI
+    :param rot1: angle1
+    :param rot2: angle2
+    :param rot3: angle3
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :param wavelength: in meter to get q in nm-1
+    :return: ndarray of double with same shape and size as pos1
     """
     cdef:
         double sinRot1 = sin(rot1)
@@ -377,7 +386,7 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
+        double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
@@ -389,27 +398,29 @@ def calc_q(double L, double rot1, double rot2, double rot3,
             out[i] = f_q(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
 
     if pos1.ndim == 2:
-        return out.reshape(pos1.shape[0], pos1.shape[1])
+        return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
     else:
-        return out
+        return numpy.asarray(out)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def calc_r(double L, double rot1, double rot2, double rot3,
            numpy.ndarray pos1 not None, numpy.ndarray pos2 not None,
            numpy.ndarray pos3=None):
     """
     Calculate the radius array (radial direction) in parallel
 
-    @param L: distance sample - PONI
-    @param rot1: angle1
-    @param rot2: angle2
-    @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
-    @param pos2: numpy array with distances in meter along dim2 from PONI (X)
-    @param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    @return: ndarray of double with same shape and size as pos1
+    :param L: distance sample - PONI
+    :param rot1: angle1
+    :param rot2: angle2
+    :param rot3: angle3
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :return: ndarray of double with same shape and size as pos1
     """
     cdef:
         double sinRot1 = sin(rot1)
@@ -424,7 +435,7 @@ def calc_r(double L, double rot1, double rot2, double rot3,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
+        double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
@@ -436,25 +447,27 @@ def calc_r(double L, double rot1, double rot2, double rot3,
             out[i] = f_r(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
-        return out.reshape(pos1.shape[0], pos1.shape[1])
+        return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
     else:
-        return out
+        return numpy.asarray(out)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def calc_cosa(double L,
               numpy.ndarray pos1 not None,
               numpy.ndarray pos2 not None,
               numpy.ndarray pos3=None):
-    """
-    Calculate the cosine of the incidence angle in parallel
+    """Calculate the cosine of the incidence angle using OpenMP. 
+    Used for sensors thickness effect corrections 
 
-    @param L: distance sa    - PONI
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
-    @param pos2: numpy array with distances in meter along dim2 from PONI (X)
-    @param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    @return: ndarray of double with same shape and size as pos1
+    :param L: distance sample - PONI
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :return: ndarray of double with same shape and size as pos1
     """
     cdef ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
@@ -462,7 +475,7 @@ def calc_cosa(double L,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
+        double[::1] out = numpy.empty(size, dtype=numpy.float64)
 
     if pos3 is None:
         for i in prange(size, nogil=True, schedule="static"):
@@ -474,13 +487,15 @@ def calc_cosa(double L,
             out[i] = f_cosa(c1[i], c2[i], L + c3[i])
 
     if pos1.ndim == 2:
-        return out.reshape(pos1.shape[0], pos1.shape[1])
+        return numpy.asarray(out).reshape(pos1.shape[0], pos1.shape[1])
     else:
-        return out
+        return numpy.asarray(out)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def calc_rad_azim(double L,
                   double poni1,
                   double poni2,
@@ -492,9 +507,22 @@ def calc_rad_azim(double L,
                   numpy.ndarray pos3=None,
                   space="2th",
                   wavelength=None):
-    """
-
-    raise KeyError when space is bad !
+    """Calculate the radial & azimutal position for each pixel from pos1, pos2, pos3. 
+                  
+    :param L: distance sample - PONI
+    :param poni1: PONI coordinate along y axis
+    :param poni2: PONI coordinate along x axis
+    :param rot1: angle1
+    :param rot2: angle2
+    :param rot3: angle3
+    :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
+    :param pos2: numpy array with distances in meter along dim2 from PONI (X)
+    :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
+    :param space: can be "2th", "q" or "r" for radial units. Azimuthal units are radians  
+    :return: ndarray of double with same shape and size as pos1 + (2,), 
+    :raise: KeyError when space is bad !
+            ValueError when wavelength is missing
+    
     """
     cdef ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"
@@ -509,8 +537,7 @@ def calc_rad_azim(double L,
         double[::1] c1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
         double[::1] c2 = numpy.ascontiguousarray(pos2.ravel(), dtype=numpy.float64)
         double[::1] c3
-        numpy.ndarray[numpy.float32_t, ndim = 2] out = numpy.empty((size, 2),
-                                                                   dtype=numpy.float32)
+        float[:, ::1] out = numpy.empty((size, 2), dtype=numpy.float32)
         double t1, t2, t3, fwavelength
 
     if space == "2th":
@@ -553,9 +580,10 @@ def calc_rad_azim(double L,
                 out[i, 0] = sqrt(t1 * t1 + t2 * t2)
             out[i, 1] = atan2(t1, t2)
 
+    nout = numpy.asarray(out)
     if pos1.ndim == 3:
-        return out.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2], 2)
+        return nout.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2], 2)
     if pos1.ndim == 2:
-        return out.reshape(pos1.shape[0], pos1.shape[1], 2)
+        return nout.reshape(pos1.shape[0], pos1.shape[1], 2)
     else:
-        return out
+        return nout

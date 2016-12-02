@@ -17,7 +17,7 @@ Usage:
 detector2nexus [options] [options] -o nxs.h5
 
 
-options:
+Options:
 --------
 
   -h, --help            show this help message and exit

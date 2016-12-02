@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -201,6 +201,7 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
 
     if USE_CYTHON:
         cext = cythonize([ext],
+                         compiler_directives={'embedsignature': True},
                          force=(os.environ.get("FORCE_CYTHON") is "True"),
                          compile_time_env={"HAVE_OPENMP": USE_OPENMP})
         if cext:
@@ -592,8 +593,8 @@ if __name__ == "__main__":
           and Frederic-Emmanuel Picca",
           author_email="jerome.kieffer@esrf.fr",
           description='Python implementation of fast azimuthal integration',
-          url="https://github.com/pyFAI/pyFAI",
-          download_url="https://github.com/pyFAI/pyFAI/releases",
+          url="https://github.com/silx-kit/pyFAI",
+          download_url="https://github.com/silx-kit/pyFAI/releases",
           # ext_package="pyFAI.ext",
           scripts=script_files,
           ext_modules=ext_modules,

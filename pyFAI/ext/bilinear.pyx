@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "27/09/2016"
+__date__ = "01/12/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -55,10 +55,10 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     with pixel coordinated stored in array pos
     This is bilinear interpolation
 
-    @param d1: position in dim1
-    @param d2: position in dim2
-    @param pos: array with position of pixels corners
-    @return 3-tuple of position.
+    :param d1: position in dim1
+    :param d2: position in dim2
+    :param pos: array with position of pixels corners
+    :return 3-tuple of position.
     """
     cdef:
         int i, p1, p2, dim1, dim2, size = d1.size
@@ -149,11 +149,11 @@ def convert_corner_2D_to_4D(int ndim,
     """
     Convert 2 (or 3) arrays of corner position into a 4D array of pixel corner coordinates
 
-    @param ndim: 2d or 3D output
-    @param d1: 2D position in dim1 (shape +1)
-    @param d2: 2D position in dim2 (shape +1)
-    @param d3: 2D position in dim3 (z) (shape +1)
-    @return: pos 4D array with position of pixels corners
+    :param ndim: 2d or 3D output
+    :param d1: 2D position in dim1 (shape +1)
+    :param d2: 2D position in dim2 (shape +1)
+    :param d3: 2D position in dim3 (z) (shape +1)
+    :return: pos 4D array with position of pixels corners
     """
     cdef int shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels

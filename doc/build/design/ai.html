@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Design of the Python Fast Azimuthal Integrator &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Design of the Python Fast Azimuthal Integrator &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="../index.html" />
     <link rel="up" title="Design of the Python Fast Azimuthal Integration library" href="index.html" />
     <link rel="next" title="pyFAI API" href="../api/modules.html" />
     <link rel="prev" title="Design of the Python Fast Azimuthal Integration library" href="index.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="index.html" title="Design of the Python Fast Azimuthal Integration library"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Design of the Python Fast Azimuthal Integration library</a> &raquo;</li> 
       </ul>
     </div>  
@@ -85,6 +85,17 @@ analysis integration are not covered.</p>
 <p>This class is the core of pyFAI, and it is the only one likely to be used by
 external developers/users. It is usually instantiated via a function of the
 module to load a poni-file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ai</span> <span class="o">=</span> <span class="n">pyFAI</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;Pilatus1M.poni&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">ai</span><span class="p">)</span>
+
+<span class="go">Detector Detector        Spline= None    PixelSize= 1.720e-04, 1.720e-04 m</span>
+
+<span class="go">SampleDetDist= 1.583231e+00m    PONI= 3.341702e-02, 4.122778e-02m       rot1=0.006487  rot2= 0.007558  rot3= 0.000000 rad</span>
+
+<span class="go">DirectBeamDist= 1583.310mm      Center: x=179.981, y=263.859 pix        Tilt=0.571 deg  tiltPlanRotation= 130.640 deg</span>
+</pre></div>
+</div>
 <p>As one can see, the <em>ai</em> contains the detector geometry (type, pixel size,
 distortion) as well as the
 geometry of the experimental setup. The geometry is given in two equivalent
@@ -106,7 +117,7 @@ be applied.</p>
 <p>Because multiple radial output space are possible (q, r, 2theta) each with multiple
 units, if one wants to avoid interpolation, it is important to export directly the data
 in the destination space, specifying the unit=&#8221;2th_deg&#8221; or &#8220;q_nm^-1&#8221;</p>
-<p>Many more option exists, please refer to the documentation of AzimuthalIntegration <a href="#id1"><span class="problematic" id="id2">integrate_</span></a></p>
+<p>Many more option exists, please refer to the documentation of AzimuthalIntegration <a class="reference external" href="http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d">integrate</a></p>
 <p>The AzimuthalIntegration class inherits from the Geometry class and hold
 references to configured rebinning engines.</p>
 </div>
@@ -151,7 +162,7 @@ but it is hard to parallelize (efficiently) due to the need of atomic operations
 <dt>Sparse matrix multiplication</dt>
 <dd>By recording where every single ends one can transform the previous histogram into a
 large sparse matrix multiplication which is either stored as a Look-Up Table (actually an array of struct, also called LIL)
-or more efficiently in the <a href="#id3"><span class="problematic" id="id4">CSR_</span></a> format.
+or more efficiently in the <a class="reference external" href="http://en.wikipedia.org/wiki/Sparse_matrix">CSR</a> format.
 Those rebinning engines are trivially parallel and provide the best performances.</dd>
 </dl>
 </div>
@@ -170,8 +181,6 @@ Those rebinning engines are trivially parallel and provide the best performances
 </div>
 <div class="section" id="references">
 <h2>References:<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
-<p>:: _integrate: <a class="reference external" href="http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d">http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d</a></p>
-<p>:: _CSR: <a class="reference external" href="http://en.wikipedia.org/wiki/Sparse_matrix">http://en.wikipedia.org/wiki/Sparse_matrix</a></p>
 </div>
 </div>
 
@@ -241,7 +250,7 @@ Those rebinning engines are trivially parallel and provide the best performances
         <li class="right" >
           <a href="index.html" title="Design of the Python Fast Azimuthal Integration library"
              >previous</a> |</li>
-        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="index.html" >Design of the Python Fast Azimuthal Integration library</a> &raquo;</li> 
       </ul>
     </div>

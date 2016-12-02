@@ -2,7 +2,7 @@
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -71,13 +71,13 @@ class TestScriptsHelp(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 
-        rc = p.wait()
-        if rc:
+        out, err = p.communicate()
+        if p.returncode != 0:
             logger.error("Error while requesting help")
             logger.error("Stdout:")
-            logger.error(p.stdout.read())
+            logger.error(out)
             logger.error("Stderr:")
-            logger.error(p.stderr.read())
+            logger.error(err)
             envString = "Environment:"
             for k, v in self.env.items():
                 env += "%s    %s: %s" % (os.linesep, k, v)
