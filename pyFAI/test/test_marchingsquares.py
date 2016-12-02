@@ -26,14 +26,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for marching_squares / isocontour"
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for marching_squares / isocontour"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "02/12/2016"
 
 
 import unittest
@@ -56,7 +56,7 @@ class TestMarchingSquares(unittest.TestCase):
             self.assertNotEqual(0, len(c), "controur plot contains not point")
             i = numpy.round(c).astype(numpy.int32)
             self.assertTrue(abs(r[(i[:, 0], i[:, 1])] - ref).max() < 0.05, "contour plot not working correctly")
-            if logger.getEffectiveLevel() <= logging.INFO:
+            if logger.getEffectiveLevel() <= logging.DEBUG:
                 pylab.imshow(r)
                 pylab.plot(c[:, 1], c[:, 0], ",")
                 pylab.show()
