@@ -944,7 +944,7 @@ class Nexus(object):
         if not force_name:
             nb_entries = len(self.get_entries())
             entry = "%s_%04i" % (entry, nb_entries)
-        entry_grp = self.h5.require_group()
+        entry_grp = self.h5.require_group(entry)
         entry_grp.attrs["NX_class"] = numpy.string_("NXentry")
         entry_grp["title"] = numpy.string_(title)
         entry_grp["program_name"] = numpy.string_(program_name)
