@@ -106,7 +106,7 @@ class Massif(object):
         defines a map of the massif around x and returns the mask
         """
         labeled = self.getLabeledMassif()
-        y = (int(floor(x[0]+0.5)),int(floor(x[1]+0.5)))
+        y = int(floor(x[0] + 0.5)), int(floor(x[1] + 0.5))
         if labeled[y[0], y[1]] != labeled.max():
             return (labeled == labeled[y[0], y[1]])
 
