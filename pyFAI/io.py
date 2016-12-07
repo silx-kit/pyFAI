@@ -927,7 +927,9 @@ class Nexus(object):
                         return detector
         return result
 
-    def new_entry(self, entry="entry", program_name="pyFAI", title="description of experiment", force_time=None):
+    def new_entry(self, entry="entry", program_name="pyFAI", 
+                  title="description of experiment", 
+                  force_time=None, force_name=False):
         """
         Create a new entry
 
@@ -935,10 +937,14 @@ class Nexus(object):
         :param program_name: value of the field as string
         :param title: value of the field as string
         :param force_time: enforce the start_time (as string!)
+        :param force_name: force the entry name as such, without numerical suffix.
         :return: the corresponding HDF5 group
         """
-        nb_entries = len(self.get_entries())
-        entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
+        
+        if not force_name:
+            nb_entries = len(self.get_entries())
+            entry = "%s_%04i" % (entry, nb_entries)
+        entry_grp = self.h5.require_group(entry)
         entry_grp.attrs["NX_class"] = numpy.string_("NXentry")
         entry_grp["title"] = numpy.string_(title)
         entry_grp["program_name"] = numpy.string_(program_name)
