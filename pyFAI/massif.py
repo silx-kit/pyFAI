@@ -32,7 +32,7 @@ __status__ = "production"
 import sys
 import os
 import threading
-from math import ceil, sqrt
+from math import ceil, sqrt, floor
 import logging
 logger = logging.getLogger("pyFAI.massif")
 import numpy
@@ -106,8 +106,9 @@ class Massif(object):
         defines a map of the massif around x and returns the mask
         """
         labeled = self.getLabeledMassif()
-        if labeled[x[0], x[1]] != labeled.max():
-            return (labeled == labeled[x[0], x[1]])
+        y = (int(floor(x[0]+0.5)),int(floor(x[1]+0.5)))
+        if labeled[y[0], y[1]] != labeled.max():
+            return (labeled == labeled[y[0], y[1]])
 
     def find_peaks(self, x, nmax=200, annotate=None, massif_contour=None, stdout=sys.stdout):
         """
