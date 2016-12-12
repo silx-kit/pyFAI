@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "12/12/2016"
 __status__ = "production"
 
 import sys
@@ -113,7 +113,8 @@ class Massif(object):
         """
         All in one function that finds a maximum from the given seed (x)
         then calculates the region extension and extract position of the neighboring peaks.
-        :param x: seed for the calculation, input coordinates
+        :param x: coordinates of the peak, seed for the calculation
+        :type x: tuple of integer
         :param nmax: maximum number of peak per region
         :param annotate: call back method taking number of points + coordinate as input.
         :param massif_contour: callback to show the contour of a massif with the given index.

@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "12/12/2016"
 __status__ = "production"
 
 import os
@@ -413,23 +413,28 @@ class PeakPicker(object):
             return gpt
 
         def new_grp(event):
-            " * Right-click (click+n):         try an auto find for a ring"
-            points = self.massif.find_peaks([event.ydata, event.xdata],
+            " * new_grp Right-click (click+n):         try an auto find for a ring"
+            # ydata is a float, and matplotlib display pixels centered.
+            # we use floor (int cast) instead of round to avoid use of
+            # banker's rounding
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            points = self.massif.find_peaks([ypix, xpix],
                                             self.defaultNbPoints,
                                             None, self.massif_contour)
             if points:
                 gpt = common_creation(points)
-                annontate(points[0], [event.ydata, event.xdata], gpt=gpt)
+                annontate(points[0], [ypix, xpix], gpt=gpt)
                 logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
             else:
                 logger.warning("No peak found !!!")
 
         def single_point(event):
             " * Right-click + Ctrl (click+b):  create new group with one single point"
-            newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt = common_creation([newpeak])
-                annontate(newpeak, [event.ydata, event.xdata], gpt=gpt)
+                annontate(newpeak, [ypix, xpix], gpt=gpt)
                 logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
             else:
                 logger.warning("No peak found !!!")
@@ -445,8 +450,10 @@ class PeakPicker(object):
                     self.ax.lines.remove(gpt.plot[0])
 
             update_fig(self.fig)
+            # matplotlib coord to pixel coord, avoinding use of banker's round
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
             # need to annotate only if a new group:
-            listpeak = self.massif.find_peaks([event.ydata, event.xdata],
+            listpeak = self.massif.find_peaks([ypix, xpix],
                                               self.defaultNbPoints, None,
                                               self.massif_contour)
             if listpeak:
@@ -466,7 +473,9 @@ class PeakPicker(object):
                 if gpt.plot[0] in self.ax.lines:
                     self.ax.lines.remove(gpt.plot[0])
             update_fig(self.fig)
-            newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
+            # matplotlib coord to pixel coord, avoinding use of banker's round
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt.points.append(newpeak)
                 logger.info("x=%5.1f, y=%5.1f added to group #%2s", newpeak[1], newpeak[0], gpt.label)
@@ -511,8 +520,8 @@ class PeakPicker(object):
                     self.ax.lines.remove(gpt.plot[0])
             if len(gpt) > 1:
                 # delete single closest point from current group
-                x0 = event.xdata
-                y0 = event.ydata
+                # matplotlib coord to pixel coord, avoinding use of banker's round
+                y0, x0 = int(event.ydata + 0.5), int(event.xdata + 0.5)
                 distsq = [((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in gpt.points]
                 # index and distance of smallest distance:
                 indexMin = min(enumerate(distsq), key=operator.itemgetter(1))
