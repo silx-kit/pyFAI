@@ -287,7 +287,7 @@ class Worker(object):
                  "method": self.method,
                  "polarization_factor": self.polarization_factor,
                  # "filename": None,
-                 "safe": self.is_safe,
+                 "safe": self.safe,
                  "data": data,
                  "correctSolidAngle": self.correct_solid_angle,
                  "safe": self.safe
