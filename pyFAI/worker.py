@@ -222,7 +222,7 @@ class Worker(object):
         self.azimuthal = None
         self.radial_range = None
         self.azimuth_range = None
-        self.is_safe = True
+        self.safe = True
 
     def __repr__(self):
         """
@@ -290,6 +290,7 @@ class Worker(object):
                  "safe": self.is_safe,
                  "data": data,
                  "correctSolidAngle": self.correct_solid_angle,
+                 "safe": self.safe
                  }
 
         if monitor is not None:
