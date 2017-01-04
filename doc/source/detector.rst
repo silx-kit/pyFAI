@@ -3,6 +3,8 @@
 :Keywords: detector
 :Target: General audience
 
+.. _detector:
+
 Simple detector
 ===============
 

@@ -61,6 +61,7 @@ of publication on pyFAI.
    changelog
    publications
    biblio
+   glossary
 
 Indices and tables
 ==================
