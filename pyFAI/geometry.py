@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2016"
+__date__ = "15/12/2016"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1054,7 +1054,8 @@ class Geometry(object):
 
         solid_angle = cos(incidence)^3
 
-        :param shape: shape of the array expected
+        :param shape: shape of the array expected, 
+                    defaults to the size of the detector
         :param order: should be 3, power of the formula just obove
         :param absolute: the absolute solid angle is calculated as:
 
@@ -1066,6 +1067,10 @@ class Geometry(object):
                 self._dssa_order = 3.0
             else:
                 self._dssa_order = float(order)
+
+            if shape is None:
+                shape = self.get_shape(shape)
+
             self._dssa = numpy.fromfunction(self.diffSolidAngle,
                                             shape, dtype=numpy.float32)
             self._dssa_crc = crc32(self._dssa)
