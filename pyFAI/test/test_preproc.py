@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "05/01/2017"
 
 
 import unittest
@@ -43,13 +43,17 @@ import logging
 
 logger = logging.getLogger(__file__)
 
-from ..ext import preproc
+from ..ext import preproc as cython_preproc
+from .. import preproc as python_preproc
+from .. import ocl_preproc
 
 
 class TestPreproc(unittest.TestCase):
-    def test(self):
+    def one_test(self, preproc):
         """
         The final pattern should look like a 4x4 square with 1 and -1 elsewhere.
+        
+        :param preproc: the preproc module to use 
         """
         shape = 8, 8
         size = shape[0] * shape[1]
@@ -99,10 +103,23 @@ class TestPreproc(unittest.TestCase):
         res = preproc.preproc(raw, dark, flat, dummy=dummy, mask=mask, normalization_factor=scale)
         self.assertEqual(abs(numpy.round(res) - target).max(), 0, "mask is properly applied")
 
+    def test_python(self):
+        self.one_test(python_preproc)
+
+    def test_cython(self):
+        self.one_test(cython_preproc)
+
+    def test_opencl(self):
+        if ocl_preproc.ocl is not None:
+            self.one_test(ocl_preproc)
+
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestPreproc("test"))
+    testsuite.addTest(TestPreproc("test_python"))
+    testsuite.addTest(TestPreproc("test_cython"))
+    testsuite.addTest(TestPreproc("test_opencl"))
+
     return testsuite
 
 
