@@ -11,12 +11,13 @@ Target: Developers interested in using the library
 
 Reference: API documentation
 
+
 Abstract
 --------
 
 The core part of pyFAI is the AzimuthalIntegator objects, named
 *ai* hereafter.
-This document describes the two importants methods of the class,
+This document describes the two important methods of the class,
 how it is related to Detector, Geometry, and integration engines.
 
 One of the core idea is to have a complete representation of the geometry
@@ -31,6 +32,8 @@ which take into account all effects like:
 This document focuses on the core of pyFAI while peripheral code
 dealing with graphical user interfaces, image analysis online data
 analysis integration are not covered.
+
+.. _AzimuthalIntegrator:
 
 AzimuthalIntegrator
 -------------------
@@ -143,9 +146,9 @@ Bounding box pixel splitting
 	The pixel is abstracted by a box surrounding it with, making calculation easier but blurring a bit the image
 
 Tight pixel splitting
-	The pixel is represented by its actual corner position, offering a very precise positionning in space.
+	The pixel is represented by its actual corner position, offering a very precise positioning in space.
 
-The main issue with pixel splitting arose from 2D integration and the habdling of pixel laying on the chi-discontinuity.
+The main issue with pixel splitting arose from 2D integration and the handling of pixel laying on the chi-discontinuity.
 
 References:
 -----------
