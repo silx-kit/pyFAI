@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/01/2017"
+__date__ = "13/01/2017"
 __status__ = "stable"
 
 
@@ -825,13 +825,16 @@ class Pilatus(Detector):
             if fabio:
                 self.offset1 = fabio.open(self.y_offset_file).data
                 self.offset2 = fabio.open(self.x_offset_file).data
+                self.uniform_pixel = False
             else:
                 logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
                 self.offset1 = None
                 self.offset2 = None
+                self.uniform_pixel = True
         else:
             self.offset1 = None
             self.offset2 = None
+            self.uniform_pixel = True
 
     def __repr__(self):
         txt = "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -917,12 +920,12 @@ class Pilatus(Detector):
             if d2.ndim == 1:
                 d1n = d1.astype(numpy.int32)
                 d2n = d2.astype(numpy.int32)
-                delta1 = self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel
-                delta2 = self.offset2[d1n, d2n] / 100.0
+                delta1 = -self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel and negative
+                delta2 = -self.offset2[d1n, d2n] / 100.0
             else:
                 if d1.shape == self.offset1.shape:
-                    delta1 = self.offset1 / 100.0  # Offsets are in percent of pixel
-                    delta2 = self.offset2 / 100.0
+                    delta1 = -self.offset1 / 100.0  # Offsets are in percent of pixel and negative
+                    delta2 = -self.offset2 / 100.0
                 elif d1.shape[0] > self.offset1.shape[0]:  # probably working with corners
                     s0, s1 = self.offset1.shape
                     delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
@@ -938,8 +941,8 @@ class Pilatus(Detector):
                     mask = numpy.where(delta1[:s0, -s1:] == 0)
                     delta1[:s0, -s1:][mask] = self.offset1[mask]
                     delta2[:s0, -s1:][mask] = self.offset2[mask]
-                    delta1 = delta1 / 100.0  # Offsets are in percent of pixel
-                    delta2 = delta2 / 100.0  # former arrays were integers
+                    delta1 = -delta1 / 100.0  # Offsets are in percent of pixel and negative
+                    delta2 = -delta2 / 100.0  # former arrays were integers
                 else:
                     logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s", self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.

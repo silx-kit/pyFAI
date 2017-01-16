@@ -10,6 +10,8 @@ around the main axis; these parameters are saved in text files usually
 with the *.poni* extension.
 In addition, the *poni-file* may contain the wavelength and the detector definition.
 
+.. _Image:
+
 Image representation in Python
 ------------------------------
 
@@ -76,6 +78,7 @@ Due to constraints on the origin and orientation of the azimuthal angle, chi,
 (1, 2, 3) is indirect orientation.
 This makes usually the PONI position with negative third coordiante (at z<0).
 
+.. _Geometry:
 
 Detector position
 -----------------
