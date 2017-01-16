@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/01/2017"
+__date__ = "16/01/2017"
 __status__ = "development"
 
 import warnings
@@ -138,7 +138,7 @@ def preproc(raw,
             if ddummy == 0:
                 mask |= (numerator == cdummy)
             else:
-                mask |= (abs(numerator - cdummy) < ddummy)
+                mask |= (abs(numerator - cdummy) <= ddummy)
 
         if variance is not None:
             variance = numpy.ascontiguousarray(variance.ravel(), dtype=dtype)
@@ -158,15 +158,18 @@ def preproc(raw,
             if poissonian:
                 variance += dark
 
+        denominator = numpy.empty(size, dtype=dtype)
+        denominator.fill(normalization_factor)
+
         if flat is not None:
             assert flat.size == size, "Flat array size is correct"
-            denominator = numpy.array(flat.ravel(), dtype=dtype, copy=True)
+            denominator *= numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
             if check_dummy:
                 # runtime warning here
                 if ddummy == 0:
                     mask |= (denominator == cdummy)
                 else:
-                    mask |= abs(denominator - cdummy) < ddummy
+                    mask |= abs(denominator - cdummy) <= ddummy
         else:
             denominator = numpy.ones(size, dtype=dtype)
 

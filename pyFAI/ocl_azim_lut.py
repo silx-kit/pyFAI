@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -23,8 +23,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "24/11/2016"
-__copyright__ = "2012, ESRF, Grenoble"
+__date__ = "16/01/2017"
+__copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import gc
@@ -43,6 +43,7 @@ logger = logging.getLogger("pyFAI.ocl_azim_lut")
 
 class OCL_LUT_Integrator(object):
     BLOCK_SIZE = 16
+
     def __init__(self, lut, image_size, devicetype="all",
                  platformid=None, deviceid=None,
                  checksum=None, profile=False,
@@ -69,7 +70,12 @@ class OCL_LUT_Integrator(object):
 
         if not checksum:
             checksum = calc_checksum(self._lut)
-        self.on_device = {"lut": checksum, "dark": None, "flat": None, "polarization": None, "solidangle": None}
+        self.on_device = {"lut": checksum, 
+                          "dark": None, 
+                          "flat": None, 
+                          "polarization": None, 
+                          "solidangle": None,
+                          "absorption": None}
         self._cl_kernel_args = {}
         self._cl_mem = {}
         self.events = []
@@ -172,6 +178,7 @@ class OCL_LUT_Integrator(object):
             ("flat", mf.READ_ONLY, numpy.float32, self.size),
             ("polarization", mf.READ_ONLY, numpy.float32, self.size),
             ("solidangle", mf.READ_ONLY, numpy.float32, self.size),
+            ("absorption", mf.READ_ONLY, numpy.float32, self.size),
         ]
 
         if self.size < self.BLOCK_SIZE:
@@ -219,11 +226,21 @@ class OCL_LUT_Integrator(object):
         When setRange is called it replaces that argument with tthRange low and upper bounds. When unsetRange is called, the argument slot
         is reset to tth_min_max.
         """
-        self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"], \
-                                             numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \
-                                             numpy.int32(0), numpy.float32(0.0), numpy.float32(0.0), numpy.float32(0.0)]
-        self._cl_kernel_args["lut_integrate"] = [self._cl_mem["image"], self._cl_mem["lut"], numpy.int32(0), numpy.float32(0), \
-                                                self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
+        self._cl_kernel_args["corrections"] = [self._cl_mem["image"],
+                                               numpy.int32(0), self._cl_mem["dark"],
+                                               numpy.int32(0), self._cl_mem["flat"],
+                                               numpy.int32(0), self._cl_mem["solidangle"],
+                                               numpy.int32(0), self._cl_mem["polarization"],
+                                               numpy.int32(0), self._cl_mem["absorption"],
+                                               numpy.int32(0), numpy.float32(0.0),
+                                               numpy.float32(0.0), numpy.float32(0.0)]
+        self._cl_kernel_args["lut_integrate"] = [self._cl_mem["image"],
+                                                 self._cl_mem["lut"],
+                                                 numpy.int32(0),
+                                                 numpy.float32(0),
+                                                 self._cl_mem["outData"],
+                                                 self._cl_mem["outCount"],
+                                                 self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
         self._cl_kernel_args["u8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
         self._cl_kernel_args["s8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
@@ -232,9 +249,11 @@ class OCL_LUT_Integrator(object):
         self._cl_kernel_args["u32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
         self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
 
-    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
-                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
-                            preprocess_only=False, safe=True, normalization_factor=1.0):
+    def integrate(self, data, dummy=None, delta_dummy=None,
+                  dark=None, flat=None, solidAngle=None, polarization=None, absorption=None,
+                  dark_checksum=None, flat_checksum=None, solidAngle_checksum=None,
+                  polarization_checksum=None, absorption_checksum=None,
+                  preprocess_only=False, safe=True, normalization_factor=1.0):
         """
         Before performing azimuthal integration, the preprocessing is:
 
@@ -253,8 +272,8 @@ class OCL_LUT_Integrator(object):
         :param solidAngle_checksum: CRC32 checksum of the given array
         :param polarization_checksum: CRC32 checksum of the given array
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        :param normalization_factor: divide raw signal by this value
         :param preprocess_only: return the dark subtracted; flat field & solidAngle & polarization corrected image, else
+        :param normalization_factor: divide raw signal by this value
         :return: averaged data, weighted histogram, unweighted histogram
         """
         events = []
@@ -300,10 +319,10 @@ class OCL_LUT_Integrator(object):
                 do_dummy = numpy.int32(0)
                 dummy = numpy.float32(self.empty)
                 delta_dummy = numpy.float32(0.0)
-            self._cl_kernel_args["corrections"][9] = do_dummy
-            self._cl_kernel_args["corrections"][10] = dummy
-            self._cl_kernel_args["corrections"][11] = delta_dummy
-            self._cl_kernel_args["corrections"][12] = numpy.float32(normalization_factor)
+            self._cl_kernel_args["corrections"][11] = do_dummy
+            self._cl_kernel_args["corrections"][12] = dummy
+            self._cl_kernel_args["corrections"][13] = delta_dummy
+            self._cl_kernel_args["corrections"][14] = numpy.float32(normalization_factor)
             self._cl_kernel_args["lut_integrate"][2] = do_dummy
             self._cl_kernel_args["lut_integrate"][3] = dummy
 
@@ -353,10 +372,24 @@ class OCL_LUT_Integrator(object):
             else:
                 do_polarization = numpy.int32(0)
             self._cl_kernel_args["corrections"][7] = do_polarization
+
+            if absorption is not None:
+                do_absorption = numpy.int32(1)
+                if not absorption_checksum:
+                    absorption_checksum = calc_checksum(absorption, safe)
+                if absorption_checksum != self.on_device["polarization"]:
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["absorption"], numpy.ascontiguousarray(absorption, dtype=numpy.float32))
+                    events.append(("copy absorption", ev))
+                    self.on_device["absorption"] = polarization_checksum
+            else:
+                do_absorption = numpy.int32(0)
+            self._cl_kernel_args["corrections"][9] = do_absorption
+
             copy_image.wait()
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
                 events.append(("corrections", ev))
+
             if preprocess_only:
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image"])
