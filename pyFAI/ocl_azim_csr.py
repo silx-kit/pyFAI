@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "16/01/2017"
+__date__ = "18/01/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -242,18 +242,18 @@ class OCL_CSR_Integrator(object):
         is reset to tth_min_max.
         """
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"],
-                                               numpy.int32(0), self._cl_mem["dark"],
-                                               numpy.int32(0), self._cl_mem["flat"],
-                                               numpy.int32(0), self._cl_mem["solidangle"],
-                                               numpy.int32(0), self._cl_mem["polarization"],
-                                               numpy.int32(0), self._cl_mem["absorption"],
-                                               numpy.int32(0), numpy.float32(0.0),
+                                               numpy.int8(0), self._cl_mem["dark"],
+                                               numpy.int8(0), self._cl_mem["flat"],
+                                               numpy.int8(0), self._cl_mem["solidangle"],
+                                               numpy.int8(0), self._cl_mem["polarization"],
+                                               numpy.int8(0), self._cl_mem["absorption"],
+                                               numpy.int8(0), numpy.float32(0.0),
                                                numpy.float32(0.0), numpy.float32(1.0)]
         self._cl_kernel_args["csr_integrate"] = [self._cl_mem["image"],
                                                  self._cl_mem["data"],
                                                  self._cl_mem["indices"],
                                                  self._cl_mem["indptr"],
-                                                 numpy.int32(0),
+                                                 numpy.int8(0),
                                                  numpy.float32(0),
                                                  self._cl_mem["outData"],
                                                  self._cl_mem["outCount"],
@@ -333,7 +333,7 @@ class OCL_CSR_Integrator(object):
                 else:
                     delta_dummy = numpy.float32(abs(delta_dummy))
             else:
-                do_dummy = numpy.int32(0)
+                do_dummy = numpy.int8(0)
                 dummy = numpy.float32(self.empty)
                 delta_dummy = numpy.float32(0.0)
             self._cl_kernel_args["corrections"][11] = do_dummy
@@ -353,7 +353,7 @@ class OCL_CSR_Integrator(object):
                     events.append(("copy dark", ev))
                     self.on_device["dark"] = dark_checksum
             else:
-                do_dark = numpy.int32(0)
+                do_dark = numpy.int8(0)
             self._cl_kernel_args["corrections"][1] = do_dark
             if flat is not None:
                 do_flat = numpy.int32(1)
@@ -364,7 +364,7 @@ class OCL_CSR_Integrator(object):
                     events.append(("copy flat", ev))
                     self.on_device["flat"] = flat_checksum
             else:
-                do_flat = numpy.int32(0)
+                do_flat = numpy.int8(0)
             self._cl_kernel_args["corrections"][3] = do_flat
 
             if solidAngle is not None:
@@ -376,7 +376,7 @@ class OCL_CSR_Integrator(object):
                     events.append(("copy solidangle", ev))
                     self.on_device["solidangle"] = solidAngle_checksum
             else:
-                do_solidAngle = numpy.int32(0)
+                do_solidAngle = numpy.int8(0)
             self._cl_kernel_args["corrections"][5] = do_solidAngle
 
             if polarization is not None:
@@ -388,7 +388,7 @@ class OCL_CSR_Integrator(object):
                     events.append(("copy polarization", ev))
                     self.on_device["polarization"] = polarization_checksum
             else:
-                do_polarization = numpy.int32(0)
+                do_polarization = numpy.int8(0)
             self._cl_kernel_args["corrections"][7] = do_polarization
 
             if absorption is not None:
@@ -400,7 +400,7 @@ class OCL_CSR_Integrator(object):
                     events.append(("copy absorption", ev))
                     self.on_device["absorption"] = polarization_checksum
             else:
-                do_absorption = numpy.int32(0)
+                do_absorption = numpy.int8(0)
             self._cl_kernel_args["corrections"][9] = do_absorption
 
             copy_image.wait()

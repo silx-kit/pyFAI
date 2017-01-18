@@ -167,6 +167,67 @@ memset_out(__global float *array0,
   }
 }
 
+// Functions to be called from an actual kernel.
+
+static float3 _preproc3(const __global float  *image,
+                        const __global float  *variance,
+                        const          char   do_mask,
+                        const __global char   *mask,
+                        const          char   do_dark,
+                        const __global float  *dark,
+                        const          char   do_dark_variance,
+                        const __global float  *dark_variance,
+                        const          char   do_flat,
+                        const __global float  *flat,
+                        const          char   do_solidangle,
+                        const __global float  *solidangle,
+                        const          char   do_polarization,
+                        const __global float  *polarization,
+                        const          char   do_absorption,
+                        const __global float  *absorption,
+                        const          char   do_dummy,
+                        const          float  dummy,
+                        const          float  delta_dummy,
+                        const          float  normalization_factor)
+{
+    size_t i= get_global_id(0);
+    float3 result = (float3)(0.0, 0.0, 0.0);
+    if (i < NIMAGE)
+    {
+        if (do_mask && (!mask[i]))
+        {
+            result.s0 = image[i];
+            if (variance != 0)
+                result.s1 = variance[i];
+            result.s2 = normalization_factor;
+            if ( (!do_dummy)
+                    ||((delta_dummy!=0.0f) && (fabs(result.s0-dummy) > delta_dummy))
+                    ||((delta_dummy==0.0f) && (result.s0!=dummy)))
+            {
+                if (do_dark)
+                    result.s0 -= dark[i];
+                if (do_dark_variance)
+                    result.s1 += dark_variance[i];
+                if (do_flat)
+                    result.s2 *= flat[i];
+                if (do_solidangle)
+                    result.s2 *= solidangle[i];
+                if (do_polarization)
+                    result.s2 *= polarization[i];
+                if (do_absorption)
+                    result.s2 *= absorption[i];
+                if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 <= 0))
+                    result = (float3)(0.0, 0.0, 0.0);
+            }
+            else
+            {
+                result = (float3)(0.0, 0.0, 0.0);
+            }//end if do_dummy
+        } // end if mask
+    };//end if NIMAGE
+    return result;
+};//end function
+
 
 /**
  * \brief Performs the normalization of input image by dark subtraction,
@@ -195,52 +256,57 @@ memset_out(__global float *array0,
  * - normalization_factor : divide the input by this value
  *
 **/
+
 __kernel void
 corrections(      __global float  *image,
-            const          int    do_dark,
+            const          char   do_mask,
+            const __global char   *mask,
+            const          char   do_dark,
             const __global float  *dark,
-            const          int    do_flat,
+            const          char   do_flat,
             const __global float  *flat,
-            const          int    do_solidangle,
+            const          char   do_solidangle,
             const __global float  *solidangle,
-            const          int    do_polarization,
+            const          char   do_polarization,
             const __global float  *polarization,
-			const          int    do_absorption,
+			const          char   do_absorption,
 			const __global float  *absorption,
-            const          int    do_dummy,
+            const          char   do_dummy,
             const          float  dummy,
             const          float  delta_dummy,
             const          float  normalization_factor
             )
 {
-    int i= get_global_id(0);
+    size_t i= get_global_id(0);
+    float3 result = (float3)(0.0, 0.0, 0.0);
     if (i < NIMAGE)
     {
-        float data = image[i];
-        if ((!isnan(data)) ||(!do_dummy)
-                || ((delta_dummy!=0.0f) && (fabs(data-dummy) > delta_dummy))
-                || ((delta_dummy==0.0f) && (data!=dummy)))
-        {
-            if (do_dark)
-                data -= dark[i];
-            if (do_flat)
-                data /= flat[i];
-            if (do_solidangle)
-                data /= solidangle[i];
-            if (do_polarization)
-                data /= polarization[i];
-            if (do_absorption)
-                data /= absorption[i];
-            data /= normalization_factor;
-            if (isnan(data))
-                data = dummy;
-            image[i] = data;
-        }
+        result = _preproc3(image,
+                            0,
+                            0,
+                            0,
+                            do_dark,
+                            dark,
+                            0,
+                            0,
+                            do_flat,
+                            flat,
+                            do_solidangle,
+                            solidangle,
+                            do_polarization,
+                            polarization,
+                            do_absorption,
+                            absorption,
+                            do_dummy,
+                            dummy,
+                            delta_dummy,
+                            normalization_factor);
+        if ((result.s0 != 0.0) && (result.s2 > 0.0))
+            image[i] = result.s0/result.s2;
         else
-        {
             image[i] = dummy;
-        }//end if do_dummy
     };//end if NIMAGE
+
 };//end kernel
 
 
@@ -274,52 +340,48 @@ corrections(      __global float  *image,
 **/
 __kernel void
 corrections2(const __global float  *image,
-             const          int    do_dark,
+             const          char   do_dark,
              const __global float  *dark,
-             const          int    do_flat,
+             const          char   do_flat,
              const __global float  *flat,
-             const          int    do_solidangle,
+             const          char   do_solidangle,
              const __global float  *solidangle,
-             const          int    do_polarization,
+             const          char   do_polarization,
              const __global float  *polarization,
-             const          int    do_absorption,
+             const          char   do_absorption,
              const __global float  *absorption,
-             const          int    do_dummy,
+             const          char   do_dummy,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
                    __global float2  *output
             )
 {
-
-    int i= get_global_id(0);
+    size_t i= get_global_id(0);
+    float3 result = (float3)(0.0, 0.0, 0.0);
     if (i < NIMAGE)
     {
-        float2 result;
-        result.x = image[i];
-        result.y = normalization_factor;
-        if ((!do_dummy)
-                || ((delta_dummy!=0.0f) && (fabs(result.x-dummy) > delta_dummy))
-                || ((delta_dummy==0.0f) && (result.x!=dummy)))
-        {
-            if (do_dark)
-                result.x -= dark[i];
-            if (do_flat)
-                result.y *= flat[i];
-            if (do_solidangle)
-                result.y *= solidangle[i];
-            if (do_polarization)
-                result.y *= polarization[i];
-            if (do_absorption)
-                result.y *= absorption[i];
-            if (isnan(result.x) || isnan(result.y) || (result.y <= 0) )
-                result = (float2)(0.0, 0.0);
-        }
-        else
-        {
-            result = (float2)(0.0, 0.0);;
-        }//end if do_dummy
-        output[i] = result;
+        result = _preproc3(image,
+                            0,
+                            0,
+                            0,
+                            do_dark,
+                            dark,
+                            0,
+                            0,
+                            do_flat,
+                            flat,
+                            do_solidangle,
+                            solidangle,
+                            do_polarization,
+                            polarization,
+                            do_absorption,
+                            absorption,
+                            do_dummy,
+                            dummy,
+                            delta_dummy,
+                            normalization_factor);
+        output[i] = (float2)(result.s0, result.s2);
     };//end if NIMAGE
 };//end kernel
 
@@ -353,55 +415,47 @@ corrections2(const __global float  *image,
 **/
 __kernel void
 corrections3Poisson( const __global float  *image,
-                     const          int    do_dark,
+                     const          char   do_dark,
                      const __global float  *dark,
-                     const          int    do_flat,
+                     const          char   do_flat,
                      const __global float  *flat,
-                     const          int    do_solidangle,
+                     const          char   do_solidangle,
                      const __global float  *solidangle,
-                     const          int    do_polarization,
+                     const          char   do_polarization,
                      const __global float  *polarization,
-                     const          int    do_absorption,
+                     const          char   do_absorption,
                      const __global float  *absorption,
-                     const          int    do_dummy,
+                     const          char   do_dummy,
                      const          float  dummy,
                      const          float  delta_dummy,
                      const          float  normalization_factor,
                            __global float3  *output
             )
 {
-
-    int i= get_global_id(0);
+    size_t i= get_global_id(0);
+    float3 result = (float3)(0.0, 0.0, 0.0);
     if (i < NIMAGE)
     {
-        float3 result;
-        result.x = image[i];
-        result.y = image[i];
-        result.z = normalization_factor;
-        if ( (!do_dummy)
-                || ((delta_dummy!=0.0f) && (fabs(result.x-dummy) > delta_dummy))
-                || ((delta_dummy==0.0f) && (result.x!=dummy)))
-        {
-            if (do_dark)
-            {
-                result.x -= dark[i];
-                result.y += dark[i];
-            }
-            if (do_flat)
-                result.z *= flat[i];
-            if (do_solidangle)
-                result.z *= solidangle[i];
-            if (do_polarization)
-                result.z *= polarization[i];
-            if (do_absorption)
-                result.z *= absorption[i];
-            if (isnan(result.x) || isnan(result.y) || isnan(result.z) || (result.z <= 0))
-                result = (float3)(0.0, 0.0, 0.0);
-        }
-        else
-        {
-            result = (float3)(0.0, 0.0, 0.0);
-        }//end if do_dummy
+        result = _preproc3(image,
+                           image,
+                            0,
+                            0,
+                            do_dark,
+                            dark,
+                            do_dark,
+                            dark,
+                            do_flat,
+                            flat,
+                            do_solidangle,
+                            solidangle,
+                            do_polarization,
+                            polarization,
+                            do_absorption,
+                            absorption,
+                            do_dummy,
+                            dummy,
+                            delta_dummy,
+                            normalization_factor);
         output[i] = result;
     };//end if NIMAGE
 };//end kernel
@@ -438,57 +492,51 @@ corrections3Poisson( const __global float  *image,
 __kernel void
 corrections3(const __global float  *image,
              const __global float  *variance,
-             const          int    do_dark,
+             const          char   do_dark,
              const __global float  *dark,
-             const          int    do_dark_variance,
+             const          char   do_dark_variance,
              const __global float  *dark_variance,
-             const          int    do_flat,
+             const          char   do_flat,
              const __global float  *flat,
-             const          int    do_solidangle,
+             const          char   do_solidangle,
              const __global float  *solidangle,
-             const          int    do_polarization,
+             const          char   do_polarization,
              const __global float  *polarization,
-             const          int    do_absorption,
+             const          char   do_absorption,
              const __global float  *absorption,
-             const          int    do_dummy,
+             const          char   do_dummy,
              const          float  dummy,
              const          float  delta_dummy,
              const          float  normalization_factor,
                    __global float3  *output
             )
 {
-
-    int i= get_global_id(0);
+    size_t i= get_global_id(0);
+    float3 result = (float3)(0.0, 0.0, 0.0);
     if (i < NIMAGE)
     {
-        float3 result;
-        result.x = image[i];
-        result.y = variance[i];
-        result.z = normalization_factor;
-        if ( (!do_dummy)
-                ||((delta_dummy!=0.0f) && (fabs(result.x-dummy) > delta_dummy))
-                ||((delta_dummy==0.0f) && (result.x!=dummy)))
-        {
-            if (do_dark)
-                result.x -= dark[i];
-            if (do_dark_variance)
-                result.y += dark_variance[i];
-            if (do_flat)
-                result.z *= flat[i];
-            if (do_solidangle)
-                result.z *= solidangle[i];
-            if (do_polarization)
-                result.z *= polarization[i];
-            if (do_absorption)
-                result.z *= absorption[i];
-            if (isnan(result.x) || isnan(result.y) || isnan(result.z) || (result.z <= 0))
-                result = (float3)(0.0, 0.0, 0.0);
-        }
-        else
-        {
-            result = (float3)(0.0, 0.0, 0.0);
-        }//end if do_dummy
+        result = _preproc3(image,
+                           variance,
+                            0,
+                            0,
+                            do_dark,
+                            dark,
+                            do_dark_variance,
+                            dark_variance,
+                            do_flat,
+                            flat,
+                            do_solidangle,
+                            solidangle,
+                            do_polarization,
+                            polarization,
+                            do_absorption,
+                            absorption,
+                            do_dummy,
+                            dummy,
+                            delta_dummy,
+                            normalization_factor);
         output[i] = result;
     };//end if NIMAGE
 };//end kernel
+
 
