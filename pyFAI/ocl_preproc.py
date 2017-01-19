@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -34,7 +34,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __date__ = "19/01/2017"
-__copyright__ = "2015, ESRF, Grenoble"
+__copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
@@ -51,6 +51,7 @@ else:
 
 from collections import namedtuple
 BufferDescription = namedtuple("BufferDescription", ["name", "flags", "dtype", "size"])
+EventDescription = namedtuple("EventDescription", ["name", "event"])
 
 try:
     from .ext.fastcrc import crc32
@@ -89,7 +90,7 @@ class OpenclProcessing(object):
         """
         self.sem = threading.Semaphore()
         self.profile = bool(profile)
-        self.events = []  # List with all event, kept for profiling
+        self.events = []  # List with of EventDescription, kept for profiling
         self.cl_mem = {}  # dict with all buffer allocated
         self.cl_program = None  # The actual OpenCL program
         self.cl_kernel_args = {}  # dict with all kernel arguments
@@ -186,13 +187,17 @@ class OpenclProcessing(object):
         out.append("%50s:\t%.3fms" % ("Total execution time", t))
         logger.info(os.linesep.join(out))
 
-# TODO
 #     def __copy__(self):
 #         """Shallow copy of the object
 #
 #         :return: copy of the object
 #         """
-#         return self.__class__(...)
+#         return self.__class__((self._data, self._indices, self._indptr),
+#                               self.size, block_size=self.BLOCK_SIZE,
+#                               platformid=self.platform.id,
+#                               deviceid=self.device.id,
+#                               checksum=self.on_device.get("data"),
+#                               profile=self.profile, empty=self.empty)
 #
 #     def __deepcopy__(self, memo=None):
 #         """deep copy of the object
@@ -201,7 +206,17 @@ class OpenclProcessing(object):
 #         """
 #         if memo is None:
 #             memo = {}
-#         # TODO
+#         new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
+#         memo[id(self._data)] = new_csr[0]
+#         memo[id(self._indices)] = new_csr[1]
+#         memo[id(self._indptr)] = new_csr[2]
+#         new_obj = self.__class__(new_csr, self.size,
+#                                  block_size=self.BLOCK_SIZE,
+#                                  platformid=self.platform.id,
+#                                  deviceid=self.device.id,
+#                                  checksum=self.on_device.get("data"),
+#                                  profile=self.profile, empty=self.empty)
+#         memo[id(self)] = new_obj
 #         return new_obj
 
 
@@ -212,7 +227,7 @@ class OCL_Preproc(OpenclProcessing):
                BufferDescription("image_raw", mf.READ_ONLY, numpy.float32, 1),
                BufferDescription("image", mf.READ_WRITE, numpy.float32, 1),
                BufferDescription("variance", mf.READ_WRITE, numpy.float32, 1),
-               BufferDescription("dark", mf.READ_ONLY, numpy.float32, 1),
+               BufferDescription("dark", mf.READ_WRITE, numpy.float32, 1),
                BufferDescription("dark_variance", mf.READ_ONLY, numpy.float32, 1),
                BufferDescription("flat", mf.READ_ONLY, numpy.float32, 1),
                BufferDescription("polarization", mf.READ_ONLY, numpy.float32, 1),
@@ -228,7 +243,7 @@ class OCL_Preproc(OpenclProcessing):
                numpy.uint32: "u32_to_float",
                numpy.int32: "s32_to_float"}
 
-    def __init__(self, image_size=None, image_dtype=None, template=None,
+    def __init__(self, image_size=None, image_dtype=None, image=None,
                  dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
                  mask=None, dummy=None, delta_dummy=None, empty=None,
                  split_result=False, calc_variance=False, poissonian=False,
@@ -248,54 +263,66 @@ class OCL_Preproc(OpenclProcessing):
         
         """
         OpenclProcessing.__init__(self, ctx, devicetype, platformid, deviceid, block_size, profile)
-        self.size = image_size or template.size
-        self.input_dtype = image_dtype or template.dtype.type
+        self.size = image_size or image.size
+        self.input_dtype = image_dtype or image.dtype.type
         self.buffers = [BufferDescription(*((i[:-1]) + (i[-1] * self.size,)))
                         for i in self.__class__.buffers]
         self.allocate_buffers()
+        if poissonian:
+            calc_variance = True
+        if calc_variance:
+            split_result = True
+        self.on_host = {"dummy": dummy,
+                        "delta_dummy": delta_dummy,
+                        "empty": empty,
+                        "poissonian": poissonian,
+                        "calc_variance": calc_variance,
+                        "split_result": split_result
+                        }
         self.set_kernel_arguments()
 
         self.on_device = {}
-        if template is not None:
-            self.send_buffer(template, "image", dest_type=numpy.float32)
+
+        if image is not None:
+            self.send_buffer(image, "image")
         if dark is not None:
             assert dark.size == self.size
-            self.send_buffer(dark, "dark", dest_type=numpy.float32)
+            self.send_buffer(dark, "dark")
             self.cl_kernel_args["corrections"][1] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][1] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][1] = numpy.int8(1)
             self.cl_kernel_args["corrections3Poisson"][2] = numpy.int8(1)
         if flat is not None:
             assert flat.size == self.size
-            self.send_buffer(flat, "flat", dest_type=numpy.float32)
+            self.send_buffer(flat, "flat")
             self.cl_kernel_args["corrections"][3] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][3] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][3] = numpy.int8(1)
             self.cl_kernel_args["corrections3Poisson"][4] = numpy.int8(1)
         if solidangle is not None:
             assert solidangle.size == self.size
-            self.send_buffer(solidangle, "solidangle", dest_type=numpy.float32)
+            self.send_buffer(solidangle, "solidangle")
             self.cl_kernel_args["corrections"][5] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][5] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][5] = numpy.int8(1)
             self.cl_kernel_args["corrections3Poisson"][6] = numpy.int8(1)
         if polarization is not None:
             assert polarization.size == self.size
-            self.send_buffer(polarization, "polarization", dest_type=numpy.float32)
+            self.send_buffer(polarization, "polarization")
             self.cl_kernel_args["corrections"][7] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][7] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][7] = numpy.int8(1)
             self.cl_kernel_args["corrections3Poisson"][8] = numpy.int8(1)
         if absorption is not None:
             assert absorption.size == self.size
-            self.send_buffer(absorption, "absorption", dest_type=numpy.float32)
+            self.send_buffer(absorption, "absorption")
             self.cl_kernel_args["corrections"][9] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][9] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][9] = numpy.int8(1)
             self.cl_kernel_args["corrections3Poisson"][10] = numpy.int8(1)
         if mask is not None:
             assert mask.size == self.size
-            self.send_buffer(mask, "mask", dest_type=numpy.int8)
+            self.send_buffer(mask, "mask")
             self.cl_kernel_args["corrections"][11] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][11] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][11] = numpy.int8(1)
@@ -304,10 +331,62 @@ class OCL_Preproc(OpenclProcessing):
         self.compile_kernels()
         # self.block_size = max(self.block_size,self.program.k)
 
+    @property
+    def dummy(self):
+        return self.on_host["dummy"]
+
+    @dummy.setter
+    def dummy(self, value=None):
+        self.on_host["dummy"] = value
+        if value is None:
+            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
+                self.cl_kernel_args[kernel][13] = numpy.int8(0)
+            self.cl_kernel_args["corrections3"][16] = numpy.int8(0)
+        else:
+            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
+                self.cl_kernel_args[kernel][13] = numpy.int8(1)
+                self.cl_kernel_args[kernel][14] = numpy.float32(value)
+            self.cl_kernel_args["corrections3"][16] = numpy.int8(1)
+            self.cl_kernel_args["corrections3"][17] = numpy.float32(value)
+
+    @property
+    def delta_dummy(self):
+        return self.on_host["delta_dummy"]
+
+    @delta_dummy.setter
+    def delta_dummy(self, value=None):
+        value = value or numpy.float32(0)
+        self.on_host["delta_dummy"] = value
+        for kernel in ("corrections", "corrections2", "corrections3Poisson"):
+            self.cl_kernel_args[kernel][15] = value
+        self.cl_kernel_args["corrections3"][18] = value
+
+    @property
+    def empty(self):
+        return self.on_host["empty"]
+
+    @empty.setter
+    def empty(self, value=None):
+        value = value or numpy.float32(0)
+        if self.dummy is None:
+            self.on_host["empty"] = value
+            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
+                self.cl_kernel_args[kernel][14] = value
+                self.cl_kernel_args["corrections3"][17] = value
+
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
 
         """
+        if self.on_host["dummy"] is None:
+            do_dummy = numpy.int8(0)
+            dummy = numpy.float32(self.on_host["empty"] or 0.0)
+            delta_dummy = numpy.float32(self.on_host["delta_dummy"] or 0.0)
+        else:
+            do_dummy = numpy.int8(0)
+            dummy = numpy.float32(self.on_host["dummy"])
+            delta_dummy = numpy.float32(self.on_host["delta_dummy"] or 0.0)
+
         self.cl_kernel_args["corrections"] = [self.cl_mem["image"],
                                               numpy.int8(0), self.cl_mem["dark"],
                                               numpy.int8(0), self.cl_mem["flat"],
@@ -315,8 +394,8 @@ class OCL_Preproc(OpenclProcessing):
                                               numpy.int8(0), self.cl_mem["polarization"],
                                               numpy.int8(0), self.cl_mem["absorption"],
                                               numpy.int8(0), self.cl_mem["mask"],
-                                              numpy.int8(0), numpy.float32(0.0),
-                                              numpy.float32(0.0), numpy.float32(1.0)]
+                                              do_dummy, dummy,
+                                              delta_dummy, numpy.float32(1.0)]
         self.cl_kernel_args["corrections2"] = [self.cl_mem["image"],
                                                numpy.int8(0), self.cl_mem["dark"],
                                                numpy.int8(0), self.cl_mem["flat"],
@@ -324,18 +403,20 @@ class OCL_Preproc(OpenclProcessing):
                                                numpy.int8(0), self.cl_mem["polarization"],
                                                numpy.int8(0), self.cl_mem["absorption"],
                                                numpy.int8(0), self.cl_mem["mask"],
-                                               numpy.int8(0), numpy.float32(0.0),
-                                               numpy.float32(0.0), numpy.float32(1.0),
+                                               do_dummy, dummy,
+                                               delta_dummy, numpy.float32(1.0),
                                                self.cl_mem["output"]]
         self.cl_kernel_args["corrections3"] = [self.cl_mem["image"],
+                                               self.cl_mem["variance"],
                                                numpy.int8(0), self.cl_mem["dark"],
+                                               numpy.int8(0), self.cl_mem["dark_variance"],
                                                numpy.int8(0), self.cl_mem["flat"],
                                                numpy.int8(0), self.cl_mem["solidangle"],
                                                numpy.int8(0), self.cl_mem["polarization"],
                                                numpy.int8(0), self.cl_mem["absorption"],
                                                numpy.int8(0), self.cl_mem["mask"],
-                                               numpy.int8(0), numpy.float32(0.0),
-                                               numpy.float32(0.0), numpy.float32(1.0),
+                                               do_dummy, dummy,
+                                               delta_dummy, numpy.float32(1.0),
                                                self.cl_mem["output"]]
         self.cl_kernel_args["corrections3Poisson"] = [self.cl_mem["image"],
                                                       numpy.int8(0), self.cl_mem["dark"],
@@ -344,8 +425,8 @@ class OCL_Preproc(OpenclProcessing):
                                                       numpy.int8(0), self.cl_mem["polarization"],
                                                       numpy.int8(0), self.cl_mem["absorption"],
                                                       numpy.int8(0), self.cl_mem["mask"],
-                                                      numpy.int8(0), numpy.float32(0.0),
-                                                      numpy.float32(0.0), numpy.float32(1.0),
+                                                      do_dummy, dummy,
+                                                      delta_dummy, numpy.float32(1.0),
                                                       self.cl_mem["output"]]
 
     def compile_kernels(self, kernel_files=None, compile_options=None):
@@ -359,30 +440,116 @@ class OCL_Preproc(OpenclProcessing):
         compile_options = "-D NIMAGE=%i" % (self.size)
         OpenclProcessing.compile_kernels(self, kernel_files, compile_options)
 
-    def process(self, raw,
-                dark=None,
-                normalization_factor=1.0,
-                empty=None,
-                variance=None):
-        """Perform the pixel-wise operation of the array
-        
-        :param raw: numpy array with the input image
+    def send_buffer(self, data, dest):
+        """Send a numpy array to the device
+        :param data: numpy array with data
+        :param dest: name of the buffer as registered in the class
         """
-        return raw
 
-    def send_buffer(self, data, dest, dest_type=numpy.float32):
-        """Send a numpy array to the device"""
+        dest_type = [i.dtype for i in self.buffers if i.name == dest][0]
         events = []
         if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-            events.append(("copy %s" % dest, copy_image))
+            events.append(EventDescription("copy %s" % dest, copy_image))
         else:
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
             kernel = getattr(self.program, self.mapping[data.dtype.type])
             cast_to_float = kernel(self.queue, (self.shape,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
-            events += [("copy raw %s" % dest,), ("cast to float", cast_to_float)]
-        self.events += events
+            events += [EventDescription("copy raw %s" % dest,), EventDescription("cast to float", cast_to_float)]
+        if self.profile:
+            self.events += events
         self.on_device[dest] = data
+
+    def process(self, image,
+                dark=None,
+                variance=None,
+                dark_variance=None,
+                normalization_factor=1.0
+                ):
+        """Perform the pixel-wise operation of the array
+        
+        :param raw: numpy array with the input image
+        
+        :param dark: numpy array with the dark-current image
+        :param 
+        """
+        if id(image) != id(self.on_device.get("image")):
+            self.send_buffer(image, "image")
+
+        if dark is not None:
+            do_dark = numpy.int8(1)
+            if id(dark) != id(self.on_device.get("dark")):
+                self.send_buffer(dark, "dark")
+        else:
+            do_dark = numpy.int8(0)
+        if (variance is not None) and self.on_host.get("calc_variance"):
+            if id(variance) != id(self.on_device.get("variance")):
+                self.send_buffer(variance, "variance")
+        if (dark_variance is not None) and self.on_host.get("calc_variance"):
+            if id(dark_variance) != id(self.on_device.get("dark_variance")):
+                self.send_buffer(dark_variance, "dark_variance")
+        normalization_factor = numpy.float32(normalization_factor)
+        if self.on_device.get("poissonian"):
+            kernel_name = "corrections3Poisson"
+            args = self.cl_kernel_args[kernel_name]
+            args[1] = do_dark
+        elif self.on_device.get("calc_variance"):
+            kernel_name = "corrections3"
+            args = self.cl_kernel_args[kernel_name]
+            args[2] = do_dark
+            if self.on_device.get("dark_variance") is not None and do_dark:
+                args[4] = do_dark
+
+        elif self.on_device.get("split_result"):
+            kernel_name = "corrections2"
+            args = self.cl_kernel_args[kernel_name]
+            args[1] = do_dark
+        else:
+            kernel_name = "corrections"
+            args = self.cl_kernel_args[kernel_name]
+            args[1] = do_dark
+
+        kernel = self.program.__getattr__(kernel_name)
+        evt = kernel(self.queue, (self.size,), None, *args)
+        if "3" in kernel_name:
+            dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
+            copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["output"])
+        elif "2" in kernel_name:
+            dest = numpy.empty(self.on_device.get("image").shape + (2,), dtype=numpy.float32)
+            copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["output"])
+        else:
+            dest = numpy.empty(self.on_device.get("image").shape, dtype=numpy.float32)
+            copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["image"])
+        if self.profile:
+            self.events += [EventDescription("preproc", evt), EventDescription("copy result", copy_result)]
+
+        return dest
+
+    def __copy__(self):
+        """Shallow copy of the object
+
+        :return: copy of the object
+        """
+        return self.__class__(dummy=self.dummy, delta_dummy=self.delta_dummy, empty=self.self.empty,
+                              ctx=self.ctx, profile=self.profile, **self.on_device)
+
+    def __deepcopy__(self, memo=None):
+        """deep copy of the object
+
+        :return: deepcopy of the object
+        """
+        if memo is None:
+            memo = {}
+
+        memo[id(self.ctx)] = self.ctx
+        od2 = {}
+        for k, v in self.on_device.items():
+            od2[k] = v.copy()
+            memo[id(v)] = od2[k]
+        new_obj = self.__class__(dummy=self.dummy, delta_dummy=self.delta_dummy, empty=self.self.empty,
+                                 ctx=self.ctx, profile=self.profile, **self.on_device)
+        memo[id(self)] = new_obj
+        return new_obj
 
 
 def preproc(raw,
@@ -413,8 +580,7 @@ def preproc(raw,
     :param polarization: Correction for polarization of the incident beam
     :param absorption: Correction for absorption in the sensor volume
     :param normalization_factor: final value is divided by this
-    :param empty: value to be given for empty bins
-#    :param engine: may be "python", "cython" or "opencl" for accelereated results
+    :param empty: value to be given for empty pixels
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.   
     :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
@@ -444,13 +610,13 @@ def preproc(raw,
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32
         raw = numpy.ascontiguousarray(raw, numpy.float32)
 
-    engine = OCL_Preproc(template=raw,
+    engine = OCL_Preproc(image=raw,
                          dark=dark, flat=flat, solidangle=None, polarization=None, absorption=None,
                          mask=None,
                          devicetype="all")
 
     # TODO
-    result = engine.process(raw)
+    result = engine.process(raw, dark=dark)
 
     if result.dtype != dtype:
         result = numpy.ascontiguousarray(result, dtype)
