@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "19/01/2017"
 __status__ = "stable"
 
 import os
@@ -409,14 +409,13 @@ def allocate_cl_buffers(buffers, device=None, context=None):
     logger.info("%.3fMB are needed on device which has %.3fMB",
                 ualloc / 1.0e6, memory / 1.0e6)
     if ualloc >= memory:
-        raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
+        raise MemoryError("Fatal error in allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
 
     # do the allocation
     try:
         for name, flag, dtype, size in buffers:
-            mem[name] = \
-                pyopencl.Buffer(context, flag,
-                                numpy.dtype(dtype).itemsize * size)
+            mem[name] = pyopencl.Buffer(context, flag,
+                                        numpy.dtype(dtype).itemsize * size)
     except pyopencl.MemoryError as error:
         release_cl_buffers(mem)
         raise MemoryError(error)
