@@ -99,7 +99,6 @@ def preproc(raw,
     
     If poissonian is set to True, the variance is evaluated as (raw + dark)
     """
-    print(mask)
     if isinstance(dtype, str):
         dtype = numpy.dtype(dtype).type
     shape = raw.shape
@@ -132,79 +131,78 @@ def preproc(raw,
 
     numerator = numpy.ascontiguousarray(raw.ravel(), dtype=dtype)
     denominator = numpy.zeros_like(numerator) + normalization_factor
-
-    if check_dummy:
-        # runtime warning here
-        if ddummy == 0:
-            mask |= (numerator == cdummy)
-        else:
-            mask |= (abs(numerator - cdummy) <= ddummy)
-
     if variance is not None:
         variance = numpy.ascontiguousarray(variance.ravel(), dtype=dtype)
     elif poissonian:
         variance = numerator.copy()
 
-    if dark is not None:
-        assert dark.size == size, "Dark array size is correct"
-        dark = numpy.ascontiguousarray(dark.ravel(), dtype=dtype)
+    # runtime warning here
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', category=RuntimeWarning)
+
         if check_dummy:
             # runtime warning here
             if ddummy == 0:
-                mask |= (dark == cdummy)
+                mask |= (numerator == cdummy)
             else:
-                mask |= abs(dark - cdummy) < ddummy
-        numerator -= dark
-        if poissonian:
-            variance += dark
-        elif dark_variance is not None:
-            variance += dark_variance
+                mask |= (abs(numerator - cdummy) <= ddummy)
 
-    if flat is not None:
-        assert flat.size == size, "Flat array size is correct"
-        flat = numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
-        if check_dummy:
-            # runtime warning here
-            if ddummy == 0:
-                mask |= (flat == cdummy)
+        if dark is not None:
+            assert dark.size == size, "Dark array size is correct"
+            dark = numpy.ascontiguousarray(dark.ravel(), dtype=dtype)
+            if check_dummy:
+                # runtime warning here
+                if ddummy == 0:
+                    mask |= (dark == cdummy)
+                else:
+                    mask |= abs(dark - cdummy) < ddummy
+            numerator -= dark
+            if poissonian:
+                variance += dark
+            elif dark_variance is not None:
+                variance += dark_variance
+
+        if flat is not None:
+            assert flat.size == size, "Flat array size is correct"
+            flat = numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
+            if check_dummy:
+                # runtime warning here
+                if ddummy == 0:
+                    mask |= (flat == cdummy)
+                else:
+                    mask |= abs(flat - cdummy) <= ddummy
+            denominator *= flat
+
+        if polarization is not None:
+            assert polarization.size == size, "Polarization array size is correct"
+            denominator *= numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
+
+        if solidangle is not None:
+            assert solidangle.size == size, "Solid angle array size is correct"
+            denominator *= numpy.ascontiguousarray(solidangle.ravel(), dtype=dtype)
+
+        if absorption is not None:
+            assert absorption.size == size, "Absorption array size is correct"
+            denominator *= numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
+
+        mask |= numpy.isnan(numerator)
+        mask |= numpy.isnan(denominator)
+        if variance is not None:
+            mask |= numpy.isnan(variance)
+
+        if split_result:
+            result = numpy.zeros(out_shape, dtype=dtype)
+            numerator[mask] = 0.0
+            denominator[mask] = 0.0
+            variance[mask] = 0.0
+            result[..., 0] = numerator.reshape(shape)
+            if variance is None:
+                result[:, :, 1] = denominator.reshape(shape)
             else:
-                mask |= abs(flat - cdummy) <= ddummy
-        denominator *= flat
-
-    if polarization is not None:
-        assert polarization.size == size, "Polarization array size is correct"
-        denominator *= numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
-
-    if solidangle is not None:
-        assert solidangle.size == size, "Solid angle array size is correct"
-        denominator *= numpy.ascontiguousarray(solidangle.ravel(), dtype=dtype)
-
-    if absorption is not None:
-        assert absorption.size == size, "Absorption array size is correct"
-        denominator *= numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
-
-    mask |= numpy.isnan(numerator)
-    mask |= numpy.isnan(denominator)
-    if variance is not None:
-        mask |= numpy.isnan(variance)
-
-    if split_result:
-        result = numpy.zeros(out_shape, dtype=dtype)
-        numerator[mask] = 0.0
-        denominator[mask] = 0.0
-        variance[mask] = 0.0
-        result[..., 0] = numerator.reshape(shape)
-        if variance is None:
-            result[:, :, 1] = denominator.reshape(shape)
+                result[..., 1] = variance.reshape(shape)
+                result[..., 2] = denominator.reshape(shape)
         else:
-            result[..., 1] = variance.reshape(shape)
-            result[..., 2] = denominator.reshape(shape)
-    else:
-        # runtime warning here
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', category=RuntimeWarning)
             result = numerator / denominator
-        result[mask] = cdummy
-        result.shape = shape
-        print(mask.reshape(shape))
+            result[mask] = cdummy
+            result.shape = shape
     return result
