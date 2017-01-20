@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2017"
+__date__ = "20/01/2017"
 __status__ = "development"
 
 import warnings
@@ -56,6 +56,7 @@ def preproc(raw,
             empty=None,
             split_result=False,
             variance=None,
+            dark_variance=None,
             poissonian=False,
             dtype=numpy.float32
             ):
@@ -72,9 +73,9 @@ def preproc(raw,
     :param absorption: Correction for absorption in the sensor volume
     :param normalization_factor: final value is divided by this
     :param empty: value to be given for empty bins
-#    :param engine: may be "python", "cython" or "opencl" for accelereated results
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
-    :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.   
+    :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
+    :param dark_variance: provide an estimation of the variance of the dark_current, enforce split_result=True and return an float3 array with variance in second position.   
     :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
     :param dtype: dtype for all processing
     
@@ -157,6 +158,8 @@ def preproc(raw,
             numerator -= dark
             if poissonian:
                 variance += dark
+            elif dark_variance is not None:
+                variance += dark_variance
 
         denominator = numpy.empty(size, dtype=dtype)
         denominator.fill(normalization_factor)

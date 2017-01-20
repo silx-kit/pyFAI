@@ -3,7 +3,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2011-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,8 +28,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "05/01/2017"
-__copyright__ = "2011-2015, ESRF"
+__date__ = "20/01/2017"
+__copyright__ = "2011-2017, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -97,7 +97,7 @@ cdef floating[::1]c1_preproc(floating[::1] data,
         bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization 
         bint is_valid
         floating[::1] result   
-        floating one_value, one_result, one_flat
+        floating one_value, one_num, one_den, one_flat
 
     with gil:
         size = data.size
@@ -110,16 +110,16 @@ cdef floating[::1]c1_preproc(floating[::1] data,
         result = numpy.zeros_like(data)
 
     for i in prange(size, nogil=True, schedule="static"):
-        one_value = data[i]
-        
-        is_valid = not isnan(one_value)
+        one_num = data[i]
+        one_den = normalization_factor
+        is_valid = not isnan(one_num)
         if is_valid and check_mask:
             is_valid = (mask[i] == 0)
         if is_valid and check_dummy:
             if delta_dummy == 0:
-                is_valid = (one_value != dummy)
+                is_valid = (one_num != dummy)
             else:
-                is_valid = fabs(one_value - dummy) > delta_dummy
+                is_valid = fabs(one_num - dummy) > delta_dummy
                 
         if is_valid and do_flat:
             one_flat = flat[i]
@@ -131,20 +131,21 @@ cdef floating[::1]c1_preproc(floating[::1] data,
         if is_valid:
             # Do not use "/=" as they mean reduction for cython
             if do_dark:
-                one_value = one_value - dark[i]
+                one_num = one_num - dark[i]
             if do_flat:
-                one_value = one_value / flat[i]
+                one_den = one_den * flat[i]
             if do_polarization:
-                one_value = one_value / polarization[i]
+                one_den = one_den * polarization[i]
             if do_solidangle:
-                one_value = one_value / solidangle[i]
+                one_den = one_den * solidangle[i]
             if do_absorption:
-                one_value = one_value / absorption[i]
-            one_result = one_value / normalization_factor
+                one_den = one_den * absorption[i]
+            if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+                result[i] += dummy
+            else:
+                result[i] += one_num / one_den            
         else:
-            one_result = dummy
-
-        result[i] += one_result
+            result[i] += dummy
     return result
 
 
@@ -201,7 +202,7 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
-        one_den = 1.0
+        one_den = normalization_factor
         is_valid = not isnan(one_num)
         if is_valid and check_mask:
             is_valid = (mask[i] == 0)
@@ -223,14 +224,16 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
             if do_dark:
                 one_num = one_num - dark[i]
             if do_flat:
-                one_den = one_den / flat[i]
+                one_den = one_den * flat[i]
             if do_polarization:
-                one_den = one_den / polarization[i]
+                one_den = one_den * polarization[i]
             if do_solidangle:
-                one_den = one_den / solidangle[i]
+                one_den = one_den * solidangle[i]
             if do_absorption:
-                one_den = one_den / absorption[i]
-            one_num = one_num / normalization_factor
+                one_den = one_den * absorption[i]
+            if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+                one_num = 0.0
+                one_den = 0.0
         else:
             one_num = 0.0
             one_den = 0.0
@@ -293,7 +296,7 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = one_var = data[i]
-        one_den = 1.0
+        one_den = normalization_factor
         
         is_valid = not isnan(one_num)
         if is_valid and check_mask:
@@ -312,23 +315,25 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
                 is_valid = fabs(one_flat - dummy) > delta_dummy
     
         if is_valid:
-            # Do not use "/=" as they mean reduction for cython
+            # Do not use "+=" as they mean reduction for cython
             if do_dark:
                 one_num = one_num - dark[i]
                 one_var = one_var + dark[i]
             if do_flat:
-                one_den = one_den / flat[i]
+                one_den = one_den * flat[i]
             if do_polarization:
-                one_den = one_den / polarization[i]
+                one_den = one_den * polarization[i]
             if do_solidangle:
-                one_den = one_den / solidangle[i]
+                one_den = one_den * solidangle[i]
             if do_absorption:
-                one_den = one_den / absorption[i]
-            one_num = one_num / normalization_factor
-            one_var = one_var / normalization_factor
+                one_den = one_den * absorption[i]
+            if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+                one_num = 0.0
+                one_var = 0.0
+                one_den = 0.0                
         else:
             one_num = 0.0
-            one_num = 0.0
+            one_var = 0.0
             one_den = 0.0
 
         result[i, 0] += one_num
@@ -353,9 +358,10 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                                 bint check_dummy=False,
                                 floating normalization_factor=1.0,
                                 floating[::1] variance=None,
+                                floating[::1] dark_variance=None,
                                 ) nogil:
     """Common preprocessing step for all routines: C-implementation 
-    with split_result with variance in second position  
+    with split_result with variance in second position: (signal, variance, normalization)  
     
     :param data: raw value, as a numpy array, 1D or 2D
     :param dark: array containing the value of the dark noise, to be subtracted
@@ -366,16 +372,17 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
     :param delta_dummy: precision for invalid data    
-    :param normalization_factor: final value is divided by this
-    
+    :param normalization_factor: final value is divided by this, settles on the denominaor
+    :param variance: variance of the data
+    :param dark_variance: variance of the dark
     NaN are always considered as invalid
     
     Empty pixels are 0 both num, var and den  
     """
     cdef:
         int size, i
-        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization 
-        bint is_valid
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,  
+        bint is_valid, do_polarization, do_variance, do_dark_variance 
         floating[:, ::1] result   
         floating one_num, one_result, one_flat, one_den, one_var
 
@@ -387,11 +394,17 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
         do_absorption = absorption is not None
         do_polarization = polarization is not None
         check_mask = mask is not None
+        do_variance = variance is not None
+        do_dark_variance = dark_variance is not None
         result = numpy.zeros((size, 3), dtype=data.dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
-        one_num = one_var = data[i]
-        one_den = 1.0
+        one_num = data[i]
+        one_den = normalization_factor
+        if do_variance:
+            one_var = variance[i]
+        else:
+            one_var = 0.0
         
         is_valid = not isnan(one_num)
         if is_valid and check_mask:
@@ -413,17 +426,20 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
             # Do not use "/=" as they mean reduction for cython
             if do_dark:
                 one_num = one_num - dark[i]
-                one_var = one_var + dark[i]
+                if do_dark_variance:
+                    one_var = one_var + dark_variance[i]
             if do_flat:
-                one_den = one_den / flat[i]
+                one_den = one_den * flat[i]
             if do_polarization:
-                one_den = one_den / polarization[i]
+                one_den = one_den * polarization[i]
             if do_solidangle:
-                one_den = one_den / solidangle[i]
+                one_den = one_den * solidangle[i]
             if do_absorption:
-                one_den = one_den / absorption[i]
-            one_num = one_num / normalization_factor
-            one_var = one_var / normalization_factor
+                one_den = one_den * absorption[i]
+            if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+                one_num = 0.0
+                one_var = 0.0
+                one_den = 0.0                
         else:
             one_num = 0.0
             one_num = 0.0
@@ -452,6 +468,7 @@ def preproc(raw,
             empty=None,
             bint split_result=False,
             variance=None,
+            dark_variance=None,
             bint poissonian=False,
             ):
     """Common preprocessing step for all 
@@ -467,7 +484,9 @@ def preproc(raw,
     :param absorption: Correction for absorption in the sensor volume
     :param normalization_factor: final value is divided by this
     :param empty: value to be given for empty bins
-    
+    :param variance: variance of the data
+    :param dark_variance: variance of the dark
+
     All calculation are performed in single precision floating point.
     
     NaN are always considered as invalid
@@ -478,7 +497,7 @@ def preproc(raw,
         int size
         bint check_dummy 
         cnp.int8_t[::1] cmask
-        float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, res1
+        float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, dvariance,res1 
         float[:, ::1] res2
         float cdummy, ddummy
     
@@ -540,6 +559,11 @@ def preproc(raw,
         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=numpy.float32)
     else:
         cvariance = None
+    if dark_variance is not None:
+        assert dark_variance.size == size, "Dark_variance array size is correct"
+        dvariance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=numpy.float32)
+    else:
+        dvariance = None
 
     shape = raw.shape
     if split_result or (variance is not None) or poissonian:
@@ -548,7 +572,7 @@ def preproc(raw,
         if (variance is not None):
             out_shape += [3]
             res2 = c3_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                              cmask, cdummy, ddummy, check_dummy, normalization_factor, cvariance)
+                              cmask, cdummy, ddummy, check_dummy, normalization_factor, cvariance, dvariance)
         elif poissonian:
             out_shape += [3]
             res2 = cp_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,

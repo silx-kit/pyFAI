@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "19/01/2017"
+__date__ = "20/01/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -327,7 +327,6 @@ class OCL_Preproc(OpenclProcessing):
             self.cl_kernel_args["corrections2"][11] = numpy.int8(1)
             self.cl_kernel_args["corrections2"][11] = numpy.int8(1)
             self.cl_kernel_args["corrections3Poisson"][12] = numpy.int8(1)
-        print(self.on_device)
         self.compile_kernels()
         # self.block_size = max(self.block_size,self.program.k)
 
@@ -474,6 +473,7 @@ class OCL_Preproc(OpenclProcessing):
         :param 
         """
         if id(image) != id(self.on_device.get("image")):
+            print("Re-send buffer !")
             self.send_buffer(image, "image")
 
         if dark is not None:
@@ -482,6 +482,13 @@ class OCL_Preproc(OpenclProcessing):
                 self.send_buffer(dark, "dark")
         else:
             do_dark = numpy.int8(0)
+        print(self.on_device)
+        print(image)
+        print(dark)
+        print(variance)
+        print(dark_variance)
+        print(normalization_factor)
+        print(self.on_host)
         if (variance is not None) and self.on_host.get("calc_variance"):
             if id(variance) != id(self.on_device.get("variance")):
                 self.send_buffer(variance, "variance")
@@ -522,7 +529,8 @@ class OCL_Preproc(OpenclProcessing):
             copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["image"])
         if self.profile:
             self.events += [EventDescription("preproc", evt), EventDescription("copy result", copy_result)]
-
+        copy_result.wait()
+        print(dest)
         return dest
 
     def __copy__(self):
@@ -565,6 +573,7 @@ def preproc(raw,
             empty=None,
             split_result=False,
             variance=None,
+            dark_variance=None,
             poissonian=False,
             dtype=numpy.float32
             ):
@@ -610,13 +619,18 @@ def preproc(raw,
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32
         raw = numpy.ascontiguousarray(raw, numpy.float32)
 
-    engine = OCL_Preproc(image=raw,
-                         dark=dark, flat=flat, solidangle=None, polarization=None, absorption=None,
-                         mask=None,
+    engine = OCL_Preproc(image=raw, dark=dark, flat=flat, solidangle=solidangle,
+                         polarization=polarization, absorption=absorption,
+                         mask=mask, dummy=dummy, delta_dummy=delta_dummy, empty=empty,
+                         split_result=split_result,
+                         calc_variance=(variance is not None),
+                         poissonian=poissonian,
                          devicetype="all")
 
     # TODO
-    result = engine.process(raw, dark=dark)
+    result = engine.process(raw, dark=dark, variance=variance,
+                            dark_variance=dark_variance,
+                            normalization_factor=normalization_factor)
 
     if result.dtype != dtype:
         result = numpy.ascontiguousarray(result, dtype)
