@@ -140,7 +140,7 @@ cdef floating[::1]c1_preproc(floating[::1] data,
                 one_den = one_den * solidangle[i]
             if do_absorption:
                 one_den = one_den * absorption[i]
-            if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+            if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
                 result[i] += dummy
             else:
                 result[i] += one_num / one_den            
@@ -231,7 +231,7 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
                 one_den = one_den * solidangle[i]
             if do_absorption:
                 one_den = one_den * absorption[i]
-            if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+            if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
                 one_num = 0.0
                 one_den = 0.0
         else:
@@ -327,7 +327,7 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
                 one_den = one_den * solidangle[i]
             if do_absorption:
                 one_den = one_den * absorption[i]
-            if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+            if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
                 one_num = 0.0
                 one_var = 0.0
                 one_den = 0.0                
@@ -372,7 +372,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
     :param delta_dummy: precision for invalid data    
-    :param normalization_factor: final value is divided by this, settles on the denominaor
+    :param normalization_factor: final value is divided by this, settles on the denominator
     :param variance: variance of the data
     :param dark_variance: variance of the dark
     NaN are always considered as invalid
@@ -436,7 +436,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                 one_den = one_den * solidangle[i]
             if do_absorption:
                 one_den = one_den * absorption[i]
-            if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+            if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
                 one_num = 0.0
                 one_var = 0.0
                 one_den = 0.0                

@@ -3798,19 +3798,19 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_20, __pyx_t_13, __pyx_t_18, __pyx_t_11, __pyx_t_12, __pyx_t_17, __pyx_t_16, __pyx_t_21, __pyx_t_14, __pyx_t_19, __pyx_t_22, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_13, __pyx_t_10, __pyx_t_14, __pyx_t_20, __pyx_t_22, __pyx_t_21, __pyx_t_11, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_one_den) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_num) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_den) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_num) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
+                              __pyx_v_is_valid = ((int)0xbad0bad0);
                               __pyx_v_one_den = ((float)__PYX_NAN());
                               __pyx_v_one_flat = ((float)__PYX_NAN());
-                              __pyx_v_is_valid = ((int)0xbad0bad0);
                               __pyx_v_one_num = ((float)__PYX_NAN());
 
                               /* "pyFAI/ext/preproc.pyx":113
@@ -4097,7 +4097,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:             # <<<<<<<<<<<<<<
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  */
                                 __pyx_t_11 = (__pyx_v_do_absorption != 0);
                                 if (__pyx_t_11) {
@@ -4106,7 +4106,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  *                 result[i] += dummy
  */
                                   __pyx_t_19 = __pyx_v_i;
@@ -4118,7 +4118,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(
                                 /* "pyFAI/ext/preproc.pyx":143
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):             # <<<<<<<<<<<<<<
  *                 result[i] += dummy
  *             else:
  */
@@ -4134,14 +4134,14 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(
                                   __pyx_t_11 = __pyx_t_12;
                                   goto __pyx_L34_bool_binop_done;
                                 }
-                                __pyx_t_12 = ((__pyx_v_one_den <= 0.0) != 0);
+                                __pyx_t_12 = ((__pyx_v_one_den == 0.0) != 0);
                                 __pyx_t_11 = __pyx_t_12;
                                 __pyx_L34_bool_binop_done:;
                                 if (__pyx_t_11) {
 
                                   /* "pyFAI/ext/preproc.pyx":144
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  *                 result[i] += dummy             # <<<<<<<<<<<<<<
  *             else:
  *                 result[i] += one_num / one_den
@@ -4557,20 +4557,20 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_20, __pyx_t_13, __pyx_t_18, __pyx_t_23, __pyx_t_11, __pyx_t_21, __pyx_t_12, __pyx_t_17, __pyx_t_16, __pyx_t_14, __pyx_t_19, __pyx_t_22, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_13, __pyx_t_10, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_11, __pyx_t_21, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_flat) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_one_flat) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_num) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_one_num = ((float)__PYX_NAN());
-                              __pyx_v_one_den = ((float)__PYX_NAN());
                               __pyx_v_is_valid = ((int)0xbad0bad0);
+                              __pyx_v_one_den = ((float)__PYX_NAN());
                               __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_num = ((float)__PYX_NAN());
 
                               /* "pyFAI/ext/preproc.pyx":204
  * 
@@ -4856,7 +4856,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:             # <<<<<<<<<<<<<<
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  */
                                 __pyx_t_11 = (__pyx_v_do_absorption != 0);
                                 if (__pyx_t_11) {
@@ -4865,7 +4865,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  *                 one_num = 0.0
  */
                                   __pyx_t_19 = __pyx_v_i;
@@ -4877,7 +4877,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(
                                 /* "pyFAI/ext/preproc.pyx":234
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):             # <<<<<<<<<<<<<<
  *                 one_num = 0.0
  *                 one_den = 0.0
  */
@@ -4893,14 +4893,14 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(
                                   __pyx_t_11 = __pyx_t_12;
                                   goto __pyx_L34_bool_binop_done;
                                 }
-                                __pyx_t_12 = ((__pyx_v_one_den <= 0.0) != 0);
+                                __pyx_t_12 = ((__pyx_v_one_den == 0.0) != 0);
                                 __pyx_t_11 = __pyx_t_12;
                                 __pyx_L34_bool_binop_done:;
                                 if (__pyx_t_11) {
 
                                   /* "pyFAI/ext/preproc.pyx":235
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  *                 one_num = 0.0             # <<<<<<<<<<<<<<
  *                 one_den = 0.0
  *         else:
@@ -4908,7 +4908,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(
                                   __pyx_v_one_num = 0.0;
 
                                   /* "pyFAI/ext/preproc.pyx":236
- *             if (isnan(one_num) or isnan(one_den) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  *                 one_num = 0.0
  *                 one_den = 0.0             # <<<<<<<<<<<<<<
  *         else:
@@ -5347,19 +5347,19 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_27, __pyx_t_18, __pyx_t_23, __pyx_t_26, __pyx_t_25, __pyx_t_20, __pyx_t_13, __pyx_t_12, __pyx_t_17, __pyx_t_11, __pyx_t_16, __pyx_t_21, __pyx_t_24, __pyx_t_14, __pyx_t_19, __pyx_t_22, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_10, __pyx_t_27, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_21, __pyx_t_13, __pyx_t_26, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18, __pyx_t_24, __pyx_t_25, __pyx_t_11)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_one_var) lastprivate(__pyx_v_one_num) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_one_flat) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_var) lastprivate(__pyx_v_one_den) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_one_var = ((float)__PYX_NAN());
                               __pyx_v_one_num = ((float)__PYX_NAN());
                               __pyx_v_is_valid = ((int)0xbad0bad0);
+                              __pyx_v_one_var = ((float)__PYX_NAN());
                               __pyx_v_one_den = ((float)__PYX_NAN());
                               __pyx_v_one_flat = ((float)__PYX_NAN());
 
@@ -5659,7 +5659,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:             # <<<<<<<<<<<<<<
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  */
                                 __pyx_t_12 = (__pyx_v_do_absorption != 0);
                                 if (__pyx_t_12) {
@@ -5668,7 +5668,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  *                 one_num = 0.0
  */
                                   __pyx_t_21 = __pyx_v_i;
@@ -5680,7 +5680,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(
                                 /* "pyFAI/ext/preproc.pyx":330
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):             # <<<<<<<<<<<<<<
  *                 one_num = 0.0
  *                 one_var = 0.0
  */
@@ -5702,14 +5702,14 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(
                                   __pyx_t_12 = __pyx_t_13;
                                   goto __pyx_L34_bool_binop_done;
                                 }
-                                __pyx_t_13 = ((__pyx_v_one_den <= 0.0) != 0);
+                                __pyx_t_13 = ((__pyx_v_one_den == 0.0) != 0);
                                 __pyx_t_12 = __pyx_t_13;
                                 __pyx_L34_bool_binop_done:;
                                 if (__pyx_t_12) {
 
                                   /* "pyFAI/ext/preproc.pyx":331
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  *                 one_num = 0.0             # <<<<<<<<<<<<<<
  *                 one_var = 0.0
  *                 one_den = 0.0
@@ -5717,7 +5717,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(
                                   __pyx_v_one_num = 0.0;
 
                                   /* "pyFAI/ext/preproc.pyx":332
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  *                 one_num = 0.0
  *                 one_var = 0.0             # <<<<<<<<<<<<<<
  *                 one_den = 0.0
@@ -6213,21 +6213,21 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_23, __pyx_t_20, __pyx_t_27, __pyx_t_18, __pyx_t_12, __pyx_t_26, __pyx_t_25, __pyx_t_11, __pyx_t_13, __pyx_t_17, __pyx_t_16, __pyx_t_21, __pyx_t_24, __pyx_t_14, __pyx_t_19, __pyx_t_22, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_10, __pyx_t_12, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_21, __pyx_t_11, __pyx_t_13, __pyx_t_26, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_27, __pyx_t_18, __pyx_t_24, __pyx_t_25)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_var) lastprivate(__pyx_v_is_valid) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_one_var) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_is_valid) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
                               __pyx_v_one_den = ((float)__PYX_NAN());
-                              __pyx_v_one_num = ((float)__PYX_NAN());
-                              __pyx_v_one_flat = ((float)__PYX_NAN());
                               __pyx_v_one_var = ((float)__PYX_NAN());
+                              __pyx_v_one_num = ((float)__PYX_NAN());
                               __pyx_v_is_valid = ((int)0xbad0bad0);
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
 
                               /* "pyFAI/ext/preproc.pyx":402
  * 
@@ -6570,7 +6570,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:             # <<<<<<<<<<<<<<
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  */
                                 __pyx_t_11 = (__pyx_v_do_absorption != 0);
                                 if (__pyx_t_11) {
@@ -6579,7 +6579,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
  *                 one_den = one_den * solidangle[i]
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  *                 one_num = 0.0
  */
                                   __pyx_t_21 = __pyx_v_i;
@@ -6591,7 +6591,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
                                 /* "pyFAI/ext/preproc.pyx":439
  *             if do_absorption:
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):             # <<<<<<<<<<<<<<
  *                 one_num = 0.0
  *                 one_var = 0.0
  */
@@ -6613,14 +6613,14 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
                                   __pyx_t_11 = __pyx_t_13;
                                   goto __pyx_L36_bool_binop_done;
                                 }
-                                __pyx_t_13 = ((__pyx_v_one_den <= 0.0) != 0);
+                                __pyx_t_13 = ((__pyx_v_one_den == 0.0) != 0);
                                 __pyx_t_11 = __pyx_t_13;
                                 __pyx_L36_bool_binop_done:;
                                 if (__pyx_t_11) {
 
                                   /* "pyFAI/ext/preproc.pyx":440
  *                 one_den = one_den * absorption[i]
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  *                 one_num = 0.0             # <<<<<<<<<<<<<<
  *                 one_var = 0.0
  *                 one_den = 0.0
@@ -6628,7 +6628,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
                                   __pyx_v_one_num = 0.0;
 
                                   /* "pyFAI/ext/preproc.pyx":441
- *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den <= 0)):
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
  *                 one_num = 0.0
  *                 one_var = 0.0             # <<<<<<<<<<<<<<
  *                 one_den = 0.0
@@ -6821,7 +6821,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_7preproc_preproc[] = "Common preprocessing step for all \n    \n    :param raw: raw value, as a numpy array, 1D or 2D\n    :param mask: array non null  where data should be ignored\n    :param dummy: value of invalid data\n    :param delta_dummy: precision for invalid data\n    :param dark: array containing the value of the dark noise, to be subtracted\n    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.\n    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility\n    :param polarization: Correction for polarization of the incident beam\n    :param absorption: Correction for absorption in the sensor volume\n    :param normalization_factor: final value is divided by this\n    :param empty: value to be given for empty bins\n    :param variance: variance of the data\n    :param dark_variance: variance of the dark\n\n    All calculation are performed in single precision floating point.\n    \n    NaN are always considered as invalid\n    \n    if neither empty nor dummy is provided, empty pixels are 0  \n    ";
+static char __pyx_doc_5pyFAI_3ext_7preproc_preproc[] = "preproc(raw, dark=None, flat=None, solidangle=None, polarization=None, absorption=None, mask=None, dummy=None, delta_dummy=None, float normalization_factor=1.0, empty=None, bool split_result=False, variance=None, dark_variance=None, bool poissonian=False)\nCommon preprocessing step for all \n    \n    :param raw: raw value, as a numpy array, 1D or 2D\n    :param mask: array non null  where data should be ignored\n    :param dummy: value of invalid data\n    :param delta_dummy: precision for invalid data\n    :param dark: array containing the value of the dark noise, to be subtracted\n    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.\n    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility\n    :param polarization: Correction for polarization of the incident beam\n    :param absorption: Correction for absorption in the sensor volume\n    :param normalization_factor: final value is divided by this\n    :param empty: value to be given for empty bins\n    :param variance: variance of the data\n    :param dark_variance: variance of the dark\n\n    All calculation are performed in single precision floating point.\n    \n    NaN are always considered as invalid\n    \n    if neither empty nor dummy is provided, empty pixels are 0  \n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_7preproc_1preproc = {"preproc", (PyCFunction)__pyx_pw_5pyFAI_3ext_7preproc_1preproc, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_7preproc_preproc};
 static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_raw = 0;
