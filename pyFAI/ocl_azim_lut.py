@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "18/01/2017"
+__date__ = "20/01/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -199,7 +199,7 @@ class OCL_LUT_Integrator(object):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or "ocl_azim_LUT.cl"
-        kernel_src = concatenate_cl_kernel(["preprocess.cl", kernel_file])
+        kernel_src = concatenate_cl_kernel(["preprocess.cl", "memset.cl", kernel_file])
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))

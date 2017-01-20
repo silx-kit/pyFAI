@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "18/01/2017"
+__date__ = "20/01/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -214,7 +214,7 @@ class OCL_CSR_Integrator(object):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or "ocl_azim_CSR.cl"
-        kernel_src = concatenate_cl_kernel(["preprocess.cl", kernel_file])
+        kernel_src = concatenate_cl_kernel(["preprocess.cl", "memset.cl", kernel_file])
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.BLOCK_SIZE, int(self.device_type == "CPU"))
