@@ -200,29 +200,37 @@ static float3 _preproc3(const __global float  *image,
     float3 result = (float3)(0.0, 0.0, 0.0);
     if (i < NIMAGE)
     {
-        if (do_mask && (!mask[i]))
+        if ((!do_mask) || (!mask[i]))
         {
             result.s0 = image[i];
             if (variance != 0)
                 result.s1 = variance[i];
             result.s2 = normalization_factor;
             if ( (!do_dummy)
-                    ||((delta_dummy!=0.0f) && (fabs(result.s0-dummy) > delta_dummy))
-                    ||((delta_dummy==0.0f) && (result.s0!=dummy)))
+                  ||((delta_dummy != 0.0f) && (fabs(result.s0-dummy) > delta_dummy))
+                  ||((delta_dummy == 0.0f) && (result.s0 != dummy)))
             {
                 if (do_dark)
                     result.s0 -= dark[i];
                 if (do_dark_variance)
                     result.s1 += dark_variance[i];
                 if (do_flat)
-                    result.s2 *= flat[i];
+                {
+                    float one_flat = flat[i];
+                    if ( (!do_dummy)
+                         ||((delta_dummy != 0.0f) && (fabs(one_flat-dummy) > delta_dummy))
+                         ||((delta_dummy == 0.0f) && (one_flat != dummy)))
+                        result.s2 *= one_flat;
+                    else
+                        result.s2 = 0.0f;
+                }
                 if (do_solidangle)
                     result.s2 *= solidangle[i];
                 if (do_polarization)
                     result.s2 *= polarization[i];
                 if (do_absorption)
                     result.s2 *= absorption[i];
-                if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 <= 0))
+                if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 == 0.0f))
                     result = (float3)(0.0, 0.0, 0.0);
             }
             else
@@ -268,7 +276,7 @@ static float3 _preproc3(const __global float  *image,
 **/
 
 __kernel void
-corrections(      __global float  *image,
+corrections(const __global float  *image,
             const          char   do_dark,
             const __global float  *dark,
             const          char   do_flat,
@@ -284,7 +292,8 @@ corrections(      __global float  *image,
             const          char   do_dummy,
             const          float  dummy,
             const          float  delta_dummy,
-            const          float  normalization_factor
+            const          float  normalization_factor,
+                  __global float  *output
             )
 {
     size_t i= get_global_id(0);
@@ -311,10 +320,10 @@ corrections(      __global float  *image,
                             dummy,
                             delta_dummy,
                             normalization_factor);
-        if ((result.s0 != 0.0) && (result.s2 > 0.0))
-            image[i] = result.s0 / result.s2;
+        if (result.s2 != 0.0f)
+            output[i] = result.s0 / result.s2;
         else
-            image[i] = dummy;
+            output[i] = dummy;
     };//end if NIMAGE
 
 };//end kernel

@@ -77,17 +77,16 @@ class TestPreproc(unittest.TestCase):
 
         # add some tests with various levels of conditioning
         res = preproc.preproc(raw)
-
         # then Nan on last lines -> 0
         self.assertEqual(abs(res[-2:, 2:]).max(), 0, "Nan filtering")
+        self.assertGreater(abs(res[:-2, 2:]).max(), scale, "untouched other")
 
         res = preproc.preproc(raw, empty=-1)
         # then Nan on last lines -> -1
         self.assertEqual(abs(res[-2:, :] + 1).max(), 0, "Nan filtering with empty filling")
 
-        res = preproc.preproc(raw, dummy=-1, delta_dummy=0.5)
         # test dummy
-
+        res = preproc.preproc(raw, dummy=-1, delta_dummy=0.5)
         self.assertEqual(abs(res[-2:, :] + 1).max(), 0, "dummy filtering")
 
         # test polarization, solidangle and sensor thickness  with dummy.
@@ -95,7 +94,7 @@ class TestPreproc(unittest.TestCase):
 
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
 
-        self.assertGreater(abs(numpy.round(res) - target).max(), 0, "flat != polarization")
+        self.assertGreater(abs(numpy.round(res, 3) - target).max(), 0, "flat != polarization")
 
         res = preproc.preproc(raw, dark, solidangle=flat, dummy=dummy, mask=mask, normalization_factor=scale)
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
@@ -107,9 +106,7 @@ class TestPreproc(unittest.TestCase):
 
         # Test all features together
         res = preproc.preproc(raw, dark=dark, flat=flat, dummy=dummy, mask=mask, normalization_factor=scale)
-#         print("dark,flat,dummy,mask&normalization")
-#         print(numpy.round(res))
-        self.assertEqual(abs(numpy.round(res) - target).max(), 0, "test all features ")
+        self.assertLessEqual(abs(res - target).max(), 1e-3, "test all features ")
 
     def test_python(self):
         self.one_test(python_preproc)
@@ -125,8 +122,8 @@ class TestPreproc(unittest.TestCase):
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestPreproc("test_python"))
-    # testsuite.addTest(TestPreproc("test_cython"))
-    # testsuite.addTest(TestPreproc("test_opencl"))
+    testsuite.addTest(TestPreproc("test_cython"))
+    testsuite.addTest(TestPreproc("test_opencl"))
 
     return testsuite
 

@@ -53,11 +53,11 @@ from collections import namedtuple
 BufferDescription = namedtuple("BufferDescription", ["name", "flags", "dtype", "size"])
 EventDescription = namedtuple("EventDescription", ["name", "event"])
 
-try:
-    from .ext.fastcrc import crc32
-except:
-    from zlib import crc32
-logger = logging.getLogger("pyFAI.ocl_azim_csr")
+# try:
+#     from .ext.fastcrc import crc32
+# except:
+#     from zlib import crc32
+logger = logging.getLogger("pyFAI.ocl_preproc")
 
 
 class OpenclProcessing(object):
@@ -175,18 +175,19 @@ class OpenclProcessing(object):
         """If we are in profiling mode, prints out all timing for every single OpenCL call
         """
         t = 0.0
-        out = ["", "Profiling info for OpenCL %s" % self.__name__]
+        out = ["", "Profiling info for OpenCL %s" % self.__class__.__name__]
         if self.profile:
             for e in self.events:
                 if "__len__" in dir(e) and len(e) >= 2:
                     et = 1e-6 * (e[1].profile.end - e[1].profile.start)
-                    out.append("%50s:\t%.3fms" % e[0], et)
+                    out.append("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
         out.append("_" * 80)
         out.append("%50s:\t%.3fms" % ("Total execution time", t))
         logger.info(os.linesep.join(out))
 
+# This should be implemented by concrete class
 #     def __copy__(self):
 #         """Shallow copy of the object
 #
@@ -328,7 +329,6 @@ class OCL_Preproc(OpenclProcessing):
             self.cl_kernel_args["corrections2"][11] = numpy.int8(1)
             self.cl_kernel_args["corrections3Poisson"][12] = numpy.int8(1)
         self.compile_kernels()
-        # self.block_size = max(self.block_size,self.program.k)
 
     @property
     def dummy(self):
@@ -382,7 +382,7 @@ class OCL_Preproc(OpenclProcessing):
             dummy = numpy.float32(self.on_host["empty"] or 0.0)
             delta_dummy = numpy.float32(self.on_host["delta_dummy"] or 0.0)
         else:
-            do_dummy = numpy.int8(0)
+            do_dummy = numpy.int8(1)
             dummy = numpy.float32(self.on_host["dummy"])
             delta_dummy = numpy.float32(self.on_host["delta_dummy"] or 0.0)
 
@@ -394,7 +394,8 @@ class OCL_Preproc(OpenclProcessing):
                                               numpy.int8(0), self.cl_mem["absorption"],
                                               numpy.int8(0), self.cl_mem["mask"],
                                               do_dummy, dummy,
-                                              delta_dummy, numpy.float32(1.0)]
+                                              delta_dummy, numpy.float32(1.0),
+                                              self.cl_mem["output"]]
         self.cl_kernel_args["corrections2"] = [self.cl_mem["image"],
                                                numpy.int8(0), self.cl_mem["dark"],
                                                numpy.int8(0), self.cl_mem["flat"],
@@ -445,7 +446,7 @@ class OCL_Preproc(OpenclProcessing):
         :param dest: name of the buffer as registered in the class
         """
 
-        dest_type = [i.dtype for i in self.buffers if i.name == dest][0]
+        dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
         events = []
         if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
@@ -472,65 +473,55 @@ class OCL_Preproc(OpenclProcessing):
         :param dark: numpy array with the dark-current image
         :param 
         """
-        if id(image) != id(self.on_device.get("image")):
-            print("Re-send buffer !")
-            self.send_buffer(image, "image")
+        with self.sem:
+            if id(image) != id(self.on_device.get("image")):
+                self.send_buffer(image, "image")
 
-        if dark is not None:
-            do_dark = numpy.int8(1)
-            if id(dark) != id(self.on_device.get("dark")):
-                self.send_buffer(dark, "dark")
-        else:
-            do_dark = numpy.int8(0)
-        print(self.on_device)
-        print(image)
-        print(dark)
-        print(variance)
-        print(dark_variance)
-        print(normalization_factor)
-        print(self.on_host)
-        if (variance is not None) and self.on_host.get("calc_variance"):
-            if id(variance) != id(self.on_device.get("variance")):
-                self.send_buffer(variance, "variance")
-        if (dark_variance is not None) and self.on_host.get("calc_variance"):
-            if id(dark_variance) != id(self.on_device.get("dark_variance")):
-                self.send_buffer(dark_variance, "dark_variance")
-        normalization_factor = numpy.float32(normalization_factor)
-        if self.on_device.get("poissonian"):
-            kernel_name = "corrections3Poisson"
-            args = self.cl_kernel_args[kernel_name]
-            args[1] = do_dark
-        elif self.on_device.get("calc_variance"):
-            kernel_name = "corrections3"
-            args = self.cl_kernel_args[kernel_name]
-            args[2] = do_dark
-            if self.on_device.get("dark_variance") is not None and do_dark:
-                args[4] = do_dark
+            if dark is not None:
+                do_dark = numpy.int8(1)
+                if id(dark) != id(self.on_device.get("dark")):
+                    self.send_buffer(dark, "dark")
+            else:
+                do_dark = numpy.int8(0)
+            if (variance is not None) and self.on_host.get("calc_variance"):
+                if id(variance) != id(self.on_device.get("variance")):
+                    self.send_buffer(variance, "variance")
+            if (dark_variance is not None) and self.on_host.get("calc_variance"):
+                if id(dark_variance) != id(self.on_device.get("dark_variance")):
+                    self.send_buffer(dark_variance, "dark_variance")
 
-        elif self.on_device.get("split_result"):
-            kernel_name = "corrections2"
-            args = self.cl_kernel_args[kernel_name]
-            args[1] = do_dark
-        else:
-            kernel_name = "corrections"
-            args = self.cl_kernel_args[kernel_name]
-            args[1] = do_dark
+            if self.on_host.get("poissonian"):
+                kernel_name = "corrections3Poisson"
+                args = self.cl_kernel_args[kernel_name]
+                args[1] = do_dark
+            elif self.on_host.get("calc_variance"):
+                kernel_name = "corrections3"
+                args = self.cl_kernel_args[kernel_name]
+                args[2] = do_dark
+                if self.on_device.get("dark_variance") is not None and do_dark:
+                    args[4] = do_dark
+            elif self.on_host.get("split_result"):
+                kernel_name = "corrections2"
+                args = self.cl_kernel_args[kernel_name]
+                args[1] = do_dark
+            else:
+                kernel_name = "corrections"
+                args = self.cl_kernel_args[kernel_name]
+                args[1] = do_dark
+            args[-2] = numpy.float32(normalization_factor)
+            kernel = self.program.__getattr__(kernel_name)
+            evt = kernel(self.queue, (self.size,), None, *args)
+            if kernel_name.startswith("corrections3"):
+                dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
+            elif kernel_name == "corrections2":
+                dest = numpy.empty(self.on_device.get("image").shape + (2,), dtype=numpy.float32)
+            else:
+                dest = numpy.empty(self.on_device.get("image").shape, dtype=numpy.float32)
 
-        kernel = self.program.__getattr__(kernel_name)
-        evt = kernel(self.queue, (self.size,), None, *args)
-        if "3" in kernel_name:
-            dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
             copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["output"])
-        elif "2" in kernel_name:
-            dest = numpy.empty(self.on_device.get("image").shape + (2,), dtype=numpy.float32)
-            copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["output"])
-        else:
-            dest = numpy.empty(self.on_device.get("image").shape, dtype=numpy.float32)
-            copy_result = pyopencl.enqueue_copy(self.queue, dest, self.cl_mem["image"])
-        if self.profile:
-            self.events += [EventDescription("preproc", evt), EventDescription("copy result", copy_result)]
-        copy_result.wait()
-        print(dest)
+            copy_result.wait()
+            if self.profile:
+                self.events += [EventDescription("preproc", evt), EventDescription("copy result", copy_result)]
         return dest
 
     def __copy__(self):
@@ -615,7 +606,6 @@ def preproc(raw,
     
     If poissonian is set to True, the variance is evaluated as (raw + dark)
     """
-    size = raw.size
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32
         raw = numpy.ascontiguousarray(raw, numpy.float32)
 
@@ -626,8 +616,6 @@ def preproc(raw,
                          calc_variance=(variance is not None),
                          poissonian=poissonian,
                          devicetype="all")
-
-    # TODO
     result = engine.process(raw, dark=dark, variance=variance,
                             dark_variance=dark_variance,
                             normalization_factor=normalization_factor)
@@ -635,4 +623,3 @@ def preproc(raw,
     if result.dtype != dtype:
         result = numpy.ascontiguousarray(result, dtype)
     return result
-
