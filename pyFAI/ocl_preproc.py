@@ -37,188 +37,15 @@ __date__ = "20/01/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os
 import logging
-import threading
-import gc
 import numpy
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
-from .utils import concatenate_cl_kernel
+from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers, \
+                    BufferDescription, EventDescription, OpenclProcessing
+
 if pyopencl:
     mf = pyopencl.mem_flags
-else:
-    raise ImportError("pyopencl is not installed")
 
-from collections import namedtuple
-BufferDescription = namedtuple("BufferDescription", ["name", "flags", "dtype", "size"])
-EventDescription = namedtuple("EventDescription", ["name", "event"])
-
-# try:
-#     from .ext.fastcrc import crc32
-# except:
-#     from zlib import crc32
 logger = logging.getLogger("pyFAI.ocl_preproc")
-
-
-class OpenclProcessing(object):
-    """Abstract class for all OpenCL processing.
-    
-    This class provides:
-    * Generation of the context, queues, profiling mode
-    * Additional function to allocate/free all buffers declared as static attributes of the class 
-    * Functions to compile kernels, cache them and clean them  
-    * helper functions to clone the object
-    """
-    # The last parameter
-    buffers = [BufferDescription("output", mf.WRITE_ONLY, numpy.float32, 10),
-               ]
-    # list of kernel source files to be concatenated before compilation of the program
-    kernel_files = []
-
-    def __init__(self, ctx=None, devicetype="all", platformid=None, deviceid=None,
-                 block_size=None, profile=False):
-        """Constructor of the abstract OpenCL processing class
-        
-        :param ctx: actual working context, left to None for automatic 
-                    initialization from device type or platformid/deviceid 
-        :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
-        :param platformid: integer with the platform_identifier, as given by clinfo
-        :param deviceid: Integer with the device identifier, as given by clinfo
-        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
-        :param profile: switch on profiling to be able to profile at the kernel level,
-                        store profiling elements (makes code slower) 
-        """
-        self.sem = threading.Semaphore()
-        self.profile = bool(profile)
-        self.events = []  # List with of EventDescription, kept for profiling
-        self.cl_mem = {}  # dict with all buffer allocated
-        self.cl_program = None  # The actual OpenCL program
-        self.cl_kernel_args = {}  # dict with all kernel arguments
-        if ctx:
-            self.ctx = ctx
-            device_name = self.ctx.devices[0].name.strip()
-            platform_name = self.ctx.devices[0].platform.name.strip()
-            platform = ocl.get_platform(platform_name)
-            self.device = platform.get_device(device_name)
-            # self.device = platform.id, device.id
-        else:
-            self.ctx = ocl.create_context(devicetype=devicetype, platformid=platformid, deviceid=deviceid)
-            device_name = self.ctx.devices[0].name.strip()
-            platform_name = self.ctx.devices[0].platform.name.strip()
-            platform = ocl.get_platform(platform_name)
-            self.device = platform.get_device(device_name)
-            # self.device = platform.id, device.id
-
-        if profile:
-            self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
-        else:
-            self.queue = pyopencl.CommandQueue(self.ctx)
-
-        self.block_size = block_size
-
-    def __del__(self):
-        """Destructor: release all buffers and programs
-        """
-        self.free_kernels()
-        self.free_buffers()
-        self.queue = None
-        self.ctx = None
-        gc.collect()
-
-    def allocate_buffers(self, buffers=None):
-        """
-        Allocate OpenCL buffers required for a specific configuration
-
-        Note that an OpenCL context also requires some memory, as well
-        as Event and other OpenCL functionalities which cannot and are
-        not taken into account here.  The memory required by a context
-        varies depending on the device. Typical for GTX580 is 65Mb but
-        for a 9300m is ~15Mb In addition, a GPU will always have at
-        least 3-5Mb of memory in use.  Unfortunately, OpenCL does NOT
-        have a built-in way to check the actual free memory on a
-        device, only the total memory.
-        """
-        if buffers is None:
-            buffers = self.buffers
-        self.cl_mem = allocate_cl_buffers(buffers, self.device, self.ctx)
-
-    def free_buffers(self):
-        """free all memory allocated on the device
-        """
-        self.cl_mem = release_cl_buffers(self.cl_mem)
-
-    def compile_kernels(self, kernel_files=None, compile_options=None):
-        """Call the OpenCL compiler
-        
-        :param kernel_files: list of path to the kernel 
-        (by default use the one declared in the class)
-        """
-        # concatenate all needed source files into a single openCL module
-        kernel_files = kernel_files or self.kernel_files
-        kernel_src = concatenate_cl_kernel(kernel_files)
-
-        compile_options = compile_options or ""
-        logger.info("Compiling file %s with options %s", kernel_files, compile_options)
-        try:
-            self.program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
-        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
-            raise MemoryError(error)
-
-    def free_kernels(self):
-        """Free all kernels
-        """
-        for kernel in self.cl_kernel_args:
-            self.cl_kernel_args[kernel] = []
-        self.program = None
-
-    def log_profile(self):
-        """If we are in profiling mode, prints out all timing for every single OpenCL call
-        """
-        t = 0.0
-        out = ["", "Profiling info for OpenCL %s" % self.__class__.__name__]
-        if self.profile:
-            for e in self.events:
-                if "__len__" in dir(e) and len(e) >= 2:
-                    et = 1e-6 * (e[1].profile.end - e[1].profile.start)
-                    out.append("%50s:\t%.3fms" % (e[0], et))
-                    t += et
-
-        out.append("_" * 80)
-        out.append("%50s:\t%.3fms" % ("Total execution time", t))
-        logger.info(os.linesep.join(out))
-
-# This should be implemented by concrete class
-#     def __copy__(self):
-#         """Shallow copy of the object
-#
-#         :return: copy of the object
-#         """
-#         return self.__class__((self._data, self._indices, self._indptr),
-#                               self.size, block_size=self.BLOCK_SIZE,
-#                               platformid=self.platform.id,
-#                               deviceid=self.device.id,
-#                               checksum=self.on_device.get("data"),
-#                               profile=self.profile, empty=self.empty)
-#
-#     def __deepcopy__(self, memo=None):
-#         """deep copy of the object
-#
-#         :return: deepcopy of the object
-#         """
-#         if memo is None:
-#             memo = {}
-#         new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
-#         memo[id(self._data)] = new_csr[0]
-#         memo[id(self._indices)] = new_csr[1]
-#         memo[id(self._indptr)] = new_csr[2]
-#         new_obj = self.__class__(new_csr, self.size,
-#                                  block_size=self.BLOCK_SIZE,
-#                                  platformid=self.platform.id,
-#                                  deviceid=self.device.id,
-#                                  checksum=self.on_device.get("data"),
-#                                  profile=self.profile, empty=self.empty)
-#         memo[id(self)] = new_obj
-#         return new_obj
 
 
 class OCL_Preproc(OpenclProcessing):
@@ -254,14 +81,26 @@ class OCL_Preproc(OpenclProcessing):
         """
         :param image_size: (int) number of element of the input image 
         :param image_dtype: dtype of the input image
-        :param template_image: retrieve image_size and image_dtype from example
-        
-        :param absorption: 
-        :param mask:
-        :param dummy:
-        :param delta_dummy:
-        :param empty: value to be assigned to bins without contribution from any pixel
-        
+        :param image: retrieve image_size and image_dtype from template
+        :param dark: dark current image as numpy array
+        :param flat: flat field image as numpy array
+        :param solidangle: solid angle image as numpy array
+        :param absorption: absorption image  as numpy array
+        :param mask: array of int8 with 0 where the data are valid
+        :param dummy: value of impossible values: dynamic mask
+        :param delta_dummy: precision for dummy values
+        :param empty: value to be assigned to pixel without contribution (i.e masked)
+        :param split_result: return the result a tuple: data, [variance], normalization, so the last dim becomes 2 or 3
+        :param calc_variance: report the result as  data, variance, normalization
+        :param poissonian: assumes poisson law for data and dark,
+        :param ctx: actual working context, left to None for automatic 
+                    initialization from device type or platformid/deviceid 
+        :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
+        :param platformid: integer with the platform_identifier, as given by clinfo
+        :param deviceid: Integer with the device identifier, as given by clinfo
+        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
+        :param profile: switch on profiling to be able to profile at the kernel level,
+                        store profiling elements (makes code slower) 
         """
         OpenclProcessing.__init__(self, ctx, devicetype, platformid, deviceid, block_size, profile)
         self.size = image_size or image.size
@@ -469,9 +308,12 @@ class OCL_Preproc(OpenclProcessing):
         """Perform the pixel-wise operation of the array
         
         :param raw: numpy array with the input image
-        
         :param dark: numpy array with the dark-current image
-        :param 
+        :param variance: numpy array with the variance of input image
+        :param dark_variance: numpy array with the variance of dark-current image
+        :param normalization_factor: divide the result by this
+        :return: array with processed data, 
+                may be an array of (data,variance,normalization) depending on class initialization
         """
         with self.sem:
             if id(image) != id(self.on_device.get("image")):

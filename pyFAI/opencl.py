@@ -34,22 +34,29 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2017"
+__date__ = "20/01/2017"
 __status__ = "stable"
 
 import os
 import logging
+import threading
+import gc
 
 import numpy
+from collections import namedtuple
+BufferDescription = namedtuple("BufferDescription", ["name", "flags", "dtype", "size"])
+EventDescription = namedtuple("EventDescription", ["name", "event"])
 
 logger = logging.getLogger("pyFAI.opencl")
-
+from .utils import concatenate_cl_kernel
 if os.environ.get("PYFAI_OPENCL") == "0":
     logger.warning("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
     pyopencl = None
 else:
     try:
         import pyopencl
+        mf = pyopencl.mem_flags
+
     except ImportError:
         logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
         pyopencl = None
@@ -421,3 +428,164 @@ def allocate_cl_buffers(buffers, device=None, context=None):
         raise MemoryError(error)
 
     return mem
+
+
+class OpenclProcessing(object):
+    """Abstract class for different types of OpenCL processing.
+    
+    This class provides:
+    * Generation of the context, queues, profiling mode
+    * Additional function to allocate/free all buffers declared as static attributes of the class 
+    * Functions to compile kernels, cache them and clean them  
+    * helper functions to clone the object
+    """
+    # The last parameter
+    buffers = [BufferDescription("output", mf.WRITE_ONLY, numpy.float32, 10),
+               ]
+    # list of kernel source files to be concatenated before compilation of the program
+    kernel_files = []
+
+    def __init__(self, ctx=None, devicetype="all", platformid=None, deviceid=None,
+                 block_size=None, profile=False):
+        """Constructor of the abstract OpenCL processing class
+        
+        :param ctx: actual working context, left to None for automatic 
+                    initialization from device type or platformid/deviceid 
+        :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
+        :param platformid: integer with the platform_identifier, as given by clinfo
+        :param deviceid: Integer with the device identifier, as given by clinfo
+        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
+        :param profile: switch on profiling to be able to profile at the kernel level,
+                        store profiling elements (makes code slower) 
+        """
+        self.sem = threading.Semaphore()
+        self.profile = bool(profile)
+        self.events = []  # List with of EventDescription, kept for profiling
+        self.cl_mem = {}  # dict with all buffer allocated
+        self.cl_program = None  # The actual OpenCL program
+        self.cl_kernel_args = {}  # dict with all kernel arguments
+        if ctx:
+            self.ctx = ctx
+            device_name = self.ctx.devices[0].name.strip()
+            platform_name = self.ctx.devices[0].platform.name.strip()
+            platform = ocl.get_platform(platform_name)
+            self.device = platform.get_device(device_name)
+            # self.device = platform.id, device.id
+        else:
+            self.ctx = ocl.create_context(devicetype=devicetype, platformid=platformid, deviceid=deviceid)
+            device_name = self.ctx.devices[0].name.strip()
+            platform_name = self.ctx.devices[0].platform.name.strip()
+            platform = ocl.get_platform(platform_name)
+            self.device = platform.get_device(device_name)
+            # self.device = platform.id, device.id
+
+        if profile:
+            self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+        else:
+            self.queue = pyopencl.CommandQueue(self.ctx)
+
+        self.block_size = block_size
+
+    def __del__(self):
+        """Destructor: release all buffers and programs
+        """
+        self.free_kernels()
+        self.free_buffers()
+        self.queue = None
+        self.ctx = None
+        gc.collect()
+
+    def allocate_buffers(self, buffers=None):
+        """
+        Allocate OpenCL buffers required for a specific configuration
+
+        Note that an OpenCL context also requires some memory, as well
+        as Event and other OpenCL functionalities which cannot and are
+        not taken into account here.  The memory required by a context
+        varies depending on the device. Typical for GTX580 is 65Mb but
+        for a 9300m is ~15Mb In addition, a GPU will always have at
+        least 3-5Mb of memory in use.  Unfortunately, OpenCL does NOT
+        have a built-in way to check the actual free memory on a
+        device, only the total memory.
+        """
+        if buffers is None:
+            buffers = self.buffers
+        self.cl_mem = allocate_cl_buffers(buffers, self.device, self.ctx)
+
+    def free_buffers(self):
+        """free all memory allocated on the device
+        """
+        self.cl_mem = release_cl_buffers(self.cl_mem)
+
+    def compile_kernels(self, kernel_files=None, compile_options=None):
+        """Call the OpenCL compiler
+        
+        :param kernel_files: list of path to the kernel 
+        (by default use the one declared in the class)
+        """
+        # concatenate all needed source files into a single openCL module
+        kernel_files = kernel_files or self.kernel_files
+        kernel_src = concatenate_cl_kernel(kernel_files)
+
+        compile_options = compile_options or ""
+        logger.info("Compiling file %s with options %s", kernel_files, compile_options)
+        try:
+            self.program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+            raise MemoryError(error)
+
+    def free_kernels(self):
+        """Free all kernels
+        """
+        for kernel in self.cl_kernel_args:
+            self.cl_kernel_args[kernel] = []
+        self.program = None
+
+    def log_profile(self):
+        """If we are in profiling mode, prints out all timing for every single OpenCL call
+        """
+        t = 0.0
+        out = ["", "Profiling info for OpenCL %s" % self.__class__.__name__]
+        if self.profile:
+            for e in self.events:
+                if "__len__" in dir(e) and len(e) >= 2:
+                    et = 1e-6 * (e[1].profile.end - e[1].profile.start)
+                    out.append("%50s:\t%.3fms" % (e[0], et))
+                    t += et
+
+        out.append("_" * 80)
+        out.append("%50s:\t%.3fms" % ("Total execution time", t))
+        logger.info(os.linesep.join(out))
+
+# This should be implemented by concrete class
+#     def __copy__(self):
+#         """Shallow copy of the object
+#
+#         :return: copy of the object
+#         """
+#         return self.__class__((self._data, self._indices, self._indptr),
+#                               self.size, block_size=self.BLOCK_SIZE,
+#                               platformid=self.platform.id,
+#                               deviceid=self.device.id,
+#                               checksum=self.on_device.get("data"),
+#                               profile=self.profile, empty=self.empty)
+#
+#     def __deepcopy__(self, memo=None):
+#         """deep copy of the object
+#
+#         :return: deepcopy of the object
+#         """
+#         if memo is None:
+#             memo = {}
+#         new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
+#         memo[id(self._data)] = new_csr[0]
+#         memo[id(self._indices)] = new_csr[1]
+#         memo[id(self._indptr)] = new_csr[2]
+#         new_obj = self.__class__(new_csr, self.size,
+#                                  block_size=self.BLOCK_SIZE,
+#                                  platformid=self.platform.id,
+#                                  deviceid=self.device.id,
+#                                  checksum=self.on_device.get("data"),
+#                                  profile=self.profile, empty=self.empty)
+#         memo[id(self)] = new_obj
+#         return new_obj
