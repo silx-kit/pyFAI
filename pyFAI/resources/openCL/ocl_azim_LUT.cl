@@ -78,7 +78,7 @@ struct lut_point_t
 __kernel void
 lut_integrate(  const     __global    float              *weights,
                 const     __global    struct lut_point_t *lut,
-                const                 int                 do_dummy,
+                const                 char                do_dummy,
                 const                 float               dummy,
                           __global    float              *outData,
                           __global    float              *outCount,

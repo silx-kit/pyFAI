@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "20/01/2017"
+__date__ = "26/01/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -189,7 +189,9 @@ class OCL_CSR_Integrator(object):
             ("outCount", mf.WRITE_ONLY, numpy.float32, self.bins),
             ("outMerge", mf.WRITE_ONLY, numpy.float32, self.bins),
             ("image_raw", mf.READ_ONLY, numpy.float32, self.size),
-            ("image", mf.READ_WRITE, numpy.float32, self.size),
+            ("image_in", mf.READ_WRITE, numpy.float32, self.size),
+            ("image_out", mf.READ_WRITE, numpy.float32, self.size),
+            ("mask", mf.READ_WRITE, numpy.int8, self.size),
             ("dark", mf.READ_ONLY, numpy.float32, self.size),
             ("flat", mf.READ_ONLY, numpy.float32, self.size),
             ("polarization", mf.READ_ONLY, numpy.float32, self.size),
@@ -241,15 +243,17 @@ class OCL_CSR_Integrator(object):
         When setRange is called it replaces that argument with tthRange low and upper bounds. When unsetRange is called, the argument slot
         is reset to tth_min_max.
         """
-        self._cl_kernel_args["corrections"] = [self._cl_mem["image"],
+        self._cl_kernel_args["corrections"] = [self._cl_mem["image_in"],
                                                numpy.int8(0), self._cl_mem["dark"],
                                                numpy.int8(0), self._cl_mem["flat"],
                                                numpy.int8(0), self._cl_mem["solidangle"],
                                                numpy.int8(0), self._cl_mem["polarization"],
                                                numpy.int8(0), self._cl_mem["absorption"],
+                                               numpy.int8(0), self._cl_mem["mask"],
                                                numpy.int8(0), numpy.float32(0.0),
-                                               numpy.float32(0.0), numpy.float32(1.0)]
-        self._cl_kernel_args["csr_integrate"] = [self._cl_mem["image"],
+                                               numpy.float32(0.0), numpy.float32(1.0),
+                                               self._cl_mem["image_out"]]
+        self._cl_kernel_args["csr_integrate"] = [self._cl_mem["image_out"],
                                                  self._cl_mem["data"],
                                                  self._cl_mem["indices"],
                                                  self._cl_mem["indptr"],
@@ -259,12 +263,12 @@ class OCL_CSR_Integrator(object):
                                                  self._cl_mem["outCount"],
                                                  self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
-        self._cl_kernel_args["u8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
-        self._cl_kernel_args["s8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
-        self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
-        self._cl_kernel_args["s16_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
-        self._cl_kernel_args["u32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
-        self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
+        self._cl_kernel_args["u8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image_in"]]
+        self._cl_kernel_args["s8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image_in"]]
+        self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image_in"]]
+        self._cl_kernel_args["s16_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image_in"]]
+        self._cl_kernel_args["u32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image_in"]]
+        self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image_in"]]
 
     def integrate(self, data, dummy=None, delta_dummy=None,
                   dark=None, flat=None, solidAngle=None, polarization=None, absorption=None,
@@ -320,13 +324,13 @@ class OCL_CSR_Integrator(object):
                 cast_to_float = self._program.s32_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s32_to_float"])
                 events += [("copy image", copy_image), ("cast", cast_to_float)]
             else:
-                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
+                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_in"], numpy.ascontiguousarray(data, dtype=numpy.float32))
                 events += [("copy image", copy_image)]
             memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
             events.append(("memset", memset))
 
             if dummy is not None:
-                do_dummy = numpy.int32(1)
+                do_dummy = numpy.int8(1)
                 dummy = numpy.float32(dummy)
                 if delta_dummy is None:
                     delta_dummy = numpy.float32(0.0)
@@ -336,15 +340,15 @@ class OCL_CSR_Integrator(object):
                 do_dummy = numpy.int8(0)
                 dummy = numpy.float32(self.empty)
                 delta_dummy = numpy.float32(0.0)
-            self._cl_kernel_args["corrections"][11] = do_dummy
-            self._cl_kernel_args["corrections"][12] = dummy
-            self._cl_kernel_args["corrections"][13] = delta_dummy
-            self._cl_kernel_args["corrections"][14] = numpy.float32(normalization_factor)
+            self._cl_kernel_args["corrections"][13] = do_dummy
+            self._cl_kernel_args["corrections"][14] = dummy
+            self._cl_kernel_args["corrections"][15] = delta_dummy
+            self._cl_kernel_args["corrections"][16] = numpy.float32(normalization_factor)
             self._cl_kernel_args["csr_integrate"][4] = do_dummy
             self._cl_kernel_args["csr_integrate"][5] = dummy
 
             if dark is not None:
-                do_dark = numpy.int32(1)
+                do_dark = numpy.int8(1)
                 # TODO: what is do_checksum=False and image not on device ...
                 if not dark_checksum:
                     dark_checksum = calc_checksum(dark, safe)
@@ -356,7 +360,7 @@ class OCL_CSR_Integrator(object):
                 do_dark = numpy.int8(0)
             self._cl_kernel_args["corrections"][1] = do_dark
             if flat is not None:
-                do_flat = numpy.int32(1)
+                do_flat = numpy.int8(1)
                 if not flat_checksum:
                     flat_checksum = calc_checksum(flat, safe)
                 if self.on_device["flat"] != flat_checksum:
@@ -368,7 +372,7 @@ class OCL_CSR_Integrator(object):
             self._cl_kernel_args["corrections"][3] = do_flat
 
             if solidAngle is not None:
-                do_solidAngle = numpy.int32(1)
+                do_solidAngle = numpy.int8(1)
                 if not solidAngle_checksum:
                     solidAngle_checksum = calc_checksum(solidAngle, safe)
                 if solidAngle_checksum != self.on_device["solidangle"]:
@@ -380,7 +384,7 @@ class OCL_CSR_Integrator(object):
             self._cl_kernel_args["corrections"][5] = do_solidAngle
 
             if polarization is not None:
-                do_polarization = numpy.int32(1)
+                do_polarization = numpy.int8(1)
                 if not polarization_checksum:
                     polarization_checksum = calc_checksum(polarization, safe)
                 if polarization_checksum != self.on_device["polarization"]:
@@ -392,7 +396,7 @@ class OCL_CSR_Integrator(object):
             self._cl_kernel_args["corrections"][7] = do_polarization
 
             if absorption is not None:
-                do_absorption = numpy.int32(1)
+                do_absorption = numpy.int8(1)
                 if not absorption_checksum:
                     absorption_checksum = calc_checksum(absorption, safe)
                 if absorption_checksum != self.on_device["polarization"]:
@@ -410,7 +414,7 @@ class OCL_CSR_Integrator(object):
 
             if preprocess_only:
                 image = numpy.empty(data.shape, dtype=numpy.float32)
-                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image"])
+                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image_in"])
                 events.append(("copy D->H image", ev))
                 ev.wait()
                 return image
