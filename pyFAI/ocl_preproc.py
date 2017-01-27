@@ -33,17 +33,14 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "20/01/2017"
+__date__ = "27/01/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 import numpy
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers, \
-                    BufferDescription, EventDescription, OpenclProcessing
-
-if pyopencl:
-    mf = pyopencl.mem_flags
+from .opencl import pyopencl, BufferDescription, EventDescription, \
+                    OpenclProcessing, mf, ocl
 
 logger = logging.getLogger("pyFAI.ocl_preproc")
 
@@ -51,17 +48,17 @@ logger = logging.getLogger("pyFAI.ocl_preproc")
 class OCL_Preproc(OpenclProcessing):
     """OpenCL class for pre-processing ... mainly for demonstration"""
     buffers = [
-               BufferDescription("output", mf.WRITE_ONLY, numpy.float32, 3),
-               BufferDescription("image_raw", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("image", mf.READ_WRITE, numpy.float32, 1),
-               BufferDescription("variance", mf.READ_WRITE, numpy.float32, 1),
-               BufferDescription("dark", mf.READ_WRITE, numpy.float32, 1),
-               BufferDescription("dark_variance", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("flat", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("polarization", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("solidangle", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("absorption", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("mask", mf.READ_ONLY, numpy.int8, 1),
+               BufferDescription("output", 3, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
             ]
     kernel_files = ["preprocess.cl"]
     mapping = {numpy.int8: "s8_to_float",
@@ -105,7 +102,7 @@ class OCL_Preproc(OpenclProcessing):
         OpenclProcessing.__init__(self, ctx, devicetype, platformid, deviceid, block_size, profile)
         self.size = image_size or image.size
         self.input_dtype = image_dtype or image.dtype.type
-        self.buffers = [BufferDescription(*((i[:-1]) + (i[-1] * self.size,)))
+        self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
         self.allocate_buffers()
         if poissonian:

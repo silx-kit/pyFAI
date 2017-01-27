@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "26/01/2017"
+__date__ = "27/01/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -74,7 +74,7 @@ class OCL_CSR_Integrator(object):
             raise RuntimeError("data.shape[0] != indices.shape[0]")
         self.data_size = self._data.shape[0]
         self.size = image_size
-        self.profile = profile
+        self.profile = None
         self.empty = empty or 0.0
 
         if not checksum:
@@ -108,24 +108,21 @@ class OCL_CSR_Integrator(object):
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
             self.ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-            if self.profile:
-                self._queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
-            else:
-                self._queue = pyopencl.CommandQueue(self.ctx)
+            self.set_profiling(profile)
             self._allocate_buffers()
             self._compile_kernels()
             self._set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
+        events = []
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
-        if self.profile:
-            self.events.append(("copy Coefficient data", ev))
+        events.append(("copy Coefficient data", ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], self._indices)
-        if self.profile:
-            self.events.append(("copy Row Index data", ev))
+        events.append(("copy Row Index data", ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
+        events.append(("copy Column Pointer data", ev))
         if self.profile:
-            self.events.append(("copy Column Pointer data", ev))
+            self.events += events
 
     def __del__(self):
         """Destructor: release all buffers
@@ -407,15 +404,15 @@ class OCL_CSR_Integrator(object):
                 do_absorption = numpy.int8(0)
             self._cl_kernel_args["corrections"][9] = do_absorption
 
-            copy_image.wait()
-            if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
-                ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
-                events.append(("corrections", ev))
+            ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
+            events.append(("corrections", ev))
 
             if preprocess_only:
                 image = numpy.empty(data.shape, dtype=numpy.float32)
-                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image_in"])
+                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image_out"])
                 events.append(("copy D->H image", ev))
+                if self.profile:
+                    self.events += events
                 ev.wait()
                 return image
 
@@ -434,6 +431,23 @@ class OCL_CSR_Integrator(object):
         if self.profile:
             self.events += events
         return outMerge, outData, outCount
+
+    def set_profiling(self, value=True):
+        """Switch On/Off the profiling flag of the command queue to allow debugging
+        
+        :param value: set to True to enable profiling, or to False to disable it.
+                      Without profiling, the processing is marginally faster 
+        
+        Profiling information can then be retrived with the 'log_profile' method
+        """
+        if bool(value) != self.profile:
+            with self._sem:
+                self.profile = bool(value)
+                if self.profile:
+                    self._queue = pyopencl.CommandQueue(self.ctx,
+                        properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+                else:
+                    self._queue = pyopencl.CommandQueue(self.ctx)
 
     def log_profile(self):
         """

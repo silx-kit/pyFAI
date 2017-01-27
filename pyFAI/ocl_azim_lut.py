@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "26/01/2017"
+__date__ = "27/01/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -65,7 +65,7 @@ class OCL_LUT_Integrator(object):
         self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        self.profile = profile
+        self.profile = None
         self.empty = empty or 0.0
 
         if not checksum:
@@ -100,10 +100,7 @@ class OCL_LUT_Integrator(object):
 
         try:
             self.ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-            if self.profile:
-                self._queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
-            else:
-                self._queue = pyopencl.CommandQueue(self.ctx)
+            self.set_profiling(profile)
             self._allocate_buffers()
             self._compile_kernels()
             self._set_kernel_arguments()
@@ -389,15 +386,15 @@ class OCL_LUT_Integrator(object):
                 do_absorption = numpy.int8(0)
             self._cl_kernel_args["corrections"][9] = do_absorption
 
-            copy_image.wait()
-            if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
-                ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
-                events.append(("corrections", ev))
+            ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
+            events.append(("corrections", ev))
 
             if preprocess_only:
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image_out"])
                 events.append(("copy D->H image", ev))
+                if self.profile:
+                    self.events += events
                 ev.wait()
                 return image
             integrate = self._program.lut_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
@@ -416,9 +413,29 @@ class OCL_LUT_Integrator(object):
             self.events += events
         return outMerge, outData, outCount
 
-    def log_profile(self):
+    def set_profiling(self, value=True):
+        """Switch On/Off the profiling flag of the command queue to allow debugging
+        
+        :param value: set to True to enable profiling, or to False to disable it.
+                      Without profiling, the processing is marginally faster 
+
+        
+        Profiling information can then be retrieved with the 'log_profile' method
         """
-        If we are in profiling mode, prints out all timing for every single OpenCL call
+        if bool(value) != self.profile:
+            with self._sem:
+                self.profile = bool(value)
+                if self.profile:
+                    self._queue = pyopencl.CommandQueue(self.ctx,
+                        properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+                else:
+                    self._queue = pyopencl.CommandQueue(self.ctx)
+
+    def log_profile(self):
+        """If we are in profiling mode, prints out all timing for every single 
+        OpenCL call
+        
+        :return: list of lines printed on screen
         """
         t = 0.0
         if self.profile:
