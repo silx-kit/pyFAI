@@ -34,7 +34,7 @@ You will be prompted for your password to gain root access in order to be able t
 .. code::
 
    sudo apt-get install python-stdeb cython python-fabio
-   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
    ./build-deb7.sh
@@ -78,7 +78,7 @@ One can also built from sources:
    python3-matplotlib-dbg python3-numpy python3-numpy-dbg python3-pyqt4 python3-pyqt4-dbg \
    python3-scipy python3-scipy-dbg python3-sphinx python3-sphinxcontrib.programoutput \
    python3-tk python3-tk-dbg
-   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
    ./build-deb8.sh
@@ -107,7 +107,7 @@ Or you can install pyFAI from the sources:
 
 .. code::
 
-   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
    python setup.py build test

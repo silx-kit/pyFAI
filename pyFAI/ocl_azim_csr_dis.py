@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI
+#             https://github.com/silx-kit
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "14/03/2015"
+__date__ = "27/10/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -54,20 +54,20 @@ class OCL_CSR_Integrator(object):
                  checksum=None, profile=False,
                  empty=None):
         """
-        @param lut: 3-tuple of arrays
+        :param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
             indices: Column index position for the data (same size as data)
             indptr: row pointer indicates the start of a given row. len nbin+1
-        @param image_size:
-        @param devicetype: can be "cpu","gpu","acc" or "all"
-        @param block_size: the chosen size for WORKGROUP_SIZE
-        @param platformid: number of the platform as given by clinfo
-        @type platformid: int
-        @param deviceid: number of the device as given by clinfo
-        @type deviceid: int
-        @param checksum: pre - calculated checksum to prevent re - calculating it :)
-        @param profile: store profiling elements
-        @param empty: value to be assigned to bins without contribution from any pixel
+        :param image_size:
+        :param devicetype: can be "cpu","gpu","acc" or "all"
+        :param block_size: the chosen size for WORKGROUP_SIZE
+        :param platformid: number of the platform as given by clinfo
+        :type platformid: int
+        :param deviceid: number of the device as given by clinfo
+        :type deviceid: int
+        :param checksum: pre - calculated checksum to prevent re - calculating it :)
+        :param profile: store profiling elements
+        :param empty: value to be assigned to bins without contribution from any pixel
         """
         self._sem = threading.Semaphore()
         self._data = lut[0]
@@ -175,11 +175,10 @@ class OCL_CSR_Integrator(object):
         """
         self._cl_mem = release_cl_buffers(self._cl_mem)
 
-
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        @param kernel_file: path to the kernel (by default use the one in the src directory)  # noqa
+        :param kernel_file: path to the kernel (by default use the one in the src directory)  # noqa
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or "ocl_azim_CSR.cl"
@@ -382,5 +381,5 @@ class OCL_CSR_Integrator(object):
                     print("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
-        print("_"*80)
+        print("_" * 80)
         print("%50s:\t%.3fms" % ("Total execution time", t))

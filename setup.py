@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -21,14 +21,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+"Setup script for python Fast Azimuthal Integration"
+
 from __future__ import print_function, division, with_statement, absolute_import
 
-__doc__ = "Setup script for python Fast Azimuthal Integration"
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/07/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
 
 install_warning = True
@@ -47,16 +49,15 @@ try:
     from setuptools import setup, Command
     from setuptools.command.sdist import sdist
     from setuptools.command.build_ext import build_ext
-    from setuptools.command.install_data import install_data
     from setuptools.command.install import install
     from setuptools.command.build_py import build_py as _build_py
 except ImportError:
     from distutils.core import setup, Command
     from distutils.command.sdist import sdist
     from distutils.command.build_ext import build_ext
-    from distutils.command.install_data import install_data
     from distutils.command.install import install
     from distutils.command.build_py import build_py as _build_py
+
 from numpy.distutils.core import Extension as _Extension
 
 
@@ -94,16 +95,27 @@ def check_cython():
     """
     Check if cython must be activated fron te command line or the environment.
     """
-
-    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
-        print("No Cython requested by environment")
-        return False
-
     if ("--no-cython" in sys.argv):
         sys.argv.remove("--no-cython")
         os.environ["WITH_CYTHON"] = "False"
         print("No Cython requested by command line")
         return False
+
+    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+        print("No Cython requested by environment")
+        return False
+
+    if not USE_OPENMP:
+        # By default generated Cython files used in the repo using OpenMP
+        print("OpenMP is not used. Cython files have to be re-generated")
+        os.environ["FORCE_CYTHON"] = "True"
+        return True
+
+    if "--force-cython" in sys.argv:
+        sys.argv.remove("--force-cython")
+        print("Force Cython re-generation requested by command line")
+        os.environ["FORCE_CYTHON"] = "True"
+        return True
 
     try:
         import Cython.Compiler.Version
@@ -119,12 +131,6 @@ def check_openmp():
     """
     Do we compile with OpenMP ?
     """
-    if "WITH_OPENMP" in os.environ:
-        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
-        if os.environ["WITH_OPENMP"] == "False":
-            return False
-        else:
-            return True
     if ("--no-openmp" in sys.argv):
         sys.argv.remove("--no-openmp")
         os.environ["WITH_OPENMP"] = "False"
@@ -136,15 +142,24 @@ def check_openmp():
         print("OpenMP requested by command line")
         return True
 
-    if platform.system() == "Darwin":
+    if "WITH_OPENMP" in os.environ:
+        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
+        if os.environ["WITH_OPENMP"] == "False":
+            return False
+        else:
+            return True
+
+    if sys.platform == "darwin":
         # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
         osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
         if osx >= (10, 8):
+            print("OpenMP is not supported on Apple computers for OSX newer than 10.8")
             return False
     return True
 
 
-USE_OPENMP = "openmp" if check_openmp() else ""
+# It must be done in this order
+USE_OPENMP = check_openmp()
 USE_CYTHON = check_cython()
 if USE_CYTHON:
     from Cython.Build import cythonize
@@ -173,18 +188,22 @@ def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwa
                         os.path.join(PROJECT, "ext"), numpy.get_include()]
 
     if can_use_openmp and USE_OPENMP:
+        openmp_arg = "openmp" if USE_OPENMP else ""
         extra_compile_args = set(kwargs.pop("extra_compile_args", []))
-        extra_compile_args.add(USE_OPENMP)
+        extra_compile_args.add(openmp_arg)
         kwargs["extra_compile_args"] = list(extra_compile_args)
 
         extra_link_args = set(kwargs.pop("extra_link_args", []))
-        extra_link_args.add(USE_OPENMP)
+        extra_link_args.add(openmp_arg)
         kwargs["extra_link_args"] = list(extra_link_args)
 
     ext = _Extension(name=PROJECT + ".ext." + name, sources=sources, include_dirs=include_dirs, **kwargs)
 
     if USE_CYTHON:
-        cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
+        cext = cythonize([ext],
+                         compiler_directives={'embedsignature': True},
+                         force=(os.environ.get("FORCE_CYTHON") is "True"),
+                         compile_time_env={"HAVE_OPENMP": USE_OPENMP})
         if cext:
             ext = cext[0]
     return ext
@@ -204,7 +223,7 @@ ext_modules = [
     Extension('relabel'),
     Extension("bilinear", can_use_openmp=True),
     Extension('_distortion', can_use_openmp=True),
-#     Extension('_distortionCSR', can_use_openmp=True),
+    # Extension('_distortionCSR', can_use_openmp=True),
     Extension('_bispev', can_use_openmp=True),
     Extension('_convolution', can_use_openmp=True),
     Extension('_blob'),
@@ -212,7 +231,8 @@ ext_modules = [
     Extension('marchingsquares'),
     Extension('watershed'),
     Extension('_tree'),
-    Extension('sparse_utils')
+    Extension('sparse_utils'),
+    Extension('preproc', can_use_openmp=True),
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):
@@ -230,8 +250,8 @@ class build_ext_pyFAI(build_ext):
         # Compiler
         # name, compileflag, linkflag
         'msvc': {
-            'openmp': ('/openmp', ' '),
-            'debug': ('/Zi', ' '),
+            'openmp': ('/openmp', ''),
+            'debug': ('/Zi', ''),
             'OpenCL': 'OpenCL',
         },
         'mingw32': {
@@ -292,9 +312,7 @@ def download_images():
 
 installDir = PROJECT
 
-data_files = [(os.path.join(installDir, "resources/openCL"), glob.glob("resources/openCL/*.cl")),
-              (os.path.join(installDir, "resources/gui"), glob.glob("resources/gui/*.ui")),
-              (os.path.join(installDir, "resources/calibration"), glob.glob("resources/calibration/*.D"))]
+data_files = []
 
 if sys.platform == "win32":
     # This is for mingw32/gomp
@@ -320,19 +338,6 @@ else:
     script_files = glob.glob("scripts/*")
 
 
-class smart_install_data(install_data):
-    def run(self):
-        global installDir
-
-        install_cmd = self.get_finalized_command('install')
-#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
-        self.install_dir = getattr(install_cmd, 'install_lib')
-        print("DATA to be installed in %s" % self.install_dir)
-        installDir = os.path.join(self.install_dir, installDir)
-        return install_data.run(self)
-cmdclass['install_data'] = smart_install_data
-
-
 # #################################### #
 # Test part and sdist with test images #
 # #################################### #
@@ -341,7 +346,7 @@ def rewriteManifest(with_testimages=False):
     """
     Rewrite the "Manifest" file ... if needed
 
-    @param with_testimages: include
+    :param with_testimages: include
     """
     base = os.path.dirname(os.path.abspath(__file__))
     manifest_in = os.path.join(base, "MANIFEST.in")
@@ -564,9 +569,11 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
 setup_requires = ["numpy", "cython"]
 
-packages = ["pyFAI", "pyFAI.ext", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
+packages = ["pyFAI", "pyFAI.ext", "pyFAI.gui", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
 package_dir = {"pyFAI": "pyFAI",
                "pyFAI.ext": "pyFAI/ext",
+               "pyFAI.gui": "pyFAI/gui",
+               "pyFAI.utils": "pyFAI/utils",
                "pyFAI.test": "pyFAI/test",
                "pyFAI.benchmark": "pyFAI/benchmark",
                "pyFAI.resources": "pyFAI/resources"}
@@ -586,8 +593,8 @@ if __name__ == "__main__":
           and Frederic-Emmanuel Picca",
           author_email="jerome.kieffer@esrf.fr",
           description='Python implementation of fast azimuthal integration',
-          url="https://github.com/pyFAI/pyFAI",
-          download_url="https://github.com/pyFAI/pyFAI/releases",
+          url="https://github.com/silx-kit/pyFAI",
+          download_url="https://github.com/silx-kit/pyFAI/releases",
           # ext_package="pyFAI.ext",
           scripts=script_files,
           ext_modules=ext_modules,

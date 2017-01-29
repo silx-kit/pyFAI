@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from picamera.array import PiYUVArray
 from picamera import PiCamera
 from PIL import Image

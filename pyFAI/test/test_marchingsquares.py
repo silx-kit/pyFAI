@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,23 +26,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for marching_squares / isocontour"
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for marching_squares / isocontour"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "02/12/2016"
 
 
 import unittest
-import os
 import numpy
-import logging, time
-import sys
-import fabio
-from .utilstest import UtilsTest, Rwp, getLogger
+import logging
+from .utilstest import getLogger
 logger = getLogger(__file__)
 from ..ext.marchingsquares import isocontour
 if logger.getEffectiveLevel() <= logging.INFO:
@@ -58,11 +55,12 @@ class TestMarchingSquares(unittest.TestCase):
             c = isocontour(r, ref)
             self.assertNotEqual(0, len(c), "controur plot contains not point")
             i = numpy.round(c).astype(numpy.int32)
-            self.assert_(abs(r[(i[:, 0], i[:, 1])] - ref).max() < 0.05, "contour plot not working correctly")
-            if logger.getEffectiveLevel() <= logging.INFO:
+            self.assertTrue(abs(r[(i[:, 0], i[:, 1])] - ref).max() < 0.05, "contour plot not working correctly")
+            if logger.getEffectiveLevel() <= logging.DEBUG:
                 pylab.imshow(r)
                 pylab.plot(c[:, 1], c[:, 0], ",")
                 pylab.show()
+
 
 def suite():
     testsuite = unittest.TestSuite()

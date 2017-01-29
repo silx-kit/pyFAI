@@ -31,6 +31,10 @@ if [ ! -d $OUTPUT_DIR ]
 python setup.py build
 version=$(./bootstrap.py ./version.py |tail -n 1)
 echo $version
+
+export PATH=./build/scripts-2.7:$PATH
+export PYTHONPATH=./build/lib.linux-x86_64-2.7
+
 for i in scripts/*;
     do
     script_name=$(basename $i)

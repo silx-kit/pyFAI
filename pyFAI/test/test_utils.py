@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -34,36 +34,27 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2016"
+__date__ = "28/11/2016"
 
 import unittest
 import numpy
-import sys
 import os
-import fabio
-import tempfile
-from .utilstest import UtilsTest, getLogger, recursive_delete
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 from .. import utils
 from .. import _version
 
-# if logger.getEffectiveLevel() <= logging.INFO:
-#    from pyFAI.gui_utils import pylab
 import scipy.ndimage
 
 # TODO Test:
-# gaussian_filter
 # relabel
-# boundingBox
-# removeSaturatedPixel
 # DONE:
+# # gaussian_filter
 # # binning
 # # unbinning
 # # shift
 # # shiftFFT
 # # measure_offset
-# # averageDark
-# # averageImages
 
 
 class TestUtils(unittest.TestCase):
@@ -89,33 +80,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(unbinned.shape, self.unbinned.shape, "unbinned size is OK")
         self.assertAlmostEqual(unbinned.sum(), self.unbinned.sum(), 2, "content is the same")
 
-    def test_averageDark(self):
-        """
-        Some testing for dark averaging
-        """
-        one = utils.averageDark([self.dark])
-        self.assertEqual(abs(self.dark - one).max(), 0, "data are the same")
-
-        two = utils.averageDark([self.dark, self.dark])
-        self.assertEqual(abs(self.dark - two).max(), 0, "data are the same: mean test")
-
-        three = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "median")
-        self.assertEqual(abs(self.dark - three).max(), 0, "data are the same: median test")
-
-        four = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "min")
-        self.assertEqual(abs(numpy.zeros_like(self.dark) - four).max(), 0, "data are the same: min test")
-
-        five = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "max")
-        self.assertEqual(abs(numpy.ones_like(self.dark) - five).max(), 0, "data are the same: max test")
-
-        six = utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark], "median", .001)
-        self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
-        if fabio.hexversion < 262147:
-            logger.error("Error: the version of the FabIO library is too old: %s, please upgrade to 0.4+. Skipping test for now", fabio.version)
-            return
-        seven = utils.averageImages([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
-        self.assert_(abs(numpy.ones_like(self.dark) - fabio.open(seven).data).mean() < 1e-2, "averageImages")
-
     def test_shift(self):
         """
         Some testing for image shifting and offset measurement functions.
@@ -125,9 +89,9 @@ class TestUtils(unittest.TestCase):
         res = numpy.ones((11, 12))
         res[5, 7] = 5
         delta = (5 - 2, 7 - 3)
-        self.assert_(abs(utils.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
-        self.assert_(abs(utils.shiftFFT(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
-        self.assert_(utils.measure_offset(res, ref) == delta, "measure offset works")
+        self.assertTrue(abs(utils.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
+        self.assertTrue(abs(utils.shiftFFT(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
+        self.assertTrue(utils.measure_offset(res, ref) == delta, "measure offset works")
 
     def test_gaussian_filter(self):
         """
@@ -136,10 +100,10 @@ class TestUtils(unittest.TestCase):
         for sigma in [2, 9.0 / 8.0]:
             for mode in ["wrap", "reflect", "constant", "nearest", "mirror"]:
                 blurred1 = scipy.ndimage.filters.gaussian_filter(self.flat, sigma, mode=mode)
-                blurred2 = utils.gaussian_filter(self.flat, sigma, mode=mode)
+                blurred2 = utils.gaussian_filter(self.flat, sigma, mode=mode, use_scipy=False)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
-                logger.info("Error for gaussian blur sigma: %s with mode %s is %s" % (sigma, mode, delta))
-                self.assert_(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
+                logger.info("Error for gaussian blur sigma: %s with mode %s is %s", sigma, mode, delta)
+                self.assertTrue(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
 
     def test_set(self):
         s = utils.FixedParameters()
@@ -158,8 +122,8 @@ class TestUtils(unittest.TestCase):
     def test_expand2d(self):
         vect = numpy.arange(10.)
         size2 = 11
-        self.assert_((numpy.outer(vect, numpy.ones(size2)) == utils.expand2d(vect, size2, False)).all(), "horizontal vector expand")
-        self.assert_((numpy.outer(numpy.ones(size2), vect) == utils.expand2d(vect, size2, True)).all(), "vertical vector expand")
+        self.assertTrue((numpy.outer(vect, numpy.ones(size2)) == utils.expand2d(vect, size2, False)).all(), "horizontal vector expand")
+        self.assertTrue((numpy.outer(numpy.ones(size2), vect) == utils.expand2d(vect, size2, True)).all(), "vertical vector expand")
 
     def test_hexversion(self):
         # print(_version, type(_version))
@@ -173,7 +137,6 @@ class TestUtils(unittest.TestCase):
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestUtils("test_binning"))
-    testsuite.addTest(TestUtils("test_averageDark"))
     testsuite.addTest(TestUtils("test_shift"))
     testsuite.addTest(TestUtils("test_gaussian_filter"))
     testsuite.addTest(TestUtils("test_set"))

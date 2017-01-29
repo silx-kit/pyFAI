@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,11 +33,9 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 import unittest
-import sys
-import os
 import fabio
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)

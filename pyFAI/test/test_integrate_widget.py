@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -34,20 +34,22 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 import os
 import sys
 import unittest
 import numpy
-import fabio
 from .utilstest import getLogger
-from .. import units
-from ..worker import Worker
-from ..azimuthalIntegrator import AzimuthalIntegrator
-from ..gui_utils import has_Qt
-if has_Qt:
+
+try:
+    from ..gui import qt
+except ImportError:
+    qt = None
+
+if qt is not None:
     from ..integrate_widget import AIWidget
+
 from .utilstest import UtilsTest
 
 logger = getLogger(__file__)
@@ -63,12 +65,11 @@ class TestAIWidget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from ..gui_utils import QtGui
-        if has_Qt:
-            cls.app = QtGui.QApplication([])
+        if qt is not None:
+            cls.app = qt.QApplication([])
 
     def setUp(self):
-        if not has_Qt:
+        if qt is None:
             self.skipTest("Qt is not available")
 
     @classmethod

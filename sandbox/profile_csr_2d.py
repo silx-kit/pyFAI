@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -36,7 +36,10 @@ import sys, numpy, time
 from pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
-from six.moves import input
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 # from pyFAI import splitBBox
@@ -60,5 +63,5 @@ plot(ref.ravel(), label="ocl_lut")
 plot(obt.ravel(), label="ocl_csr")
 legend()
 show()
-input()
+six.moves.input()
 

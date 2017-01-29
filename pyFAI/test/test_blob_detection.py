@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,13 +33,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "28/11/2016"
 
-import sys
 import unittest
 import numpy
-import os
-from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
+from .utilstest import getLogger
 logger = getLogger(__file__)
 from ..detectors import detector_factory
 from ..azimuthalIntegrator import AzimuthalIntegrator
@@ -79,9 +77,9 @@ class TestBlobDetection(unittest.TestCase):
     def test_local_max(self):
         bd = BlobDetection(self.img)
         bd._one_octave(shrink=False, refine=False, n_5=False)
-        self.assert_(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) == \
+        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) == \
                                    local_max(bd.dogs, bd.cur_mask, False)), "max test, 3x3x3")
-        self.assert_(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) == \
+        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) == \
                                    local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
 
 
@@ -96,5 +94,3 @@ def suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
-
-

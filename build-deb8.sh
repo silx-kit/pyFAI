@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -40,6 +40,10 @@ then
    export PATH=/usr/lib/ccache:$PATH
 fi
 
+if [ -z ${debian} ]
+then 
+   debian=9
+fi 
 
 python setup.py debian_src
 cp -f dist/${tarname} package
@@ -72,7 +76,7 @@ then
 fi
 
 cd ${directory}
-cp -r ../debian .
+cp -r ../debian${debian} debian
 cp ../../copyright debian
 
 #handle test images

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI
+#             https://github.com/silx-kit
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "29/01/2016"
+__date__ = "24/11/2016"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -48,16 +48,16 @@ class OCL_LUT_Integrator(object):
                  checksum=None, profile=False,
                  empty=None):
         """
-        @param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
-        @param image_size: Expected image size: image.shape.prod()
-        @param devicetype: can be "cpu","gpu","acc" or "all"
-        @param platformid: number of the platform as given by clinfo
-        @type platformid: int
-        @param deviceid: number of the device as given by clinfo
-        @type deviceid: int
-        @param checksum: pre - calculated checksum to prevent re - calculating it :)
-        @param profile: store profiling elements
-        @param empty: value to be assigned to bins without contribution from any pixel
+        :param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
+        :param image_size: Expected image size: image.shape.prod()
+        :param devicetype: can be "cpu","gpu","acc" or "all"
+        :param platformid: number of the platform as given by clinfo
+        :type platformid: int
+        :param deviceid: number of the device as given by clinfo
+        :type deviceid: int
+        :param checksum: pre - calculated checksum to prevent re - calculating it :)
+        :param profile: store profiling elements
+        :param empty: value to be assigned to bins without contribution from any pixel
         """
         self._sem = threading.Semaphore()
         self._lut = lut
@@ -69,7 +69,7 @@ class OCL_LUT_Integrator(object):
 
         if not checksum:
             checksum = calc_checksum(self._lut)
-        self.on_device = {"lut":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
+        self.on_device = {"lut": checksum, "dark": None, "flat": None, "polarization": None, "solidangle": None}
         self._cl_kernel_args = {}
         self._cl_mem = {}
         self.events = []
@@ -78,7 +78,7 @@ class OCL_LUT_Integrator(object):
             if res:
                 platformid, deviceid = res
             else:
-                logger.warning("No such devicetype %s" % devicetype)
+                logger.warning("No such devicetype %s", devicetype)
                 platformid, deviceid = ocl.select_device()
         elif platformid is None:
             platformid = 0
@@ -107,7 +107,8 @@ class OCL_LUT_Integrator(object):
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut)
         else:
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut.T.copy())
-        if self.profile: self.events.append(("copy LUT", ev))
+        if self.profile:
+            self.events.append(("copy LUT", ev))
 
     def __del__(self):
         """
@@ -121,11 +122,10 @@ class OCL_LUT_Integrator(object):
 
     def __copy__(self):
         """Shallow copy of the object
-        
+
         :return: copy of the object
         """
-        return self.__class__(self._lut, self.size, 
-                              block_size=self.BLOCK_SIZE,
+        return self.__class__(self._lut, self.size,
                               platformid=self.platform.id,
                               deviceid=self.device.id,
                               checksum=self.on_device.get("lut"),
@@ -133,15 +133,14 @@ class OCL_LUT_Integrator(object):
 
     def __deepcopy__(self, memo=None):
         """deep copy of the object
-        
+
         :return: deepcopy of the object
         """
         if memo is None:
             memo = {}
         new_lut = self._lut.copy()
         memo[id(self._lut)] = new_lut
-        new_obj = self.__class__(new_lut, self.size, 
-                                 block_size=self.BLOCK_SIZE,
+        new_obj = self.__class__(new_lut, self.size,
                                  platformid=self.platform.id,
                                  deviceid=self.device.id,
                                  checksum=self.on_device.get("lut"),
@@ -189,7 +188,7 @@ class OCL_LUT_Integrator(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        @param kernel_file: path to the kernel (by default use the one in the src directory)
+        :param kernel_file: path to the kernel (by default use the one in the src directory)
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or "ocl_azim_LUT.cl"
@@ -197,7 +196,7 @@ class OCL_LUT_Integrator(object):
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
-        logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
+        logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
@@ -237,24 +236,26 @@ class OCL_LUT_Integrator(object):
                             dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
                             preprocess_only=False, safe=True, normalization_factor=1.0):
         """
-        Before performing azimuthal integration, the preprocessing is :
+        Before performing azimuthal integration, the preprocessing is:
 
-        data = (data - dark) / (flat*solidAngle*polarization)
+        .. math::
+
+            data = (data - dark) / (flat * solidAngle * polarization)
 
         Integration is performed using the CSR representation of the look-up table
 
-        @param dark: array of same shape as data for pre-processing
-        @param flat: array of same shape as data for pre-processing
-        @param solidAngle: array of same shape as data for pre-processing
-        @param polarization: array of same shape as data for pre-processing
-        @param dark_checksum: CRC32 checksum of the given array
-        @param flat_checksum: CRC32 checksum of the given array
-        @param solidAngle_checksum: CRC32 checksum of the given array
-        @param polarization_checksum: CRC32 checksum of the given array
-        @param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
-        @param normalization_factor: divide raw signal by this value
-        @param preprocess_only: return the dark subtracted; flat field & solidAngle & polarization corrected image, else
-        @return averaged data, weighted histogram, unweighted histogram
+        :param dark: array of same shape as data for pre-processing
+        :param flat: array of same shape as data for pre-processing
+        :param solidAngle: array of same shape as data for pre-processing
+        :param polarization: array of same shape as data for pre-processing
+        :param dark_checksum: CRC32 checksum of the given array
+        :param flat_checksum: CRC32 checksum of the given array
+        :param solidAngle_checksum: CRC32 checksum of the given array
+        :param polarization_checksum: CRC32 checksum of the given array
+        :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        :param normalization_factor: divide raw signal by this value
+        :param preprocess_only: return the dark subtracted; flat field & solidAngle & polarization corrected image, else
+        :return: averaged data, weighted histogram, unweighted histogram
         """
         events = []
         with self._sem:
@@ -291,7 +292,7 @@ class OCL_LUT_Integrator(object):
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
-                if delta_dummy == None:
+                if delta_dummy is None:
                     delta_dummy = numpy.float32(0.0)
                 else:
                     delta_dummy = numpy.float32(abs(delta_dummy))
@@ -390,5 +391,5 @@ class OCL_LUT_Integrator(object):
                     print("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
-        print("_"*80)
+        print("_" * 80)
         print("%50s:\t%.3fms" % ("Total execution time", t))

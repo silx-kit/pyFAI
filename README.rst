@@ -38,7 +38,7 @@ Under UNIX, you may have to run the command via *sudo* to gain root access an
 perform a system wide installation.
 
 The latest release of pyFAI can be downloaded from
-`Github <https://github.com/pyFAI/pyFAI/archive/master.zip>`_ .
+`Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_ .
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
@@ -78,7 +78,7 @@ installed version)::
 The newest development version can also be obtained by checking out from the git
 repository::
 
-    git clone https://github.com/kif/pyFAI.git
+    git clone https://github.com/silx-kit/pyFAI.git
     cd pyFAI
     python setup.py build bdist_wheel
     sudo pip install . --upgrade
@@ -138,12 +138,11 @@ The extra ubuntu packages needed are:
     * python-dev
     * python-fabio
     * python-pyopencl
-    * python-fftw
     * python-qt4
 
 using apt-get these can be installed as::
 
-    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
+    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-qt4
 
 MacOSX
 ------
@@ -209,7 +208,7 @@ Indirect contributors (ideas, ...):
  * Brian Pauw
  * Veijo Honkimaki
 
-.. |Build Status| image:: https://travis-ci.org/kif/pyFAI.svg?branch=master
-   :target: https://travis-ci.org/kif/pyFAI
-.. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/c57jwp3at94t3jgr?svg=true
-   :target: https://ci.appveyor.com/project/kif/pyfai
+.. |Build Status| image:: https://travis-ci.org/silx-kit/pyFAI.svg?branch=master
+   :target: https://travis-ci.org/silx-kit/pyFAI
+.. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/github/silx-kit/pyfai?svg=true
+   :target: https://ci.appveyor.com/project/ESRF/pyfai

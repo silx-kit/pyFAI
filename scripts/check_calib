@@ -37,11 +37,18 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2014"
+__date__ = "28/11/2016"
 __satus__ = "production"
 
 import logging
 import warnings
+import sys
+
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
+
 logger = logging.getLogger("check_calib")
 
 with warnings.catch_warnings():
@@ -53,8 +60,10 @@ cc = None
 if __name__ == "__main__":
     pylab.ion()
     cc = CheckCalib()
-    cc.parse()
-    cc.integrate()
-    cc.rebuild()
-    cc.show()
-    raw_input("enter to quit")
+    if cc.parse():
+        cc.integrate()
+        cc.rebuild()
+        cc.show()
+        six.moves.input("enter to quit")
+    else:
+        sys.exit(1)

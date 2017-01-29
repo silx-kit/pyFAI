@@ -2,34 +2,42 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 #
+
+"""Description of all detectors with a factory to instantiate them"""
+
 from __future__ import print_function, division, absolute_import, with_statement
+
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/06/2016"
+__date__ = "13/01/2017"
 __status__ = "stable"
-__doc__ = """Description of all detectors with a factory to instantiate them"""
 
 
 import logging
@@ -101,13 +109,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         A kind of factory...
 
-        @param name: name of a detector
-        @type name: str
-        @param config: configuration of the detector
-        @type config: dict or JSON representation of it.
+        :param name: name of a detector
+        :type name: str
+        :param config: configuration of the detector
+        :type config: dict or JSON representation of it.
 
-        @return: an instance of the right detector, set-up if possible
-        @rtype: pyFAI.detectors.Detector
+        :return: an instance of the right detector, set-up if possible
+        :rtype: pyFAI.detectors.Detector
         """
         if os.path.isfile(name):
             return NexusDetector(name)
@@ -127,14 +135,14 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def __init__(self, pixel1=None, pixel2=None, splineFile=None, max_shape=None):
         """
-        @param pixel1: size of the pixel in meter along the slow dimension (often Y)
-        @type pixel1: float
-        @param pixel2: size of the pixel in meter along the fast dimension (often X)
-        @type pixel2: float
-        @param splineFile: path to file containing the geometric correction.
-        @type splineFile: str
-        @param max_shape: maximum size of the detector
-        @type max_shape: 2-tuple of integrers
+        :param pixel1: size of the pixel in meter along the slow dimension (often Y)
+        :type pixel1: float
+        :param pixel2: size of the pixel in meter along the fast dimension (often X)
+        :type pixel2: float
+        :param splineFile: path to file containing the geometric correction.
+        :type splineFile: str
+        :param max_shape: maximum size of the detector
+        :type max_shape: 2-tuple of integrers
         """
         self._pixel1 = None
         self._pixel2 = None
@@ -173,7 +181,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             (self.name, self.splineFile, self._pixel1, self._pixel2)
 
     def __copy__(self):
-        "@return: a shallow copy of itself"
+        ":return: a shallow copy of itself"
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
         mutable = ['_mask', '_dx', '_dy', 'flat', 'dark']
         new = self.__class__()
@@ -184,7 +192,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         return new
 
     def __deepcopy__(self, memo=None):
-        "@return: a deep copy of itself"
+        ":return: a deep copy of itself"
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
         mutable = ['_mask', '_dx', '_dy', 'flat', 'dark']
         if memo is None:
@@ -304,8 +312,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         Set the "binning" of the detector,
 
-        @param bin_size: binning as integer or tuple of integers.
-        @type bin_size: (int, int)
+        :param bin_size: binning as integer or tuple of integers.
+        :type bin_size: (int, int)
         """
         if "__len__" in dir(bin_size) and len(bin_size) >= 2:
             bin_size = int(round(float(bin_size[0]))), int(round(float(bin_size[1])))
@@ -332,8 +340,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         Helper method to serialize the description of a detector using the pyFAI way
         with everything in S.I units.
 
-        @return: representation of the detector easy to serialize
-        @rtype: dict
+        :return: representation of the detector easy to serialize
+        :rtype: dict
         """
         return {"detector": self.name,
                 "pixel1": self._pixel1,
@@ -344,8 +352,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         Helper method to serialize the description of a detector using the Fit2d units
 
-        @return: representation of the detector easy to serialize
-        @rtype: dict
+        :return: representation of the detector easy to serialize
+        :rtype: dict
         """
         return {"pixelX": self._pixel2 * 1e6,
                 "pixelY": self._pixel1 * 1e6,
@@ -355,7 +363,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         Twin method of getPyFAI: setup a detector instance according to a description
 
-        @param kwarg: dictionary containing detector, pixel1, pixel2 and splineFile
+        :param kwarg: dictionary containing detector, pixel1, pixel2 and splineFile
 
         """
         if "detector" in kwarg:
@@ -370,7 +378,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         Twin method of getFit2D: setup a detector instance according to a description
 
-        @param kwarg: dictionary containing pixel1, pixel2 and splineFile
+        :param kwarg: dictionary containing pixel1, pixel2 and splineFile
 
         """
         for kw, val in kwarg.items():
@@ -388,14 +396,14 @@ class Detector(with_metaclass(DetectorMeta, object)):
         The half pixel offset is taken into account here !!!
         Adapted to Nexus detector definition
 
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
-        @param center: retrieve the coordinate of the center of the pixel, unless gives one corner
-        @param use_cython: set to False to test Python implementation
-        @return: position in meter of the center of each pixels.
-        @rtype: 3xndarray, the later being None if IS_FLAT
+        :param d1: the Y pixel positions (slow dimension)
+        :type d1: ndarray (1D or 2D)
+        :param d2: the X pixel positions (fast dimension)
+        :type d2: ndarray (1D or 2D)
+        :param center: retrieve the coordinate of the center of the pixel, unless gives one corner
+        :param use_cython: set to False to test Python implementation
+        :return: position in meter of the center of each pixels.
+        :rtype: 3xndarray, the later being None if IS_FLAT
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -506,8 +514,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         Detectors with gaps should overwrite this method with
         something actually calculating the mask!
 
-        @return: the mask with valid pixel to 0
-        @rtype: numpy ndarray of int8 or None
+        :return: the mask with valid pixel to 0
+        :rtype: numpy ndarray of int8 or None
         """
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
         return None
@@ -596,15 +604,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
     name = property(get_name)
 
     def get_pixel_corners(self):
-        """
-        Calculate the position of the corner of the pixels
+        """Calculate the position of the corner of the pixels
 
         This should be overwritten by class representing non-contiguous detector (Xpad, ...)
 
         Precision float32 is ok: precision of 1µm for a detector size of 1m
 
-
-        @return:  4D array containing:
+        :return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
                     corner index (A, B, C or D), triangles or hexagons can be handled the same way
@@ -613,6 +619,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
+                    # like numpy.ogrid
                     d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False)
                     d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True)
                     p1, p2, p3 = self.calc_cartesian_positions(d1, d2, center=False)
@@ -642,7 +649,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             * differentiate pixel center from pixel corner offsets
             * store all offsets are ndarray according to slow/fast dimension (not x, y)
 
-        @param filename: name of the file on the disc
+        :param filename: name of the file on the disc
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -677,7 +684,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     def guess_binning(self, data):
         """
         Guess the binning/mode depending on the image shape
-        @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -692,7 +699,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             bin2 = self.max_shape[1] // shape[1]
             res = self.max_shape[0] % shape[0] + self.max_shape[1] % shape[1]
             if res != 0:
-                logger.warning("Impossible binning: max_shape is %s, requested shape %s" % (self.max_shape, shape))
+                logger.warning("Impossible binning: max_shape is %s, requested shape %s", self.max_shape, shape)
             old_binning = self._binning
             self._binning = (bin1, bin2)
             self.shape = shape
@@ -724,7 +731,7 @@ class NexusDetector(Detector):
         Loads the detector description from a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
 
-        @param filename: name of the file on the disk
+        :param filename: name of the file on the disk
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -763,8 +770,8 @@ class NexusDetector(Detector):
         Instantiate the detector description from a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
 
-        @param filename: name of the file on the disk
-        @return: Detector instance
+        :param filename: name of the file on the disk
+        :return: Detector instance
         """
         obj = cls()
         cls.load(filename)
@@ -775,8 +782,8 @@ class NexusDetector(Detector):
         Helper method to serialize the description of a detector using the pyFAI way
         with everything in S.I units.
 
-        @return: representation of the detector easy to serialize
-        @rtype: dict
+        :return: representation of the detector easy to serialize
+        :rtype: dict
         """
         return {"detector": self._filename or self.name,
                 "pixel1": self._pixel1,
@@ -787,8 +794,8 @@ class NexusDetector(Detector):
         """
         Helper method to serialize the description of a detector using the Fit2d units
 
-        @return: representation of the detector easy to serialize
-        @rtype: dict
+        :return: representation of the detector easy to serialize
+        :rtype: dict
         """
         return {"pixelX": self._pixel2 * 1e6,
                 "pixelY": self._pixel1 * 1e6
@@ -818,13 +825,16 @@ class Pilatus(Detector):
             if fabio:
                 self.offset1 = fabio.open(self.y_offset_file).data
                 self.offset2 = fabio.open(self.x_offset_file).data
+                self.uniform_pixel = False
             else:
                 logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
                 self.offset1 = None
                 self.offset2 = None
+                self.uniform_pixel = True
         else:
             self.offset1 = None
             self.offset2 = None
+            self.uniform_pixel = True
 
     def __repr__(self):
         txt = "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -848,7 +858,7 @@ class Pilatus(Detector):
                 self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
                 self.uniform_pixel = False
             except Exception as error:
-                logger.error("set_splineFile with %s gave error: %s" % (splineFile, error))
+                logger.error("set_splineFile with %s gave error: %s", splineFile, error)
                 self.x_offset_file = self.y_offset_file = self.offset1 = self.offset2 = None
                 self.uniform_pixel = True
                 return
@@ -889,13 +899,13 @@ class Pilatus(Detector):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
+        :param d1: the Y pixel positions (slow dimension)
+        :type d1: ndarray (1D or 2D)
+        :param d2: the X pixel positions (fast dimension)
+        :type d2: ndarray (1D or 2D)
 
-        @return: position in meter of the center of each pixels.
-        @rtype: ndarray
+        :return: position in meter of the center of each pixels.
+        :rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -910,12 +920,12 @@ class Pilatus(Detector):
             if d2.ndim == 1:
                 d1n = d1.astype(numpy.int32)
                 d2n = d2.astype(numpy.int32)
-                delta1 = self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel
-                delta2 = self.offset2[d1n, d2n] / 100.0
+                delta1 = -self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel and negative
+                delta2 = -self.offset2[d1n, d2n] / 100.0
             else:
                 if d1.shape == self.offset1.shape:
-                    delta1 = self.offset1 / 100.0  # Offsets are in percent of pixel
-                    delta2 = self.offset2 / 100.0
+                    delta1 = -self.offset1 / 100.0  # Offsets are in percent of pixel and negative
+                    delta2 = -self.offset2 / 100.0
                 elif d1.shape[0] > self.offset1.shape[0]:  # probably working with corners
                     s0, s1 = self.offset1.shape
                     delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
@@ -931,10 +941,10 @@ class Pilatus(Detector):
                     mask = numpy.where(delta1[:s0, -s1:] == 0)
                     delta1[:s0, -s1:][mask] = self.offset1[mask]
                     delta2[:s0, -s1:][mask] = self.offset2[mask]
-                    delta1 = delta1 / 100.0  # Offsets are in percent of pixel
-                    delta2 = delta2 / 100.0  # former arrays were integers
+                    delta1 = -delta1 / 100.0  # Offsets are in percent of pixel and negative
+                    delta2 = -delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
+                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s", self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.
         # For Pilatus,
         if center:
@@ -951,6 +961,7 @@ class Pilatus100k(Pilatus):
     Pilatus 100k detector
     """
     MAX_SHAPE = (195, 487)
+    aliases = ["Pilatus 100k"]
 
 
 class Pilatus200k(Pilatus):
@@ -958,6 +969,7 @@ class Pilatus200k(Pilatus):
     Pilatus 200k detector
     """
     MAX_SHAPE = (407, 487)
+    aliases = ["Pilatus 200k"]
 
 
 class Pilatus300k(Pilatus):
@@ -965,6 +977,7 @@ class Pilatus300k(Pilatus):
     Pilatus 300k detector
     """
     MAX_SHAPE = (619, 487)
+    aliases = ["Pilatus 300k"]
 
 
 class Pilatus300kw(Pilatus):
@@ -972,6 +985,7 @@ class Pilatus300kw(Pilatus):
     Pilatus 300k-wide detector
     """
     MAX_SHAPE = (195, 1475)
+    aliases = ["Pilatus 300kw"]
 
 
 class Pilatus1M(Pilatus):
@@ -979,6 +993,7 @@ class Pilatus1M(Pilatus):
     Pilatus 1M detector
     """
     MAX_SHAPE = (1043, 981)
+    aliases = ["Pilatus 1M"]
 
 
 class Pilatus2M(Pilatus):
@@ -987,6 +1002,7 @@ class Pilatus2M(Pilatus):
     """
 
     MAX_SHAPE = 1679, 1475
+    aliases = ["Pilatus 2M"]
 
 
 class Pilatus6M(Pilatus):
@@ -994,9 +1010,7 @@ class Pilatus6M(Pilatus):
     Pilatus 6M detector
     """
     MAX_SHAPE = (2527, 2463)
-
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    aliases = ["Pilatus 6M"]
 
 
 class PilatusCdTe(Pilatus):
@@ -1033,6 +1047,7 @@ class PilatusCdTe300k(PilatusCdTe):
     Pilatus CdTe 300k detector
     """
     MAX_SHAPE = (619, 487)
+    aliases = ["Pilatus CdTe 300k", "Pilatus 300k CdTe", "Pilatus300k CdTe", "Pilatus300kCdTe"]
 
 
 class PilatusCdTe300kw(PilatusCdTe):
@@ -1040,6 +1055,7 @@ class PilatusCdTe300kw(PilatusCdTe):
     Pilatus CdTe 300k-wide detector
     """
     MAX_SHAPE = (195, 1475)
+    aliases = ["Pilatus CdTe 300kw", "Pilatus 300kw CdTe", "Pilatus300kw CdTe", "Pilatus300kwCdTe"]
 
 
 class PilatusCdTe1M(PilatusCdTe):
@@ -1047,6 +1063,7 @@ class PilatusCdTe1M(PilatusCdTe):
     Pilatus CdTe 1M detector
     """
     MAX_SHAPE = (1043, 981)
+    aliases = ["Pilatus CdTe 1M", "Pilatus 1M CdTe", "Pilatus1M CdTe", "Pilatus1MCdTe"]
 
 
 class PilatusCdTe2M(PilatusCdTe):
@@ -1054,6 +1071,7 @@ class PilatusCdTe2M(PilatusCdTe):
     Pilatus CdTe 2M detector
     """
     MAX_SHAPE = 1679, 1475
+    aliases = ["Pilatus CdTe 2M", "Pilatus 2M CdTe", "Pilatus2M CdTe", "Pilatus2MCdTe"]
 
 
 class Eiger(Detector):
@@ -1100,13 +1118,13 @@ class Eiger(Detector):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
+        :param d1: the Y pixel positions (slow dimension)
+        :type d1: ndarray (1D or 2D)
+        :param d2: the X pixel positions (fast dimension)
+        :type d2: ndarray (1D or 2D)
 
-        @return: p1, p2 position in meter of the center of each pixels.
-        @rtype: 2-tuple of numpy.ndarray
+        :return: p1, p2 position in meter of the center of each pixels.
+        :rtype: 2-tuple of numpy.ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -1146,7 +1164,7 @@ class Eiger(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
+                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s", self.offset1.shape, d1.shape)
                     delta1 = delta2 = 0.
         if center:
             # Eiger detectors images are re-built to be contiguous
@@ -1158,11 +1176,20 @@ class Eiger(Detector):
         return p1, p2, None
 
 
+class Eiger500k(Eiger):
+    """
+    Eiger 1M detector
+    """
+    MAX_SHAPE = (512, 1030)
+    aliases = ["Eiger 500k"]
+
+
 class Eiger1M(Eiger):
     """
     Eiger 1M detector
     """
     MAX_SHAPE = (1065, 1030)
+    aliases = ["Eiger 1M"]
 
 
 class Eiger4M(Eiger):
@@ -1170,6 +1197,7 @@ class Eiger4M(Eiger):
     Eiger 4M detector
     """
     MAX_SHAPE = (2167, 2070)
+    aliases = ["Eiger 4M"]
 
 
 class Eiger9M(Eiger):
@@ -1177,6 +1205,7 @@ class Eiger9M(Eiger):
     Eiger 9M detector
     """
     MAX_SHAPE = (3269, 3110)
+    aliases = ["Eiger 9M"]
 
 
 class Eiger16M(Eiger):
@@ -1184,6 +1213,7 @@ class Eiger16M(Eiger):
     Eiger 16M detector
     """
     MAX_SHAPE = (4371, 4150)
+    aliases = ["Eiger 16M"]
 
 
 class Fairchild(Detector):
@@ -1333,7 +1363,7 @@ class Mar345(Detector):
     def guess_binning(self, data):
         """
         Guess the binning/mode depending on the image shape
-        @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -1369,15 +1399,15 @@ class ImXPadS10(Detector):
         module (in pixels) and the pixel_size (in meter). this method
         return the length of each pixels 0..length.
 
-        @param length: the number of pixel to compute
-        @type length: int
-        @param module_size: the number of pixel of one module
-        @type module_size: int
-        @param pixel_size: the size of one pixels (meter per pixel)
-        @type length: float
+        :param length: the number of pixel to compute
+        :type length: int
+        :param module_size: the number of pixel of one module
+        :type module_size: int
+        :param pixel_size: the size of one pixels (meter per pixel)
+        :type length: float
 
-        @return: the coordinates of each pixels 0..length
-        @rtype: ndarray
+        :return: the coordinates of each pixels 0..length
+        :rtype: ndarray
         """
         size = numpy.ones(length)
         n = length // module_size
@@ -1433,7 +1463,7 @@ class ImXPadS10(Detector):
         mask = numpy.logical_or(dims[0].T, dims[1])
         return mask.astype(numpy.int8)
 
-    def get_pixel_corners(self):
+    def get_pixel_corners(self, d1=None, d2=None):
         """
         Calculate the position of the corner of the pixels
 
@@ -1442,12 +1472,13 @@ class ImXPadS10(Detector):
         Precision float32 is ok: precision of 1µm for a detector size of 1m
 
 
-        @return:  4D array containing:
+        :return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
                     corner index (A, B, C or D), triangles or hexagons can be handled the same way
                     vertex position (z,y,x)
         """
+
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
@@ -1478,13 +1509,13 @@ class ImXPadS10(Detector):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
+        :param d1: the Y pixel positions (slow dimension)
+        :type d1: ndarray (1D or 2D)
+        :param d2: the X pixel positions (fast dimension)
+        :type d2: ndarray (1D or 2D)
 
-        @return: position in meter of the center of each pixels.
-        @rtype: ndarray
+        :return: position in meter of the center of each pixels.
+        :rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -1613,14 +1644,14 @@ class Xpad_flat(ImXPadS10):
         The half pixel offset is taken into account here !!!
         Adapted to Nexus detector definition
 
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
-        @param center: retrieve the coordinate of the center of the pixel
-        @parm use_cython: set to False to test Numpy implementation
-        @return: position in meter of the center of each pixels.
-        @rtype: ndarray
+        :param d1: the Y pixel positions (slow dimension)
+        :type d1: ndarray (1D or 2D)
+        :param d2: the X pixel positions (fast dimension)
+        :type d2: ndarray (1D or 2D)
+        :param center: retrieve the coordinate of the center of the pixel
+        :param use_cython: set to False to test Numpy implementation
+        :return: position in meter of the center of each pixels.
+        :rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -1673,7 +1704,7 @@ class Xpad_flat(ImXPadS10):
         """
         Calculate the position of the corner of the pixels
 
-        @return:  4D array containing:
+        :return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
                     corner index (A, B, C or D), triangles or hexagons can be handled the same way
@@ -1682,7 +1713,7 @@ class Xpad_flat(ImXPadS10):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    pixel_size1 = self._calc_pixels_size(self.max_shape[0], self.module_size[0], self._pixel1)
+                    pixel_size1 = numpy.ones(self.max_shape[0]) * self._pixel1
                     pixel_size2 = self._calc_pixels_size(self.max_shape[1], self.module_size[1], self._pixel2)
                     # half pixel offset
                     pixel_center1 = pixel_size1 / 2.0  # half pixel offset
@@ -1770,8 +1801,8 @@ class Rayonix(Detector):
         """
         Set the "binning" of the detector,
 
-        @param bin_size: set the binning of the detector
-        @type bin_size: int or (int, int)
+        :param bin_size: set the binning of the detector
+        :type bin_size: int or (int, int)
         """
         if "__len__" in dir(bin_size) and len(bin_size) >= 2:
             bin_size = int(round(float(bin_size[0]))), int(round(float(bin_size[1])))
@@ -1783,7 +1814,7 @@ class Rayonix(Detector):
                 self._pixel1 = self.BINNED_PIXEL_SIZE[bin_size[0]]
                 self._pixel2 = self.BINNED_PIXEL_SIZE[bin_size[1]]
             else:
-                logger.warning("Binning factor (%sx%s) is not an official value for Rayonix detectors" % (bin_size[0], bin_size[1]))
+                logger.warning("Binning factor (%sx%s) is not an official value for Rayonix detectors", bin_size[0], bin_size[1])
                 self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
                 self._pixel2 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[1])
             self._binning = bin_size
@@ -1798,7 +1829,7 @@ class Rayonix(Detector):
     def guess_binning(self, data):
         """
         Guess the binning/mode depending on the image shape
-        @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -1908,7 +1939,7 @@ class RayonixLx170(Rayonix):
                          }
     MAX_SHAPE = (1920, 3840)
     force_pixel = True
-    aliases = ["Rayonix lx170"]
+    aliases = ["Rayonix LX170", "Rayonix LX170-HS", "Rayonix LX170 HS", "RayonixLX170HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1930,7 +1961,7 @@ class RayonixMx170(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (3840, 3840)
-    aliases = ["Rayonix mx170"]
+    aliases = ["Rayonix MX170", "Rayonix MX170-HS", "RayonixMX170HS", "Rayonix MX170 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1952,7 +1983,7 @@ class RayonixLx255(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (1920, 5760)
-    aliases = ["Rayonix lx255", "Rayonix lx255hs"]
+    aliases = ["Rayonix LX255", "Rayonix LX255-HS", "Rayonix LX 255HS", "RayonixLX225HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1973,7 +2004,7 @@ class RayonixMx225(Rayonix):
                          8: 292.969e-6
                          }
     MAX_SHAPE = (6144, 6144)
-    aliases = ["Rayonix mx225"]
+    aliases = ["Rayonix MX225"]
 
     def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1996,7 +2027,7 @@ class RayonixMx225hs(Rayonix):
                          10: 390.625e-6,
                          }
     MAX_SHAPE = (5760, 5760)
-    aliases = ["Rayonix mx225hs"]
+    aliases = ["Rayonix MX225HS", "Rayonix MX225 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2039,7 +2070,7 @@ class RayonixMx300hs(Rayonix):
                          10: 390.625e-6
                          }
     MAX_SHAPE = (7680, 7680)
-    aliases = ["Rayonix mx300hs"]
+    aliases = ["Rayonix MX300HS", "Rayonix MX300 HS"]
 
     def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2062,7 +2093,7 @@ class RayonixMx340hs(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (7680, 7680)
-    aliases = ["Rayonix mx340hs"]
+    aliases = ["Rayonix MX340HS", "Rayonix MX340HS"]
 
     def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2084,7 +2115,7 @@ class RayonixSx30hs(Rayonix):
                          10: 156.25e-6
                          }
     MAX_SHAPE = (1920, 1920)
-    aliases = ["Rayonix Sx30hs"]
+    aliases = ["Rayonix SX30HS", "Rayonix SX30 HS"]
 
     def __init__(self, pixel1=15.625e-6, pixel2=15.625e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2106,7 +2137,7 @@ class RayonixSx85hs(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (1920, 1920)
-    aliases = ["Rayonix Sx85hs"]
+    aliases = ["Rayonix SX85HS", "Rayonix SX85 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2128,7 +2159,7 @@ class RayonixMx425hs(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (9600, 9600)
-    aliases = ["Rayonix mx425hs"]
+    aliases = ["Rayonix MX425HS", "Rayonix MX425 HS"]
 
     def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2147,7 +2178,7 @@ class RayonixMx325(Rayonix):
                          8: 317.383e-6
                          }
     MAX_SHAPE = (8192, 8192)
-    aliases = ["Rayonix mx325"]
+    aliases = ["Rayonix MX325"]
 
     def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6):
         Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -2348,7 +2379,7 @@ class Aarhus(Detector):
 
         This should be overwritten by class representing non-contiguous detector (Xpad, ...)
 
-        @return:  4D array containing:
+        :return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
                     corner index (A, B, C or D), triangles or hexagons can be handled the same way
@@ -2396,14 +2427,14 @@ class Aarhus(Detector):
         The half pixel offset is taken into account here !!!
         Adapted to Nexus detector definition
 
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
-        @param center: retrieve the coordinate of the center of the pixel
-        @param use_cython: set to False to test Python implementeation
-        @return: position in meter of the center of each pixels.
-        @rtype: ndarray
+        :param d1: the Y pixel positions (slow dimension)
+        :type d1: ndarray (1D or 2D)
+        :param d2: the X pixel positions (fast dimension)
+        :type d2: ndarray (1D or 2D)
+        :param center: retrieve the coordinate of the center of the pixel
+        :param use_cython: set to False to test Python implementeation
+        :return: position in meter of the center of each pixels.
+        :rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -2526,20 +2557,30 @@ class Apex2(Detector):
             (self.name, self._pixel1, self._pixel2)
 
 
-class RaspberryPi(Detector):
+class RaspberryPi5M(Detector):
     """5 Mpix detector from Raspberry Pi
 
     """
-    aliases = ["Raspberry", "Pi"]
+    aliases = ["Picam v1"]
     force_pixel = True
     MAX_SHAPE = (1944, 2592)
 
     def __init__(self, pixel1=1.4e-6, pixel2=1.4e-6):
-        super(RaspberryPi, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(RaspberryPi5M, self).__init__(pixel1=pixel1, pixel2=pixel2)
+
+
+class RaspberryPi8M(Detector):
+    """8 Mpix detector from Raspberry Pi
+
+    """
+    aliases = ["Picam v2"]
+    force_pixel = True
+    MAX_SHAPE = (2464, 3280)
+
+    def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6):
+        super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
 load = NexusDetector.sload
-
-

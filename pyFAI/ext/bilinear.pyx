@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "31/05/2016"
+__date__ = "01/12/2016"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -55,10 +55,10 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
     with pixel coordinated stored in array pos
     This is bilinear interpolation
 
-    @param d1: position in dim1
-    @param d2: position in dim2
-    @param pos: array with position of pixels corners
-    @return 3-tuple of position.
+    :param d1: position in dim1
+    :param d2: position in dim2
+    :param pos: array with position of pixels corners
+    :return 3-tuple of position.
     """
     cdef:
         int i, p1, p2, dim1, dim2, size = d1.size
@@ -70,7 +70,7 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
         out3 = numpy.zeros(size, dtype=numpy.float32)
     dim1 = pos.shape[0]
     dim2 = pos.shape[1]
-    assert size == d2.size
+    assert size == d2.size, "d2.size == size"
 
     for i in prange(size, nogil=True, schedule="static"):
         f1 = floor(d1[i])
@@ -149,18 +149,18 @@ def convert_corner_2D_to_4D(int ndim,
     """
     Convert 2 (or 3) arrays of corner position into a 4D array of pixel corner coordinates
 
-    @param ndim: 2d or 3D output
-    @param d1: 2D position in dim1 (shape +1)
-    @param d2: 2D position in dim2 (shape +1)
-    @param d3: 2D position in dim3 (z) (shape +1)
-    @return: pos 4D array with position of pixels corners
+    :param ndim: 2d or 3D output
+    :param d1: 2D position in dim1 (shape +1)
+    :param d2: 2D position in dim2 (shape +1)
+    :param d3: 2D position in dim3 (z) (shape +1)
+    :return: pos 4D array with position of pixels corners
     """
     cdef int shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels
     shape0 = d1.shape[0] - 1
     shape1 = d2.shape[1] - 1
-    assert d1.shape[0] == d2.shape[0]
-    assert d1.shape[1] == d2.shape[1]
+    assert d1.shape[0] == d2.shape[0], "d1.shape[0] == d2.shape[0]"
+    assert d1.shape[1] == d2.shape[1], "d1.shape[1] == d2.shape[1]"
     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
     for i in prange(shape0, nogil=True, schedule="static"):
         for j in range(shape1):
@@ -173,8 +173,8 @@ def convert_corner_2D_to_4D(int ndim,
             pos[i, j, 3, ndim - 2] += d1[i, j + 1]
             pos[i, j, 3, ndim - 1] += d2[i, j + 1]
     if (d3 is not None) and (ndim == 3):
-        assert d1.shape[0] == d3.shape[0]
-        assert d1.shape[1] == d3.shape[1]
+        assert d1.shape[0] == d3.shape[0], "d1.shape[0] == d3.shape[0]"
+        assert d1.shape[1] == d3.shape[1], "d1.shape[1] == d3.shape[1]"
         for i in prange(shape0, nogil=True, schedule="static"):
             for j in range(shape1):
                 pos[i, j, 0, 0] += d3[i, j]

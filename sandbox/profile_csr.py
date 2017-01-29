@@ -15,6 +15,10 @@ pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitBBox
 from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 logger = utilstest.getLogger("profile")
 
 
@@ -60,5 +64,5 @@ plot(out_cyt_csr, label="cyt_csr" )
 #plot(out_ocl-out_cyt, label="delta")
 legend()
 show()
-raw_input()
+six.moves.input()
 

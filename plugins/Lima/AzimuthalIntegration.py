@@ -10,7 +10,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/04/2013"
+__date__ = "08/11/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -40,10 +40,10 @@ import fabio
 class SinkPyFAI(Core.Processlib.SinkTaskBase):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
         """
-        @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
-        @param shapeIn: image size in input
-        @param shapeOut: Integrated size: can be (1,2000) for 1D integration
-        @param unit: can be "2th_deg, r_mm or q_nm^-1 ...
+        :param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
+        :param shapeIn: image size in input
+        :param shapeOut: Integrated size: can be (1,2000) for 1D integration
+        :param unit: can be "2th_deg, r_mm or q_nm^-1 ...
         """
         Core.Processlib.SinkTaskBase.__init__(self)
         if azimuthalIntgrator is None:
@@ -66,7 +66,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         try:
             self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
         except Exception as error:
-            logger.error("default on shapeIn %s: %s" % (shapeIn, error))
+            logger.error("default on shapeIn %s: %s", shapeIn, error)
             self.shapeIn = shapeIn
 
     def __repr__(self):
@@ -94,7 +94,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         """
         this is just to force the integrator to initialize
         """
-        print "did a reset"
+        print("did a reset")
         self.ai.reset()
         # print self.__repr__()
 
@@ -144,7 +144,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         else:
             directory = os.path.join(sav_parms.directory, self.subdir)
         if not os.path.exists(directory):
-            logger.error("Ouput directory does not exist !!!  %s" % directory)
+            logger.error("Ouput directory does not exist !!!  %s", directory)
             try:
                 os.makedirs(directory)
             except:  # No luck withthreads
@@ -179,10 +179,10 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
             else:
                 self.ai.integrate1d(**kwarg)
         except:
-            print data.buffer.shape, data.buffer.size
-            print self.ai
-            print self.ai._lut_integrator
-            print self.ai._lut_integrator.size
+            print(data.buffer.shape, data.buffer.size)
+            print(self.ai)
+            print(self.ai._lut_integrator)
+            print(self.ai._lut_integrator.size)
             raise
         # return rData
 
@@ -228,10 +228,10 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
             try:
                 fwavelength = float(wavelength)
             except ValueError:
-                logger.error("Unable to convert wavelength to float: %s" % wavelength)
+                logger.error("Unable to convert wavelength to float: %s", wavelength)
             else:
                 if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+                    logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
                 self.ai.wavelength = fwavelength
 
         splineFile = config.get("splineFile")
@@ -256,7 +256,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 self.ai.mask = mask
                 self.mask_image = os.path.abspath(mask_file)

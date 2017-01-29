@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -66,13 +66,13 @@ def parse():
 def bench_hdf5(n=1024, shape=(1024, 1024), dtype="float32", dirname=None, bsize=10):
     """
     Actually performs the HDF5 writing benchmark
-    @param n: number of frames to be written
-    @param shape: 2-tuple of integer describing the shape of the image
-    @param bsize: number of frames in buffer
+    :param n: number of frames to be written
+    :param shape: 2-tuple of integer describing the shape of the image
+    :param bsize: number of frames in buffer
     """
     tmp_dir = tempfile.mkdtemp(dir=dirname)
     h5file = os.path.join(tmp_dir, "junk.h5")
-    logger.info("Writing large dataset %ix(%i,%i) of %s to %s." % (n, shape[0], shape[1], dtype, h5file))
+    logger.info("Writing large dataset %ix(%i,%i) of %s to %s.", n, shape[0], shape[1], dtype, h5file)
 
     dtype = numpy.dtype(dtype)
     if dtype.kind == "f":
@@ -95,7 +95,7 @@ def bench_hdf5(n=1024, shape=(1024, 1024), dtype="float32", dirname=None, bsize=
     writer.close()
     t = time.time() - t0
     bps = nbytes / t
-    logger.info("Writing of %.3fMB in HDF5 took %.3fs (%.3f MByte/s)" % (nmbytes, t, nmbytes / t))
+    logger.info("Writing of %.3fMB in HDF5 took %.3fs (%.3f MByte/s)", nmbytes, t, nmbytes / t)
     statinfo = os.stat(h5file)
     assert statinfo.st_size > nbytes
 

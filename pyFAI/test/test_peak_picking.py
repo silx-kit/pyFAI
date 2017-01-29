@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,21 +33,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
 import os
 import numpy
-import logging
 import sys
-from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
+from .utilstest import UtilsTest, getLogger, recursive_delete
 logger = getLogger(__file__)
 from ..peak_picker import PeakPicker
 from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
 
 
 class testPeakPicking(unittest.TestCase):
@@ -58,14 +55,14 @@ class testPeakPicking(unittest.TestCase):
 
         self.calibFile = "mock.tif"
         self.ctrlPt = {0: (300, 230),
-                      1: (300, 212),
-                      2: (300, 195),
-                      3: (300, 177),
-                      4: (300, 159),
-                      5: (300, 140),
-                      6: (300, 123),
-                      7: (300, 105),
-                      8: (300, 87)}
+                       1: (300, 212),
+                       2: (300, 195),
+                       3: (300, 177),
+                       4: (300, 159),
+                       5: (300, 140),
+                       6: (300, 123),
+                       7: (300, 105),
+                       8: (300, 87)}
         self.tth = numpy.radians(numpy.arange(4, 13))
         self.wavelength = 1e-10
         self.ds = self.wavelength * 5e9 / numpy.sin(self.tth / 2)
@@ -115,22 +112,22 @@ class testPeakPicking(unittest.TestCase):
             delta2 = gr.refine2()
             logger.info(gr.__repr__())
             if delta2 == last:
-                logger.info("refinement finished after %s iteration" % i)
+                logger.info("refinement finished after %s iteration", i)
                 break
             last = delta2
         self.assertEquals(last < 1e-4, True, "residual error is less than 1e-4, got %s" % last)
-        self.assertAlmostEquals(gr.dist, 0.1, 2, "distance is OK, got %s, expected 0.1" % gr.dist)
-        self.assertAlmostEquals(gr.poni1, 3e-2, 2, "PONI1 is OK, got %s, expected 3e-2" % gr.poni1)
-        self.assertAlmostEquals(gr.poni2, 3e-2, 2, "PONI2 is OK, got %s, expected 3e-2" % gr.poni2)
-        self.assertAlmostEquals(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
-        self.assertAlmostEquals(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
-        self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
+        self.assertAlmostEqual(gr.dist, 0.1, 2, "distance is OK, got %s, expected 0.1" % gr.dist)
+        self.assertAlmostEqual(gr.poni1, 3e-2, 2, "PONI1 is OK, got %s, expected 3e-2" % gr.poni1)
+        self.assertAlmostEqual(gr.poni2, 3e-2, 2, "PONI2 is OK, got %s, expected 3e-2" % gr.poni2)
+        self.assertAlmostEqual(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
+        self.assertAlmostEqual(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
+        self.assertAlmostEqual(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
 
 
 class TestMassif(unittest.TestCase):
     """test for ring extraction algorithm with image which needs binning (non regression test)"""
     calibFile = "mock.tif"
-    #TODO !!!
+    # TODO !!!
 
 
 def suite():

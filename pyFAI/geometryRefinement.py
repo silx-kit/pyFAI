@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 
 import os
@@ -69,27 +69,27 @@ class GeometryRefinement(AzimuthalIntegrator):
                  pixel1=None, pixel2=None, splineFile=None, detector=None,
                  wavelength=None, calibrant=None):
         """
-        @param data: ndarray float64 shape = n, 3
+        :param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
             col1: pos in dim1 (in pixels)
             col2: ring index in calibrant object
-        @param dist: guessed sample-detector distance (optional, in m)
-        @param poni1: guessed PONI coordinate along the Y axis (optional, in m)
-        @param poni2: guessed PONI coordinate along the X axis (optional, in m)
-        @param rot1: guessed tilt of the detector around the Y axis (optional, in rad)
-        @param rot2: guessed tilt of the detector around the X axis (optional, in rad)
-        @param rot3: guessed tilt of the detector around the incoming beam axis (optional, in rad)
-        @param pixel1: Pixel size along the vertical direction of the detector (in m), almost mandatory
-        @param pixel2: Pixel size along the horizontal direction of the detector (in m), almost mandatory
-        @param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
-        @param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
-        @param wavelength: wavelength in m (1.54e-10)
-        @param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
+        :param dist: guessed sample-detector distance (optional, in m)
+        :param poni1: guessed PONI coordinate along the Y axis (optional, in m)
+        :param poni2: guessed PONI coordinate along the X axis (optional, in m)
+        :param rot1: guessed tilt of the detector around the Y axis (optional, in rad)
+        :param rot2: guessed tilt of the detector around the X axis (optional, in rad)
+        :param rot3: guessed tilt of the detector around the incoming beam axis (optional, in rad)
+        :param pixel1: Pixel size along the vertical direction of the detector (in m), almost mandatory
+        :param pixel2: Pixel size along the horizontal direction of the detector (in m), almost mandatory
+        :param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
+        :param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
+        :param wavelength: wavelength in m (1.54e-10)
+        :param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
 
         """
         self.data = numpy.array(data, dtype=numpy.float64)
         assert self.data.ndim == 2
-        assert self.data.shape[1] in [ 3, 4]  # 3 for non weighted, 4 for weighted refinement
+        assert self.data.shape[1] in [3, 4]  # 3 for non weighted, 4 for weighted refinement
         assert self.data.shape[0] > 0
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
@@ -133,14 +133,13 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.e-10
 
-
     def guess_poni(self):
         """
         Poni can be guessed by the centroid of the ring with lowest 2Theta
         """
 
         if len(self.calibrant.dSpacing):
-#            logger.warning(self.calibrant.__repr__())s
+            # logger.warning(self.calibrant.__repr__())s
             tth = self.calc_2th(self.data[:, 2])
         else:  # assume rings are in decreasing dSpacing in the file
             tth = self.data[:, 2]
@@ -160,7 +159,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         Set the tolerance for a refinement of the geometry; in percent of the original value
 
-        @param value: Tolerance as a percentage
+        :param value: Tolerance as a percentage
 
         """
         low = 1.0 - value / 100.
@@ -200,11 +199,10 @@ class GeometryRefinement(AzimuthalIntegrator):
         self.wavelength_min = low * self.wavelength
         self.wavelength_max = hi * self.wavelength
 
-
     def calc_2th(self, rings, wavelength=None):
         """
-        @param rings: indices of the rings. starts at 0 and self.dSpacing should be long enough !!!
-        @param wavelength: wavelength in meter
+        :param rings: indices of the rings. starts at 0 and self.dSpacing should be long enough !!!
+        :param wavelength: wavelength in meter
         """
         if wavelength is None:
             wavelength = self.wavelength
@@ -221,7 +219,7 @@ class GeometryRefinement(AzimuthalIntegrator):
 
     def residu2(self, param, d1, d2, rings):
         # dot product is faster ...
-#        return (self.residu1(param, d1, d2, rings) ** 2).sum()
+        # return (self.residu1(param, d1, d2, rings) ** 2).sum()
         t = self.residu1(param, d1, d2, rings)
         return numpy.dot(t, t)
 
@@ -264,7 +262,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
-    def refine2(self, maxiter=1000000, fix=["wavelength"]):
+    def refine2(self, maxiter=1000000, fix=None):
+        if fix is None:
+            fix = ["wavelength"]
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
         param = []
         bounds = []
@@ -313,7 +313,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
-    def refine2_wavelength(self, maxiter=1000000, fix=["wavelength"]):
+    def refine2_wavelength(self, maxiter=1000000, fix=None):
+        if fix is None:
+            fix = ["wavelength"]
         d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
 
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
@@ -369,7 +371,6 @@ class GeometryRefinement(AzimuthalIntegrator):
             return newDeltaSq
         else:
             return oldDeltaSq
-
 
     def simplex(self, maxiter=1000000):
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
@@ -450,12 +451,12 @@ class GeometryRefinement(AzimuthalIntegrator):
         """Refine the geometry and provide confidence interval
         Use curve_fit from scipy.optimize to not only refine the geometry (unconstrained fit)
 
-        @param with_rot: include rotation intro error measurment
-        @return: std_dev, confidence
+        :param with_rot: include rotation intro error measurment
+        :return: std_dev, confidence
         """
         if not curve_fit:
             import scipy
-            logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s" % scipy.version.version)
+            logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s", scipy.version.version)
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
         size = d1.size
@@ -498,8 +499,8 @@ class GeometryRefinement(AzimuthalIntegrator):
 
         Note the confidence interval increases with the number of points which is "surprizing"
 
-        @param with_rot: if true include rot1 & rot2 in the parameter set.
-        @return: std_dev, confidence
+        :param with_rot: if true include rot1 & rot2 in the parameter set.
+        :return: std_dev, confidence
         """
         epsilon = 1e-5
         d1 = self.data[:, 0]
@@ -611,34 +612,43 @@ class GeometryRefinement(AzimuthalIntegrator):
             self._dist_max = value
         else:
             self._dist_max = float(value)
+
     def get_dist_max(self):
         return self._dist_max
+
     dist_max = property(get_dist_max, set_dist_max)
+
     def set_dist_min(self, value):
         if isinstance(value, float):
             self._dist_min = value
         else:
             self._dist_min = float(value)
+
     def get_dist_min(self):
         return self._dist_min
-    dist_min = property(get_dist_min, set_dist_min)
 
+    dist_min = property(get_dist_min, set_dist_min)
 
     def set_poni1_min(self, value):
         if isinstance(value, float):
             self._poni1_min = value
         else:
             self._poni1_min = float(value)
+
     def get_poni1_min(self):
         return self._poni1_min
+
     poni1_min = property(get_poni1_min, set_poni1_min)
+
     def set_poni1_max(self, value):
         if isinstance(value, float):
             self._poni1_max = value
         else:
             self._poni1_max = float(value)
+
     def get_poni1_max(self):
         return self._poni1_max
+
     poni1_max = property(get_poni1_max, set_poni1_max)
 
     def set_poni2_min(self, value):
@@ -646,16 +656,21 @@ class GeometryRefinement(AzimuthalIntegrator):
             self._poni2_min = value
         else:
             self._poni2_min = float(value)
+
     def get_poni2_min(self):
         return self._poni2_min
+
     poni2_min = property(get_poni2_min, set_poni2_min)
+
     def set_poni2_max(self, value):
         if isinstance(value, float):
             self._poni2_max = value
         else:
             self._poni2_max = float(value)
+
     def get_poni2_max(self):
         return self._poni2_max
+
     poni2_max = property(get_poni2_max, set_poni2_max)
 
     def set_rot1_min(self, value):
@@ -663,16 +678,21 @@ class GeometryRefinement(AzimuthalIntegrator):
             self._rot1_min = value
         else:
             self._rot1_min = float(value)
+
     def get_rot1_min(self):
         return self._rot1_min
+
     rot1_min = property(get_rot1_min, set_rot1_min)
+
     def set_rot1_max(self, value):
         if isinstance(value, float):
             self._rot1_max = value
         else:
             self._rot1_max = float(value)
+
     def get_rot1_max(self):
         return self._rot1_max
+
     rot1_max = property(get_rot1_max, set_rot1_max)
 
     def set_rot2_min(self, value):
@@ -680,16 +700,21 @@ class GeometryRefinement(AzimuthalIntegrator):
             self._rot2_min = value
         else:
             self._rot2_min = float(value)
+
     def get_rot2_min(self):
         return self._rot2_min
+
     rot2_min = property(get_rot2_min, set_rot2_min)
+
     def set_rot2_max(self, value):
         if isinstance(value, float):
             self._rot2_max = value
         else:
             self._rot2_max = float(value)
+
     def get_rot2_max(self):
         return self._rot2_max
+
     rot2_max = property(get_rot2_max, set_rot2_max)
 
     def set_rot3_min(self, value):
@@ -697,16 +722,21 @@ class GeometryRefinement(AzimuthalIntegrator):
             self._rot3_min = value
         else:
             self._rot3_min = float(value)
+
     def get_rot3_min(self):
         return self._rot3_min
+
     rot3_min = property(get_rot3_min, set_rot3_min)
+
     def set_rot3_max(self, value):
         if isinstance(value, float):
             self._rot3_max = value
         else:
             self._rot3_max = float(value)
+
     def get_rot3_max(self):
         return self._rot3_max
+
     rot3_max = property(get_rot3_max, set_rot3_max)
 
     def set_wavelength_min(self, value):
@@ -714,14 +744,19 @@ class GeometryRefinement(AzimuthalIntegrator):
             self._wavelength_min = value
         else:
             self._wavelength_min = float(value)
+
     def get_wavelength_min(self):
         return self._wavelength_min
+
     wavelength_min = property(get_wavelength_min, set_wavelength_min)
+
     def set_wavelength_max(self, value):
         if isinstance(value, float):
             self._wavelength_max = value
         else:
             self._wavelength_max = float(value)
+
     def get_wavelength_max(self):
         return self._wavelength_max
+
     wavelength_max = property(get_wavelength_max, set_wavelength_max)

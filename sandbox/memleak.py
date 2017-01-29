@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -27,14 +27,14 @@
 # THE SOFTWARE.
 
 from __future__ import absolute_import, print_function, division, with_statement
-import utilstest
-import sys, os
+
+import os
 import numpy
-import pyFAI
-print(pyFAI)
 import sys
 import gc
+import pyFAI
 
+print(pyFAI)
 
 def get_mem():
         """

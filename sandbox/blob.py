@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -35,6 +35,10 @@ pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.blob_detection import BlobDetection
 from pyFAI.detectors import detector_factory
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 
 
 def somme(im):
@@ -156,4 +160,4 @@ else : kp = bd.keypoints
 # pylab.plot(kp.x,kp.y,'og')
 
 f.show()
-raw_input()
+six.moves.input()

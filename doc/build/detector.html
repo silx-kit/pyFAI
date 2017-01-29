@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Simple detector &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Simple detector &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="index.html" />
     <link rel="up" title="General introduction to PyFAI" href="pyFAI.html" />
     <link rel="next" title="Image representation in Python" href="geometry.html" />
     <link rel="prev" title="General introduction to PyFAI" href="pyFAI.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="pyFAI.html" title="General introduction to PyFAI"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="pyFAI.html" accesskey="U">General introduction to PyFAI</a> &raquo;</li> 
       </ul>
     </div>  
@@ -61,7 +61,8 @@
 2D detectors with a constant pixel size and recoded in S.I..
 Typical pixel size are 50e-6 m (50 microns) and will be used as example in the
 numerical application.</p>
-<p>Pixels of the detector are indexed from the <em>origin</em> located at the <strong>lower left corner</strong>.
+<p>Pixels of the detector are indexed from the <em>origin</em> located at the
+<strong>lower left corner</strong> when looking from the sample.
 The pixel&#8217;s center is located at half integer index:</p>
 <ul class="simple">
 <li>pixel 0 goes from position 0 m to 50e-6m and is centered at 25e-6 m.</li>
@@ -69,7 +70,7 @@ The pixel&#8217;s center is located at half integer index:</p>
 </ul>
 <p><strong>Nota</strong>:
 Most of the time you will need to pass the optional argument <em>origin=&#8221;lower&#8221;</em> to
-matplotlib imshow function when displaying the image to avoid confusion</p>
+matplotlib&#8217;s <em>imshow</em> function when displaying the image to avoid confusion.</p>
 </div>
 <div class="section" id="complex-detectors">
 <h1>Complex detectors<a class="headerlink" href="#complex-detectors" title="Permalink to this headline">¶</a></h1>
@@ -86,20 +87,20 @@ for small spatial displacements, often called geometric distortion.
 This is why detectors need more complex definitions than just that of a pixel
 size.
 To avoid complicated and error-prone sets of parameters, two tools have been introduced:
-either <em>detector</em> classes define programatically detector or Nexus saved detector setup.</p>
+either <em>detector</em> classes define programmatically detector or Nexus saved detector setup.</p>
 <div class="section" id="detectors-classes">
 <h2>Detectors classes<a class="headerlink" href="#detectors-classes" title="Permalink to this headline">¶</a></h2>
 <p>They are used to define families of detectors.
 In order to take the specificities of each detector into account, pyFAI
-contains about 55 detector class definitions (and twice a much with aliases)
+contains about 58 detector class definitions (and 168 with aliases)
 which contain a mask (invalid pixels,
 gaps, ...) and a method to calculate the pixel positions in Cartesian
 coordinates. Available detectors can be printed using:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyFAI</span>
-<span class="k">print</span><span class="p">(</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">ALL_DETECTORS</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyFAI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pyFAI</span><span class="o">.</span><span class="n">detectors</span><span class="o">.</span><span class="n">ALL_DETECTORS</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For optically coupled CCD detectors, the geometrical distortion is often
+<p>For optically coupled CCD detectors, the geometric distortion is often
 described by a bi-dimensional cubic spline which can be imported into
 the detector instance and be used to calculate the actual pixel position in space.</p>
 </div>
@@ -120,7 +121,7 @@ can address some of the most complex detector layouts:</p>
 <li>hexagonal pixels (i.e. Pixirad detectors, still under development)</li>
 <li>curved/bent imaging plates (i.e. Rigaku, Aarhus detector)</li>
 <li>pixel detectors with tiled modular (i.e. Xpad detectors from ImXpad)</li>
-<li>semi-cylindrical pixel detectors (i.e. Pilatus12M from Dectris).</li>
+<li>semi-cylindrical pixel detectors (i.e. Pilatus12M from Dectris or CirPad from Soleil).</li>
 </ul>
 <p>The detector instance can be saved as HDF5, either programmatically, either
 on the command line.</p>
@@ -133,8 +134,9 @@ on the command line.</p>
 <p>Using the <em>detector2nexus</em> script to convert a complex detector definition
 (multiple modules, possibly in 3D) into
 a single NeXus detector definition together with the mask:</p>
-<blockquote>
-<div>detector2nexus -s halfccd.spline -o halfccd.h5</div></blockquote>
+<div class="highlight-bash"><div class="highlight"><pre>detector2nexus -s halfccd.spline -o halfccd.h5
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="conclusion">
@@ -143,10 +145,10 @@ a single NeXus detector definition together with the mask:</p>
 Fortunately, most detectors are already described, making the usage transparent
 for most users.
 There are a couple of <a class="reference internal" href="usage/tutorial/index.html#tutorials"><em>Tutorials</em></a> on detector definition which will help
-you understanding the mechanisme :</p>
+you understanding the underlying mechanism:</p>
 <ul class="simple">
-<li>Distortion which explains how to correct images for geometric distortion</li>
-<li>CCD-calibration which explains how to calibrate a detector for geometric
+<li><strong>Distortion</strong> which explains how to correct images for geometric distortion</li>
+<li><strong>CCD-calibration</strong> which explains how to calibrate such detectors for geometric
 distortion.</li>
 </ul>
 </div>
@@ -211,7 +213,7 @@ distortion.</li>
         <li class="right" >
           <a href="pyFAI.html" title="General introduction to PyFAI"
              >previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="pyFAI.html" >General introduction to PyFAI</a> &raquo;</li> 
       </ul>
     </div>

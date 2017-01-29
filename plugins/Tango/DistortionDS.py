@@ -13,16 +13,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2013"
+__date__ = "03/08/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
 import sys
-import threading
 import logging
-import gc
-import time
 import traceback
 logger = logging.getLogger("pyfai.distortionDS")
 # set loglevel at least at INFO
@@ -31,30 +28,19 @@ if logger.getEffectiveLevel() > logging.INFO:
 from os.path import dirname
 cwd = dirname(dirname(dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(cwd, "build", "lib.linux-x86_64-2.6"))
-import pyFAI
-if sys.version < (2, 7):
-    from pyFAI.argparse import ArgumentParser
-else:
-    from argparse import ArgumentParser
 
 try:
-    from pyFAI.fastcrc import crc32
+    from argparse import ArgumentParser
 except ImportError:
-    from zlib import crc32
+    from pyFAI.third_party.argparse import ArgumentParser
 
-import fabio
 try:
     import pyopencl
-    import pyFAI.ocl_azim_lut
 except ImportError:
     pyopencl = None
     logger.warning("Unable to import pyopencl, will use OpenMP (if available)")
 import PyTango
-import numpy
-if sys.version > (3, 0):
-    from queue import Queue
-else:
-    from Queue import Queue
+
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
@@ -101,7 +87,7 @@ class DistortionDS(PyTango.Device_4Impl) :
 
     def setDarkcurrentImage(self, filepath):
         """
-        @param imagefile: filename with the path to the dark image
+        :param imagefile: filename with the path to the dark image
         """
 
         self.__darkcurrent_filename = filepath
@@ -111,7 +97,7 @@ class DistortionDS(PyTango.Device_4Impl) :
 
     def setFlatfieldImage(self, filepath):
         """
-        @param filepath: filename with the path to the flatfield image
+        :param filepath: filename with the path to the flatfield image
         """
         self.__flatfield_filename = filepath
         if(self.__pyFAISink) :
@@ -120,7 +106,7 @@ class DistortionDS(PyTango.Device_4Impl) :
 
     def setSplineFile(self, filepath):
         """
-        @param filepath: filename with the path to the spline distortion file
+        :param filepath: filename with the path to the spline distortion file
         """
 
         self.__spline_filename = filepath
@@ -278,7 +264,7 @@ if __name__ == '__main__':
 
     ltangoParam += args.to_tango
     try:
-        logger.debug("Tango parameters: %s" % ltangoParam)
+        logger.debug("Tango parameters: %s", ltangoParam)
         py = PyTango.Util(ltangoParam)
         py.add_TgClass(DistortionDSClass, DistortionDS, 'DistortionDS')
         U = py.instance() #PyTango.Util.instance()

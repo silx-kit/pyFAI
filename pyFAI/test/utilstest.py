@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -37,12 +37,9 @@ if __name__ == "__main__":
     __name__ = "pyFAI.test"
 
 import os
-import imp
 import sys
 import getpass
-import subprocess
 import threading
-import distutils.util
 import unittest
 import logging
 try:  # Python3
@@ -54,6 +51,11 @@ import numpy
 import shutil
 import json
 import tempfile
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
+
 logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
@@ -83,7 +85,7 @@ class UtilsTest(object):
     try:
         pyFAI = __import__("%s.directories" % name)
     except Exception as error:
-        logger.warning("Unable to loading %s %s" % (name, error))
+        logger.warning("Unable to loading %s %s", name, error)
         image_home = None
     else:
         image_home = pyFAI.directories.testimages
@@ -110,7 +112,7 @@ class UtilsTest(object):
     @classmethod
     def deep_reload(cls):
         cls.pyFAI = __import__(cls.name)
-        logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
+        logger.info("%s loaded from %s", cls.name, cls.pyFAI.__file__)
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
         import pyFAI.decorators
@@ -145,8 +147,8 @@ class UtilsTest(object):
         """
         Downloads the requested image from a file set available at http://www.silx.org/pub/pyFAI/testimages/
 
-        @param: relative name of the image.
-        @return: full path of the locally saved file.
+        :param: relative name of the image.
+        :return: full path of the locally saved file.
         """
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
@@ -157,7 +159,7 @@ class UtilsTest(object):
                     json.dump(image_list, fp, indent=4)
             except IOError:
                 logger.debug("Unable to save JSON list")
-        logger.info("UtilsTest.getimage('%s')" % imagename)
+        logger.info("UtilsTest.getimage('%s')", imagename)
         if not os.path.exists(cls.image_home):
             os.makedirs(cls.image_home)
 
@@ -177,11 +179,11 @@ class UtilsTest(object):
             else:
                 opener = urlopen
 
-            logger.info("wget %s/%s" % (cls.url_base, imagename))
+            logger.info("wget %s/%s", cls.url_base, imagename)
             try:
                 data = opener("%s/%s" % (cls.url_base, imagename),
                               data=None, timeout=cls.timeout).read()
-                logger.info("Image %s successfully downloaded." % imagename)
+                logger.info("Image %s successfully downloaded.", imagename)
             except URLError:
                 raise unittest.SkipTest("network unreachable.")
 
@@ -206,7 +208,7 @@ class UtilsTest(object):
         """
         Download all images needed for the test/benchmarks
 
-        @param imgs: list of files to download
+        :param imgs: list of files to download
         """
         if not imgs:
             imgs = cls.ALL_DOWNLOADED_FILES
@@ -244,13 +246,13 @@ class UtilsTest(object):
         """
         small helper function that initialized the logger and returns it
         """
-        dirname, basename = os.path.split(os.path.abspath(filename))
+        _dirname, basename = os.path.split(os.path.abspath(filename))
         basename = os.path.splitext(basename)[0]
         level = logging.root.level
         mylogger = logging.getLogger(basename)
         logger.setLevel(level)
         mylogger.setLevel(level)
-        mylogger.debug("tests loaded from file: %s" % basename)
+        mylogger.debug("tests loaded from file: %s", basename)
         return mylogger
 
     @classmethod
@@ -282,11 +284,11 @@ def Rwp(obt, ref, comment="Rwp"):
 
     This is done for symmetry reason between obt and ref
 
-    @param obt: obtained data
-    @type obt: 2-list of array of the same size
-    @param obt: reference data
-    @type obt: 2-list of array of the same size
-    @return:  Rwp value, lineary interpolated
+    :param obt: obtained data
+    :type obt: 2-list of array of the same size
+    :param obt: reference data
+    :type obt: 2-list of array of the same size
+    :return:  Rwp value, lineary interpolated
     """
     ref0, ref1 = ref
     obt0, obt1 = obt
@@ -308,8 +310,8 @@ def recursive_delete(dirname):
     CAUTION:  This is dangerous!  For example, if top == '/', it
     could delete all your disk files.
 
-    @param dirname: top directory to delete
-    @type dirname: string
+    :param dirname: top directory to delete
+    :type dirname: string
     """
     if not os.path.isdir(dirname):
         return
@@ -330,27 +332,26 @@ def diff_img(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(2, 2, 1)
         ax2 = fig.add_subplot(2, 2, 2)
         ax3 = fig.add_subplot(2, 2, 3)
         im_ref = ax1.imshow(ref)
-        plt.colorbar(im_ref)
+        pyplot.colorbar(im_ref)
         ax1.set_title("%s ref" % comment)
         im_obt = ax2.imshow(obt)
-        plt.colorbar(im_obt)
+        pyplot.colorbar(im_obt)
         ax2.set_title("%s obt" % comment)
         im_delta = ax3.imshow(delta)
-        plt.colorbar(im_delta)
+        pyplot.colorbar(im_delta)
         ax3.set_title("delta")
         imax = delta.argmax()
         x = imax % ref.shape[-1]
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -360,16 +361,15 @@ def diff_crv(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2)
-        im_ref = ax1.plot(ref, label="%s ref" % comment)
-        im_obt = ax1.plot(obt, label="%s obt" % comment)
-        im_delta = ax2.plot(delta, label="delta")
+        _im_ref = ax1.plot(ref, label="%s ref" % comment)
+        _im_obt = ax1.plot(obt, label="%s obt" % comment)
+        _im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        from pyFAI.utils import input
-        input()
+        six.moves.input()
 
 
 class ParameterisedTestCase(unittest.TestCase):

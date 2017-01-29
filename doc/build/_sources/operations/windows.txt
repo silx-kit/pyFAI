@@ -166,7 +166,7 @@ The latest stable release of pyFAI should also be PIP-installable (starting at v
 Install pyFAI from sources
 --------------------------
 
-The sources of pyFAI are available at https://github.com/pyFAI/pyFAI/releases
+The sources of pyFAI are available at https://github.com/silx-kit/pyFAI/releases
 the development is performed on https://github.com/kif/pyFAI
 
 In addition to the Python interpreter, you will need *the* C compiler compatible
@@ -197,5 +197,5 @@ When starting pyFAI you get a side-by-side error like::
 This means you are using a version of pyFAI which was compiled using the MSVC compiler
 (maybe not on your computer) but the Microsoft Visual C++ Redistributable Package is missing.
 For Python2.7, 64bits the missing DLL can be downloaded from::
-    http://www.microsoft.com/en-us/download/confirmation.aspx?id=2092
 
+    http://www.microsoft.com/en-us/download/confirmation.aspx?id=2092

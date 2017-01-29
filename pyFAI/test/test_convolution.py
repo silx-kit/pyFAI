@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "28/11/2016"
 
 import unittest
 import numpy
@@ -64,24 +64,24 @@ class TestConvolution(unittest.TestCase):
 
     def test_gaussian(self):
         gauss = _convolution.gaussian(self.sigma)
-        self.assert_(numpy.allclose(gauss, self.gauss), "gaussian curves are the same")
+        self.assertTrue(numpy.allclose(gauss, self.gauss), "gaussian curves are the same")
 
     def test_horizontal_convolution(self):
         gauss = self.gauss.astype(numpy.float32)
         ref = scipy.ndimage.filters.convolve1d(self.lena, self.gauss, axis=-1)
         obt = _convolution.horizontal_convolution(self.lena, gauss)
-        self.assert_(numpy.allclose(ref, obt), "horizontal filtered images are the same")
+        self.assertTrue(numpy.allclose(ref, obt), "horizontal filtered images are the same")
 
     def test_vertical_convolution(self):
         gauss = self.gauss.astype(numpy.float32)
         ref = scipy.ndimage.filters.convolve1d(self.lena, self.gauss, axis=0)
         obt = _convolution.vertical_convolution(self.lena, gauss)
-        self.assert_(numpy.allclose(ref, obt), "vertical filtered images are the same")
+        self.assertTrue(numpy.allclose(ref, obt), "vertical filtered images are the same")
 
     def test_gaussian_filter(self):
         ref = scipy.ndimage.filters.gaussian_filter(self.lena, self.sigma)
         obt = _convolution.gaussian_filter(self.lena, self.sigma)
-        self.assert_(numpy.allclose(ref, obt), "gaussian filtered images are the same")
+        self.assertTrue(numpy.allclose(ref, obt), "gaussian filtered images are the same")
 
 
 def suite():

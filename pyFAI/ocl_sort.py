@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,7 +26,7 @@
 # THE SOFTWARE.
 
 """
-Module for 2D sort based on OpenCL for median filtering and Bragg/amorphous 
+Module for 2D sort based on OpenCL for median filtering and Bragg/amorphous
 separation on GPU.
 
 """
@@ -34,7 +34,7 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "23/09/2015"
+__date__ = "27/10/2016"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -60,9 +60,9 @@ class Separator(object):
     """
     def __init__(self, npt_height=512, npt_width=1024, ctx=None, max_workgroup_size=None, profile=False):
         """
-        @param ctx: context
-        @param max_workgroup_size: 1 on macOSX on CPU
-        @param profile: turn on profiling
+        :param ctx: context
+        :param max_workgroup_size: 1 on macOSX on CPU
+        :param profile: turn on profiling
         """
         self._sem = threading.Semaphore()
         self.npt_width = npt_width
@@ -140,8 +140,8 @@ class Separator(object):
     def _compile_kernels(self, sort_kernel=None, separate_kernel=None):
         """
         Compile the kernel
-        
-        @param kernel_file: filename of the kernel (to test other kernels)
+
+        :param kernel_file: filename of the kernel (to test other kernels)
         """
         kernel_file = sort_kernel or "bitonic.cl"
         separate_file = separate_kernel or "separate.cl"
@@ -167,10 +167,8 @@ class Separator(object):
         tthRange low and upper bounds. When unsetRange is called, the
         argument slot is reset to tth_min_max.
         """
-        self._cl_kernel_args["bsort_vertical"] = [self._cl_mem["input_data"].data,
-                                                    None]
-        self._cl_kernel_args["bsort_horizontal"] = [self._cl_mem["input_data"].data,
-                                                    None]
+        self._cl_kernel_args["bsort_vertical"] = [self._cl_mem["input_data"].data, None]
+        self._cl_kernel_args["bsort_horizontal"] = [self._cl_mem["input_data"].data, None]
 
         self._cl_kernel_args["filter_vertical"] = [self._cl_mem["input_data"].data,
                                                    self._cl_mem["vector_vertical"].data,
@@ -183,21 +181,20 @@ class Separator(object):
                                                      numpy.uint32(self.npt_height),
                                                      numpy.float32(0), numpy.float32(0.5), ]
 
-
     def sort_vertical(self, data, dummy=None):
         """
-        Sort the data along the vertical axis (azimuthal) 
-        
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @return: pyopencl array
+        Sort the data along the vertical axis (azimuthal)
+
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :return: pyopencl array
         """
         events = []
         assert data.shape[1] == self.npt_width
         assert data.shape[0] <= self.npt_height
         if self.npt_height & (self.npt_height - 1):  # not a power of 2
             raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_height)
-        if dummy == None:
+        if dummy is None:
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
@@ -235,18 +232,18 @@ class Separator(object):
 
     def sort_horizontal(self, data, dummy=None):
         """
-        Sort the data along the horizontal axis (radial) 
-        
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @return: pyopencl array
+        Sort the data along the horizontal axis (radial)
+
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :return: pyopencl array
         """
         events = []
         assert data.shape[1] == self.npt_width
         assert data.shape[0] == self.npt_height
         if self.npt_width & (self.npt_width - 1):  # not a power of 2
             raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_width)
-        if dummy == None:
+        if dummy is None:
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
@@ -281,17 +278,16 @@ class Separator(object):
                 self.events += events
         return self._cl_mem["input_data"]
 
-
     def filter_vertical(self, data, dummy=None, quantile=0.5):
         """
-        Sort the data along the vertical axis (azimuthal) 
-        
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @param quantile: 
-        @return: pyopencl array
+        Sort the data along the vertical axis (azimuthal)
+
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :param quantile:
+        :return: pyopencl array
         """
-        if dummy == None:
+        if dummy is None:
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
@@ -308,14 +304,14 @@ class Separator(object):
 
     def filter_horizontal(self, data, dummy=None, quantile=0.5):
         """
-        Sort the data along the vertical axis (azimuthal) 
-        
-        @param data: numpy or pyopencl array
-        @param dummy: dummy value
-        @param quantile: 
-        @return: pyopencl array
+        Sort the data along the vertical axis (azimuthal)
+
+        :param data: numpy or pyopencl array
+        :param dummy: dummy value
+        :param quantile:
+        :return: pyopencl array
         """
-        if dummy == None:
+        if dummy is None:
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
@@ -330,7 +326,6 @@ class Separator(object):
             self.events.append(("filter_horizontal", evt))
         return self._cl_mem["vector_horizontal"]
 
-
     def log_profile(self):
         """
         If we are in debugging mode, prints out all timing for every single OpenCL call
@@ -343,7 +338,7 @@ class Separator(object):
                     print("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
-        print("_"*70)
+        print("_" * 70)
         print("%50s:\t%.3fms" % ("Total execution time", t))
 
     def reset_timer(self):

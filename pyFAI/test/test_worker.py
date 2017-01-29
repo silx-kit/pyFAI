@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"Test suite for worker"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for worker"
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/05/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
@@ -42,6 +43,8 @@ from .utilstest import getLogger
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..containers import Integrate1dResult
+from ..containers import Integrate2dResult
 
 logger = getLogger(__file__)
 
@@ -70,6 +73,21 @@ class AzimuthalIntegratorMocked():
         return self._result
 
 
+class MockedAiWriter():
+
+    def __init__(self, result=None):
+        self._write_called = 0
+        self._close_called = 0
+        self._write_kargs = {}
+
+    def write(self, data):
+        self._write_called += 1
+        self._write_kargs["data"] = data
+
+    def close(self):
+        self._close_called += 1
+
+
 class TestWorker(unittest.TestCase):
 
     def test_constructor_ai(self):
@@ -82,7 +100,7 @@ class TestWorker(unittest.TestCase):
         self.assertIsNotNone(w)
 
     def test_process_1d(self):
-        ai_result = numpy.array([0, 1]), numpy.array([2, 3])
+        ai_result = Integrate1dResult(numpy.array([0, 1]), numpy.array([2, 3]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])
@@ -90,7 +108,7 @@ class TestWorker(unittest.TestCase):
         worker.dummy = "b"
         worker.delta_dummy = "c"
         worker.method = "d"
-        worker.polarization = "e"
+        worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
         worker.nbpt_azim = 1
@@ -105,7 +123,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai_args["dummy"], worker.dummy)
         self.assertEquals(ai_args["delta_dummy"], worker.delta_dummy)
         self.assertEquals(ai_args["method"], worker.method)
-        self.assertEquals(ai_args["polarization_factor"], worker.polarization)
+        self.assertEquals(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEquals(ai_args["safe"], True)
         self.assertEquals(ai_args["data"], data)
         self.assertEquals(ai_args["correctSolidAngle"], worker.correct_solid_angle)
@@ -118,7 +136,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(worker.azimuthal, None)
 
     def test_process_2d(self):
-        ai_result = numpy.array([0]), numpy.array([1]), numpy.array([2])
+        ai_result = Integrate2dResult(numpy.array([0]), numpy.array([1]), numpy.array([2]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])
@@ -126,7 +144,7 @@ class TestWorker(unittest.TestCase):
         worker.dummy = "b"
         worker.delta_dummy = "c"
         worker.method = "d"
-        worker.polarization = "e"
+        worker.polarization_factor = "e"
         worker.correct_solid_angle = "f"
         worker.nbpt_rad = "g"
         worker.nbpt_azim = 2
@@ -141,7 +159,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai_args["dummy"], worker.dummy)
         self.assertEquals(ai_args["delta_dummy"], worker.delta_dummy)
         self.assertEquals(ai_args["method"], worker.method)
-        self.assertEquals(ai_args["polarization_factor"], worker.polarization)
+        self.assertEquals(ai_args["polarization_factor"], worker.polarization_factor)
         self.assertEquals(ai_args["safe"], True)
         self.assertEquals(ai_args["data"], data)
         self.assertEquals(ai_args["correctSolidAngle"], worker.correct_solid_angle)
@@ -152,6 +170,50 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(result.tolist(), [0])
         self.assertEquals(worker.radial.tolist(), [1])
         self.assertEquals(worker.azimuthal.tolist(), [2])
+
+    def test_1d_writer(self):
+        ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))
+        ai = AzimuthalIntegratorMocked(result=ai_result)
+        data = numpy.array([0])
+        worker = Worker(ai)
+        worker.unit = units.TTH_DEG
+        worker.dummy = "b"
+        worker.delta_dummy = "c"
+        worker.method = "d"
+        worker.polarization_factor = "e"
+        worker.correct_solid_angle = "f"
+        worker.nbpt_rad = "g"
+        worker.nbpt_azim = 1
+        worker.output = "numpy"
+
+        writer = MockedAiWriter()
+        _result = worker.process(data, writer=writer)
+
+        self.assertEquals(writer._write_called, 1)
+        self.assertEquals(writer._close_called, 0)
+        self.assertIs(writer._write_kargs["data"], ai_result)
+
+    def test_2d_writer(self):
+        ai_result = Integrate2dResult(numpy.array([0]), numpy.array([1]), numpy.array([2]))
+        ai = AzimuthalIntegratorMocked(result=ai_result)
+        data = numpy.array([0])
+        worker = Worker(ai)
+        worker.unit = units.TTH_DEG
+        worker.dummy = "b"
+        worker.delta_dummy = "c"
+        worker.method = "d"
+        worker.polarization_factor = "e"
+        worker.correct_solid_angle = "f"
+        worker.nbpt_rad = "g"
+        worker.nbpt_azim = 1
+        worker.output = "numpy"
+
+        writer = MockedAiWriter()
+        _result = worker.process(data, writer=writer)
+
+        self.assertEquals(writer._write_called, 1)
+        self.assertEquals(writer._close_called, 0)
+        self.assertIs(writer._write_kargs["data"], ai_result)
 
     def test_process_exception(self):
         ai = AzimuthalIntegratorMocked(result=Exception("Out of memory"))
@@ -164,7 +226,7 @@ class TestWorker(unittest.TestCase):
             pass
 
     def test_process_poisson(self):
-        ai_result = numpy.array([0]), numpy.array([1]), numpy.array([2])
+        ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])
@@ -175,7 +237,7 @@ class TestWorker(unittest.TestCase):
         self.assertEquals(ai._integrate1d_kargs["error_model"], "poisson")
 
     def test_process_no_output(self):
-        ai_result = numpy.array([0]), numpy.array([1]), numpy.array([2])
+        ai_result = Integrate1dResult(numpy.array([0]), numpy.array([1]))
         ai = AzimuthalIntegratorMocked(result=ai_result)
         worker = Worker(ai)
         data = numpy.array([0])

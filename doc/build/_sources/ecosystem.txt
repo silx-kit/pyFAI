@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2015
+:Date: 07/09/2016
 :Keywords: Other software related to pyFAI
 
 PyFAI Ecosystem
@@ -147,6 +147,28 @@ Python for Small Angle X-ray Scattering data acquisition, treatment and computat
 of model SAXS intensities.
 
 Developed at CEA Saclay by O. Taché and available on `PyPI <https://pypi.python.org/pypi/pySAXS>`_.
+
+Xi-cam
+......
+`Xi-cam <http://www.camera.lbl.gov/xi-cam-interface>`_ is developed by Ronald
+Pandolfi, Dinesh Kumar, Singanallur Venkatakrishnan and Alexander Hexemer at ALS.
+
+
+Xi-cam aims to provide a community driven platform for multimodal analysis
+in synchrotron science. The platform core provides a robust plugin
+infrastructure for extensibility, allowing continuing development to simply
+add further functionality. Current modules include tools for
+characterization with (GI)SAXS, Tomography, and XAS. This will continue to
+serve as a development base as algorithms for multimodal analysis develop.
+
+Seamless remote data access, visualization and analysis are key elements of
+Xi-CAM, and will become critical to synchrotron data infrastructure as
+expectations for future data volume and acquisition rates rise with
+continuously increasing throughputs. The highly interactive design elements
+of Xi-cam will similarly support a generation of users which depend on
+immediate data quality feedback during high-throughput or burst acquisition
+modes.
+
 
 xPDFsuite
 .........

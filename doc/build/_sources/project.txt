@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 02/06/2016
+:Date: 01/12/2016
 :Keywords: Project management description
 :Target: developers
 
@@ -9,10 +9,10 @@ Project
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
-PyFAI is an open source project licensed under the GPL (+ MIT code) mainly
+PyFAI is an open source project licensed under the GPL (switching to MIT) mainly
 written in Python (v2.7 or newer, 3.4 or newer) and heavily relying on the
 Python scientific ecosystem: numpy, scipy and matplotlib.
-It provides high performances image treatment thanks to cython and
+It provides high performances image treatment thanks to Cython and
 OpenCL... but only a C-compiler is needed to build it.
 
 Programming language
@@ -33,17 +33,17 @@ The OpenCL code has been tested using:
 * Beignet OpenCL v1.2 on Linux (GPU device)
 * Pocl OpenCL v1.2 on Linux (CPU device)
 
-Repository:
------------
+Repository
+----------
 
 The project is hosted on GitHub:
-https://github.com/pyFAI/pyFAI
+https://github.com/silx-kit/pyFAI
 
-Which provides the `issue tracker <https://github.com/kif/pyFAI/issues>`_ in
+Which provides the `issue tracker <https://github.com/silx-kit/pyFAI/issues>`_ in
 addition to Git hosting.
 Collaboration is done via Pull-Requests in github's web interface:
 
-Everybody is welcome to `fork the project <https://github.com/kif/pyFAI/fork>`_
+Everybody is welcome to `fork the project <https://github.com/silx-kit/pyFAI/fork>`_
 and adapt it to his own needs:
 CEA-Saclay, Synchrotrons Soleil, Desy and APS have already done so.
 Collaboration is encouraged and new developments can be submitted and merged
@@ -69,7 +69,7 @@ too much spammed. As the mailing list is archived, and can be consulted at:
 you can also check the volume of the list.
 
 If you think you are facing a bug, the best is to
-`create a new issue on the GitHub page <https://github.com/kif/pyFAI/issues>`_
+`create a new issue on the GitHub page <https://github.com/silx-kit/pyFAI/issues>`_
 (you will need a GitHub account for that).
 
 Direct contact with authors is discouraged:
@@ -93,28 +93,24 @@ Run dependencies
 * FabIO
 * h5py
 * pyopencl (optional)
-* fftw (optional)
-* pymca (optional)
 * PyQt4 or PySide (for the graphical user interface)
 
-Build dependencies:
--------------------
+Build dependencies
+------------------
 
 In addition to the run dependencies, pyFAI needs a C compiler.
 
-There is an issue with MacOSX (v10.8 onwards) where the default compiler
-(Xcode5 or 6) switched from gcc 4.2 to clang which
-dropped the support for OpenMP (clang v3.5 supports OpenMP under linux but not
-directly under MacOSX).
-Multiple solution exist, pick any of those:
+There is an issue with MacOS (v10.8 onwards) where the default compiler
+(Xcode5 or newer) dropped the support for OpenMP.
+On this platform pyFAI will enforce the generation of C-files from Cython sources
+(making Cython a build-dependency on MacOS) without support of OpenMP
+(options: --no-openmp --force-cython).
+On OSX, an alternative is to install a recent version of GCC (>=4.2) and to use
+it for compiling pyFAI.
+The options to be used then are * --force-cython --openmp*.
 
-* Install a recent version of GCC (>=4.2)
-* Use Xcode without OpenMP, using the --no-openmp flag for setup.py.
-  You will need to remove the *pyFAI/ext/histogram.c* file and regenerate it,
-  cython needs to be installed.
-
-C files are generated from cython source and distributed. Cython is only needed
-for developing new binary modules.
+Otherwise, C files are which are provided with pyFAI sources are directly useable
+and Cython is only needed for developing new binary modules.
 If you want to generate your own C files, make sure your local Cython version
 is recent enough (v0.21 and newer),
 unless your Cython files will not be translated to C, nor used.
@@ -128,15 +124,16 @@ As most of the Python projects:
 .. code::
 
     python setup.py build bdist_wheel
-    pip install dist/pyFAI-0.12.0*.whl --upgrade
+    pip install dist/pyFAI-0.13.0*.whl --upgrade
 
 
 There are few specific options to setup.py:
 
 * --no-cython: do not use cython (even if present) and use the C source code
   provided by the development team
-* --no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOSX.
-  Delete also *pyFAI/ext/histogram.c* and install cython to regenerate C-files.
+* --force-cython: enforce the regeneration of all C-files from cython sources
+* --no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOS.
+* --openmp: enforce the use of OpenMP.
 * --with-testimages: build the source distribution including all test images.
   Downloads 200MB of test images to create a self consistent tar-ball.
 
@@ -158,7 +155,7 @@ or from python:
     pyFAI.tests()
 
 
-It is normal to get few (<20) **Warning** messages as the test procedure also
+Some **Warning** messages are normal as the test procedure also
 tests corner cases.
 
 To run the test an internet connection is needed as 200MB of test images will be downloaded.
@@ -171,7 +168,7 @@ Setting the environment variable http_proxy can be necessary (depending on your 
    export http_proxy=http://proxy.site.org:3128
 
 Especially at ESRF, the configuration of the network proxy can be obtained
-by phoning on the hotline: 24-24.
+by asking at the helpdesk: helpdesk@esrf.fr
 
 To test the development version (built but not yet installed):
 
@@ -187,7 +184,7 @@ or
     python run_test.py -i
 
 
-PyFAI comes with 34 test-suites (223 tests in total) representing a coverage of 60%.
+PyFAI comes with 40 test-suites (338 tests in total) representing a coverage of 60%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.
@@ -223,7 +220,7 @@ Continuous integration is made by a home-made scripts which checks out the lates
 You have to accept non-signed packages because they are automatically built.
 
 In addition some "cloud-based" tools are used to ensure a larger coverage of operating systems/environment.
-They rely on a `"local wheelhouse" <http://www.edna-site.org/pub/debian/wheelhouse/>`_.
+They rely on a `"local wheelhouse" <http://www.silx.org/pub/wheelhouse/>`_.
 
 Those wheels are optimized for Travis-CI, AppVeyor and ReadTheDocs, using them is not recommended as your Python configuration may differ
 (and those libraries could even crash your system).
@@ -232,9 +229,10 @@ Linux
 .....
 
 
-`Travis provides continuous integration on Linux <https://travis-ci.org/kif/pyFAI>`_, 64 bits computer with Python 2.7, 3.4 and 3.5.
+`Travis provides continuous integration on Linux <https://travis-ci.org/silx-kit/pyFAI>`_,
+64 bits computer with Python 2.7, 3.4 and 3.5.
 
-The builds cannot be retrieved with Travis-CO.
+The builds cannot yet be retrieved with Travis-CI, but manylinux-wheels are on the radar.
 
 AppVeyor
 ........

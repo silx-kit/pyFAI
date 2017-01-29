@@ -10,7 +10,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2013"
+__date__ = "02/08/2016"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -49,10 +49,10 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
     """
     def __init__(self, splinefile=None, darkfile=None, flatfile=None, extraheader=None):
         """
-        @param splinefile: File with the description of the distortion as a cubic spline
-        @param darkfile: image with the dark current
-        @param flatfile: image with the flat field correction
-        @param extraheader: dictionary with additional static header for EDF files
+        :param splinefile: File with the description of the distortion as a cubic spline
+        :param darkfile: image with the dark current
+        :param flatfile: image with the flat field correction
+        :param extraheader: dictionary with additional static header for EDF files
         """
         Core.Processlib.SinkTaskBase.__init__(self)
 
@@ -84,7 +84,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
     def process(self, data) :
         """
         Process a frame
-        @param data: a LImA frame with member .buffer (a numpy array) and .frameNumber (an int)
+        :param data: a LImA frame with member .buffer (a numpy array) and .frameNumber (an int)
         """
         ctControl = _control_ref()
         saving = ctControl.saving()
@@ -98,7 +98,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
             directory = os.path.join(sav_parms.directory, self.subdir)
 
         if not os.path.exists(directory):
-            logger.error("Ouput directory does not exist !!!  %s" % directory)
+            logger.error("Ouput directory does not exist !!!  %s", directory)
 
             try:
                 os.makedirs(directory)
@@ -136,7 +136,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
 
     def setDarkcurrentFile(self, imagefile):
         """
-        @param imagefile: filename with the path to the dark image
+        :param imagefile: filename with the path to the dark image
         """
         with self._sem:
             if imagefile:
@@ -144,7 +144,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
                 try:
                     self.darkcurrent = numpy.ascontiguousarray(fabio.open(imagefile).data, numpy.float32)
                 except Exception as error:
-                    logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
+                    logger.warning("setDarkcurrentFile: Unable to read file %s: %s", imagefile, error)
                 else:
                     self.darkcurrent_crc = crc32(self.darkcurrent)
                     self.header["darkcurrent"] = imagefile
@@ -154,7 +154,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
 
     def setFlatfieldFile(self, imagefile):
         """
-        @param imagefile: filename with the path to the flatfield image
+        :param imagefile: filename with the path to the flatfield image
         """
         with self._sem:
             if imagefile:
@@ -162,7 +162,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
                 try:
                     self.flatfield = numpy.ascontiguousarray(fabio.open(imagefile).data, numpy.float32)
                 except Exception as error:
-                    logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
+                    logger.warning("setFlatfieldFile: Unable to read file %s: %s", imagefile, error)
                 else:
                     self.flatfield_crc = crc32(self.flatfield)
                     self.header["flatfield"] = imagefile
@@ -172,7 +172,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
 
     def setSplineFile(self, splineFile):
         """
-        @param imagefile: filename with the path to the spline distortion file
+        :param imagefile: filename with the path to the spline distortion file
         """
         with self._sem:
             if not splineFile or not os.path.exists(str(splineFile)):
@@ -277,7 +277,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
 
     def setDarkcurrentImage(self, filepath):
         """
-        @param imagefile: filename with the path to the dark image
+        :param imagefile: filename with the path to the dark image
         """
 
         self.__darkcurrent_filename = filepath
@@ -287,7 +287,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
 
     def setFlatfieldImage(self, filepath):
         """
-        @param filepath: filename with the path to the flatfield image
+        :param filepath: filename with the path to the flatfield image
         """
         self.__flatfield_filename = filepath
         if(self.__pyFAISink) :
@@ -296,7 +296,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
 
     def setSplineFile(self, filepath):
         """
-        @param filepath: filename with the path to the spline distortion file
+        :param filepath: filename with the path to the spline distortion file
         """
 
         self.__spline_filename = filepath

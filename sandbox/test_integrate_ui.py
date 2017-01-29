@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import sys, logging, json, os, time, types, threading
 import os.path as op
@@ -111,7 +111,7 @@ class AIWidget(QtGui.QWidget):
                     rad_min = float_(self.radial_range_min.text())
                     rad_max = float_(self.radial_range_max.text())
                 except ValueError as error:
-                    logger.error("error in parsing radial range: %s" % error)
+                    logger.error("error in parsing radial range: %s", error)
                 else:
                     kwarg["radial_range"] = (rad_min, rad_max)
 
@@ -120,14 +120,14 @@ class AIWidget(QtGui.QWidget):
                     azim_min = float_(self.azimuth_range_min.text())
                     azim_max = float_(self.azimuth_range_max.text())
                 except ValueError as error:
-                    logger.error("error in parsing azimuthal range: %s" % error)
+                    logger.error("error in parsing azimuthal range: %s", error)
                 else:
                     kwarg["azimuth_range"] = (azim_min, azim_max)
 
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                             os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
-            logger.debug("processing %s" % self.input_data)
+            logger.debug("processing %s", self.input_data)
             start_time = time.time()
             if self.input_data in [None, []]:
                 logger.warning("No input data to process")
@@ -153,7 +153,7 @@ class AIWidget(QtGui.QWidget):
                 out = []
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
-                    logger.debug("processing %s" % item)
+                    logger.debug("processing %s", item)
                     if (type(item) in types.StringTypes) and op.exists(item):
                         kwarg["data"] = fabio.open(item).data
                         if "npt_azim" in kwarg:
@@ -169,7 +169,7 @@ class AIWidget(QtGui.QWidget):
                     else:
                         out.append(self.ai.integrate1d(**kwarg)[0])
 
-            logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
+            logger.info("Processing Done in %.3fs !", time.time() - start_time)
             self.progressBar.setValue(100)
         self.die()
         return out
@@ -185,8 +185,8 @@ class AIWidget(QtGui.QWidget):
         """
         Dump the status of the current widget to a file in JSON
 
-        @param filename: path where to save the config
-        @type filename: str
+        :param filename: path where to save the config
+        :type filename: str
 
         """
         print "Dump!"
@@ -238,13 +238,13 @@ class AIWidget(QtGui.QWidget):
         """
         restore from JSON file the status of the current widget
 
-        @param filename: path where the config was saved
-        @type filename: str
+        :param filename: path where the config was saved
+        :type filename: str
 
         """
         logger.debug("Restore")
         if not os.path.isfile(filename):
-            logger.error("No such file: %s" % filename)
+            logger.error("No such file: %s", filename)
             return
         data = json.load(open(filename))
         setup_data = {  "poni": self.poni.setText,
@@ -312,7 +312,7 @@ class AIWidget(QtGui.QWidget):
                 self.pixel2.setText(str(self.ai.pixel2))
                 self.splineFile.setText(self.ai.detector.splineFile or "")
             except Exception as error:
-                logger.error("failed %s on %s" % (error, splinefile))
+                logger.error("failed %s on %s", error, splinefile)
 
     def select_maskfile(self):
         logger.debug("select_maskfile")
@@ -342,7 +342,7 @@ class AIWidget(QtGui.QWidget):
         try:
             self.ai = pyFAI.load(ponifile)
         except Exception as error:
-            logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
+            logger.error("file %s does not look like a poni-file, error %s", ponifile, error)
             return
         self.pixel1.setText(str(self.ai.pixel1))
         self.pixel2.setText(str(self.ai.pixel2))
@@ -369,7 +369,7 @@ class AIWidget(QtGui.QWidget):
             try:
                 fval = float(txtval)
             except ValueError:
-                logger.error("Unable to convert %s to float: %s" % (kw, txtval))
+                logger.error("Unable to convert %s to float: %s", kw, txtval)
         return fval
 
     def set_ai(self):
@@ -384,10 +384,10 @@ class AIWidget(QtGui.QWidget):
             try:
                 fwavelength = float(wavelength)
             except ValueError:
-                logger.error("Unable to convert wavelength to float: %s" % wavelength)
+                logger.error("Unable to convert wavelength to float: %s", wavelength)
             else:
                 if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+                    logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
                 self.ai.wavelength = fwavelength
 
         splineFile = str(self.splineFile.text()).strip()
@@ -411,7 +411,7 @@ class AIWidget(QtGui.QWidget):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 self.ai.mask = mask
         dark_files = [i.strip() for i in str(self.dark_current.text()).split(",")
@@ -448,7 +448,7 @@ class AIWidget(QtGui.QWidget):
                 self.pixel1.setText(str(inst.pixel1))
                 self.pixel2.setText(str(inst.pixel2))
             else:
-                logger.warning("No such spline file %s" % splineFile)
+                logger.warning("No such spline file %s", splineFile)
         self.ai.detector = inst
 
     def openCL_changed(self):

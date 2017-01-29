@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Test coverage report for pyFAI &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Test coverage report for pyFAI &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="index.html" />
     <link rel="up" title="Project" href="project.html" />
     <link rel="next" title="ChangeLog of Versions" href="changelog.html" />
     <link rel="prev" title="Project" href="project.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="project.html" title="Project"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="project.html" accesskey="U">Project</a> &raquo;</li> 
       </ul>
     </div>  
@@ -57,7 +57,7 @@
             
   <div class="section" id="test-coverage-report-for-pyfai">
 <h1>Test coverage report for pyFAI<a class="headerlink" href="#test-coverage-report-for-pyfai" title="Permalink to this headline">¶</a></h1>
-<p>Measured on <em>pyFAI</em> version 0.12.0, 06/06/2016</p>
+<p>Measured on <em>pyFAI</em> version 0.13.0, 01/12/2016</p>
 <table border="1" class="docutils">
 <caption>Test suite coverage</caption>
 <colgroup>
@@ -74,140 +74,180 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>pyFAI/__init__</td>
+<tr class="row-even"><td>__init__.py</td>
 <td>35</td>
 <td>20</td>
 <td>57.1 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/_version</td>
-<td>34</td>
-<td>32</td>
-<td>94.1 %</td>
+<tr class="row-odd"><td>_version.py</td>
+<td>41</td>
+<td>39</td>
+<td>95.1 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/azimuthalIntegrator</td>
-<td>1258</td>
-<td>909</td>
-<td>72.3 %</td>
+<tr class="row-even"><td>average.py</td>
+<td>526</td>
+<td>389</td>
+<td>74.0 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/blob_detection</td>
-<td>517</td>
-<td>196</td>
-<td>37.9 %</td>
+<tr class="row-odd"><td>azimuthalIntegrator.py</td>
+<td>1207</td>
+<td>926</td>
+<td>76.7 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/calibrant</td>
+<tr class="row-even"><td>blob_detection.py</td>
+<td>504</td>
+<td>194</td>
+<td>38.5 %</td>
+</tr>
+<tr class="row-odd"><td>calibrant.py</td>
 <td>338</td>
 <td>244</td>
 <td>72.2 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/decorators</td>
-<td>33</td>
-<td>33</td>
-<td>100.0 %</td>
+<tr class="row-even"><td>containers.py</td>
+<td>79</td>
+<td>72</td>
+<td>91.1 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/detectors</td>
-<td>1314</td>
-<td>1028</td>
-<td>78.2 %</td>
-</tr>
-<tr class="row-odd"><td>pyFAI/directories</td>
+<tr class="row-odd"><td>decorators.py</td>
 <td>33</td>
-<td>20</td>
-<td>60.6 %</td>
+<td>23</td>
+<td>69.7 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/distortion</td>
-<td>544</td>
-<td>162</td>
+<tr class="row-even"><td>detectors.py</td>
+<td>1336</td>
+<td>1050</td>
+<td>78.6 %</td>
+</tr>
+<tr class="row-odd"><td>directories.py</td>
+<td>34</td>
+<td>21</td>
+<td>61.8 %</td>
+</tr>
+<tr class="row-even"><td>distortion.py</td>
+<td>557</td>
+<td>166</td>
 <td>29.8 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/ext/__init__</td>
+<tr class="row-odd"><td>ext/__init__.py</td>
 <td>0</td>
 <td>0</td>
 <td>0.0 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/geometry</td>
-<td>961</td>
-<td>761</td>
-<td>79.2 %</td>
+<tr class="row-even"><td>geometry.py</td>
+<td>959</td>
+<td>759</td>
+<td>79.1 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/geometryRefinement</td>
-<td>481</td>
-<td>174</td>
-<td>36.2 %</td>
+<tr class="row-odd"><td>geometryRefinement.py</td>
+<td>485</td>
+<td>176</td>
+<td>36.3 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/gui_utils</td>
-<td>69</td>
-<td>33</td>
-<td>47.8 %</td>
+<tr class="row-even"><td>gui/__init__.py</td>
+<td>4</td>
+<td>4</td>
+<td>100.0 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/integrate_widget</td>
-<td>493</td>
-<td>273</td>
-<td>55.4 %</td>
+<tr class="row-odd"><td>gui/matplotlib.py</td>
+<td>24</td>
+<td>17</td>
+<td>70.8 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/io</td>
-<td>465</td>
-<td>250</td>
-<td>53.8 %</td>
+<tr class="row-even"><td>gui/qt.py</td>
+<td>100</td>
+<td>36</td>
+<td>36.0 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/massif</td>
+<tr class="row-odd"><td>gui/utils.py</td>
+<td>34</td>
+<td>14</td>
+<td>41.2 %</td>
+</tr>
+<tr class="row-even"><td>integrate_widget.py</td>
+<td>453</td>
+<td>268</td>
+<td>59.2 %</td>
+</tr>
+<tr class="row-odd"><td>io.py</td>
+<td>579</td>
+<td>294</td>
+<td>50.8 %</td>
+</tr>
+<tr class="row-even"><td>massif.py</td>
 <td>201</td>
 <td>132</td>
 <td>65.7 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/multi_geometry</td>
-<td>75</td>
-<td>65</td>
-<td>86.7 %</td>
+<tr class="row-odd"><td>multi_geometry.py</td>
+<td>128</td>
+<td>94</td>
+<td>73.4 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/ocl_azim</td>
+<tr class="row-even"><td>ocl_azim.py</td>
 <td>269</td>
 <td>191</td>
 <td>71.0 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/ocl_azim_csr</td>
+<tr class="row-odd"><td>ocl_azim_csr.py</td>
 <td>240</td>
 <td>184</td>
 <td>76.7 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/ocl_azim_lut</td>
-<td>230</td>
+<tr class="row-even"><td>ocl_azim_lut.py</td>
+<td>231</td>
 <td>177</td>
-<td>77.0 %</td>
+<td>76.6 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/ocl_sort</td>
+<tr class="row-odd"><td>ocl_sort.py</td>
 <td>177</td>
 <td>136</td>
 <td>76.8 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/opencl</td>
-<td>204</td>
-<td>144</td>
-<td>70.6 %</td>
+<tr class="row-even"><td>opencl.py</td>
+<td>206</td>
+<td>146</td>
+<td>70.9 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/peak_picker</td>
-<td>756</td>
-<td>195</td>
-<td>25.8 %</td>
+<tr class="row-odd"><td>peak_picker.py</td>
+<td>758</td>
+<td>197</td>
+<td>26.0 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/spline</td>
+<tr class="row-even"><td>spline.py</td>
 <td>432</td>
 <td>165</td>
 <td>38.2 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/units</td>
-<td>70</td>
-<td>65</td>
-<td>92.9 %</td>
+<tr class="row-odd"><td>units.py</td>
+<td>80</td>
+<td>76</td>
+<td>95.0 %</td>
 </tr>
-<tr class="row-odd"><td>pyFAI/utils</td>
-<td>778</td>
-<td>431</td>
-<td>55.4 %</td>
+<tr class="row-even"><td>utils/__init__.py</td>
+<td>467</td>
+<td>290</td>
+<td>62.1 %</td>
 </tr>
-<tr class="row-even"><td>pyFAI/worker</td>
-<td>340</td>
-<td>131</td>
-<td>38.5 %</td>
+<tr class="row-odd"><td>utils/bayes.py</td>
+<td>92</td>
+<td>60</td>
+<td>65.2 %</td>
+</tr>
+<tr class="row-even"><td>utils/shell.py</td>
+<td>44</td>
+<td>41</td>
+<td>93.2 %</td>
+</tr>
+<tr class="row-odd"><td>utils/stringutil.py</td>
+<td>25</td>
+<td>24</td>
+<td>96.0 %</td>
+</tr>
+<tr class="row-even"><td>worker.py</td>
+<td>358</td>
+<td>140</td>
+<td>39.1 %</td>
 </tr>
 <tr class="row-odd"><td>&nbsp;</td>
 <td>&nbsp;</td>
@@ -215,9 +255,9 @@
 <td>&nbsp;</td>
 </tr>
 <tr class="row-even"><td>pyFAI total</td>
-<td>10347</td>
-<td>6151</td>
-<td>59.4 %</td>
+<td>11036</td>
+<td>6765</td>
+<td>61.3 %</td>
 </tr>
 </tbody>
 </table>
@@ -272,7 +312,7 @@
         <li class="right" >
           <a href="project.html" title="Project"
              >previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="project.html" >Project</a> &raquo;</li> 
       </ul>
     </div>

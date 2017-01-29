@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "27/09/2016"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -98,7 +98,7 @@ class HistoBBox1d(object):
         self.allow_pos0_neg = allow_pos0_neg
         self.empty = empty
         if mask is not None:
-            assert mask.size == self.size
+            assert mask.size == self.size, "mask size"
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
             if mask_checksum:
@@ -121,8 +121,8 @@ class HistoBBox1d(object):
             self.calc_boundaries_nosplit(pos0Range)
 
         if pos1Range is not None and len(pos1Range) > 1:
-            assert pos1.size == self.size
-            assert delta_pos1.size == self.size
+            assert pos1.size == self.size, "pos1 size"
+            assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=numpy.float32)
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float32)
@@ -522,7 +522,7 @@ class HistoBBox1d(object):
             numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
             float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
@@ -537,19 +537,19 @@ class HistoBBox1d(object):
 
         if flat is not None:
             do_flat = True
-            assert flat.size == size
+            assert flat.size == size, "flat-field array size"
             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
         if dark is not None:
             do_dark = True
-            assert dark.size == size
+            assert dark.size == size, "dark current array size"
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidAngle.size == size
+            assert solidAngle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
             do_polarization = True
-            assert polarization.size == size
+            assert polarization.size == size, "polarization array size"
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
@@ -653,7 +653,7 @@ class HistoBBox2d(object):
         """
         cdef int i, size, bin0, bin1
         self.size = pos0.size
-        assert pos1.size == self.size
+        assert pos1.size == self.size, "pos1 size"
 
         if "size" not in dir(delta_pos0) or delta_pos0.size != self.size or\
            "size" not in dir(delta_pos1) or delta_pos1.size != self.size:
@@ -675,7 +675,7 @@ class HistoBBox2d(object):
         self.bins = (int(bins0), int(bins1))
         self.lut_size = 0
         if mask is not None:
-            assert mask.size == self.size
+            assert mask.size == self.size, "mask size"
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
             if mask_checksum:
@@ -1230,7 +1230,7 @@ class HistoBBox2d(object):
             float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
 
-        assert size == weights.size
+        assert weights.size == size, "weights size"
 
         if dummy is not None:
             do_dummy = True
@@ -1244,19 +1244,19 @@ class HistoBBox2d(object):
 
         if flat is not None:
             do_flat = True
-            assert flat.size == size
+            assert flat.size == size, "flat-field array size"
             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
         if dark is not None:
             do_dark = True
-            assert dark.size == size
+            assert dark.size == size, "dark current array size"
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
         if solidAngle is not None:
             do_solidAngle = True
-            assert solidAngle.size == size
+            assert solidAngle.size == size, "Solid angle array size"
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
             do_polarization = True
-            assert polarization.size == size
+            assert polarization.size == size, "polarization array size"
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):

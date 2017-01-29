@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,7 +26,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "30/06/2016"
+__date__ = "28/11/2016"
 
 import sys
 import logging
@@ -53,10 +53,9 @@ detector_factory = Detector.factory
 
 
 def tests(deprecation=False):
-    """
-    Runs the test suite of the installed version
+    """Runs the test suite of the installed version
 
-    @param deprecation: enable/disables deprecation warning in the tests
+    :param deprecation: enable/disables deprecation warning in the tests
     """
     if deprecation:
         depreclog.setLevel(logging.DEBUG)
@@ -68,10 +67,11 @@ def tests(deprecation=False):
     return res
 
 
-def benchmarks():
-    """
-    Run the benchmarks
+def benchmarks(*arg, **kwarg):
+    """Run the integrated benchmarks.
+    
+    See the documentation of pyFAI.benchmark.run_benchmark
     """
     from . import benchmark
-    res = benchmark.run()
+    res = benchmark.run(*arg, **kwarg)
     return res

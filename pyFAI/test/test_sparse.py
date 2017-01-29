@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,20 +33,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
 import numpy
-import os
-import sys
-import time
 from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+logger = getLogger(__name__)
 from .. import load
 from ..ext import splitBBox
-from ..ext import splitBBoxCSR
-from ..ext import splitBBoxLUT
 from ..ext import sparse_utils
 import fabio
 
@@ -72,30 +67,29 @@ class TestSparseBBox(unittest.TestCase):
 
     def test_LUT(self):
         obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="LUT")[1]
-        logger.debug("delta on global result: %s" % (abs(obt - self.ref) / self.ref).max())
-        self.assert_(numpy.allclose(obt, self.ref))
+        logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
+        self.assertTrue(numpy.allclose(obt, self.ref))
 
         cython = self.ai._lut_integrator.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
-            logger.debug("delta on cython result: %s" % (abs(obt - ref) / ref).max())
-            self.assert_(numpy.allclose(obt, ref))
+            logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
+            self.assertTrue(numpy.allclose(obt, ref))
 
     def test_CSR(self):
         obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="CSR")[1]
-        logger.debug("delta on global result: %s" % (abs(obt - self.ref) / self.ref).max())
-        self.assert_(numpy.allclose(obt, self.ref))
+        logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
+        self.assertTrue(numpy.allclose(obt, self.ref))
 
         cython = self.ai._csr_integrator.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
-            logger.debug("delta on cython result: %s" % (abs(obt - ref) / ref).max())
-            self.assert_(numpy.allclose(obt, ref))
+            logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
+            self.assertTrue(numpy.allclose(obt, ref))
 
 
 class TestSparseUtils(unittest.TestCase):
     def test_conversion(self):
         dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
         shape = 99, 101
-        thres = 0.99
         nnz = 0
 
         # Ensures there is at least one non zero element
@@ -121,13 +115,13 @@ class TestSparseUtils(unittest.TestCase):
         csr_ref = (dense[loc], idx, idptr)
 
         lut_out = sparse_utils.CSR_to_LUT(*csr_ref)
-        self.assert_(numpy.allclose(lut_out["coef"], lut_ref["coef"]), "coef are the same in LUT")
-        self.assert_(numpy.allclose(lut_out["idx"], lut_ref["idx"]), "idx are the same in LUT")
+        self.assertTrue(numpy.allclose(lut_out["coef"], lut_ref["coef"]), "coef are the same in LUT")
+        self.assertTrue(numpy.allclose(lut_out["idx"], lut_ref["idx"]), "idx are the same in LUT")
 
         csr_out = sparse_utils.LUT_to_CSR(lut_ref)
-        self.assert_(numpy.allclose(csr_out[2], csr_ref[2]), "idpts are the same in CSR")
-        self.assert_(numpy.allclose(csr_out[1], csr_ref[1]), "coef are the same in CSR")
-        self.assert_(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
+        self.assertTrue(numpy.allclose(csr_out[2], csr_ref[2]), "idpts are the same in CSR")
+        self.assertTrue(numpy.allclose(csr_out[1], csr_ref[1]), "coef are the same in CSR")
+        self.assertTrue(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
 
 
 def suite():

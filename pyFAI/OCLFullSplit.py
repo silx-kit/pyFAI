@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "01/11/2015"
+__date__ = "27/10/2016"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -63,7 +63,6 @@ class OCLFullSplit1d(object):
                  deviceid=None,
                  profile=False):
 
-
         self.bins = bins
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
@@ -77,34 +76,34 @@ class OCLFullSplit1d(object):
         else:
             raise ValueError("Pos array dimentions are wrong")
         self.pos_size = pos.size
-        self.size = self.pos_size/8
+        self.size = self.pos_size / 8
         self.pos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
-        self.pos0Range = numpy.empty(2,dtype=numpy.float32)
-        self.pos1Range = numpy.empty(2,dtype=numpy.float32)
+        self.pos0Range = numpy.empty(2, dtype=numpy.float32)
+        self.pos1Range = numpy.empty(2, dtype=numpy.float32)
 
         if (pos0Range is not None) and (len(pos0Range) is 2):
-            self.pos0Range[0] = min(pos0Range) # do it on GPU?
+            self.pos0Range[0] = min(pos0Range)  # do it on GPU?
             self.pos0Range[1] = max(pos0Range)
             if (not self.allow_pos0_neg) and (self.pos0Range[0] < 0):
                 self.pos0Range[0] = 0.0
                 if self.pos0Range[1] < 0:
                     print("Warning: Invalid 0-dim range! Using the data derived range instead")
                     self.pos0Range[1] = 0.0
-            #self.pos0Range[0] = pos0Range[0]
-            #self.pos0Range[1] = pos0Range[1]
+            # self.pos0Range[0] = pos0Range[0]
+            # self.pos0Range[1] = pos0Range[1]
         else:
             self.pos0Range[0] = 0.0
             self.pos0Range[1] = 0.0
         if (pos1Range is not None) and (len(pos1Range) is 2):
-            self.pos1Range[0] = min(pos1Range) # do it on GPU?
+            self.pos1Range[0] = min(pos1Range)  # do it on GPU?
             self.pos1Range[1] = max(pos1Range)
-            #self.pos1Range[0] = pos1Range[0]
-            #self.pos1Range[1] = pos1Range[1]
+            # self.pos1Range[0] = pos1Range[0]
+            # self.pos1Range[1] = pos1Range[1]
         else:
             self.pos1Range[0] = 0.0
             self.pos1Range[1] = 0.0
 
-        if  mask is not None:
+        if mask is not None:
             assert mask.size == self.size
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
@@ -152,7 +151,7 @@ class OCLFullSplit1d(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        @param kernel_file: path tothe
+        :param kernel_file: path tothe
         """
         kernel_name = "ocl_lut.cl"
         if kernel_file is None:
@@ -165,7 +164,7 @@ class OCLFullSplit1d(object):
         kernel_src = utils.read_cl_file(kernel_file)
         compile_options = "-D BINS=%i -D POS_SIZE=%i -D SIZE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
                           (self.bins, self.pos_size, self.size, self.workgroup_size, numpy.finfo(numpy.float32).eps)
-        logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
+        logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:
@@ -178,7 +177,7 @@ class OCLFullSplit1d(object):
         # # # # # # # # Check for memory# # # # # # # #
         size_of_float = numpy.dtype(numpy.float32).itemsize
 
-        ualloc  = (self.pos_size * size_of_float)
+        ualloc = (self.pos_size * size_of_float)
         ualloc += (self.workgroup_size * 4 * size_of_float)
         ualloc += (4 * size_of_float)
         memory = self.device.memory
@@ -188,12 +187,12 @@ class OCLFullSplit1d(object):
         # # # # # # # # allocate memory # # # # # # # #
         try:
             # No returned event for profiling
-            #self._cl_mem["pos"]       = pyopencl.array.to_device(self._queue, self.pos)
-            #self._cl_mem["preresult"] = pyopencl.array.empty(self._queue, (4*self.workgroup_size,), dtype=numpy.float32)
-            #self._cl_mem["minmax"]    = pyopencl.array.empty(self._queue, (4,), dtype=numpy.float32)
-            self._cl_mem["pos"]       = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * self.pos_size)
+            # self._cl_mem["pos"]       = pyopencl.array.to_device(self._queue, self.pos)
+            # self._cl_mem["preresult"] = pyopencl.array.empty(self._queue, (4*self.workgroup_size,), dtype=numpy.float32)
+            # self._cl_mem["minmax"]    = pyopencl.array.empty(self._queue, (4,), dtype=numpy.float32)
+            self._cl_mem["pos"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * self.pos_size)
             self._cl_mem["preresult"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 4 * self.workgroup_size)
-            self._cl_mem["minmax"]    = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 4)
+            self._cl_mem["minmax"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 4)
         except pyopencl.MemoryError as error:
             self._free_device_memory()
             raise MemoryError(error)
@@ -209,24 +208,23 @@ class OCLFullSplit1d(object):
         # # # # # # do the minmax reduction # # # # # #
         with self._sem:
             reduce_minmax_1 = self._program.reduce_minmax_1(self._queue, (self.workgroup_size * self.workgroup_size,), (self.workgroup_size,), *self._cl_kernel_args["reduce_minmax_1"])
-            self.events += [("reduce_minmax_1",reduce_minmax_1)]
+            self.events += [("reduce_minmax_1", reduce_minmax_1)]
             reduce_minmax_2 = self._program.reduce_minmax_2(self._queue, (self.workgroup_size,), (self.workgroup_size,), *self._cl_kernel_args["reduce_minmax_2"])
-            self.events += [("reduce_minmax_2",reduce_minmax_2)]
+            self.events += [("reduce_minmax_2", reduce_minmax_2)]
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # release the redundant data  # # # # #
         self._cl_mem["preresult"].release()
         self._cl_mem.pop("preresult")
         # # # # # # # # # # # # # # # # # # # # # # # #
 
-        #check memory of d_pos + d_preresult + d_minmax
-        #load d_pos
-        #allocate d_preresult
-        #allocate d_minmax
-        #run reduce1
-        #run reduce2
-        #save reference to d_minMax
-        #free d_preresult
-
+        # check memory of d_pos + d_preresult + d_minmax
+        # load d_pos
+        # allocate d_preresult
+        # allocate d_minmax
+        # run reduce1
+        # run reduce2
+        # save reference to d_minMax
+        # free d_preresult
 
     def _calc_LUT(self):
         """
@@ -236,36 +234,36 @@ class OCLFullSplit1d(object):
         size_of_float = numpy.dtype(numpy.float32).itemsize
         size_of_int = numpy.dtype(numpy.int32).itemsize
 
-        ualloc  = (self.pos_size * size_of_float) # pos
-        ualloc += (4 * size_of_float)             # minmax
-        ualloc += (2 * size_of_float) * 2         # pos0Range, pos1Range
-        ualloc += (self.bins * size_of_int)       # outMax
-        ualloc += (1 * size_of_int)               # lutsize
-        ualloc += ((self.bins+1) * size_of_int)   # idx_ptr
+        ualloc = (self.pos_size * size_of_float)   # pos
+        ualloc += (4 * size_of_float)              # minmax
+        ualloc += (2 * size_of_float) * 2          # pos0Range, pos1Range
+        ualloc += (self.bins * size_of_int)        # outMax
+        ualloc += (1 * size_of_int)                # lutsize
+        ualloc += ((self.bins + 1) * size_of_int)  # idx_ptr
         memory = self.device.memory
         if ualloc >= memory:
             raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # allocate memory # # # # # # # #
         try:
-            #self._cl_mem["pos0Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
-            #self._cl_mem["pos1Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
-            self._cl_mem["outMax"]    = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.bins)
-            self._cl_mem["lutsize"]   = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 1)
-            self._cl_mem["idx_ptr"]   = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * (self.bins+1))
+            # self._cl_mem["pos0Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
+            # self._cl_mem["pos1Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
+            self._cl_mem["outMax"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.bins)
+            self._cl_mem["lutsize"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 1)
+            self._cl_mem["idx_ptr"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * (self.bins + 1))
         except pyopencl.MemoryError as error:
             self._free_device_memory()
             raise MemoryError(error)
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # # move data # # # # # # # # # #
-        #with self._sem:
-            #copy_pos0Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos0Range"], self.pos0Range)
-            #self.events += [("copy pos0Range", copy_pos0Range)]
-            #copy_pos1Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos1Range"], self.pos1Range)
-            #self.events += [("copy pos1Range", copy_pos1Range)]
+        # with self._sem:
+            # copy_pos0Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos0Range"], self.pos0Range)
+            # self.events += [("copy pos0Range", copy_pos0Range)]
+            # copy_pos1Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos1Range"], self.pos1Range)
+            # self.events += [("copy pos1Range", copy_pos1Range)]
         # # # # # # # # set arguments # # # # # # # # #
         self._cl_kernel_args["memset_outMax"] = [self._cl_mem["outMax"]]
-        self._cl_kernel_args["lut_1"] = [self._cl_mem["pos"],  self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"]]
+        self._cl_kernel_args["lut_1"] = [self._cl_mem["pos"], self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"]]
         self._cl_kernel_args["lut_2"] = [self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["lutsize"]]
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # start the LUT creation  # # # # # #
@@ -299,7 +297,7 @@ class OCLFullSplit1d(object):
             raise MemoryError(error)
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # set arguments # # # # # # # # #
-        self._cl_kernel_args["lut_3"] = [self._cl_mem["pos"],  self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["indices"], self._cl_mem["data"]]
+        self._cl_kernel_args["lut_3"] = [self._cl_mem["pos"], self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["indices"], self._cl_mem["data"]]
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # #   finish the LUT creation   # # # # #
         with self._sem:
@@ -313,33 +311,32 @@ class OCLFullSplit1d(object):
         self._cl_mem.pop("pos")
         self._cl_mem["minmax"].release()
         self._cl_mem.pop("minmax")
-        #self._cl_mem["pos0Range"].release()
-        #self._cl_mem.pop("pos0Range")
-        #self._cl_mem["pos1Range"].release()
-        #self._cl_mem.pop("pos1Range")
+        # self._cl_mem["pos0Range"].release()
+        # self._cl_mem.pop("pos0Range")
+        # self._cl_mem["pos1Range"].release()
+        # self._cl_mem.pop("pos1Range")
         self._cl_mem["outMax"].release()
         self._cl_mem.pop("outMax")
         self._cl_mem["lutsize"].release()
         self._cl_mem.pop("lutsize")
         # # # # # # # # # # # # # # # # # # # # # # # #
 
-
-        #check memory of d_pos + d_minmax + d_outMax + d_lutsize
-        #allocate d_outMax
-        #allocate d_lutsize
-        #memset d_outMax
-        #run lut1
-        #run lut2
-        #save d_lutsize
-        #memset d_outMax
-        #allocate d_data
-        #allocate d_indices
-        #run lut3
-        #free d_pos
-        #free d_minMax
-        #free d_lutsize
-        #run lut4
-        #free d_outMax
+        # check memory of d_pos + d_minmax + d_outMax + d_lutsize
+        # allocate d_outMax
+        # allocate d_lutsize
+        # memset d_outMax
+        # run lut1
+        # run lut2
+        # save d_lutsize
+        # memset d_outMax
+        # allocate d_data
+        # allocate d_indices
+        # run lut3
+        # free d_pos
+        # free d_minMax
+        # free d_lutsize
+        # run lut4
+        # free d_outMax
 
     def _free_device_memory(self):
         """
@@ -351,12 +348,10 @@ class OCLFullSplit1d(object):
                 try:
                     buf.release()
                 except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s" % buffer_name)
+                    logger.error("Error while freeing buffer %s", buffer_name)
 
     def get_platform(self):
         pass
 
     def get_queue(self):
         pass
-
-

@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,20 +26,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
-__doc__ = """tests for Jon's geometry changes
+"""tests for Jon's geometry changes
 FIXME : make some tests that the functions do what is expected
 """
+
+from __future__ import absolute_import, division, print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "13/12/2016"
 
 
 import unittest
-import os
 import sys
 import random
 import time
@@ -106,16 +106,16 @@ class TestSolidAngle(unittest.TestCase):
         delta_tth = abs(tth - self.tth_fit2d).max()
         delta_I = abs(I_nogood - self.I_fit2d).max()
         I = abs(I_nogood - self.I_fit2d).mean()
-        self.assert_(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assert_(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
-        self.assert_(I > 2, 'Error on (wrong) I are large: %s >2' % I)
+        self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
+        self.assertTrue(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
+        self.assertTrue(I > 2, 'Error on (wrong) I are large: %s >2' % I)
         tth, I_good = self.ai.integrate1d(self.data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=3)
         delta_tth = abs(tth - self.tth_fit2d).max()
         delta_I = abs(I_good - self.I_fit2d).max()
         I = abs(I_good - self.I_fit2d).mean()
-        self.assert_(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
-        self.assert_(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
-        self.assert_(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
+        self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
+        self.assertTrue(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
+        self.assertTrue(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
 
     def test_nonflat_center(self):
         """
@@ -130,8 +130,8 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assert_(mini > 0.99, 'Cos solid angle is %s >0.99' % mini)
+        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertTrue(mini > 0.99, 'Cos solid angle is %s >0.99' % mini)
 
     def test_nonflat_outside(self):
         """
@@ -146,9 +146,9 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assert_(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assert_(mini < 0.92, 'Cos solid angle min is %s <0.92' % mini)
+        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertTrue(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assertTrue(mini < 0.92, 'Cos solid angle min is %s <0.92' % mini)
 
     def test_nonflat_inside(self):
         """
@@ -163,9 +163,9 @@ class TestSolidAngle(unittest.TestCase):
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
-        self.assert_(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
-        self.assert_(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
-        self.assert_(mini < 0.87, 'Cos solid angle min is %s <0.86' % mini)
+        self.assertTrue(maxi <= 1.0, 'Cos incidence is %s <=1.0' % maxi)
+        self.assertTrue(maxi > 0.99, 'Cos incidence max is %s >0.99' % maxi)
+        self.assertTrue(mini < 0.87, 'Cos solid angle min is %s <0.86' % mini)
 
 
 class TestBug88SolidAngle(unittest.TestCase):
@@ -202,13 +202,13 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
     def test_center(self):
         rd2 = self.geo.rd2Array(self.shape)
         q = self.geo.qArray(self.shape)
-        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "center rd2 = (q/2pi)**2")
+        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "center rd2 = (q/2pi)**2")
 
     def test_corner(self):
         rd2 = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
         q = self.geo.cornerQArray(self.shape)[:, :, :, 0]
         delta = rd2 - (q / (2 * numpy.pi)) ** 2
-        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
+        self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
 
     def test_delta(self):
 
@@ -216,19 +216,34 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         rd2 = self.geo.rd2Array(self.shape)
         rc = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
         drd2 = self.geo.deltaRd2(self.shape)
-        self.assert_(numpy.allclose(drd2, drd2a, atol=1e-5), "delta rd2 = (q/2pi)**2, one formula with another")
+        self.assertTrue(numpy.allclose(drd2, drd2a, atol=1e-5), "delta rd2 = (q/2pi)**2, one formula with another")
         delta2 = abs(rc - numpy.atleast_3d(rd2)).max(axis=-1)
-        self.assert_(numpy.allclose(drd2, delta2, atol=1e-5), "delta rd2 = (q/2pi)**2")
+        self.assertTrue(numpy.allclose(drd2, delta2, atol=1e-5), "delta rd2 = (q/2pi)**2")
 
 
 class ParamFastPath(ParameterisedTestCase):
     """Test the consistency of the geometry calculation using the Python and the
     Cython path.
     """
-    detectors = ("Pilatus300k", "Xpad_flat")
+    detectors = ("Pilatus100k", "ImXPadS10")
     number_of_geometries = 2
     epsilon = 3e-7
-    geometries = []
+    epsilon_r = 1e-5
+    epsilon_a = 1e-5
+    count_a = 17
+    # Here is a set of pathological cases ...
+    geometries = [  # Provides atol = 1.08e-5
+                  {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605, "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+                  # Provides atol = 2.8e-5
+                  {'dist': 0.48459003559204783, 'poni2':-0.15784154756282065, 'poni1': 0.02783657100374448, 'rot3':-0.2901541134116695, 'rot1':-0.3927992588689394, 'rot2': 0.148115949280184, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+                  # Provides atol = 3.67761e-05
+                  {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus100k', 'dist': 0.7350926443000882},
+                  # Provides atol = 4.94719e-05
+                  {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186, 'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077, 'dist': 0.04711960678381288, 'poni1': 0.012745759325719641},
+                  # atol=2pi
+                  {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455, 'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118, 'detector': 'Pilatus100k', 'dist': 0.43544642285972124},
+                  {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077, 'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536, 'poni2': 0.05248001026597382, 'detector': 'Pilatus100k'}
+                  ]
     for i in range(number_of_geometries):
         geo = {"dist": 0.01 + random.random(),
                "poni1": random.random() - 0.5,
@@ -237,29 +252,12 @@ class ParamFastPath(ParameterisedTestCase):
                "rot2": random.random() - 0.5,
                "rot3": random.random() - 0.5,
                "wavelength": 1e-10}
-# Provides atol = 1.08e-5
-#         geo = {"dist": 0.037759112584709535,
-#                "poni1": 0.005490358659182459,
-#                "poni2": 0.06625690275821605,
-#                "rot1": 0.20918568578536278,
-#                "rot2": 0.42161920581114365,
-#                "rot3": 0.38784171093239983,
-#                "wavelength": 1e-10}
-# Provides atol = 2.8e-5
-#         geo = {'dist': 0.48459003559204783,
-#                'poni2':-0.15784154756282065,
-#                'poni1': 0.02783657100374448,
-#                'rot3':-0.2901541134116695,
-#                'rot1':-0.3927992588689394,
-#                'rot2': 0.148115949280184,
-#                "wavelength": 1e-10}
-# Provides atol = 3.67761e-05
-#         geo = {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus300k', 'dist': 0.7350926443000882}
+
         for det in detectors:
             dico = geo.copy()
             dico["detector"] = det
             geometries.append(dico)
-    dunits = dict((u.REPR.split("_")[0], u) for u in units.RADIAL_UNITS)
+    dunits = dict((u.split("_")[0], v) for u, v in units.RADIAL_UNITS.items())
     TESTSPACE = itertools.product(geometries, dunits.values())
 
     def test_corner_array(self):
@@ -274,10 +272,15 @@ class ParamFastPath(ParameterisedTestCase):
         t10 = timer()
         cy_res = geo.corner_array(unit=space, use_cython=True)
         t11 = timer()
-        delta = abs(py_res - cy_res).max()
-        logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta:%s",
-                    space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / (t11 - t10), delta)
-        self.assert_(numpy.allclose(py_res, cy_res, atol=2.9e-5), "data:%s, space: %s delta: %s" % (data, space, delta))
+        delta = abs(py_res - cy_res)
+        # We expect precision on radial position
+        delta_r = delta[..., 0].max()
+        # issue with numerical stability of azimuthal position due to arctan(y,x)
+        cnt_delta_a = (delta[..., 1] > self.epsilon_a).sum()
+        logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
+                    space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
+        self.assertTrue(delta_r < self.epsilon_r, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
+        self.assertTrue(cnt_delta_a < self.count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""
@@ -289,9 +292,10 @@ class ParamFastPath(ParameterisedTestCase):
         cy_res = geo.calc_pos_zyx(corners=True, use_cython=True)
         t2 = timer()
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
-        logger.info("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s", kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / (t2 - t1), delta)
+        logger.info("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
+                    kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
-        self.assert_(numpy.alltrue(delta.max() < self.epsilon), msg)
+        self.assertTrue(numpy.alltrue(delta.max() < self.epsilon), msg)
         logger.debug(msg)
 
 
@@ -304,8 +308,7 @@ class ParamTestGeometry(ParameterisedTestCase):
                  ("tth", ("tan", "cython")),
                  ("qFunction", ("numpy", "cython")),
                  ("rFunction", ("numpy", "cython"))]
-    pixels = {"pixel1": 1,
-              "pixel2": 1,
+    pixels = {"detector": "Pilatus100k",
               "wavelength": 1e-10}
     geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
                   {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
@@ -313,13 +316,13 @@ class ParamTestGeometry(ParameterisedTestCase):
                   {'dist': 1, 'rot1':-1, 'rot2':-.2, 'rot3': 1},
                   {'dist': 1, 'rot1': 1, 'rot2': 5, 'rot3': .4},
                   {'dist': 1, 'rot1':-1.2, 'rot2': 1, 'rot3': 1},
-                  {'dist': 1e10, 'rot1':-2, 'rot2': 2, 'rot3': 1},
+                  {'dist': 100, 'rot1':-2, 'rot2': 2, 'rot3': 1},
                   ]
     for g in geometries:
         g.update(pixels)
 
     TESTCASES_FUNCT = [(k[0], k[1], g) for k, g in itertools.product(functions, geometries)]
-    TESTCASES_XYZ = itertools.product((False,), geometries)
+    TESTCASES_XYZ = itertools.product((False, True), geometries)
 
     def test_geometry_functions(self):
         "test functions like tth, qFunct, rfunction, ... fake detectors"
@@ -331,9 +334,10 @@ class ParamTestGeometry(ParameterisedTestCase):
         newret = getattr(geo, func)(self.d1, self.d2, path=varargs[1])
         t2 = timer()
         delta = abs(oldret - newret).max()
-        logger.info("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s", func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / (t2 - t1), delta)
+        logger.info("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
+                    func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
-        self.assertAlmostEquals(delta, 0, 3, msg)
+        self.assertAlmostEqual(delta, 0, 3, msg)
         logger.debug(msg)
 
     def test_XYZ(self):
@@ -346,14 +350,29 @@ class ParamTestGeometry(ParameterisedTestCase):
         cy_res = geo.calc_pos_zyx(None, self.d1, self.d2, corners=corners, use_cython=True)
         t2 = timer()
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
-        logger.info("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s", corners, t1 - t0, t2 - t1, (t1 - t0) / (t2 - t1), delta)
+        logger.info("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s",
+                    corners, t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "delta=%s, geo= \n%s" % (delta, geo)
-        self.assert_(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
+        self.assertTrue(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
         logger.debug(msg)
+
+
+class TestBug474(unittest.TestCase):
+    """This bug is about PONI coordinates not subtracted from x&y coodinates in Cython"""
+
+    def test_regression(self):
+        detector = detector_factory("Pilatus100K")  # small detectors makes calculation faster
+        geo = geometry.Geometry(detector=detector)
+        geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
+        rc = geo.position_array(use_cython=True)
+        rp = geo.position_array(use_cython=False)
+        delta = abs(rp - rc).max()
+        self.assertLess(delta, 1e-5, "error on position is %s" % delta)
 
 
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(TestBug474("test_regression"))
     testsuite.addTest(TestSolidAngle("testSolidAngle"))
     testsuite.addTest(TestSolidAngle("test_nonflat_center"))
     testsuite.addTest(TestSolidAngle("test_nonflat_outside"))

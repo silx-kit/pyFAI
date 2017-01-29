@@ -1,34 +1,38 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2016 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-__doc__ = """
-Inverse watershed for connecting region of high intensity
+"""Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/01/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 
 import cython
 import numpy
@@ -76,11 +80,12 @@ cdef class Region:
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def init_values(self, float[:] flat):
+    @cython.initializedcheck(False)
+    def init_values(self, float[::1] flat):
         """
         Initialize the values : maxi, mini and pass both height and so on
-        @param flat: flat view on the data (intensity)
-        @return: True if there is a problem and the region should be removed
+        :param flat: flat view on the data (intensity)
+        :return: True if there is a problem and the region should be removed
         """
         cdef:
             int i, k, imax, imin
@@ -139,6 +144,7 @@ cdef class Region:
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def merge(self, Region other):
         """
         merge 2 regions
@@ -196,10 +202,10 @@ class InverseWatershed(object):
     
     def __init__(self, data not None, thres=1.0):
         """
-        @param data: 2d image as numpy array
+        :param data: 2d image as numpy array
 
         """
-        assert data.ndim == 2
+        assert data.ndim == 2, "data.ndim == 2"
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
         
         self.height, self.width = data.shape
@@ -243,8 +249,8 @@ class InverseWatershed(object):
         """
         import h5py
         with h5py.File(fname) as h5:
-            assert h5["VERSION"].value == cls.VERSION
-            assert h5["NAME"].value == cls.NAME
+            assert h5["VERSION"].value == cls.VERSION, "Version of module used for HDF5"
+            assert h5["NAME"].value == cls.NAME, "Name of module used for HDF5"
             self = cls(h5["data"].value, h5["thres"].value)
             for i in ("labels", "borders"):
                 setattr(self, i, h5[i].value)
@@ -272,10 +278,10 @@ class InverseWatershed(object):
 #        self.merge_intense(self.thres)
         logger.info("found %s regions, after merge remains %s" % (len(self.regions), len(set(self.regions.values()))))
 
-    @timeit
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def init_labels(self):
         cdef:
             int i, j, width = self.width, height = self.height, idx, res
@@ -290,10 +296,10 @@ class InverseWatershed(object):
                 if idx == res:
                     regions[res] = Region(res) 
 
-    @timeit 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def init_borders(self):
         cdef:
             int i, j, width = self.width, height = self.height, idx, res
@@ -323,15 +329,15 @@ class InverseWatershed(object):
                     neighb |= 1 << 7
                 borders[i, j] = neighb
 
-    @timeit
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     def init_regions(self):
         cdef:
             int i, j, idx, res
-            numpy.int32_t[:, :] labels = self.labels
-            numpy.uint8_t[:, :] borders = self.borders
+            numpy.int32_t[:, ::1] labels = self.labels
+            numpy.uint8_t[:, ::1] borders = self.borders
             numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
@@ -364,14 +370,13 @@ class InverseWatershed(object):
                 elif get_bit(neighb, 6):
                     region.neighbors.append(labels[i + 1, j - 1])
 
-    @timeit
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def init_pass(self):
         cdef:
             int i, j, k, imax, imin
-            float[:] flat = self.data.ravel()
+            float[::1] flat = self.data.ravel()
             numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
@@ -381,7 +386,6 @@ class InverseWatershed(object):
             if region.init_values(flat):
                 regions.pop(region.index)
 
-    @timeit
     def merge_singleton(self):
         "merge single pixel region"
         cdef:
@@ -391,8 +395,8 @@ class InverseWatershed(object):
             numpy.uint8_t neighb = 0
             float ref = 0.0            
             float[:, :] data = self.data
-            numpy.int32_t[:, :] labels = self.labels
-            numpy.uint8_t[:, :] borders = self.borders
+            numpy.int32_t[:, ::1] labels = self.labels
+            numpy.uint8_t[:, ::1] borders = self.borders
             int to_merge = -1
             int width = self.width
             int cnt = 0
@@ -447,7 +451,6 @@ class InverseWatershed(object):
                     cnt += 1
         logger.info("Did %s merge_singleton" % cnt)
 
-    @timeit
     def merge_twins(self):
         """
         Twins are two peak region which are best linked together:
@@ -479,8 +482,7 @@ class InverseWatershed(object):
                     regions[key] = region
                 cnt += 1
         logger.info("Did %s merge_twins" % cnt)
-        
-    @timeit
+
     def merge_intense(self, thres=1.0):
         """
         Merge groups then (pass-mini)/(maxi-mini) >=thres
@@ -516,11 +518,11 @@ class InverseWatershed(object):
     
     def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):
         """
-        @param mask: mask of data points valid
-        @param Imin: Minimum intensity for a peak 
-        @param keep: Number of  points to keep
-        @param refine: refine sub-pixel position
-        @param dmin: minimum distance from 
+        :param mask: mask of data points valid
+        :param Imin: Minimum intensity for a peak 
+        :param keep: Number of  points to keep
+        :param refine: refine sub-pixel position
+        :param dmin: minimum distance from 
         """
         cdef:
             int i, j, l, x, y, width = self.width
@@ -558,19 +560,20 @@ class InverseWatershed(object):
                 dmin2 = dmin * dmin
             else:
                 dmin2 = 0.0
-            if keep and len(output_points)>keep:
+            if keep and len(output_points) > keep:
                 tmp_lst = output_points
                 rej_lst = []
                 output_points = []
                 for pt in tmp_lst:
                     for pt2 in output_points:
-                        d2 = (pt[0]-pt2[0])**2 + (pt[1]-pt2[1])**2
-                        if d2<=dmin2:
+                        d2 = (pt[0] - pt2[0]) ** 2 + (pt[1] - pt2[1]) ** 2
+                        if d2 <= dmin2:
                             rej_lst.append(pt)
                             break
                     else:
                         output_points.append(pt)
-                        if len(output_points)>=keep:
+                        if len(output_points) >= keep:
                             return output_points
-                output_points = (output_points+rej_lst)[:keep]
+                output_points = (output_points + rej_lst)[:keep]
         return output_points
+    

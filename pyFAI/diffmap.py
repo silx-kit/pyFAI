@@ -1,7 +1,7 @@
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/05/2016"
+__date__ = "27/10/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module with GUI for diffraction mapping experiments"""
@@ -78,10 +78,10 @@ class DiffMap(object):
     def __init__(self, npt_fast=0, npt_slow=1, npt_rad=1000, npt_azim=None):
         """Constructor of the class DiffMap for diffraction mapping
 
-        @param npt_fast: number of translations
-        @param npt_slow: number of translations
-        @param npt_rad: number of points in diffraction pattern (radial dimension)
-        @param npt_azim:  number of points in diffraction pattern (azimuthal dimension)
+        :param npt_fast: number of translations
+        :param npt_slow: number of translations
+        :param npt_rad: number of points in diffraction pattern (radial dimension)
+        :param npt_azim:  number of points in diffraction pattern (azimuthal dimension)
         """
         self.npt_fast = npt_fast
         self.npt_slow = npt_slow
@@ -121,7 +121,7 @@ class DiffMap(object):
         to_tuple("slice06/IRIS4_1_14749.edf")
         --> (6, 4, 1, 14749)
 
-        @param name: input string, often a filename
+        :param name: input string, often a filename
         """
         res = []
         cur = ""
@@ -137,7 +137,7 @@ class DiffMap(object):
         """
         parse options from command line: setup the object
 
-        @return: dictionary able to setup a DiffMapWidget
+        :return: dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction imaging.
 
@@ -262,19 +262,19 @@ If the number of files is too large, use double quotes like "*.edf" """
         if options.mask:
             mask = urlparse(options.mask).path
             if os.path.isfile(mask):
-                logger.info("Reading Mask file from: %s" % mask)
+                logger.info("Reading Mask file from: %s", mask)
                 self.mask = os.path.abspath(mask)
                 config["ai"]["mask_file"] = self.mask
                 config["ai"]["do_mask"] = True
             else:
-                logger.warning("No such mask file %s" % mask)
+                logger.warning("No such mask file %s", mask)
         if options.poni:
             if os.path.isfile(options.poni):
-                logger.info("Reading PONI file from: %s" % options.poni)
+                logger.info("Reading PONI file from: %s", options.poni)
                 self.poni = options.poni
                 config["ai"]["poni"] = self.poni
             else:
-                logger.warning("No such poni file %s" % options.poni)
+                logger.warning("No such poni file %s", options.poni)
         if options.fast is not None:
             self.npt_fast = int(options.fast)
             config["fast_motor_points"] = self.npt_fast
@@ -387,7 +387,7 @@ If the number of files is too large, use double quotes like "*.edf" """
     def init_ai(self):
         """Force initialization of azimuthal intgrator
 
-        @return: radial position array
+        :return: radial position array
         """
         if not self.ai:
             self.setup_ai()
@@ -424,11 +424,11 @@ If the number of files is too large, use double quotes like "*.edf" """
         if not self.stats:
             return
         try:
-            from .gui_utils import pyplot as plt
+            from .gui.matplotlib import pyplot
         except ImportError:
             logger.error("Unable to start matplotlib for display")
             return
-        fig = plt.figure()
+        fig = pyplot.figure()
         ax = fig.add_subplot(1, 1, 1)
         ax.hist(self.timing, 500, facecolor='green', alpha=0.75)
         ax.set_xlabel('Execution time (seconds)')
@@ -443,9 +443,9 @@ If the number of files is too large, use double quotes like "*.edf" """
         Calculate the position in the sinogram of the file according
         to it's number
 
-        @param filename: name of current frame
-        @param idx: index of current frame
-        @return: namedtuple: index, rot, trans
+        :param filename: name of current frame
+        :param idx: index of current frame
+        :return: namedtuple: index, rot, trans
         """
         #         n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
         if idx is None:
@@ -456,8 +456,8 @@ If the number of files is too large, use double quotes like "*.edf" """
 
     def process_one_file(self, filename):
         """
-        @param filename: name of the input filename
-        @param idx: index of file
+        :param filename: name of the input filename
+        :param idx: index of file
         """
         if self.ai is None:
             self.setup_ai()
@@ -479,7 +479,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 
     def process_one_frame(self, frame):
         """
-        @param frame: 2d numpy array with an image to process
+        :param frame: 2d numpy array with an image to process
         """
         self._idx += 1
         pos = self.get_pos(None, self._idx)
@@ -508,9 +508,10 @@ If the number of files is too large, use double quotes like "*.edf" """
               (cnt, tot, 1000. * tot / cnt))
         self.nxs.close()
 
-
     def get_use_gpu(self):
         return ("gpu" in self.method)
+
     def set_use_gpu(self, value):
         self.method = "csr_ocl_gpu" if value else "csr"
+
     use_gpu = property(get_use_gpu, set_use_gpu)

@@ -1,7 +1,10 @@
 .. pyFAI documentation master file, created by
    sphinx-quickstart on Mon Nov 19 13:19:53 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+
+:Author: Jérôme Kieffer
+:Date: 01/12/2016
+:Keywords: generic description of the geometry
+:Target: General audience
 
 Fast Azimuthal Integration using Python
 =======================================
@@ -58,6 +61,7 @@ of publication on pyFAI.
    changelog
    publications
    biblio
+   glossary
 
 Indices and tables
 ==================

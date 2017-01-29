@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/06/2016"
+__date__ = "27/07/2016"
 __status__ = "production"
 
 import os
@@ -159,7 +159,7 @@ def main():
             t0 = time.time()
             fabimg = fabio.open(afile)
             if options.multiframe:
-                data = pyFAI.utils.averageDark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
+                data = pyFAI.average.average_dark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
             else:
                 data = fabimg.data
             t1 = time.time()

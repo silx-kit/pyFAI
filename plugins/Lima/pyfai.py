@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #coding: utf-8
 #Class defining the link task for azimuthal regrouping in process lib for Lima
 #
@@ -17,7 +17,7 @@ EXPO = 0.1 #sec
 class PyFAILink(Core.Processlib.LinkTask):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(966, 1296), shapeOut=(360, 500), unit="r_mm"):
         """
-        @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
+        :param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
         
         """
         Core.Processlib.LinkTask.__init__(self)
@@ -43,7 +43,7 @@ class PyFAILink(Core.Processlib.LinkTask):
             data = fabio.open(imagefile).data
         except Exception as error:
             data = None
-            logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
+            logger.warning("setDarkcurrentFile: Unable to read file %s: %s", imagefile, error)
         else:
             self.ai.set_darkcurrent = data
 
@@ -52,7 +52,7 @@ class PyFAILink(Core.Processlib.LinkTask):
             data = fabio.open(imagefile).data
         except Exception as error:
             data = None
-            logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
+            logger.warning("setFlatfieldFile: Unable to read file %s: %s", imagefile, error)
         self.ai.set_flatfield(data)
 
 if __name__ == "__main__":
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     acq.setAcqExpoTime(EXPO)
     ctrl.prepareAcq()
     ctrl.startAcq()
-    print ctrl.getStatus()
+    print(ctrl.getStatus())
     time.sleep(1)
     base_img = ctrl.ReadBaseImage()
     proc_img = ctrl.ReadImage()

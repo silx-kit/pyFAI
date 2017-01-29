@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2013-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,14 +26,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"test suite for Distortion correction class"
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for Distortion correction class"
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
@@ -62,7 +63,7 @@ class TestHalfCCD(unittest.TestCase):
         self.fit2d = fabio.open(self.fit2dFile).data
         self.ref = _distortion.Distortion(self.det)
         self.raw = fabio.open(self.halfFrelon).data
-        self.dis = distortion.Distortion(self.det)
+        self.dis = distortion.Distortion(self.det, method="LUT")
         self.larger = numpy.zeros(self.det.shape)
         self.larger[:-1, :] = self.raw
 
@@ -74,10 +75,10 @@ class TestHalfCCD(unittest.TestCase):
         """
         Compare position from _distortion.Distortion and distortion.Distortion.
         Nota the points, named ABCD have a different layout in those implementations:
-        _distortion.Distortion:  B C   distortion.Distortion: D C  
+        _distortion.Distortion:  B C   distortion.Distortion: D C
                                  A B                          A B
         So we compare only the position of A and C.
-        
+
         """
         self.dis.reset(prepare=False)
         onp = self.dis.calc_pos(use_cython=False)[:, :, ::2, :]
@@ -127,8 +128,8 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
     def test_lut_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -150,8 +151,8 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
     def test_csr_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
@@ -173,8 +174,8 @@ class TestHalfCCD(unittest.TestCase):
         ratio = delta / denom
         ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
-        logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
 
 class TestImplementations(unittest.TestCase):
@@ -230,17 +231,17 @@ class TestImplementations(unittest.TestCase):
         self.assertEqual(csr1[2].size, csr3[2].size, "right shape 1-3")
         self.assertEqual(csr1[2].size, csr4[2].size, "right shape 1-4")
 
-        self.assert_(numpy.allclose(csr1[2], csr2[2]), "same indptr 1-2")
-        self.assert_(numpy.allclose(csr1[2], csr3[2]), "same indptr 1-3")
-        self.assert_(numpy.allclose(csr1[2], csr4[2]), "same indptr 1-4")
+        self.assertTrue(numpy.allclose(csr1[2], csr2[2]), "same indptr 1-2")
+        self.assertTrue(numpy.allclose(csr1[2], csr3[2]), "same indptr 1-3")
+        self.assertTrue(numpy.allclose(csr1[2], csr4[2]), "same indptr 1-4")
 
-        self.assert_(numpy.allclose(csr1[1], csr2[1]), "same indices1-2")
-        self.assert_(numpy.allclose(csr1[1], csr3[1]), "same indices1-3")
-        self.assert_(numpy.allclose(csr1[1], csr4[1]), "same indices1-4")
+        self.assertTrue(numpy.allclose(csr1[1], csr2[1]), "same indices1-2")
+        self.assertTrue(numpy.allclose(csr1[1], csr3[1]), "same indices1-3")
+        self.assertTrue(numpy.allclose(csr1[1], csr4[1]), "same indices1-4")
 
-        self.assert_(numpy.allclose(csr1[0], csr2[0], atol=2e-7), "same data 1-2")
-        self.assert_(numpy.allclose(csr1[0], csr3[0], atol=2e-7), "same data 1-3")
-        self.assert_(numpy.allclose(csr1[0], csr4[0], atol=2e-7), "same data 1-4")
+        self.assertTrue(numpy.allclose(csr1[0], csr2[0], atol=2e-7), "same data 1-2")
+        self.assertTrue(numpy.allclose(csr1[0], csr3[0], atol=2e-7), "same data 1-3")
+        self.assertTrue(numpy.allclose(csr1[0], csr4[0], atol=2e-7), "same data 1-4")
 
 
 def suite():

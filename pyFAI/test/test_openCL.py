@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,13 +33,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
 import os
 import time
-import sys
 import fabio
 import gc
 import numpy
@@ -49,15 +48,11 @@ logger = getLogger(__file__)
 try:
     import pyopencl
 except ImportError as error:
-    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s." % error)
-    skip = True
-else:
-    skip = False
+    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
+    pyopencl = None
 
 from ..opencl import ocl
-if ocl is None:
-    skip = True
-else:
+if ocl is not None:
     from ..opencl import pyopencl
     import pyopencl.array
 from .. import load
@@ -109,10 +104,10 @@ class TestMask(unittest.TestCase):
         for devtype in ("GPU", "CPU"):
             ids = ocl.select_device(devtype, extensions=["cl_khr_int64_base_atomics"])
             if ids is None:
-                logger.error("No suitable %s OpenCL device found" % devtype)
+                logger.error("No suitable %s OpenCL device found", devtype)
                 continue
             else:
-                logger.info("I found a suitable device %s %s: %s %s " % (devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]]))
+                logger.info("I found a suitable device %s %s: %s %s ", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
 
             for ds in self.datasets:
                 ai = load(ds["poni"])
@@ -120,7 +115,7 @@ class TestMask(unittest.TestCase):
                 res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
                 ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
                 r = Rwp(ref, res)
-                logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s" % (r, ds))
+                logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                 self.assertTrue(r < 6, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
                 del ai, data
                 gc.collect()
@@ -130,10 +125,10 @@ class TestMask(unittest.TestCase):
         for devtype in ("GPU", "CPU"):
             ids = ocl.select_device(devtype, best=True)
             if ids is None:
-                logger.error("No suitable %s OpenCL device found" % devtype)
+                logger.error("No suitable %s OpenCL device found", devtype)
                 continue
             else:
-                logger.info("I found a suitable device %s %s: %s %s " % (devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]]))
+                logger.info("I found a suitable device %s %s: %s %s ", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
 
             for ds in self.datasets:
                 ai = load(ds["poni"])
@@ -142,12 +137,12 @@ class TestMask(unittest.TestCase):
                 try:
                     res = ai.integrate1d(data, self.N, method="ocl_lut_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
                 except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
-                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory." % (devtype, os.path.basename(ds["img"]), os.linesep, error))
+                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
                     ref = ai.xrpd(data, self.N)
                     r = Rwp(ref, res)
-                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s" % (r, ds))
+                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
                 del ai, data
                 gc.collect()
@@ -157,10 +152,10 @@ class TestMask(unittest.TestCase):
         for devtype in ("GPU", "CPU"):
             ids = ocl.select_device(devtype, best=True)
             if ids is None:
-                logger.error("No suitable %s OpenCL device found" % devtype)
+                logger.error("No suitable %s OpenCL device found", devtype)
                 continue
             else:
-                logger.info("I found a suitable device %s %s: %s %s " % (devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]]))
+                logger.info("I found a suitable device %s %s: %s %s", devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]])
 
             for ds in self.datasets:
                 ai = load(ds["poni"])
@@ -169,11 +164,11 @@ class TestMask(unittest.TestCase):
                 try:
                     res = ai.integrate1d(data, self.N, method="ocl_csr_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
                 except (pyopencl.MemoryError, MemoryError, pyopencl.RuntimeError, RuntimeError) as error:
-                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory." % (devtype, os.path.basename(ds["img"]), os.linesep, error))
+                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
                     r = Rwp(ref, res)
-                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s" % (r, ds))
+                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
                 del ai, data
                 gc.collect()
@@ -226,13 +221,13 @@ class TestSort(unittest.TestCase):
         evt.wait()
         err = abs(hs_data - d_data.get()).max()
         logger.info("test_reference_book")
-        logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
-        logger.info("Reference sort time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
+        logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
+        logger.info("Reference sort time: %s ms, err=%s ", 1e-6 * (evt.profile.end - evt.profile.start), err)
         # this test works under linux:
         if platform.system() == "Linux":
-            self.assert_(err == 0.0)
+            self.assertTrue(err == 0.0)
         else:
-            logger.warning("Measured error on %s is %s" % (platform.system(), err))
+            logger.warning("Measured error on %s is %s", platform.system(), err)
 
     def test_reference_file(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
@@ -245,10 +240,10 @@ class TestSort(unittest.TestCase):
         evt.wait()
         err = abs(hs_data - d_data.get()).max()
         logger.info("test_reference_file")
-        logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
-        logger.info("Reference sort time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
+        logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
+        logger.info("Reference sort time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
         # this test works anywhere !
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
     def test_sort_all(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
@@ -261,9 +256,9 @@ class TestSort(unittest.TestCase):
         evt.wait()
         err = abs(hs_data - d_data.get()).max()
         logger.info("test_sort_all")
-        logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
-        logger.info("modified function execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
-        self.assert_(err == 0.0)
+        logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
+        logger.info("modified function execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
+        self.assertTrue(err == 0.0)
 
     def test_sort_horizontal(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -274,9 +269,9 @@ class TestSort(unittest.TestCase):
         evt = self.prg.bsort_horizontal(self.queue, (self.N, self.ws), (1, self.ws), d2_data.data, self.local_mem)
         evt.wait()
         err = abs(h2s_data - d2_data.get()).max()
-        logger.info("Numpy horizontal sort on %sx%s elements took %s ms" % (self.N, self.N, time_sort))
-        logger.info("Horizontal execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
-        self.assert_(err == 0.0)
+        logger.info("Numpy horizontal sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
+        logger.info("Horizontal execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
+        self.assertTrue(err == 0.0)
 
     def test_sort_vertical(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -287,14 +282,14 @@ class TestSort(unittest.TestCase):
         evt = self.prg.bsort_vertical(self.queue, (self.ws, self.N), (self.ws, 1), d2_data.data, self.local_mem)
         evt.wait()
         err = abs(h2s_data - d2_data.get()).max()
-        logger.info("Numpy vertical sort on %sx%s elements took %s ms" % (self.N, self.N, time_sort))
-        logger.info("Vertical execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
-        self.assert_(err == 0.0)
+        logger.info("Numpy vertical sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
+        logger.info("Vertical execution time: %s ms, err=%s ", 1e-6 * (evt.profile.end - evt.profile.start), err)
+        self.assertTrue(err == 0.0)
 
 
 def suite():
     testsuite = unittest.TestSuite()
-    if skip:
+    if pyopencl is None or ocl is None:
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip tests")
     else:
         testsuite.addTest(TestMask("test_OpenCL"))

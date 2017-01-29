@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,15 +33,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
-import os
-import numpy
 import logging
-import time
-import sys
 import fabio
 from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
@@ -49,6 +45,10 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
+try:
+    from ..third_party import six
+except (ImportError, Exception):
+    import six
 
 
 class TestSaxs(unittest.TestCase):
@@ -80,14 +80,15 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("Numpy has R=%s" % R)
+        if R > 20:
+            logger.error("Numpy has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="Numpy R=%.1f" % R)
             pylab.yscale("log")
         self.assertTrue(R < 20, "Numpy: Measure R=%s<2" % R)
 
     def testCython(self):
-        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        qref, Iref, _s = self.ai.saxs(self.data, self.npt)
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="cython")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
@@ -96,14 +97,15 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("Cython has R=%s" % R)
+        if R > 20:
+            logger.error("Cython has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="Cython R=%.1f" % R)
             pylab.yscale("log")
         self.assertTrue(R < 20, "Cython: Measure R=%s<2" % R)
 
     def testSplitBBox(self):
-        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        qref, Iref, _s = self.ai.saxs(self.data, self.npt)
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="splitbbox")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
@@ -112,14 +114,15 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("SplitPixel has R=%s" % R)
+        if R > 20:
+            logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="SplitBBox R=%.1f" % R)
             pylab.yscale("log")
         self.assertEqual(R < 20, True, "SplitBBox: Measure R=%s<20" % R)
 
     def testSplitPixel(self):
-        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        qref, Iref, _s = self.ai.saxs(self.data, self.npt)
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="splitpixel")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
@@ -128,7 +131,8 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(I.max() < 52000, "I.max() < 52000 got %s" % (I.max()))
         self.assertTrue(I.min() >= 0, "I.min() >= 0 got %s" % (I.min()))
         R = Rwp((q, I), (qref, Iref))
-        if R > 20: logger.error("SplitPixel has R=%s" % R)
+        if R > 20:
+            logger.error("SplitPixel has R=%s", R)
         if logger.getEffectiveLevel() == logging.DEBUG:
             pylab.errorbar(q, I, s, label="SplitPixel R=%.1f" % R)
             pylab.yscale("log")
@@ -155,5 +159,5 @@ if __name__ == '__main__':
     if logger.getEffectiveLevel() == logging.DEBUG:
         pylab.legend()
         pylab.show()
-        raw_input()
+        six.moves.input()
         pylab.clf()

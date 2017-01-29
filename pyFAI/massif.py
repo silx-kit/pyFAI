@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2016"
+__date__ = "12/12/2016"
 __status__ = "production"
 
 import sys
@@ -51,11 +51,6 @@ if os.name != "nt":
     WindowsError = RuntimeError
 
 
-
-################################################################################
-# Massif
-################################################################################
-
 class Massif(object):
     """
     A massif is defined as an area around a peak, it is used to find neighboring peaks
@@ -68,7 +63,7 @@ class Massif(object):
         """
         if isinstance(data, six.string_types) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
-        elif  isinstance(data, fabio.fabioimage.fabioimage):
+        elif isinstance(data, fabio.fabioimage.fabioimage):
             self.data = data.data.astype("float32")
         else:
             try:
@@ -90,8 +85,8 @@ class Massif(object):
 
     def nearest_peak(self, x):
         """
-        @param x: coordinates of the peak
-        @returns the coordinates of the nearest peak
+        :param x: coordinates of the peak
+        :returns: the coordinates of the nearest peak
         """
         out = self._bilin.local_maxi(x)
         if isinstance(out, tuple):
@@ -99,9 +94,9 @@ class Massif(object):
         elif isinstance(out, numpy.ndarray):
             res = tuple(out)
         else:
-            res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx] ]
+            res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx]]
         if (len(res) != 2) or not((0 <= out[0] < self.data.shape[0]) and (0 <= res[1] < self.data.shape[1])):
-            logger.error("in nearest_peak %s -> %s" % (x, out))
+            logger.error("in nearest_peak %s -> %s", x, out)
             return
         else:
             return res
@@ -118,12 +113,13 @@ class Massif(object):
         """
         All in one function that finds a maximum from the given seed (x)
         then calculates the region extension and extract position of the neighboring peaks.
-        @param x: seed for the calculation, input coordinates
-        @param nmax: maximum number of peak per region
-        @param annotate: call back method taking number of points + coordinate as input.
-        @param massif_contour: callback to show the contour of a massif with the given index.
-        @param stdout: this is the file where output is written by default.
-        @return: list of peaks
+        :param x: coordinates of the peak, seed for the calculation
+        :type x: tuple of integer
+        :param nmax: maximum number of peak per region
+        :param annotate: call back method taking number of points + coordinate as input.
+        :param massif_contour: callback to show the contour of a massif with the given index.
+        :param stdout: this is the file where output is written by default.
+        :return: list of peaks
         """
         listpeaks = []
         region = self.calculate_massif(x)
@@ -143,7 +139,7 @@ class Massif(object):
                 try:
                     annotate(xinit, x)
                 except Exception as error:
-                    logger.error("Error in annotate %i: %i %i. %s" , len(listpeaks), xinit[0], xinit[1], error)
+                    logger.error("Error in annotate %i: %i %i. %s", len(listpeaks), xinit[0], xinit[1], error)
 
         listpeaks.append(xinit)
         mean = self.data[region].mean(dtype=numpy.float64)
@@ -176,13 +172,13 @@ class Massif(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask.
-        @param Imin: minimum of intensity above the background to keep the point
-        @param keep: maximum number of points to keep
-        @param kwarg: ignored parameters
-        @param dmin: minimum distance to another peak
-        @param seed: list of good guesses to start with
-        @return: list of peaks [y,x], [y,x], ...]
+        :param mask: 2d array with mask.
+        :param Imin: minimum of intensity above the background to keep the point
+        :param keep: maximum number of points to keep
+        :param kwarg: ignored parameters
+        :param dmin: minimum distance to another peak
+        :param seed: list of good guesses to start with
+        :return: list of peaks [y,x], [y,x], ...]
         """
         all_points = numpy.vstack(numpy.where(mask)).T
         res = []
@@ -221,13 +217,15 @@ class Massif(object):
         if self._valley_size is None:
             self.initValleySize()
         return self._valley_size
+
     def setValleySize(self, size):
         new_size = float(size)
         if self._valley_size != new_size:
             self._valley_size = new_size
-#            self.getLabeledMassif()
+            # self.getLabeledMassif()
             t = threading.Thread(target=self.getLabeledMassif)
             t.start()
+
     def delValleySize(self):
         self._valley_size = None
         self._blured_data = None
@@ -235,7 +233,7 @@ class Massif(object):
 
     def getBinnedData(self):
         """
-        @return binned data
+        :return binned data
         """
         if self._binned_data is None:
             with self._sem_binning:
@@ -259,7 +257,7 @@ class Massif(object):
 
     def getMedianData(self):
         """
-        @return: a spacial median filtered image
+        :return: a spacial median filtered image
         """
         if self._median_data is None:
             with self._sem_median:
@@ -273,21 +271,21 @@ class Massif(object):
 
     def getBluredData(self):
         """
-        @return: a blurred image
+        :return: a blurred image
         """
 
         if self._blured_data is None:
             with self._sem:
                 if self._blured_data is None:
-                    logger.debug("Blurring image with kernel size: %s" , self.valley_size)
-                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
+                    logger.debug("Blurring image with kernel size: %s", self.valley_size)
+                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in self.binning], mode="reflect")
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._blured_data).write("blured_data.edf")
         return self._blured_data
 
     def getLabeledMassif(self, pattern=None):
         """
-        @return: an image composed of int with a different value for each massif
+        :return: an image composed of int with a different value for each massif
         """
         if self._labeled_massif is None:
             with self._sem_label:
@@ -296,7 +294,7 @@ class Massif(object):
                         pattern = [[1] * 3] * 3  # [[0, 1, 0], [1, 1, 1], [0, 1, 0]]#[[1] * 3] * 3
                     logger.debug("Labeling all massifs. This takes some time !!!")
                     labeled_massif, self._number_massif = label((self.getBinnedData() > self.getBluredData()), pattern)
-                    logger.info("Labeling found %s massifs." % self._number_massif)
+                    logger.info("Labeling found %s massifs.", self._number_massif)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
                     relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
@@ -305,5 +303,5 @@ class Massif(object):
                     self._labeled_massif = unBinning(relabeled, self.binning, False)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
-                    logger.info("Labeling found %s massifs." % self._number_massif)
+                    logger.info("Labeling found %s massifs.", self._number_massif)
         return self._labeled_massif

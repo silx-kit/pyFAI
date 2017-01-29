@@ -40,6 +40,7 @@ external developers/users. It is usually instantiated via a function of the
 module to load a poni-file:
 
 .. code-block:: python
+
 	>>> import pyFAI
 	>>> ai = pyFAI.load("Pilatus1M.poni")
 	>>> print(ai)
@@ -149,6 +150,6 @@ The main issue with pixel splitting arose from 2D integration and the habdling o
 References:
 -----------
 
-:: _integrate: http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d
+.. _integrate: http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d
 
-:: _CSR: http://en.wikipedia.org/wiki/Sparse_matrix
+.. _CSR: http://en.wikipedia.org/wiki/Sparse_matrix

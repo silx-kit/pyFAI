@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,16 +32,16 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2016"
+__date__ = "28/11/2016"
 
 import sys
-import os
 import unittest
 from .utilstest import UtilsTest, getLogger
 
 logger = getLogger("test_all")
 
 
+from . import test_average
 from . import test_dummy
 from . import test_histogram
 from . import test_geometry_refinement
@@ -74,10 +74,16 @@ from . import test_multi_geometry
 from . import test_ocl_sort
 from . import test_worker
 from . import test_integrate_widget
+from . import test_utils_shell
+from . import test_utils_stringutil
+from . import test_preproc
+from . import test_bayes
+from . import test_scripts
 
 
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(test_average.suite())
     testsuite.addTest(test_dummy.suite())
     testsuite.addTest(test_histogram.suite())
     testsuite.addTest(test_geometry_refinement.suite())
@@ -110,6 +116,11 @@ def suite():
     testsuite.addTest(test_ocl_sort.suite())
     testsuite.addTest(test_worker.suite())
     testsuite.addTest(test_integrate_widget.suite())
+    testsuite.addTest(test_utils_shell.suite())
+    testsuite.addTest(test_utils_stringutil.suite())
+    testsuite.addTest(test_preproc.suite())
+    testsuite.addTest(test_bayes.suite())
+    testsuite.addTest(test_scripts.suite())
     return testsuite
 
 

@@ -12,7 +12,10 @@ import sys, numpy, time, os
 import fabio
 import pyopencl as cl
 from pylab import *
-from six.moves import input
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 print("#"*50)
 if __name__ == '__main__':
     import pkgutil
@@ -123,5 +126,4 @@ plot(ref[0], ref[1], label="ref")
 # plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()
-input()
-
+six.moves.input()

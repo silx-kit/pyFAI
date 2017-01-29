@@ -12,8 +12,10 @@ if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from . import utilstest
-from six.moves import input
-
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
 import fabio
 import pyopencl as cl
 from pylab import *
@@ -185,5 +187,5 @@ plot(ref[0], ref[1], label="ref_merge")
 ####plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()
-input()
+six.moves.input()
 
