@@ -1,0 +1,243 @@
+Source: pyfai
+Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
+Uploaders: Jerome Kieffer <jerome.kieffer@esrf.fr>,
+           Picca Frédéric-Emmanuel <picca@debian.org>
+Section: science
+Priority: extra
+Build-Depends: cython,
+               cython-dbg,
+               cython3,
+               cython3-dbg,
+               debhelper,
+               dh-python,
+               python-all-dev,
+               python-all-dbg,
+               python-fabio,
+               python-fabio-dbg,
+               python-h5py,
+               python-h5py-dbg,
+               python-lxml,
+               python-lxml-dbg,
+               python-matplotlib,
+               python-matplotlib-dbg,
+               python-numpy,
+               python-numpy-dbg,
+               python-qt4,
+               python-qt4-dbg,
+               python-scipy,
+               python-scipy-dbg,
+               python-sphinx,
+               python-sphinxcontrib.programoutput,
+               python-tk,
+               python-tk-dbg,
+               python3-all-dev,
+               python3-all-dbg,
+               python3-fabio,
+               python3-fabio-dbg,
+               python3-lxml,
+               python3-lxml-dbg,
+               python3-matplotlib,
+               python3-matplotlib-dbg,
+               python3-numpy,
+               python3-numpy-dbg,
+               python3-pyqt4,
+               python3-pyqt4-dbg,
+               python3-scipy,
+               python3-scipy-dbg,
+               python3-sphinx,
+               python3-sphinxcontrib.programoutput,
+               python3-tk,
+               python3-tk-dbg
+Standards-Version: 3.9.6
+Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git
+Vcs-Git: git://anonscm.debian.org/debian-science/packages/pyfai.git
+Homepage: http://forge.epn-campus.eu/projects/azimuthal
+X-Python-Version: >= 2.6
+X-Python3-Version: >= 3.2
+
+Package: pyfai
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends},
+         python-pyfai (>= ${source:Version})
+Description: Fast Azimuthal Integration scripts
+ PyFAI is a Python library for azimuthal integration; it allows the conversion
+ of diffraction images taken with 2D detectors like CCD cameras into X-Ray
+ powder patterns that can be used by other software like Rietveld refinement
+ tools (i.e. FullProf), phase analysis or texture analysis.
+ .
+ As PyFAI is a library, its main goal is to be integrated in other tools like
+ PyMca, LiMa or EDNA. To perform online data analysis, the precise description
+ of the experimental setup has to be known. This is the reason why PyFAI
+ includes geometry optimization code working on "powder rings" of reference
+ samples. Alternatively, PyFAI can also import geometries fitted with other
+ tools like Fit2D.
+ .
+ PyFAI has been designed to work with any kind of detector with any geometry
+ (transmission, reflection, off-axis, ...). It uses the Python library FabIO
+ to read most images taken by diffractometer.
+
+Package: python-pyfai
+Architecture: any
+Section: python
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends},
+         python-fabio (>=0.3),
+         python-imaging,
+         python-matplotlib,
+         python-scipy
+Recommends: python-h5py,
+            python-pyopencl,
+            python-qt4 | python-pyside
+Suggests: pymca,
+          python-rfoo
+Breaks: ${python:Breaks},
+        pyfai (<< 0.11.0+dfsg-2)
+Replaces: pyfai (<< 0.11.0+dfsg-2)
+Description: Fast Azimuthal Integration scripts - Python2
+ PyFAI is a Python library for azimuthal integration; it allows the conversion
+ of diffraction images taken with 2D detectors like CCD cameras into X-Ray
+ powder patterns that can be used by other software like Rietveld refinement
+ tools (i.e. FullProf), phase analysis or texture analysis.
+ .
+ As PyFAI is a library, its main goal is to be integrated in other tools like
+ PyMca, LiMa or EDNA. To perform online data analysis, the precise description
+ of the experimental setup has to be known. This is the reason why PyFAI
+ includes geometry optimization code working on "powder rings" of reference
+ samples. Alternatively, PyFAI can also import geometries fitted with other
+ tools like Fit2D.
+ .
+ PyFAI has been designed to work with any kind of detector with any geometry
+ (transmission, reflection, off-axis, ...). It uses the Python library FabIO
+ to read most images taken by diffractometer.
+ .
+ This is the Python 2 version of the package.
+
+Package: python-pyfai-dbg
+Architecture: any
+Section: debug
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends},
+         python-pyfai (= ${binary:Version}),
+         python-fabio-dbg (>= 0.3),
+         python-imaging-dbg,
+         python-matplotlib-dbg,
+         python-scipy-dbg
+Recommends: python-dbg,
+            python-pyopencl-dbg,
+            python-qt4-dbg,
+            python-h5py-dbg
+Suggests: python-h5py-dbg
+Description: Fast Azimuthal Integration scripts - Python2 debug
+ PyFAI is a Python library for azimuthal integration; it allows the conversion
+ of diffraction images taken with 2D detectors like CCD cameras into X-Ray
+ powder patterns that can be used by other software like Rietveld refinement
+ tools (i.e. FullProf), phase analysis or texture analysis.
+ .
+ As PyFAI is a library, its main goal is to be integrated in other tools like
+ PyMca, LiMa or EDNA. To perform online data analysis, the precise description
+ of the experimental setup has to be known. This is the reason why PyFAI
+ includes geometry optimization code working on "powder rings" of reference
+ samples. Alternatively, PyFAI can also import geometries fitted with other
+ tools like Fit2D.
+ .
+ PyFAI has been designed to work with any kind of detector with any geometry
+ (transmission, reflection, off-axis, ...). It uses the Python library FabIO
+ to read most images taken by diffractometer.
+ .
+ This package contains the extension built for the Python 2 debug
+ interpreter.
+
+Package: python3-pyfai
+Architecture: any
+Section: python
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends},
+         python3-fabio (>= 0.3),
+         python3-pil,
+         python3-matplotlib,
+         python3-scipy
+Recommends: python3-pyopencl,
+            python3-pyqt4 | python3-pyside
+Suggests: python3-h5py
+Description: Fast Azimuthal Integration scripts - Python3
+ PyFAI is a Python library for azimuthal integration; it allows the conversion
+ of diffraction images taken with 2D detectors like CCD cameras into X-Ray
+ powder patterns that can be used by other software like Rietveld refinement
+ tools (i.e. FullProf), phase analysis or texture analysis.
+ .
+ As PyFAI is a library, its main goal is to be integrated in other tools like
+ PyMca, LiMa or EDNA. To perform online data analysis, the precise description
+ of the experimental setup has to be known. This is the reason why PyFAI
+ includes geometry optimization code working on "powder rings" of reference
+ samples. Alternatively, PyFAI can also import geometries fitted with other
+ tools like Fit2D.
+ .
+ PyFAI has been designed to work with any kind of detector with any geometry
+ (transmission, reflection, off-axis, ...). It uses the Python library FabIO
+ to read most images taken by diffractometer.
+ .
+ This is the Python 3 version of the package.
+
+Package: python3-pyfai-dbg
+Architecture: any
+Section: debug
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends},
+         python3-pyfai (= ${binary:Version}),
+         python3-fabio-dbg (>=0.3),
+         python3-pil-dbg,
+         python3-matplotlib-dbg,
+         python3-scipy-dbg
+Recommends: python3-dbg,
+            python3-pyopencl-dbg,
+            python3-pyqt4-dbg | python3-pyside-dbg
+Suggests: python3-h5py-dbg
+Description: Fast Azimuthal Integration scripts - Python3 debug
+ PyFAI is a Python library for azimuthal integration; it allows the conversion
+ of diffraction images taken with 2D detectors like CCD cameras into X-Ray
+ powder patterns that can be used by other software like Rietveld refinement
+ tools (i.e. FullProf), phase analysis or texture analysis.
+ .
+ As PyFAI is a library, its main goal is to be integrated in other tools like
+ PyMca, LiMa or EDNA. To perform online data analysis, the precise description
+ of the experimental setup has to be known. This is the reason why PyFAI
+ includes geometry optimization code working on "powder rings" of reference
+ samples. Alternatively, PyFAI can also import geometries fitted with other
+ tools like Fit2D.
+ .
+ PyFAI has been designed to work with any kind of detector with any geometry
+ (transmission, reflection, off-axis, ...). It uses the Python library FabIO
+ to read most images taken by diffractometer.
+ .
+ This package contains the extension built for the Python 3 debug
+ interpreter.
+
+Package: python-pyfai-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends},
+         ${sphinxdoc:Depends}
+Description: Fast Azimuthal Integration scripts - Documentation
+ PyFAI is a Python library for azimuthal integration; it allows the conversion
+ of diffraction images taken with 2D detectors like CCD cameras into X-Ray
+ powder patterns that can be used by other software like Rietveld refinement
+ tools (i.e. FullProf), phase analysis or texture analysis.
+ .
+ As PyFAI is a library, its main goal is to be integrated in other tools like
+ PyMca, LiMa or EDNA. To perform online data analysis, the precise description
+ of the experimental setup has to be known. This is the reason why PyFAI
+ includes geometry optimization code working on "powder rings" of reference
+ samples. Alternatively, PyFAI can also import geometries fitted with other
+ tools like Fit2D.
+ .
+ PyFAI has been designed to work with any kind of detector with any geometry
+ (transmission, reflection, off-axis, ...). It uses the Python library FabIO
+ to read most images taken by diffractometer.
+ .
+ This is the common documentation package.

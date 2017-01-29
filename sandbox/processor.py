@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/05/2016"
+__date__ = "17/11/2016"
 __status__ = "DEPRECATED -> see worker"
 __docformat__ = 'restructuredtext'
 
@@ -60,7 +60,6 @@ class Processor(object):
         elif type(config) in types.StringTypes:
             if os.path.isfile(config):
                 self.config = json.load(open(config, "r"))
-                self.config_file(config)
             else:
                 self.config = json.loads(config)
         if self.config:
@@ -71,17 +70,17 @@ class Processor(object):
         pretty print of myself
         """
         lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
-                "Input image shape: %s" % list(self.shapeIn),
-                "Number of points in radial direction: %s" % self.nbpt_rad,
-                "Number of points in azimuthal direction: %s" % self.nbpt_azim,
-                "Unit in radial dimension: %s" % self.unit.REPR,
-                "Correct for solid angle: %s" % self.correct_solid_angle,
-                "Polarization factor: %s" % self.polarization,
-                "Dark current image: %s" % self.dark_current_image,
-                "Flat field image: %s" % self.flat_field_image,
-                "Mask image: %s" % self.mask_image,
-                "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
-                "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
+                  "Input image shape: %s" % list(self.shapeIn),
+                  "Number of points in radial direction: %s" % self.nbpt_rad,
+                  "Number of points in azimuthal direction: %s" % self.nbpt_azim,
+                  "Unit in radial dimension: %s" % self.unit.REPR,
+                  "Correct for solid angle: %s" % self.correct_solid_angle,
+                  "Polarization factor: %s" % self.polarization,
+                  "Dark current image: %s" % self.dark_current_image,
+                  "Flat field image: %s" % self.flat_field_image,
+                  "Mask image: %s" % self.mask_image,
+                  "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
+                  "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -115,10 +114,10 @@ class Processor(object):
             try:
                 fwavelength = float(wavelength)
             except ValueError:
-                logger.error("Unable to convert wavelength to float: %s" % wavelength)
+                logger.error("Unable to convert wavelength to float: %s", wavelength)
             else:
                 if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+                    logger.warning("Wavelength is in meter ... unlikely value %s", fwavelength)
                 self.ai.wavelength = fwavelength
 
         splineFile = config.get("splineFile")
@@ -133,12 +132,10 @@ class Processor(object):
         self.ai.rot2 = config.get("rot2", 0)
         self.ai.rot3 = config.get("rot3", 0)
 
-
         if config.get("chi_discontinuity_at_0"):
             self.ai.setChiDiscAtZero()
         else:
             self.ai.setChiDiscAtPi()
-
 
         mask_file = config.get("mask_file")
         do_mask = config.get("do_mask")
@@ -146,7 +143,7 @@ class Processor(object):
             try:
                 mask = fabio.open(mask_file).data
             except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                logger.error("Unable to load mask file %s, error %s", mask_file, error)
             else:
                 self.ai.mask = mask
                 self.mask_image = os.path.abspath(mask_file)
@@ -227,14 +224,13 @@ class Processor(object):
             with open(filename, "w") as myFile:
                 json.dump(to_save, myFile, indent=4)
         except IOError as error:
-            logger.error("Error while saving config: %s" % error)
+            logger.error("Error while saving config: %s", error)
         else:
             logger.debug("Saved")
 
     def save_config(self, filename=None):
         if not filename:
             filename = self.config_file
-
 
     def warmup(self):
         """

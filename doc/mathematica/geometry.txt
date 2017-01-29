@@ -61,8 +61,8 @@ CForm[t3]
 Out[28]= L Cos[rot1] Cos[rot2]+d2 Cos[rot2] Sin[rot1]-d1 Sin[rot2]
 Out[29]//CForm=
 L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)
-Distance sample to detector point (d1,d2)		▼
-(no Mathematica translations)  
+Distance sample to detector point (d1,d2)
+(no Mathematica translations)
 GraphicsBox[
 TagBox[RasterBox[CompressedData["
 1:eJxtUstqU1EUDY2iUdSOnBcERwGHDgQf+YNGOrAQSEBBBwlWQfsDcVKsI4sf
@@ -85,7 +85,7 @@ Selectable->False],
 BaseStyle->"ImageGraphics",
 ImageSize->Magnification[1],
 ImageSizeRaw->{14, 14},
-PlotRange->{{0, 14}, {0, 14}}]		▲
+PlotRange->{{0, 14}, {0, 14}}]
 
 
 In[30]:= dist = Norm[R.P]

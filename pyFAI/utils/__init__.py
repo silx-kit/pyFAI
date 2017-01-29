@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/06/2016"
+__date__ = "24/11/2016"
 __status__ = "production"
 
 import logging
@@ -45,65 +45,44 @@ sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
 
-from ._version import calc_hexversion
+from .._version import calc_hexversion
 if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2)):
     from fabio.nexus import exists
 else:
     from os.path import exists
 
-if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4, 0, "dev", 5)):
-    # Short cut fabio.factory do not exists on older versions
-    fabio.factory = fabio.fabioimage.FabioImage.factory
-
-from scipy import ndimage
-from scipy.interpolate import interp1d
-from math import ceil, sin, cos, atan2, pi
+from math import ceil, pi
 try:
-    from .third_party import six
+    from ..third_party import six
 except (ImportError, Exception):
     import six
 try:
-    from .ext import relabel as _relabel
+    from ..ext import relabel as _relabel
 except ImportError:
     _relabel = None
 try:
-    from .directories import data_dir
+    from ..directories import data_dir
 except ImportError:
     data_dir = None
 
-from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 
-cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
 
 win32 = (os.name == "nt") and (tuple.__itemsize__ == 4)
 
-has_fftw3 = None
-try:
-    import fftw3
-    has_fftw3 = True
-except (ImportError, WindowsError) as err:
-    logger.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
-    has_fftw3 = False
-
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
-
-
 StringTypes = (six.binary_type, six.text_type)
-try:
-    input = raw_input
-except NameError:
-    pass
 
 try:
-    from .fastcrc import crc32
+    from ..fastcrc import crc32
 except:
     from zlib import crc32
+
 
 def calc_checksum(ary, safe=True):
     """
@@ -113,23 +92,6 @@ def calc_checksum(ary, safe=True):
         return crc32(ary)
     else:
         return ary.__array_interface__['data'][0]
-
-def gaussian(M, std):
-    """
-    Return a Gaussian window of length M with standard-deviation std.
-
-    This differs from the scipy.signal.gaussian implementation as:
-    - The default for sym=False (needed for gaussian filtering without shift)
-    - This implementation is normalized
-
-    @param M: length of the windows (int)
-    @param std: standatd deviation sigma
-
-    The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
-
-    """
-    x = numpy.arange(M) - M / 2.0
-    return numpy.exp(-(x / std) ** 2 / 2.0) / std / numpy.sqrt(2 * numpy.pi)
 
 
 def float_(val):
@@ -159,7 +121,7 @@ def str_(val):
     Convert anything to a string ... but None -> ""
     """
     s = ""
-    if val != None:
+    if val is not None:
         try:
             s = str(val)
         except UnicodeError:
@@ -172,17 +134,22 @@ def expand2d(vect, size2, vertical=True):
     """
     This expands a vector to a 2d-array.
 
-    The resul is the same as
-    if vertical:
-        numpy.outer(numpy.ones(size2), vect)
-    else:
-         numpy.outer(vect, numpy.ones( size2))
+    The result is the same as:
 
-    This is a ninja optimization: replace *1 with a memcopy, saves 50% of time at the ms level.
+    .. code-block:: python
 
-    @param vect: 1d vector
-    @param size2: size
-    @param vertical: if False,
+        if vertical:
+            numpy.outer(numpy.ones(size2), vect)
+        else:
+            numpy.outer(vect, numpy.ones(size2))
+
+    This is a ninja optimization: replace \\*1 with a memcopy, saves 50% of
+    time at the ms level.
+
+    :param vect: 1d vector
+    :param size2: size of the expanded dimension
+    :param vertical: if False the vector is expanded to the first dimension.
+        If True, it is expanded to the second dimension.
     """
     size1 = vect.size
     size2 = int(size2)
@@ -198,81 +165,72 @@ def expand2d(vect, size2, vertical=True):
     return out
 
 
-def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
+def gaussian(M, std):
     """
-    2-dimensional Gaussian filter implemented with FFTw
+    Return a Gaussian window of length M with standard-deviation std.
 
-    @param input_img:    input array to filter
-    @type input_img: array-like
-    @param sigma: standard deviation for Gaussian kernel.
+    This differs from the scipy.signal.gaussian implementation as:
+    - The default for sym=False (needed for gaussian filtering without shift)
+    - This implementation is normalized
+
+    :param M: length of the windows (int)
+    :param std: standatd deviation sigma
+
+    The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
+
+    """
+    x = numpy.arange(M) - M / 2.0
+    return numpy.exp(-(x / std) ** 2 / 2.0) / std / numpy.sqrt(2 * numpy.pi)
+
+
+def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0, use_scipy=True):
+    """
+    2-dimensional Gaussian filter implemented with FFT
+
+    :param input_img:    input array to filter
+    :type input_img: array-like
+    :param sigma: standard deviation for Gaussian kernel.
         The standard deviations of the Gaussian filter are given for each axis as a sequence,
         or as a single number, in which case it is equal for all axes.
-    @type sigma: scalar or sequence of scalars
-    @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
+    :type sigma: scalar or sequence of scalars
+    :param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
         The ``mode`` parameter determines how the array borders are
         handled, where ``cval`` is the value when mode is equal to
         'constant'. Default is 'reflect'
-    @param cval: scalar, optional
+    :param cval: scalar, optional
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
-    res = None
-    # TODO: understand why this is needed !
-    if "has_fftw3" not in dir():
-        has_fftw3 = ("fftw3" in sys.modules)
-    if has_fftw3:
-        try:
-            if isinstance(sigma, (list, tuple)):
-                sigma = (float(sigma[0]), float(sigma[1]))
-            else:
-                sigma = (float(sigma), float(sigma))
-            k0 = int(ceil(4.0 * float(sigma[0])))
-            k1 = int(ceil(4.0 * float(sigma[1])))
-
-            if mode != "wrap":
-                input_img = expand(input_img, (k0, k1), mode, cval)
-            s0, s1 = input_img.shape
-            sum_init = input_img.astype(numpy.float32).sum()
-            fftOut = numpy.zeros((s0, s1), dtype=complex)
-            fftIn = numpy.zeros((s0, s1), dtype=complex)
-            with sem:
-                fft = fftw3.Plan(fftIn, fftOut, direction='forward')
-                ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
-
-            g0 = gaussian(s0, sigma[0])
-            g1 = gaussian(s1, sigma[1])
-            g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
-            g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
-            g2 = numpy.outer(g0, g1)
-            g2fft = numpy.zeros((s0, s1), dtype=complex)
-            fftIn[:, :] = g2.astype(complex)
-            fft()
-            g2fft[:, :] = fftOut.conjugate()
-
-            fftIn[:, :] = input_img.astype(complex)
-            fft()
-
-            fftOut *= g2fft
-            ifft()
-            out = fftIn.real.astype(numpy.float32)
-            sum_out = out.sum()
-            res = out * sum_init / sum_out
-            if mode != "wrap":
-                res = res[k0:-k0, k1:-k1]
-        except MemoryError:
-            logging.error("MemoryError in FFTw3 part. Falling back on Scipy")
-    if res is None:
-        has_fftw3 = False
+    if use_scipy:
         res = scipy.ndimage.filters.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
-    return res
+    else:
+        if isinstance(sigma, (list, tuple)):
+            sigma = (float(sigma[0]), float(sigma[1]))
+        else:
+            sigma = (float(sigma), float(sigma))
+        k0 = int(ceil(4.0 * float(sigma[0])))
+        k1 = int(ceil(4.0 * float(sigma[1])))
 
+        if mode != "wrap":
+            input_img = expand(input_img, (k0, k1), mode, cval)
+        s0, s1 = input_img.shape
+        g0 = gaussian(s0, sigma[0])
+        g1 = gaussian(s1, sigma[1])
+        g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
+        g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
+        g2 = numpy.outer(g0, g1)
+        fftIn = numpy.fft.ifft2(numpy.fft.fft2(input_img) * numpy.fft.fft2(g2).conjugate())
+        res = fftIn.real.astype(numpy.float32)
+        if mode != "wrap":
+            res = res[k0:-k0, k1:-k1]
+    return res
 
 
 def shift(input_img, shift_val):
     """
     Shift an array like  scipy.ndimage.interpolation.shift(input_img, shift_val, mode="wrap", order=0) but faster
-    @param input_img: 2d numpy array
-    @param shift_val: 2-tuple of integers
-    @return: shifted image
+    :param input_img: 2d numpy array
+    :param shift_val: 2-tuple of integers
+    :return: shifted image
     """
     re = numpy.zeros_like(input_img)
     s0, s1 = input_img.shape
@@ -285,6 +243,7 @@ def shift(input_img, shift_val):
     re[d0:, :d1] = input_img[:r0, r1:]
     re[:d0, :d1] = input_img[r0:, r1:]
     return re
+
 
 def dog(s1, s2, shape=None):
     """
@@ -300,21 +259,22 @@ def dog(s1, s2, shape=None):
     centered = numpy.exp(-r2 / (2. * s1) ** 2) / 2. / numpy.pi / s1 - numpy.exp(-r2 / (2. * s2) ** 2) / 2. / numpy.pi / s2
     return centered
 
+
 def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
     """
-    2-dimensional Difference of Gaussian filter implemented with FFTw
+    2-dimensional Difference of Gaussian filter implemented with FFT
 
-    @param input_img:    input_img array to filter
-    @type input_img: array-like
-    @param sigma: standard deviation for Gaussian kernel.
+    :param input_img:    input_img array to filter
+    :type input_img: array-like
+    :param sigma: standard deviation for Gaussian kernel.
         The standard deviations of the Gaussian filter are given for each axis as a sequence,
         or as a single number, in which case it is equal for all axes.
-    @type sigma: scalar or sequence of scalars
-    @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
+    :type sigma: scalar or sequence of scalars
+    :param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
         The ``mode`` parameter determines how the array borders are
         handled, where ``cval`` is the value when mode is equal to
         'constant'. Default is 'reflect'
-    @param cval: scalar, optional
+    :param cval: scalar, optional
             Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
 
@@ -329,32 +289,9 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
         else:
             k0 = k1 = int(ceil(4.0 * float(sigma)))
 
-        if fftw3:
-            sum_init = input_img.astype(numpy.float32).sum()
-            fftOut = numpy.zeros((s0, s1), dtype=complex)
-            fftIn = numpy.zeros((s0, s1), dtype=complex)
-
-            with sem:
-                fft = fftw3.Plan(fftIn, fftOut, direction='forward')
-                ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
-
-
-            g2fft = numpy.zeros((s0, s1), dtype=complex)
-            fftIn[:, :] = shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)
-            fft()
-            g2fft[:, :] = fftOut.conjugate()
-
-            fftIn[:, :] = input_img.astype(complex)
-            fft()
-
-            fftOut *= g2fft
-            ifft()
-            out = fftIn.real.astype(numpy.float32)
-            sum_out = out.sum()
-            res = out * sum_init / sum_out
-        else:
-            res = numpy.fft.ifft2(numpy.fft.fft2(input_img.astype(complex)) * \
-                                  numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)).conjugate())
+        res = numpy.fft.ifft2(numpy.fft.fft2(input_img.astype(complex)) *
+                              numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)),
+                                                   (s0 // 2, s1 // 2)).astype(complex)).conjugate())
         if mode == "wrap":
             return res
         else:
@@ -362,13 +299,12 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
 
 
 def expand(input_img, sigma, mode="constant", cval=0.0):
-
     """Expand array a with its reflection on boundaries
 
-    @param a: 2D array
-    @param sigma: float or 2-tuple of floats.
-    @param mode:"constant", "nearest", "reflect" or mirror
-    @param cval: filling value used for constant, 0.0 by default
+    :param a: 2D array
+    :param sigma: float or 2-tuple of floats.
+    :param mode: "constant", "nearest", "reflect" or "mirror"
+    :param cval: filling value used for constant, 0.0 by default
 
     Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian
     """
@@ -441,11 +377,11 @@ def relabel(label, data, blured, max_size=None):
     Relabel limits the number of region in the label array.
     They are ranked relatively to their max(I0)-max(blur(I0)
 
-    @param label: a label array coming out of scipy.ndimage.measurement.label
-    @param data: an array containing the raw data
-    @param blured: an array containing the blured data
-    @param max_size: the max number of label wanted
-    @return array like label
+    :param label: a label array coming out of ``scipy.ndimage.measurement.label``
+    :param data: an array containing the raw data
+    :param blured: an array containing the blurred data
+    :param max_size: the max number of label wanted
+    :return: array like label
     """
     if _relabel:
         max_label = label.max()
@@ -463,320 +399,12 @@ def relabel(label, data, blured, max_size=None):
         return label
 
 
-def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)):
-    """
-    Averages a serie of dark (or flat) images.
-    Centers the result on the mean or the median ...
-    but averages all frames within  cutoff*std
-
-    @param lstimg: list of 2D images or a 3D stack
-    @param center_method: is the center calculated by a "mean", "median", "quantile", "std"
-    @param cutoff: keep all data where (I-center)/std < cutoff
-    @param quantiles: 2-tuple of floats average out data between the two quantiles
-
-    @return: 2D image averaged
-    """
-    if "ndim" in dir(lstimg) and lstimg.ndim == 3:
-        stack = lstimg.astype(numpy.float32)
-        shape = stack.shape[1:]
-        length = stack.shape[0]
-    else:
-        shape = lstimg[0].shape
-        length = len(lstimg)
-        if length == 1:
-            return lstimg[0].astype(numpy.float32)
-        stack = numpy.zeros((length, shape[0], shape[1]), dtype=numpy.float32)
-        for i, img in enumerate(lstimg):
-            stack[i] = img
-    if center_method in dir(stack):
-        center = stack.__getattribute__(center_method)(axis=0)
-    elif center_method == "median":
-        logger.info("Filtering data (median)")
-        center = numpy.median(stack, axis=0)
-    elif center_method.startswith("quantil"):
-        logger.info("Filtering data (quantiles: %s)" % str(quantiles))
-        sorted_ = numpy.sort(stack, axis=0)
-        lower = max(0, int(numpy.floor(min(quantiles) * length)))
-        upper = min(length, int(numpy.ceil(max(quantiles) * length)))
-        if (upper == lower):
-            if upper < length:
-                upper += 1
-            elif lower > 0:
-                lower -= 1
-            else:
-                logger.warning("Empty selection for quantil %s, would keep points from %s to %s" % (quantiles, lower, upper))
-        center = sorted_[lower:upper].mean(axis=0)
-    else:
-        raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
-    if cutoff is None or cutoff <= 0:
-        output = center
-    else:
-        std = stack.std(axis=0)
-        strides = 0, std.strides[0], std.strides[1]
-        std.shape = 1, shape[0], shape[1]
-        std.strides = strides
-        center.shape = 1, shape[0], shape[1]
-        center.strides = strides
-        mask = ((abs(stack - center) / std) > cutoff)
-        stack[numpy.where(mask)] = 0.0
-        summed = stack.sum(axis=0)
-        output = summed / numpy.maximum(1, (length - mask.sum(axis=0)))
-    return output
-
-
-def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                  darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
-                  cutoff=None, quantiles=None, fformat="edf"):
-    """
-    Takes a list of filenames and create an average frame discarding all saturated pixels.
-
-    @param listImages: list of string representing the filenames
-    @param output: name of the optional output file
-    @param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
-    @param minimum: minimum valid value or True
-    @param maximum: maximum valid value
-    @param darks: list of dark current images for subtraction
-    @param flats: list of flat field images for division
-    @param filter_: can be "min", "max", "median", "mean", "sum", "quantiles" (default='mean')
-    @param correct_flat_from_dark: shall the flat be re-corrected ?
-    @param cutoff: keep all data where (I-center)/std < cutoff
-    @param quantiles: 2-tuple containing the lower and upper quantile (0<q<1) to average out.
-    @param fformat: file format of the output image, default: edf
-    @return: filename with the data or the data ndarray in case format=None
-    """
-    def correct_img(data):
-        "internal subfunction for dark/flat "
-        corrected_img = numpy.ascontiguousarray(data, numpy.float32)
-        if threshold or minimum or maximum:
-            corrected_img = removeSaturatedPixel(corrected_img, threshold, minimum, maximum)
-        if do_dark:
-            corrected_img -= dark
-        if do_flat:
-            corrected_img /= flat
-        return corrected_img
-    # input sanitization
-    if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles", "std"]:
-        logger.warning("Filter %s not understood. switch to mean filter" % filter_)
-        filter_ = "mean"
-
-    nb_files = len(listImages)
-    nb_frames = 0
-    fimgs = []
-
-    for fn in listImages:
-        if isinstance(fn, six.string_types):
-            logger.info("Reading %s" % fn)
-            fimg = fabio.open(fn)
-        else:
-            if fabio.hexversion < 262148:
-                logger.error("Old version of fabio detected, upgrade to 0.4 or newer")
-
-            # Assume this is a numpy array like
-            if not ("ndim" in dir(fn) and "shape" in dir(fn)):
-                raise RuntimeError("Not good type for input, got %s, expected numpy array" % type(fn))
-            fimg = fabio.numpyimage.NumpyImage(data=fn)
-        fimgs.append(fimg)
-        nb_frames += fimg.nframes
-
-    acc_img = None
-    do_dark = (darks is not None)
-    do_flat = (flats is not None)
-    dark = None
-    flat = None
-
-    if do_dark:
-        if "ndim" in dir(darks) and darks.ndim == 3:
-            dark = averageDark(darks, center_method="mean", cutoff=4)
-        elif ("__len__" in dir(darks)) and isinstance(darks[0], six.string_types):
-            dark = averageDark([fabio.open(f).data for f in darks if exists(f)], center_method="mean", cutoff=4)
-        elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
-            dark = averageDark(darks, center_method="mean", cutoff=4)
-    if do_flat:
-        if "ndim" in dir(flats) and flats.ndim == 3:
-            flat = averageDark(flats, center_method="mean", cutoff=4)
-        elif ("__len__" in dir(flats)) and isinstance(flats[0], six.string_types):
-            flat = averageDark([fabio.open(f).data for f in flats if exists(f)], center_method="mean", cutoff=4)
-        elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
-            flat = averageDark(flats, center_method="mean", cutoff=4)
-        else:
-            logger.warning("there is some wrong with flats=%s" % (flats))
-        if correct_flat_from_dark:
-            flat -= dark
-        flat[numpy.where(flat <= 0)] = 1.0
-
-    if (cutoff or quantiles or (filter_ in ["median", "quantiles", "std"])):
-        first_frame = fimgs[0]
-        first_shape = first_frame.data.shape
-        logger.info("Big array allocation for median filter/cut-off/quantiles %i*%i*%i", first_frame.nframes, first_frame.dim2, first_frame.dim1)
-        big_img = numpy.zeros((nb_frames, first_shape[0], first_shape[1]), dtype=numpy.float32)
-        idx = 0
-        for fimg in fimgs:
-            for frame in range(fimg.nframes):
-                if fimg.nframes == 1:
-                    ds = fimg.data
-                else:
-                    ds = fimg.getframe(frame).data
-                big_img[idx, :, :] = correct_img(ds)
-                idx += 1
-        datared = averageDark(big_img, filter_, cutoff, quantiles)
-    else:
-        for idx, fimg in enumerate(fimgs):
-            for frame in range(fimg.nframes):
-                if fimg.nframes == 1:
-                    ds = fimg.data
-                else:
-                    ds = fimg.getframe(frame).data
-                logger.debug("Intensity range for %s#%i is %s --> %s", fimg.filename, frame, ds.min(), ds.max())
-
-                corrected_img = correct_img(ds)
-                if filter_ == "max":
-                    acc_img = corrected_img if (acc_img is None) else numpy.maximum(corrected_img, acc_img)
-                elif filter_ == "min":
-                    acc_img = corrected_img if (acc_img is None) else numpy.minimum(corrected_img, acc_img)
-                elif filter_ in ("mean", "sum"):
-                    acc_img = corrected_img if (acc_img is None) else corrected_img + acc_img
-            if filter_ == "mean":
-                datared = acc_img / numpy.float32(nb_frames)
-            else:
-                datared = acc_img
-    logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
-    if fformat is not None:
-        if fformat.startswith("."):
-            fformat = fformat.lstrip(".")
-        if (output is None):
-            prefix = ""
-            for ch in zip(i.filename for i in fimgs):
-                c = ch[0]
-                good = True
-                if c in ["*", "?", "[", "{", "("]:
-                    good = False
-                    break
-                for i in ch:
-                    if i != c:
-                        good = False
-                        break
-                if good:
-                    prefix += c
-                else:
-                    break
-            output = "%sfilt%02i-%s.%s" % (filter_, nb_frames, prefix, fformat)
-
-    if fformat and output:
-        if "." in fformat:  # in case "edf.gz"
-            fformat = fformat.split(".")[0]
-        fabioclass = fabio.factory(fformat + "image")
-        header = fabio.fabioimage.OrderedDict()
-        header["method"] = filter_
-        header["nfiles"] = nb_files
-        header["nframes"] = nb_frames
-        header["cutoff"] = str(cutoff)
-        header["quantiles"] = str(quantiles)
-        form = "merged_file_%%0%ii" % len(str(len(fimgs)))
-        for i, f in enumerate(fimgs):
-            name = form % i
-            header[name] = f.filename
-        fimg = fabioclass.__class__(data=datared, header=header)
-        fimg.write(output)
-        logger.info("Wrote %s" % output)
-        return output
-    else:
-        return datared
-
-
-def boundingBox(img):
-    """
-    Tries to guess the bounding box around a valid massif
-
-    @param img: 2D array like
-    @return: 4-typle (d0_min, d1_min, d0_max, d1_max)
-    """
-    img = img.astype(numpy.int)
-    img0 = (img.sum(axis=1) > 0).astype(numpy.int)
-    img1 = (img.sum(axis=0) > 0).astype(numpy.int)
-    dimg0 = img0[1:] - img0[:-1]
-    min0 = dimg0.argmax()
-    max0 = dimg0.argmin() + 1
-    dimg1 = img1[1:] - img1[:-1]
-    min1 = dimg1.argmax()
-    max1 = dimg1.argmin() + 1
-    if max0 == 1:
-        max0 = img0.size
-    if max1 == 1:
-        max1 = img1.size
-    return (min0, min1, max0, max1)
-
-
-def removeSaturatedPixel(ds, threshold=0.1, minimum=None, maximum=None):
-    """
-    @param ds: a dataset as  ndarray
-
-    @param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
-    @param minimum: minumum valid value (or True for auto-guess)
-    @param maximum: maximum valid value
-    @return: another dataset
-    """
-    shape = ds.shape
-    if ds.dtype == numpy.uint16:
-        maxt = (1.0 - threshold) * 65535.0
-    elif ds.dtype == numpy.int16:
-        maxt = (1.0 - threshold) * 32767.0
-    elif ds.dtype == numpy.uint8:
-        maxt = (1.0 - threshold) * 255.0
-    elif ds.dtype == numpy.int8:
-        maxt = (1.0 - threshold) * 127.0
-    else:
-        if maximum is None:
-            maxt = (1.0 - threshold) * ds.max()
-        else:
-            maxt = maximum
-    if maximum is not None:
-        maxt = min(maxt, maximum)
-    invalid = (ds > maxt)
-    if minimum:
-        if minimum is True:
-            # automatic guess of the best minimum TODO: use the HWHM to guess the minumum...
-            data_min = ds.min()
-            x, y = numpy.histogram(numpy.log(ds - data_min + 1.0), bins=100)
-            f = interp1d((y[1:] + y[:-1]) / 2.0, -x, bounds_error=False, fill_value=-x.min())
-            max_low = fmin(f, y[1], disp=0)
-            max_hi = fmin(f, y[-1], disp=0)
-            if max_hi > max_low:
-                f = interp1d((y[1:] + y[:-1]) / 2.0, x, bounds_error=False)
-                min_center = fminbound(f, max_low, max_hi)
-            else:
-                min_center = max_hi
-            minimum = float(numpy.exp(y[((min_center / y) > 1).sum() - 1])) - 1.0 + data_min
-            logger.debug("removeSaturatedPixel: best minimum guessed is %s", minimum)
-        ds[ds < minimum] = minimum
-        ds -= minimum  # - 1.0
-
-    if invalid.sum(dtype=int) == 0:
-        logger.debug("No saturated area where found")
-        return ds
-    gi = ndimage.morphology.binary_dilation(invalid)
-    lgi, nc = ndimage.label(gi)
-    if nc > 100:
-        logger.warning("More than 100 saturated zones were found on this image !!!!")
-    for zone in range(nc + 1):
-        dzone = (lgi == zone)
-        if dzone.sum(dtype=int) > ds.size // 2:
-            continue
-        min0, min1, max0, max1 = boundingBox(dzone)
-        ksize = min(max0 - min0, max1 - min1)
-        subset = ds[max(0, min0 - 4 * ksize):min(shape[0], max0 + 4 * ksize), max(0, min1 - 4 * ksize):min(shape[1], max1 + 4 * ksize)]
-        while subset.max() > maxt:
-            subset = ndimage.median_filter(subset, ksize)
-        ds[max(0, min0 - 4 * ksize):min(shape[0], max0 + 4 * ksize), max(0, min1 - 4 * ksize):min(shape[1], max1 + 4 * ksize)] = subset
-    fabio.edfimage.edfimage(data=ds).write("removeSaturatedPixel.edf")
-    return ds
-
-
 def binning(input_img, binsize, norm=True):
     """
-    @param input_img: input ndarray
-    @param binsize: int or 2-tuple representing the size of the binning
-    @param norm: if False, do average instead of sum
-    @return: binned input ndarray
+    :param input_img: input ndarray
+    :param binsize: int or 2-tuple representing the size of the binning
+    :param norm: if False, do average instead of sum
+    :return: binned input ndarray
     """
     inputSize = input_img.shape
     outputSize = []
@@ -803,10 +431,10 @@ def binning(input_img, binsize, norm=True):
 
 def unBinning(binnedArray, binsize, norm=True):
     """
-    @param binnedArray: input ndarray
-    @param binsize: 2-tuple representing the size of the binning
-    @param norm: if True (default) decrease the intensity by binning factor. If False, it is non-conservative
-    @return: unBinned input ndarray
+    :param binnedArray: input ndarray
+    :param binsize: 2-tuple representing the size of the binning
+    :param norm: if True (default) decrease the intensity by binning factor. If False, it is non-conservative
+    :return: unBinned input ndarray
     """
     if isinstance(binsize, int):
         binsize = (binsize, binsize)
@@ -822,45 +450,27 @@ def unBinning(binnedArray, binsize, norm=True):
     return out
 
 
-
-def shiftFFT(input_img, shift_val, method="fftw"):
-    """
-    Do shift using FFTs
+def shiftFFT(input_img, shift_val, method="fft"):
+    """Do shift using FFTs
+    
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
-    @param input_img: 2d numpy array
-    @param shift_val: 2-tuple of float
-    @return: shifted image
-
+    :param input_img: 2d numpy array
+    :param shift_val: 2-tuple of float
+    :return: shifted image
     """
-    # TODO: understand why this is needed !
-    if "has_fftw3" not in dir():
-        has_fftw3 = ("fftw3" in sys.modules)
-    if "has_fftw3" and ("fftw3" not in dir()):
-        fftw3 = sys.modules.get("fftw3")
+    if method == "fft":
+        d0, d1 = input_img.shape
+        v0, v1 = shift_val
+        f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
+        f1 = numpy.fft.ifftshift(numpy.arange(-d1 // 2, d1 // 2))
+        m1, m0 = numpy.meshgrid(f1, f0)
+        e0 = numpy.exp(-2j * numpy.pi * v0 * m0 / float(d0))
+        e1 = numpy.exp(-2j * numpy.pi * v1 * m1 / float(d1))
+        e = e0 * e1
+        out = abs(numpy.fft.ifft2(numpy.fft.fft2(input_img) * e))
     else:
-        fftw3 = None
-    d0, d1 = input_img.shape
-    v0, v1 = shift_val
-    f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
-    f1 = numpy.fft.ifftshift(numpy.arange(-d1 // 2, d1 // 2))
-    m1, m0 = numpy.meshgrid(f1, f0)
-    e0 = numpy.exp(-2j * numpy.pi * v0 * m0 / float(d0))
-    e1 = numpy.exp(-2j * numpy.pi * v1 * m1 / float(d1))
-    e = e0 * e1
-    if method.startswith("fftw") and (fftw3 is not None):
-        input_ = numpy.zeros((d0, d1), dtype=complex)
-        output = numpy.zeros((d0, d1), dtype=complex)
-        with sem:
-            fft = fftw3.Plan(input_, output, direction='forward', flags=['estimate'])
-            ifft = fftw3.Plan(output, input_, direction='backward', flags=['estimate'])
-        input_[:, :] = input_img.astype(complex)
-        fft()
-        output *= e
-        ifft()
-        out = input_ / input_.size
-    else:
-        out = numpy.fft.ifft2(numpy.fft.fft2(input_img) * e)
-    return abs(out)
+        out = scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity")
+    return out
 
 
 def maximum_position(img):
@@ -868,8 +478,8 @@ def maximum_position(img):
     Same as scipy.ndimage.measurements.maximum_position:
     Find the position of the maximum of the values of the array.
 
-    @param img: 2-D image
-    @return: 2-tuple of int with the position of the maximum
+    :param img: 2-D image
+    :return: 2-tuple of int with the position of the maximum
     """
     maxarg = numpy.argmax(img)
     _, s1 = img.shape
@@ -880,8 +490,8 @@ def center_of_mass(img):
     """
     Calculate the center of mass of of the array.
     Like scipy.ndimage.measurements.center_of_mass
-    @param img: 2-D array
-    @return: 2-tuple of float with the center of mass
+    :param img: 2-D array
+    :return: 2-tuple of float with the center of mass
     """
     d0, d1 = img.shape
     a0, a1 = numpy.ogrid[:d0, :d1]
@@ -893,10 +503,10 @@ def center_of_mass(img):
 def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     """
     Measure the actual offset between 2 images
-    @param img1: ndarray, first image
-    @param img2: ndarray, second image, same shape as img1
-    @param withLog: shall we return logs as well ? boolean
-    @return: tuple of floats with the offsets
+    :param img1: ndarray, first image
+    :param img2: ndarray, second image, same shape as img1
+    :param withLog: shall we return logs as well ? boolean
+    :return: tuple of floats with the offsets
     """
     method = str(method)
     ################################################################################
@@ -906,35 +516,16 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     logs = []
     assert img2.shape == shape
     t0 = time.time()
-    if method[:4] == "fftw" and (fftw3 is not None):
-        input_ = numpy.zeros(shape, dtype=complex)
-        output = numpy.zeros(shape, dtype=complex)
-        with sem:
-            fft = fftw3.Plan(input_, output, direction='forward', flags=['measure'])
-            ifft = fftw3.Plan(output, input_, direction='backward', flags=['measure'])
-        input_[:, :] = img2.astype(complex)
-        fft()
-        temp = output.conjugate()
-        input_[:, :] = img1.astype(complex)
-        fft()
-        output *= temp
-        ifft()
-        res = input_.real / input_.size
-#    elif method[:4] == "cuda" and (cu_fft is not None):
-#        with sem:
-#            cuda_correlate = CudaCorrelate(shape)
-#            res = cuda_correlate.correlate(img1, img2)
-    else:  # use numpy fftpack
-        i1f = numpy.fft.fft2(img1)
-        i2f = numpy.fft.fft2(img2)
-        res = numpy.fft.ifft2(i1f * i2f.conjugate()).real
+    i1f = numpy.fft.fft2(img1)
+    i2f = numpy.fft.fft2(img2)
+    res = numpy.fft.ifft2(i1f * i2f.conjugate()).real
     t1 = time.time()
 
     ################################################################################
     # END of convolutions
     ################################################################################
     offset1 = maximum_position(res)
-    res = shift(res, (shape[0] // 2 , shape[1] // 2))
+    res = shift(res, (shape[0] // 2, shape[1] // 2))
     mean = res.mean(dtype="float64")
     maxi = res.max()
     std = res.std(dtype="float64")
@@ -942,7 +533,7 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     new = numpy.maximum(numpy.zeros(shape), res - numpy.ones(shape) * (mean + std * SN * 0.9))
     com2 = center_of_mass(new)
     logs.append("MeasureOffset: fine result of the centered image: %s %s " % com2)
-    offset2 = ((com2[0] - shape[0] // 2) % shape[0] , (com2[1] - shape[1] // 2) % shape[1])
+    offset2 = ((com2[0] - shape[0] // 2) % shape[0], (com2[1] - shape[1] // 2) % shape[1])
     delta0 = (offset2[0] - offset1[0]) % shape[0]
     delta1 = (offset2[1] - offset1[1]) % shape[1]
     if delta0 > shape[0] // 2:
@@ -974,14 +565,15 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
 
 def expand_args(args):
     """
-    Takes an argv and expand it (under Windows, cmd does not convert *.tif into a list of files.
+    Takes an argv and expand it (under Windows, cmd does not convert ``*.tif``
+    into a list of files.
     Keeps only valid files (thanks to glob)
 
-    @param args: list of files or wilcards
-    @return: list of actual args
+    :param args: list of files or wilcards
+    :return: list of actual args
     """
     new = []
-    for afile in  args:
+    for afile in args:
         if exists(afile):
             new.append(afile)
         else:
@@ -991,8 +583,8 @@ def expand_args(args):
 
 def _get_data_path(filename):
     """
-    @param filename: the name of the requested data file.
-    @type filename: str
+    :param filename: the name of the requested data file.
+    :type filename: str
 
     Can search root of data directory in:
     - Environment variable PYFAI_DATA
@@ -1006,7 +598,10 @@ def _get_data_path(filename):
 
     For now, just perform a recursive search
     """
-    resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
+    resources = [
+        os.environ.get("PYFAI_DATA"),
+        data_dir,
+        os.path.join(os.path.dirname(__file__), "..")]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
@@ -1027,7 +622,7 @@ def _get_data_path(filename):
 def get_calibration_dir():
     """get the full path of a calibration directory
 
-    @return: the full path of the calibrant file
+    :return: the full path of the calibrant file
     """
     return _get_data_path("calibration")
 
@@ -1035,7 +630,7 @@ def get_calibration_dir():
 def get_cl_file(filename):
     """get the full path of a openCL file
 
-    @return: the full path of the openCL source file
+    :return: the full path of the openCL source file
     """
     return _get_data_path(os.path.join("openCL", filename))
 
@@ -1043,15 +638,15 @@ def get_cl_file(filename):
 def get_ui_file(filename):
     """get the full path of a user-interface file
 
-    @return: the full path of the ui
+    :return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
 
 
 def read_cl_file(filename):
     """
-    @param filename: read an OpenCL file and apply a preprocessor
-    @return: preprocessed source code
+    :param filename: read an OpenCL file and apply a preprocessor
+    :return: preprocessed source code
     """
     with open(get_cl_file(filename), "r") as f:
         # Dummy preprocessor which removes the #include
@@ -1061,8 +656,8 @@ def read_cl_file(filename):
 
 def concatenate_cl_kernel(filenames):
     """
-    @param filenames: filenames containing the kernels
-    @type kernel@: list of str which can be filename of kernel as a string.
+    :param filenames: filenames containing the kernels
+    :type filenames: list of str which can be filename of kernel as a string.
 
     this method concatenates all the kernel from the list
     """
@@ -1077,7 +672,7 @@ def deg2rad(dd):
     """
     Convert degrees to radian in the range -pi->pi
 
-    @param dd: angle in degrees
+    :param dd: angle in degrees
 
     Nota: depending on the platform it could be 0<2pi
     A branch is cheaper than a trigo operation
@@ -1259,10 +854,10 @@ def readFloatFromKeyboard(text, dictVar):
     """
     Read float from the keyboard ....
 
-    @param text: string to be displayed
-    @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
+    :param text: string to be displayed
+    :param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
     """
-    fromkb = raw_input(text).strip()
+    fromkb = six.moves.input(text).strip()
     try:
         vals = [float(i) for i in fromkb.split()]
     except:
@@ -1286,9 +881,9 @@ class FixedParameters(set):
     def add_or_discard(self, key, value=True):
         """
         Add a value to a set if value, else discard it
-        @param key: element to added or discared from set
-        @type value: boolean. If None do nothing !
-        @return: None
+        :param key: element to added or discared from set
+        :type value: boolean. If None do nothing !
+        :return: None
         """
         if value is None:
             return
@@ -1303,8 +898,8 @@ def roundfft(N):
     This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
     Credit: Alessandro Mirone, ESRF, 2012
 
-    @param N: interger on which one would like to do a Fourier transform
-    @return: integer with a better choice
+    :param N: interger on which one would like to do a Fourier transform
+    :return: integer with a better choice
     """
     MA, MB, MC, MD, ME, MF = 0, 0, 0, 0, 0, 0
     FA, FB, FC, FD, FE, FFF = 2, 3, 5, 7, 11, 13
@@ -1350,10 +945,10 @@ def is_far_from_group(pt, lst_pts, d2):
     """
     Tells if a point is far from a group of points, distance greater than d2 (distance squared)
 
-    @param pt: point of interest
-    @param lst_pts: list of points
-    @param d2: minimum distance squarred
-    @return: True If the point is far from all others.
+    :param pt: point of interest
+    :param lst_pts: list of points
+    :param d2: minimum distance squarred
+    :return: True If the point is far from all others.
 
     """
     for apt in lst_pts:

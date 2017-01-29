@@ -1,5 +1,6 @@
-#!/usr/bin/python2
 # -*- coding: utf-8 -*-
+
+# Taken from: https://gist.github.com/cpbotha/1b42a20c8f3eb9bb7cb8
 
 # Copyright (c) 2011 Sebastian Wiesner <lunaryorn@gmail.com>
 # Modifications by Charl Botha <cpbotha@vxlabs.com>
@@ -7,7 +8,8 @@
 #   pyside 1.1.2 on Ubuntu 12.04 x86_64)
 # * workingDirectory support in loadUi
 
-# Found here: https://gist.github.com/cpbotha/1b42a20c8f3eb9bb7cb8
+# found this here:
+# https://github.com/lunaryorn/snippets/blob/master/qt4/designer/pyside_dynamic.py
 
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -36,14 +38,14 @@
 from __future__ import (print_function, division, unicode_literals,
                         absolute_import)
 
-import os
-import sys
+import logging
 
-from PySide.QtCore import Slot, QMetaObject
+from PySide.QtCore import QMetaObject
 from PySide.QtUiTools import QUiLoader
-from PySide.QtGui import QApplication, QMainWindow, QMessageBox
+from PySide.QtGui import QMainWindow
 
-SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+
+_logger = logging.getLogger(__name__)
 
 
 class UiLoader(QUiLoader):
@@ -66,9 +68,10 @@ class UiLoader(QUiLoader):
         instance of the top-level class in the user interface to load, or a
         subclass thereof.
 
-        ``customWidgets`` is a dictionary mapping from class name to class object
-        for widgets that you've promoted in the Qt Designer interface. Usually,
-        this should be done by calling registerCustomWidget on the QUiLoader, but
+        ``customWidgets`` is a dictionary mapping from class name to class
+        object for widgets that you've promoted in the Qt Designer
+        interface. Usually, this should be done by calling
+        registerCustomWidget on the QUiLoader, but
         with PySide 1.1.2 on Ubuntu 12.04 x86_64 this causes a segfault.
 
         ``parent`` is the parent object of this loader.
@@ -95,15 +98,18 @@ class UiLoader(QUiLoader):
                 widget = QUiLoader.createWidget(self, class_name, parent, name)
 
             else:
-                # if not in the list of availableWidgets, must be a custom widget
+                # if not in the list of availableWidgets,
+                # must be a custom widget
                 # this will raise KeyError if the user has not supplied the
                 # relevant class_name in the dictionary, or TypeError, if
                 # customWidgets is None
                 try:
                     widget = self.customWidgets[class_name](parent)
 
-                except (TypeError, KeyError) as e:
-                    raise Exception('No custom widget ' + class_name + ' found in customWidgets param of UiLoader __init__.')
+                except (TypeError, KeyError):
+                    raise Exception('No custom widget ' + class_name +
+                                    ' found in customWidgets param of' +
+                                    'UiLoader __init__.')
 
             if self.baseinstance:
                 # set an attribute for the new child widget on the base
@@ -112,13 +118,12 @@ class UiLoader(QUiLoader):
 
                 # this outputs the various widget names, e.g.
                 # sampleGraphicsView, dockWidget, samplesTableView etc.
-                #print(name)
+                # print(name)
 
             return widget
 
 
-def loadUi(uifile, baseinstance=None, customWidgets=None,
-           workingDirectory=None):
+def loadUi(uifile, baseinstance=None, package=None, resource_suffix=None):
     """
     Dynamically load a user interface from the given ``uifile``.
 
@@ -133,55 +138,21 @@ def loadUi(uifile, baseinstance=None, customWidgets=None,
     cannot load a ``QMainWindow`` UI file with a plain
     :class:`~PySide.QtGui.QWidget` as ``baseinstance``.
 
-    ``customWidgets`` is a dictionary mapping from class name to class object
-    for widgets that you've promoted in the Qt Designer interface. Usually,
-    this should be done by calling registerCustomWidget on the QUiLoader, but
-    with PySide 1.1.2 on Ubuntu 12.04 x86_64 this causes a segfault.
-
     :method:`~PySide.QtCore.QMetaObject.connectSlotsByName()` is called on the
     created user interface, so you can implemented your slots according to its
     conventions in your widget class.
 
-    Return ``baseinstance``, if ``baseinstance`` is not ``None``.  Otherwise
+    Return ``baseinstance``, if ``baseinstance`` is not ``None``. Otherwise
     return the newly created instance of the user interface.
     """
+    if package is not None:
+        _logger.warning(
+            "loadUi package parameter not implemented with PySide")
+    if resource_suffix is not None:
+        _logger.warning(
+            "loadUi resource_suffix parameter not implemented with PySide")
 
-    loader = UiLoader(baseinstance, customWidgets)
-
-    if workingDirectory is not None:
-        loader.setWorkingDirectory(workingDirectory)
-
+    loader = UiLoader(baseinstance)
     widget = loader.load(uifile)
     QMetaObject.connectSlotsByName(widget)
     return widget
-
-
-class MainWindow(QMainWindow):
-
-    def __init__(self, parent=None):
-        QMainWindow.__init__(self, parent)
-        loadUi(os.path.join(SCRIPT_DIRECTORY, 'mainwindow.ui'), self)
-
-    @Slot(bool)
-    def on_clickMe_clicked(self, is_checked):
-        if is_checked:
-            message = self.trUtf8(b'I am checked now.')
-        else:
-            message = self.trUtf8(b'I am unchecked now.')
-        QMessageBox.information(self, self.trUtf8(b'You clicked me'), message)
-
-    @Slot()
-    def on_actionHello_triggered(self):
-        QMessageBox.information(self, self.trUtf8(b'Hello world'),
-                                self.trUtf8(b'Greetings to the world.'))
-
-
-def main():
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    app.exec_()
-
-
-if __name__ == '__main__':
-    main()
