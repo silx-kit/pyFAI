@@ -26,7 +26,7 @@ from __future__ import print_function, division
 
 __doc__ = "Benchmark for Azimuthal integration of PyFAI"
 __author__ = "Jérôme Kieffer"
-__date__ = "23/06/2016"
+__date__ = "29/01/2017"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -193,7 +193,13 @@ data = fabio.open(r"%s").data
             fn = utilstest.UtilsTest.getimage(datasets[param])
             poni = PONIS[param]
             setup = self.setup_1d % (poni, fn)
+            loc = locals()
             exec(setup)
+            if sys.version_info[0] > 2:
+                # issue #527 on python3
+                data = loc["data"]
+                N = loc["N"]
+                ai = loc["ai"]
             res = eval(self.stmt_1d % ("splitBBox"))
             self.reference_1d[param] = res
             del ai, data
@@ -243,7 +249,13 @@ data = fabio.open(r"%s").data
             poni = PONIS[param]
             setup = self.setup_1d % (poni, fn)
             stmt = self.stmt_1d % method
+            loc = locals()
             exec(setup)
+            if sys.version_info[0] > 2:
+                # issue #527
+                data = loc["data"]
+                N = loc["N"]
+                ai = loc["ai"]
             size = data.size / 1.0e6
             if size > self.max_size:
                 continue
@@ -344,7 +356,13 @@ data = fabio.open(r"%s").data
             poni = PONIS[param]
             setup = self.setup_2d % (poni, fn)
             stmt = self.stmt_2d % method
+            loc = locals()
             exec(setup)
+            if sys.version_info[0] > 2:
+                # issue #527
+                data = loc["data"]
+                N = loc["N"]
+                ai = loc["ai"]
             size = data.size / 1.0e6
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size, N))
             try:
