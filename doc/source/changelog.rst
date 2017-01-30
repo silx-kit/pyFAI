@@ -5,6 +5,14 @@
 ChangeLog of Versions
 =====================
 
+0.13.1: 30/01/2017
+------------------
+
+* Backport critical bug fix from 0.14-dev
+    - Convert matplotlib mouse input into pixel coordinates (fix issue with numpy 0.12)
+    - Fix eiger-mask script if h5py is not installed
+    - Use "/usr/bin/env python" for scripts
+
 0.13.0: 01/12/2016
 ------------------
 * Global improvement of tests, packaging, code quality, documentation and project tools
