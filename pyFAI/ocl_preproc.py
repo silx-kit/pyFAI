@@ -183,15 +183,14 @@ class OCL_Preproc(OpenclProcessing):
     def dummy(self, value=None):
         self.on_host["dummy"] = value
         if value is None:
-            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-                self.cl_kernel_args[kernel][13] = numpy.int8(0)
-            self.cl_kernel_args["corrections3"][16] = numpy.int8(0)
+            for name, kwargs in self.cl_kernel_args.items():
+                if "correction" in name:
+                    kwargs["do_dummy"] = numpy.int8(0)
         else:
-            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-                self.cl_kernel_args[kernel][13] = numpy.int8(1)
-                self.cl_kernel_args[kernel][14] = numpy.float32(value)
-            self.cl_kernel_args["corrections3"][16] = numpy.int8(1)
-            self.cl_kernel_args["corrections3"][17] = numpy.float32(value)
+            for name, kwargs in self.cl_kernel_args.items():
+                if "correction" in name:
+                    kwargs["do_dummy"] = numpy.int8(1)
+                    kwargs["dummy"] = numpy.float32(value)
 
     @property
     def delta_dummy(self):
@@ -201,9 +200,9 @@ class OCL_Preproc(OpenclProcessing):
     def delta_dummy(self, value=None):
         value = value or numpy.float32(0)
         self.on_host["delta_dummy"] = value
-        for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-            self.cl_kernel_args[kernel][15] = value
-        self.cl_kernel_args["corrections3"][18] = value
+        for name, kwargs in self.cl_kernel_args.items():
+            if "correction" in name:
+                kwargs["delta_dummy"] = numpy.float32(value)
 
     @property
     def empty(self):
@@ -214,9 +213,9 @@ class OCL_Preproc(OpenclProcessing):
         value = value or numpy.float32(0)
         if self.dummy is None:
             self.on_host["empty"] = value
-            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-                self.cl_kernel_args[kernel][14] = value
-                self.cl_kernel_args["corrections3"][17] = value
+            for name, kwargs in self.cl_kernel_args.items():
+                if "correction" in name:
+                    kwargs["dummy"] = numpy.float32(value)
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
