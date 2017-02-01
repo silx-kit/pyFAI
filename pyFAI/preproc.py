@@ -92,7 +92,7 @@ def preproc(raw,
     I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
     Invalid pixels are set to the dummy or empty value. 
      
-    When split_ressult is set to True, each result result is a float2 
+    When split_ressult is set to True, each result is a float2 
     or a float3 (with an additional value for the variance) as such:
     I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
     Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value) 

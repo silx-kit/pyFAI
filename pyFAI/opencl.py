@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2017"
+__date__ = "27/01/2017"
 __status__ = "stable"
 
 import os
@@ -44,7 +44,7 @@ import gc
 
 import numpy
 from collections import namedtuple
-BufferDescription = namedtuple("BufferDescription", ["name", "flags", "dtype", "size"])
+BufferDescription = namedtuple("BufferDescription", ["name", "size", "dtype", "flags"])
 EventDescription = namedtuple("EventDescription", ["name", "event"])
 
 logger = logging.getLogger("pyFAI.opencl")
@@ -56,10 +56,13 @@ else:
     try:
         import pyopencl
         mf = pyopencl.mem_flags
-
     except ImportError:
         logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
         pyopencl = None
+        class mf(object):
+            WRITE_ONLY = 1
+            READ_ONLY = 1
+            READ_WRITE = 1
 
 FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
@@ -540,8 +543,8 @@ class OpenclProcessing(object):
     * Functions to compile kernels, cache them and clean them  
     * helper functions to clone the object
     """
-    # The last parameter
-    buffers = [BufferDescription("output", mf.WRITE_ONLY, numpy.float32, 10),
+    # Example of how to create an output buffer of 10 floats
+    buffers = [BufferDescription("output", 10, numpy.float32, mf.WRITE_ONLY),
                ]
     # list of kernel source files to be concatenated before compilation of the program
     kernel_files = []
@@ -560,7 +563,7 @@ class OpenclProcessing(object):
                         store profiling elements (makes code slower) 
         """
         self.sem = threading.Semaphore()
-        self.profile = bool(profile)
+        self.profile = None
         self.events = []  # List with of EventDescription, kept for profiling
         self.cl_mem = {}  # dict with all buffer allocated
         self.cl_program = None  # The actual OpenCL program
@@ -571,20 +574,13 @@ class OpenclProcessing(object):
             platform_name = self.ctx.devices[0].platform.name.strip()
             platform = ocl.get_platform(platform_name)
             self.device = platform.get_device(device_name)
-            # self.device = platform.id, device.id
         else:
             self.ctx = ocl.create_context(devicetype=devicetype, platformid=platformid, deviceid=deviceid)
             device_name = self.ctx.devices[0].name.strip()
             platform_name = self.ctx.devices[0].platform.name.strip()
             platform = ocl.get_platform(platform_name)
             self.device = platform.get_device(device_name)
-            # self.device = platform.id, device.id
-
-        if profile:
-            self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
-        else:
-            self.queue = pyopencl.CommandQueue(self.ctx)
-
+        self.set_profiling(profile)
         self.block_size = block_size
 
     def __del__(self):
@@ -599,6 +595,9 @@ class OpenclProcessing(object):
     def allocate_buffers(self, buffers=None):
         """
         Allocate OpenCL buffers required for a specific configuration
+    
+        :param buffers: a list of BufferDescriptions, leave to None for
+                        paramatrized buffers.
 
         Note that an OpenCL context also requires some memory, as well
         as Event and other OpenCL functionalities which cannot and are
@@ -609,14 +608,53 @@ class OpenclProcessing(object):
         have a built-in way to check the actual free memory on a
         device, only the total memory.
         """
+
         if buffers is None:
             buffers = self.buffers
-        self.cl_mem = allocate_cl_buffers(buffers, self.device, self.ctx)
+
+        with self.sem:
+            mem = {}
+
+            # check if enough memory is available on the device
+            ualloc = 0
+            for buf in buffers:
+                ualloc += numpy.dtype(buf.dtype).itemsize * buf.size
+            logger.info("%.3fMB are needed on device which has %.3fMB",
+                        ualloc / 1.0e6, self.device.memory / 1.0e6)
+
+            if ualloc >= self.device.memory:
+                raise MemoryError("Fatal error in allocate_buffers. Not enough "
+                                  " device memory for buffers (%lu requested, %lu available)"
+                                  % (ualloc, self.device.memory))
+
+            # do the allocation
+            try:
+                for buf in buffers:
+                    size = numpy.dtype(buf.dtype).itemsize * buf.size
+                    mem[buf.name] = pyopencl.Buffer(self.ctx, buf.flags, size)
+            except pyopencl.MemoryError as error:
+                release_cl_buffers(mem)
+                raise MemoryError(error)
+
+        self.cl_mem.update(mem)
 
     def free_buffers(self):
-        """free all memory allocated on the device
+        """free all device.memory allocated on the device
         """
-        self.cl_mem = release_cl_buffers(self.cl_mem)
+        with self.sem:
+            for key, buf in list(self.cl_mem.items()):
+                if buf is not None:
+                    if isinstance(buf, pyopencl.array.Array):
+                        try:
+                            buf.data.release()
+                        except pyopencl.LogicError:
+                            logger.error("Error while freeing buffer %s", key)
+                    else:
+                        try:
+                            buf.release()
+                        except pyopencl.LogicError:
+                            logger.error("Error while freeing buffer %s", key)
+                    self.cl_mem[key] = None
 
     def compile_kernels(self, kernel_files=None, compile_options=None):
         """Call the OpenCL compiler
@@ -642,6 +680,23 @@ class OpenclProcessing(object):
             self.cl_kernel_args[kernel] = []
         self.program = None
 
+    def set_profiling(self, value=True):
+        """Switch On/Off the profiling flag of the command queue to allow debugging
+        
+        :param value: set to True to enable profiling, or to False to disable it.
+                      Without profiling, the processing is marginally faster 
+        
+        Profiling information can then be retrived with the 'log_profile' method
+        """
+        if bool(value) != self.profile:
+            with self.sem:
+                self.profile = bool(value)
+                if self.profile:
+                    self.queue = pyopencl.CommandQueue(self.ctx,
+                        properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+                else:
+                    self.queue = pyopencl.CommandQueue(self.ctx)
+
     def log_profile(self):
         """If we are in profiling mode, prints out all timing for every single OpenCL call
         """
@@ -657,6 +712,7 @@ class OpenclProcessing(object):
         out.append("_" * 80)
         out.append("%50s:\t%.3fms" % ("Total execution time", t))
         logger.info(os.linesep.join(out))
+        return out
 
 # This should be implemented by concrete class
 #     def __copy__(self):

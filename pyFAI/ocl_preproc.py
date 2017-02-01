@@ -33,17 +33,15 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "20/01/2017"
+__date__ = "01/02/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
+from collections import OrderedDict
 import numpy
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers, \
-                    BufferDescription, EventDescription, OpenclProcessing
-
-if pyopencl:
-    mf = pyopencl.mem_flags
+from .opencl import pyopencl, BufferDescription, EventDescription, \
+                    OpenclProcessing, mf, ocl
 
 logger = logging.getLogger("pyFAI.ocl_preproc")
 
@@ -51,17 +49,17 @@ logger = logging.getLogger("pyFAI.ocl_preproc")
 class OCL_Preproc(OpenclProcessing):
     """OpenCL class for pre-processing ... mainly for demonstration"""
     buffers = [
-               BufferDescription("output", mf.WRITE_ONLY, numpy.float32, 3),
-               BufferDescription("image_raw", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("image", mf.READ_WRITE, numpy.float32, 1),
-               BufferDescription("variance", mf.READ_WRITE, numpy.float32, 1),
-               BufferDescription("dark", mf.READ_WRITE, numpy.float32, 1),
-               BufferDescription("dark_variance", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("flat", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("polarization", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("solidangle", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("absorption", mf.READ_ONLY, numpy.float32, 1),
-               BufferDescription("mask", mf.READ_ONLY, numpy.int8, 1),
+               BufferDescription("output", 3, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
             ]
     kernel_files = ["preprocess.cl"]
     mapping = {numpy.int8: "s8_to_float",
@@ -105,7 +103,7 @@ class OCL_Preproc(OpenclProcessing):
         OpenclProcessing.__init__(self, ctx, devicetype, platformid, deviceid, block_size, profile)
         self.size = image_size or image.size
         self.input_dtype = image_dtype or image.dtype.type
-        self.buffers = [BufferDescription(*((i[:-1]) + (i[-1] * self.size,)))
+        self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
         self.allocate_buffers()
         if poissonian:
@@ -128,45 +126,53 @@ class OCL_Preproc(OpenclProcessing):
         if dark is not None:
             assert dark.size == self.size
             self.send_buffer(dark, "dark")
-            self.cl_kernel_args["corrections"][1] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][1] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][1] = numpy.int8(1)
-            self.cl_kernel_args["corrections3Poisson"][2] = numpy.int8(1)
+            do_dark = numpy.int8(1)
+        else:
+            do_dark = numpy.int8(0)
+
         if flat is not None:
             assert flat.size == self.size
             self.send_buffer(flat, "flat")
-            self.cl_kernel_args["corrections"][3] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][3] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][3] = numpy.int8(1)
-            self.cl_kernel_args["corrections3Poisson"][4] = numpy.int8(1)
+            do_flat = numpy.int8(1)
+        else:
+            do_flat = numpy.int8(0)
+
         if solidangle is not None:
             assert solidangle.size == self.size
             self.send_buffer(solidangle, "solidangle")
-            self.cl_kernel_args["corrections"][5] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][5] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][5] = numpy.int8(1)
-            self.cl_kernel_args["corrections3Poisson"][6] = numpy.int8(1)
+            do_solidangle = numpy.int8(1)
+        else:
+            do_solidangle = numpy.int8(0)
+
         if polarization is not None:
             assert polarization.size == self.size
             self.send_buffer(polarization, "polarization")
-            self.cl_kernel_args["corrections"][7] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][7] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][7] = numpy.int8(1)
-            self.cl_kernel_args["corrections3Poisson"][8] = numpy.int8(1)
+            do_polarization = numpy.int8(1)
+        else:
+            do_polarization = numpy.int8(0)
+
         if absorption is not None:
             assert absorption.size == self.size
             self.send_buffer(absorption, "absorption")
-            self.cl_kernel_args["corrections"][9] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][9] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][9] = numpy.int8(1)
-            self.cl_kernel_args["corrections3Poisson"][10] = numpy.int8(1)
+            do_absorption = numpy.int8(1)
+        else:
+            do_absorption = numpy.int8(0)
+
         if mask is not None:
             assert mask.size == self.size
             self.send_buffer(mask, "mask")
-            self.cl_kernel_args["corrections"][11] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][11] = numpy.int8(1)
-            self.cl_kernel_args["corrections2"][11] = numpy.int8(1)
-            self.cl_kernel_args["corrections3Poisson"][12] = numpy.int8(1)
+            do_mask = numpy.int8(1)
+        else:
+            do_mask = numpy.int8(0)
+
+        for name, kwargs in self.cl_kernel_args.items():
+            if "correction" in name:
+                kwargs["do_dark"] = do_dark
+                kwargs["do_flat"] = do_flat
+                kwargs["do_solidangle"] = do_solidangle
+                kwargs["do_polarization"] = do_polarization
+                kwargs["do_absorption"] = do_absorption
+                kwargs["do_mask"] = do_mask
         self.compile_kernels()
 
     @property
@@ -225,48 +231,84 @@ class OCL_Preproc(OpenclProcessing):
             dummy = numpy.float32(self.on_host["dummy"])
             delta_dummy = numpy.float32(self.on_host["delta_dummy"] or 0.0)
 
-        self.cl_kernel_args["corrections"] = [self.cl_mem["image"],
-                                              numpy.int8(0), self.cl_mem["dark"],
-                                              numpy.int8(0), self.cl_mem["flat"],
-                                              numpy.int8(0), self.cl_mem["solidangle"],
-                                              numpy.int8(0), self.cl_mem["polarization"],
-                                              numpy.int8(0), self.cl_mem["absorption"],
-                                              numpy.int8(0), self.cl_mem["mask"],
-                                              do_dummy, dummy,
-                                              delta_dummy, numpy.float32(1.0),
-                                              self.cl_mem["output"]]
-        self.cl_kernel_args["corrections2"] = [self.cl_mem["image"],
-                                               numpy.int8(0), self.cl_mem["dark"],
-                                               numpy.int8(0), self.cl_mem["flat"],
-                                               numpy.int8(0), self.cl_mem["solidangle"],
-                                               numpy.int8(0), self.cl_mem["polarization"],
-                                               numpy.int8(0), self.cl_mem["absorption"],
-                                               numpy.int8(0), self.cl_mem["mask"],
-                                               do_dummy, dummy,
-                                               delta_dummy, numpy.float32(1.0),
-                                               self.cl_mem["output"]]
-        self.cl_kernel_args["corrections3"] = [self.cl_mem["image"],
-                                               self.cl_mem["variance"],
-                                               numpy.int8(0), self.cl_mem["dark"],
-                                               numpy.int8(0), self.cl_mem["dark_variance"],
-                                               numpy.int8(0), self.cl_mem["flat"],
-                                               numpy.int8(0), self.cl_mem["solidangle"],
-                                               numpy.int8(0), self.cl_mem["polarization"],
-                                               numpy.int8(0), self.cl_mem["absorption"],
-                                               numpy.int8(0), self.cl_mem["mask"],
-                                               do_dummy, dummy,
-                                               delta_dummy, numpy.float32(1.0),
-                                               self.cl_mem["output"]]
-        self.cl_kernel_args["corrections3Poisson"] = [self.cl_mem["image"],
-                                                      numpy.int8(0), self.cl_mem["dark"],
-                                                      numpy.int8(0), self.cl_mem["flat"],
-                                                      numpy.int8(0), self.cl_mem["solidangle"],
-                                                      numpy.int8(0), self.cl_mem["polarization"],
-                                                      numpy.int8(0), self.cl_mem["absorption"],
-                                                      numpy.int8(0), self.cl_mem["mask"],
-                                                      do_dummy, dummy,
-                                                      delta_dummy, numpy.float32(1.0),
-                                                      self.cl_mem["output"]]
+        self.cl_kernel_args["corrections"] = OrderedDict(("image", self.cl_mem["image"]),
+                                                         ("do_dark", numpy.int8(0)),
+                                                         ("dark", self.cl_mem["dark"]),
+                                                         ("do_flat", numpy.int8(0)),
+                                                         ("flat", self.cl_mem["flat"]),
+                                                         ("do_solidangle", numpy.int8(0)),
+                                                         ("solidangle", self.cl_mem["solidangle"]),
+                                                         ("do_polarization", numpy.int8(0)),
+                                                         ("polarization", self.cl_mem["polarization"]),
+                                                         ("do_absorption", numpy.int8(0)),
+                                                         ("absorption", self.cl_mem["absorption"]),
+                                                         ("do_mask", numpy.int8(0)),
+                                                         ("mask", self.cl_mem["mask"]),
+                                                         ("do_dummy", do_dummy),
+                                                         ("dummy", dummy),
+                                                         ("delta_dummy", delta_dummy),
+                                                         ("normalization_factor", numpy.float32(1.0)),
+                                                         ("output", self.cl_mem["output"]))
+
+        self.cl_kernel_args["corrections2"] = OrderedDict(("image", self.cl_mem["image"]),
+                                                          ("do_dark", numpy.int8(0)),
+                                                          ("dark", self.cl_mem["dark"]),
+                                                          ("do_flat", numpy.int8(0)),
+                                                          ("flat", self.cl_mem["flat"]),
+                                                          ("do_solidangle", numpy.int8(0)),
+                                                          ("solidangle", self.cl_mem["solidangle"]),
+                                                          ("do_polarization", numpy.int8(0)),
+                                                          ("polarization", self.cl_mem["polarization"]),
+                                                          ("do_absorption", numpy.int8(0)),
+                                                          ("absorption", self.cl_mem["absorption"]),
+                                                          ("do_mask", numpy.int8(0)),
+                                                          ("mask", self.cl_mem["mask"]),
+                                                          ("do_dummy", do_dummy),
+                                                          ("dummy", dummy),
+                                                          ("delta_dummy", delta_dummy),
+                                                          ("normalization_factor", numpy.float32(1.0)),
+                                                          ("output", self.cl_mem["output"]))
+
+        self.cl_kernel_args["corrections3"] = OrderedDict(("image", self.cl_mem["image"]),
+                                                          ("variance", self.cl_mem["variance"]),
+                                                          ("do_dark", numpy.int8(0)),
+                                                          ("dark", self.cl_mem["dark"]),
+                                                          ("do_dark_variance", numpy.int8(0)),
+                                                          ("dark_variance", self.cl_mem["dark_variance"]),
+                                                          ("do_flat", numpy.int8(0)),
+                                                          ("flat", self.cl_mem["flat"]),
+                                                          ("do_solidangle", numpy.int8(0)),
+                                                          ("solidangle", self.cl_mem["solidangle"]),
+                                                          ("do_polarization", numpy.int8(0)),
+                                                          ("polarization", self.cl_mem["polarization"]),
+                                                          ("do_absorption", numpy.int8(0)),
+                                                          ("absorption", self.cl_mem["absorption"]),
+                                                          ("do_mask", numpy.int8(0)),
+                                                          ("mask", self.cl_mem["mask"]),
+                                                          ("do_dummy", do_dummy),
+                                                          ("dummy", dummy),
+                                                          ("delta_dummy", delta_dummy),
+                                                          ("normalization_factor", numpy.float32(1.0)),
+                                                          ("output", self.cl_mem["output"]))
+
+        self.cl_kernel_args["corrections3Poisson"] = OrderedDict(("image", self.cl_mem["image"]),
+                                                                 ("do_dark", numpy.int8(0)),
+                                                                 ("dark", self.cl_mem["dark"]),
+                                                                 ("do_flat", numpy.int8(0)),
+                                                                 ("flat", self.cl_mem["flat"]),
+                                                                 ("do_solidangle", numpy.int8(0)),
+                                                                 ("solidangle", self.cl_mem["solidangle"]),
+                                                                 ("do_polarization", numpy.int8(0)),
+                                                                 ("polarization", self.cl_mem["polarization"]),
+                                                                 ("do_absorption", numpy.int8(0)),
+                                                                 ("absorption", self.cl_mem["absorption"]),
+                                                                 ("do_mask", numpy.int8(0)),
+                                                                 ("mask", self.cl_mem["mask"]),
+                                                                 ("do_dummy", do_dummy),
+                                                                 ("dummy", dummy),
+                                                                 ("delta_dummy", delta_dummy),
+                                                                 ("normalization_factor", numpy.float32(1.0)),
+                                                                 ("output", self.cl_mem["output"]))
 
     def compile_kernels(self, kernel_files=None, compile_options=None):
         """Call the OpenCL compiler
@@ -334,25 +376,19 @@ class OCL_Preproc(OpenclProcessing):
 
             if self.on_host.get("poissonian"):
                 kernel_name = "corrections3Poisson"
-                args = self.cl_kernel_args[kernel_name]
-                args[1] = do_dark
             elif self.on_host.get("calc_variance"):
                 kernel_name = "corrections3"
-                args = self.cl_kernel_args[kernel_name]
-                args[2] = do_dark
-                if self.on_device.get("dark_variance") is not None and do_dark:
-                    args[4] = do_dark
             elif self.on_host.get("split_result"):
                 kernel_name = "corrections2"
-                args = self.cl_kernel_args[kernel_name]
-                args[1] = do_dark
             else:
                 kernel_name = "corrections"
-                args = self.cl_kernel_args[kernel_name]
-                args[1] = do_dark
-            args[-2] = numpy.float32(normalization_factor)
+            kwargs = self.cl_kernel_args[kernel_name]
+            kwargs["do_dark"] = do_dark
+            kwargs["normalization_factor"] = numpy.float32(normalization_factor)
+            if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
+                kwargs["do_dark_variance"] = do_dark
             kernel = self.program.__getattr__(kernel_name)
-            evt = kernel(self.queue, (self.size,), None, *args)
+            evt = kernel(self.queue, (self.size,), None, list(kwargs.values()))
             if kernel_name.startswith("corrections3"):
                 dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
             elif kernel_name == "corrections2":

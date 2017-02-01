@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "27/01/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2346,8 +2346,11 @@ class AzimuthalIntegrator(Geometry):
                                     var1d, a, b = self._ocl_lut_integr.integrate(variance,
                                                                                  solidAngle=None,
                                                                                  dummy=dummy,
-                                                                                 delta_dummy=delta_dummy)
-                                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1) / normalization_factor
+                                                                                 delta_dummy=delta_dummy,
+                                                                                 normalization_factor=1.0)
+                                    with numpy.errstate(divide='ignore'):
+                                        sigma = numpy.sqrt(a) / (b * normalization_factor)
+                                    sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
                         qAxis, I, sum_, count = self._lut_integrator.integrate(data, dark=dark, flat=flat,
                                                                                solidAngle=solidangle,
@@ -2362,8 +2365,10 @@ class AzimuthalIntegrator(Geometry):
                             _, var1d, a, b = self._lut_integrator.integrate(variance,
                                                                             solidAngle=None,
                                                                             dummy=dummy,
-                                                                            delta_dummy=delta_dummy)
-                            sigma = numpy.sqrt(a) / b / normalization_factor
+                                                                            delta_dummy=delta_dummy,
+                                                                            normalization_factor=1.0)
+                            with numpy.errstate(divide='ignore'):
+                                sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("csr" in method):
@@ -2479,7 +2484,9 @@ class AzimuthalIntegrator(Geometry):
                                                                              solidAngle=None,
                                                                              dummy=dummy,
                                                                              delta_dummy=delta_dummy)
-                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1) / normalization_factor
+                                with numpy.errstate(divide='ignore'):
+                                    sigma = numpy.sqrt(a) / (b * normalization_factor)
+                                sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
                         qAxis, I, sum_, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
                                                                                solidAngle=solidangle,
@@ -2494,9 +2501,11 @@ class AzimuthalIntegrator(Geometry):
                             _, var1d, a, b = self._csr_integrator.integrate(variance,
                                                                             solidAngle=None,
                                                                             dummy=dummy,
-                                                                            delta_dummy=delta_dummy)
-                            sigma = numpy.sqrt(a) / numpy.maximum(b, 1) / normalization_factor
-
+                                                                            delta_dummy=delta_dummy,
+                                                                            normalization_factor=1.0)
+                            with numpy.errstate(divide='ignore'):
+                                sigma = numpy.sqrt(a) / (b * normalization_factor)
+                            sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("splitpix" in method):
 #            if "full" in method:
@@ -2532,43 +2541,11 @@ class AzimuthalIntegrator(Geometry):
                                                                 dummy=dummy,
                                                                 delta_dummy=delta_dummy,
                                                                 mask=mask,
+                                                                normalization_factor=1.0
                                                                 )
-                        sigma = numpy.sqrt(a) / b / normalization_factor
+                        with numpy.errstate(divide='ignore'):
+                            sigma = numpy.sqrt(a) / (b * normalization_factor)
                         sigma[b == 0] = dummy if dummy is not None else self._empty
-#            else:
-#                if splitPixel is None:
-#                    logger.warning("SplitPixel is not available,"
-#                                " falling back on splitbbox histogram !")
-#                    method = self.DEFAULT_METHOD
-#                else:
-#                    logger.debug("integrate1d uses SplitPixel implementation")
-#                    pos = self.array_from_unit(shape, "corner", unit)
-#                    qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
-#                                                            weights=data,
-#                                                            bins=npt,
-#                                                            pos0Range=radial_range,
-#                                                            pos1Range=azimuth_range,
-#                                                            dummy=dummy,
-#                                                            delta_dummy=delta_dummy,
-#                                                            mask=mask,
-#                                                            dark=dark,
-#                                                            flat=flat,
-#                                                            solidangle=solidangle,
-#                                                            polarization=polarization
-#                                                            )
-#                    if error_model == "azimuthal":
-#                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
-#                    if variance is not None:
-#                        _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
-#                                                                weights=variance,
-#                                                                bins=npt,
-#                                                                pos0Range=radial_range,
-#                                                                pos1Range=azimuth_range,
-#                                                                dummy=dummy,
-#                                                                delta_dummy=delta_dummy,
-#                                                                mask=mask,
-#                                                                )
-#                        sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
@@ -2615,7 +2592,8 @@ class AzimuthalIntegrator(Geometry):
                                                            delta_dummy=delta_dummy,
                                                            mask=mask,
                                                            )
-                    sigma = numpy.sqrt(a) / b / normalization_factor
+                    with numpy.errstate(divide='ignore'):
+                        sigma = numpy.sqrt(a) / (b * normalization_factor)
                     sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if I is None:
@@ -2663,7 +2641,8 @@ class AzimuthalIntegrator(Geometry):
                                                              bins=npt,
                                                              pixelSize_in_Pos=1,
                                                              empty=dummy if dummy is not None else self._empty)
-                        sigma = numpy.sqrt(a) / b / normalization_factor
+                        with numpy.errstate(divide='ignore'):
+                            sigma = numpy.sqrt(a) / (b * normalization_factor)
                         sigma[b == 0] = dummy if dummy is not None else self._empty
                 else:
                     logger.warning("pyFAI.histogram is not available,"
@@ -2675,16 +2654,16 @@ class AzimuthalIntegrator(Geometry):
             method = "numpy"
             count, b = numpy.histogram(pos0, npt, range=radial_range)
             qAxis = (b[1:] + b[:-1]) / 2.0
-            count1 = numpy.maximum(1, count)
             sum_, b = numpy.histogram(pos0, npt, weights=data, range=radial_range)
-            if error_model == "azimuthal":
-                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
-            if variance is not None:
-                var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
-                sigma = numpy.sqrt(var1d) / count1 / normalization_factor
-                sigma[count == 0] = dummy if dummy is not None else self._empty
-            I = sum_ / count1 / normalization_factor
-            I[count == 0] = dummy if dummy is not None else self._empty
+            with numpy.errstate(divide='ignore'):
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                if variance is not None:
+                    var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
+                    sigma = numpy.sqrt(var1d) / (count * normalization_factor)
+                    sigma[count == 0] = dummy if dummy is not None else self._empty
+                I = sum_ / count / normalization_factor
+                I[count == 0] = dummy if dummy is not None else self._empty
 
         if pos0_scale:
             # not in place to make a copy
