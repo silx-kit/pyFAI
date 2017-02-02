@@ -59,7 +59,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
     It also performs the preprocessing using the preproc kernel
     """
-
+    BLOCK_SIZE = 32
     buffers = [
            BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
            BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
@@ -106,7 +106,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                   block_size=block_size, profile=profile)
 
         self._data, self._indices, self._indptr = lut
-        self.bins = self._indptr.shape[0] - 1
+        self.bins = self._indptr.size - 1
         self.nbytes = self._data.nbytes + self._indices.nbytes + self._indptr.nbytes
         if self._data.shape[0] != self._indices.shape[0]:
             raise RuntimeError("data.shape[0] != indices.shape[0]")
@@ -122,6 +122,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
                           "polarization": None,
                           "solidangle": None,
                           "absorption": None}
+
+        if block_size is None:
+            block_size = self.BLOCK_SIZE
+
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
