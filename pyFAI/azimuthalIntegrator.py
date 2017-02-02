@@ -2469,8 +2469,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                        block_size=block_size,
                                                                                        profile=profile)
                             I, sum_, count = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
-                                                                            solidAngle=solidangle,
-                                                                            solidAngle_checksum=self._dssa_crc,
+                                                                            solidangle=solidangle,
+                                                                            solidangle_checksum=self._dssa_crc,
                                                                             dummy=dummy,
                                                                             delta_dummy=delta_dummy,
                                                                             polarization=polarization,
@@ -2481,7 +2481,7 @@ class AzimuthalIntegrator(Geometry):
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                             if variance is not None:
                                 var1d, a, b = self._ocl_csr_integr.integrate(variance,
-                                                                             solidAngle=None,
+                                                                             solidangle=None,
                                                                              dummy=dummy,
                                                                              delta_dummy=delta_dummy)
                                 with numpy.errstate(divide='ignore'):
@@ -2489,7 +2489,7 @@ class AzimuthalIntegrator(Geometry):
                                 sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
                         qAxis, I, sum_, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
-                                                                               solidAngle=solidangle,
+                                                                               solidangle=solidangle,
                                                                                dummy=dummy,
                                                                                delta_dummy=delta_dummy,
                                                                                polarization=polarization,
@@ -2499,7 +2499,7 @@ class AzimuthalIntegrator(Geometry):
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                         if variance is not None:
                             _, var1d, a, b = self._csr_integrator.integrate(variance,
-                                                                            solidAngle=None,
+                                                                            solidangle=None,
                                                                             dummy=dummy,
                                                                             delta_dummy=delta_dummy,
                                                                             normalization_factor=1.0)
