@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2016"
+__date__ = "16/01/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -923,7 +923,7 @@ class Geometry(object):
         Generate an array of position in different dimentions (R, Q,
         2Theta)
 
-        :param shape: shape of the expected array
+        :param shape: shape of the expected array, leave it to None for safety
         :type shape: ndarray.shape
         :param typ: "center", "corner" or "delta"
         :type typ: str

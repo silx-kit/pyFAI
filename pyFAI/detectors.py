@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/01/2017"
+__date__ = "02/02/2017"
 __status__ = "stable"
 
 
@@ -2584,3 +2584,5 @@ class RaspberryPi8M(Detector):
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
 load = NexusDetector.sload
+
+

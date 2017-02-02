@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "27/01/2017"
 
 
 import unittest
@@ -247,11 +247,11 @@ class TestFlatimage(unittest.TestCase):
     epsilon = 1e-4
 
     def test_splitPixel(self):
-        shape = (2000, 2001)
+        shape = (200, 201)
         data = numpy.ones(shape, dtype="float64")
-        det = Detector(1e-5, 1e-5, max_shape=(2000, 2001))
+        det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-        I = ai.xrpd2_splitPixel(data, 2048, 2048, correctSolidAngle=False, dummy=-1.0)[0]
+        I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
 #        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -267,10 +267,11 @@ class TestFlatimage(unittest.TestCase):
         assert abs(I.max() - 1.0) < self.epsilon
 
     def test_splitBBox(self):
-        data = numpy.ones((2000, 2000), dtype="float64")
-        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, pixel1=1e-5, pixel2=1e-5)
-        I = ai.xrpd2_splitBBox(data, 2048, 2048, correctSolidAngle=False, dummy=-1.0)[0]
-#        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
+        shape = (200, 201)
+        data = numpy.ones(shape, dtype="float64")
+        det = Detector(1e-4, 1e-4, max_shape=shape)
+        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
+        I = ai.xrpd2_splitBBox(data, 256, 256, correctSolidAngle=False, dummy=-1.0)[0]
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
@@ -327,14 +328,15 @@ class TestSaxs(unittest.TestCase):
 
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 1d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 1d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
-            #ai.reset()
+            # ai.reset()
             ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, error_model="poisson")
             ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref2d[method + "_1"].intensity.mean() / ref2d[method + "_10"].intensity.mean()
 #             ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
 #             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
-            #ai.reset()
+            # ai.reset()
+
 
 class TestSetter(unittest.TestCase):
     def setUp(self):

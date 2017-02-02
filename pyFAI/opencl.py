@@ -34,25 +34,35 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "27/01/2017"
 __status__ = "stable"
 
 import os
 import logging
+import threading
+import gc
 
 import numpy
+from collections import namedtuple
+BufferDescription = namedtuple("BufferDescription", ["name", "size", "dtype", "flags"])
+EventDescription = namedtuple("EventDescription", ["name", "event"])
 
 logger = logging.getLogger("pyFAI.opencl")
-
+from .utils import concatenate_cl_kernel
 if os.environ.get("PYFAI_OPENCL") == "0":
     logger.warning("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
     pyopencl = None
 else:
     try:
         import pyopencl
+        mf = pyopencl.mem_flags
     except ImportError:
         logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
         pyopencl = None
+        class mf(object):
+            WRITE_ONLY = 1
+            READ_ONLY = 1
+            READ_WRITE = 1
 
 FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
@@ -88,7 +98,7 @@ class Device(object):
                  extensions="", memory=None, available=None,
                  cores=None, frequency=None, flop_core=None, idx=0, workgroup=1):
         """
-        Simple container with some important data for the OpenCL device description:
+        Simple container with some important data for the OpenCL device description.
 
         :param name: name of the device
         :param dtype: device type: CPU/GPU/ACC...
@@ -96,7 +106,7 @@ class Device(object):
         :param driver_version:
         :param extensions: List of opencl extensions
         :param memory: maximum memory available on the device
-        :param available: is the device desactivated or not
+        :param available: is the device deactivated or not
         :param cores: number of SM/cores
         :param frequency: frequency of the device
         :param flop_cores: Flopating Point operation per core per cycle
@@ -193,6 +203,61 @@ class Platform(object):
         return out
 
 
+def _measure_workgroup_size(device_or_context, fast=False):
+    """Mesure the maximal work group size of the given device
+
+    :param device: instance of pyopencl.Device or pyopencl.Context
+    :param fast: ask the kernel the valid value, don't probe it
+    :return: maximum size for the workgroup
+    """
+    if isinstance(device_or_context, pyopencl.Device):
+        ctx = pyopencl.Context(devices=[device_or_context])
+        device = device_or_context
+    elif isinstance(device_or_context, pyopencl.Context):
+        ctx = device_or_context
+        device = device_or_context.devices[0]
+    else:
+        raise RuntimeError("""given parameter device_or_context is not an
+            instanciation of a device or a context""")
+    shape = device.max_work_group_size
+    # get the context
+
+    assert ctx is not None
+    queue = pyopencl.CommandQueue(ctx)
+
+    max_valid_wg = 1
+    data = numpy.random.random(shape).astype(numpy.float32)
+    d_data = pyopencl.array.to_device(queue, data)
+    d_data_1 = pyopencl.array.zeros_like(d_data) + 1
+
+    program = pyopencl.Program(ctx, get_opencl_code("addition")).build()
+    if fast:
+        max_valid_wg = program.addition.get_work_group_info(pyopencl.kernel_work_group_info.WORK_GROUP_SIZE, device)
+    else:
+        maxi = int(round(numpy.log2(shape)))
+        for i in range(maxi + 1):
+            d_res = pyopencl.array.empty_like(d_data)
+            wg = 1 << i
+            try:
+                evt = program.addition(queue, (shape,), (wg,),
+                       d_data.data, d_data_1.data, d_res.data, numpy.int32(shape))
+                evt.wait()
+            except Exception as error:
+                logger.info("%s on device %s for WG=%s/%s" , error, device.name, wg, shape)
+                program = queue = d_res = d_data_1 = d_data = None
+                break
+            else:
+                res = d_res.get()
+                good = numpy.allclose(res, data + 1)
+                if good:
+                    if wg > max_valid_wg:
+                        max_valid_wg = wg
+                else:
+                    logger.warning("ArithmeticError on %s for WG=%s/%s", wg, device.name, shape)
+
+    return max_valid_wg
+
+
 class OpenCL(object):
     """
     Simple class that wraps the structure ocl_tools_extended.h
@@ -233,9 +298,11 @@ class OpenCL(object):
                     flop_core = 1
                 workgroup = device.max_work_group_size
                 if (devtype == "CPU") and (pypl.vendor == "Apple"):
-                    logger.info("For Apple's OpenCL on CPU: enforce max_work_goup_size=1")
-                    workgroup = 1
-
+                    logger.warning("For Apple's OpenCL on CPU: Measuring actual valid max_work_goup_size.")
+                    workgroup = _measure_workgroup_size(device, fast=True)
+                if (devtype == "GPU") and os.environ.get("GPU") == "False":
+                    # Environment variable to disable GPU devices
+                    continue
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
                                device.global_mem_size, bool(device.available), device.max_compute_units,
                                device.max_clock_frequency, flop_core, idd, workgroup)
@@ -409,16 +476,273 @@ def allocate_cl_buffers(buffers, device=None, context=None):
     logger.info("%.3fMB are needed on device which has %.3fMB",
                 ualloc / 1.0e6, memory / 1.0e6)
     if ualloc >= memory:
-        raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
+        raise MemoryError("Fatal error in allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
 
     # do the allocation
     try:
         for name, flag, dtype, size in buffers:
-            mem[name] = \
-                pyopencl.Buffer(context, flag,
-                                numpy.dtype(dtype).itemsize * size)
+            mem[name] = pyopencl.Buffer(context, flag,
+                                        numpy.dtype(dtype).itemsize * size)
     except pyopencl.MemoryError as error:
         release_cl_buffers(mem)
         raise MemoryError(error)
 
     return mem
+
+
+def measure_workgroup_size(device):
+    """Measure the actual size of the workgroup
+
+    :param device: device or context or 2-tuple with indexes
+    :return: the actual measured workgroup size
+
+    if device is "all", returns a dict with all devices with their ids as keys.
+    """
+    if (ocl is None) or (device is None):
+        return None
+
+    if isinstance(device, tuple) and (len(device) == 2):
+        # this is probably a tuple (platformid, deviceid)
+        device = ocl.create_context(platformid=device[0], deviceid=device[1])
+
+    if device == "all":
+        res = {}
+        for pid, platform in enumerate(ocl.platforms):
+            for did, _devices in enumerate(platform.devices):
+                tup = (pid, did)
+                res[tup] = measure_workgroup_size(tup)
+    else:
+        res = _measure_workgroup_size(device)
+    return res
+
+
+def kernel_workgroup_size(program, kernel):
+    """Extract the compile time maximum workgroup size
+
+    :param program: OpenCL program
+    :param kernel: kernel or name of the kernel
+    :return: the maximum acceptable workgroup size for the given kernel
+    """
+    assert isinstance(program, pyopencl.Program)
+    if not isinstance(kernel, pyopencl.Kernel):
+        kernel_name = kernel
+        assert kernel in (k.function_name for k in program.all_kernels()), "the kernel exists"
+        kernel = program.__getattr__(kernel_name)
+
+    device = program.devices[0]
+    query_wg = pyopencl.kernel_work_group_info.WORK_GROUP_SIZE
+    return kernel.get_work_group_info(query_wg, device)
+
+
+class OpenclProcessing(object):
+    """Abstract class for different types of OpenCL processing.
+    
+    This class provides:
+    * Generation of the context, queues, profiling mode
+    * Additional function to allocate/free all buffers declared as static attributes of the class 
+    * Functions to compile kernels, cache them and clean them  
+    * helper functions to clone the object
+    """
+    # Example of how to create an output buffer of 10 floats
+    buffers = [BufferDescription("output", 10, numpy.float32, mf.WRITE_ONLY),
+               ]
+    # list of kernel source files to be concatenated before compilation of the program
+    kernel_files = []
+
+    def __init__(self, ctx=None, devicetype="all", platformid=None, deviceid=None,
+                 block_size=None, profile=False):
+        """Constructor of the abstract OpenCL processing class
+        
+        :param ctx: actual working context, left to None for automatic 
+                    initialization from device type or platformid/deviceid 
+        :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
+        :param platformid: integer with the platform_identifier, as given by clinfo
+        :param deviceid: Integer with the device identifier, as given by clinfo
+        :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
+        :param profile: switch on profiling to be able to profile at the kernel level,
+                        store profiling elements (makes code slower) 
+        """
+        self.sem = threading.Semaphore()
+        self.profile = None
+        self.events = []  # List with of EventDescription, kept for profiling
+        self.cl_mem = {}  # dict with all buffer allocated
+        self.cl_program = None  # The actual OpenCL program
+        self.cl_kernel_args = {}  # dict with all kernel arguments
+        if ctx:
+            self.ctx = ctx
+            device_name = self.ctx.devices[0].name.strip()
+            platform_name = self.ctx.devices[0].platform.name.strip()
+            platform = ocl.get_platform(platform_name)
+            self.device = platform.get_device(device_name)
+        else:
+            self.ctx = ocl.create_context(devicetype=devicetype, platformid=platformid, deviceid=deviceid)
+            device_name = self.ctx.devices[0].name.strip()
+            platform_name = self.ctx.devices[0].platform.name.strip()
+            platform = ocl.get_platform(platform_name)
+            self.device = platform.get_device(device_name)
+        self.set_profiling(profile)
+        self.block_size = block_size
+
+    def __del__(self):
+        """Destructor: release all buffers and programs
+        """
+        self.free_kernels()
+        self.free_buffers()
+        self.queue = None
+        self.ctx = None
+        gc.collect()
+
+    def allocate_buffers(self, buffers=None):
+        """
+        Allocate OpenCL buffers required for a specific configuration
+    
+        :param buffers: a list of BufferDescriptions, leave to None for
+                        paramatrized buffers.
+
+        Note that an OpenCL context also requires some memory, as well
+        as Event and other OpenCL functionalities which cannot and are
+        not taken into account here.  The memory required by a context
+        varies depending on the device. Typical for GTX580 is 65Mb but
+        for a 9300m is ~15Mb In addition, a GPU will always have at
+        least 3-5Mb of memory in use.  Unfortunately, OpenCL does NOT
+        have a built-in way to check the actual free memory on a
+        device, only the total memory.
+        """
+
+        if buffers is None:
+            buffers = self.buffers
+
+        with self.sem:
+            mem = {}
+
+            # check if enough memory is available on the device
+            ualloc = 0
+            for buf in buffers:
+                ualloc += numpy.dtype(buf.dtype).itemsize * buf.size
+            logger.info("%.3fMB are needed on device which has %.3fMB",
+                        ualloc / 1.0e6, self.device.memory / 1.0e6)
+
+            if ualloc >= self.device.memory:
+                raise MemoryError("Fatal error in allocate_buffers. Not enough "
+                                  " device memory for buffers (%lu requested, %lu available)"
+                                  % (ualloc, self.device.memory))
+
+            # do the allocation
+            try:
+                for buf in buffers:
+                    size = numpy.dtype(buf.dtype).itemsize * buf.size
+                    mem[buf.name] = pyopencl.Buffer(self.ctx, buf.flags, size)
+            except pyopencl.MemoryError as error:
+                release_cl_buffers(mem)
+                raise MemoryError(error)
+
+        self.cl_mem.update(mem)
+
+    def free_buffers(self):
+        """free all device.memory allocated on the device
+        """
+        with self.sem:
+            for key, buf in list(self.cl_mem.items()):
+                if buf is not None:
+                    if isinstance(buf, pyopencl.array.Array):
+                        try:
+                            buf.data.release()
+                        except pyopencl.LogicError:
+                            logger.error("Error while freeing buffer %s", key)
+                    else:
+                        try:
+                            buf.release()
+                        except pyopencl.LogicError:
+                            logger.error("Error while freeing buffer %s", key)
+                    self.cl_mem[key] = None
+
+    def compile_kernels(self, kernel_files=None, compile_options=None):
+        """Call the OpenCL compiler
+        
+        :param kernel_files: list of path to the kernel 
+        (by default use the one declared in the class)
+        """
+        # concatenate all needed source files into a single openCL module
+        kernel_files = kernel_files or self.kernel_files
+        kernel_src = concatenate_cl_kernel(kernel_files)
+
+        compile_options = compile_options or ""
+        logger.info("Compiling file %s with options %s", kernel_files, compile_options)
+        try:
+            self.program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+            raise MemoryError(error)
+
+    def free_kernels(self):
+        """Free all kernels
+        """
+        for kernel in self.cl_kernel_args:
+            self.cl_kernel_args[kernel] = []
+        self.program = None
+
+    def set_profiling(self, value=True):
+        """Switch On/Off the profiling flag of the command queue to allow debugging
+        
+        :param value: set to True to enable profiling, or to False to disable it.
+                      Without profiling, the processing is marginally faster 
+        
+        Profiling information can then be retrived with the 'log_profile' method
+        """
+        if bool(value) != self.profile:
+            with self.sem:
+                self.profile = bool(value)
+                if self.profile:
+                    self.queue = pyopencl.CommandQueue(self.ctx,
+                        properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+                else:
+                    self.queue = pyopencl.CommandQueue(self.ctx)
+
+    def log_profile(self):
+        """If we are in profiling mode, prints out all timing for every single OpenCL call
+        """
+        t = 0.0
+        out = ["", "Profiling info for OpenCL %s" % self.__class__.__name__]
+        if self.profile:
+            for e in self.events:
+                if "__len__" in dir(e) and len(e) >= 2:
+                    et = 1e-6 * (e[1].profile.end - e[1].profile.start)
+                    out.append("%50s:\t%.3fms" % (e[0], et))
+                    t += et
+
+        out.append("_" * 80)
+        out.append("%50s:\t%.3fms" % ("Total execution time", t))
+        logger.info(os.linesep.join(out))
+        return out
+
+# This should be implemented by concrete class
+#     def __copy__(self):
+#         """Shallow copy of the object
+#
+#         :return: copy of the object
+#         """
+#         return self.__class__((self._data, self._indices, self._indptr),
+#                               self.size, block_size=self.BLOCK_SIZE,
+#                               platformid=self.platform.id,
+#                               deviceid=self.device.id,
+#                               checksum=self.on_device.get("data"),
+#                               profile=self.profile, empty=self.empty)
+#
+#     def __deepcopy__(self, memo=None):
+#         """deep copy of the object
+#
+#         :return: deepcopy of the object
+#         """
+#         if memo is None:
+#             memo = {}
+#         new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
+#         memo[id(self._data)] = new_csr[0]
+#         memo[id(self._indices)] = new_csr[1]
+#         memo[id(self._indptr)] = new_csr[2]
+#         new_obj = self.__class__(new_csr, self.size,
+#                                  block_size=self.BLOCK_SIZE,
+#                                  platformid=self.platform.id,
+#                                  deviceid=self.device.id,
+#                                  checksum=self.on_device.get("data"),
+#                                  profile=self.profile, empty=self.empty)
+#         memo[id(self)] = new_obj
+#         return new_obj
