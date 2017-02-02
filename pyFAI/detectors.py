@@ -38,6 +38,7 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "13/01/2017"
 __status__ = "stable"
+__doc__ = """Description of all detectors with a factory to instantiate them"""
 
 
 import logging
@@ -2584,3 +2585,5 @@ class RaspberryPi8M(Detector):
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
 load = NexusDetector.sload
+
+
