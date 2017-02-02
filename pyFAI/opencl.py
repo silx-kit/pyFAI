@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2017"
+__date__ = "02/02/2017"
 __status__ = "stable"
 
 import os
@@ -658,9 +658,9 @@ class OpenclProcessing(object):
 
     def compile_kernels(self, kernel_files=None, compile_options=None):
         """Call the OpenCL compiler
-        
-        :param kernel_files: list of path to the kernel 
-        (by default use the one declared in the class)
+
+        :param kernel_files: list of path to the kernel
+            (by default use the one declared in the class)
         """
         # concatenate all needed source files into a single openCL module
         kernel_files = kernel_files or self.kernel_files
@@ -682,11 +682,11 @@ class OpenclProcessing(object):
 
     def set_profiling(self, value=True):
         """Switch On/Off the profiling flag of the command queue to allow debugging
-        
+
         :param value: set to True to enable profiling, or to False to disable it.
-                      Without profiling, the processing is marginally faster 
-        
-        Profiling information can then be retrived with the 'log_profile' method
+                      Without profiling, the processing is marginally faster
+
+        Profiling information can then be retrieved with the 'log_profile' method
         """
         if bool(value) != self.profile:
             with self.sem:
