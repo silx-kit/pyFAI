@@ -41,7 +41,7 @@ import logging
 import numpy
 
 import unittest
-from silx.opencl import ocl, _measure_workgroup_size
+from ..common import ocl, _measure_workgroup_size
 if ocl:
     import pyopencl
     import pyopencl.array

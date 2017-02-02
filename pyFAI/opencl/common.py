@@ -210,7 +210,8 @@ class Platform(object):
 def _measure_workgroup_size(device_or_context, fast=False):
     """Mesure the maximal work group size of the given device
 
-    :param device: instance of pyopencl.Device or pyopencl.Context
+    :param device: instance of pyopencl.Device or pyopencl.Context or 2-tuple
+                   (platformid,deviceid)
     :param fast: ask the kernel the valid value, don't probe it
     :return: maximum size for the workgroup
     """
@@ -220,6 +221,10 @@ def _measure_workgroup_size(device_or_context, fast=False):
     elif isinstance(device_or_context, pyopencl.Context):
         ctx = device_or_context
         device = device_or_context.devices[0]
+    elif isinstance(device_or_context, (tuple, list)) and len(device_or_context) == 2:
+        ctx = ocl.create_context(platformid=device_or_context[0],
+                                 deviceid=device_or_context[1])
+        device = ctx.devices[0]
     else:
         raise RuntimeError("""given parameter device_or_context is not an
             instanciation of a device or a context""")
@@ -269,6 +274,8 @@ class OpenCL(object):
     This is a static class.
     ocl should be the only instance and shared among all python modules.
     """
+    def _is_nvidia_gpu(vendor, devtype) : return (vendor == "NVIDIA Corporation") and (devtype == "GPU")
+
     platforms = []
     nb_devices = 0
     context_cache = {}  # key: 2-tuple of int, value: context
@@ -291,7 +298,7 @@ class OpenCL(object):
                     devtype = "CPU"
                 if len(devtype) > 3:
                     devtype = devtype[:3]
-                if (pypl.vendor == "NVIDIA Corporation") and (devtype == "GPU") and "compute_capability_major_nv" in dir(device):
+                if _is_nvidia_gpu(pypl.vendor, devtype) and "compute_capability_major_nv" in dir(device):
                     comput_cap = device.compute_capability_major_nv, device.compute_capability_minor_nv
                     flop_core = NVIDIA_FLOP_PER_CORE.get(comput_cap, min(NVIDIA_FLOP_PER_CORE.values()))
                 elif (pypl.vendor == "Advanced Micro Devices, Inc.") and (devtype == "GPU"):
@@ -318,7 +325,9 @@ class OpenCL(object):
     def __repr__(self):
         out = ["OpenCL devices:"]
         for platformid, platform in enumerate(self.platforms):
-            out.append("[%s] %s: " % (platformid, platform.name) + ", ".join(["(%s,%s) %s" % (platformid, deviceid, dev.name) for deviceid, dev in enumerate(platform.devices)]))
+            deviceids = ["(%s,%s) %s" % (platformid, deviceid, dev.name) \
+                for deviceid, dev in enumerate(platform.devices)]
+            out.append("[%s] %s: " % (platformid, platform.name) + ", ".join(deviceids))
         return os.linesep.join(out)
 
     def get_platform(self, key):
@@ -377,14 +386,16 @@ class OpenCL(object):
         if best_found:
             return best_found[0], best_found[1]
 
-    def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None, cached=True):
+    def create_context(self, devicetype="ALL", useFp64=False, platformid=None,
+                       deviceid=None, cached=True):
         """
         Choose a device and initiate a context.
 
         Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
         Suggested are GPU,CPU.
         For each setting to work there must be such an OpenCL device and properly installed.
-        E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
+        E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail.
+              The AMD SDK kit is required for CPU via OpenCL.
         :param devicetype: string in ["cpu","gpu", "all", "acc"]
         :param useFp64: boolean specifying if double precision will be used
         :param platformid: integer
@@ -480,7 +491,10 @@ def allocate_cl_buffers(buffers, device=None, context=None):
     logger.info("%.3fMB are needed on device which has %.3fMB",
                 ualloc / 1.0e6, memory / 1.0e6)
     if ualloc >= memory:
-        raise MemoryError("Fatal error in allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
+        memError = "Fatal error in allocate_buffers."
+        memError += "Not enough device memory for buffers"
+        memError += "(%lu requested, %lu available)" % (ualloc, memory)
+        raise MemoryError(memError)  # noqa
 
     # do the allocation
     try:
