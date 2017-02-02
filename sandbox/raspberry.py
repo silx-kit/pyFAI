@@ -7,7 +7,7 @@ import numpy
 import pyFAI
 import time
 
-resolution = (640, 480) 
+resolution = (640, 480)
 shape = 500, 360
 fps = 2
 ai = pyFAI.AzimuthalIntegrator(detector="raspberry")
@@ -43,4 +43,4 @@ with PiCamera() as camera:
             QtCore.QCoreApplication.processEvents()
             raw.truncate(0)
 
-            
+

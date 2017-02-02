@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "01/12/2016"
+__date__ = "02/02/2017"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -42,7 +42,7 @@ from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
 cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """Calculate t2 (aka y) for 1 pixel
-    
+
     :param p1:distances in meter along dim1 from PONI
     :param p2: distances in meter along dim2 from PONI
     :param p3: distance sample - PONI
@@ -90,7 +90,7 @@ cdef inline double f_tth(double p1, double p2, double L, double sinRot1, double 
     :param L: distance sample - PONI
     :param sinRot1,sinRot2,sinRot3: sine of the angles
     :param cosRot1,cosRot2,cosRot3: cosine of the angles
-    :return 2 theta
+    :return: 2 theta
     """
     cdef:
         double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
@@ -227,7 +227,7 @@ def calc_pos_zyx(double L, double poni1, double poni2,
     r1 = numpy.asarray(t1)
     r2 = numpy.asarray(t2)
     r3 = numpy.asarray(t3)
-    
+
     if pos1.ndim == 3:
         return r3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
                r1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
@@ -460,8 +460,8 @@ def calc_cosa(double L,
               numpy.ndarray pos1 not None,
               numpy.ndarray pos2 not None,
               numpy.ndarray pos3=None):
-    """Calculate the cosine of the incidence angle using OpenMP. 
-    Used for sensors thickness effect corrections 
+    """Calculate the cosine of the incidence angle using OpenMP.
+    Used for sensors thickness effect corrections
 
     :param L: distance sample - PONI
     :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
@@ -507,8 +507,8 @@ def calc_rad_azim(double L,
                   numpy.ndarray pos3=None,
                   space="2th",
                   wavelength=None):
-    """Calculate the radial & azimutal position for each pixel from pos1, pos2, pos3. 
-                  
+    """Calculate the radial & azimutal position for each pixel from pos1, pos2, pos3.
+
     :param L: distance sample - PONI
     :param poni1: PONI coordinate along y axis
     :param poni2: PONI coordinate along x axis
@@ -518,11 +518,11 @@ def calc_rad_azim(double L,
     :param pos1: numpy array with distances in meter along dim1 from PONI (Y)
     :param pos2: numpy array with distances in meter along dim2 from PONI (X)
     :param pos3: numpy array with distances in meter along Sample->PONI (Z), positive behind the detector
-    :param space: can be "2th", "q" or "r" for radial units. Azimuthal units are radians  
-    :return: ndarray of double with same shape and size as pos1 + (2,), 
+    :param space: can be "2th", "q" or "r" for radial units. Azimuthal units are radians
+    :return: ndarray of double with same shape and size as pos1 + (2,),
     :raise: KeyError when space is bad !
             ValueError when wavelength is missing
-    
+
     """
     cdef ssize_t  size = pos1.size, i = 0
     assert pos2.size == size, "pos2.size == size"

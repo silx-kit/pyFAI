@@ -24,7 +24,7 @@
 # THE SOFTWARE.
 
 """ Bayesian evaluation of background for 1D powder diffraction pattern
- 
+
 Code according to Sivia and David, J. Appl. Cryst. (2001). 34, 318-324
 # Version: 0.1 2012/03/28
 # Version: 0.2 2016/10/07: OOP implementation
@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2016"
+__date__ = "02/02/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -46,20 +46,20 @@ from scipy import optimize
 
 class BayesianBackground(object):
     """This class estimates the background of a powder diffraction pattern
-    
+
     http://journals.iucr.org/j/issues/2001/03/00/he0278/he0278.pdf
-    
+
     The log likelihood is described in correspond to eq7 of the paper:
     z = y/sigma^2
     * if z<0: a quadratic behaviour is expected
-    * if z>>1 it is likely a bragg peak so the penalty should be small: log(z). 
-    * The spline is used to have a quadratic behaviour near 0 and the log one 
-      near the junction   
-    
-    The threshold is taken at 8 as erf is 1 above 6: 
-    The points 6, 7 and 8 are used in the spline to ensure a continuous junction 
-    with the logarithmic continuation 
-     
+    * if z>>1 it is likely a bragg peak so the penalty should be small: log(z).
+    * The spline is used to have a quadratic behaviour near 0 and the log one
+      near the junction
+
+    The threshold is taken at 8 as erf is 1 above 6:
+    The points 6, 7 and 8 are used in the spline to ensure a continuous junction
+    with the logarithmic continuation
+
     """
     s1 = None
     PREFACTOR = 1
@@ -124,13 +124,14 @@ class BayesianBackground(object):
     @classmethod
     def bayes_llk(cls, z):
         """Calculate actually the log-likelihood from a set of weighted error
-        
+
         Re implementation of:
         (y<=0)*5*y**2 + (y>0)*(y<8)*pyFAI.utils.bayes.background.spline(y) + (y>=8)*(s1+log(abs(y)+1*(y<8)))
         even slightly faster
-        
+
         :param float[:] z: weighted error
-        :return float[:]: log likelihood 
+        :return: log likelihood
+        :rtype: float[:]
         """
 
         llk = numpy.zeros_like(z)
@@ -154,29 +155,30 @@ class BayesianBackground(object):
     @classmethod
     def func_min(cls, y0, x_obs, y_obs, w_obs, x0, k):
         """ Function to optimize
-        
-        :param y0: values of the background 
+
+        :param y0: values of the background
         :param x_obs: experimental values
         :param y_obs: experimental values
         :param w_obs: weights of the experimental points
         :param x0: position of evaluation of the spline
         :param k: order of the spline, usually 3
-        :return: sum of the log-likelihood to be minimized 
+        :return: sum of the log-likelihood to be minimized
         """
         s = UnivariateSpline(x0, y0, s=0, k=k)
         tmp = cls.bayes_llk(w_obs * (y_obs - s(x_obs))).sum()
         return tmp
 
     def __call__(self, x, y, sigma=None, npt=40, k=3):
-        """Function like class instance... 
-        
+        """Function like class instance...
+
         :param float[:] x: coordinates along the horizontal axis
         :param float[:] y: coordinates along the vertical axis
         :param float[:] sigma: error along the vertical axis
         :param int npt: number of points of the fitting spline
         :param int k: order of the fitted spline.
-        :return float[:]: the background for y 
-        
+        :return: the background for y
+        :rtype: float[:]
+
         Nota: Due to spline function, one needs: npt >= k + 1
         """
         if sigma is None:
@@ -204,11 +206,11 @@ class BayesianBackground(object):
         """ Function to optimize
 
         :param values: values of the background on spline knots
-        :param d0_sparse: positions along slowest axis of the spline knots 
+        :param d0_sparse: positions along slowest axis of the spline knots
         :param d1_pos: positions along fastest axis of the spline knots
         :param d0_pos: positions along slowest axis (all coordinates)
         :param d1_pos: positions along fastest axis (all coordinates)
-        :param y_obs: intensities actually measured 
+        :param y_obs: intensities actually measured
         :param w_obs: weights of the experimental points
         :param valid: coordinated of valid pixels
         :param k: order of the spline, usually 3

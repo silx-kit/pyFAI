@@ -2076,7 +2076,7 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_5pyFAI_3ext_10splitPixel_get_bin
   double __pyx_r;
 
   /* "pyFAI/ext/regrid_common.pxi":59
- *     @return: bin number as floating point.
+ *     :return: bin number as floating point.
  *     """
  *     return (x0 - pos0_min) / delta             # <<<<<<<<<<<<<<
  */
@@ -2108,7 +2108,7 @@ static CYTHON_INLINE __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_f_5pyFAI_
   __pyx_t_5pyFAI_3ext_10splitPixel_position_t __pyx_r;
 
   /* "pyFAI/ext/splitPixel.pyx":67
- *     @return: area, i.e. 1/2 * (AC ^ BD)
+ *     :return: area, i.e. 1/2 * (AC ^ BD)
  *     """
  *     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))             # <<<<<<<<<<<<<<
  * 
@@ -2489,7 +2489,7 @@ static CYTHON_INLINE void __pyx_f_5pyFAI_3ext_10splitPixel_integrate(__Pyx_memvi
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_10splitPixel_fullSplit1D[] = "fullSplit1D(ndarray pos, ndarray weights, int bins=100, pos0Range=None, pos1Range=None, dummy=None, delta_dummy=None, mask=None, dark=None, flat=None, solidangle=None, polarization=None, float empty=0.0, double normalization_factor=1.0)\n\n    Calculates histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D.\n    No compromise for speed has been made here.\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64) with flat image\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return 2theta, I, weighted histogram, unweighted histogram\n    ";
+static char __pyx_doc_5pyFAI_3ext_10splitPixel_fullSplit1D[] = "fullSplit1D(ndarray pos, ndarray weights, int bins=100, pos0Range=None, pos1Range=None, dummy=None, delta_dummy=None, mask=None, dark=None, flat=None, solidangle=None, polarization=None, float empty=0.0, double normalization_factor=1.0)\n\n    Calculates histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D.\n    No compromise for speed has been made here.\n\n\n    :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    :param weights: array with intensities\n    :param bins: number of output bins\n    :param pos0Range: minimum and maximum  of the 2th range\n    :param pos1Range: minimum and maximum  of the chi range\n    :param dummy: value for bins without pixels\n    :param delta_dummy: precision of dummy value\n    :param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    :param dark: array (of float64) with dark noise to be subtracted (or None)\n    :param flat: array (of float64) with flat image\n    :param polarization: array (of float64) with polarization correction\n    :param solidangle: array (of float64) with flat image\n    :param empty: value of output bins without any contribution when dummy is None\n    :param normalization_factor: divide the valid result by this value\n\n    :return: 2theta, I, weighted histogram, unweighted histogram\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_10splitPixel_1fullSplit1D = {"fullSplit1D", (PyCFunction)__pyx_pw_5pyFAI_3ext_10splitPixel_1fullSplit1D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_10splitPixel_fullSplit1D};
 static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
@@ -2955,7 +2955,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10splitPixel_fullSplit1D(CYTHON_UNUSED PyO
   __pyx_pybuffernd_outMerge.rcbuffer = &__pyx_pybuffer_outMerge;
 
   /* "pyFAI/ext/splitPixel.pyx":148
- *     @return 2theta, I, weighted histogram, unweighted histogram
+ *     :return: 2theta, I, weighted histogram, unweighted histogram
  *     """
  *     cdef int  size = weights.size             # <<<<<<<<<<<<<<
  *     if pos.ndim>3: #create a view
@@ -5931,7 +5931,7 @@ __pyx_t_14.strides[0] = __pyx_v_buffer.strides[0];
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_10splitPixel_2fullSplit2D[] = "fullSplit2D(ndarray pos, ndarray weights, bins, pos0Range=None, pos1Range=None, dummy=None, delta_dummy=None, mask=None, dark=None, flat=None, solidangle=None, polarization=None, float empty=0.0, double normalization_factor=1.0)\n\n    Calculate 2D histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat-field image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64)with solid angle corrections\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
+static char __pyx_doc_5pyFAI_3ext_10splitPixel_2fullSplit2D[] = "fullSplit2D(ndarray pos, ndarray weights, bins, pos0Range=None, pos1Range=None, dummy=None, delta_dummy=None, mask=None, dark=None, flat=None, solidangle=None, polarization=None, float empty=0.0, double normalization_factor=1.0)\n\n    Calculate 2D histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D\n\n\n    :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    :param weights: array with intensities\n    :param bins: number of output bins int or 2-tuple of int\n    :param pos0Range: minimum and maximum  of the 2th range\n    :param pos1Range: minimum and maximum  of the chi range\n    :param dummy: value for bins without pixels\n    :param delta_dummy: precision of dummy value\n    :param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    :param dark: array (of float64) with dark noise to be subtracted (or None)\n    :param flat: array (of float64) with flat-field image\n    :param polarization: array (of float64) with polarization correction\n    :param solidangle: array (of float64)with solid angle corrections\n    :param empty: value of output bins without any contribution when dummy is None\n    :param normalization_factor: divide the valid result by this value\n\n    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_10splitPixel_3fullSplit2D = {"fullSplit2D", (PyCFunction)__pyx_pw_5pyFAI_3ext_10splitPixel_3fullSplit2D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_10splitPixel_2fullSplit2D};
 static PyObject *__pyx_pw_5pyFAI_3ext_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;

@@ -134,7 +134,7 @@ Let's download such a file and create a detector from it.
         with open(target,"wb") as dest, opener(url) as src:
             dest.write(src.read())
         return target
-    
+
     spline_file = download("http://www.silx.org/pub/pyFAI/testimages/halfccd.spline")
 
 .. code:: python
@@ -305,7 +305,7 @@ distortion.
     import fabio
     raw = fabio.open(halfccd_img).data
     cor = dis.correct(raw)
-    
+
     #Then display images side by side
     numpy.seterr(divide="ignore") #remove warning messages from numpy
     figure(figsize=(12,6))
@@ -388,18 +388,18 @@ image.
     xpad = pyFAI.detector_factory("Xpad_flat")
     print(xpad)
     xpad_dis = Distortion(xpad, resize=True)
-    
+
     raw = fabio.open(xpad_file).data
     cor = xpad_dis.correct(raw)
     print("Shape as input and output:", raw.shape, cor.shape)
-    
+
     #then display images side by side
     figure(figsize=(12,10))
     subplot(1,2,1)
     imshow(numpy.log(raw), interpolation="nearest", origin="lower")
     subplot(1,2,2)
     imshow(numpy.log(cor), interpolation="nearest", origin="lower")
-    
+
     print("Conservation of the total intensity:", raw.sum(), cor.sum())
 
 
@@ -434,18 +434,18 @@ a NeXus detector definition file.
     wos = pyFAI.detector_factory(wos_det)
     print(wos)
     wos_dis = Distortion(wos, resize=True)
-    
+
     raw = fabio.open(wos_img).data
     cor = wos_dis.correct(raw)
     print("Shape as input and output:", raw.shape, cor.shape)
-    
+
     #then display images side by side
     figure(figsize=(12,10))
     subplot(1,2,1)
     imshow(numpy.log(raw), interpolation="nearest", origin="lower")
     subplot(1,2,2)
     imshow(numpy.log(cor), interpolation="nearest", origin="lower")
-    
+
     print("Conservation of the total intensity:", raw.sum(), cor.sum())
 
 

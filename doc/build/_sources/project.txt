@@ -149,7 +149,7 @@ To test the installed version of pyFAI:
 
 or from python:
 
-.. code-block:: python 
+.. code-block:: python
 
     import pyFAI
     pyFAI.tests()
@@ -212,8 +212,8 @@ Continuous integration is made by a home-made scripts which checks out the lates
 `Nightly builds <http://www.silx.org/pub/debian/binary/>`_ are available for debian8-64 bits. To install them:
 
 .. code::
-    
-    
+
+
 	sudo apt-get update
 	sudo apt-get install pyfai
 

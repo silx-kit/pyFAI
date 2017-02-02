@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2016"
+__date__ = "02/02/2017"
 __status__ = "development"
 
 import threading
@@ -568,8 +568,8 @@ class PixelwiseWorker(object):
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """Constructor of the worker
-        
-        :param dark: array 
+
+        :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
@@ -610,7 +610,7 @@ class PixelwiseWorker(object):
         Process the data and apply a normalization factor
         :param data: input data
         :param normalization: normalization factor
-        :return processed data
+        :return: processed data
         """
         if preproc is not None:
             proc_data = preproc(data,
@@ -658,12 +658,12 @@ class DistortionWorker(object):
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """Constructor of the worker
-        :param dark: array 
+        :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
-        
+
         """
 
         self.ctx = None
@@ -707,7 +707,7 @@ class DistortionWorker(object):
         Process the data and apply a normalization factor
         :param data: input data
         :param normalization: normalization factor
-        :return processed data
+        :return: processed data
         """
         if preproc is not None:
             proc_data = preproc(data,

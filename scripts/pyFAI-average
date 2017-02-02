@@ -44,7 +44,7 @@ class PreEmitStreamHandler(logging.StreamHandler):
 
     def emit(self, record):
         """
-        @type record: logging.LogRecord
+        :type record: logging.LogRecord
         """
         self.pre_emit()
         super(PreEmitStreamHandler, self).emit(record)

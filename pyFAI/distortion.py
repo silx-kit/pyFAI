@@ -159,7 +159,7 @@ class Distortion(object):
         """
         Calculate/cache the output shape
 
-        :return output shape
+        :return: output shape
         """
         if self._shape_out is None:
             self.calc_pos()

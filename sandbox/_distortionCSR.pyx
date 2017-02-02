@@ -12,12 +12,12 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -31,7 +31,7 @@ __contact__ = "jerome.kieffer@esrf.fr"
 import cython
 cimport numpy
 import numpy
-from cython.parallel import prange  
+from cython.parallel import prange
 from libc.math cimport floor, ceil, fabs
 import logging
 import threading
@@ -203,7 +203,7 @@ class Distortion(object):
     """
     def __init__(self, detector="detector", shape=None, compute_device="Host", workgroup_size=32):
         """
-        @param detector: detector instance or detector name
+        :param detector: detector instance or detector name
         """
         if type(detector) in types.StringTypes:
             self.detector = detector_factory(detector)
@@ -294,19 +294,19 @@ class Distortion(object):
     def calc_LUT(self):
         cdef:
             int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
-            int offset0, offset1, box_size0, box_size1, bins, tmp_index  
+            int offset0, offset1, box_size0, box_size1, bins, tmp_index
             numpy.int32_t k, idx=0
             float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
             float[:, :, :, :] pos
             numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
             float[:, :] buffer
             numpy.ndarray[numpy.int32_t, ndim = 1] indptr
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices 
+            numpy.ndarray[numpy.int32_t, ndim = 1] indices
             numpy.ndarray[numpy.float32_t, ndim = 1] data
             numpy.ndarray[numpy.int32_t, ndim = 1] bin_size
 
         shape0, shape1 = self.shape
- 
+
         bin_size = self.bin_size
 
         if self.lut_size is None:
@@ -315,18 +315,18 @@ class Distortion(object):
             with self._sem:
                 if self.LUT is None:
                     pos = self.pos
-                    
+
                     indices = numpy.zeros(shape=self.lut_size, dtype=numpy.int32)
                     data = numpy.zeros(shape=self.lut_size, dtype=numpy.float32)
-                    
+
                     bins = shape0 * shape1
                     indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
                     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
-                    
+
                     indices_size = self.lut_size * sizeof(numpy.int32)
                     data_size = self.lut_size * sizeof(numpy.float32)
                     indptr_size = bins * sizeof(numpy.int32)
-                    
+
                     logger.info("CSR matrix: %.3f MByte" % ((indices_size+data_size+indptr_size)/1.0e6))
                     buffer = numpy.empty((self.delta0, self.delta1),dtype=numpy.float32)
                     buffer_size = self.delta0 * self.delta1 * sizeof(float)
@@ -414,8 +414,8 @@ class Distortion(object):
         Correct an image based on the look-up table calculated ...
         Calculation takes place on the Host
 
-        @param image: 2D-array with the image
-        @return: corrected 2D image
+        :param image: 2D-array with the image
+        :return: corrected 2D image
         """
         cdef int i, j, idx, size, bins
         cdef float coef, tmp
@@ -450,7 +450,7 @@ class Distortion(object):
                         logger.warning("Accessing %i >= %i !!!" % (idx, size))
                         continue
                 tmp = lout[i] + lin[idx] * coef
-                lout[i] = tmp 
+                lout[i] = tmp
         return out[:img_shape[0], :img_shape[1]]
 
     @cython.wraparound(False)
@@ -460,8 +460,8 @@ class Distortion(object):
         Correct an image based on the look-up table calculated ...
         Calculation takes place on the device
 
-        @param image: 2D-array with the image
-        @return: corrected 2D image
+        :param image: 2D-array with the image
+        :return: corrected 2D image
         """
         if self.integrator is None:
             if self.LUT is None:
@@ -477,7 +477,7 @@ class Distortion(object):
         out = self.integrator.integrate(image)
         out[1].shape = self.shape
         return out[1][:img_shape[0], :img_shape[1]]
-    
+
     @cython.wraparound(False)
     @cython.boundscheck(False)
     def correct(self, image):
@@ -488,20 +488,20 @@ class Distortion(object):
         else:
             logger.warning("Please select a compute device (Host or Device)")
         return out
-        
+
     def setHost(self):
         self.compute_device = "Host"
-        
+
     def setDevice(self):
         self.compute_device = "Device"
-                
+
     @timeit
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
 
-        @param image: 2D-array with the image
-        @return: uncorrected 2D image and a mask (pixels in raw image
+        :param image: 2D-array with the image
+        :return: uncorrected 2D image and a mask (pixels in raw image
         """
         cdef int[:] indices, indptr
         cdef float[:] data
@@ -515,7 +515,7 @@ class Distortion(object):
         lmask = mask.ravel()
         lout = out.ravel()
         lin = image.ravel()
-        
+
         data = self.LUT[0]
         indices = self.LUT[1]
         indptr = self.LUT[2]
@@ -528,5 +528,5 @@ class Distortion(object):
                 continue
             val = lin[idx] / data[idx1:idx2].sum()
             lout[indices[idx1:idx2]] += val * data[idx1:idx2]
-                               
+
         return out, mask

@@ -52,9 +52,9 @@ cdef class Bilinear:
     def f_cy(self, x):
         """
         Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
-        @param x: 2-tuple of float
-        @return: Interpolated signal from the image (negative for minimizer)
 
+        :param x: 2-tuple of float
+        :return: Interpolated signal from the image (negative for minimizer)
         """
         cdef:
             float d0 = x[0]
@@ -167,10 +167,9 @@ cdef class Bilinear:
         """
         Return the local maximum ... without sub-pixel refinement
 
-        @param x: start index
-        @param w: half with of the window: 1 or 2 are advised
-        @return: local maximum index
-
+        :param x: start index
+        :param w: half with of the window: 1 or 2 are advised
+        :return: local maximum index
         """
         cdef:
             int current0 = x // self.width

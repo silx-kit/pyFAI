@@ -2332,7 +2332,7 @@ static CYTHON_INLINE float __pyx_fuse_0__pyx_f_5pyFAI_3ext_17splitPixelFullLUT_g
   float __pyx_r;
 
   /* "pyFAI/ext/regrid_common.pxi":59
- *     @return: bin number as floating point.
+ *     :return: bin number as floating point.
  *     """
  *     return (x0 - pos0_min) / delta             # <<<<<<<<<<<<<<
  */
@@ -2364,7 +2364,7 @@ static CYTHON_INLINE float __pyx_f_5pyFAI_3ext_17splitPixelFullLUT_area4(float _
   float __pyx_r;
 
   /* "pyFAI/ext/splitPixelFullLUT.pyx":64
- *     @return: area, i.e. 1/2 * (AC ^ BD)
+ *     :return: area, i.e. 1/2 * (AC ^ BD)
  *     """
  *     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))             # <<<<<<<<<<<<<<
  * 
@@ -2535,7 +2535,7 @@ static CYTHON_INLINE float __pyx_f_5pyFAI_3ext_17splitPixelFullLUT_integrate(flo
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit___init__[] = "HistoLUT1dFullSplit.__init__(self, ndarray pos, int bins=100, pos0Range=None, pos1Range=None, mask=None, mask_checksum=None, allow_pos0_neg=False, unit='undefined', empty=None)\n\n        @param pos: 3D or 4D array with the coordinates of each pixel point\n        @param bins: number of output bins, 100 by default\n        @param pos0Range: minimum and maximum  of the 2th range\n        @param pos1Range: minimum and maximum  of the chi range\n        @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n        @param allow_pos0_neg: enforce the q<0 is usually not possible\n        @param unit: can be 2th_deg or r_nm^-1 ...\n        ";
+static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit___init__[] = "HistoLUT1dFullSplit.__init__(self, ndarray pos, int bins=100, pos0Range=None, pos1Range=None, mask=None, mask_checksum=None, allow_pos0_neg=False, unit='undefined', empty=None)\n\n        :param pos: 3D or 4D array with the coordinates of each pixel point\n        :param bins: number of output bins, 100 by default\n        :param pos0Range: minimum and maximum  of the 2th range\n        :param pos1Range: minimum and maximum  of the chi range\n        :param mask: array (of int8) with masked pixels with 1 (0=not masked)\n        :param allow_pos0_neg: enforce the q<0 is usually not possible\n        :param unit: can be 2th_deg or r_nm^-1 ...\n        ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_1__init__ = {"__init__", (PyCFunction)__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_1__init__, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit___init__};
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
@@ -2609,7 +2609,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_
  *                  unit="undefined",
  *                  empty=None):             # <<<<<<<<<<<<<<
  *         """
- *         @param pos: 3D or 4D array with the coordinates of each pixel point
+ *         :param pos: 3D or 4D array with the coordinates of each pixel point
  */
     values[9] = ((PyObject *)((PyObject *)Py_None));
     if (unlikely(__pyx_kwds)) {
@@ -5739,7 +5739,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_4integrate[] = "HistoLUT1dFullSplit.integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None)\n\n        Actually perform the integration which in this case looks more like a matrix-vector product\n\n        @param weights: input image\n        @type weights: ndarray\n        @param dummy: value for dead pixels (optional)\n        @type dummy: float\n        @param delta_dummy: precision for dead-pixel value in dynamic masking\n        @type delta_dummy: float\n        @param dark: array with the dark-current value to be subtracted (if any)\n        @type dark: ndarray\n        @param flat: array with the dark-current value to be divided by (if any)\n        @type flat: ndarray\n        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)\n        @type solidAngle: ndarray\n        @param polarization: array with the polarization correction values to be divided by (if any)\n        @type polarization: ndarray\n        @return : positions, pattern, weighted_histogram and unweighted_histogram\n        @rtype: 4-tuple of ndarrays\n\n        ";
+static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_4integrate[] = "HistoLUT1dFullSplit.integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None)\n\n        Actually perform the integration which in this case looks more like a matrix-vector product\n\n        :param weights: input image\n        :type weights: ndarray\n        :param dummy: value for dead pixels (optional)\n        :type dummy: float\n        :param delta_dummy: precision for dead-pixel value in dynamic masking\n        :type delta_dummy: float\n        :param dark: array with the dark-current value to be subtracted (if any)\n        :type dark: ndarray\n        :param flat: array with the dark-current value to be divided by (if any)\n        :type flat: ndarray\n        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)\n        :type solidAngle: ndarray\n        :param polarization: array with the polarization correction values to be divided by (if any)\n        :type polarization: ndarray\n        :return: positions, pattern, weighted_histogram and unweighted_histogram\n        :rtype: 4-tuple of ndarrays\n\n        ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_5integrate = {"integrate", (PyCFunction)__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_5integrate, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_4integrate};
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT1dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
@@ -8617,7 +8617,7 @@ static CYTHON_INLINE int __pyx_f_5pyFAI_3ext_17splitPixelFullLUT_foo(float __pyx
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit___init__[] = "HistoLUT2dFullSplit.__init__(self, ndarray pos, bins=(100, 36), pos0Range=None, pos1Range=None, mask=None, mask_checksum=None, allow_pos0_neg=False, unit='undefined')\n\n        @param pos: 3D or 4D array with the coordinates of each pixel point\n        @param bins: number of output bins (tth=100, chi=36 by default)\n        @param pos0Range: minimum and maximum  of the 2th range\n        @param pos1Range: minimum and maximum  of the chi range\n        @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n        @param allow_pos0_neg: enforce the q<0 is usually not possible\n        @param unit: can be 2th_deg or r_nm^-1 ...\n        ";
+static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit___init__[] = "HistoLUT2dFullSplit.__init__(self, ndarray pos, bins=(100, 36), pos0Range=None, pos1Range=None, mask=None, mask_checksum=None, allow_pos0_neg=False, unit='undefined')\n\n        :param pos: 3D or 4D array with the coordinates of each pixel point\n        :param bins: number of output bins (tth=100, chi=36 by default)\n        :param pos0Range: minimum and maximum  of the 2th range\n        :param pos1Range: minimum and maximum  of the chi range\n        :param mask: array (of int8) with masked pixels with 1 (0=not masked)\n        :param allow_pos0_neg: enforce the q<0 is usually not possible\n        :param unit: can be 2th_deg or r_nm^-1 ...\n        ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_1__init__ = {"__init__", (PyCFunction)__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_1__init__, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit___init__};
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
@@ -14114,7 +14114,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_4integrate[] = "HistoLUT2dFullSplit.integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None)\n\n        Actually perform the integration which in this case looks more like a matrix-vector product\n\n        @param weights: input image\n        @type weights: ndarray\n        @param dummy: value for dead pixels (optional)\n        @type dummy: float\n        @param delta_dummy: precision for dead-pixel value in dynamic masking\n        @type delta_dummy: float\n        @param dark: array with the dark-current value to be subtracted (if any)\n        @type dark: ndarray\n        @param flat: array with the dark-current value to be divided by (if any)\n        @type flat: ndarray\n        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)\n        @type solidAngle: ndarray\n        @param polarization: array with the polarization correction values to be divided by (if any)\n        @type polarization: ndarray\n        @return : positions, pattern, weighted_histogram and unweighted_histogram\n        @rtype: 4-tuple of ndarrays\n\n        ";
+static char __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_4integrate[] = "HistoLUT2dFullSplit.integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None)\n\n        Actually perform the integration which in this case looks more like a matrix-vector product\n\n        :param weights: input image\n        :type weights: ndarray\n        :param dummy: value for dead pixels (optional)\n        :type dummy: float\n        :param delta_dummy: precision for dead-pixel value in dynamic masking\n        :type delta_dummy: float\n        :param dark: array with the dark-current value to be subtracted (if any)\n        :type dark: ndarray\n        :param flat: array with the dark-current value to be divided by (if any)\n        :type flat: ndarray\n        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)\n        :type solidAngle: ndarray\n        :param polarization: array with the polarization correction values to be divided by (if any)\n        :type polarization: ndarray\n        :return: positions, pattern, weighted_histogram and unweighted_histogram\n        :rtype: 4-tuple of ndarrays\n\n        ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_5integrate = {"integrate", (PyCFunction)__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_5integrate, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_4integrate};
 static PyObject *__pyx_pw_5pyFAI_3ext_17splitPixelFullLUT_19HistoLUT2dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
