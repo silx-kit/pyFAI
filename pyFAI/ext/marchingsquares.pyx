@@ -196,9 +196,9 @@ def isocontour(img, isovalue=None, sorted=False):
     is not given or None, a value between the min and max of the image
     is used.
 
-    @param img: 2D array representing the image
-    @param isovalue: the value for which the iso_contour shall be calculated
-    @param sorted: perform a sorting of the points to have them contiguous ?
+    :param img: 2D array representing the image
+    :param isovalue: the value for which the iso_contour shall be calculated
+    :param sorted: perform a sorting of the points to have them contiguous ?
 
     Returns a pointset in which each two subsequent points form a line
     piece. This van be best visualized using "vv.plot(result, ls='+')".

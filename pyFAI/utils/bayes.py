@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2016"
+__date__ = "02/02/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -124,13 +124,14 @@ class BayesianBackground(object):
     @classmethod
     def bayes_llk(cls, z):
         """Calculate actually the log-likelihood from a set of weighted error
-        
+
         Re implementation of:
         (y<=0)*5*y**2 + (y>0)*(y<8)*pyFAI.utils.bayes.background.spline(y) + (y>=8)*(s1+log(abs(y)+1*(y<8)))
         even slightly faster
-        
+
         :param float[:] z: weighted error
-        :return float[:]: log likelihood 
+        :return: log likelihood
+        :rtype: float[:]
         """
 
         llk = numpy.zeros_like(z)
@@ -154,7 +155,7 @@ class BayesianBackground(object):
     @classmethod
     def func_min(cls, y0, x_obs, y_obs, w_obs, x0, k):
         """ Function to optimize
-        
+
         :param y0: values of the background 
         :param x_obs: experimental values
         :param y_obs: experimental values
@@ -169,14 +170,15 @@ class BayesianBackground(object):
 
     def __call__(self, x, y, sigma=None, npt=40, k=3):
         """Function like class instance... 
-        
+
         :param float[:] x: coordinates along the horizontal axis
         :param float[:] y: coordinates along the vertical axis
         :param float[:] sigma: error along the vertical axis
         :param int npt: number of points of the fitting spline
         :param int k: order of the fitted spline.
-        :return float[:]: the background for y 
-        
+        :return: the background for y
+        :rtype: float[:]
+
         Nota: Due to spline function, one needs: npt >= k + 1
         """
         if sigma is None:
@@ -204,11 +206,11 @@ class BayesianBackground(object):
         """ Function to optimize
 
         :param values: values of the background on spline knots
-        :param d0_sparse: positions along slowest axis of the spline knots 
+        :param d0_sparse: positions along slowest axis of the spline knots
         :param d1_pos: positions along fastest axis of the spline knots
         :param d0_pos: positions along slowest axis (all coordinates)
         :param d1_pos: positions along fastest axis (all coordinates)
-        :param y_obs: intensities actually measured 
+        :param y_obs: intensities actually measured
         :param w_obs: weights of the experimental points
         :param valid: coordinated of valid pixels
         :param k: order of the spline, usually 3

@@ -39,9 +39,9 @@ include "sparse_common.pxi"
 def LUT_to_CSR(lut):
     """Conversion between sparse matrix representations
 
-    @param lut: Look-up table as 2D array of (int idx, float coef)
-    @return: the same matrix as CSR representation
-    @rtype: 3-tuple of numpy array (data, indices, indptr)
+    :param lut: Look-up table as 2D array of (int idx, float coef)
+    :return: the same matrix as CSR representation
+    :rtype: 3-tuple of numpy array (data, indices, indptr)
     """
     cdef:
         int nrow, ncol
@@ -76,11 +76,11 @@ def LUT_to_CSR(lut):
 def CSR_to_LUT(data, indices, indptr):
     """Conversion between sparse matrix representations
 
-    @param data: coef of the sparse matrix as 1D array
-    @param indices: index of the col position in input array as 1D array
-    @param indptr: index of the start of the row in the indices array
-    @return: the same matrix as LUT representation
-    @rtype: record array of (int idx, float coef)
+    :param data: coef of the sparse matrix as 1D array
+    :param indices: index of the col position in input array as 1D array
+    :param indptr: index of the start of the row in the indices array
+    :return: the same matrix as LUT representation
+    :rtype: record array of (int idx, float coef)
     """
     cdef:
         int nrow, ncol

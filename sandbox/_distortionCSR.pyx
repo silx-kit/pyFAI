@@ -203,7 +203,7 @@ class Distortion(object):
     """
     def __init__(self, detector="detector", shape=None, compute_device="Host", workgroup_size=32):
         """
-        @param detector: detector instance or detector name
+        :param detector: detector instance or detector name
         """
         if type(detector) in types.StringTypes:
             self.detector = detector_factory(detector)
@@ -414,8 +414,8 @@ class Distortion(object):
         Correct an image based on the look-up table calculated ...
         Calculation takes place on the Host
 
-        @param image: 2D-array with the image
-        @return: corrected 2D image
+        :param image: 2D-array with the image
+        :return: corrected 2D image
         """
         cdef int i, j, idx, size, bins
         cdef float coef, tmp
@@ -460,8 +460,8 @@ class Distortion(object):
         Correct an image based on the look-up table calculated ...
         Calculation takes place on the device
 
-        @param image: 2D-array with the image
-        @return: corrected 2D image
+        :param image: 2D-array with the image
+        :return: corrected 2D image
         """
         if self.integrator is None:
             if self.LUT is None:
@@ -500,8 +500,8 @@ class Distortion(object):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
 
-        @param image: 2D-array with the image
-        @return: uncorrected 2D image and a mask (pixels in raw image
+        :param image: 2D-array with the image
+        :return: uncorrected 2D image and a mask (pixels in raw image
         """
         cdef int[:] indices, indptr
         cdef float[:] data

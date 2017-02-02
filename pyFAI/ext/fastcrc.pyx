@@ -40,8 +40,8 @@ from crc32 cimport crc32 as C_crc32
 def crc32(numpy.ndarray data not None):
     """
     Calculate the CRC32 checksum of a numpy array
-    @param data: a numpy array
-    @return unsigned integer
+    :param data: a numpy array
+    :return unsigned integer
     """
     cdef numpy.uint32_t size = data.nbytes
     return C_crc32(<char *> data.data, size)

@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/12/2016"
+__date__ = "02/02/2017"
 __status__ = "development"
 
 import threading
@@ -610,7 +610,7 @@ class PixelwiseWorker(object):
         Process the data and apply a normalization factor
         :param data: input data
         :param normalization: normalization factor
-        :return processed data
+        :return: processed data
         """
         if preproc is not None:
             proc_data = preproc(data,
@@ -707,7 +707,7 @@ class DistortionWorker(object):
         Process the data and apply a normalization factor
         :param data: input data
         :param normalization: normalization factor
-        :return processed data
+        :return: processed data
         """
         if preproc is not None:
             proc_data = preproc(data,

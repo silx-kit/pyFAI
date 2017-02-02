@@ -241,17 +241,17 @@ center coordinates (but the sample-detector distance is in millimeters).
         By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
         To obtaine correct result you will have to flip images using numpy.flipud.
         
-        @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
-        @param tilt: tilt in degrees
-        @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+        :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
+        :param tilt: tilt in degrees
+        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
                 * 0deg -> Y does not move, +X goes to Z<0
                 * 90deg -> X does not move, +Y goes to Z<0
                 * 180deg -> Y does not move, +X goes to Z>0
                 * 270deg -> X does not move, +Y goes to Z>0
         
-        @param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
-        @param centerX, centerY: pixel position of the beam center
-        @param splineFile: name of the file containing the spline
+        :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
+        :param centerX, centerY: pixel position of the beam center
+        :param splineFile: name of the file containing the spline
     
 
 

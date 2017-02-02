@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2016"
+__date__ = "02/02/2017"
 __status__ = "production"
 
 import sys
@@ -233,7 +233,7 @@ class Massif(object):
 
     def getBinnedData(self):
         """
-        :return binned data
+        :return: binned data
         """
         if self._binned_data is None:
             with self._sem_binning:

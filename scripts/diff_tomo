@@ -67,9 +67,9 @@ class DiffTomo(DiffMap):
         """
         Constructor of the class
 
-        @param nTrans: number of translations
-        @param nRot: number of translations
-        @param nDiff: number of points in diffraction pattern
+        :param nTrans: number of translations
+        :param nRot: number of translations
+        :param nDiff: number of points in diffraction pattern
         """
         DiffMap.__init__(self, npt_slow=nRot, npt_fast=nTrans, npt_rad=nDiff)
         self.hdf5path = "diff_tomo/data/sinogram"
