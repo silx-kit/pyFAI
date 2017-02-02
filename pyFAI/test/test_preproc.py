@@ -34,9 +34,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2017"
+__date__ = "02/02/2017"
 
 
+import os
 import unittest
 import numpy
 import logging
@@ -94,7 +95,18 @@ class TestPreproc(unittest.TestCase):
 
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
 
-        self.assertGreater(abs(numpy.round(res, 3) - target).max(), 0, "flat != polarization")
+        # search for numerical instability:
+        # delta = abs(numpy.round(res, 3) - target).max()
+        delta = abs(res - target).max()
+        if delta <= 0.1:
+            l = ["raw:", str(raw),
+                 "dark", str(dark),
+                 "flat:", str(flat),
+                 "delta", str(delta)]
+
+            logger.warning(os.linesep.join(l))
+
+        self.assertGreater(abs(res - target).max(), 1e-3, "flat != polarization")
 
         res = preproc.preproc(raw, dark, solidangle=flat, dummy=dummy, mask=mask, normalization_factor=scale)
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
