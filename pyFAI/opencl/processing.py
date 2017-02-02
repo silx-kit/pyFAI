@@ -87,7 +87,7 @@ class OpenclProcessing(object):
         :param deviceid: Integer with the device identifier, as given by clinfo
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
-                        store profiling elements (makes code slower)
+                        store profiling elements (makes code slightly slower)
         """
         self.sem = threading.Semaphore()
         self.profile = None
@@ -109,6 +109,7 @@ class OpenclProcessing(object):
             self.device = platform.get_device(device_name)
         self.set_profiling(profile)
         self.block_size = block_size
+        self.program = None
 
     def __del__(self):
         """Destructor: release all buffers and programs
