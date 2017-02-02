@@ -183,15 +183,14 @@ class OCL_Preproc(OpenclProcessing):
     def dummy(self, value=None):
         self.on_host["dummy"] = value
         if value is None:
-            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-                self.cl_kernel_args[kernel][13] = numpy.int8(0)
-            self.cl_kernel_args["corrections3"][16] = numpy.int8(0)
+            for name, kwargs in self.cl_kernel_args.items():
+                if "correction" in name:
+                    kwargs["do_dummy"] = numpy.int8(0)
         else:
-            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-                self.cl_kernel_args[kernel][13] = numpy.int8(1)
-                self.cl_kernel_args[kernel][14] = numpy.float32(value)
-            self.cl_kernel_args["corrections3"][16] = numpy.int8(1)
-            self.cl_kernel_args["corrections3"][17] = numpy.float32(value)
+            for name, kwargs in self.cl_kernel_args.items():
+                if "correction" in name:
+                    kwargs["do_dummy"] = numpy.int8(1)
+                    kwargs["dummy"] = numpy.float32(value)
 
     @property
     def delta_dummy(self):
@@ -201,9 +200,9 @@ class OCL_Preproc(OpenclProcessing):
     def delta_dummy(self, value=None):
         value = value or numpy.float32(0)
         self.on_host["delta_dummy"] = value
-        for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-            self.cl_kernel_args[kernel][15] = value
-        self.cl_kernel_args["corrections3"][18] = value
+        for name, kwargs in self.cl_kernel_args.items():
+            if "correction" in name:
+                kwargs["delta_dummy"] = numpy.float32(value)
 
     @property
     def empty(self):
@@ -214,9 +213,9 @@ class OCL_Preproc(OpenclProcessing):
         value = value or numpy.float32(0)
         if self.dummy is None:
             self.on_host["empty"] = value
-            for kernel in ("corrections", "corrections2", "corrections3Poisson"):
-                self.cl_kernel_args[kernel][14] = value
-                self.cl_kernel_args["corrections3"][17] = value
+            for name, kwargs in self.cl_kernel_args.items():
+                if "correction" in name:
+                    kwargs["dummy"] = numpy.float32(value)
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -231,26 +230,7 @@ class OCL_Preproc(OpenclProcessing):
             dummy = numpy.float32(self.on_host["dummy"])
             delta_dummy = numpy.float32(self.on_host["delta_dummy"] or 0.0)
 
-        self.cl_kernel_args["corrections"] = OrderedDict(("image", self.cl_mem["image"]),
-                                                         ("do_dark", numpy.int8(0)),
-                                                         ("dark", self.cl_mem["dark"]),
-                                                         ("do_flat", numpy.int8(0)),
-                                                         ("flat", self.cl_mem["flat"]),
-                                                         ("do_solidangle", numpy.int8(0)),
-                                                         ("solidangle", self.cl_mem["solidangle"]),
-                                                         ("do_polarization", numpy.int8(0)),
-                                                         ("polarization", self.cl_mem["polarization"]),
-                                                         ("do_absorption", numpy.int8(0)),
-                                                         ("absorption", self.cl_mem["absorption"]),
-                                                         ("do_mask", numpy.int8(0)),
-                                                         ("mask", self.cl_mem["mask"]),
-                                                         ("do_dummy", do_dummy),
-                                                         ("dummy", dummy),
-                                                         ("delta_dummy", delta_dummy),
-                                                         ("normalization_factor", numpy.float32(1.0)),
-                                                         ("output", self.cl_mem["output"]))
-
-        self.cl_kernel_args["corrections2"] = OrderedDict(("image", self.cl_mem["image"]),
+        self.cl_kernel_args["corrections"] = OrderedDict((("image", self.cl_mem["image"]),
                                                           ("do_dark", numpy.int8(0)),
                                                           ("dark", self.cl_mem["dark"]),
                                                           ("do_flat", numpy.int8(0)),
@@ -267,48 +247,67 @@ class OCL_Preproc(OpenclProcessing):
                                                           ("dummy", dummy),
                                                           ("delta_dummy", delta_dummy),
                                                           ("normalization_factor", numpy.float32(1.0)),
-                                                          ("output", self.cl_mem["output"]))
+                                                          ("output", self.cl_mem["output"])))
 
-        self.cl_kernel_args["corrections3"] = OrderedDict(("image", self.cl_mem["image"]),
-                                                          ("variance", self.cl_mem["variance"]),
-                                                          ("do_dark", numpy.int8(0)),
-                                                          ("dark", self.cl_mem["dark"]),
-                                                          ("do_dark_variance", numpy.int8(0)),
-                                                          ("dark_variance", self.cl_mem["dark_variance"]),
-                                                          ("do_flat", numpy.int8(0)),
-                                                          ("flat", self.cl_mem["flat"]),
-                                                          ("do_solidangle", numpy.int8(0)),
-                                                          ("solidangle", self.cl_mem["solidangle"]),
-                                                          ("do_polarization", numpy.int8(0)),
-                                                          ("polarization", self.cl_mem["polarization"]),
-                                                          ("do_absorption", numpy.int8(0)),
-                                                          ("absorption", self.cl_mem["absorption"]),
-                                                          ("do_mask", numpy.int8(0)),
-                                                          ("mask", self.cl_mem["mask"]),
-                                                          ("do_dummy", do_dummy),
-                                                          ("dummy", dummy),
-                                                          ("delta_dummy", delta_dummy),
-                                                          ("normalization_factor", numpy.float32(1.0)),
-                                                          ("output", self.cl_mem["output"]))
+        self.cl_kernel_args["corrections2"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                           ("do_dark", numpy.int8(0)),
+                                                           ("dark", self.cl_mem["dark"]),
+                                                           ("do_flat", numpy.int8(0)),
+                                                           ("flat", self.cl_mem["flat"]),
+                                                           ("do_solidangle", numpy.int8(0)),
+                                                           ("solidangle", self.cl_mem["solidangle"]),
+                                                           ("do_polarization", numpy.int8(0)),
+                                                           ("polarization", self.cl_mem["polarization"]),
+                                                           ("do_absorption", numpy.int8(0)),
+                                                           ("absorption", self.cl_mem["absorption"]),
+                                                           ("do_mask", numpy.int8(0)),
+                                                           ("mask", self.cl_mem["mask"]),
+                                                           ("do_dummy", do_dummy),
+                                                           ("dummy", dummy),
+                                                           ("delta_dummy", delta_dummy),
+                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                           ("output", self.cl_mem["output"])))
 
-        self.cl_kernel_args["corrections3Poisson"] = OrderedDict(("image", self.cl_mem["image"]),
-                                                                 ("do_dark", numpy.int8(0)),
-                                                                 ("dark", self.cl_mem["dark"]),
-                                                                 ("do_flat", numpy.int8(0)),
-                                                                 ("flat", self.cl_mem["flat"]),
-                                                                 ("do_solidangle", numpy.int8(0)),
-                                                                 ("solidangle", self.cl_mem["solidangle"]),
-                                                                 ("do_polarization", numpy.int8(0)),
-                                                                 ("polarization", self.cl_mem["polarization"]),
-                                                                 ("do_absorption", numpy.int8(0)),
-                                                                 ("absorption", self.cl_mem["absorption"]),
-                                                                 ("do_mask", numpy.int8(0)),
-                                                                 ("mask", self.cl_mem["mask"]),
-                                                                 ("do_dummy", do_dummy),
-                                                                 ("dummy", dummy),
-                                                                 ("delta_dummy", delta_dummy),
-                                                                 ("normalization_factor", numpy.float32(1.0)),
-                                                                 ("output", self.cl_mem["output"]))
+        self.cl_kernel_args["corrections3"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                           ("variance", self.cl_mem["variance"]),
+                                                           ("do_dark", numpy.int8(0)),
+                                                           ("dark", self.cl_mem["dark"]),
+                                                           ("do_dark_variance", numpy.int8(0)),
+                                                           ("dark_variance", self.cl_mem["dark_variance"]),
+                                                           ("do_flat", numpy.int8(0)),
+                                                           ("flat", self.cl_mem["flat"]),
+                                                           ("do_solidangle", numpy.int8(0)),
+                                                           ("solidangle", self.cl_mem["solidangle"]),
+                                                           ("do_polarization", numpy.int8(0)),
+                                                           ("polarization", self.cl_mem["polarization"]),
+                                                           ("do_absorption", numpy.int8(0)),
+                                                           ("absorption", self.cl_mem["absorption"]),
+                                                           ("do_mask", numpy.int8(0)),
+                                                           ("mask", self.cl_mem["mask"]),
+                                                           ("do_dummy", do_dummy),
+                                                           ("dummy", dummy),
+                                                           ("delta_dummy", delta_dummy),
+                                                           ("normalization_factor", numpy.float32(1.0)),
+                                                           ("output", self.cl_mem["output"])))
+ 
+        self.cl_kernel_args["corrections3Poisson"] = OrderedDict((("image", self.cl_mem["image"]),
+                                                                  ("do_dark", numpy.int8(0)),
+                                                                  ("dark", self.cl_mem["dark"]),
+                                                                  ("do_flat", numpy.int8(0)),
+                                                                  ("flat", self.cl_mem["flat"]),
+                                                                  ("do_solidangle", numpy.int8(0)),
+                                                                  ("solidangle", self.cl_mem["solidangle"]),
+                                                                  ("do_polarization", numpy.int8(0)),
+                                                                  ("polarization", self.cl_mem["polarization"]),
+                                                                  ("do_absorption", numpy.int8(0)),
+                                                                  ("absorption", self.cl_mem["absorption"]),
+                                                                  ("do_mask", numpy.int8(0)),
+                                                                  ("mask", self.cl_mem["mask"]),
+                                                                  ("do_dummy", do_dummy),
+                                                                  ("dummy", dummy),
+                                                                  ("delta_dummy", delta_dummy),
+                                                                  ("normalization_factor", numpy.float32(1.0)),
+                                                                  ("output", self.cl_mem["output"]))) 
 
     def compile_kernels(self, kernel_files=None, compile_options=None):
         """Call the OpenCL compiler
@@ -388,7 +387,7 @@ class OCL_Preproc(OpenclProcessing):
             if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
                 kwargs["do_dark_variance"] = do_dark
             kernel = self.program.__getattr__(kernel_name)
-            evt = kernel(self.queue, (self.size,), None, list(kwargs.values()))
+            evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
             if kernel_name.startswith("corrections3"):
                 dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)
             elif kernel_name == "corrections2":
