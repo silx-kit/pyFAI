@@ -72,7 +72,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
            BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
            BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
         ]
-    kernel_files = ["preprocess.cl"]
+    kernel_files = ["preprocess.cl", "memset.cl", "ocl_azim_LUT.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
@@ -84,7 +84,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
     def __init__(self, lut, image_size, checksum=None, empty=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
                  block_size=None, profile=False):
-        """Constructor of the OCL_LUT_Integrator integrator
+        """Constructor of the OCL_LUT_Integrator class
 
         :param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
         :param image_size: Expected image size: image.size
@@ -97,7 +97,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         :param deviceid: Integer with the device identifier, as given by clinfo
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
-                        store profiling elements (makes code slightly slower)        :param devicetype: can be "cpu","gpu","acc" or "all"
+                        store profiling elements (makes code slightly slower)
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
                                   platformid=platformid, deviceid=deviceid,
@@ -174,10 +174,10 @@ class OCL_LUT_Integrator(OpenclProcessing):
     def compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        :param kernel_file: path to the kernel (by default use the one in the src directory)
+        :param kernel_file: path to the kernel (by default use the one in the resources directory)
         """
         # concatenate all needed source files into a single openCL module
-        kernel_file = kernel_file or "ocl_azim_LUT.cl"
+        kernel_file = kernel_file or self.kernel_files[-1]
         kernels = ("preprocess.cl", "memset.cl", kernel_file)
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
@@ -246,9 +246,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
             events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
         if self.profile:
             self.events += events
-        if checksum is None:
-            checksum = calc_checksum(data)
-        self.on_device[dest] = checksum
+        if checksum is not None:
+            self.on_device[dest] = checksum
 
 
     def integrate(self, data, dummy=None, delta_dummy=None,
@@ -359,7 +358,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
 
             if preprocess_only:
                 image = numpy.empty(data.shape, dtype=numpy.float32)
-                ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["image_out"])
+                ev = pyopencl.enqueue_copy(self.queue, image, self.cl_mem["output"])
                 events.append(EventDescription("copy D->H image", ev))
                 if self.profile:
                     self.events += events
