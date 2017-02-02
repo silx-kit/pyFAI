@@ -314,10 +314,10 @@ class OCLFullSplit1d(object):
                             outMax[i] += 1
 
         self.lut_max_idx = outMax
-        self._lut = lut 
+        self._lut = lut
 
     def get_lut(self):
-        """Getter for the LUT as actual numpy array""" 
+        """Getter for the LUT as actual numpy array"""
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef lut_point[:,:] lut = self._lut

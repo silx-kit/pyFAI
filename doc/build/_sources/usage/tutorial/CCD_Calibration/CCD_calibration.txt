@@ -177,8 +177,8 @@ peak-position.
 .. code:: python
 
     #Check that size is unchanged.
-    print(img.shape) 
-    print(cnv.shape) 
+    print(img.shape)
+    print(cnv.shape)
 
 
 .. parsed-literal::
@@ -275,7 +275,7 @@ is done on the log-scale of the intensity.
     iw.merge_singleton()
     all_regions = set(iw.regions.values())
     regions = [i for i in all_regions if i.size>mini]
-    
+
     print("Number of region segmented: %s"%len(all_regions))
     print("Number of large enough regions : %s"%len(regions))
 
@@ -421,7 +421,7 @@ this we calculate the distance\_matrix from any point to any other:
 
 .. code:: python
 
-    # Nota, pyFAI uses **C-coordinates** so they come out as (y,x) and not the usual (x,y). 
+    # Nota, pyFAI uses **C-coordinates** so they come out as (y,x) and not the usual (x,y).
     # This notation helps us to remind the order
     yx = numpy.array(ref_peaks)
 
@@ -464,7 +464,7 @@ and 110 pixels apart.
 
 .. code:: python
 
-    #We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west). 
+    #We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west).
     point_type = np.dtype([('center_y', float), ('center_x', float),
                             ('east_y', float), ('east_x', float),
                             ('west_y', float), ('west_x', float),
@@ -485,7 +485,7 @@ and 110 pixels apart.
 
 .. code:: python
 
-    #Populate the structure: we use a loop as it loops only over 400 points 
+    #Populate the structure: we use a loop as it loops only over 400 points
     h=-1
     for i, center in enumerate(peaks_ref):
         if neig[i].sum()!=4: continue
@@ -519,7 +519,7 @@ prefer to take the peak the nearest to the centroid of all other peaks.
     Cx, Cy = 734, 1181 #beam center
     #Cx, Cy = tuple(i//2 for i in cnv.shape) #detector center
     print("The guessed center is at (%s, %s)"%(Cx, Cy))
-    
+
     #Get the nearest point from centroid:
     d2 = ((point["center_x"]-Cx)**2+(point["center_y"]-Cy)**2)
     best = d2.argmin()
@@ -527,7 +527,7 @@ prefer to take the peak the nearest to the centroid of all other peaks.
     Ox, Oy = Op["center_x"], Op["center_y"]
 
     print("The center is at (%s, %s)"%(Ox, Oy))
-    #Calculate the average vector along the 4 main axes 
+    #Calculate the average vector along the 4 main axes
     Xx = (point[:]["east_x"] - point[:]["center_x"]).mean()
     Xy = (point[:]["east_y"] - point[:]["center_y"]).mean()
     Yx = (point[:]["north_x"] - point[:]["center_x"]).mean()
@@ -673,7 +673,7 @@ the peaks on the border with less than 4 neighbours.
         "Translate hole -> pixel"
         T = numpy.atleast_2d(P[:2])
         R = P[2:].reshape((2,2))
-        #Transformation from index points (holes) to pixel coordinates: 
+        #Transformation from index points (holes) to pixel coordinates:
         pix = dot(R,holes.T).T + T
         return pix
 
@@ -819,7 +819,7 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
     #From http://stackoverflow.com/questions/3662361/fill-in-missing-values-with-nearest-neighbour-in-python-numpy-masked-arrays
     def fill(data, invalid=None):
         """
-        Replace the value of invalid 'data' cells (indicated by 'invalid') 
+        Replace the value of invalid 'data' cells (indicated by 'invalid')
         by the value of the nearest valid data cell
 
         Input:
@@ -828,11 +828,11 @@ needed as y,x (and not x,y) we use p instead of peaks\_m
                      value should be replaced.
                      If None (default), use: invalid  = np.isnan(data)
 
-        Output: 
-            Return a filled array. 
+        Output:
+            Return a filled array.
         """
 
-        if invalid is None: 
+        if invalid is None:
             invalid = numpy.isnan(data)
 
         ind = ndimage.distance_transform_edt(invalid, return_distances=False, return_indices=True)

@@ -654,14 +654,14 @@ class Bench(object):
 def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                   do_1d=True, do_2d=False, devices="all"):
     """Run the integrated benchmark using the most common algorithms (method parameter)
-    
+
     :param number: Measure timimg over number of executions
     :param repeat: number of measurement, takes the best of them
     :param memprof: set to True to enable memory profiling to hunt memory leaks
     :param max_size: maximum image size in megapixel, set it to 2 to speed-up the tests.
     :param do_1d: perfrom benchmarking using integrate1d
-    :param do_2d: perfrom benchmarking using integrate2d  
-    :devices: "all", "cpu", "gpu" or "acc" or a list of devices [(proc_id, dev_id)] 
+    :param do_2d: perfrom benchmarking using integrate2d
+    :devices: "all", "cpu", "gpu" or "acc" or a list of devices [(proc_id, dev_id)]
     """
     print("Averaging over %i repetitions (best of %s)." % (number, repeat))
     bench = Bench(number, repeat, memprof, max_size=max_size)

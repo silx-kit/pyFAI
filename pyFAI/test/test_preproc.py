@@ -53,8 +53,8 @@ class TestPreproc(unittest.TestCase):
     def one_test(self, preproc):
         """
         The final pattern should look like a 4x4 square with 1 and -1 elsewhere.
-        
-        :param preproc: the preproc module to use 
+
+        :param preproc: the preproc module to use
         """
         logger.debug("using preproc from: %s", preproc.__name__)
         shape = 8, 8

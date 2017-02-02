@@ -29,7 +29,7 @@
 
 __doc__ = """Re-implementation of numpy histograms using OpenMP"""
 __author__ = "Jerome Kieffer"
-__date__ = "31/05/2016"
+__date__ = "02/02/2017"
 __license__ = "MIT"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -66,7 +66,7 @@ def histogram(numpy.ndarray pos not None, \
     :param empty: value given to empty bins
     :param normalization_factor: divide the result by this value
 
-    :return 2theta, I, weighted histogram, raw histogram
+    :return: 2theta, I, weighted histogram, raw histogram
     """
 
     assert pos.size == weights.size
@@ -167,7 +167,7 @@ def histogram2d(numpy.ndarray pos0 not None,
     :param empty: value given to empty bins
     :param normalization_factor: divide the result by this value
 
-    :return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
 
     One can also limit this with OMP_NUM_THREADS environment variable
     """

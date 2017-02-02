@@ -415,11 +415,11 @@ class OCL_LUT_Integrator(object):
 
     def set_profiling(self, value=True):
         """Switch On/Off the profiling flag of the command queue to allow debugging
-        
-        :param value: set to True to enable profiling, or to False to disable it.
-                      Without profiling, the processing is marginally faster 
 
-        
+        :param value: set to True to enable profiling, or to False to disable it.
+                      Without profiling, the processing is marginally faster
+
+
         Profiling information can then be retrieved with the 'log_profile' method
         """
         if bool(value) != self.profile:
@@ -432,9 +432,9 @@ class OCL_LUT_Integrator(object):
                     self._queue = pyopencl.CommandQueue(self.ctx)
 
     def log_profile(self):
-        """If we are in profiling mode, prints out all timing for every single 
+        """If we are in profiling mode, prints out all timing for every single
         OpenCL call
-        
+
         :return: list of lines printed on screen
         """
         t = 0.0

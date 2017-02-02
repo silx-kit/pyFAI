@@ -88,7 +88,7 @@ def CSR_to_LUT(data, indices, indptr):
     nrow = indptr.size - 1
     ncol = (indptr[1:] - indptr[:-1]).max()
     assert nrow > 0, "nrow >0"
-    assert ncol > 0, "ncol >0" 
+    assert ncol > 0, "ncol >0"
 
     cdef:
         float[::1] data_ = numpy.ascontiguousarray(data, dtype=numpy.float32)

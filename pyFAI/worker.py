@@ -568,8 +568,8 @@ class PixelwiseWorker(object):
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """Constructor of the worker
-        
-        :param dark: array 
+
+        :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
@@ -658,12 +658,12 @@ class DistortionWorker(object):
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """Constructor of the worker
-        :param dark: array 
+        :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
-        
+
         """
 
         self.ctx = None

@@ -69,7 +69,7 @@ def tests(deprecation=False):
 
 def benchmarks(*arg, **kwarg):
     """Run the integrated benchmarks.
-    
+
     See the documentation of pyFAI.benchmark.run_benchmark
     """
     from . import benchmark
