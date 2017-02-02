@@ -234,18 +234,6 @@ Blob detection is used to find peaks in images by performing subsequent blurs
     :undoc-members:
     :show-inheritance:
 
-:mod:`ext.container` Module
----------------------------
-
-Container are a new uniform storage, optimized for the creation of both LUT and CSR.
-It has nothing to do with Docker.
-
-.. automodule:: pyFAI.ext.container
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-   
 :mod:`ext._convolution` Module
 ------------------------------
 
