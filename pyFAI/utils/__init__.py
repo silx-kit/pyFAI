@@ -452,7 +452,7 @@ def unBinning(binnedArray, binsize, norm=True):
 
 def shiftFFT(input_img, shift_val, method="fft"):
     """Do shift using FFTs
-    
+
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
     :param input_img: 2d numpy array
     :param shift_val: 2-tuple of float

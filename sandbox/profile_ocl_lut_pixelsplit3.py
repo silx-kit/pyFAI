@@ -52,7 +52,7 @@ with open("../openCL/ocl_lut_pixelsplit.cl", "r") as kernelFile:
 
 compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
                 (bins, size, workgroup_size, numpy.finfo(numpy.float32).eps)
-            
+
 print(compile_options)
 
 program = cl.Program(ctx, kernel_src).build(options=compile_options)

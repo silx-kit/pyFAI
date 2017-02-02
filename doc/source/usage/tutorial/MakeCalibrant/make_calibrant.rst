@@ -67,20 +67,20 @@ to use the **pyFAI.calibrant.Cell** class.
 
 .. parsed-literal::
 
-    
+
         This is a cell object, able to calculate the volume and d-spacing according to formula from:
-    
+
         http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
-        
+
     Constructor of the Cell class:
-    
+
             Crystalographic units are Angstrom for distances and degrees for angles !
-    
-            @param a,b,c: unit cell length in Angstrom
-            @param alpha, beta, gamma: unit cell angle in degrees
-            @param lattice: "cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"
-            @param lattice_type: P, I, F, C or R
-            
+
+            :param a,b,c: unit cell length in Angstrom
+            :param alpha, beta, gamma: unit cell angle in degrees
+            :param lattice: "cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"
+            :param lattice_type: P, I, F, C or R
+
 
 
 The constructor of the class is used to build and well suited to
@@ -128,21 +128,21 @@ such primitive cubic packing.
 
     Po.d_spacing?
     Calculate all d-spacing down to dmin
-    
+
             applies selection rules
-    
-            @param dmin: minimum value of spacing requested
-            @return: dict d-spacing as string, list of tuple with Miller indices
+
+            :param dmin: minimum value of spacing requested
+            :return: dict d-spacing as string, list of tuple with Miller indices
                     preceded with the numerical value
-            
+
     Po.save?
     Save informations about the cell in a d-spacing file, usable as Calibrant
-    
-            @param name: name of the calibrant
-            @param doi: reference of the publication used to parametrize the cell
-            @param dmin: minimal d-spacing
-            @param dest_dir: name of the directory where to save the result
-            
+
+            :param name: name of the calibrant
+            :param doi: reference of the publication used to parametrize the cell
+            :param dmin: minimal d-spacing
+            :param dest_dir: name of the directory where to save the result
+
 
 
 To generate a *d-spacing* file usable as calibrant, one simply has to
@@ -327,17 +327,17 @@ demonstration
 .. code:: python
 
     import inspect
-    for rule in Si.selection_rules: 
+    for rule in Si.selection_rules:
         print(inspect.getsource(rule))
 
 .. parsed-literal::
 
             self.selection_rules = [lambda h, k, l: not(h == 0 and k == 0 and l == 0)]
-    
+
                 self.selection_rules.append(lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3))
-    
+
                 lambda h, k, l:not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0))
-    
+
 
 
 Actually the last line correspond to an anonymous function (lambda)

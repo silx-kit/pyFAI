@@ -75,7 +75,7 @@ ESRF.
 
     import os, sys
     os.environ["http_proxy"] = "http://proxy.site.com:3128"
-    
+
     def download(url):
         """download the file given in URL and return its local path"""
         if sys.version_info[0]<3:
@@ -232,27 +232,27 @@ center coordinates (but the sample-detector distance is in millimeters).
 .. parsed-literal::
 
     Help on method setFit2D in module pyFAI.geometry:
-    
+
     setFit2D(directDist, centerX, centerY, tilt=0.0, tiltPlanRotation=0.0, pixelX=None, pixelY=None, splineFile=None) method of pyFAI.azimuthalIntegrator.AzimuthalIntegrator instance
         Set the Fit2D-like parameter set: For geometry description see
         HPR 1996 (14) pp-240
-        
+
         Warning: Fit2D flips automatically images depending on their file-format.
         By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
         To obtaine correct result you will have to flip images using numpy.flipud.
-        
-        @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
-        @param tilt: tilt in degrees
-        @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+
+        :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
+        :param tilt: tilt in degrees
+        :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
                 * 0deg -> Y does not move, +X goes to Z<0
                 * 90deg -> X does not move, +Y goes to Z<0
                 * 180deg -> Y does not move, +X goes to Z>0
                 * 270deg -> X does not move, +Y goes to Z>0
-        
-        @param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
-        @param centerX, centerY: pixel position of the beam center
-        @param splineFile: name of the file containing the spline
-    
+
+        :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
+        :param centerX, centerY: pixel position of the beam center
+        :param splineFile: name of the file containing the spline
+
 
 
 .. code:: python
@@ -320,16 +320,16 @@ do it by providing an output filename:
     # PONI: 3.000e-02, 3.000e-02 m
     # Distance Sample to Detector: 0.1 m
     # Rotations: 0.000000 0.000000 0.000000 rad
-    # 
+    #
     # == Fit2d calibration ==
     # Distance Sample-beamCenter: 100.000 mm
     # Center: x=300.000, y=300.000 pix
     # Tilt: 0.000 deg  TiltPlanRot: 0.000 deg
-    # 
+    #
     # Polarization factor: None
     # Normalization factor: 1.0
     # --> moke.dat
-    #       2th_deg             I 
+    #       2th_deg             I
       3.831631e-01    6.384597e+00
       1.149489e+00    1.240657e+01
       1.915815e+00    1.222277e+01

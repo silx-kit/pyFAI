@@ -434,10 +434,10 @@ class OCL_CSR_Integrator(object):
 
     def set_profiling(self, value=True):
         """Switch On/Off the profiling flag of the command queue to allow debugging
-        
+
         :param value: set to True to enable profiling, or to False to disable it.
-                      Without profiling, the processing is marginally faster 
-        
+                      Without profiling, the processing is marginally faster
+
         Profiling information can then be retrived with the 'log_profile' method
         """
         if bool(value) != self.profile:

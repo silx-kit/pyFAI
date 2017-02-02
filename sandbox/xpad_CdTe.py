@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2015"
+__date__ = "02/02/2017"
 
 import os
 import sys
@@ -54,7 +54,7 @@ ny = 8
 def parse(fname):
     """
     :param fname: name of the CSV definition file
-    :return numpy array containing x,y,z coordinates
+    :return: numpy array containing x,y,z coordinates
     """
     res = []
     with open(fname) as fd:
@@ -83,7 +83,7 @@ def one_module(p1, p2, flat=False):
     :param dy: number of pixel in a column
     :param px: pixel size in x
     :param py: pixel size in y
-    :return 2x (dy+1)x(dx+1) array of corner position
+    :return: 2x (dy+1)x(dx+1) array of corner position
     """
     xyz1 = p1[1:4] / 1000.0  # in meter
     xyz2 = p2[1:4] / 1000.0  # in meter

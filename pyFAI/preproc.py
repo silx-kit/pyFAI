@@ -27,7 +27,7 @@
 
 """Pre-Processing
 
-A module for all common pixel-wise  pre-processing of data.  
+A module for all common pixel-wise  pre-processing of data.
 """
 
 from __future__ import absolute_import, print_function, with_statement
@@ -60,8 +60,8 @@ def preproc(raw,
             poissonian=False,
             dtype=numpy.float32
             ):
-    """Common preprocessing step for all integration engines 
-    
+    """Common preprocessing step for all integration engines
+
     :param data: raw value, as a numpy array, 1D or 2D
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
@@ -75,28 +75,28 @@ def preproc(raw,
     :param empty: value to be given for empty bins
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
     :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
-    :param dark_variance: provide an estimation of the variance of the dark_current, enforce split_result=True and return an float3 array with variance in second position.   
+    :param dark_variance: provide an estimation of the variance of the dark_current, enforce split_result=True and return an float3 array with variance in second position.
     :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
     :param dtype: dtype for all processing
-    
+
     All calculation are performed in single precision floating point (32 bits).
-    
+
     NaN are always considered as invalid values
-    
+
     if neither empty nor dummy is provided, empty pixels are 0.
     Empty pixels are always zero in "split_result" mode
-    
+
     Split result:
     -------------
     When set to False, i.e the default, the pixel-wise operation is:
     I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
-    Invalid pixels are set to the dummy or empty value. 
-     
-    When split_ressult is set to True, each result is a float2 
+    Invalid pixels are set to the dummy or empty value.
+
+    When split_ressult is set to True, each result is a float2
     or a float3 (with an additional value for the variance) as such:
     I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
-    Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value) 
-    
+    Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
+
     If poissonian is set to True, the variance is evaluated as (raw + dark)
     """
     if isinstance(dtype, str):
