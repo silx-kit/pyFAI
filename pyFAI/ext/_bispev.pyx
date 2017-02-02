@@ -31,7 +31,7 @@ Created on Nov 4, 2013
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "05/03/2015"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -53,36 +53,11 @@ def bisplev(x, y, tck, dx=0, dy=0):
     y.  In special cases, return an array or just a float if either x or y or
     both are floats.  Based on BISPEV from FITPACK.
 
-    Parameters
-    ----------
-    x, y : ndarray
-        Rank-1 arrays specifying the domain over which to evaluate the
-        spline or its derivative.
-    tck : tuple
-        A sequence of length 5 returned by `bisplrep` containing the knot
-        locations, the coefficients, and the degree of the spline:
-        [tx, ty, c, kx, ky].
-    dx, dy : int, optional
-        The orders of the partial derivatives in `x` and `y` respectively.
-        This version does bot implement derivatives.
+    See :func:`bisplrep` to generate the `tck` representation.
 
-    Returns
-    -------
-    vals : ndarray
-        The B-spline or its derivative evaluated over the set formed by
-        the cross-product of `x` and `y`.
+    See also :func:`splprep`, :func:`splrep`, :func:`splint`, :func:`sproot`,
+    :func:`splev`, :func:`UnivariateSpline`, :func:`BivariateSpline`
 
-    See Also
-    --------
-    splprep, splrep, splint, sproot, splev
-    UnivariateSpline, BivariateSpline
-
-    Notes
-    -----
-        See `bisplrep` to generate the `tck` representation.
-
-    References
-    ----------
     .. [1] Dierckx P. : An algorithm for surface fitting
        with spline functions
        Ima J. Numer. Anal. 1 (1981) 267-283.
@@ -92,6 +67,20 @@ def bisplev(x, y, tck, dx=0, dy=0):
     .. [3] Dierckx P. : Curve and surface fitting with splines,
        Monographs on Numerical Analysis, Oxford University Press, 1993.
 
+    :param ndarray x: Rank-1 arrays specifying the domain over which to evaluate
+        the spline or its derivative.
+    :param ndarray y: Rank-1 arrays specifying the domain over which to evaluate
+        the spline or its derivative.
+    :param tuple tck: A sequence of length 5 returned by `bisplrep` containing
+        the knot locations, the coefficients, and the degree of the spline:
+        [tx, ty, c, kx, ky].
+    :param int dx: The orders of the partial derivatives in `x`.
+        This version does not implement derivatives.
+    :param int dy: The orders of the partial derivatives in `y`.
+        This version does not implement derivatives.
+    :rtype: ndarray
+    :return: The B-spline or its derivative evaluated over the set formed by
+        the cross-product of `x` and `y`.
     """
     cdef:
         int kx, ky
@@ -161,12 +150,11 @@ cdef void fpbspl(float[:]t,
 cdef void init_w(float[:] t, int k, float[:] x, numpy.int32_t[:] lx, float[:, :] w) nogil:
     """
     Initialize w array for a 1D array
-    
-    @param t:
-    @param k: order of the spline
-    @param x: position of the evaluation
-    
-    @param w: 
+
+    :param t:
+    :param k: order of the spline
+    :param x: position of the evaluation
+    :param w:
     """
     cdef:
         int i, l, l1, n, m
@@ -211,9 +199,9 @@ cdef cy_bispev(float[:] tx,
                float[:] y):
     """
     Actual implementation of bispev in Cython
-    
-    @param tx: array of float size nx containing position of knots in x
-    @param ty: array of float size ny containing position of knots in y
+
+    :param tx: array of float size nx containing position of knots in x
+    :param ty: array of float size ny containing position of knots in y
     """
     cdef:
         int nx = tx.size

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "02/02/2017"
 __status__ = "production"
 
 import os
@@ -97,8 +97,8 @@ def get_detector(detector, datafiles=None):
     Detector factory taking into account the binning knowing the datafiles
 
     :param detector: string or detector or other junk
-    :param datafiles: can be a list of images to be opened and their shape used.
-    :return pyFAI.detector.Detector instance
+    :param datafiles: can be a list of images to be opened and their shape used
+    :return: pyFAI.detector.Detector instance
     :raise RuntimeError: If no detector found
     """
     res = None

@@ -25,8 +25,8 @@ from libc.math cimport floor, ceil
 
 cdef class Bilinear:
     """Bilinear interpolator for finding max.
-    
-    Instance attribute defined in pxd file 
+
+    Instance attribute defined in pxd file
     """
     cdef:
         readonly float[:, ::1] data
@@ -43,7 +43,7 @@ cdef class Bilinear:
         self.maxi = data.max()
         self.mini = data.min()
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-    
+
     def __dealloc__(self):
         self.data = None
 
@@ -96,19 +96,18 @@ cdef class Bilinear:
     @cython.cdivision(True)
     def local_maxi(self, x):
         """
-        Return the local maximum ... with sub-pixel refinement
-
-        @param x: 2-tuple of integers
-        @param w: half with of the window: 1 or 2 are advised
-        @return: 2-tuple of float with the nearest local maximum
-
+        Return the local maximum with sub-pixel refinement.
 
         Sub-pixel refinement:
         Second order Taylor expansion of the function; first derivative is null
-        delta = x-i = -Inverse[Hessian].gradient
 
-        if Hessian is singular or |delta|>1: use a center of mass.
+        .. math:: delta = x-i = -Inverse[Hessian].gradient
 
+        If Hessian is singular or :math:`|delta|>1`: use a center of mass.
+
+        :param x: 2-tuple of integers
+        :param w: half with of the window: 1 or 2 are advised
+        :return: 2-tuple of float with the nearest local maximum
         """
         cdef:
             int res, current0, current1
