@@ -5,19 +5,19 @@
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:   Zubair Nawaz <zubair.nawaz@gmail.com>    
+#    Principal author:   Zubair Nawaz <zubair.nawaz@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -109,10 +109,10 @@ def bisplev(x, y, tck, dx=0, dy=0):
 
     x = numpy.atleast_1d(x)
     y = numpy.atleast_1d(y)
-    
+
     if (len(x.shape) != 1) or (len(y.shape) != 1):
         raise ValueError("First two entries should be rank-1 arrays.")
-    
+
     cy_x = numpy.ascontiguousarray(x, dtype=numpy.float32)
     cy_y = numpy.ascontiguousarray(y, dtype=numpy.float32)
 
@@ -120,12 +120,12 @@ def bisplev(x, y, tck, dx=0, dy=0):
     z.shape = len(y), len(x)
 
     # Transpose again afterwards to retrieve a memory-contiguous object
-    if len(z) > 1: 
+    if len(z) > 1:
         return z.T
     if len(z[0]) > 1:
         return z[0]
     return z[0][0]
-    
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -141,18 +141,18 @@ cdef void fpbspl(float[:]t,
     subroutine fpbspl evaluates the (k+1) non-zero b-splines of
     degree k at t(l) <= x < t(l+1) using the stable recurrence
     relation of de boor and cox.
-    
+
     """
-    cdef int i, j, li, lj 
+    cdef int i, j, li, lj
     cdef float f
 
     h[0] = 1.00
     for j in range(1, k + 1):
-        for i in range(j):  
-            hh[i] = h[i]    
+        for i in range(j):
+            hh[i] = h[i]
         h[0] = 0.00
-        for i in range(j): 
-            f = hh[i] / (t[l + i] - t[l + i - j]) 
+        for i in range(j):
+            f = hh[i] / (t[l + i] - t[l + i - j])
             h[i] = h[i] + f * (t[l + i] - x)
             h[i + 1] = f * (x - t[l + i - j])
 
@@ -169,25 +169,25 @@ cdef void init_w(float[:] t, int k, float[:] x, numpy.int32_t[:] lx, float[:, :]
     @param w: 
     """
     cdef:
-        int i, l, l1, n, m 
-        float arg, tb, te  
+        int i, l, l1, n, m
+        float arg, tb, te
         float[:] h, hh
-    
+
     tb = t[k]
     with gil:
         n = t.size
         m = x.size
         h = view.array(shape=(6,), itemsize=sizeof(float), format="f")
         hh = view.array(shape=(5,), itemsize=sizeof(float), format="f")
-    
+
     te = t[n - k - 1]
     l = k + 1
     l1 = l + 1
-    for i in range(m): 
-        arg = x[i]      
-        if arg < tb: 
+    for i in range(m):
+        arg = x[i]
+        if arg < tb:
             arg = tb
-        if arg > te: 
+        if arg > te:
             arg = te
         while not (arg < t[l] or l == (n - k - 1)):
             l = l1
@@ -225,7 +225,7 @@ cdef cy_bispev(float[:] tx,
         int ky1 = ky + 1
 
         int nkx1 = nx - kx1
-        int nky1 = ny - ky1 
+        int nky1 = ny - ky1
 
         # initializing scratch space
         float[:, :] wx = view.array(shape=(mx, kx1), itemsize=sizeof(float), format="f")
@@ -240,7 +240,7 @@ cdef cy_bispev(float[:] tx,
     # initializing z and h
         numpy.ndarray[numpy.float32_t, ndim = 1] z = numpy.zeros(size_z, numpy.float32)
         float arg, sp, err, tmp, a
-    
+
     with nogil:
         # cannot be initialized in parallel, why ? segfaults on MacOSX
         init_w(tx, kx, x, lx, wx)
@@ -260,4 +260,3 @@ cdef cy_bispev(float[:] tx,
                         sp = tmp
                 z[j * mx + i] += sp
     return z
-

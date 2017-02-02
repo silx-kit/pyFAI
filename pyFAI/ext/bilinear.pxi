@@ -116,7 +116,7 @@ cdef class Bilinear:
             float tmp, sum0 = 0, sum1 = 0, sum = 0
             float a00, a01, a02, a10, a11, a12, a20, a21, a22
             float d00, d11, d01, denom, delta0, delta1
-            
+
         res = self.c_local_maxi(round(x[0]) * self.width + round(x[1]))
 
         current0 = res // self.width
@@ -155,7 +155,7 @@ cdef class Bilinear:
                     sum += tmp
             if sum > 0:
                 return (sum0 / sum, sum1 / sum)
-                
+
         return (float(current0), float(current1))
 
     cpdef size_t cp_local_maxi(self, size_t x):
