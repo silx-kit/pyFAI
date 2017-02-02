@@ -569,7 +569,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
 setup_requires = ["numpy", "cython"]
 
-packages = ["pyFAI", "pyFAI.ext", "pyFAI.gui", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources", "pyFAI.opencl"]
+packages = ["pyFAI", "pyFAI.ext", "pyFAI.gui", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources", "pyFAI.opencl", "pyFAI.opencl.test"]
 package_dir = {"pyFAI": "pyFAI",
                "pyFAI.ext": "pyFAI/ext",
                "pyFAI.gui": "pyFAI/gui",
@@ -577,7 +577,8 @@ package_dir = {"pyFAI": "pyFAI",
                "pyFAI.test": "pyFAI/test",
                "pyFAI.benchmark": "pyFAI/benchmark",
                "pyFAI.resources": "pyFAI/resources",
-               "pyFAI.opencl": "pyFAI/opencl", }
+               "pyFAI.opencl": "pyFAI/opencl",
+               "pyFAI.opencl.test": "pyFAI/opencl/test", }
 
 if os.path.isdir("pyFAI/third_party"):
     package_dir["pyFAI.third_party"] = "pyFAI/third_party"

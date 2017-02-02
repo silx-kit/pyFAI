@@ -632,6 +632,8 @@ def get_cl_file(filename):
 
     :return: the full path of the openCL source file
     """
+    if not filename.endswith(".cl"):
+        filename += ".cl"
     return _get_data_path(os.path.join("openCL", filename))
 
 
