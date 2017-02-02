@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "02/02/2017"
 __status__ = "production"
 
 import logging
@@ -452,7 +452,7 @@ def unBinning(binnedArray, binsize, norm=True):
 
 def shiftFFT(input_img, shift_val, method="fft"):
     """Do shift using FFTs
-    
+
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
     :param input_img: 2d numpy array
     :param shift_val: 2-tuple of float
@@ -641,31 +641,6 @@ def get_ui_file(filename):
     :return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
-
-
-def read_cl_file(filename):
-    """
-    :param filename: read an OpenCL file and apply a preprocessor
-    :return: preprocessed source code
-    """
-    with open(get_cl_file(filename), "r") as f:
-        # Dummy preprocessor which removes the #include
-        lines = [i for i in f.readlines() if not i.startswith("#include ")]
-    return "".join(lines)
-
-
-def concatenate_cl_kernel(filenames):
-    """
-    :param filenames: filenames containing the kernels
-    :type filenames: list of str which can be filename of kernel as a string.
-
-    this method concatenates all the kernel from the list
-    """
-    kernel = ""
-    for filename in filenames:
-            kernel += read_cl_file(filename)
-            kernel += os.linesep
-    return kernel
 
 
 def deg2rad(dd):

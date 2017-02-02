@@ -3,55 +3,65 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit
 #
-#    Copyright (C) 2012-2017 European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Copyright (C) 2014-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#                            Giannis Ashiotis
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
-__author__ = "Jerome Kieffer"
-__license__ = "GPLv3"
-__date__ = "27/01/2017"
-__copyright__ = "2012-2017, ESRF, Grenoble"
+__authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
+__license__ = "MIT"
+__date__ = "02/02/2017"
+__copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import gc
 import logging
 import threading
 import numpy
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
-from .ext.splitBBoxLUT import HistoBBox1d
-from .utils import concatenate_cl_kernel, calc_checksum
+from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from .utils import concatenate_cl_kernel
+from ..utils import  calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-logger = logging.getLogger("pyFAI.ocl_azim_lut")
+
+logger = logging.getLogger("pyFAI.opencl.azim_csr")
 
 
-class OCL_LUT_Integrator(object):
-    BLOCK_SIZE = 16
-
+class OCL_CSR_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all",
+                 block_size=32,
                  platformid=None, deviceid=None,
                  checksum=None, profile=False,
                  empty=None):
         """
-        :param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
-        :param image_size: Expected image size: image.shape.prod()
+        :param lut: 3-tuple of arrays
+            data: coefficient of the matrix in a 1D vector of float32 - size of nnz
+            indices: Column index position for the data (same size as data)
+            indptr: row pointer indicates the start of a given row. len nbin+1
+        :param image_size: size of the image (for pre-processing)
         :param devicetype: can be "cpu","gpu","acc" or "all"
+        :param block_size: the chosen size for WORKGROUP_SIZE
         :param platformid: number of the platform as given by clinfo
         :type platformid: int
         :param deviceid: number of the device as given by clinfo
@@ -61,16 +71,21 @@ class OCL_LUT_Integrator(object):
         :param empty: value to be assigned to bins without contribution from any pixel
         """
         self._sem = threading.Semaphore()
-        self._lut = lut
-        self.nbytes = lut.nbytes
-        self.bins, self.lut_size = lut.shape
+        self._data = lut[0]
+        self._indices = lut[1]
+        self._indptr = lut[2]
+        self.bins = self._indptr.shape[0] - 1
+        self.nbytes = self._data.nbytes + self._indices.nbytes + self._indptr.nbytes
+        if self._data.shape[0] != self._indices.shape[0]:
+            raise RuntimeError("data.shape[0] != indices.shape[0]")
+        self.data_size = self._data.shape[0]
         self.size = image_size
         self.profile = None
         self.empty = empty or 0.0
 
         if not checksum:
-            checksum = calc_checksum(self._lut)
-        self.on_device = {"lut": checksum,
+            checksum = calc_checksum(self._data)
+        self.on_device = {"data": checksum,
                           "dark": None,
                           "flat": None,
                           "polarization": None,
@@ -93,11 +108,10 @@ class OCL_LUT_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        self.BLOCK_SIZE = min(self.BLOCK_SIZE, self.device.max_work_group_size)
+        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
-        self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
-
         try:
             self.ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             self.set_profiling(profile)
@@ -106,16 +120,18 @@ class OCL_LUT_Integrator(object):
             self._set_kernel_arguments()
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
-        if self.device_type == "CPU":
-            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut)
-        else:
-            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut.T.copy())
+        events = []
+        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
+        events.append(("copy Coefficient data", ev))
+        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], self._indices)
+        events.append(("copy Row Index data", ev))
+        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
+        events.append(("copy Column Pointer data", ev))
         if self.profile:
-            self.events.append(("copy LUT", ev))
+            self.events += events
 
     def __del__(self):
-        """
-        Destructor: release all buffers
+        """Destructor: release all buffers
         """
         self._free_kernels()
         self._free_buffers()
@@ -128,10 +144,11 @@ class OCL_LUT_Integrator(object):
 
         :return: copy of the object
         """
-        return self.__class__(self._lut, self.size,
+        return self.__class__((self._data, self._indices, self._indptr),
+                              self.size, block_size=self.BLOCK_SIZE,
                               platformid=self.platform.id,
                               deviceid=self.device.id,
-                              checksum=self.on_device.get("lut"),
+                              checksum=self.on_device.get("data"),
                               profile=self.profile, empty=self.empty)
 
     def __deepcopy__(self, memo=None):
@@ -141,12 +158,15 @@ class OCL_LUT_Integrator(object):
         """
         if memo is None:
             memo = {}
-        new_lut = self._lut.copy()
-        memo[id(self._lut)] = new_lut
-        new_obj = self.__class__(new_lut, self.size,
+        new_csr = self._data.copy(), self._indices.copy(), self._indptr.copy()
+        memo[id(self._data)] = new_csr[0]
+        memo[id(self._indices)] = new_csr[1]
+        memo[id(self._indptr)] = new_csr[2]
+        new_obj = self.__class__(new_csr, self.size,
+                                 block_size=self.BLOCK_SIZE,
                                  platformid=self.platform.id,
                                  deviceid=self.device.id,
-                                 checksum=self.on_device.get("lut"),
+                                 checksum=self.on_device.get("data"),
                                  profile=self.profile, empty=self.empty)
         memo[id(self)] = new_obj
         return new_obj
@@ -165,24 +185,25 @@ class OCL_LUT_Integrator(object):
         device, only the total memory.
         """
         buffers = [
-                    ("lut", mf.READ_WRITE, [("bins", numpy.float32), ("lut_size", numpy.int32)], self.bins * self.lut_size),  # noqa
-                    ("outData", mf.WRITE_ONLY, numpy.float32, self.bins),
-                    ("outCount", mf.WRITE_ONLY, numpy.float32, self.bins),
-                    ("outMerge", mf.WRITE_ONLY, numpy.float32, self.bins),
-                    ("image_raw", mf.READ_ONLY, numpy.float32, self.size),
-                    ("image_in", mf.READ_WRITE, numpy.float32, self.size),
-                    ("image_out", mf.READ_WRITE, numpy.float32, self.size),
-                    ("dark", mf.READ_ONLY, numpy.float32, self.size),
-                    ("flat", mf.READ_ONLY, numpy.float32, self.size),
-                    ("polarization", mf.READ_ONLY, numpy.float32, self.size),
-                    ("solidangle", mf.READ_ONLY, numpy.float32, self.size),
-                    ("absorption", mf.READ_ONLY, numpy.float32, self.size),
-                    ("mask", mf.READ_ONLY, numpy.int8, self.size),
-                    ]
+            ("data", mf.READ_WRITE, numpy.float32, self.data_size),
+            ("indices", mf.READ_WRITE, numpy.int32, self.data_size),
+            ("indptr", mf.READ_WRITE, numpy.int32, (self.bins + 1)),
+            ("outData", mf.WRITE_ONLY, numpy.float32, self.bins),
+            ("outCount", mf.WRITE_ONLY, numpy.float32, self.bins),
+            ("outMerge", mf.WRITE_ONLY, numpy.float32, self.bins),
+            ("image_raw", mf.READ_ONLY, numpy.float32, self.size),
+            ("image_in", mf.READ_WRITE, numpy.float32, self.size),
+            ("image_out", mf.READ_WRITE, numpy.float32, self.size),
+            ("mask", mf.READ_WRITE, numpy.int8, self.size),
+            ("dark", mf.READ_ONLY, numpy.float32, self.size),
+            ("flat", mf.READ_ONLY, numpy.float32, self.size),
+            ("polarization", mf.READ_ONLY, numpy.float32, self.size),
+            ("solidangle", mf.READ_ONLY, numpy.float32, self.size),
+            ("absorption", mf.READ_ONLY, numpy.float32, self.size),
+        ]
 
         if self.size < self.BLOCK_SIZE:
-            raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)
-
+            raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)  # noqa
         self._cl_mem = allocate_cl_buffers(buffers, self.device, self.ctx)
 
     def _free_buffers(self):
@@ -197,11 +218,11 @@ class OCL_LUT_Integrator(object):
         :param kernel_file: path to the kernel (by default use the one in the src directory)
         """
         # concatenate all needed source files into a single openCL module
-        kernel_file = kernel_file or "ocl_azim_LUT.cl"
+        kernel_file = kernel_file or "ocl_azim_CSR.cl"
         kernel_src = concatenate_cl_kernel(["preprocess.cl", "memset.cl", kernel_file])
 
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
-                          (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
+        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D ON_CPU=%i" % \
+                (self.bins, self.size, self.BLOCK_SIZE, int(self.device_type == "CPU"))
         logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
@@ -235,9 +256,11 @@ class OCL_LUT_Integrator(object):
                                                numpy.int8(0), numpy.float32(0.0),
                                                numpy.float32(0.0), numpy.float32(1.0),
                                                self._cl_mem["image_out"]]
-        self._cl_kernel_args["lut_integrate"] = [self._cl_mem["image_out"],
-                                                 self._cl_mem["lut"],
-                                                 numpy.int32(0),
+        self._cl_kernel_args["csr_integrate"] = [self._cl_mem["image_out"],
+                                                 self._cl_mem["data"],
+                                                 self._cl_mem["indices"],
+                                                 self._cl_mem["indptr"],
+                                                 numpy.int8(0),
                                                  numpy.float32(0),
                                                  self._cl_mem["outData"],
                                                  self._cl_mem["outCount"],
@@ -324,11 +347,12 @@ class OCL_LUT_Integrator(object):
             self._cl_kernel_args["corrections"][14] = dummy
             self._cl_kernel_args["corrections"][15] = delta_dummy
             self._cl_kernel_args["corrections"][16] = numpy.float32(normalization_factor)
-            self._cl_kernel_args["lut_integrate"][2] = do_dummy
-            self._cl_kernel_args["lut_integrate"][3] = dummy
+            self._cl_kernel_args["csr_integrate"][4] = do_dummy
+            self._cl_kernel_args["csr_integrate"][5] = dummy
 
             if dark is not None:
                 do_dark = numpy.int8(1)
+                # TODO: what is do_checksum=False and image not on device ...
                 if not dark_checksum:
                     dark_checksum = calc_checksum(dark, safe)
                 if dark_checksum != self.on_device["dark"]:
@@ -397,7 +421,8 @@ class OCL_LUT_Integrator(object):
                     self.events += events
                 ev.wait()
                 return image
-            integrate = self._program.lut_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
+
+            integrate = self._program.csr_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
             events.append(("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
@@ -415,12 +440,11 @@ class OCL_LUT_Integrator(object):
 
     def set_profiling(self, value=True):
         """Switch On/Off the profiling flag of the command queue to allow debugging
-        
-        :param value: set to True to enable profiling, or to False to disable it.
-                      Without profiling, the processing is marginally faster 
 
-        
-        Profiling information can then be retrieved with the 'log_profile' method
+        :param value: set to True to enable profiling, or to False to disable it.
+                      Without profiling, the processing is marginally faster
+
+        Profiling information can then be retrived with the 'log_profile' method
         """
         if bool(value) != self.profile:
             with self._sem:
@@ -432,10 +456,8 @@ class OCL_LUT_Integrator(object):
                     self._queue = pyopencl.CommandQueue(self.ctx)
 
     def log_profile(self):
-        """If we are in profiling mode, prints out all timing for every single 
-        OpenCL call
-        
-        :return: list of lines printed on screen
+        """
+        If we are in profiling mode, prints out all timing for every single OpenCL call
         """
         t = 0.0
         if self.profile:

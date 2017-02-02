@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2016"
+__date__ = "02/02/2017"
 __status__ = "development"
 
 import logging
@@ -42,7 +42,8 @@ from math import ceil, floor
 from . import detectors
 from .opencl import ocl
 if ocl:
-    from . import ocl_azim_lut, ocl_azim_csr
+    from .opencl import azim_lut as ocl_azim_lut
+    from .opencl import azim_csr as ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
 try:

@@ -44,17 +44,18 @@ import logging
 
 logger = logging.getLogger(__file__)
 
-from ..ext import preproc as cython_preproc
+
 from .. import preproc as python_preproc
-from .. import ocl_preproc
+from ..ext import preproc as cython_preproc
+from ..opencl import preproc as ocl_preproc
 
 
 class TestPreproc(unittest.TestCase):
     def one_test(self, preproc):
         """
         The final pattern should look like a 4x4 square with 1 and -1 elsewhere.
-        
-        :param preproc: the preproc module to use 
+
+        :param preproc: the preproc module to use
         """
         logger.debug("using preproc from: %s", preproc.__name__)
         shape = 8, 8

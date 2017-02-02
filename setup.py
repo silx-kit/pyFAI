@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2016"
+__date__ = "02/02/2017"
 __status__ = "stable"
 
 install_warning = True
@@ -569,14 +569,15 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
 setup_requires = ["numpy", "cython"]
 
-packages = ["pyFAI", "pyFAI.ext", "pyFAI.gui", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources"]
+packages = ["pyFAI", "pyFAI.ext", "pyFAI.gui", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources", "pyFAI.opencl"]
 package_dir = {"pyFAI": "pyFAI",
                "pyFAI.ext": "pyFAI/ext",
                "pyFAI.gui": "pyFAI/gui",
                "pyFAI.utils": "pyFAI/utils",
                "pyFAI.test": "pyFAI/test",
                "pyFAI.benchmark": "pyFAI/benchmark",
-               "pyFAI.resources": "pyFAI/resources"}
+               "pyFAI.resources": "pyFAI/resources",
+               "pyFAI.opencl": "pyFAI/opencl", }
 
 if os.path.isdir("pyFAI/third_party"):
     package_dir["pyFAI.third_party"] = "pyFAI/third_party"

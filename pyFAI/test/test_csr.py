@@ -42,7 +42,7 @@ from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..azimuthalIntegrator import AzimuthalIntegrator
 if opencl.ocl:
-    from .. import ocl_azim_csr
+    from ..opencl import azim_csr as ocl_azim_csr
 
 import fabio
 
