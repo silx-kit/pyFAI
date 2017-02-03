@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "01/12/2016"
+__date__ = "02/02/2017"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -52,13 +52,13 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
                              bint is_flat=True):
     """
     Calculate the Cartesian position for array of position (d1, d2)
-    with pixel coordinated stored in array pos
-    This is bilinear interpolation
+    with pixel coordinated stored in array pos.
+    This is bilinear interpolation.
 
     :param d1: position in dim1
     :param d2: position in dim2
     :param pos: array with position of pixels corners
-    :return 3-tuple of position.
+    :return: 3-tuple of position.
     """
     cdef:
         int i, p1, p2, dim1, dim2, size = d1.size

@@ -212,7 +212,6 @@ to bilinear interpolations.
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext._bispev` Module
 -------------------------
 
@@ -222,7 +221,6 @@ This extension is a re-implementation of bi-cubic spline evaluation from scipy
     :members:
     :undoc-members:
     :show-inheritance:
-
 
 :mod:`ext._blob` Module
 -----------------------
@@ -234,18 +232,6 @@ Blob detection is used to find peaks in images by performing subsequent blurs
     :undoc-members:
     :show-inheritance:
 
-:mod:`ext.container` Module
----------------------------
-
-Container are a new uniform storage, optimized for the creation of both LUT and CSR.
-It has nothing to do with Docker.
-
-.. automodule:: pyFAI.ext.container
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-   
 :mod:`ext._convolution` Module
 ------------------------------
 
@@ -311,7 +297,6 @@ They are also implemented in scipy.ndimage in the general case, but not as fast.
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext.reconstruct` Module
 -----------------------------
 
@@ -333,7 +318,6 @@ Relabel regions, used to flag from largest regions to the smallest
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext.preproc` Module
 -------------------------
 
@@ -345,7 +329,6 @@ flat-field normalization, ... taking care of masked values and normalization.
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext._tree` Module
 -----------------------
 
@@ -355,7 +338,7 @@ The tree is used in file hierarchy tree for the diff_map graphical user interfac
     :members:
     :undoc-members:
     :show-inheritance:
-        
+
 :mod:`ext.watershed` Module
 ---------------------------
 
@@ -365,5 +348,3 @@ Peak peaking via inverse watershed for connecting region of high intensity
     :members:
     :undoc-members:
     :show-inheritance:
-        
-        

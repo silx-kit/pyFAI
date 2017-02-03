@@ -25,8 +25,8 @@ from libc.math cimport floor, ceil
 
 cdef class Bilinear:
     """Bilinear interpolator for finding max.
-    
-    Instance attribute defined in pxd file 
+
+    Instance attribute defined in pxd file
     """
     cdef:
         readonly float[:, ::1] data
@@ -43,7 +43,7 @@ cdef class Bilinear:
         self.maxi = data.max()
         self.mini = data.min()
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-    
+
     def __dealloc__(self):
         self.data = None
 
@@ -96,19 +96,18 @@ cdef class Bilinear:
     @cython.cdivision(True)
     def local_maxi(self, x):
         """
-        Return the local maximum ... with sub-pixel refinement
-
-        @param x: 2-tuple of integers
-        @param w: half with of the window: 1 or 2 are advised
-        @return: 2-tuple of float with the nearest local maximum
-
+        Return the local maximum with sub-pixel refinement.
 
         Sub-pixel refinement:
         Second order Taylor expansion of the function; first derivative is null
-        delta = x-i = -Inverse[Hessian].gradient
 
-        if Hessian is singular or |delta|>1: use a center of mass.
+        .. math:: delta = x-i = -Inverse[Hessian].gradient
 
+        If Hessian is singular or :math:`|delta|>1`: use a center of mass.
+
+        :param x: 2-tuple of integers
+        :param w: half with of the window: 1 or 2 are advised
+        :return: 2-tuple of float with the nearest local maximum
         """
         cdef:
             int res, current0, current1
@@ -116,7 +115,7 @@ cdef class Bilinear:
             float tmp, sum0 = 0, sum1 = 0, sum = 0
             float a00, a01, a02, a10, a11, a12, a20, a21, a22
             float d00, d11, d01, denom, delta0, delta1
-            
+
         res = self.c_local_maxi(round(x[0]) * self.width + round(x[1]))
 
         current0 = res // self.width
@@ -155,7 +154,7 @@ cdef class Bilinear:
                     sum += tmp
             if sum > 0:
                 return (sum0 / sum, sum1 / sum)
-                
+
         return (float(current0), float(current1))
 
     cpdef size_t cp_local_maxi(self, size_t x):
