@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "02/02/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -224,6 +224,16 @@ register_radial_unit("log(1+q.A)_None",
                      scale=1.0,
                      label=r"log(1+$q$.A)",
                      equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength) * 10.0))
+
+register_radial_unit("arcsinh(q.nm)_None",
+                     scale=1.0,
+                     label=r"arcsinh($q$.nm)",
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength)))
+
+register_radial_unit("arcsinh(q.A)_None",
+                     scale=1.0,
+                     label=r"arcsinh($q$.A)",
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength) * 10.0))
 
 
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),

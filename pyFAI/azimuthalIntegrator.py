@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2017"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -119,28 +119,28 @@ except ImportError as error:
 from .opencl import ocl
 if ocl:
     try:
-        from . import ocl_azim  # IGNORE:F0401
+        from .opencl import azim_hist as ocl_azim  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
-        logger.warning("Unable to import pyFAI.ocl_azim"
-                       ": %s" % error)
+        logger.error("Unable to import pyFAI.ocl_azim: %s",
+                       error)
         ocl_azim = None
     try:
-        from . import ocl_azim_csr  # IGNORE:F0401
+        from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
-        logger.error("Unable to import pyFAI.ocl_azim_csr"
-                     ": %s" % error)
+        logger.error("Unable to import pyFAI.ocl_azim_csr: %s",
+                     error)
         ocl_azim_csr = None
     try:
-        from . import ocl_azim_lut  # IGNORE:F0401
+        from .opencl import azim_lut as ocl_azim_lut  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_azim_lut for"
-                     ": %s" % error)
+        logger.error("Unable to import pyFAI.ocl_azim_lut for: %s",
+                     error)
         ocl_azim_lut = None
     try:
-        from . import ocl_sort
+        from .opencl import sort as ocl_sort
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_sort for"
-                     ": %s" % error)
+        logger.error("Unable to import pyFAI.ocl_sort for: %s",
+                      error)
         ocl_sort = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
@@ -2164,9 +2164,9 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 
-               0 for circular polarization or random, 
-               None for no correction, 
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+               0 for circular polarization or random,
+               None for no correction,
                True for using the former correction
         :type polarization_factor: float
         :param dark: dark noise image
@@ -2332,8 +2332,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                        checksum=self._lut_integrator.lut_checksum)
                             if self._ocl_lut_integr is not None:
                                 I, sum_, count = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
-                                                                                solidAngle=solidangle,
-                                                                                solidAngle_checksum=self._dssa_crc,
+                                                                                solidangle=solidangle,
+                                                                                solidangle_checksum=self._dssa_crc,
                                                                                 dummy=dummy,
                                                                                 delta_dummy=delta_dummy,
                                                                                 polarization=polarization,
@@ -2344,7 +2344,7 @@ class AzimuthalIntegrator(Geometry):
                                     variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                                 if variance is not None:
                                     var1d, a, b = self._ocl_lut_integr.integrate(variance,
-                                                                                 solidAngle=None,
+                                                                                 solidangle=None,
                                                                                  dummy=dummy,
                                                                                  delta_dummy=delta_dummy,
                                                                                  normalization_factor=1.0)
@@ -2469,8 +2469,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                        block_size=block_size,
                                                                                        profile=profile)
                             I, sum_, count = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
-                                                                            solidAngle=solidangle,
-                                                                            solidAngle_checksum=self._dssa_crc,
+                                                                            solidangle=solidangle,
+                                                                            solidangle_checksum=self._dssa_crc,
                                                                             dummy=dummy,
                                                                             delta_dummy=delta_dummy,
                                                                             polarization=polarization,
@@ -2481,7 +2481,7 @@ class AzimuthalIntegrator(Geometry):
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                             if variance is not None:
                                 var1d, a, b = self._ocl_csr_integr.integrate(variance,
-                                                                             solidAngle=None,
+                                                                             solidangle=None,
                                                                              dummy=dummy,
                                                                              delta_dummy=delta_dummy)
                                 with numpy.errstate(divide='ignore'):
@@ -2876,8 +2876,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                        checksum=self._lut_integrator.lut_checksum)
                             if not error:
                                 I, sum_, count = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
-                                                                                solidAngle=solidangle,
-                                                                                solidAngle_checksum=self._dssa_crc,
+                                                                                solidangle=solidangle,
+                                                                                solidangle_checksum=self._dssa_crc,
                                                                                 dummy=dummy,
                                                                                 delta_dummy=delta_dummy,
                                                                                 polarization=polarization,
@@ -2985,8 +2985,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                        checksum=self._csr_integrator.lut_checksum)
                         if not error:
                                 I, sum_, count = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
-                                                                                solidAngle=solidangle,
-                                                                                solidAngle_checksum=self._dssa_crc,
+                                                                                solidangle=solidangle,
+                                                                                solidangle_checksum=self._dssa_crc,
                                                                                 dummy=dummy,
                                                                                 delta_dummy=delta_dummy,
                                                                                 polarization=polarization,

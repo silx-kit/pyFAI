@@ -28,7 +28,7 @@
 
 __doc__ = """Re-implementation of numpy histograms without OpenMP"""
 __author__ = "Jerome Kieffer"
-__date__ = "31/05/2016"
+__date__ = "02/02/2017"
 __license__ = "MIY"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -52,15 +52,15 @@ def histogram(numpy.ndarray pos not None, \
     """
     Calculates histogram of pos weighted by weights
 
-    @param pos: 2Theta array
-    @param weights: array with intensities
-    @param bins: number of output bins
-    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
-    @param nthread: OpenMP is disabled. unused
-    @param empty: value given to empty bins
-    @param normalization_factor: divide the result by this value
+    :param pos: 2Theta array
+    :param weights: array with intensities
+    :param bins: number of output bins
+    :param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
+    :param nthread: OpenMP is disabled. unused
+    :param empty: value given to empty bins
+    :param normalization_factor: divide the result by this value
 
-    @return 2theta, I, weighted histogram, raw histogram
+    :return: 2theta, I, weighted histogram, raw histogram
     """
 
     assert pos.size == weights.size
@@ -127,16 +127,16 @@ def histogram2d(numpy.ndarray pos0 not None,
     """
     Calculate 2D histogram of pos0,pos1 weighted by weights
 
-    @param pos0: 2Theta array
-    @param pos1: Chi array
-    @param weights: array with intensities
-    @param bins: number of output bins int or 2-tuple of int
-    @param split: pixel splitting is disabled in histogram
-    @param nthread: OpenMP is disabled. unused here
-    @param empty: value given to empty bins
-    @param normalization_factor: divide the result by this value
+    :param pos0: 2Theta array
+    :param pos1: Chi array
+    :param weights: array with intensities
+    :param bins: number of output bins int or 2-tuple of int
+    :param split: pixel splitting is disabled in histogram
+    :param nthread: OpenMP is disabled. unused here
+    :param empty: value given to empty bins
+    :param normalization_factor: divide the result by this value
 
-    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
     assert pos0.size == pos1.size
     assert pos0.size == weights.size

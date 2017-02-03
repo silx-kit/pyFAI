@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "02/02/2017"
 
 
 import unittest
@@ -56,7 +56,7 @@ if ocl is not None:
     from ..opencl import pyopencl
     import pyopencl.array
 from .. import load
-from ..utils import read_cl_file
+from ..opencl.utils import read_cl_file
 
 
 class TestMask(unittest.TestCase):

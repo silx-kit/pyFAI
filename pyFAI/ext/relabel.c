@@ -1795,7 +1795,7 @@ static PyObject *__pyx_codeobj__19;
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_7relabel_1countThem(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_7relabel_countThem[] = "countThem(ndarray label, ndarray data, ndarray blured)\nCount \n    :param label: 2D array containing labeled zones\n    :param data: 2D array containing the raw data\n    :param blured: 2D array containing the blured data\n    :return: 2D arrays containing:\n        * count pixels in labelled zone: label == index).sum()\n        * max of data in that zone:      data[label == index].max()\n        * max of blured in that zone:    blured[label == index].max()\n        * data-blured where data is max.\n    ";
+static char __pyx_doc_5pyFAI_3ext_7relabel_countThem[] = "countThem(ndarray label, ndarray data, ndarray blured)\nCount\n\n    :param label: 2D array containing labeled zones\n    :param data: 2D array containing the raw data\n    :param blured: 2D array containing the blured data\n    :return: 2D arrays containing:\n\n        * count pixels in labeled zone: label == index).sum()\n        * max of data in that zone:      data[label == index].max()\n        * max of blurred in that zone:    blured[label == index].max()\n        * data-blurred where data is max.\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_7relabel_1countThem = {"countThem", (PyCFunction)__pyx_pw_5pyFAI_3ext_7relabel_1countThem, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_7relabel_countThem};
 static PyObject *__pyx_pw_5pyFAI_3ext_7relabel_1countThem(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_label = 0;
@@ -16530,8 +16530,8 @@ PyMODINIT_FUNC PyInit_relabel(void)
   /* "pyFAI/ext/relabel.pyx":40
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * def countThem(numpy.ndarray label not None, \             # <<<<<<<<<<<<<<
- *               numpy.ndarray data not None, \
+ * def countThem(numpy.ndarray label not None,             # <<<<<<<<<<<<<<
+ *               numpy.ndarray data not None,
  *               numpy.ndarray blured not None):
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_7relabel_1countThem, NULL, __pyx_n_s_pyFAI_ext_relabel); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}

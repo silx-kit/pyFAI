@@ -62,7 +62,7 @@ def extract_mask(infile):
     """
     Retrieve the mask from an Eiger master file.
 
-    @param infile: name of the Eiger master file
+    :param infile: name of the Eiger master file
     """
     h = h5py.File(infile, "r")
     entry = h["entry"]

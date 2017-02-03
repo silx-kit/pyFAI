@@ -57,8 +57,8 @@ ctypedef fused any_int_t:
     cnp.int16_t
     cnp.int32_t
     cnp.int64_t
-    
-    
+
+
 @cython.boundscheck(False)
 @cython.cdivision(True)
 @cython.wraparound(False)
@@ -67,16 +67,16 @@ cdef floating[::1]c1_preproc(floating[::1] data,
                              floating[::1] dark=None,
                              floating[::1] flat=None,
                              floating[::1] solidangle=None,
-                             floating[::1] polarization=None, 
+                             floating[::1] polarization=None,
                              floating[::1] absorption=None,
                              any_int_t[::1] mask=None,
                              floating dummy=0,
                              floating delta_dummy=0,
                              bint check_dummy=False,
-                             floating normalization_factor=1.0,                         
+                             floating normalization_factor=1.0,
                              ) nogil:
-    """Common preprocessing step for all routines: C-implementation 
-    
+    """Common preprocessing step for all routines: C-implementation
+
     :param data: raw value, as a numpy array, 1D or 2D
     :param dark: array containing the value of the dark noise, to be subtracted
     :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
@@ -85,18 +85,18 @@ cdef floating[::1]c1_preproc(floating[::1] data,
     :param absorption: Correction for absorption in the sensor volume
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
-    :param delta_dummy: precision for invalid data    
+    :param delta_dummy: precision for invalid data
     :param normalization_factor: final value is divided by this
-    
+
     NaN are always considered as invalid
-    
-    if neither empty nor dummy is provided, empty pixels are 0  
+
+    if neither empty nor dummy is provided, empty pixels are 0
     """
     cdef:
         int size, i
-        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization 
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization
         bint is_valid
-        floating[::1] result   
+        floating[::1] result
         floating one_value, one_num, one_den, one_flat
 
     with gil:
@@ -120,14 +120,14 @@ cdef floating[::1]c1_preproc(floating[::1] data,
                 is_valid = (one_num != dummy)
             else:
                 is_valid = fabs(one_num - dummy) > delta_dummy
-                
+
         if is_valid and do_flat:
             one_flat = flat[i]
             if delta_dummy == 0:
                 is_valid = (one_flat != dummy)
             else:
                 is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
         if is_valid:
             # Do not use "/=" as they mean reduction for cython
             if do_dark:
@@ -143,7 +143,7 @@ cdef floating[::1]c1_preproc(floating[::1] data,
             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
                 result[i] += dummy
             else:
-                result[i] += one_num / one_den            
+                result[i] += one_num / one_den
         else:
             result[i] += dummy
     return result
@@ -157,7 +157,7 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
                                 floating[::1] dark=None,
                                 floating[::1] flat=None,
                                 floating[::1] solidangle=None,
-                                floating[::1] polarization=None, 
+                                floating[::1] polarization=None,
                                 floating[::1] absorption=None,
                                 any_int_t[::1] mask=None,
                                 floating dummy=0,
@@ -165,9 +165,9 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
                                 bint check_dummy=False,
                                 floating normalization_factor=1.0,
                                 ) nogil:
-    """Common preprocessing step for all routines: C-implementation 
-    with split_result without variance 
-    
+    """Common preprocessing step for all routines: C-implementation
+    with split_result without variance
+
     :param data: raw value, as a numpy array, 1D or 2D
     :param dark: array containing the value of the dark noise, to be subtracted
     :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
@@ -176,18 +176,18 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
     :param absorption: Correction for absorption in the sensor volume
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
-    :param delta_dummy: precision for invalid data    
+    :param delta_dummy: precision for invalid data
     :param normalization_factor: final value is divided by this
-    
+
     NaN are always considered as invalid
-    
-    Empty pixels are 0 both num and den  
+
+    Empty pixels are 0 both num and den
     """
     cdef:
         int size, i
-        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization 
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization
         bint is_valid
-        floating[:, ::1] result   
+        floating[:, ::1] result
         floating one_num, one_result, one_flat, one_den
 
     with gil:
@@ -211,14 +211,14 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
                 is_valid = (one_num != dummy)
             else:
                 is_valid = fabs(one_num - dummy) > delta_dummy
-                
+
         if is_valid and do_flat:
             one_flat = flat[i]
             if delta_dummy == 0:
                 is_valid = (one_flat != dummy)
             else:
                 is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
         if is_valid:
             # Do not use "/=" as they mean reduction for cython
             if do_dark:
@@ -251,7 +251,7 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
                                 floating[::1] dark=None,
                                 floating[::1] flat=None,
                                 floating[::1] solidangle=None,
-                                floating[::1] polarization=None, 
+                                floating[::1] polarization=None,
                                 floating[::1] absorption=None,
                                 any_int_t[::1] mask=None,
                                 floating dummy=0,
@@ -259,9 +259,9 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
                                 bint check_dummy=False,
                                 floating normalization_factor=1.0,
                                 ) nogil:
-    """Common preprocessing step for all routines: C-implementation 
-    with split_result assuming a poissonian distribution 
-    
+    """Common preprocessing step for all routines: C-implementation
+    with split_result assuming a poissonian distribution
+
     :param data: raw value, as a numpy array, 1D or 2D
     :param dark: array containing the value of the dark noise, to be subtracted
     :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
@@ -270,18 +270,18 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
     :param absorption: Correction for absorption in the sensor volume
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
-    :param delta_dummy: precision for invalid data    
+    :param delta_dummy: precision for invalid data
     :param normalization_factor: final value is divided by this
-    
+
     NaN are always considered as invalid
-    
+
     Empty pixels are 0 both num, var and den
     """
     cdef:
         int size, i
-        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization 
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization
         bint is_valid
-        floating[:, ::1] result   
+        floating[:, ::1] result
         floating one_num, one_result, one_flat, one_den, one_var
 
     with gil:
@@ -297,7 +297,7 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
     for i in prange(size, nogil=True, schedule="static"):
         one_num = one_var = data[i]
         one_den = normalization_factor
-        
+
         is_valid = not isnan(one_num)
         if is_valid and check_mask:
             is_valid = (mask[i] == 0)
@@ -306,14 +306,14 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
                 is_valid = (one_num != dummy)
             else:
                 is_valid = fabs(one_num - dummy) > delta_dummy
-                
+
         if is_valid and do_flat:
             one_flat = flat[i]
             if delta_dummy == 0:
                 is_valid = (one_flat != dummy)
             else:
                 is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
         if is_valid:
             # Do not use "+=" as they mean reduction for cython
             if do_dark:
@@ -330,7 +330,7 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
                 one_num = 0.0
                 one_var = 0.0
-                one_den = 0.0                
+                one_den = 0.0
         else:
             one_num = 0.0
             one_var = 0.0
@@ -350,7 +350,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                                 floating[::1] dark=None,
                                 floating[::1] flat=None,
                                 floating[::1] solidangle=None,
-                                floating[::1] polarization=None, 
+                                floating[::1] polarization=None,
                                 floating[::1] absorption=None,
                                 any_int_t[::1] mask=None,
                                 floating dummy=0.0,
@@ -360,9 +360,9 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                                 floating[::1] variance=None,
                                 floating[::1] dark_variance=None,
                                 ) nogil:
-    """Common preprocessing step for all routines: C-implementation 
-    with split_result with variance in second position: (signal, variance, normalization)  
-    
+    """Common preprocessing step for all routines: C-implementation
+    with split_result with variance in second position: (signal, variance, normalization)
+
     :param data: raw value, as a numpy array, 1D or 2D
     :param dark: array containing the value of the dark noise, to be subtracted
     :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
@@ -371,19 +371,19 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
     :param absorption: Correction for absorption in the sensor volume
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
-    :param delta_dummy: precision for invalid data    
+    :param delta_dummy: precision for invalid data
     :param normalization_factor: final value is divided by this, settles on the denominator
     :param variance: variance of the data
     :param dark_variance: variance of the dark
     NaN are always considered as invalid
-    
-    Empty pixels are 0 both num, var and den  
+
+    Empty pixels are 0 both num, var and den
     """
     cdef:
         int size, i
-        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,  
-        bint is_valid, do_polarization, do_variance, do_dark_variance 
-        floating[:, ::1] result   
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption,
+        bint is_valid, do_polarization, do_variance, do_dark_variance
+        floating[:, ::1] result
         floating one_num, one_result, one_flat, one_den, one_var
 
     with gil:
@@ -405,7 +405,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
             one_var = variance[i]
         else:
             one_var = 0.0
-        
+
         is_valid = not isnan(one_num)
         if is_valid and check_mask:
             is_valid = (mask[i] == 0)
@@ -414,14 +414,14 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                 is_valid = (one_num != dummy)
             else:
                 is_valid = fabs(one_num - dummy) > delta_dummy
-                
+
         if is_valid and do_flat:
             one_flat = flat[i]
             if delta_dummy == 0:
                 is_valid = (one_flat != dummy)
             else:
                 is_valid = fabs(one_flat - dummy) > delta_dummy
-    
+
         if is_valid:
             # Do not use "/=" as they mean reduction for cython
             if do_dark:
@@ -439,7 +439,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
                 one_num = 0.0
                 one_var = 0.0
-                one_den = 0.0                
+                one_den = 0.0
         else:
             one_num = 0.0
             one_num = 0.0
@@ -471,8 +471,8 @@ def preproc(raw,
             dark_variance=None,
             bint poissonian=False,
             ):
-    """Common preprocessing step for all 
-    
+    """Common preprocessing step for all
+
     :param raw: raw value, as a numpy array, 1D or 2D
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
@@ -488,23 +488,23 @@ def preproc(raw,
     :param dark_variance: variance of the dark
 
     All calculation are performed in single precision floating point.
-    
+
     NaN are always considered as invalid
-    
-    if neither empty nor dummy is provided, empty pixels are 0  
+
+    if neither empty nor dummy is provided, empty pixels are 0
     """
     cdef:
         int size
-        bint check_dummy 
+        bint check_dummy
         cnp.int8_t[::1] cmask
-        float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, dvariance,res1 
+        float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, dvariance,res1
         float[:, ::1] res2
         float cdummy, ddummy
-    
+
     # initialization of values:
     size = raw.size
     cdata = numpy.ascontiguousarray(raw.ravel(), dtype=numpy.float32)
-    
+
     if (mask is None) or (mask is False):
         cmask = None
     else:
@@ -535,7 +535,7 @@ def preproc(raw,
         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
     else:
         cflat = None
-        
+
     if polarization is not None:
         assert polarization.size == size, "Polarization array size is correct"
         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
@@ -583,7 +583,7 @@ def preproc(raw,
                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
         res = numpy.asarray(res2)
         res.shape = out_shape
-    else: 
+    else:
         res1 = c1_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
                           cmask, cdummy, ddummy, check_dummy, normalization_factor)
         res = numpy.asarray(res1)

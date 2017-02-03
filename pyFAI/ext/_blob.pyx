@@ -5,19 +5,19 @@
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:   Aurore Deschildre <auroredeschildre@gmail.com>    
+#    Principal author:   Aurore Deschildre <auroredeschildre@gmail.com>
 #                        Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -26,7 +26,7 @@ Some Cythonized function for blob detection function
 """
 __authors__ = ["Aurore Deschildre", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "01/12/2016" 
+__date__ = "01/12/2016"
 __status__ = "stable"
 __license__ = "GPLv3+"
 import cython
@@ -40,16 +40,16 @@ from cython.parallel import prange
 @cython.cdivision(True)
 def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
     """Calculate if a point is a maximum in a 3D space: (scale, y, x)
-    
+
     :param dogs: 3D array of difference of gaussian
     :param mask: mask with invalid pixels
     :param N_5: take a neighborhood of 5x5 pixel in plane
-    :return: 3d_array with 1 where is_max 
+    :return: 3d_array with 1 where is_max
     """
     cdef bint do_mask = mask is not None
     cdef int ns, ny, nx, s, x, y
-    cdef numpy.int8_t m 
-    cdef float c 
+    cdef numpy.int8_t m
+    cdef float c
     cdef numpy.int8_t[:, ::1] cmask
     ns = dogs.shape[0]
     ny = dogs.shape[1]
@@ -106,11 +106,11 @@ def local_max(float[:, :, ::1] dogs, mask=None, bint n_5=False):
                             m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\
                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\
                                   and (c>dogs[s+1,y-2,x]) and (c>dogs[s+1,y-2,x-1]) and (c>dogs[s+1,y+2,x+1])
-                            
+
                         if y<ny-2:
                             m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\
                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\
                                   and (c>dogs[s+1,y+2,x]) and (c>dogs[s+1,y+2,x-1]) and (c>dogs[s+1,y+2,x+1])
-                        
+
                 is_max[s,y,x] = m
-    return is_max 
+    return is_max

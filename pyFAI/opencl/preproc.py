@@ -33,17 +33,17 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "01/02/2017"
+__date__ = "02/02/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from .opencl import pyopencl, BufferDescription, EventDescription, \
-                    OpenclProcessing, mf, ocl
+from .common import pyopencl, mf, ocl
+from .processing import OpenclProcessing, BufferDescription, EventDescription
 
-logger = logging.getLogger("pyFAI.ocl_preproc")
+logger = logging.getLogger("pyFAI.opencl.preproc")
 
 
 class OCL_Preproc(OpenclProcessing):
@@ -77,7 +77,7 @@ class OCL_Preproc(OpenclProcessing):
                  block_size=32, profile=False,
                  ):
         """
-        :param image_size: (int) number of element of the input image 
+        :param image_size: (int) number of element of the input image
         :param image_dtype: dtype of the input image
         :param image: retrieve image_size and image_dtype from template
         :param dark: dark current image as numpy array
@@ -91,14 +91,14 @@ class OCL_Preproc(OpenclProcessing):
         :param split_result: return the result a tuple: data, [variance], normalization, so the last dim becomes 2 or 3
         :param calc_variance: report the result as  data, variance, normalization
         :param poissonian: assumes poisson law for data and dark,
-        :param ctx: actual working context, left to None for automatic 
-                    initialization from device type or platformid/deviceid 
+        :param ctx: actual working context, left to None for automatic
+                    initialization from device type or platformid/deviceid
         :param devicetype: type of device, can be "CPU", "GPU", "ACC" or "ALL"
         :param platformid: integer with the platform_identifier, as given by clinfo
         :param deviceid: Integer with the device identifier, as given by clinfo
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
         :param profile: switch on profiling to be able to profile at the kernel level,
-                        store profiling elements (makes code slower) 
+                        store profiling elements (makes code slower)
         """
         OpenclProcessing.__init__(self, ctx, devicetype, platformid, deviceid, block_size, profile)
         self.size = image_size or image.size
@@ -289,7 +289,7 @@ class OCL_Preproc(OpenclProcessing):
                                                            ("delta_dummy", delta_dummy),
                                                            ("normalization_factor", numpy.float32(1.0)),
                                                            ("output", self.cl_mem["output"])))
- 
+
         self.cl_kernel_args["corrections3Poisson"] = OrderedDict((("image", self.cl_mem["image"]),
                                                                   ("do_dark", numpy.int8(0)),
                                                                   ("dark", self.cl_mem["dark"]),
@@ -307,12 +307,12 @@ class OCL_Preproc(OpenclProcessing):
                                                                   ("dummy", dummy),
                                                                   ("delta_dummy", delta_dummy),
                                                                   ("normalization_factor", numpy.float32(1.0)),
-                                                                  ("output", self.cl_mem["output"]))) 
+                                                                  ("output", self.cl_mem["output"])))
 
     def compile_kernels(self, kernel_files=None, compile_options=None):
         """Call the OpenCL compiler
-        
-        :param kernel_files: list of path to the kernel 
+
+        :param kernel_files: list of path to the kernel
         (by default use the one declared in the class)
         """
         # concatenate all needed source files into a single openCL module
@@ -347,13 +347,13 @@ class OCL_Preproc(OpenclProcessing):
                 normalization_factor=1.0
                 ):
         """Perform the pixel-wise operation of the array
-        
+
         :param raw: numpy array with the input image
         :param dark: numpy array with the dark-current image
         :param variance: numpy array with the variance of input image
         :param dark_variance: numpy array with the variance of dark-current image
         :param normalization_factor: divide the result by this
-        :return: array with processed data, 
+        :return: array with processed data,
                 may be an array of (data,variance,normalization) depending on class initialization
         """
         with self.sem:
@@ -445,8 +445,8 @@ def preproc(raw,
             poissonian=False,
             dtype=numpy.float32
             ):
-    """Common preprocessing step, implemented using OpenCL. May be inefficient 
-    
+    """Common preprocessing step, implemented using OpenCL. May be inefficient
+
     :param data: raw value, as a numpy array, 1D or 2D
     :param mask: array non null  where data should be ignored
     :param dummy: value of invalid data
@@ -459,28 +459,28 @@ def preproc(raw,
     :param normalization_factor: final value is divided by this
     :param empty: value to be given for empty pixels
     :param split_result: set to true to separate numerator from denominator and return an array of float2 or float3 (with variance)
-    :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.   
+    :param variance: provide an estimation of the variance, enforce split_result=True and return an float3 array with variance in second position.
     :param poissonian: set to "True" for assuming the detector is poissonian and variance = raw + dark
     :param dtype: dtype for all processing
-    
+
     All calculation are performed in single precision floating point (32 bits).
-    
+
     NaN are always considered as invalid values
-    
+
     if neither empty nor dummy is provided, empty pixels are 0.
     Empty pixels are always zero in "split_result" mode
-    
+
     Split result:
     -------------
     When set to False, i.e the default, the pixel-wise operation is:
     I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
-    Invalid pixels are set to the dummy or empty value. 
-     
-    When split_ressult is set to True, each result result is a float2 
+    Invalid pixels are set to the dummy or empty value.
+
+    When split_ressult is set to True, each result result is a float2
     or a float3 (with an additional value for the variance) as such:
     I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
-    Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value) 
-    
+    Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
+
     If poissonian is set to True, the variance is evaluated as (raw + dark)
     """
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32

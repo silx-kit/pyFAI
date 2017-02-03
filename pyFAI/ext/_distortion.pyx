@@ -265,9 +265,9 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
         float min0, min1, max0, max1, delta0, delta1
         float all_min0, all_max0, all_max1, all_min1
         float p0, p1
-    
+
     if (pixel1 == 0.0) or (pixel2 == 0):
-        raise RuntimeError("Pixel size cannot be null -> Zero division error") 
+        raise RuntimeError("Pixel size cannot be null -> Zero division error")
 
     dim0 = pixel_corners.shape[0]
     dim1 = pixel_corners.shape[1]
@@ -291,7 +291,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
                     p1 = pixel_corners[i, j, k, 2] / pixel2
                     pos[i, j, k, 0] = p0
                     pos[i, j, k, 1] = p1
-                    min0 = p0 if p0 < min0 else min0                        
+                    min0 = p0 if p0 < min0 else min0
                     min1 = p1 if p1 < min1 else min1
                     max0 = p0 if p0 > max0 else max0
                     max1 = p1 if p1 > max1 else max1
@@ -390,7 +390,7 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
         int offset0, offset1, box_size0, box_size1, size, k
         numpy.int32_t idx = 0
         int err_cnt = 0
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         lut_point[:, :, :] lut
         bint do_mask = mask is not None
@@ -403,7 +403,7 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
     delta0, delta1 = max_pixel_size
     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
     outMax[:, :] = 0
-    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)    
+    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     buffer_nbytes = buffer.nbytes
     if (size == 0): # fix 271
         raise RuntimeError("The look-up table has dimension 0 which is a non-sense."
@@ -440,8 +440,8 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
                     # Increase size of the buffer
                     delta0 = offset0 if offset0 > delta0 else delta0
                     delta1 = offset1 if offset1 > delta1 else delta1
-                    with gil: 
-                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+                    with gil:
+                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
 
                 A0 -= foffset0
                 A1 -= foffset1
@@ -528,7 +528,7 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
     :param bin_size: number of input element per output element (as numpy array)
     :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
     :return: look-up table in CSR format: 3-tuple of array"""
-    cdef: 
+    cdef:
         int shape0, shape1, delta0, delta1, bins
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
@@ -536,7 +536,7 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
     cdef:
         int i, j, k, ms, ml, ns, nl, idx = 0, tmp_index, err_cnt=0
         int lut_size, offset0, offset1, box_size0, box_size1
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         numpy.ndarray[numpy.int32_t, ndim = 1] indptr, indices
         numpy.ndarray[numpy.float32_t, ndim = 1] data
@@ -588,8 +588,8 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                     # Increase size of the buffer
                     delta0 = offset0 if offset0 > delta0 else delta0
                     delta1 = offset1 if offset1 > delta1 else delta1
-                    with gil: 
-                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+                    with gil:
+                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
 
                 A0 -= foffset0
                 A1 -= foffset1
@@ -687,7 +687,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
         int i0, i1, lut_size, offset0, offset1, box_size0, box_size1
         int counter, bin_number
         int idx, err_cnt=0
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         int[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
         float[::1] data, large_data
@@ -735,8 +735,8 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                 # Increase size of the buffer
                 delta0 = offset0 if offset0 > delta0 else delta0
                 delta1 = offset1 if offset1 > delta1 else delta1
-                with gil: 
-                    buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+                with gil:
+                    buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
 
             A0 = A0 - foffset0
             A1 = A1 - foffset1
@@ -766,7 +766,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                 cDA = D1 - pDA * D0
             else:
                 pDA = cDA = 0.0
-            
+
             integrate(buffer, B0, A0, pAB, cAB)
             integrate(buffer, A0, D0, pDA, cDA)
             integrate(buffer, D0, C0, pCD, cCD)
@@ -805,7 +805,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                     idx_pixel[counter] += idx
                     idx_bin[counter] += bin_number
                     large_data[counter] += value
-    logger.info("number of elements: %s, average per bin %.3f allocated max: %s", 
+    logger.info("number of elements: %s, average per bin %.3f allocated max: %s",
                 counter, counter / size_in, bins_per_pixel)
 
     if format == "csr":
@@ -889,7 +889,7 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
                 new_image[:shape_img0, :shape_img1] = image
             else:
                 new_image[:shape_img0, :] = image[:, :shape_in1]
-        else: 
+        else:
             if shape_img1 < shape_in1:
                 new_image[:, :shape_img1] = image[:shape_in0, :]
             else:
@@ -970,7 +970,7 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
                 new_image[:shape_img0, :shape_img1] = image
             else:
                 new_image[:shape_img0, :] = image[:, :shape_in1]
-        else: 
+        else:
             if shape_img1 < shape_in1:
                 new_image[:, :shape_img1] = image[:shape_in0, :]
             else:
@@ -1017,7 +1017,7 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
 def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
-    
+
     :param image: 2D-array with the image
     :param shape: shape of output image
     :param LUT: Look up table, here a 2D-array of struct
@@ -1054,7 +1054,7 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
 @cython.embedsignature(True)
 def uncorrect_CSR(image, shape, LUT):
     """Take an image which has been corrected and transform it into it's raw (with loss of information)
-    
+
     :param image: 2D-array with the image
     :param shape: shape of output image
     :param LUT: Look up table, here a 3-tuple of ndarray

@@ -28,7 +28,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -90,17 +90,17 @@ class HistoBBox1d(object):
                  unit="undefined",
                  empty=0.0):
         """
-        @param pos0: 1D array with pos0: tth or q_vect or r ...
-        @param delta_pos0: 1D array with delta pos0: max center-corner distance
-        @param pos1: 1D array with pos1: chi
-        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-        @param bins: number of output bins, 100 by default
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param unit: can be 2th_deg or r_nm^-1 ...
-        @param empty: value for bins without contributing pixels
+        :param pos0: 1D array with pos0: tth or q_vect or r ...
+        :param delta_pos0: 1D array with delta pos0: max center-corner distance
+        :param pos1: 1D array with pos1: chi
+        :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        :param bins: number of output bins, 100 by default
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param unit: can be 2th_deg or r_nm^-1 ...
+        :param empty: value for bins without contributing pixels
         """
 
         self.size = pos0.size
@@ -389,24 +389,24 @@ class HistoBBox1d(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef:
@@ -544,24 +544,24 @@ class HistoBBox1d(object):
         Actually perform the integration which in this case looks more like a matrix-vector product
         Single precision implementation using Kahan summation
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef:
@@ -735,17 +735,17 @@ class HistoBBox2d(object):
                  chiDiscAtPi=True
                  ):
         """
-        @param pos0: 1D array with pos0: tth or q_vect
-        @param delta_pos0: 1D array with delta pos0: max center-corner distance
-        @param pos1: 1D array with pos1: chi
-        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-        @param bins: number of output bins (tth=100, chi=36 by default)
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
-        @param unit: can be 2th_deg or r_nm^-1 ...
+        :param pos0: 1D array with pos0: tth or q_vect
+        :param delta_pos0: 1D array with delta pos0: max center-corner distance
+        :param pos1: 1D array with pos1: chi
+        :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        :param bins: number of output bins (tth=100, chi=36 by default)
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        :param unit: can be 2th_deg or r_nm^-1 ...
         """
         cdef numpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
@@ -1152,24 +1152,24 @@ class HistoBBox2d(object):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
-        @rtype: 5-tuple of ndarrays
+        :return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
+        :rtype: 5-tuple of ndarrays
 
         """
         cdef:

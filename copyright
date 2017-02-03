@@ -68,6 +68,7 @@ Files:  setup.py
         pyFAI/ext/watershed.pyx
         pyFAI/ext/*.pxi
         pyFAI/ext/src/*
+        pyFAI/opencl/*
         pyFAI/resources/gui/*
         pyFAI/resources/openCL/bitonic.cl
         pyFAI/resources/openCL/for_eclipse.cl

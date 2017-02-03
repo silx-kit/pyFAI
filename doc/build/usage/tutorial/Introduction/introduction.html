@@ -236,17 +236,17 @@ setFit2D(directDist, centerX, centerY, tilt=0.0, tiltPlanRotation=0.0, pixelX=No
     By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
     To obtaine correct result you will have to flip images using numpy.flipud.
 
-    @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
-    @param tilt: tilt in degrees
-    @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+    :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
+    :param tilt: tilt in degrees
+    :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
             * 0deg -&gt; Y does not move, +X goes to Z&lt;0
             * 90deg -&gt; X does not move, +Y goes to Z&lt;0
             * 180deg -&gt; Y does not move, +X goes to Z&gt;0
             * 270deg -&gt; X does not move, +Y goes to Z&gt;0
 
-    @param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
-    @param centerX, centerY: pixel position of the beam center
-    @param splineFile: name of the file containing the spline
+    :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
+    :param centerX, centerY: pixel position of the beam center
+    :param splineFile: name of the file containing the spline
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai</span><span class="o">.</span><span class="n">setFit2D</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>

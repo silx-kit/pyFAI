@@ -24,7 +24,7 @@ wheel (0.29.0)
 setuptools (28.7.1)
 ```
 
-Here is the other dependancies 
+Here is the other dependancies
 ```
 cycler (0.10.0)
 decorator (4.0.10)
