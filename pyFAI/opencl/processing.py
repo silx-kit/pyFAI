@@ -42,10 +42,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "03/02/2017"
 __status__ = "stable"
 
 
+import os
 import logging
 import gc
 from collections import namedtuple

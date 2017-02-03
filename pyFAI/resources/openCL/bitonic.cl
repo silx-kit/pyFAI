@@ -292,7 +292,7 @@ __kernel void bsort_all(__global float4 *g_data,
 // dim0 = y: wg=1
 // dim1 = x: wg=number_of_element/8
 __kernel void bsort_horizontal(__global float *g_data,
-                                __local float4 *l_data) {
+                               __local  float4 *l_data) {
     float8 input, output;
     uint id, global_start, offset;
 
@@ -552,3 +552,163 @@ __kernel void bsort_file(__global float4 *g_data, __local float4 *l_data) {
    g_data[global_start] = input1;
    g_data[global_start+1] = input2;
 }
+
+// Perform the 2D median filtering of an image 2D image
+// dim0 => wg=number_of_element in the tile /8
+// dim1 = y: wg=1
+// dim2 = x: wg=1
+__kernel void medfilt2d(__global float *image,  // input image
+                        __global float *result, // output array
+                        __local  float4 *l_data,// local storage 4x the number of threads
+                                 int khs1,    // Kernel half-size along dim1 (lines)
+                                 int khs2,    // Kernel half-size along dim2 (columns)
+                                 int height,    // Image size along dim1 (lines)
+                                 int width)    // Image size along dim2 (columns)
+{
+    size_t t = get_local_id(0);
+    size_t wg = get_local_size(0);
+    size_t y = get_global_id(1);
+    size_t x = get_global_id(2);
+
+    if (y < height && x < width)
+    {
+        float8 input, output;
+        input = (float8)(MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT);
+        size_t kfs1 = 2 * khs1 + 1;
+        size_t kfs2 = 2 * khs2 + 1;
+        size_t nbands = ((kfs1 + 7) & ~(7)) / 8;
+        if ((nbands*kfs2) <= wg) // we arange in nbands for coalesced read
+        {
+            //calc where the thread reads
+            size_t band_nr = 8*(t / kfs2);
+            size_t band_id = t % kfs2;
+            int pos_y = y + band_nr - khs1;
+            int pos_x = x + band_id - khs2;
+            if (pos_y<0) pos_y = 0;
+            if (pos_y>=height) pos_y = height-1;
+            if (pos_x < 0) pos_x = 0;
+            if (pos_x >= width) pos_x = width - 1;
+            input.s0 = image[pos_x + width*pos_y];
+
+            if ((band_nr + 1)<=kfs1)
+            {
+                pos_y = y + band_nr - khs1 + 1;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                input.s1 = image[pos_x + width*pos_y];
+            }
+            if ((band_nr + 2)<=kfs1)
+            {
+                pos_y = y + band_nr - khs1 + 2;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                input.s2 = image[pos_x + width*pos_y];
+            }
+            if ((band_nr + 3)<=kfs1)
+            {
+                pos_y = y + band_nr - khs1 + 3;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                input.s3 = image[pos_x + width*pos_y];
+            }
+            if ((band_nr + 4)<=kfs1)
+            {
+                pos_y = y + band_nr - khs1 + 4;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                input.s4 = image[pos_x + width*pos_y];
+            }
+            if ((band_nr + 5)<=kfs1)
+            {
+                pos_y = y + band_nr - khs1 + 5;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                input.s5 = image[pos_x + width*pos_y];
+            }
+            if ((band_nr + 6)<=kfs1)
+            {
+                pos_y = y + band_nr - khs1 + 6;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                input.s6 = image[pos_x + width*pos_y];
+            }
+            if ((band_nr + 7)<=kfs1)
+            {
+                pos_y = y + band_nr - khs1 + 7;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                input.s7 = image[pos_x + width*pos_y];
+            }
+        }
+        else //inefficient reading
+        {
+            for (int i1=-khs1; i1<=khs1; i1++)
+            {
+                int pos_y = y + i1;
+                if (pos_y<0) pos_y = 0;
+                if (pos_y>=height) pos_y = height-1;
+                for (int i2=-khs2; i2<=khs2; i2+=1)
+                {
+                    size_t tile_pos = i2 + khs2 + (i1 + khs1) * (2*khs2+1);
+                    if ((t == tile_pos/8)) //only one thread works
+                    {
+                        int pos_x = x + i2;
+                        if (pos_x < 0) pos_x = 0;
+                        if (pos_x >= width) pos_x = width - 1;
+                        float one_value = image[pos_x + width*pos_y];
+                        switch (tile_pos%8)
+                        {
+                            case 0:
+                                input.s0 = one_value;
+                            case 1:
+                                input.s1 = one_value;
+                            case 2:
+                                input.s2 = one_value;
+                            case 3:
+                                input.s3 = one_value;
+                            case 4:
+                                input.s4 = one_value;
+                            case 5:
+                                input.s5 = one_value;
+                            case 6:
+                                input.s6 = one_value;
+                            case 7:
+                                input.s7 = one_value;
+                        }
+                    }
+                }
+            }
+        }
+
+        output = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
+                              input, l_data);
+
+        size_t target = 2 * khs1 * khs2 + khs1 + khs2;
+        if (t == (target / 8)) //Only one thread works
+        {
+            float one_value;
+            size_t index = target - 8 * t;
+            switch (index)
+            {
+                case 0:
+                    one_value = output.s0;
+                case 1:
+                    one_value = output.s1;
+                case 2:
+                    one_value = output.s2;
+                case 3:
+                    one_value = output.s3;
+                case 4:
+                    one_value = output.s4;
+                case 5:
+                    one_value = output.s5;
+                case 6:
+                    one_value = output.s6;
+                case 7:
+                    one_value = output.s7;
+            }
+            result[x + y * width] = one_value;
+        }
+    }
+}
+
