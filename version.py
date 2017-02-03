@@ -96,7 +96,7 @@ def calc_hexversion(major=0, minor=0, micro=0, releaselevel="dev", serial=0):
     :param micro: integer
     :param relev: integer or string
     :param serial: integer
-    :return: integerm always increasing with revision numbers
+    :return: integer always increasing with revision numbers
     """
     global RELEASE_LEVEL_VALUE
     try:
