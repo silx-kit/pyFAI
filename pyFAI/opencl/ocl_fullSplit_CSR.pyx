@@ -66,13 +66,13 @@ class OCLFullSplit1d(object):
                  allow_pos0_neg=False,
                  unit="undefined"):
         """
-        :param pos: 4D array with the coodrinates of all pixels: tth or q_vect or r...
-        :param bins: number of output bins, 100 by default
-        :param pos0Range: minimum and maximum  of the 2th range
-        :param pos1Range: minimum and maximum  of the chi range
-        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        :param allow_pos0_neg: enforce the q<0 is usually not possible,      NOT USED
-        :param unit: can be 2th_deg or r_nm^-1 ...
+        @param pos: 4D array with the coodrinates of all pixels: tth or q_vect or r...
+        @param bins: number of output bins, 100 by default
+        @param pos0Range: minimum and maximum  of the 2th range
+        @param pos1Range: minimum and maximum  of the chi range
+        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        @param allow_pos0_neg: enforce the q<0 is usually not possible,      NOT USED
+        @param unit: can be 2th_deg or r_nm^-1 ...
         """
 
         self.bins = bins
@@ -314,10 +314,10 @@ class OCLFullSplit1d(object):
                             outMax[i] += 1
 
         self.lut_max_idx = outMax
-        self._lut = lut
+        self._lut = lut 
 
     def get_lut(self):
-        """Getter for the LUT as actual numpy array"""
+        """Getter for the LUT as actual numpy array""" 
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef lut_point[:,:] lut = self._lut
@@ -348,22 +348,22 @@ class OCLFullSplit1d(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        :param weights: input image
-        :type weights: ndarray
-        :param dummy: value for dead pixels (optional)
-        :type dummy: float
-        :param delta_dummy: precision for dead-pixel value in dynamic masking
-        :type delta_dummy: float
-        :param dark: array with the dark-current value to be subtracted (if any)
-        :type dark: ndarray
-        :param flat: array with the dark-current value to be divided by (if any)
-        :type flat: ndarray
-        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        :type solidAngle: ndarray
-        :param polarization: array with the polarization correction values to be divided by (if any)
-        :type polarization: ndarray
-        :return: positions, pattern, weighted_histogram and unweighted_histogram
-        :rtype: 4-tuple of ndarrays
+        @param weights: input image
+        @type weights: ndarray
+        @param dummy: value for dead pixels (optional)
+        @type dummy: float
+        @param delta_dummy: precision for dead-pixel value in dynamic masking
+        @type delta_dummy: float
+        @param dark: array with the dark-current value to be subtracted (if any)
+        @type dark: ndarray
+        @param flat: array with the dark-current value to be divided by (if any)
+        @type flat: ndarray
+        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        @type solidAngle: ndarray
+        @param polarization: array with the polarization correction values to be divided by (if any)
+        @type polarization: ndarray
+        @return : positions, pattern, weighted_histogram and unweighted_histogram
+        @rtype: 4-tuple of ndarrays
 
         """
         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size

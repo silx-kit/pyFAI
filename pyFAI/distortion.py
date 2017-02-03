@@ -42,7 +42,8 @@ from math import ceil, floor
 from . import detectors
 from .opencl import ocl
 if ocl:
-    from . import ocl_azim_lut, ocl_azim_csr
+    from .opencl import azim_lut as ocl_azim_lut
+    from .opencl import azim_csr as ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
 try:

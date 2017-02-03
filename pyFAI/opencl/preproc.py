@@ -33,17 +33,17 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "01/02/2017"
+__date__ = "02/02/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from .opencl import pyopencl, BufferDescription, EventDescription, \
-                    OpenclProcessing, mf, ocl
+from .common import pyopencl, mf, ocl
+from .processing import OpenclProcessing, BufferDescription, EventDescription
 
-logger = logging.getLogger("pyFAI.ocl_preproc")
+logger = logging.getLogger("pyFAI.opencl.preproc")
 
 
 class OCL_Preproc(OpenclProcessing):

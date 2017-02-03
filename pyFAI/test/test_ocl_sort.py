@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __doc__ = """Test for OpenCL sorting on GPU"""
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "28/11/2016"
+__date__ = "02/02/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,15 +45,11 @@ except (ImportError, Exception):
 logger = getLogger(__file__)
 
 
-try:
-    import pyopencl
-except ImportError as error:
-    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
-    pyopencl = None
-else:
-    from .. import ocl_sort
+from ..opencl  import ocl, pyopencl
+if ocl:
+    from ..opencl import sort as ocl_sort
 
-
+@unittest.skipIf(ocl is None, "OpenCL is not available")
 class TestOclSort(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -119,13 +115,10 @@ class TestOclSort(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    if pyopencl is None:
-        logger.warning("OpenCL module (pyopencl) is not present or no device available: skip test_ocl_sort")
-    else:
-        testsuite.addTest(TestOclSort("test_sort_hor"))
-        testsuite.addTest(TestOclSort("test_sort_vert"))
-        testsuite.addTest(TestOclSort("test_filter_hor"))
-        testsuite.addTest(TestOclSort("test_filter_vert"))
+    testsuite.addTest(TestOclSort("test_sort_hor"))
+    testsuite.addTest(TestOclSort("test_sort_vert"))
+    testsuite.addTest(TestOclSort("test_filter_hor"))
+    testsuite.addTest(TestOclSort("test_filter_vert"))
     return testsuite
 
 if __name__ == "__main__":

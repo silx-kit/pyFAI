@@ -44,9 +44,10 @@ import logging
 
 logger = logging.getLogger(__file__)
 
-from ..ext import preproc as cython_preproc
+
 from .. import preproc as python_preproc
-from .. import ocl_preproc
+from ..ext import preproc as cython_preproc
+from ..opencl import preproc as ocl_preproc
 
 
 class TestPreproc(unittest.TestCase):
