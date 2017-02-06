@@ -36,7 +36,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/02/2017"
+__date__ = "06/02/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -140,6 +140,13 @@ class MedianFilter2D(OpenclProcessing):
         :param image: numpy array with the image
         :param kernel_size: 2-tuple if
         :return: median-filtered  2D image
+        
+        
+        Nota: for window size 1x1 -> 7x7     up to 49  /  64 elements in   8 threads, 8elt/th 
+                              9x9 -> 15x15   up to 225 / 256 elements in  32 threads, 8elt/th                      
+                              17x17 -> 21x21 up to 441 / 512 elements in  64 threads, 8elt/th
+        
+        #TODO: change window size on the fly
         """
         events = []
         with self.sem:
@@ -156,7 +163,6 @@ class MedianFilter2D(OpenclProcessing):
         if self.profile:
             self.events += events
         return result
-
 
 
 def medfilt2d(ary, kernel_size=3):
@@ -179,7 +185,9 @@ def medfilt2d(ary, kernel_size=3):
     image = numpy.atleast_2d(ary)
     kernel_size = asarray(kernel_size)
     if kernel_size.shape == ():
-        kernel_size = np.repeat(kernel_size.item(), 2)
+        kernel_size = numpy.repeat(kernel_size.item(), 2)
     for size in kernel_size:
         if (size % 2) != 1:
             raise ValueError("Each element of kernel_size should be odd.")
+    m = MedianFilter2D(image.shape, kernel_size)
+    return m.medfilt2d(image, kernel_size)

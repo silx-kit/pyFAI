@@ -260,6 +260,64 @@ static float8 my_sort_book(uint local_id, uint group_id, uint local_size,
     return  output;
 }
 
+/* Function read and write at a given position in a float8 based on switches
+ *
+ */
+static float read_float8(float8 vect,
+                         size_t index)
+{
+    float value = 0.0f;
+    switch (index)
+    {
+        case 0:
+            value = vect.s0;
+        case 1:
+            value = vect.s1;
+        case 2:
+            value = vect.s2;
+        case 3:
+            value = vect.s3;
+        case 4:
+            value = vect.s4;
+        case 5:
+            value = vect.s5;
+        case 6:
+            value = vect.s6;
+        case 7:
+            value = vect.s7;
+    }
+    return value;
+
+}
+
+
+static float8 write_float8(float8 vect,
+                         size_t index,
+                         float value)
+{
+    switch (index)
+    {
+        case 0:
+            vect.s0 = value;
+        case 1:
+            vect.s1 = value;
+        case 2:
+            vect.s2 = value;
+        case 3:
+            vect.s3 = value;
+        case 4:
+            vect.s4 = value;
+        case 5:
+            vect.s5 = value;
+        case 6:
+            vect.s6 = value;
+        case 7:
+            vect.s7 = value;
+    }
+    return vect;
+}
+
+
 //////////////
 // Kernels
 //////////////
@@ -565,7 +623,7 @@ __kernel void medfilt2d(__global float *image,  // input image
                                  int height,    // Image size along dim1 (lines)
                                  int width)    // Image size along dim2 (columns)
 {
-    size_t t = get_local_id(0);
+    size_t threadid = get_local_id(0);
     size_t wg = get_local_size(0);
     size_t y = get_global_id(1);
     size_t x = get_global_id(2);
@@ -576,138 +634,31 @@ __kernel void medfilt2d(__global float *image,  // input image
         input = (float8)(MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT);
         size_t kfs1 = 2 * khs1 + 1;
         size_t kfs2 = 2 * khs2 + 1;
-        size_t nbands = ((kfs1 + 7) & ~(7)) / 8;
-        if ((nbands*kfs2) <= wg) // we arange in nbands for coalesced read
+        size_t nbands = (kfs1 + 7) / 8; // 8 elements per thread, aligned vertically
+        size_t nband8 = nbands * 8;
+        //calc where the thread reads
+        if (threadid < (nband8 * kfs2)) // Not all thread read data
         {
-            //calc where the thread reads
-            size_t band_nr = 8*(t / kfs2);
-            size_t band_id = t % kfs2;
-            int pos_y = y + band_nr - khs1;
-            int pos_x = x + band_id - khs2;
-            if (pos_y<0) pos_y = 0;
-            if (pos_y>=height) pos_y = height-1;
-            if (pos_x < 0) pos_x = 0;
-            if (pos_x >= width) pos_x = width - 1;
-            input.s0 = image[pos_x + width*pos_y];
-
-            if ((band_nr + 1)<=kfs1)
+            size_t band_nr = threadid / kfs2;
+            size_t band_id = threadid % kfs2;
+            int pos_x = clamp((int)(x + band_id - khs2), (int) 0, (int) width-1);
+            int nb_max = 8;
+            if (band_nr == (nbands - 1))
+                nb_max -= nband8 - kfs1;
+            for (int i=0; i<nb_max; i++)
             {
-                pos_y = y + band_nr - khs1 + 1;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                input.s1 = image[pos_x + width*pos_y];
-            }
-            if ((band_nr + 2)<=kfs1)
-            {
-                pos_y = y + band_nr - khs1 + 2;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                input.s2 = image[pos_x + width*pos_y];
-            }
-            if ((band_nr + 3)<=kfs1)
-            {
-                pos_y = y + band_nr - khs1 + 3;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                input.s3 = image[pos_x + width*pos_y];
-            }
-            if ((band_nr + 4)<=kfs1)
-            {
-                pos_y = y + band_nr - khs1 + 4;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                input.s4 = image[pos_x + width*pos_y];
-            }
-            if ((band_nr + 5)<=kfs1)
-            {
-                pos_y = y + band_nr - khs1 + 5;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                input.s5 = image[pos_x + width*pos_y];
-            }
-            if ((band_nr + 6)<=kfs1)
-            {
-                pos_y = y + band_nr - khs1 + 6;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                input.s6 = image[pos_x + width*pos_y];
-            }
-            if ((band_nr + 7)<=kfs1)
-            {
-                pos_y = y + band_nr - khs1 + 7;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                input.s7 = image[pos_x + width*pos_y];
-            }
-        }
-        else //inefficient reading
-        {
-            for (int i1=-khs1; i1<=khs1; i1++)
-            {
-                int pos_y = y + i1;
-                if (pos_y<0) pos_y = 0;
-                if (pos_y>=height) pos_y = height-1;
-                for (int i2=-khs2; i2<=khs2; i2+=1)
-                {
-                    size_t tile_pos = i2 + khs2 + (i1 + khs1) * (2*khs2+1);
-                    if ((t == tile_pos/8)) //only one thread works
-                    {
-                        int pos_x = x + i2;
-                        if (pos_x < 0) pos_x = 0;
-                        if (pos_x >= width) pos_x = width - 1;
-                        float one_value = image[pos_x + width*pos_y];
-                        switch (tile_pos%8)
-                        {
-                            case 0:
-                                input.s0 = one_value;
-                            case 1:
-                                input.s1 = one_value;
-                            case 2:
-                                input.s2 = one_value;
-                            case 3:
-                                input.s3 = one_value;
-                            case 4:
-                                input.s4 = one_value;
-                            case 5:
-                                input.s5 = one_value;
-                            case 6:
-                                input.s6 = one_value;
-                            case 7:
-                                input.s7 = one_value;
-                        }
-                    }
-                }
+                int pos_y = clamp((int)(y + 8 * band_nr + i - khs1), (int) 0, (int) height-1);
+                input = write_float8(input, i, image[pos_x + width*pos_y]);
             }
         }
 
         output = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
                               input, l_data);
 
-        size_t target = 2 * khs1 * khs2 + khs1 + khs2;
-        if (t == (target / 8)) //Only one thread works
+        size_t target = kfs1 * kfs2 / 2;
+        if (threadid == (target / 8)) //Only one thread has the proper value
         {
-            float one_value;
-            size_t index = target - 8 * t;
-            switch (index)
-            {
-                case 0:
-                    one_value = output.s0;
-                case 1:
-                    one_value = output.s1;
-                case 2:
-                    one_value = output.s2;
-                case 3:
-                    one_value = output.s3;
-                case 4:
-                    one_value = output.s4;
-                case 5:
-                    one_value = output.s5;
-                case 6:
-                    one_value = output.s6;
-                case 7:
-                    one_value = output.s7;
-            }
-            result[x + y * width] = one_value;
+            result[x + y * width] = read_float8(output, target - 8 * threadid);
         }
     }
 }
