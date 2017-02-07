@@ -113,8 +113,8 @@ class MedianFilter2D(OpenclProcessing):
                                                         ("khs1", numpy.int32(self.kernel_size[0] // 2)),  # Kernel half-size along dim1 (lines)
                                                         ("khs2", numpy.int32(self.kernel_size[1] // 2)),  # Kernel half-size along dim2 (columns)
                                                         ("height", numpy.int32(self.shape[0])),  # Image size along dim1 (lines)
-                                                        ("width", numpy.int32(self.shape[1])),
-                                                        ('debug', self.cl_mem["debug"])))  # Image size along dim2 (columns))
+                                                        ("width", numpy.int32(self.shape[1]))))
+#                                                         ('debug', self.cl_mem["debug"])))  # Image size along dim2 (columns))
 
     def get_local_mem(self, wg):
         return pyopencl.LocalMemory(wg * 32)  # 4byte per float, 8 element per thread
@@ -190,8 +190,8 @@ class MedianFilter2D(OpenclProcessing):
             kwargs["khs2"] = kernel_half_size[1]
             kwargs["height"] = numpy.int32(image.shape[0])
             kwargs["width"] = numpy.int32(image.shape[1])
-            for k, v in kwargs.items():
-                print("%s: %s (%s)" % (k, v, type(v)))
+#             for k, v in kwargs.items():
+#                 print("%s: %s (%s)" % (k, v, type(v)))
             mf2d = self.program.medfilt2d(self.queue,
                                           (wg, image.shape[0], image.shape[1]),
                                           (wg, 1, 1), *list(kwargs.values()))
