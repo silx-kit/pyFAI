@@ -128,12 +128,11 @@ __kernel void medfilt2d(__global float *image,  // input image
                                  int height,    // Image size along dim1 (nb lines)
                                  int width)     // Image size along dim2 (nb columns)
 {
-    size_t threadid = get_local_id(0);
-    size_t wg = get_local_size(0);
-    size_t y = get_global_id(1);
-    size_t x = get_global_id(2);
+    int threadid = get_local_id(0);
+    int wg = get_local_size(0);
+    int x = get_global_id(1);
 
-    if (y < height && x < width)
+    if (x < width)
     {
         union
         {
@@ -144,28 +143,80 @@ __kernel void medfilt2d(__global float *image,  // input image
         int kfs1 = 2 * khs1 + 1; //definition of kernel full size
         int kfs2 = 2 * khs2 + 1;
         int nbands = (kfs1 + 7) / 8; // 8 elements per thread, aligned vertically in 1 column
-        //calc where the thread reads
-        if (threadid < (nbands * 8 * kfs2)) // Not all thread may be reading data
+        for (int y=0; y<height; y++)
         {
+            //Select only the active threads, some may remain inactive
+            int nb_threads =  (nbands * 8 * kfs2);
             int band_nr = threadid / kfs2;
             int band_id = threadid % kfs2;
             int pos_x = clamp((int)(x + band_id - khs2), (int) 0, (int) width-1);
-            int max_vec = clamp(kfs1 - 8 * band_nr, 0, 8);
-            for (int i=0; i<max_vec; i++)
+            if (y == 0)
             {
-                int pos_y = clamp((int)(y + 8 * band_nr + i - khs1), (int) 0, (int) height-1);
-                input.ary[i] = image[pos_x + width * pos_y];
+                int max_vec = ((band_nr + 1) == nbands)? kfs1 % 8 : 8;
+                for (int i=0; i<max_vec; i++)
+                {
+                    if (threadid<nb_threads)
+                    {
+                        int pos_y = clamp((int)(y + 8 * band_nr + i - khs1), (int) 0, (int) height-1);
+                        input.ary[i] = image[pos_x + width * pos_y];
+                    }
+                }
             }
-        }
+            else
+            {
+                //Offset to the bottom
+                input.vec.s7 = MAXFLOAT;
+                input.vec.s6 = storage.vec.s7;
+                input.vec.s5 = storage.vec.s6;
+                input.vec.s4 = storage.vec.s5;
+                input.vec.s3 = storage.vec.s4;
+                input.vec.s2 = storage.vec.s3;
+                input.vec.s1 = storage.vec.s2;
+                input.vec.s0 = storage.vec.s1;
+                //storage.s0 is lost as we move down
 
-        //This function is definied in bitonic.cl
-        output.vec = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
-                                   input.vec, l_data);
+/*works*/
+                int max_vec = ((band_nr + 1) == nbands)? kfs1 % 8 : 8;
+                if (threadid<nb_threads)
+                {
+                    int i = max_vec - 1;
+                    int pos_y = clamp((int)(y + 8 * band_nr + i - khs1), (int) 0, (int) height-1);
+                    input.ary[i] = image[pos_x + width * pos_y];
+                }
+/* Does not work!
+                //store storage.s0 to some shared memory to retieve it from another thread.
+                l_data[threadid].x = storage.vec.s0;
+                barrier(CLK_LOCAL_MEM_FENCE);
+                int read_from = threadid + kfs2;
+                float value;
+                if (read_from<nb_threads)
+                {
+                    input.vec.s7 = l_data[read_from].x;
+                }
+                if ((band_nr + 1) == nbands)  //we are on the last line
+                //else if (threadid<nb_threads) //we are on the last line
+                {
+                    int pos_y = clamp((int)(y + khs1), (int) 0, (int) height-1);
+                    //Coalesced read in global memory
+                    input.ary[kfs1 % 8] = image[pos_x + width * pos_y];
+                }
+                */
 
-        size_t target = (kfs1 * kfs2) / 2;
-        if (threadid == (target / 8))
-        {
-            result[y * width + x] = output.ary[target % 8];
+
+            }
+            //store a copy of the input
+            storage = input;
+
+            //This function is definied in bitonic.cl
+            output.vec = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
+                                       input.vec, l_data);
+
+            size_t target = (kfs1 * kfs2) / 2;
+            if (threadid == (target / 8))
+            {
+                result[y * width + x] = output.ary[target % 8];
+            }
+
         }
     }
 }

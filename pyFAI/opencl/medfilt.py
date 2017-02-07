@@ -93,7 +93,7 @@ class MedianFilter2D(OpenclProcessing):
         self.shape = shape
         self.size = shape[0] * shape[1]
         self.kernel_size = self.calc_kernel_size(kernel_size)
-        self.workgroup_size = (self.calc_wg(self.kernel_size), 1, 1)  # 3D kernel
+        self.workgroup_size = (self.calc_wg(self.kernel_size), 1)  # 3D kernel
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
 
@@ -193,8 +193,8 @@ class MedianFilter2D(OpenclProcessing):
 #             for k, v in kwargs.items():
 #                 print("%s: %s (%s)" % (k, v, type(v)))
             mf2d = self.program.medfilt2d(self.queue,
-                                          (wg, image.shape[0], image.shape[1]),
-                                          (wg, 1, 1), *list(kwargs.values()))
+                                          (wg, image.shape[1]),
+                                          (wg, 1), *list(kwargs.values()))
             events.append(EventDescription("median filter 2d", mf2d))
 
             result = numpy.empty(image.shape, numpy.float32)
