@@ -273,6 +273,7 @@ class UtilsTest(object):
                 break
         else:
             logger.warning("No scipt %s found in path: %s", script, paths)
+            script_path = script
         return script_path, env
 
 
