@@ -36,14 +36,14 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "06/02/2017"
+__date__ = "07/02/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 import numpy
 from collections import OrderedDict
-from numpy import asarray
+
 from .common import ocl, pyopencl
 from .processing import EventDescription, OpenclProcessing, BufferDescription
 
@@ -53,14 +53,16 @@ else:
     raise ImportError("pyopencl is not installed")
 
 
+
 class MedianFilter2D(OpenclProcessing):
     """A class for doing median filtering using OpenCL"""
     buffers = [
-               BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("result", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("debug", 8 * 8, numpy.float32, mf.READ_WRITE),
                ]
-    kernel_files = ["preprocess.cl", "bitonic.cl"]
+    kernel_files = ["preprocess.cl", "bitonic.cl", "medfilt.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
@@ -90,14 +92,13 @@ class MedianFilter2D(OpenclProcessing):
                           block_size=block_size, profile=profile)
         self.shape = shape
         self.size = shape[0] * shape[1]
-        self.kernel_size = kernel_size
-        self.to_sort = 1 << ((self.kernel_size[0] * self.kernel_size[1] - 1).bit_length())
-        self.workgroup_size = (max(1, self.to_sort // 8), 1, 1)  # 3D kernel
+        self.kernel_size = self.calc_kernel_size(kernel_size)
+        self.workgroup_size = (self.calc_wg(self.kernel_size), 1, 1)  # 3D kernel
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
 
         self.allocate_buffers()
-        self.local_mem = pyopencl.LocalMemory(self.workgroup_size[0] * 32)  # 4byte per float, 8 element per thread
+        self.local_mem = self.get_local_mem(self.workgroup_size[0])
         OpenclProcessing.compile_kernels(self, self.kernel_files, "-D NIMAGE=%i" % self.size)
         self.set_kernel_arguments()
 
@@ -107,12 +108,16 @@ class MedianFilter2D(OpenclProcessing):
         for val in self.mapping.values():
             self.cl_kernel_args[val] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["medfilt2d"] = OrderedDict((("image", self.cl_mem["image"]),
-                                                        ("output", self.cl_mem["output"]),
+                                                        ("result", self.cl_mem["result"]),
                                                         ("local", self.local_mem),
                                                         ("khs1", numpy.int32(self.kernel_size[0] // 2)),  # Kernel half-size along dim1 (lines)
                                                         ("khs2", numpy.int32(self.kernel_size[1] // 2)),  # Kernel half-size along dim2 (columns)
                                                         ("height", numpy.int32(self.shape[0])),  # Image size along dim1 (lines)
-                                                        ("width", numpy.int32(self.shape[1]))))  # Image size along dim2 (columns))
+                                                        ("width", numpy.int32(self.shape[1])),
+                                                        ('debug', self.cl_mem["debug"])))  # Image size along dim2 (columns))
+
+    def get_local_mem(self, wg):
+        return pyopencl.LocalMemory(wg * 32)  # 4byte per float, 8 element per thread
 
     def send_buffer(self, data, dest):
         """Send a numpy array to the device, including the cast on the device if possible
@@ -134,35 +139,83 @@ class MedianFilter2D(OpenclProcessing):
         if self.profile:
             self.events += events
 
+    def calc_wg(self, kernel_size):
+        """calculate and return the optimal workgroup size for the first dimension, taking into account
+        the 8-height band"""
+        needed_threads = ((kernel_size[0] + 7) // 8) * kernel_size[1]
+        if needed_threads < 8:
+            wg = 8
+        elif needed_threads < 32:
+            wg = 32
+        else:
+            wg = 1 << (needed_threads.bit_length())
+        return wg
+
     def medfilt2d(self, image, kernel_size=None):
         """Actually apply the median filtering on the image
 
         :param image: numpy array with the image
         :param kernel_size: 2-tuple if
         :return: median-filtered  2D image
-        
-        
-        Nota: for window size 1x1 -> 7x7     up to 49  /  64 elements in   8 threads, 8elt/th 
-                              9x9 -> 15x15   up to 225 / 256 elements in  32 threads, 8elt/th                      
+
+
+        Nota: for window size 1x1 -> 7x7     up to 49  /  64 elements in   8 threads, 8elt/th
+                              9x9 -> 15x15   up to 225 / 256 elements in  32 threads, 8elt/th
                               17x17 -> 21x21 up to 441 / 512 elements in  64 threads, 8elt/th
-        
-        #TODO: change window size on the fly
+
+        TODO: change window size on the fly,
+
+
         """
         events = []
+        if kernel_size is None:
+            kernel_size = self.kernel_size
+        else:
+            kernel_size = self.calc_kernel_size(kernel_size)
+        kernel_half_size = kernel_size // numpy.int32(2)
+        # this is the workgroup size
+        wg = self.calc_wg(kernel_size)
+        localmem = self.get_local_mem(wg)
+
+        assert image.ndim == 2, "Treat only 2D images"
+        assert image.shape[0] <= self.shape[0], "height is OK"
+        assert image.shape[1] <= self.shape[1], "width is OK"
+
         with self.sem:
             self.send_buffer(image, "image")
+
+            kwargs = self.cl_kernel_args["medfilt2d"]
+            kwargs["local"] = localmem
+            kwargs["khs1"] = kernel_half_size[0]
+            kwargs["khs2"] = kernel_half_size[1]
+            kwargs["height"] = numpy.int32(image.shape[0])
+            kwargs["width"] = numpy.int32(image.shape[1])
+            for k, v in kwargs.items():
+                print("%s: %s (%s)" % (k, v, type(v)))
             mf2d = self.program.medfilt2d(self.queue,
-                                          (self.workgroup_size[0], self.shape[0], self.shape[1]),
-                                          self.workgroup_size, *list(self.cl_kernel_args["medfilt2d"].values()))
+                                          (wg, image.shape[0], image.shape[1]),
+                                          (wg, 1, 1), *list(kwargs.values()))
             events.append(EventDescription("median filter 2d", mf2d))
 
-            result = numpy.empty(image.shape, "float32")
-            ev = pyopencl.enqueue_copy(self.queue, result, self.cl_mem["output"])
-            events.append(EventDescription("copy D->H output", ev))
+            result = numpy.empty(image.shape, numpy.float32)
+            ev = pyopencl.enqueue_copy(self.queue, result, self.cl_mem["result"])
+            events.append(EventDescription("copy D->H result", ev))
             ev.wait()
         if self.profile:
             self.events += events
         return result
+
+    @staticmethod
+    def calc_kernel_size(kernel_size):
+        """format the kernel size to be a 2-length numpy array of int32
+        """
+        kernel_size = numpy.asarray(kernel_size, dtype=numpy.int32)
+        if kernel_size.shape == ():
+            kernel_size = numpy.repeat(kernel_size.item(), 2).astype(numpy.int32)
+        for size in kernel_size:
+            if (size % 2) != 1:
+                raise ValueError("Each element of kernel_size should be odd.")
+        return kernel_size
 
 
 def medfilt2d(ary, kernel_size=3):
@@ -183,11 +236,5 @@ def medfilt2d(ary, kernel_size=3):
     About the padding: the boundary value looks duplicated in scipy
     """
     image = numpy.atleast_2d(ary)
-    kernel_size = asarray(kernel_size)
-    if kernel_size.shape == ():
-        kernel_size = numpy.repeat(kernel_size.item(), 2)
-    for size in kernel_size:
-        if (size % 2) != 1:
-            raise ValueError("Each element of kernel_size should be odd.")
     m = MedianFilter2D(image.shape, kernel_size)
-    return m.medfilt2d(image, kernel_size)
+    return m.medfilt2d(image)

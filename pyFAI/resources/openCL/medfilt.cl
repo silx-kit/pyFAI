@@ -122,10 +122,11 @@ static float8 write_float8(float8 vect,
 __kernel void medfilt2d(__global float *image,  // input image
                         __global float *result, // output array
                         __local  float4 *l_data,// local storage 4x the number of threads
-                                 int khs1,      // Kernel half-size along dim1 (lines)
-                                 int khs2,      // Kernel half-size along dim2 (columns)
-                                 int height,    // Image size along dim1 (lines)
-                                 int width)     // Image size along dim2 (columns)
+                                 int khs1,      // Kernel half-size along dim1 (nb lines)
+                                 int khs2,      // Kernel half-size along dim2 (nb columns)
+                                 int height,    // Image size along dim1 (nb lines)
+                                 int width,     // Image size along dim2 (nb columns)
+                        __global float8 *debug) // debug array
 {
     size_t threadid = get_local_id(0);
     size_t wg = get_local_size(0);
@@ -135,7 +136,7 @@ __kernel void medfilt2d(__global float *image,  // input image
     if (y < height && x < width)
     {
         float8 input, output;
-        input = (float8)(MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT);
+//        input = (float8)(MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT);
         size_t kfs1 = 2 * khs1 + 1; //definition of kernel full size
         size_t kfs2 = 2 * khs2 + 1;
         size_t nbands = (kfs1 + 7) / 8; // 8 elements per thread, aligned vertically in 1 column
@@ -146,23 +147,39 @@ __kernel void medfilt2d(__global float *image,  // input image
             size_t band_nr = threadid / kfs2;
             size_t band_id = threadid % kfs2;
             int pos_x = clamp((int)(x + band_id - khs2), (int) 0, (int) width-1);
-            int nb_max = 8;
-            if (band_nr == (nbands - 1))
-                nb_max -= nband8 - kfs1;
-            for (int i=0; i<nb_max; i++)
+//            int nb_max = 8;
+//            if ((band_nr + 1)  == nbands)
+//                nb_max = kfs1; //TODO!
+            for (int i=0; i<8; i++)
             {
-                int pos_y = clamp((int)(y + 8 * band_nr + i - khs1), (int) 0, (int) height-1);
-                input = write_float8(input, i, image[pos_x + width*pos_y]);
+                if ((8 * band_nr + i) < kfs1)
+                {
+                    int pos_y = clamp((int)(y + 8 * band_nr + i - khs1), (int) 0, (int) height-1);
+                    input = write_float8(input, i, image[pos_x + width * pos_y]);
+                }
+                else
+                {
+                    input = write_float8(input, i, MAXFLOAT);
+                }
             }
         }
+
+//        //store debug information
+//        debug[(x + y * width) * 8 + threadid] = input;
 
         //This function is definied in bitonic.cl
         output = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
                               input, l_data);
 
-        size_t target = kfs1 * kfs2 / 2;
-        if (threadid == (target / 8)) //Only one thread has the proper value
-            result[x + y * width] = read_float8(output, target - 8 * threadid);
+                //store debug information
+        debug[(x + y * width) * 8 + threadid] = output;
+
+
+        size_t target = (kfs1 * kfs2) / 2;
+        if (threadid == (target / 8))
+        {
+            result[y * width + x] = read_float8(output, target % 8);
+        }
     }
 }
 
