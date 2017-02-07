@@ -268,6 +268,9 @@ class UtilsTest(object):
         if cls.script_dir is not None:
             paths.insert(0, cls.script_dir)
         for i in paths:
+            # clean up extra quotes from paths
+            if i.startswith('"') and i.endswith('"'):
+                i = i[1:-1]
             script_path = os.path.join(i, script)
             if os.path.exists(script_path):
                 break
