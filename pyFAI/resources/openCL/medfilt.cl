@@ -30,85 +30,20 @@
  */
 
 /*
- * Needs to be concatenated with btonic.cl prior to compilation
+ * Needs to be concatenated with bitonic.cl prior to compilation
 */
-
-/*
- * Function to read at a given position in a float8 based on switches,
- * Probably inefficient
- *
- */
-
-static float read_float8(float8 vect,
-                         size_t index)
-{
-    float value = 0.0f;
-    switch (index)
-    {
-        case 0:
-            value = vect.s0;
-        case 1:
-            value = vect.s1;
-        case 2:
-            value = vect.s2;
-        case 3:
-            value = vect.s3;
-        case 4:
-            value = vect.s4;
-        case 5:
-            value = vect.s5;
-        case 6:
-            value = vect.s6;
-        case 7:
-            value = vect.s7;
-    }
-    return value;
-
-}
-
-/*
- * Function to write at a given position in a float8 based on switches,
- * Probably inefficient
- *
- */
-static float8 write_float8(float8 vect,
-                         size_t index,
-                         float value)
-{
-    switch (index)
-    {
-        case 0:
-            vect.s0 = value;
-        case 1:
-            vect.s1 = value;
-        case 2:
-            vect.s2 = value;
-        case 3:
-            vect.s3 = value;
-        case 4:
-            vect.s4 = value;
-        case 5:
-            vect.s5 = value;
-        case 6:
-            vect.s6 = value;
-        case 7:
-            vect.s7 = value;
-    }
-    return vect;
-}
-
 
 /*
  *  Perform the 2D median filtering of an image 2D image
  *
  * dim0 => wg=number_of_element in the tile /8
- * dim1 = y: wg=1
- * dim2 = x: wg=1
+ * dim1 = x: wg=1
+
  *
  * Actually the workgoup size is a bit more complicated:
  * if window size = 1,3,5,7: WG1=8
  * if window size = 9,11,13,15: WG1=32
- * if window size = 9,11,13,15: WG1=64
+ * if window size = 17, ...,21: WG1=64
  *
  * More Generally the workgroup size must be: at least: kfs2*(kfs1+7)/8
  * Each thread treats 8 values aligned vertically, this allows (almost)
@@ -118,7 +53,7 @@ static float8 write_float8(float8 vect,
  * and slide it vertically by one line.
  * The additionnal need for shared memory will be kfs2 floats and a float8 as register.
  *
- * Theoritically, it should be possible to handle up to windows-size 45x45
+ * Theoritically, it should be possible to handle up to windows-size 83x83
  */
 __kernel void medfilt2d(__global float *image,  // input image
                         __global float *result, // output array
@@ -150,9 +85,9 @@ __kernel void medfilt2d(__global float *image,  // input image
             int band_nr = threadid / kfs2;
             int band_id = threadid % kfs2;
             int pos_x = clamp((int)(x + band_id - khs2), (int) 0, (int) width-1);
+            int max_vec = clamp(kfs1 - 8 * band_nr, 0, 8);
             if (y == 0)
             {
-                int max_vec = ((band_nr + 1) == nbands)? kfs1 % 8 : 8;
                 for (int i=0; i<max_vec; i++)
                 {
                     if (threadid<nb_threads)
@@ -176,12 +111,10 @@ __kernel void medfilt2d(__global float *image,  // input image
                 //storage.s0 is lost as we move down
 
 /*works*/
-                int max_vec = ((band_nr + 1) == nbands)? kfs1 % 8 : 8;
                 if (threadid<nb_threads)
                 {
-                    int i = max_vec - 1;
-                    int pos_y = clamp((int)(y + 8 * band_nr + i - khs1), (int) 0, (int) height-1);
-                    input.ary[i] = image[pos_x + width * pos_y];
+                    int pos_y = clamp((int)(y + 8 * band_nr + max_vec - 1 - khs1), (int) 0, (int) height-1);
+                    input.ary[max_vec - 1] = image[pos_x + width * pos_y];
                 }
 /* Does not work!
                 //store storage.s0 to some shared memory to retieve it from another thread.
@@ -193,14 +126,14 @@ __kernel void medfilt2d(__global float *image,  // input image
                 {
                     input.vec.s7 = l_data[read_from].x;
                 }
-                if ((band_nr + 1) == nbands)  //we are on the last line
-                //else if (threadid<nb_threads) //we are on the last line
+//                if ((band_nr + 1) == nbands)  //we are on the last line
+                else if (threadid<nb_threads) //we are on the last line
                 {
-                    int pos_y = clamp((int)(y + khs1), (int) 0, (int) height-1);
+                    int pos_y = clamp((int)(y + 8 * band_nr + max_vec - 1 - khs1), (int) 0, (int) height-1);
                     //Coalesced read in global memory
-                    input.ary[kfs1 % 8] = image[pos_x + width * pos_y];
+                    input.ary[max_vec - 1] = image[pos_x + width * pos_y];
                 }
-                */
+*/
 
 
             }
