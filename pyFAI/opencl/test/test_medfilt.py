@@ -37,6 +37,8 @@ __license__ = "MIT"
 __copyright__ = "2013-2017 European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/02/2017"
 
+
+import sys
 import time
 import logging
 import numpy
@@ -61,30 +63,9 @@ except:
 
 from scipy.ndimage import filters
 
+
 @unittest.skipUnless(ocl, "PyOpenCl is missing")
 class TestMedianFilter(unittest.TestCase):
-
-#     @classmethod
-#     def setUpClass(cls):
-#         super(TestAddition, cls).setUpClass()
-#         if ocl:
-#             cls.ctx = ocl.create_context()
-#             if logger.getEffectiveLevel() <= logging.INFO:
-#                 cls.PROFILE = True
-#                 cls.queue = pyopencl.CommandQueue(
-#                                 cls.ctx,
-#                                 properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
-#             else:
-#                 cls.PROFILE = False
-#                 cls.queue = pyopencl.CommandQueue(cls.ctx)
-#             cls.max_valid_wg = 0
-
-#     @classmethod
-#     def tearDownClass(cls):
-#         super(TestAddition, cls).tearDownClass()
-#         print("Maximum valid workgroup size %s on device %s" % (cls.max_valid_wg, cls.ctx.devices[0]))
-#         cls.ctx = None
-#         cls.queue = None
 
     def setUp(self):
         if ocl is None:
@@ -97,7 +78,7 @@ class TestMedianFilter(unittest.TestCase):
         self.medianfilter = None
 
     def measure(self, size):
-        "Common measurement of accuracy and timimgs"
+        "Common measurement of accuracy and timings"
         t0 = time.time()
         ref = filters.median_filter(self.data, size, mode="nearest"),
         t1 = time.time()
@@ -112,19 +93,53 @@ class TestMedianFilter(unittest.TestCase):
         tests the median filter kernel
         """
         r = self.measure(size=9)
-        logger.info("test_medfilt: size: %s error %s, t_ref: %.3fs, t_obt: %.3fs" % r)
+        logger.info("test_medfilt: size: %s error %s, t_ref: %.3fs, t_ocl: %.3fs" % r)
         self.assert_(r.error == 0, 'Results are correct')
 
-    def benchmark(self):
-        from pylab import *
-        f = figure()
-        sp = f.add_subplot(1, 1, 1)
-        f.set_title("Median filter of an image 512x512")
-        sp.set_xlabel("Window width/height")
-        sp.set_tlabel("Executiton time")
-        for s in range(3, 31, 2):
+    def benchmark(self, limit=35):
+        "Run some benchmarking"
+        try:
+            import PyQt5
+            from ...gui.matplotlib import pylab
+            from ...gui.utils import update_fig
+            from ...benchmark import Bench
+        except:
+            pylab = None
+
+            def update_fig(*ag, **kwarg):
+                pass
+
+        fig = pylab.figure()
+        fig.suptitle("Median filter of an image 512x512")
+        sp = fig.add_subplot(1, 1, 1)
+        sp.set_title(self.medianfilter.ctx.devices[0].name)
+        sp.set_xlabel("Window width & height")
+        sp.set_ylabel("Execution time (s)")
+        sp.set_xlim(2, limit + 1)
+        sp.set_ylim(0, 4)
+        data_size = []
+        data_scipy = []
+        data_opencl = []
+        plot_sp = sp.plot(data_size, data_scipy, "-or", label="scipy")[0]
+        plot_opencl = sp.plot(data_size, data_opencl, "-ob", label="opencl")[0]
+        sp.legend(loc=2)
+        fig.show()
+        update_fig(fig)
+        for s in range(3, limit, 2):
             r = self.measure(s)
             print(r)
+            if r.error == 0:
+                data_size.append(s)
+                data_scipy.append(r.sp_time)
+                data_opencl.append(r.oc_time)
+                plot_sp.set_data(data_size, data_scipy)
+                plot_opencl.set_data(data_size, data_opencl)
+                update_fig(fig)
+        fig.show()
+        if sys.version_info[0] < 3:
+            raw_input()
+        else:
+            input()
 
 
 def suite():
@@ -135,7 +150,7 @@ def suite():
 
 def benchmark():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(TestMedianFilter("test_medfilt"))
+    testSuite.addTest(TestMedianFilter("benchmark"))
     return testSuite
 
 
