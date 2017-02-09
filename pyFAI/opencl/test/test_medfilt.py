@@ -71,7 +71,7 @@ class TestMedianFilter(unittest.TestCase):
         if ocl is None:
             return
         self.data = ascent().astype(numpy.float32)
-        self.medianfilter = medfilt.MedianFilter2D(self.data.shape)
+        self.medianfilter = medfilt.MedianFilter2D(self.data.shape, devicetype="gpu")
 
     def tearDown(self):
         self.data = None
@@ -92,17 +92,16 @@ class TestMedianFilter(unittest.TestCase):
         """
         tests the median filter kernel
         """
-        r = self.measure(size=9)
+        r = self.measure(size=11)
         logger.info("test_medfilt: size: %s error %s, t_ref: %.3fs, t_ocl: %.3fs" % r)
         self.assert_(r.error == 0, 'Results are correct')
 
-    def benchmark(self, limit=35):
+    def benchmark(self, limit=36):
         "Run some benchmarking"
         try:
             import PyQt5
             from ...gui.matplotlib import pylab
             from ...gui.utils import update_fig
-            from ...benchmark import Bench
         except:
             pylab = None
 
@@ -152,7 +151,6 @@ def benchmark():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestMedianFilter("benchmark"))
     return testSuite
-
 
 
 if __name__ == '__main__':
