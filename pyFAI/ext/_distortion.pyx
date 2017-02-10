@@ -4,7 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2016 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "01/12/2016"
+__date__ = "10/02/2017"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -247,7 +247,6 @@ cdef inline void integrate(float[:, ::1] box, float start, float stop, float slo
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
              float pixel1, float pixel2, shape_out=None):
     """Calculate the pixel boundary position on the regular grid
@@ -261,7 +260,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
         float[:, :, :, ::1] pos
         int i, j, k, dim0, dim1, nb_corners
         bint do_shape = (shape_out is None)
-        float BIG = <float> sys.maxsize
+        float BIG = numpy.finfo(numpy.float32).max
         float min0, min1, max0, max1, delta0, delta1
         float all_min0, all_max0, all_max1, all_min1
         float p0, p1
@@ -277,7 +276,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
         delta0 = -BIG
         delta1 = -BIG
         all_min0 = BIG
-        all_min0 = BIG
+        all_min1 = BIG
         all_max0 = -BIG
         all_max1 = -BIG
         for i in range(dim0):
@@ -313,7 +312,6 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def calc_size(floating[:, :, :, ::1] pos not None,
               shape,
               numpy.int8_t[:, ::1] mask=None,
@@ -374,7 +372,6 @@ def calc_size(floating[:, :, :, ::1] pos not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """
@@ -518,7 +515,6 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """Calculate the Look-up table as CSR format
@@ -854,7 +850,6 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
 
@@ -932,7 +927,6 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
@@ -1009,11 +1003,11 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
         lout[i] += sum  # this += is for Cython's reduction
     return out
 
+
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
@@ -1047,11 +1041,11 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
                 lout[LUT[idx, j].idx] += val * coef
     return out, mask
 
+
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-@cython.embedsignature(True)
 def uncorrect_CSR(image, shape, LUT):
     """Take an image which has been corrected and transform it into it's raw (with loss of information)
 
