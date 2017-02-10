@@ -36,7 +36,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "07/02/2017"
+__date__ = "10/02/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -51,7 +51,6 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-
 
 
 class MedianFilter2D(OpenclProcessing):
@@ -88,8 +87,8 @@ class MedianFilter2D(OpenclProcessing):
                         store profiling elements (makes code slightly slower)
         """
         OpenclProcessing.__init__(self, ctx=ctx, devicetype=devicetype,
-                          platformid=platformid, deviceid=deviceid,
-                          block_size=block_size, profile=profile)
+                                  platformid=platformid, deviceid=deviceid,
+                                  block_size=block_size, profile=profile)
         self.shape = shape
         self.size = shape[0] * shape[1]
         self.kernel_size = self.calc_kernel_size(kernel_size)
@@ -148,7 +147,7 @@ class MedianFilter2D(OpenclProcessing):
         elif needed_threads < 32:
             wg = 32
         else:
-            wg = 1 << (needed_threads.bit_length())
+            wg = 1 << (int(needed_threads).bit_length())
         return wg
 
     def medfilt2d(self, image, kernel_size=None):
@@ -218,23 +217,41 @@ class MedianFilter2D(OpenclProcessing):
         return kernel_size
 
 
-def medfilt2d(ary, kernel_size=3):
-    """Median filter a 2-dimensional array.
+class _MedFilt2d(object):
+    median_filter = None
 
-    Apply a median filter to the `input` array using a local window-size
-    given by `kernel_size` (must be odd).
+    @classmethod
+    def medfilt2d(cls, ary, kernel_size=3):
+        """Median filter a 2-dimensional array.
+    
+        Apply a median filter to the `input` array using a local window-size
+        given by `kernel_size` (must be odd).
+    
+        :param ary: A 2-dimensional input array.
+        :param kernel_size: A scalar or a list of length 2, giving the size of the
+                            median filter window in each dimension.  Elements of
+                            `kernel_size` should be odd.  If `kernel_size` is a scalar,
+                            then this scalar is used as the size in each dimension.
+                            Default is a kernel of size (3, 3).
+        :return: An array the same size as input containing the median filtered
+                result. always work on float32 values
+    
+        About the padding:
+         
+        * The filling mode in scipy.signal.medfilt2d is zero-padding
+        * This implementation is equivalent to: 
+            scipy.ndimage.filters.median_filter(ary, kernel_size, mode="nearest")
+          
+        """
+        image = numpy.atleast_2d(ary)
+        shape = numpy.array(image.shape)
+        if cls.median_filter is None:
+            cls.median_filter = MedianFilter2D(image.shape, kernel_size)
+        elif (numpy.array(cls.median_filter.shape) < shape).any():
+            # enlarger the buffer size
+            new_shape = numpy.maximum(numpy.array(cls.median_filter.shape), shape)
+            ctx = cls.median_filter.ctx
+            cls.median_filter(new_shape, kernel_size, ctx=ctx)
+        return cls.median_filter.medfilt2d(image)
 
-    :param ary: A 2-dimensional input array.
-    :param kernel_size: A scalar or a list of length 2, giving the size of the
-                        median filter window in each dimension.  Elements of
-                        `kernel_size` should be odd.  If `kernel_size` is a scalar,
-                        then this scalar is used as the size in each dimension.
-                        Default is a kernel of size (3, 3).
-    :return: An array the same size as input containing the median filtered
-            result.
-
-    About the padding: the boundary value looks duplicated in scipy
-    """
-    image = numpy.atleast_2d(ary)
-    m = MedianFilter2D(image.shape, kernel_size)
-    return m.medfilt2d(image)
+medfilt2d = _MedFilt2d.medfilt2d
