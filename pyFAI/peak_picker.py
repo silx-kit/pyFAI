@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "13/02/2017"
 __status__ = "production"
 
 import os
@@ -39,6 +39,7 @@ import types
 import array
 import operator
 import numpy
+from collections import OrderedDict
 
 try:
     from .gui import qt
@@ -413,23 +414,28 @@ class PeakPicker(object):
             return gpt
 
         def new_grp(event):
-            " * Right-click (click+n):         try an auto find for a ring"
-            points = self.massif.find_peaks([event.ydata, event.xdata],
+            " * new_grp Right-click (click+n):         try an auto find for a ring"
+            # ydata is a float, and matplotlib display pixels centered.
+            # we use floor (int cast) instead of round to avoid use of
+            # banker's rounding
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            points = self.massif.find_peaks([ypix, xpix],
                                             self.defaultNbPoints,
                                             None, self.massif_contour)
             if points:
                 gpt = common_creation(points)
-                annontate(points[0], [event.ydata, event.xdata], gpt=gpt)
+                annontate(points[0], [ypix, xpix], gpt=gpt)
                 logger.info("Created group #%2s with %i points", gpt.label, len(gpt))
             else:
                 logger.warning("No peak found !!!")
 
         def single_point(event):
             " * Right-click + Ctrl (click+b):  create new group with one single point"
-            newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt = common_creation([newpeak])
-                annontate(newpeak, [event.ydata, event.xdata], gpt=gpt)
+                annontate(newpeak, [ypix, xpix], gpt=gpt)
                 logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f", gpt.label, newpeak[1], newpeak[0])
             else:
                 logger.warning("No peak found !!!")
@@ -445,8 +451,10 @@ class PeakPicker(object):
                     self.ax.lines.remove(gpt.plot[0])
 
             update_fig(self.fig)
+            # matplotlib coord to pixel coord, avoinding use of banker's round
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
             # need to annotate only if a new group:
-            listpeak = self.massif.find_peaks([event.ydata, event.xdata],
+            listpeak = self.massif.find_peaks([ypix, xpix],
                                               self.defaultNbPoints, None,
                                               self.massif_contour)
             if listpeak:
@@ -466,7 +474,9 @@ class PeakPicker(object):
                 if gpt.plot[0] in self.ax.lines:
                     self.ax.lines.remove(gpt.plot[0])
             update_fig(self.fig)
-            newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
+            # matplotlib coord to pixel coord, avoinding use of banker's round
+            ypix, xpix = int(event.ydata + 0.5), int(event.xdata + 0.5)
+            newpeak = self.massif.nearest_peak([ypix, xpix])
             if newpeak:
                 gpt.points.append(newpeak)
                 logger.info("x=%5.1f, y=%5.1f added to group #%2s", newpeak[1], newpeak[0], gpt.label)
@@ -511,8 +521,8 @@ class PeakPicker(object):
                     self.ax.lines.remove(gpt.plot[0])
             if len(gpt) > 1:
                 # delete single closest point from current group
-                x0 = event.xdata
-                y0 = event.ydata
+                # matplotlib coord to pixel coord, avoinding use of banker's round
+                y0, x0 = int(event.ydata + 0.5), int(event.xdata + 0.5)
                 distsq = [((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in gpt.points]
                 # index and distance of smallest distance:
                 indexMin = min(enumerate(distsq), key=operator.itemgetter(1))
@@ -699,11 +709,12 @@ class PeakPicker(object):
 ################################################################################
 class ControlPoints(object):
     """
-    This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ...
+    This class contains a set of control points with (optionally) their ring number 
+    hence d-spacing and diffraction  2Theta angle ...
     """
     def __init__(self, filename=None, calibrant=None, wavelength=None):
         self._sem = threading.Semaphore()
-        self._groups = {}
+        self._groups = OrderedDict()
         self.calibrant = Calibrant(wavelength=wavelength)
         if filename is not None:
             self.load(filename)
@@ -732,8 +743,7 @@ class ControlPoints(object):
         lstOut = ["ControlPoints instance containing %i group of point:" % len(self)]
         if self.calibrant:
             lstOut.append(self.calibrant.__repr__())
-        labels = list(self._groups.keys())
-        labels.sort(key=lambda item: self._groups[item].code)
+        labels = self.get_labels()
         lstOut.append("Containing %s groups of points:" % len(labels))
         for lbl in labels:
             lstOut.append(str(self._groups[lbl]))
@@ -743,21 +753,20 @@ class ControlPoints(object):
         return len(self._groups)
 
     def check(self):
-        """
-        check internal consistency of the class
+        """check internal consistency of the class, disabled for now
         """
         pass
 
     def reset(self):
-        """
-        remove all stored values and resets them to default
+        """remove all stored values and resets them to default
         """
         with self._sem:
-            self._groups = {}
+            self._groups = OrderedDict()
             PointGroup.reset_label()
 
     def append(self, points, ring=None, annotate=None, plot=None):
-        """
+        """Append a group of points to a given ring
+
         :param point: list of points
         :param ring: ring number
         :param annotate: matplotlib.annotate reference
@@ -770,37 +779,39 @@ class ControlPoints(object):
         return gpt
 
     def append_2theta_deg(self, points, angle=None, ring=None):
-        """
+        """Append a group of points to a given ring
+        
         :param point: list of points
         :param angle: 2-theta angle in degrees
+        :param: ring: ring number
         """
         if angle:
             self.append(points, numpy.deg2rad(angle), ring)
         else:
             self.append(points, None, ring)
 
-    def get(self, ring=None):
-        """
-        retireves the last set of points for a given ring (by default the last)
+    def get(self, ring=None, lbl=None):
+        """Retireves the last group of points for a given ring (by default the last)
 
         :param ring: index of ring to search for
+        :param lbl: label of the group to retrieve 
         """
         out = None
         with self._sem:
-            if (ring is None):
-                lst = list(self._groups.keys())
-                lst.sort(key=lambda item: self._groups[item].code)
-                if not lst:
-                    logger.warning("No group in ControlPoints.get")
-                    return
-                lbl = lst[-1]
-            else:
-                lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
-                lst.sort(key=lambda item: self._groups[item].code)
-                if not lst:
-                    logger.warning("No group for ring %s in ControlPoints.get", ring)
-                    return
-                lbl = lst[-1]
+            if lbl is None:
+                if (ring is None):
+                    lst = self.get_labels()
+                    if not lst:
+                        logger.warning("No group in ControlPoints.get")
+                        return
+                    lbl = lst[-1]
+                else:
+                    lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
+                    lst.sort(key=lambda item: self._groups[item].code)
+                    if not lst:
+                        logger.warning("No group for ring %s in ControlPoints.get", ring)
+                        return
+                    lbl = lst[-1]
             if lbl in self._groups:
                 out = self._groups.get(lbl)
             else:
@@ -852,8 +863,7 @@ class ControlPoints(object):
             if self.calibrant.wavelength is not None:
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
-            lst = list(self._groups.keys())
-            lst.sort(key=lambda item: self._groups[item].code)
+            lst = self.get_labels()
             tth = self.calibrant.get_2th()
             for idx, lbl in enumerate(lst):
                 gpt = self._groups[lbl]
@@ -1061,6 +1071,15 @@ class ControlPoints(object):
             self.calibrant = Calibrant()
         self.calibrant.dSpacing = lst
     dSpacing = property(get_dSpacing, set_dSpacing)
+
+    def get_labels(self):
+        """Retieve the list of labels 
+        
+        :return: list of labels as string  
+        """
+        labels = list(self._groups.keys())
+        labels.sort(key=lambda item: self._groups[item].code)
+        return labels
 
 
 class PointGroup(object):
