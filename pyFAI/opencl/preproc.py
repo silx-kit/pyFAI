@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "02/02/2017"
+__date__ = "10/02/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -313,7 +313,7 @@ class OCL_Preproc(OpenclProcessing):
         """Call the OpenCL compiler
 
         :param kernel_files: list of path to the kernel
-        (by default use the one declared in the class)
+                             (by default use the one declared in the class)
         """
         # concatenate all needed source files into a single openCL module
         kernel_files = kernel_files or self.kernel_files
@@ -322,6 +322,7 @@ class OCL_Preproc(OpenclProcessing):
 
     def send_buffer(self, data, dest):
         """Send a numpy array to the device
+        
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
         """
@@ -471,17 +472,19 @@ def preproc(raw,
     Empty pixels are always zero in "split_result" mode
 
     Split result:
-    -------------
-    When set to False, i.e the default, the pixel-wise operation is:
-    I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
-    Invalid pixels are set to the dummy or empty value.
+    
+    * When set to False, i.e the default, the pixel-wise operation is:
+      I = (raw - dark)/(flat \* solidangle \* polarization \* absorption)
+      Invalid pixels are set to the dummy or empty value.
 
-    When split_ressult is set to True, each result result is a float2
-    or a float3 (with an additional value for the variance) as such:
-    I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
-    Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
+    * When split_ressult is set to True, each result result is a float2
+      or a float3 (with an additional value for the variance) as such:
+      
+      I = [(raw - dark), (variance), (flat \* solidangle \* polarization \* absorption)]
+      
+      Empty pixels will have all their 2 or 3 values to 0 (and not to dummy or empty value)
 
-    If poissonian is set to True, the variance is evaluated as (raw + dark)
+    * If poissonian is set to True, the variance is evaluated as (raw + dark)
     """
     if raw.dtype.itemsize > 4:  # use numpy to cast to float32
         raw = numpy.ascontiguousarray(raw, numpy.float32)
