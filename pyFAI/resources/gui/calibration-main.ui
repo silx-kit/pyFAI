@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>524</width>
+    <height>312</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PyFAI Calibration</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+    <item>
+     <widget class="QListWidget" name="_list">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QListWidget {
+	border: 0;
+	background: rgba(1,1,1,0);
+}
+
+QListWidget::item {
+	background: rgba(1,1,1,0);
+	height: 40px;
+	font: 0 16pt;
+	color:black;
+	margin: 10px;
+}
+
+QListWidget::item:selected {
+	font: 75 16pt;
+	background-color: grey;
+}
+</string>
+      </property>
+      <property name="currentRow">
+       <number>-1</number>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="_stack">
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>_list</sender>
+   <signal>currentRowChanged(int)</signal>
+   <receiver>_stack</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>237</x>
+     <y>218</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>389</x>
+     <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
