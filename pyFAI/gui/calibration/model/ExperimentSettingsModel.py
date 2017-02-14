@@ -42,7 +42,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__mask = DataModel()
         self.__image = DataModel()
         self.__distance = DataModel()
-        self.__waveLength = DataModel()
+        self.__wavelength = DataModel()
         self.__polarizationFactor = DataModel()
         self.__calibrantModel = CalibrantModel()
         self.__detectorModel = DetectorModel()
@@ -50,7 +50,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__mask.changed.connect(self.dataChanged)
         self.__image.changed.connect(self.dataChanged)
         self.__distance.changed.connect(self.dataChanged)
-        self.__waveLength.changed.connect(self.dataChanged)
+        self.__wavelength.changed.connect(self.dataChanged)
         self.__polarizationFactor.changed.connect(self.dataChanged)
         self.__calibrantModel.changed.connect(self.dataChanged)
         self.__detectorModel.changed.connect(self.dataChanged)
@@ -73,8 +73,8 @@ class ExperimentSettingsModel(AbstractModel):
     def distance(self):
         return self.__distance
 
-    def waveLength(self):
-        return self.__waveLength
+    def wavelength(self):
+        return self.__wavelength
 
     def polarizationFactor(self):
         return self.__polarizationFactor

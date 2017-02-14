@@ -38,7 +38,7 @@ class GeometryModel(AbstractModel):
     def __init__(self, parent=None):
         super(GeometryModel, self).__init__(parent)
         self.__distance = DataModel()
-        self.__waveLength = DataModel()
+        self.__wavelength = DataModel()
         self.__poni1 = DataModel()
         self.__poni2 = DataModel()
         self.__rotation1 = DataModel()
@@ -46,7 +46,7 @@ class GeometryModel(AbstractModel):
         self.__rotation3 = DataModel()
 
         self.__distance.changed.connect(self.dataChanged)
-        self.__waveLength.changed.connect(self.dataChanged)
+        self.__wavelength.changed.connect(self.dataChanged)
         self.__poni1.changed.connect(self.dataChanged)
         self.__poni2.changed.connect(self.dataChanged)
         self.__rotation1.changed.connect(self.dataChanged)
@@ -56,7 +56,7 @@ class GeometryModel(AbstractModel):
     def isValid(self):
         if not self.__distance.isValid():
             return False
-        if not self.__waveLength.isValid():
+        if not self.__wavelength.isValid():
             return False
         if not self.__poni1.isValid():
             return False
@@ -72,8 +72,8 @@ class GeometryModel(AbstractModel):
     def distance(self):
         return self.__distance
 
-    def waveLength(self):
-        return self.__waveLength
+    def wavelength(self):
+        return self.__wavelength
 
     def poni1(self):
         return self.__poni1
