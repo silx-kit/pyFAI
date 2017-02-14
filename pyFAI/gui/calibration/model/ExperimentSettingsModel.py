@@ -23,11 +23,11 @@
 #
 # ###########################################################################*/
 
+from __future__ import absolute_import
+
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/02/2017"
-
-from __future__ import absolute_import
+__date__ = "14/02/2017"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
