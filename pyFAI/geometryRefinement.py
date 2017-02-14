@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/02/2017"
+__date__ = "14/02/2017"
 __status__ = "development"
 
 import os
@@ -165,10 +165,11 @@ class GeometryRefinement(AzimuthalIntegrator):
         l = len(smallRing)
         worked = False
         if len > 5:
-#             If there are many control point on the inner-most ring:
+            # If there are many control point on the inner-most ring, fit an ellipse
             try:
                 ellipse = fit_ellipse(*smallRing_in_m[:2])
-                direct_dist = ellipse.half_short_axis / numpy.tan(tth_min)
+                print(ellipse)
+                direct_dist = ellipse.half_long_axis / numpy.tan(tth_min)
                 tilt = numpy.arctan2(ellipse.half_long_axis - ellipse.half_short_axis, ellipse.half_short_axis)
                 cos_tilt = numpy.cos(tilt)
                 sin_tilt = numpy.sin(tilt)
@@ -182,11 +183,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                 rot1 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt / numpy.sqrt(1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt)))))  # + or -
                 if cos_tpr * sin_tilt > 0:
                     rot1 = -rot1
-                if tilt == 0:
-                    rot3 = 0
-                else:
-                    rot3 = numpy.arccos(min(1.0, max(-1.0, (cos_tilt * cos_tpr * sin_tpr - cos_tpr * sin_tpr) / numpy.sqrt(1 - sin_tpr * sin_tpr * sin_tilt * sin_tilt))))  # + or -
-                    rot3 = numpy.pi / 2.0 - rot3
+                rot3 = 0
             except:
                 worked = False
             else:

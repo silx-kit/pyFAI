@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/02/2017"
+__date__ = "14/02/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -83,4 +83,4 @@ def fit_ellipse(pty, ptx):
     down2 = (b * b - a * c) * ((a - c) * numpy.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
     res1 = numpy.sqrt(up / down1)
     res2 = numpy.sqrt(up / down2)
-    return Ellipse(y0, x0, angle, res1, res2)
+    return Ellipse(y0, x0, angle, max(res1, res2), min(res1, res2))
