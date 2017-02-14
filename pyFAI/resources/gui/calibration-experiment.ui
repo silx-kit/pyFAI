@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>746</width>
+    <width>659</width>
     <height>547</height>
    </rect>
   </property>
@@ -28,7 +28,7 @@
      <property name="lineWidth">
       <number>1</number>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_15" stretch="">
+     <layout class="QVBoxLayout" name="verticalLayout_15">
       <property name="spacing">
        <number>0</number>
       </property>
@@ -50,16 +50,6 @@
          <string>Experient settings</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="1" column="1" colspan="2">
-          <widget class="QLineEdit" name="_waveLength">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="1" colspan="2">
           <widget class="QLineEdit" name="_distance">
            <property name="text">
@@ -70,49 +60,13 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="3">
-          <widget class="QLabel" name="_waveLengthUnit">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>A</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3">
-          <widget class="QLabel" name="_distanceUnit">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>mm</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_7">
            <property name="text">
-            <string>Distance:</string>
+            <string>Energy:</string>
            </property>
            <property name="buddy">
             <cstring>_distance</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Wave length:</string>
-           </property>
-           <property name="buddy">
-            <cstring>_waveLength</cstring>
            </property>
           </widget>
          </item>
@@ -126,6 +80,62 @@
          <item row="5" column="1" colspan="2">
           <widget class="CalibrantSelector" name="_calibrant" native="true"/>
          </item>
+         <item row="1" column="3">
+          <widget class="QLabel" name="_waveLengthUnit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Å</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Wavelength:</string>
+           </property>
+           <property name="buddy">
+            <cstring>_waveLength</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1" colspan="2">
+          <widget class="QLineEdit" name="_waveLength">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QLabel" name="_distanceUnit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>keV</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Detector:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1" colspan="2">
+          <widget class="QWidget" name="widget_2" native="true"/>
+         </item>
         </layout>
         <zorder>_distance</zorder>
         <zorder>label_3</zorder>
@@ -135,6 +145,8 @@
         <zorder>label_7</zorder>
         <zorder>label_6</zorder>
         <zorder>_calibrant</zorder>
+        <zorder>label_8</zorder>
+        <zorder>widget_2</zorder>
        </widget>
       </item>
       <item>
@@ -143,21 +155,7 @@
          <string>Acquisition</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_13">
-         <item row="0" column="4">
-          <widget class="QToolButton" name="_imageLoader">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QLineEdit" name="_image">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="4">
+         <item row="2" column="4">
           <widget class="QLabel" name="_imageSizeUnit">
            <property name="text">
             <string>px</string>
@@ -174,14 +172,28 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="2">
+          <widget class="QLineEdit" name="_image">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QToolButton" name="_imageLoader">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
           <widget class="QLabel" name="_imageSizeLabel">
            <property name="text">
             <string>Image size:</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
+         <item row="2" column="2">
           <widget class="QLabel" name="_imageSize">
            <property name="text">
             <string/>
@@ -191,109 +203,24 @@
            </property>
           </widget>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_25">
-        <property name="title">
-         <string>Detector</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_17">
-         <item row="1" column="3">
-          <widget class="QLabel" name="label_57">
-           <property name="text">
-            <string>um</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="_pixelWidth">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1" colspan="2">
-          <widget class="QLineEdit" name="_spline">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="label_76">
            <property name="text">
             <string>Dark file:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="3">
-          <widget class="QToolButton" name="_darkLoader">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="3">
-          <widget class="QToolButton" name="_splinerLoader">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1" colspan="2">
-          <widget class="QLineEdit" name="_flat">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="3">
-          <widget class="QToolButton" name="_flatLoader">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_72">
-           <property name="text">
-            <string>Flat file:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1" colspan="2">
+         <item row="1" column="2">
           <widget class="QLineEdit" name="_dark">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_64">
+         <item row="1" column="4">
+          <widget class="QToolButton" name="_darkLoader">
            <property name="text">
-            <string>Spline file:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLineEdit" name="_pixelHeight">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_55">
-           <property name="text">
-            <string>Pixel size:</string>
+            <string>...</string>
            </property>
           </widget>
          </item>
