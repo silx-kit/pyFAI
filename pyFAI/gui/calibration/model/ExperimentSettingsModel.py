@@ -39,9 +39,12 @@ class ExperimentSettingsModel(AbstractModel):
 
     def __init__(self, parent=None):
         super(ExperimentSettingsModel, self).__init__(parent)
-        self.__mask = DataModel()
         self.__image = DataModel()
-        self.__distance = DataModel()
+        self.__mask = DataModel()
+        self.__dark = DataModel()
+        self.__imageFile = DataModel()
+        self.__maskFile = DataModel()
+        self.__darkFile = DataModel()
         self.__wavelength = DataModel()
         self.__polarizationFactor = DataModel()
         self.__calibrantModel = CalibrantModel()
@@ -49,7 +52,10 @@ class ExperimentSettingsModel(AbstractModel):
 
         self.__image.changed.connect(self.wasChanged)
         self.__mask.changed.connect(self.wasChanged)
-        self.__distance.changed.connect(self.wasChanged)
+        self.__dark.changed.connect(self.wasChanged)
+        self.__imageFile.changed.connect(self.wasChanged)
+        self.__maskFile.changed.connect(self.wasChanged)
+        self.__darkFile.changed.connect(self.wasChanged)
         self.__wavelength.changed.connect(self.wasChanged)
         self.__polarizationFactor.changed.connect(self.wasChanged)
         self.__calibrantModel.changed.connect(self.wasChanged)
@@ -64,14 +70,23 @@ class ExperimentSettingsModel(AbstractModel):
     def detectorModel(self):
         return self.__detectorModel
 
-    def mask(self):
-        return self.__mask
-
     def image(self):
         return self.__image
 
-    def distance(self):
-        return self.__distance
+    def mask(self):
+        return self.__mask
+
+    def dark(self):
+        return self.__dark
+
+    def imageFile(self):
+        return self.__imageFile
+
+    def maskFile(self):
+        return self.__maskFile
+
+    def darkFile(self):
+        return self.__darkFile
 
     def wavelength(self):
         return self.__wavelength
