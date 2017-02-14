@@ -202,7 +202,7 @@ We can integrate the image for the two extreme cases:
 
     lab6 = cals["LaB6"]
     ai_short.wavelength = ai_long.wavelength = wl
-    
+
     fig = figure(figsize=(10,10))
     ax = subplot(2,2,1)
     img_short = lab6.fake_calibration_image(ai_short)

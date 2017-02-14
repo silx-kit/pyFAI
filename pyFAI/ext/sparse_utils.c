@@ -1396,7 +1396,7 @@ static PyObject *__pyx_codeobj__17;
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR(PyObject *__pyx_self, PyObject *__pyx_v_lut); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_12sparse_utils_LUT_to_CSR[] = "LUT_to_CSR(lut)\nConversion between sparse matrix representations\n\n    @param lut: Look-up table as 2D array of (int idx, float coef)\n    @return: the same matrix as CSR representation\n    @rtype: 3-tuple of numpy array (data, indices, indptr)\n    ";
+static char __pyx_doc_5pyFAI_3ext_12sparse_utils_LUT_to_CSR[] = "LUT_to_CSR(lut)\nConversion between sparse matrix representations\n\n    :param lut: Look-up table as 2D array of (int idx, float coef)\n    :return: the same matrix as CSR representation\n    :rtype: 3-tuple of numpy array (data, indices, indptr)\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR = {"LUT_to_CSR", (PyCFunction)__pyx_pw_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR, METH_O, __pyx_doc_5pyFAI_3ext_12sparse_utils_LUT_to_CSR};
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_1LUT_to_CSR(PyObject *__pyx_self, PyObject *__pyx_v_lut) {
   PyObject *__pyx_r = 0;
@@ -2060,7 +2060,7 @@ __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_t_25, 1, (PyObject *(*)(char *)) __
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT[] = "CSR_to_LUT(data, indices, indptr)\nConversion between sparse matrix representations\n\n    @param data: coef of the sparse matrix as 1D array\n    @param indices: index of the col position in input array as 1D array\n    @param indptr: index of the start of the row in the indices array\n    @return: the same matrix as LUT representation\n    @rtype: record array of (int idx, float coef)\n    ";
+static char __pyx_doc_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT[] = "CSR_to_LUT(data, indices, indptr)\nConversion between sparse matrix representations\n\n    :param data: coef of the sparse matrix as 1D array\n    :param indices: index of the col position in input array as 1D array\n    :param indptr: index of the start of the row in the indices array\n    :return: the same matrix as LUT representation\n    :rtype: record array of (int idx, float coef)\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT = {"CSR_to_LUT", (PyCFunction)__pyx_pw_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_12sparse_utils_2CSR_to_LUT};
 static PyObject *__pyx_pw_5pyFAI_3ext_12sparse_utils_3CSR_to_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_data = 0;

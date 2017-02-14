@@ -72,46 +72,6 @@
     :undoc-members:
     :show-inheritance:
 
-:mod:`opencl` Module
---------------------
-
-.. automodule:: pyFAI.opencl
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ocl_azim` Module
-----------------------
-
-.. automodule:: pyFAI.ocl_azim
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ocl_azim_lut` Module
---------------------------
-
-.. automodule:: pyFAI.ocl_azim_lut
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ocl_azim_csr` Module
---------------------------
-
-.. automodule:: pyFAI.ocl_azim_csr
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ocl_azim_csr_dis` Module
-------------------------------
-
-.. automodule:: pyFAI.ocl_azim_csr_dis
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`io` Module
 ----------------
 
@@ -185,24 +145,156 @@
     :undoc-members:
     :show-inheritance:
 
-:mod:`utils` Module
--------------------
+:mod:`utils.__init__` Module
+----------------------------
 
-.. automodule:: pyFAI.utils
+Sub module with miscelaneous tools
+
+.. automodule:: pyFAI.utils.__init__
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`gui.gui_utils` Module
----------------------------
+:mod:`utils.bayes` Module
+.........................
+
+Tool for bayesian filtering-out of positive peaks
+
+.. automodule:: pyFAI.utils.bayes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`utils.shell` Module
+.........................
+
+Contains the progress-bar in the shell command line
+
+.. automodule:: pyFAI.utils.shell
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`utils.string` Module
+..........................
+
+Enhanced string formatter
+
+.. automodule:: pyFAI.utils.string
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+:mod:`opencl.__init__` Module
+-----------------------------
+
+Contains all OpenCL implementation.
+
+.. automodule:: pyFAI.opencl
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`opencl.common` Module
+...........................
+
+.. automodule:: pyFAI.opencl.common
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`opencl.processing` Module
+...............................
+
+.. automodule:: pyFAI.opencl.processing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+:mod:`opencl.preproc` Module
+............................
+
+.. automodule:: pyFAI.opencl.preproc
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+:mod:`opencl.azim_hist` Module
+..............................
+
+.. automodule:: pyFAI.opencl.azim_hist
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`opencl.azim_lut` Module
+.............................
+
+.. automodule:: pyFAI.opencl.azim_lut
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`opencl.azim_csr` Module
+.............................
+
+.. automodule:: pyFAI.opencl.azim_csr
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+:mod:`gui.__init__` Module
+--------------------------
+
+.. automodule:: pyFAI.gui.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`gui.matplotlib` Module
+............................
+
+Initialize properly Matplotlib
+
+.. automodule:: pyFAI.gui.matplotlib
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`gui.qt` Module
+....................
+
+
+.. automodule:: pyFAI.gui.qt
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+:mod:`gui.utils` Module
+.......................
 
 .. automodule:: pyFAI.gui.utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`ext.bilinear` Module
+:mod:`ext.__init__` Module
 --------------------------
+Sub-module with all Cython binary extensions
+
+.. automodule:: pyFAI.ext.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+:mod:`ext.bilinear` Module
+..........................
 
 This extension makes a discrete 2D-array appear like a continuous function thanks
 to bilinear interpolations.
@@ -212,9 +304,8 @@ to bilinear interpolations.
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext._bispev` Module
--------------------------
+.........................
 
 This extension is a re-implementation of bi-cubic spline evaluation from scipy
 
@@ -223,9 +314,8 @@ This extension is a re-implementation of bi-cubic spline evaluation from scipy
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext._blob` Module
------------------------
+.......................
 
 Blob detection is used to find peaks in images by performing subsequent blurs
 
@@ -234,20 +324,8 @@ Blob detection is used to find peaks in images by performing subsequent blurs
     :undoc-members:
     :show-inheritance:
 
-:mod:`ext.container` Module
----------------------------
-
-Container are a new uniform storage, optimized for the creation of both LUT and CSR.
-It has nothing to do with Docker.
-
-.. automodule:: pyFAI.ext.container
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-   
 :mod:`ext._convolution` Module
-------------------------------
+..............................
 
 Convolutions in real space are used to blurs images, used in blob-detection algorithm
 
@@ -257,7 +335,7 @@ Convolutions in real space are used to blurs images, used in blob-detection algo
     :show-inheritance:
 
 :mod:`ext._distortion` Module
------------------------------
+.............................
 
 Distortion correction are correction are applied by Look-up table (or CSR)
 
@@ -267,7 +345,7 @@ Distortion correction are correction are applied by Look-up table (or CSR)
     :show-inheritance:
 
 :mod:`ext._geometry` Module
----------------------------
+...........................
 
 This extension is a fast-implementation for calculating the geometry, i.e. where
 every pixel of an array stays in space (x,y,z) or its (r, \chi) coordinates.
@@ -278,7 +356,7 @@ every pixel of an array stays in space (x,y,z) or its (r, \chi) coordinates.
     :show-inheritance:
 
 :mod:`ext.histogram` Module
----------------------------
+...........................
 
 Re-implementation of the numpy.histogram, optimized for azimuthal integration.
 Deprecated, will be replaced by silx.math.histogramnd
@@ -289,7 +367,7 @@ Deprecated, will be replaced by silx.math.histogramnd
     :show-inheritance:
 
 :mod:`ext.marchingsquares` Module
----------------------------------
+.................................
 
 The marchingsquares algorithm is used for calculating an iso-contour curve (displayed
 on the screen while calibrating) but also to seed the points for the "massif" algoritm
@@ -301,7 +379,7 @@ during recalib.
     :show-inheritance:
 
 :mod:`ext.morphology` Module
-----------------------------
+............................
 
 The morphology extension provides a couple of binary morphology operations on images.
 They are also implemented in scipy.ndimage in the general case, but not as fast.
@@ -311,9 +389,8 @@ They are also implemented in scipy.ndimage in the general case, but not as fast.
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext.reconstruct` Module
------------------------------
+.............................
 
 Very simple inpainting module for reconstructing the missing part of an image (masked)
 to be able to use more common algorithms.
@@ -324,7 +401,7 @@ to be able to use more common algorithms.
     :show-inheritance:
 
 :mod:`ext.relabel` Module
--------------------------
+.........................
 
 Relabel regions, used to flag from largest regions to the smallest
 
@@ -333,9 +410,8 @@ Relabel regions, used to flag from largest regions to the smallest
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext.preproc` Module
--------------------------
+.........................
 
 Contains a preprocessing function in charge of the dark-current subtraction,
 flat-field normalization, ... taking care of masked values and normalization.
@@ -345,9 +421,8 @@ flat-field normalization, ... taking care of masked values and normalization.
     :undoc-members:
     :show-inheritance:
 
-
 :mod:`ext._tree` Module
------------------------
+.......................
 
 The tree is used in file hierarchy tree for the diff_map graphical user interface.
 
@@ -355,9 +430,9 @@ The tree is used in file hierarchy tree for the diff_map graphical user interfac
     :members:
     :undoc-members:
     :show-inheritance:
-        
+
 :mod:`ext.watershed` Module
----------------------------
+...........................
 
 Peak peaking via inverse watershed for connecting region of high intensity
 
@@ -365,5 +440,3 @@ Peak peaking via inverse watershed for connecting region of high intensity
     :members:
     :undoc-members:
     :show-inheritance:
-        
-        

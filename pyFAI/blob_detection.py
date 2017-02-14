@@ -27,7 +27,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "02/02/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -447,7 +447,7 @@ class BlobDetection(object):
         :param kpx: x_pos of keypoint
         :param kpy: y_pos of keypoint
         :param kps: s_pos of keypoint
-        :return array of corrected keypoints
+        :return: array of corrected keypoints
 
         """
 

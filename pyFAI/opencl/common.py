@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Fast Azimuthal Integration
-#             https://github.com/silx-kit/pyFAI
+#    Project: S I L X project
+#             https://github.com/silx-kit/silx
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -33,19 +33,25 @@
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "02/02/2017"
 __status__ = "stable"
+__all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
+           "measure_workgroup_size", "kernel_workgroup_size"]
 
 import os
 import logging
+import gc
 
 import numpy
 
-logger = logging.getLogger("pyFAI.opencl")
 
-if os.environ.get("PYFAI_OPENCL") == "0":
-    logger.warning("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
+logger = logging.getLogger("pyFAI.opencl.common")
+
+from .utils import get_opencl_code, concatenate_cl_kernel
+
+if os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
+    logger.warning("Use of OpenCL has been disables from environment variable: SILX_OPENCL=0")
     pyopencl = None
 else:
     try:
@@ -53,10 +59,18 @@ else:
     except ImportError:
         logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
         pyopencl = None
+        class mf(object):
+            WRITE_ONLY = 1
+            READ_ONLY = 1
+            READ_WRITE = 1
+    else:
+        import pyopencl.array as array
+        mf = pyopencl.mem_flags
 
 FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
                  "ACC": 8}  # ACC: the Xeon-phi (MIC) appears to be able to process 8 Flops per hyperthreaded-core
+
 # Sources : https://en.wikipedia.org/wiki/CUDA
 NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
                         (1, 1): 24,  # Measured on G98 [Quadro NVS 295]
@@ -88,7 +102,7 @@ class Device(object):
                  extensions="", memory=None, available=None,
                  cores=None, frequency=None, flop_core=None, idx=0, workgroup=1):
         """
-        Simple container with some important data for the OpenCL device description:
+        Simple container with some important data for the OpenCL device description.
 
         :param name: name of the device
         :param dtype: device type: CPU/GPU/ACC...
@@ -96,7 +110,7 @@ class Device(object):
         :param driver_version:
         :param extensions: List of opencl extensions
         :param memory: maximum memory available on the device
-        :param available: is the device desactivated or not
+        :param available: is the device deactivated or not
         :param cores: number of SM/cores
         :param frequency: frequency of the device
         :param flop_cores: Flopating Point operation per core per cycle
@@ -193,6 +207,66 @@ class Platform(object):
         return out
 
 
+def _measure_workgroup_size(device_or_context, fast=False):
+    """Mesure the maximal work group size of the given device
+
+    :param device: instance of pyopencl.Device or pyopencl.Context or 2-tuple
+                   (platformid,deviceid)
+    :param fast: ask the kernel the valid value, don't probe it
+    :return: maximum size for the workgroup
+    """
+    if isinstance(device_or_context, pyopencl.Device):
+        ctx = pyopencl.Context(devices=[device_or_context])
+        device = device_or_context
+    elif isinstance(device_or_context, pyopencl.Context):
+        ctx = device_or_context
+        device = device_or_context.devices[0]
+    elif isinstance(device_or_context, (tuple, list)) and len(device_or_context) == 2:
+        ctx = ocl.create_context(platformid=device_or_context[0],
+                                 deviceid=device_or_context[1])
+        device = ctx.devices[0]
+    else:
+        raise RuntimeError("""given parameter device_or_context is not an
+            instanciation of a device or a context""")
+    shape = device.max_work_group_size
+    # get the context
+
+    assert ctx is not None
+    queue = pyopencl.CommandQueue(ctx)
+
+    max_valid_wg = 1
+    data = numpy.random.random(shape).astype(numpy.float32)
+    d_data = pyopencl.array.to_device(queue, data)
+    d_data_1 = pyopencl.array.zeros_like(d_data) + 1
+
+    program = pyopencl.Program(ctx, get_opencl_code("addition")).build()
+    if fast:
+        max_valid_wg = program.addition.get_work_group_info(pyopencl.kernel_work_group_info.WORK_GROUP_SIZE, device)
+    else:
+        maxi = int(round(numpy.log2(shape)))
+        for i in range(maxi + 1):
+            d_res = pyopencl.array.empty_like(d_data)
+            wg = 1 << i
+            try:
+                evt = program.addition(queue, (shape,), (wg,),
+                       d_data.data, d_data_1.data, d_res.data, numpy.int32(shape))
+                evt.wait()
+            except Exception as error:
+                logger.info("%s on device %s for WG=%s/%s" , error, device.name, wg, shape)
+                program = queue = d_res = d_data_1 = d_data = None
+                break
+            else:
+                res = d_res.get()
+                good = numpy.allclose(res, data + 1)
+                if good:
+                    if wg > max_valid_wg:
+                        max_valid_wg = wg
+                else:
+                    logger.warning("ArithmeticError on %s for WG=%s/%s", wg, device.name, shape)
+
+    return max_valid_wg
+
+
 class OpenCL(object):
     """
     Simple class that wraps the structure ocl_tools_extended.h
@@ -200,6 +274,8 @@ class OpenCL(object):
     This is a static class.
     ocl should be the only instance and shared among all python modules.
     """
+    def _is_nvidia_gpu(vendor, devtype) : return (vendor == "NVIDIA Corporation") and (devtype == "GPU")
+
     platforms = []
     nb_devices = 0
     context_cache = {}  # key: 2-tuple of int, value: context
@@ -222,7 +298,7 @@ class OpenCL(object):
                     devtype = "CPU"
                 if len(devtype) > 3:
                     devtype = devtype[:3]
-                if (pypl.vendor == "NVIDIA Corporation") and (devtype == "GPU") and "compute_capability_major_nv" in dir(device):
+                if _is_nvidia_gpu(pypl.vendor, devtype) and "compute_capability_major_nv" in dir(device):
                     comput_cap = device.compute_capability_major_nv, device.compute_capability_minor_nv
                     flop_core = NVIDIA_FLOP_PER_CORE.get(comput_cap, min(NVIDIA_FLOP_PER_CORE.values()))
                 elif (pypl.vendor == "Advanced Micro Devices, Inc.") and (devtype == "GPU"):
@@ -233,9 +309,11 @@ class OpenCL(object):
                     flop_core = 1
                 workgroup = device.max_work_group_size
                 if (devtype == "CPU") and (pypl.vendor == "Apple"):
-                    logger.info("For Apple's OpenCL on CPU: enforce max_work_goup_size=1")
-                    workgroup = 1
-
+                    logger.warning("For Apple's OpenCL on CPU: Measuring actual valid max_work_goup_size.")
+                    workgroup = _measure_workgroup_size(device, fast=True)
+                if (devtype == "GPU") and os.environ.get("GPU") == "False":
+                    # Environment variable to disable GPU devices
+                    continue
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
                                device.global_mem_size, bool(device.available), device.max_compute_units,
                                device.max_clock_frequency, flop_core, idd, workgroup)
@@ -247,7 +325,9 @@ class OpenCL(object):
     def __repr__(self):
         out = ["OpenCL devices:"]
         for platformid, platform in enumerate(self.platforms):
-            out.append("[%s] %s: " % (platformid, platform.name) + ", ".join(["(%s,%s) %s" % (platformid, deviceid, dev.name) for deviceid, dev in enumerate(platform.devices)]))
+            deviceids = ["(%s,%s) %s" % (platformid, deviceid, dev.name) \
+                for deviceid, dev in enumerate(platform.devices)]
+            out.append("[%s] %s: " % (platformid, platform.name) + ", ".join(deviceids))
         return os.linesep.join(out)
 
     def get_platform(self, key):
@@ -306,14 +386,16 @@ class OpenCL(object):
         if best_found:
             return best_found[0], best_found[1]
 
-    def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None, cached=True):
+    def create_context(self, devicetype="ALL", useFp64=False, platformid=None,
+                       deviceid=None, cached=True):
         """
         Choose a device and initiate a context.
 
         Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
         Suggested are GPU,CPU.
         For each setting to work there must be such an OpenCL device and properly installed.
-        E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
+        E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail.
+              The AMD SDK kit is required for CPU via OpenCL.
         :param devicetype: string in ["cpu","gpu", "all", "acc"]
         :param useFp64: boolean specifying if double precision will be used
         :param platformid: integer
@@ -409,16 +491,64 @@ def allocate_cl_buffers(buffers, device=None, context=None):
     logger.info("%.3fMB are needed on device which has %.3fMB",
                 ualloc / 1.0e6, memory / 1.0e6)
     if ualloc >= memory:
-        raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
+        memError = "Fatal error in allocate_buffers."
+        memError += "Not enough device memory for buffers"
+        memError += "(%lu requested, %lu available)" % (ualloc, memory)
+        raise MemoryError(memError)  # noqa
 
     # do the allocation
     try:
         for name, flag, dtype, size in buffers:
-            mem[name] = \
-                pyopencl.Buffer(context, flag,
-                                numpy.dtype(dtype).itemsize * size)
+            mem[name] = pyopencl.Buffer(context, flag,
+                                        numpy.dtype(dtype).itemsize * size)
     except pyopencl.MemoryError as error:
         release_cl_buffers(mem)
         raise MemoryError(error)
 
     return mem
+
+
+def measure_workgroup_size(device):
+    """Measure the actual size of the workgroup
+
+    :param device: device or context or 2-tuple with indexes
+    :return: the actual measured workgroup size
+
+    if device is "all", returns a dict with all devices with their ids as keys.
+    """
+    if (ocl is None) or (device is None):
+        return None
+
+    if isinstance(device, tuple) and (len(device) == 2):
+        # this is probably a tuple (platformid, deviceid)
+        device = ocl.create_context(platformid=device[0], deviceid=device[1])
+
+    if device == "all":
+        res = {}
+        for pid, platform in enumerate(ocl.platforms):
+            for did, _devices in enumerate(platform.devices):
+                tup = (pid, did)
+                res[tup] = measure_workgroup_size(tup)
+    else:
+        res = _measure_workgroup_size(device)
+    return res
+
+
+def kernel_workgroup_size(program, kernel):
+    """Extract the compile time maximum workgroup size
+
+    :param program: OpenCL program
+    :param kernel: kernel or name of the kernel
+    :return: the maximum acceptable workgroup size for the given kernel
+    """
+    assert isinstance(program, pyopencl.Program)
+    if not isinstance(kernel, pyopencl.Kernel):
+        kernel_name = kernel
+        assert kernel in (k.function_name for k in program.all_kernels()), "the kernel exists"
+        kernel = program.__getattr__(kernel_name)
+
+    device = program.devices[0]
+    query_wg = pyopencl.kernel_work_group_info.WORK_GROUP_SIZE
+    return kernel.get_work_group_info(query_wg, device)
+
+

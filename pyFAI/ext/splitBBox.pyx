@@ -31,7 +31,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -64,25 +64,25 @@ def histoBBox1d(numpy.ndarray weights not None,
 
     Splitting is done on the pixel's bounding box like fit2D
 
-    @param weights: array with intensities
-    @param pos0: 1D array with pos0: tth or q_vect
-    @param delta_pos0: 1D array with delta pos0: max center-corner distance
-    @param pos1: 1D array with pos1: chi
-    @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-    @param bins: number of output bins
-    @param pos0Range: minimum and maximum  of the 2th range
-    @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels & value of "no good" pixels
-    @param delta_dummy: precision of dummy value
-    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-    @param dark: array (of float32) with dark noise to be subtracted (or None)
-    @param flat: array (of float32) with flat-field image
-    @param solidangle: array (of float32) with solid angle corrections
-    @param polarization: array (of float32) with polarization corrections
-    @param empty: value of output bins without any contribution when dummy is None
-    @param normalization_factor: divide the result by this value
+    :param weights: array with intensities
+    :param pos0: 1D array with pos0: tth or q_vect
+    :param delta_pos0: 1D array with delta pos0: max center-corner distance
+    :param pos1: 1D array with pos1: chi
+    :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+    :param bins: number of output bins
+    :param pos0Range: minimum and maximum  of the 2th range
+    :param pos1Range: minimum and maximum  of the chi range
+    :param dummy: value for bins without pixels & value of "no good" pixels
+    :param delta_dummy: precision of dummy value
+    :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :param dark: array (of float32) with dark noise to be subtracted (or None)
+    :param flat: array (of float32) with flat-field image
+    :param solidangle: array (of float32) with solid angle corrections
+    :param polarization: array (of float32) with polarization corrections
+    :param empty: value of output bins without any contribution when dummy is None
+    :param normalization_factor: divide the result by this value
 
-    @return 2theta, I, weighted histogram, unweighted histogram
+    :return: 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
     assert pos0.size == size, "pos0.size == size"
@@ -276,27 +276,27 @@ def histoBBox2d(numpy.ndarray weights not None,
     Splitting is done on the pixel's bounding box like fit2D
 
 
-    @param weights: array with intensities
-    @param pos0: 1D array with pos0: tth or q_vect
-    @param delta_pos0: 1D array with delta pos0: max center-corner distance
-    @param pos1: 1D array with pos1: chi
-    @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-    @param bins: number of output bins (tth=100, chi=36 by default)
-    @param pos0Range: minimum and maximum  of the 2th range
-    @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels & value of "no good" pixels
-    @param delta_dummy: precision of dummy value
-    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-    @param dark: array (of float32) with dark noise to be subtracted (or None)
-    @param flat: array (of float32) with flat-field image
-    @param solidangle: array (of float32) with solid angle corrections
-    @param polarization: array (of float32) with polarization corrections
-    @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
-    @param empty: value of output bins without any contribution when dummy is None
-    @param normalization_factor: divide the result by this value
+    :param weights: array with intensities
+    :param pos0: 1D array with pos0: tth or q_vect
+    :param delta_pos0: 1D array with delta pos0: max center-corner distance
+    :param pos1: 1D array with pos1: chi
+    :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+    :param bins: number of output bins (tth=100, chi=36 by default)
+    :param pos0Range: minimum and maximum  of the 2th range
+    :param pos1Range: minimum and maximum  of the chi range
+    :param dummy: value for bins without pixels & value of "no good" pixels
+    :param delta_dummy: precision of dummy value
+    :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :param dark: array (of float32) with dark noise to be subtracted (or None)
+    :param flat: array (of float32) with flat-field image
+    :param solidangle: array (of float32) with solid angle corrections
+    :param polarization: array (of float32) with polarization corrections
+    :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+    :param empty: value of output bins without any contribution when dummy is None
+    :param normalization_factor: divide the result by this value
 
 
-    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
     cdef ssize_t bins0, bins1, i, j, idx

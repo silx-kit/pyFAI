@@ -2740,7 +2740,7 @@ static void __pyx_pf_5pyFAI_3ext_9watershed_8Bilinear_2__dealloc__(struct __pyx_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_9watershed_8Bilinear_4f_cy[] = "Bilinear.f_cy(self, x)\n\n        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates\n        @param x: 2-tuple of float\n        @return: Interpolated signal from the image (negative for minimizer)\n\n        ";
+static char __pyx_doc_5pyFAI_3ext_9watershed_8Bilinear_4f_cy[] = "Bilinear.f_cy(self, x)\n\n        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates\n\n        :param x: 2-tuple of float\n        :return: Interpolated signal from the image (negative for minimizer)\n        ";
 static PyObject *__pyx_pw_5pyFAI_3ext_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -3186,12 +3186,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_9watershed_8Bilinear_4f_cy(struct __pyx_ob
  *     @cython.cdivision(True)
  *     def local_maxi(self, x):             # <<<<<<<<<<<<<<
  *         """
- *         Return the local maximum ... with sub-pixel refinement
+ *         Return the local maximum with sub-pixel refinement.
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_9watershed_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_9watershed_8Bilinear_6local_maxi[] = "Bilinear.local_maxi(self, x)\n\n        Return the local maximum ... with sub-pixel refinement\n\n        @param x: 2-tuple of integers\n        @param w: half with of the window: 1 or 2 are advised\n        @return: 2-tuple of float with the nearest local maximum\n\n\n        Sub-pixel refinement:\n        Second order Taylor expansion of the function; first derivative is null\n        delta = x-i = -Inverse[Hessian].gradient\n\n        if Hessian is singular or |delta|>1: use a center of mass.\n\n        ";
+static char __pyx_doc_5pyFAI_3ext_9watershed_8Bilinear_6local_maxi[] = "Bilinear.local_maxi(self, x)\n\n        Return the local maximum with sub-pixel refinement.\n\n        Sub-pixel refinement:\n        Second order Taylor expansion of the function; first derivative is null\n\n        .. math:: delta = x-i = -Inverse[Hessian].gradient\n\n        If Hessian is singular or :math:`|delta|>1`: use a center of mass.\n\n        :param x: 2-tuple of integers\n        :param w: half with of the window: 1 or 2 are advised\n        :return: 2-tuple of float with the nearest local maximum\n        ";
 static PyObject *__pyx_pw_5pyFAI_3ext_9watershed_8Bilinear_7local_maxi(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations

@@ -2,7 +2,7 @@
  * Project: Azimuthal integration
  *       https://github.com/silx-kit/pyFAI
  *
- * Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+ * Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
  *
  * Principal author:       Jerome Kieffer (Jerome.Kieffer@ESRF.eu)
  *
@@ -57,12 +57,12 @@ __kernel void copy_pad(__global float *src,
 filter_vertical filters out a sorted array, counts the number of non dummy values and
 copies the according value at the position depending on the quantile.
 
-@param src: 2D array of floats of size width*height
-@param dst: 1D array of floats of size width
-@param width:
-@param height:
-@param dummy: value of the invalid data
-@param quantile: between 0 and 1
+:param src: 2D array of floats of size width*height
+:param dst: 1D array of floats of size width
+:param width:
+:param height:
+:param dummy: value of the invalid data
+:param quantile: between 0 and 1
 
 Each thread works on a complete column, counting the elements and copying the right one
 */
@@ -97,12 +97,12 @@ __kernel void filter_vertical(__global float *src,
 filter_horizontal filters out a sorted array, counts the number of non dummy values and
 copies the according value at the position depending on the quantile.
 
-@param src: 2D array of floats of size width*height
-@param dst: 1D array of floats of size width
-@param width:
-@param height:
-@param dummy: value of the invalid data
-@param quantile: between 0 and 1
+:param src: 2D array of floats of size width*height
+:param dst: 1D array of floats of size width
+:param width:
+:param height:
+:param dummy: value of the invalid data
+:param quantile: between 0 and 1
 
 Each thread works on a complete column, counting the elements and copying the right one
 */

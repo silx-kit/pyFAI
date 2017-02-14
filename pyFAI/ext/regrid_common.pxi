@@ -28,7 +28,7 @@
 __doc__ = """Common cdef constants and functions for preprocessing"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "13/05/2016"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -51,9 +51,9 @@ cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating de
     """
     calculate the bin number for any point (as floating)
 
-    @param x0: current position
-    @param pos0_min: position minimum
-    @param delta: bin width
-    @return: bin number as floating point.
+    :param x0: current position
+    :param pos0_min: position minimum
+    :param delta: bin width
+    :return: bin number as floating point.
     """
     return (x0 - pos0_min) / delta

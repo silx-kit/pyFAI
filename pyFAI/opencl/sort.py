@@ -34,7 +34,7 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "27/10/2016"
+__date__ = "02/02/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,13 +44,13 @@ import threading
 import numpy
 import gc
 from .utils import concatenate_cl_kernel
-from .opencl import ocl, pyopencl, release_cl_buffers
-if pyopencl:
-    mf = pyopencl.mem_flags
+from .common import ocl, pyopencl, release_cl_buffers, mf
+if ocl:
     import pyopencl.array
 else:
-    raise ImportError("pyopencl is not installed")
-logger = logging.getLogger("pyFAI.ocl_sort")
+    raise ImportError("pyopencl is not installed or no device is available")
+
+logger = logging.getLogger("pyFAI.opencl.sort")
 
 
 class Separator(object):

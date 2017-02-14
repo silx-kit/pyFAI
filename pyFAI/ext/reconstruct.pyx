@@ -133,7 +133,7 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
             mask += (data == dummy)
         else:
             mask += (abs(data - dummy) <= delta_dummy)
-    cdef: 
+    cdef:
         numpy.int8_t[:, ::1] cmask = mask.astype(numpy.int8)
     assert d0 == mask.shape[0], "mask.shape[0]"
     assert d1 == mask.shape[1], "mask.shape[1]"

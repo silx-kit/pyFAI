@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -64,7 +64,7 @@ cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, flo
     B(b0,b1)
     C(c0,c1)
     D(d0,d1)
-    @return: area, i.e. 1/2 * (AC ^ BD)
+    :return: area, i.e. 1/2 * (AC ^ BD)
     """
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
@@ -185,14 +185,14 @@ class FullSplitCSR_1d(object):
                  unit="undefined",
                  empty=None):
         """
-        @param pos: 3D or 4D array with the coordinates of each pixel point
-        @param bins: number of output bins, 100 by default
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param unit: can be 2th_deg or r_nm^-1 ...
-        @param empty: value of output bins without any contribution when dummy is None
+        :param pos: 3D or 4D array with the coordinates of each pixel point
+        :param bins: number of output bins, 100 by default
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param unit: can be 2th_deg or r_nm^-1 ...
+        :param empty: value of output bins without any contribution when dummy is None
 
         """
 
@@ -455,24 +455,24 @@ class FullSplitCSR_1d(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef:
@@ -609,14 +609,14 @@ class FullSplitCSR_2d(object):
                  empty=None):
 
         """
-        @param pos: 3D or 4D array with the coordinates of each pixel point
-        @param bins: number of output bins (tth=100, chi=36 by default)
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param unit: can be 2th_deg or r_nm^-1 ...
-        @param empty: value for bins where no pixels are contributing
+        :param pos: 3D or 4D array with the coordinates of each pixel point
+        :param bins: number of output bins (tth=100, chi=36 by default)
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param unit: can be 2th_deg or r_nm^-1 ...
+        :param empty: value for bins where no pixels are contributing
         """
 
         if pos.ndim > 3:  # create a view
@@ -1092,24 +1092,24 @@ class FullSplitCSR_2d(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef:

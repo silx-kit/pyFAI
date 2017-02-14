@@ -35,26 +35,34 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "05/12/2016"
 __satus__ = "development"
 
 
 import os
 import sys
-import h5py
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("eiger-mask")
 import numpy
 import fabio
+
 try:
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
+
+try:
+    import h5py
+except ImportError:
+    h5py = None
 
 
 def extract_mask(infile):
     """
     Retrieve the mask from an Eiger master file.
 
-    @param infile: name of the Eiger master file
+    :param infile: name of the Eiger master file
     """
     h = h5py.File(infile, "r")
     entry = h["entry"]
@@ -65,10 +73,17 @@ def extract_mask(infile):
 
 if __name__ == "__main__":
     description = "A tool to extract the mask from an Eiger detector file."
-    parser = ArgumentParser(description=description)
+    epilog = None
+    if h5py is None:
+        epilog = "Python h5py module is missing. It have to be installed to use this application"
+    parser = ArgumentParser(description=description, epilog=epilog)
     parser.add_argument('input_file', help='Input file. Must be an HDF5 file.')
     parser.add_argument('output_file', nargs="?", help='Output file. It can be an msk, tif, or an edf file.')
     options = parser.parse_args()
+
+    if h5py is None:
+        logger.error("Python h5py module is expected to use this script")
+        sys.exit(1)
 
     infile = os.path.abspath(options.input_file)
     if options.output_file is not None:

@@ -68,7 +68,18 @@ Files:  setup.py
         pyFAI/ext/watershed.pyx
         pyFAI/ext/*.pxi
         pyFAI/ext/src/*
-        pyFAI/gui/*
+        pyFAI/opencl/*
+        pyFAI/resources/gui/*
+        pyFAI/resources/openCL/bitonic.cl
+        pyFAI/resources/openCL/for_eclipse.cl
+        pyFAI/resources/openCL/ocl_azim_CSR.cl
+        pyFAI/resources/openCL/memset.cl
+        pyFAI/resources/openCL/ocl_azim_CSR.cl
+        pyFAI/resources/openCL/ocl_azim_LUT.cl
+        pyFAI/resources/openCL/preprocess.cl
+        pyFAI/resources/openCL/reduction_test.cl
+        pyFAI/resources/openCL/reduction_test4.cl
+        pyFAI/resources/openCL/separate.cl
         pyFAI/benchmark/*
         pyFAI/test/test_mask.py
         pyFAI/test/test_integrate.py

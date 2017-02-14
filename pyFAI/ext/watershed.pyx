@@ -37,9 +37,9 @@ __license__ = "MIT"
 import cython
 import numpy
 cimport numpy
-import sys 
+import sys
 import logging
-logger = logging.getLogger("pyFAI.ext.watershed") 
+logger = logging.getLogger("pyFAI.ext.watershed")
 from ..decorators import timeit
 from cython.parallel import prange
 
@@ -119,13 +119,13 @@ cdef class Region:
 
     def get_size(self):
         return self.size
-    
+
     def get_highest_pass(self):
         return self.highest_pass
 
     def get_maxi(self):
         return self.maxi
-    
+
     def get_mini(self):
         return self.mini
 
@@ -137,7 +137,7 @@ cdef class Region:
 
     def get_borders(self):
         return self.border
-    
+
     def get_neighbors(self):
         return self.neighbors
 
@@ -199,7 +199,7 @@ class InverseWatershed(object):
 #         readonly Bilinear bilinear
     NAME = "Inverse watershed"
     VERSION = "1.0"
-    
+
     def __init__(self, data not None, thres=1.0):
         """
         :param data: 2d image as numpy array
@@ -207,7 +207,7 @@ class InverseWatershed(object):
         """
         assert data.ndim == 2, "data.ndim == 2"
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-        
+
         self.height, self.width = data.shape
         self.bilinear = Bilinear(data)
         self.regions = {}
@@ -236,7 +236,7 @@ class InverseWatershed(object):
             for i in ("data", "height", "width", "labels", "borders", "thres"):
                 h5[i] = self.__getattribute__(i)
             r = h5.require_group("regions")
-            
+
             for i in set(self.regions.values()):
                 s = r.require_group(str(i.index))
                 for j in ("index", "size", "pass_to", "mini", "maxi", "highest_pass", "neighbors", "border", "peaks"):
@@ -267,7 +267,7 @@ class InverseWatershed(object):
                 for j in r.peaks:
                     self.regions[j] = r
         return self
-    
+
     def init(self):
         self.init_labels()
         self.init_borders()
@@ -294,7 +294,7 @@ class InverseWatershed(object):
                 res = bilinear.c_local_maxi(idx)
                 labels[i, j] += res
                 if idx == res:
-                    regions[res] = Region(res) 
+                    regions[res] = Region(res)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -350,7 +350,7 @@ class InverseWatershed(object):
                 res = labels[i, j]
                 region = regions[res]
                 region.size += 1
-                if neighb == 0: 
+                if neighb == 0:
                     continue
                 region.border.append(idx)
                 if get_bit(neighb, 1):
@@ -393,7 +393,7 @@ class InverseWatershed(object):
             Region region1, region2, region
             dict regions = self.regions
             numpy.uint8_t neighb = 0
-            float ref = 0.0            
+            float ref = 0.0
             float[:, :] data = self.data
             numpy.int32_t[:, ::1] labels = self.labels
             numpy.uint8_t[:, ::1] borders = self.borders
@@ -407,7 +407,7 @@ class InverseWatershed(object):
                 to_merge = -1
                 if region1.size == 1:
                     i = region1.index // width
-                    j = region1.index % width                    
+                    j = region1.index % width
                     neighb = borders[i, j]
                     if get_bit(neighb, 1) and (region1.maxi == data[i - 1, j]):
                         to_merge = labels[i - 1, j]
@@ -515,14 +515,14 @@ class InverseWatershed(object):
                     regions[key] = region
                 cnt += 1
         logger.info("Did %s merge_intense" % cnt)
-    
+
     def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):
         """
         :param mask: mask of data points valid
-        :param Imin: Minimum intensity for a peak 
+        :param Imin: Minimum intensity for a peak
         :param keep: Number of  points to keep
         :param refine: refine sub-pixel position
-        :param dmin: minimum distance from 
+        :param dmin: minimum distance from
         """
         cdef:
             int i, j, l, x, y, width = self.width
@@ -533,7 +533,7 @@ class InverseWatershed(object):
             Region region
             list output_points = [], intensities = [], argsort, tmp_lst, rej_lst
             set keep_regions = set()
-            float[:] data = self.data.ravel() 
+            float[:] data = self.data.ravel()
             double d2, dmin2
         for i in input_points:
             l = labels[i]
@@ -555,7 +555,7 @@ class InverseWatershed(object):
             if Imin:
                 argsort = [i for i in argsort if intensities[i] >= Imin]
             output_points = [output_points[i] for i in argsort]
-            
+
             if dmin:
                 dmin2 = dmin * dmin
             else:
@@ -576,4 +576,3 @@ class InverseWatershed(object):
                             return output_points
                 output_points = (output_points + rej_lst)[:keep]
         return output_points
-    

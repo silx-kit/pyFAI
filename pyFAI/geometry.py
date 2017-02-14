@@ -604,7 +604,7 @@ class Geometry(object):
         :param shape: shape of the array expected
         :param corners: set to true to receive a (...,4,3) array of corner positions
         :param dtype: output format requested. Double precision is needed for fitting the geometry
-        :param (bool) use_cython: set to false to test the Python path (slower) 
+        :param (bool) use_cython: set to false to test the Python path (slower)
         :return: 3D coodinates as nd-array of size (...,3) or (...,3) (default)
 
         Nota: this value is not cached and actually generated on demand (costly)
@@ -923,7 +923,7 @@ class Geometry(object):
         Generate an array of position in different dimentions (R, Q,
         2Theta)
 
-        :param shape: shape of the expected array
+        :param shape: shape of the expected array, leave it to None for safety
         :type shape: ndarray.shape
         :param typ: "center", "corner" or "delta"
         :type typ: str
@@ -1679,7 +1679,7 @@ class Geometry(object):
 # ############################################
     def get_shape(self, shape=None):
         """Guess what is the best shape ....
-        
+
         :param shape: force this value (2-tuple of int)
         :return: 2-tuple of int
         """
