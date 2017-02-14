@@ -162,9 +162,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         smallRing2 = smallRing[:, 1]
         smallRing_in_m = self.detector.calc_cartesian_positions(smallRing1,
                                                                 smallRing2)
-        l = len(smallRing)
+        nbpt = len(smallRing)
         worked = False
-        if len > 5:
+        if nbpt > 5:
             # If there are many control point on the inner-most ring, fit an ellipse
             try:
                 ellipse = fit_ellipse(*smallRing_in_m[:2])
@@ -198,8 +198,8 @@ class GeometryRefinement(AzimuthalIntegrator):
                     self.rot2 = rot2
                     self.rot3 = rot3
         if not worked:
-            self.poni1 = smallRing_in_m[0].sum() / l
-            self.poni2 = smallRing_in_m[1].sum() / l
+            self.poni1 = smallRing_in_m[0].sum() / nbpt
+            self.poni2 = smallRing_in_m[1].sum() / nbpt
 
     def set_tolerance(self, value=10):
         """
