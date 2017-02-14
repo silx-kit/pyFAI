@@ -30,9 +30,15 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "14/02/2017"
 
+import os
+import fabio
+import logging
+from contextlib import contextmanager
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+
+_logger = logging.getLogger(__name__)
 
 
 class ExperimentTask(AbstractCalibrationTask):
@@ -40,6 +46,11 @@ class ExperimentTask(AbstractCalibrationTask):
     def __init__(self):
         super(ExperimentTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
+        self.__currentDirectory = os.getcwd()
+
+        self._imageLoader.clicked.connect(self.loadImage)
+        self._maskLoader.clicked.connect(self.loadMask)
+        self._darkLoader.clicked.connect(self.loadDark)
 
     def _updateModel(self, model):
         self._calibrant.setModel(model.experimentSettingsModel().calibrantModel())
@@ -49,8 +60,77 @@ class ExperimentTask(AbstractCalibrationTask):
         self._wavelength.setModel(model.experimentSettingsModel().wavelength())
         self._energy.setModel(adaptor)
 
+        model.experimentSettingsModel().image().changed.connect(self.__imageUpdated)
+
         model.experimentSettingsModel().calibrantModel().changed.connect(self.printSelectedCalibrant)
         model.experimentSettingsModel().detectorModel().changed.connect(self.printSelectedDetector)
+
+    def __imageUpdated(self):
+        image = self.model().experimentSettingsModel().image().value()
+        self._imageSize.setVisible(image is not None)
+        self._imageSizeLabel.setVisible(image is not None)
+        self._imageSizeUnit.setVisible(image is not None)
+        if image is not None:
+            text = [str(s) for s in image.shape]
+            text = u" × ".join(text)
+            self._imageSize.setText(text)
+
+    def createImageDialog(self, title, forMask=False):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setModal(True)
+
+        filters = [
+            "EDF image files (*.edf)",
+            "TIFF image files (*.tif)",
+            "NumPy binary file (*.npy)",
+            "CBF files (*.cbf)",
+            "MarCCD image files (*.mccd)"
+        ]
+        if forMask:
+            filters.append("Fit2D mask (*.msk)")
+        filters.append("Any file (*)")
+
+        dialog.setNameFilters(filters)
+        dialog.setFileMode(qt.QFileDialog.ExistingFile)
+        dialog.setDirectory(self.__currentDirectory)
+        return dialog
+
+    @contextmanager
+    def getImageFromDialog(self, title, forMask=False):
+        dialog = self.createImageDialog(title, forMask)
+        result = dialog.exec_()
+        if not result:
+            return
+
+        filename = dialog.selectedFiles()[0]
+        try:
+            with fabio.open(filename) as image:
+                yield image
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            # FIXME Display error dialog
+        except KeyboardInterrupt:
+            raise
+
+    def loadImage(self):
+        with self.getImageFromDialog("Load calibration image") as image:
+            settings = self.model().experimentSettingsModel()
+            settings.imageFile().setValue(image.filename)
+            settings.image().setValue(image.data)
+
+    def loadMask(self):
+        with self.getImageFromDialog("Load calibration image", forMask=True) as image:
+            settings = self.model().experimentSettingsModel()
+            settings.maskFile().setValue(image.filename)
+            settings.mask().setValue(image.data)
+
+    def loadDark(self):
+        with self.getImageFromDialog("Load dark image") as image:
+            settings = self.model().experimentSettingsModel()
+            settings.darkFile().setValue(image.filename)
+            settings.dark().setValue(image.data)
 
     def printSelectedCalibrant(self):
         print(self.model().experimentSettingsModel().calibrantModel().calibrant())
