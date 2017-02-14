@@ -42,7 +42,12 @@ class ExperimentTask(AbstractCalibrationTask):
 
     def _updateModel(self, model):
         self._calibrant.setModel(model.experimentSettingsModel().calibrantModel())
+        self._detector.setModel(model.experimentSettingsModel().detectorModel())
         model.experimentSettingsModel().calibrantModel().changed.connect(self.printSelectedCalibrant)
+        model.experimentSettingsModel().detectorModel().changed.connect(self.printSelectedDetector)
 
     def printSelectedCalibrant(self):
         print(self.model().experimentSettingsModel().calibrantModel().calibrant())
+
+    def printSelectedDetector(self):
+        print(self.model().experimentSettingsModel().detectorModel().detector())

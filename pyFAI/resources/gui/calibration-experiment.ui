@@ -134,7 +134,7 @@
           </widget>
          </item>
          <item row="6" column="1" colspan="2">
-          <widget class="QWidget" name="widget_2" native="true"/>
+          <widget class="DetectorSelector" name="_detector" native="true"/>
          </item>
         </layout>
         <zorder>_distance</zorder>
@@ -146,7 +146,7 @@
         <zorder>label_6</zorder>
         <zorder>_calibrant</zorder>
         <zorder>label_8</zorder>
-        <zorder>widget_2</zorder>
+        <zorder>_detector</zorder>
        </widget>
       </item>
       <item>
@@ -263,6 +263,12 @@
    <class>CalibrantSelector</class>
    <extends>QWidget</extends>
    <header>pyFAI.gui.calibration.CalibrantSelector</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DetectorSelector</class>
+   <extends>QWidget</extends>
+   <header>pyFAI.gui.calibration.DetectorSelector</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
