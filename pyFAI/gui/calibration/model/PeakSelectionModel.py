@@ -56,8 +56,8 @@ class PeakModel(AbstractModel):
 
     def append(self, peak):
         return self.__peaks.append(peak)
-        self.dataChanged()
+        self.wasChanged()
 
     def remove(self, peak):
         self.__peaks.remove(peak)
-        self.dataChanged()
+        self.wasChanged()

@@ -45,13 +45,13 @@ class GeometryConstaintsModel(AbstractModel):
         self.__rotation2 = ConstraintModel()
         self.__rotation3 = ConstraintModel()
 
-        self.__distance.changed.connect(self.dataChanged)
-        self.__wavelength.changed.connect(self.dataChanged)
-        self.__poni1.changed.connect(self.dataChanged)
-        self.__poni2.changed.connect(self.dataChanged)
-        self.__rotation1.changed.connect(self.dataChanged)
-        self.__rotation2.changed.connect(self.dataChanged)
-        self.__rotation3.changed.connect(self.dataChanged)
+        self.__distance.changed.connect(self.wasChanged)
+        self.__wavelength.changed.connect(self.wasChanged)
+        self.__poni1.changed.connect(self.wasChanged)
+        self.__poni2.changed.connect(self.wasChanged)
+        self.__rotation1.changed.connect(self.wasChanged)
+        self.__rotation2.changed.connect(self.wasChanged)
+        self.__rotation3.changed.connect(self.wasChanged)
 
     def isValid(self):
         if not self.__distance.isValid():

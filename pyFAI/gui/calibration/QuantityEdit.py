@@ -117,14 +117,14 @@ class QuantityEdit(qt.QLineEdit):
             value = float(text)
 
         try:
-            self.__model.setData(value)
+            self.__model.setValue(value)
         except ValueError as e:
             _logger.debug(e, exc_info=True)
             self.__cancelText()
 
     def __cancelText(self):
         """Reset the edited value to the original one"""
-        value = self.__model.data()
+        value = self.__model.value()
         if value is None:
             text = ""
         else:

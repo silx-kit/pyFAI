@@ -41,14 +41,14 @@ class WavelengthToEnergyAdaptor(DataModelAdaptor):
     hc = 1.2398
     """Product of h the Planck constant, and c the speed of light in vacuum."""
 
-    def fromModel(self, data):
+    def fromModel(self, value):
         """Returns energy in KeV from wavelength in angstrom"""
-        if data is None:
+        if value is None:
             return None
-        return self.hc / (data * 1000 * self.angstrom)
+        return self.hc / (value * 1000 * self.angstrom)
 
-    def toModel(self, data):
+    def toModel(self, value):
         """Returns wavelength in angstrom from energy in KeV"""
-        if data is None:
+        if value is None:
             return None
-        return self.hc / (data * 1000 * self.angstrom)
+        return self.hc / (value * 1000 * self.angstrom)

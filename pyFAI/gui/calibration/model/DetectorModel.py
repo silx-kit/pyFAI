@@ -43,7 +43,7 @@ class DetectorModel(AbstractModel):
 
     def setDetector(self, detector):
         self.__detector = detector
-        self.dataChanged()
+        self.wasChanged()
 
     def detector(self):
         return self.__detector

@@ -42,5 +42,5 @@ class AbstractModel(qt.QObject):
     def isValid(self):
         return True
 
-    def dataChanged(self):
+    def wasChanged(self):
         self.changed.emit()

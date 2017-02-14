@@ -45,11 +45,11 @@ class ConstraintModel(AbstractModel):
     def setFixedConstraint(self):
         self.__fixed = True
         self.__range = None
-        self.dataChanged()
+        self.wasChanged()
 
     def setRangeConstraint(self, minValue, maxValue):
         self.__range = (minValue, maxValue)
-        self.dataChanged()
+        self.wasChanged()
 
     def isFixed(self):
         return self.__fixed is True

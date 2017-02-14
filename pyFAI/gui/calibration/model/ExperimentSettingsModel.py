@@ -47,13 +47,13 @@ class ExperimentSettingsModel(AbstractModel):
         self.__calibrantModel = CalibrantModel()
         self.__detectorModel = DetectorModel()
 
-        self.__mask.changed.connect(self.dataChanged)
-        self.__image.changed.connect(self.dataChanged)
-        self.__distance.changed.connect(self.dataChanged)
-        self.__wavelength.changed.connect(self.dataChanged)
-        self.__polarizationFactor.changed.connect(self.dataChanged)
-        self.__calibrantModel.changed.connect(self.dataChanged)
-        self.__detectorModel.changed.connect(self.dataChanged)
+        self.__image.changed.connect(self.wasChanged)
+        self.__mask.changed.connect(self.wasChanged)
+        self.__distance.changed.connect(self.wasChanged)
+        self.__wavelength.changed.connect(self.wasChanged)
+        self.__polarizationFactor.changed.connect(self.wasChanged)
+        self.__calibrantModel.changed.connect(self.wasChanged)
+        self.__detectorModel.changed.connect(self.wasChanged)
 
     def isValid(self):
         return True

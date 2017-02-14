@@ -43,7 +43,7 @@ class CalibrantModel(AbstractModel):
 
     def setCalibrant(self, calibrant):
         self.__calibrant = calibrant
-        self.dataChanged()
+        self.wasChanged()
 
     def calibrant(self):
         return self.__calibrant

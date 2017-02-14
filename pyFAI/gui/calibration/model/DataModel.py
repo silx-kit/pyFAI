@@ -36,14 +36,14 @@ class DataModel(AbstractModel):
 
     def __init__(self, parent=None):
         super(DataModel, self).__init__(parent)
-        self.__data = None
+        self.__value = None
 
     def isValid(self):
-        return self.__data is not None
+        return self.__value is not None
 
-    def data(self):
-        return self.__data
+    def value(self):
+        return self.__value
 
-    def setData(self, data):
-        self.__data = data
-        self.dataChanged()
+    def setValue(self, value):
+        self.__value = value
+        self.wasChanged()

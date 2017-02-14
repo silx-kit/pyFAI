@@ -43,7 +43,7 @@ class DataModelAdaptor(AbstractModel):
             self.__model.changed.connect(self.__modelChanged)
 
     def __modelChanged(self):
-        self.dataChanged()
+        self.wasChanged()
 
     def isValid(self):
         return self.__model.isValid()
@@ -54,11 +54,11 @@ class DataModelAdaptor(AbstractModel):
     def toModel(self, data):
         raise NotImplementedError("It have to be implemented by inheritance")
 
-    def data(self):
-        data = self.__model.data()
-        data = self.fromModel(data)
-        return data
+    def value(self):
+        value = self.__model.value()
+        value = self.fromModel(value)
+        return value
 
-    def setData(self, data):
-        data = self.toModel(data)
-        self.__model.setData(data)
+    def setValue(self, value):
+        value = self.toModel(value)
+        self.__model.setValue(value)

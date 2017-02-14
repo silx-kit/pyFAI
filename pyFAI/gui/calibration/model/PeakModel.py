@@ -48,18 +48,18 @@ class PeakModel(AbstractModel):
 
     def setName(self, name):
         self.__name = name
-        self.dataChanged()
+        self.wasChanged()
 
     def coords(self):
         return self.__coords
 
     def setCoords(self, coords):
         self.__coords = coords
-        self.dataChanged()
+        self.wasChanged()
 
     def ringNumber(self):
         return self.__ringNumber
 
     def setRingNumber(self, ringNumber):
         self.__ringNumber = ringNumber
-        self.dataChanged()
+        self.wasChanged()
