@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>659</width>
-    <height>547</height>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,7 +51,7 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="1" colspan="2">
-          <widget class="QLineEdit" name="_distance">
+          <widget class="QuantityEdit" name="_energy">
            <property name="text">
             <string/>
            </property>
@@ -66,7 +66,7 @@
             <string>Energy:</string>
            </property>
            <property name="buddy">
-            <cstring>_distance</cstring>
+            <cstring>_energy</cstring>
            </property>
           </widget>
          </item>
@@ -77,11 +77,8 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="CalibrantSelector" name="_calibrant" native="true"/>
-         </item>
          <item row="1" column="3">
-          <widget class="QLabel" name="_waveLengthUnit">
+          <widget class="QLabel" name="_wavelengthUnit">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -99,12 +96,12 @@
             <string>Wavelength:</string>
            </property>
            <property name="buddy">
-            <cstring>_waveLength</cstring>
+            <cstring>_wavelength</cstring>
            </property>
           </widget>
          </item>
          <item row="1" column="1" colspan="2">
-          <widget class="QLineEdit" name="_waveLength">
+          <widget class="QuantityEdit" name="_wavelength">
            <property name="text">
             <string/>
            </property>
@@ -114,7 +111,7 @@
           </widget>
          </item>
          <item row="0" column="3">
-          <widget class="QLabel" name="_distanceUnit">
+          <widget class="QLabel" name="_energyUnit">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -134,19 +131,22 @@
           </widget>
          </item>
          <item row="6" column="1" colspan="2">
-          <widget class="DetectorSelector" name="_detector" native="true"/>
+          <widget class="DetectorSelector" name="_detector"/>
+         </item>
+         <item row="5" column="1" colspan="2">
+          <widget class="CalibrantSelector" name="_calibrant"/>
          </item>
         </layout>
-        <zorder>_distance</zorder>
+        <zorder>_energy</zorder>
         <zorder>label_3</zorder>
-        <zorder>_waveLengthUnit</zorder>
-        <zorder>_distanceUnit</zorder>
-        <zorder>_waveLength</zorder>
+        <zorder>_wavelengthUnit</zorder>
+        <zorder>_energyUnit</zorder>
+        <zorder>_wavelength</zorder>
         <zorder>label_7</zorder>
         <zorder>label_6</zorder>
-        <zorder>_calibrant</zorder>
         <zorder>label_8</zorder>
         <zorder>_detector</zorder>
+        <zorder>_calibrant</zorder>
        </widget>
       </item>
       <item>
@@ -260,16 +260,19 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>QuantityEdit</class>
+   <extends>QLineEdit</extends>
+   <header>pyFAI.gui.calibration.QuantityEdit</header>
+  </customwidget>
+  <customwidget>
    <class>CalibrantSelector</class>
-   <extends>QWidget</extends>
+   <extends>QComboBox</extends>
    <header>pyFAI.gui.calibration.CalibrantSelector</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>DetectorSelector</class>
-   <extends>QWidget</extends>
+   <extends>QComboBox</extends>
    <header>pyFAI.gui.calibration.DetectorSelector</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -24,36 +24,31 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
-from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "14/02/2017"
 
-from pyFAI.gui import qt
-import pyFAI.utils
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .DataModelAdaptor import DataModelAdaptor
 
 
-class ExperimentTask(AbstractCalibrationTask):
+class WavelengthToEnergyAdaptor(DataModelAdaptor):
+    """Adapte a wavelength in angstrom to energy in KeV ."""
 
-    def __init__(self):
-        super(ExperimentTask, self).__init__()
-        qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
+    angstrom = 1.00001501e-4
+    """One angstrom in micro-meter."""
 
-    def _updateModel(self, model):
-        self._calibrant.setModel(model.experimentSettingsModel().calibrantModel())
-        self._detector.setModel(model.experimentSettingsModel().detectorModel())
+    hc = 1.2398
+    """Product of h the Planck constant, and c the speed of light in vacuum."""
 
-        adaptor = WavelengthToEnergyAdaptor(self, model.experimentSettingsModel().wavelength())
-        self._wavelength.setModel(model.experimentSettingsModel().wavelength())
-        self._energy.setModel(adaptor)
+    def fromModel(self, data):
+        """Returns energy in KeV from wavelength in angstrom"""
+        if data is None:
+            return None
+        return self.hc / (data * 1000 * self.angstrom)
 
-        model.experimentSettingsModel().calibrantModel().changed.connect(self.printSelectedCalibrant)
-        model.experimentSettingsModel().detectorModel().changed.connect(self.printSelectedDetector)
-
-    def printSelectedCalibrant(self):
-        print(self.model().experimentSettingsModel().calibrantModel().calibrant())
-
-    def printSelectedDetector(self):
-        print(self.model().experimentSettingsModel().detectorModel().detector())
+    def toModel(self, data):
+        """Returns wavelength in angstrom from energy in KeV"""
+        if data is None:
+            return None
+        return self.hc / (data * 1000 * self.angstrom)

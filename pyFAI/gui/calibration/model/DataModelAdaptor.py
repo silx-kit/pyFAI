@@ -24,36 +24,41 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
-from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "14/02/2017"
 
-from pyFAI.gui import qt
-import pyFAI.utils
-from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from .AbstractModel import AbstractModel
 
 
-class ExperimentTask(AbstractCalibrationTask):
+class DataModelAdaptor(AbstractModel):
 
-    def __init__(self):
-        super(ExperimentTask, self).__init__()
-        qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
+    def __init__(self, parent=None, model=None):
+        if model is None:
+            raise ValueError("Model expected")
+        super(DataModelAdaptor, self).__init__(parent)
+        self.__model = model
+        if self.__model is not None:
+            self.__model.changed.connect(self.__modelChanged)
 
-    def _updateModel(self, model):
-        self._calibrant.setModel(model.experimentSettingsModel().calibrantModel())
-        self._detector.setModel(model.experimentSettingsModel().detectorModel())
+    def __modelChanged(self):
+        self.dataChanged()
 
-        adaptor = WavelengthToEnergyAdaptor(self, model.experimentSettingsModel().wavelength())
-        self._wavelength.setModel(model.experimentSettingsModel().wavelength())
-        self._energy.setModel(adaptor)
+    def isValid(self):
+        return self.__model.isValid()
 
-        model.experimentSettingsModel().calibrantModel().changed.connect(self.printSelectedCalibrant)
-        model.experimentSettingsModel().detectorModel().changed.connect(self.printSelectedDetector)
+    def fromModel(self, data):
+        raise NotImplementedError("It have to be implemented by inheritance")
 
-    def printSelectedCalibrant(self):
-        print(self.model().experimentSettingsModel().calibrantModel().calibrant())
+    def toModel(self, data):
+        raise NotImplementedError("It have to be implemented by inheritance")
 
-    def printSelectedDetector(self):
-        print(self.model().experimentSettingsModel().detectorModel().detector())
+    def data(self):
+        data = self.__model.data()
+        data = self.fromModel(data)
+        return data
+
+    def setData(self, data):
+        data = self.toModel(data)
+        self.__model.setData(data)
