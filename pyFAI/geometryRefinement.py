@@ -164,7 +164,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                                                                 smallRing2)
         l = len(smallRing)
         worked = False
-        if len > 5:
+        if l > 5:
             # If there are many control point on the inner-most ring, fit an ellipse
             try:
                 ellipse = fit_ellipse(*smallRing_in_m[:2])
