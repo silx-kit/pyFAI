@@ -27,12 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "15/02/2017"
 
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.model.CalibrationModel import CalibrationModel
-from pyFAI.gui.calibration.ExperimentTask import ExperimentTask
 
 
 class CalibrationWindow(qt.QMainWindow):
@@ -51,8 +50,11 @@ class CalibrationWindow(qt.QMainWindow):
             self._list.setCurrentRow(0)
 
     def createTasks(self):
+        from pyFAI.gui.calibration.ExperimentTask import ExperimentTask
+        from pyFAI.gui.calibration.MaskTask import MaskTask
         tasks = [
-            ExperimentTask()
+            ExperimentTask(),
+            MaskTask()
         ]
         return tasks
 
