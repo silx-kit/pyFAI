@@ -25,10 +25,11 @@
 
 from __future__ import absolute_import
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
+from collections import OrderedDict
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "15/02/2017"
 
 import os
 import fabio
@@ -46,7 +47,7 @@ class ExperimentTask(AbstractCalibrationTask):
     def __init__(self):
         super(ExperimentTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
-        self.__currentDirectory = os.getcwd()
+        self.__dialogState = None
 
         self._imageLoader.clicked.connect(self.loadImage)
         self._maskLoader.clicked.connect(self.loadMask)
@@ -86,29 +87,41 @@ class ExperimentTask(AbstractCalibrationTask):
         dialog.setWindowTitle(title)
         dialog.setModal(True)
 
-        filters = [
-            "EDF image files (*.edf)",
-            "TIFF image files (*.tif)",
-            "NumPy binary file (*.npy)",
-            "CBF files (*.cbf)",
-            "MarCCD image files (*.mccd)"
-        ]
+        extensions = OrderedDict()
+        extensions["EDF image files"] = "*.edf"
+        extensions["TIFF image files"] = "*.tif *.tiff"
+        extensions["NumPy binary files"] = "*.npy"
+        extensions["CBF files"] = "*.cbf"
+        extensions["MarCCD image files"] = "*.mccd"
         if forMask:
-            filters.append("Fit2D mask (*.msk)")
-        filters.append("Any file (*)")
+            extensions["Fit2D mask files"] = "*.msk"
+
+        filters = []
+        filters.append("All supported files (%s)" % " ".join(extensions.values()))
+        for name, extension in extensions.items():
+            filters.append("%s (%s)" % (name, extension))
+        filters.append("All files (*)")
 
         dialog.setNameFilters(filters)
         dialog.setFileMode(qt.QFileDialog.ExistingFile)
-        dialog.setDirectory(self.__currentDirectory)
         return dialog
 
     @contextmanager
     def getImageFromDialog(self, title, forMask=False):
         dialog = self.createImageDialog(title, forMask)
+
+        if self.__dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(self.__dialogState)
+
         result = dialog.exec_()
         if not result:
+            yield None
             return
 
+        self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         try:
             with fabio.open(filename) as image:
@@ -117,26 +130,30 @@ class ExperimentTask(AbstractCalibrationTask):
             _logger.error(e.args[0])
             _logger.debug("Backtrace", exc_info=True)
             # FIXME Display error dialog
+            yield None
         except KeyboardInterrupt:
             raise
 
     def loadImage(self):
         with self.getImageFromDialog("Load calibration image") as image:
-            settings = self.model().experimentSettingsModel()
-            settings.imageFile().setValue(image.filename)
-            settings.image().setValue(image.data)
+            if image is not None:
+                settings = self.model().experimentSettingsModel()
+                settings.imageFile().setValue(image.filename)
+                settings.image().setValue(image.data)
 
     def loadMask(self):
-        with self.getImageFromDialog("Load calibration image", forMask=True) as image:
-            settings = self.model().experimentSettingsModel()
-            settings.maskFile().setValue(image.filename)
-            settings.mask().setValue(image.data)
+        with self.getImageFromDialog("Load mask image", forMask=True) as image:
+            if image is not None:
+                settings = self.model().experimentSettingsModel()
+                settings.maskFile().setValue(image.filename)
+                settings.mask().setValue(image.data)
 
     def loadDark(self):
         with self.getImageFromDialog("Load dark image") as image:
-            settings = self.model().experimentSettingsModel()
-            settings.darkFile().setValue(image.filename)
-            settings.dark().setValue(image.data)
+            if image is not None:
+                settings = self.model().experimentSettingsModel()
+                settings.darkFile().setValue(image.filename)
+                settings.dark().setValue(image.data)
 
     def printSelectedCalibrant(self):
         print(self.model().experimentSettingsModel().calibrantModel().calibrant())
