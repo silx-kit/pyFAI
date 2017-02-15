@@ -53,17 +53,23 @@ class ExperimentTask(AbstractCalibrationTask):
         self._darkLoader.clicked.connect(self.loadDark)
 
     def _updateModel(self, model):
-        self._calibrant.setModel(model.experimentSettingsModel().calibrantModel())
-        self._detector.setModel(model.experimentSettingsModel().detectorModel())
+        settings = model.experimentSettingsModel()
 
-        adaptor = WavelengthToEnergyAdaptor(self, model.experimentSettingsModel().wavelength())
-        self._wavelength.setModel(model.experimentSettingsModel().wavelength())
+        self._calibrant.setModel(settings.calibrantModel())
+        self._detector.setModel(settings.detectorModel())
+        self._image.setModel(settings.imageFile())
+        self._mask.setModel(settings.maskFile())
+        self._dark.setModel(settings.darkFile())
+
+        adaptor = WavelengthToEnergyAdaptor(self, settings.wavelength())
+        self._wavelength.setModel(settings.wavelength())
         self._energy.setModel(adaptor)
 
-        model.experimentSettingsModel().image().changed.connect(self.__imageUpdated)
+        settings.image().changed.connect(self.__imageUpdated)
 
-        model.experimentSettingsModel().calibrantModel().changed.connect(self.printSelectedCalibrant)
-        model.experimentSettingsModel().detectorModel().changed.connect(self.printSelectedDetector)
+        # FIXME debug purpous
+        settings.calibrantModel().changed.connect(self.printSelectedCalibrant)
+        settings.detectorModel().changed.connect(self.printSelectedDetector)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
