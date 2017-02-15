@@ -35,6 +35,7 @@ import os
 import fabio
 import logging
 from contextlib import contextmanager
+import silx.gui.plot
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -52,6 +53,23 @@ class ExperimentTask(AbstractCalibrationTask):
         self._imageLoader.clicked.connect(self.loadImage)
         self._maskLoader.clicked.connect(self.loadMask)
         self._darkLoader.clicked.connect(self.loadDark)
+
+        self.__plot2D = silx.gui.plot.Plot2D(parent=self._imageHolder)
+        self.__plot2D.setKeepDataAspectRatio(True)
+        self.__plot2D.getMaskAction().setVisible(False)
+        self.__plot2D.getProfileToolbar().setVisible(False)
+
+        colormap = {
+            'name': "inferno",
+            'normalization': 'log',
+            'autoscale': True,
+        }
+        self.__plot2D.setDefaultColormap(colormap)
+
+        layout = qt.QVBoxLayout(self._imageHolder)
+        layout.addWidget(self.__plot2D)
+        layout.setContentsMargins(1, 1, 1, 1)
+        self._imageHolder.setLayout(layout)
 
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
@@ -81,6 +99,9 @@ class ExperimentTask(AbstractCalibrationTask):
             text = [str(s) for s in image.shape]
             text = u" × ".join(text)
             self._imageSize.setText(text)
+
+        image = self.model().experimentSettingsModel().image().value()
+        self.__plot2D.addImage(image, legend="image")
 
     def createImageDialog(self, title, forMask=False):
         dialog = qt.QFileDialog(self)
