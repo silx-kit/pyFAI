@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "15/02/2017"
 
 import logging
 from pyFAI.gui import qt
@@ -57,16 +57,15 @@ class _DoubleAndEmptyValidator(qt.QDoubleValidator):
 
 class QuantityEdit(qt.QLineEdit):
     """
-    QLineEdit connected to q DataModel.
+    QLineEdit connected to a DataModel.
 
     It allows to edit a float value which can be nonified (by the use of an
-    empty string)
+    empty string).
     """
 
     def __init__(self, parent=None):
         super(QuantityEdit, self).__init__(parent)
         self.setLocale(qt.QLocale("C"))
-        self.installEventFilter(self)
         self.setValidator(_DoubleAndEmptyValidator(self))
 
         self.__model = None
