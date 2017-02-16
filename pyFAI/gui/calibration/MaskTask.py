@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/02/2017"
+__date__ = "16/02/2017"
 
 import logging
 from pyFAI.gui import qt
@@ -35,6 +35,8 @@ import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 
 import silx.gui.plot
+from silx.gui.plot.PlotTools import PositionInfo
+from silx.gui.plot import PlotActions
 
 _logger = logging.getLogger(__name__)
 
@@ -46,19 +48,8 @@ class MaskTask(AbstractCalibrationTask):
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-mask.ui"), self)
         self.__dialogState = None
 
-        self.__plot2D = silx.gui.plot.Plot2D(parent=self._imageHolder)
-        self.__plot2D.setKeepDataAspectRatio(True)
-        self.__plot2D.getMaskAction().setVisible(False)
-        self.__plot2D.getProfileToolbar().setVisible(False)
-        self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot2D)
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        self.__plot2D.setDefaultColormap(colormap)
-
+        self.__plot = self.__createPlot()
+        self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
         self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
         self.__maskPanel.setMultipleMasks("single")
 
@@ -68,9 +59,82 @@ class MaskTask(AbstractCalibrationTask):
         self._toolHolder.setLayout(layout)
 
         layout = qt.QVBoxLayout(self._imageHolder)
-        layout.addWidget(self.__plot2D)
+        layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+
+    def __createPlot(self):
+        plot = silx.gui.plot.PlotWidget(parent=self._imageHolder)
+        plot.setKeepDataAspectRatio(True)
+        toolBar = self.__createPlotToolBar(plot)
+        plot.addToolBar(toolBar)
+        statusBar = self.__createPlotStatusBar(plot)
+        plot.setStatusBar(statusBar)
+
+        colormap = {
+            'name': "inferno",
+            'normalization': 'log',
+            'autoscale': True,
+        }
+        plot.setDefaultColormap(colormap)
+
+        return plot
+
+    def __createPlotToolBar(self, plot):
+        toolBar = qt.QToolBar("Plot tools", plot)
+
+        toolBar.addAction(PlotActions.ResetZoomAction(plot, toolBar))
+        toolBar.addAction(PlotActions.ZoomInAction(plot, toolBar))
+        toolBar.addAction(PlotActions.ZoomOutAction(plot, toolBar))
+        toolBar.addSeparator()
+        toolBar.addAction(PlotActions.ColormapAction(plot, toolBar))
+        toolBar.addAction(PlotActions.PixelIntensitiesHistoAction(plot, toolBar))
+        toolBar.addSeparator()
+        toolBar.addAction(PlotActions.CopyAction(plot, toolBar))
+        toolBar.addAction(PlotActions.SaveAction(plot, toolBar))
+        toolBar.addAction(PlotActions.PrintAction(plot, toolBar))
+
+        return toolBar
+
+    def __createPlotStatusBar(self, plot):
+
+        converters = [
+            ('X', lambda x, y: x),
+            ('Y', lambda x, y: y),
+            ('Value', self.__getImageValue)]
+
+        hbox = qt.QHBoxLayout()
+        hbox.setContentsMargins(0, 0, 0, 0)
+
+        info = PositionInfo(plot=plot, converters=converters)
+        info.autoSnapToActiveCurve = True
+        statusBar = qt.QStatusBar(plot)
+        statusBar.setSizeGripEnabled(False)
+        statusBar.addWidget(info)
+        return statusBar
+
+    def __getImageValue(self, x, y):
+        """Get value of top most image at position (x, y).
+
+        :param float x: X position in plot coordinates
+        :param float y: Y position in plot coordinates
+        :return: The value at that point or 'n/a'
+        """
+        value = 'n/a'
+
+        image = self.__plot.getImage("image")
+        if image is None:
+            return value
+        data, params = image[0], image[4]
+        ox, oy = params['origin']
+        sx, sy = params['scale']
+        row, col = (y - oy) / sy, (x - ox) / sx
+        if row >= 0 and col >= 0:
+            # Test positive before cast otherwise issue with int(-0.5) = 0
+            row, col = int(row), int(col)
+            if (row < data.shape[0] and col < data.shape[1]):
+                value = data[row, col]
+        return value
 
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
@@ -79,7 +143,10 @@ class MaskTask(AbstractCalibrationTask):
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
-        self.__plot2D.addImage(image, legend="image")
+        self.__plot.addImage(image, legend="image")
+        if image is not None:
+            self.__plot.setGraphXLimits(0, image.shape[0])
+            self.__plot.setGraphYLimits(0, image.shape[1])
 
     def __maskUpdated(self):
         mask = self.model().experimentSettingsModel().mask().value()
