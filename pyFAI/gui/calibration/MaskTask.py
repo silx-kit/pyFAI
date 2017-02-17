@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/02/2017"
+__date__ = "17/02/2017"
 
 import logging
 from pyFAI.gui import qt
@@ -70,6 +70,14 @@ class MaskTask(AbstractCalibrationTask):
         plot.addToolBar(toolBar)
         statusBar = self.__createPlotStatusBar(plot)
         plot.setStatusBar(statusBar)
+
+        if isinstance(plot._backend, silx.gui.plot.BackendMatplotlib.BackendMatplotlib):
+            # hide axes and viewbox rect
+            plot._backend.ax.set_axis_off()
+            plot._backend.ax2.set_axis_off()
+            # remove external margins
+            plot._backend.ax.set_position([0, 0, 1, 1])
+            plot._backend.ax2.set_position([0, 0, 1, 1])
 
         colormap = {
             'name': "inferno",
