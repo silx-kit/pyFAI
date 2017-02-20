@@ -27,15 +27,15 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "20/02/2017"
 
 from .AbstractModel import AbstractModel
 
 
-class PeakModel(AbstractModel):
+class PeakSelectionModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(PeakModel, self).__init__(parent)
+        super(PeakSelectionModel, self).__init__(parent)
         self.__peaks = []
 
     def isValid(self):
