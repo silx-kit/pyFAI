@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/02/2017"
+__date__ = "20/02/2017"
 
 from pyFAI.gui import qt
 import pyFAI.utils
@@ -52,9 +52,11 @@ class CalibrationWindow(qt.QMainWindow):
     def createTasks(self):
         from pyFAI.gui.calibration.ExperimentTask import ExperimentTask
         from pyFAI.gui.calibration.MaskTask import MaskTask
+        from pyFAI.gui.calibration.PeakPickingTask import PeakPickingTask
         tasks = [
             ExperimentTask(),
-            MaskTask()
+            MaskTask(),
+            PeakPickingTask()
         ]
         return tasks
 
