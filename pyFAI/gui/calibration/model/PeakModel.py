@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "20/02/2017"
 
 from .AbstractModel import AbstractModel
 
@@ -37,6 +37,7 @@ class PeakModel(AbstractModel):
     def __init__(self, parent=None):
         super(PeakModel, self).__init__(parent)
         self.__name = None
+        self.__color = None
         self.__coords = []
         self.__ringNumber = None
 
@@ -48,6 +49,13 @@ class PeakModel(AbstractModel):
 
     def setName(self, name):
         self.__name = name
+        self.wasChanged()
+
+    def color(self):
+        return self.__color
+
+    def setColor(self, color):
+        self.__color = color
         self.wasChanged()
 
     def coords(self):
