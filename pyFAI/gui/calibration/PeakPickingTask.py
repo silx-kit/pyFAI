@@ -30,16 +30,97 @@ __license__ = "MIT"
 __date__ = "20/02/2017"
 
 import logging
+import numpy
+import functools
 from pyFAI.gui import qt
 from pyFAI.gui import icons
 import pyFAI.utils
+import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
-
+from pyFAI.gui.calibration.model.PeakModel import PeakModel
 import silx.gui.plot
 from silx.gui.plot.PlotTools import PositionInfo
 from silx.gui.plot import PlotActions
 
 _logger = logging.getLogger(__name__)
+
+
+class _DummyStdOut(object):
+
+    def write(self, text):
+        pass
+
+
+class _PeakSelectionTableModel(qt.QAbstractTableModel):
+
+    def __init__(self, parent, peakSelectionModel):
+        super(_PeakSelectionTableModel, self).__init__(parent=parent)
+        self.__peakSelectionModel = peakSelectionModel
+        peakSelectionModel.changed.connect(self.__invalidateModel)
+        self.__callbacks = []
+        self.__invalidateModel()
+
+    def __invalidateModel(self):
+        self.beginResetModel()
+        for callback in self.__callbacks:
+            target, method = callback
+            target.changed.disconnect(method)
+        self.__callbacks = []
+        for index, item in enumerate(self.__peakSelectionModel):
+            callback = functools.partial(self.__invalidateItem, index)
+            item.changed.connect(callback)
+            self.__callbacks.append((item, callback))
+        self.endResetModel()
+
+    def __invalidateItem(self, index):
+        index1 = self.index(index, 0, qt.QModelIndex())
+        index2 = self.index(index, self.columnCount() - 1, qt.QModelIndex())
+        self.dataChanged(index1, index2)
+
+    def headerData(self, section, orientation, role=qt.Qt.DisplayRole):
+        if orientation != qt.Qt.Horizontal:
+            return None
+        if role != qt.Qt.DisplayRole:
+            return super(_PeakSelectionTableModel, self).headerData(section, orientation, role)
+        if section == 0:
+            return "Name"
+        if section == 1:
+            return "Number of points"
+        if section == 2:
+            return "Ring number"
+        return None
+
+    def flags(self, index):
+        return (#qt.Qt.ItemIsEditable |
+                qt.Qt.ItemIsEnabled |
+                qt.Qt.ItemIsSelectable)
+
+    def rowCount(self, parent=qt.QModelIndex()):
+        return len(self.__peakSelectionModel)
+
+    def columnCount(self, parent=qt.QModelIndex()):
+        return 4
+
+    def data(self, index=qt.QModelIndex(), role=qt.Qt.DisplayRole):
+        peakModel = self.__peakSelectionModel[index.row()]
+        column = index.column()
+        if role == qt.Qt.DecorationRole:
+            if column == 0:
+                color = peakModel.color()
+                pixmap = qt.QPixmap(16, 16)
+                pixmap.fill(color)
+                icon = qt.QIcon(pixmap)
+                return icon
+            else:
+                return None
+        if role == qt.Qt.DisplayRole or role == qt.Qt.EditRole:
+            if column == 0:
+                return peakModel.name()
+            if column == 1:
+                return len(peakModel.coords())
+            if column == 2:
+                return peakModel.ringNumber()
+        return None
 
 
 class PeakPickingTask(AbstractCalibrationTask):
@@ -119,10 +200,44 @@ class PeakPickingTask(AbstractCalibrationTask):
 
     def __onPlotEvent(self, event):
         if event["event"] == "imageClicked":
-            print(event)
             x, y, button = event["col"], event["row"], event["button"]
             if button == "left":
-                print("clicked", x, y)
+                image = self.model().experimentSettingsModel().image().value()
+                massif = pyFAI.massif.Massif(image)
+                points = massif.find_peaks([y, x], stdout=_DummyStdOut())
+                if len(points) > 0:
+                    peakModel = self.__createNewPeak(points)
+                    self.model().peakSelectionModel().append(peakModel)
+
+    def __createNewPeak(self, points):
+        selection = self.model().peakSelectionModel()
+
+        # FIXME support more than 'z' names
+        name = chr(len(selection) + ord('a'))
+        # FIXME improve color list
+        colors = [qt.QColor(255, 0, 0), qt.QColor(0, 255, 0), qt.QColor(0, 0, 255)]
+        color = colors[(len(selection)) % len(colors)]
+        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+
+        peakModel = PeakModel(self.model().peakSelectionModel())
+        peakModel.setName(name)
+        peakModel.setColor(color)
+        peakModel.setCoords(points)
+
+        y, x = points[0]
+        self.__plot.addMarker(x=x, y=y,
+                              legend="marker" + name,
+                              text=name)
+        y = map(lambda p: p[0], points)
+        x = map(lambda p: p[1], points)
+        self.__plot.addCurve(x=x, y=y,
+                             legend="coord" + name,
+                             linestyle=' ',
+                             symbol='o',
+                             color=numpyColor,
+                             resetzoom=False)
+
+        return peakModel
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
@@ -151,6 +266,21 @@ class PeakPickingTask(AbstractCalibrationTask):
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.mask().changed.connect(self.__maskUpdated)
+        self.__initPeakSelectionView(model)
+
+    def __initPeakSelectionView(self, model):
+        tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
+        self._peakSelection.setModel(tableModel)
+
+        header = self._peakSelection.horizontalHeader()
+        if qt.qVersion() < "5.0":
+            setResizeMode = header.setResizeMode
+        else:
+            setResizeMode = header.setSectionResizeMode
+        setResizeMode(0, qt.QHeaderView.Stretch)
+        setResizeMode(1, qt.QHeaderView.ResizeToContents)
+        setResizeMode(2, qt.QHeaderView.ResizeToContents)
+        setResizeMode(3, qt.QHeaderView.ResizeToContents)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
