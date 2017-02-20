@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2017"
+__date__ = "22/05/2017"
 __status__ = "stable"
 
 
@@ -732,7 +732,10 @@ def get_project_configuration(dry_run):
             # Add here all resources files
             'calibration/*.D',
             'gui/*.ui',
-            'openCL/*.cl']
+            'gui/icons/*.svg',
+            'gui/icons/*.png',
+            'openCL/*.cl',
+        ]
     }
 
     console_scripts = [
