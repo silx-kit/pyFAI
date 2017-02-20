@@ -55,7 +55,7 @@ class PeakSelectionModel(AbstractModel):
         return self.__peaks[index]
 
     def append(self, peak):
-        return self.__peaks.append(peak)
+        self.__peaks.append(peak)
         self.wasChanged()
 
     def remove(self, peak):
