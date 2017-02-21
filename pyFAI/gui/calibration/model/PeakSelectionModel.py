@@ -62,5 +62,9 @@ class PeakSelectionModel(AbstractModel):
         self.__peaks.remove(peak)
         self.wasChanged()
 
+    def clear(self):
+        self.__peaks = []
+        self.wasChanged()
+
     def index(self, peak):
         return self.__peaks.index(peak)
