@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2017"
+__date__ = "21/02/2017"
 
 from .AbstractModel import AbstractModel
 
@@ -61,3 +61,6 @@ class PeakSelectionModel(AbstractModel):
     def remove(self, peak):
         self.__peaks.remove(peak)
         self.wasChanged()
+
+    def index(self, peak):
+        return self.__peaks.index(peak)
