@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2017"
+__date__ = "21/02/2017"
 
 from .AbstractModel import AbstractModel
 
@@ -71,3 +71,11 @@ class PeakModel(AbstractModel):
     def setRingNumber(self, ringNumber):
         self.__ringNumber = ringNumber
         self.wasChanged()
+
+    def copy(self, parent=None):
+        peakModel = PeakModel(parent)
+        peakModel.setName(self.name())
+        peakModel.setColor(self.color())
+        peakModel.setCoords(self.coords())
+        peakModel.setRingNumber(self.ringNumber())
+        return peakModel
