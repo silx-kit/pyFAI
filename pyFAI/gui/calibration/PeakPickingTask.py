@@ -51,6 +51,35 @@ class _DummyStdOut(object):
         pass
 
 
+class _PeakSelectionUndoCommand(qt.QUndoCommand):
+
+    def __init__(self, parent, model, oldState, newState):
+        super(_PeakSelectionUndoCommand, self).__init__(parent=parent)
+        self.__peakPickingModel = model
+        self.__oldState = list(oldState)
+        self.__newState = list(newState)
+        self.__redoInhibited = False
+
+    def setRedoInhibited(self, isInhibited):
+        """Allow to avoid to push the command into the QUndoStack without
+        calling redo."""
+        self.__redoInhibited = isInhibited
+
+    def undo(self):
+        peakPickingModel = self.__peakPickingModel
+        peakPickingModel.clear()
+        for peakModel in self.__oldState:
+            peakPickingModel.append(peakModel)
+
+    def redo(self):
+        if self.__redoInhibited:
+            return
+        peakPickingModel = self.__peakPickingModel
+        peakPickingModel.clear()
+        for peakModel in self.__newState:
+            peakPickingModel.append(peakModel)
+
+
 class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     def __init__(self, parent, peakSelectionModel):
@@ -169,6 +198,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
             callback = functools.partial(self.__invalidateItem, peakModel)
             peakModel.changed.connect(callback)
             self.addPeak(peakModel)
+            self.__callbacks[peakModel] = callback
 
     def __invalidateItem(self, peakModel):
         self.updatePeak(peakModel)
@@ -225,6 +255,10 @@ class PeakPickingTask(AbstractCalibrationTask):
         self._peakSelectionMode.setIcon(icons.getQIcon("search-peak"))
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
+        self.__undoStack = qt.QUndoStack(self)
+        self._undoButton.setDefaultAction(self.__undoStack.createUndoAction(self))
+        self._redoButton.setDefaultAction(self.__undoStack.createRedoAction(self))
+
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
 
@@ -267,7 +301,22 @@ class PeakPickingTask(AbstractCalibrationTask):
                 points = massif.find_peaks([y, x], stdout=_DummyStdOut())
                 if len(points) > 0:
                     peakModel = self.__createNewPeak(points)
+                    oldState = self.__copyPeaks(self.__undoStack)
                     self.model().peakSelectionModel().append(peakModel)
+                    newState = self.__copyPeaks(self.__undoStack)
+                    command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+                    command.setText("Add peaks named %s" % peakModel.name())
+                    command.setRedoInhibited(True)
+                    self.__undoStack.push(command)
+                    command.setRedoInhibited(False)
+
+    def __copyPeaks(self, parent):
+        selection = self.model().peakSelectionModel()
+        state = []
+        for peakModel in selection:
+            copy = peakModel.copy(parent)
+            state.append(copy)
+        return state
 
     def __createNewPeak(self, points):
         selection = self.model().peakSelectionModel()
@@ -314,6 +363,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         settings.mask().changed.connect(self.__maskUpdated)
         self.__plot.setModel(model.peakSelectionModel())
         self.__initPeakSelectionView(model)
+        self.__undoStack.clear()
 
     def __initPeakSelectionView(self, model):
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
