@@ -82,12 +82,17 @@ class _PeakSelectionUndoCommand(qt.QUndoCommand):
 
 class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
+    requestRingChange = qt.Signal(object, int)
+
     def __init__(self, parent, peakSelectionModel):
+        assert isinstance(parent, PeakPickingTask)
         super(_PeakSelectionTableModel, self).__init__(parent=parent)
         self.__peakSelectionModel = peakSelectionModel
         peakSelectionModel.changed.connect(self.__invalidateModel)
         self.__callbacks = []
         self.__invalidateModel()
+        # QAbstractTableModel do not provide access to the parent
+        self.__parent = parent
 
     def __invalidateModel(self):
         self.beginResetModel()
@@ -104,7 +109,7 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
     def __invalidateItem(self, index):
         index1 = self.index(index, 0, qt.QModelIndex())
         index2 = self.index(index, self.columnCount() - 1, qt.QModelIndex())
-        self.dataChanged(index1, index2)
+        self.dataChanged.emit(index1, index2)
 
     def headerData(self, section, orientation, role=qt.Qt.DisplayRole):
         if orientation != qt.Qt.Horizontal:
@@ -120,8 +125,11 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         return None
 
     def flags(self, index):
-        return (#qt.Qt.ItemIsEditable |
-                qt.Qt.ItemIsEnabled |
+        if index.column() == 2:
+            return (qt.Qt.ItemIsEditable |
+                    qt.Qt.ItemIsEnabled |
+                    qt.Qt.ItemIsSelectable)
+        return (qt.Qt.ItemIsEnabled |
                 qt.Qt.ItemIsSelectable)
 
     def rowCount(self, parent=qt.QModelIndex()):
@@ -150,6 +158,14 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
             if column == 2:
                 return peakModel.ringNumber()
         return None
+
+    def setData(self, index, value, role=qt.Qt.EditRole):
+        if not index.isValid():
+            return
+        peakModel = self.__peakSelectionModel[index.row()]
+        column = index.column()
+        if column == 2:
+            self.requestRingChange.emit(peakModel, value)
 
 
 class _PeakPickingPlot(silx.gui.plot.PlotWidget):
@@ -233,6 +249,55 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.addPeak(peakModel)
 
 
+class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
+
+    def __init__(self, parent=None):
+        super(_SpinBoxItemDelegate, self).__init__(parent)
+
+    def createEditor(self, parent, option, index):
+        if not index.isValid():
+            return super(_SpinBoxItemDelegate, self).createEditor(parent, option, index)
+
+        editor = qt.QSpinBox(parent=parent)
+        editor.setMinimum(1)
+        editor.setMaximum(999)
+        editor.valueChanged.connect(lambda x: self.commitData.emit(editor))
+        editor.setFocusPolicy(qt.Qt.StrongFocus)
+        editor.setValue(index.data())
+        editor.installEventFilter(self)
+        return editor
+
+    def eventFilter(self, widget, event):
+        if event.type() == qt.QEvent.ChildPolished:
+            # Fix issue relative to Qt4. after createEditor and setEditorData
+            # The lineedit content is set selected without any reason.
+            widget.lineEdit().deselect()
+        return qt.QSpinBox.eventFilter(self, widget, event)
+
+    def setEditorData(self, editor, index):
+        value = index.data()
+        if editor.value() == value:
+            return
+        old = editor.blockSignals(True)
+        editor.setValue(value)
+        editor.blockSignals(old)
+
+    def setModelData(self, editor, model, index):
+        editor.interpretText()
+        value = editor.value()
+        model.setData(index, value)
+
+    def updateEditorGeometry(self, editor, option, index):
+        """
+        Update the geometry of the editor according to the changes of the view.
+
+        :param qt.QWidget editor: Editor widget
+        :param qt.QStyleOptionViewItem option: Control how the editor is shown
+        :param qt.QIndex index: Index of the data to display
+        """
+        editor.setGeometry(option.rect)
+
+
 class PeakPickingTask(AbstractCalibrationTask):
 
     def __init__(self):
@@ -256,8 +321,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
         self.__undoStack = qt.QUndoStack(self)
-        self._undoButton.setDefaultAction(self.__undoStack.createUndoAction(self))
-        self._redoButton.setDefaultAction(self.__undoStack.createRedoAction(self))
+        self._undoButton.setDefaultAction(self.__undoStack.createUndoAction(self, "Undo"))
+        self._redoButton.setDefaultAction(self.__undoStack.createRedoAction(self, "Redo"))
 
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
@@ -310,6 +375,16 @@ class PeakPickingTask(AbstractCalibrationTask):
                     self.__undoStack.push(command)
                     command.setRedoInhibited(False)
 
+    def __setRingNumber(self, peakModel, value):
+        oldState = self.__copyPeaks(self.__undoStack)
+        peakModel.setRingNumber(value)
+        newState = self.__copyPeaks(self.__undoStack)
+        command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+        command.setText("Update ring number of %s" % peakModel.name())
+        command.setRedoInhibited(True)
+        self.__undoStack.push(command)
+        command.setRedoInhibited(False)
+
     def __copyPeaks(self, parent):
         selection = self.model().peakSelectionModel()
         state = []
@@ -331,6 +406,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         peakModel.setName(name)
         peakModel.setColor(color)
         peakModel.setCoords(points)
+        peakModel.setRingNumber(1)
 
         return peakModel
 
@@ -378,6 +454,25 @@ class PeakPickingTask(AbstractCalibrationTask):
         setResizeMode(1, qt.QHeaderView.ResizeToContents)
         setResizeMode(2, qt.QHeaderView.ResizeToContents)
         setResizeMode(3, qt.QHeaderView.ResizeToContents)
+
+        ringDelegate = _SpinBoxItemDelegate(self._peakSelection)
+        self._peakSelection.setItemDelegateForColumn(2, ringDelegate)
+        tableModel.rowsInserted.connect(self.__openPersistantViewOnRowInserted)
+        tableModel.modelReset.connect(self.__openPersistantViewOnModelReset)
+        tableModel.requestRingChange.connect(self.__setRingNumber)
+        self.__openPersistantViewOnModelReset()
+
+    def __openPersistantViewOnRowInserted(self, parent, start, end):
+        model = self._peakSelection.model()
+        for row in range(start, end):
+            index = model.index(row, 2, qt.QModelIndex())
+            self._peakSelection.openPersistentEditor(index)
+
+    def __openPersistantViewOnModelReset(self):
+        model = self._peakSelection.model()
+        index = qt.QModelIndex()
+        row = model.rowCount(index)
+        self.__openPersistantViewOnRowInserted(index, 0, row)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
