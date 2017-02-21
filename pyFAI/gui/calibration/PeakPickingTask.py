@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2017"
+__date__ = "21/02/2017"
 
 import logging
 import numpy
@@ -123,6 +123,86 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         return None
 
 
+class _PeakPickingPlot(silx.gui.plot.PlotWidget):
+
+    def __init__(self, parent):
+        super(_PeakPickingPlot, self).__init__(parent=parent)
+        self.setKeepDataAspectRatio(True)
+
+        if isinstance(self._backend, silx.gui.plot.BackendMatplotlib.BackendMatplotlib):
+            # hide axes and viewbox rect
+            self._backend.ax.set_axis_off()
+            self._backend.ax2.set_axis_off()
+            # remove external margins
+            self._backend.ax.set_position([0, 0, 1, 1])
+            self._backend.ax2.set_position([0, 0, 1, 1])
+
+        colormap = {
+            'name': "inferno",
+            'normalization': 'log',
+            'autoscale': True,
+        }
+        self.setDefaultColormap(colormap)
+
+        self.__peakSelectionModel = None
+        self.__callbacks = {}
+
+    def setModel(self, peakSelectionModel):
+        assert self.__peakSelectionModel is None
+        self.__peakSelectionModel = peakSelectionModel
+        self.__peakSelectionModel.changed.connect(self.__invalidateModel)
+        self.__invalidateModel()
+
+    def __invalidateModel(self):
+        added = set(self.__peakSelectionModel) - set(self.__callbacks.keys())
+        removed = set(self.__callbacks.keys()) - set(self.__peakSelectionModel)
+
+        # remove items
+        for peakModel in removed:
+            callback = self.__callbacks[peakModel]
+            del self.__callbacks[peakModel]
+            peakModel.changed.disconnect(callback)
+            self.removePeak(peakModel)
+
+        # add items
+        for peakModel in added:
+            callback = functools.partial(self.__invalidateItem, peakModel)
+            peakModel.changed.connect(callback)
+            self.addPeak(peakModel)
+
+    def __invalidateItem(self, peakModel):
+        self.updatePeak(peakModel)
+
+    def removePeak(self, peakModel):
+        legend = "marker" + peakModel.name()
+        self.removeMarker(legend=legend)
+        legend = "coord" + peakModel.name()
+        self.removeCurve(legend=legend)
+
+    def addPeak(self, peakModel):
+        color = peakModel.color()
+        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+        points = peakModel.coords()
+        name = peakModel.name()
+
+        y, x = points[0]
+        self.addMarker(x=x, y=y,
+                       legend="marker" + name,
+                       text=name)
+        y = map(lambda p: p[0], points)
+        x = map(lambda p: p[1], points)
+        self.addCurve(x=x, y=y,
+                      legend="coord" + name,
+                      linestyle=' ',
+                      symbol='o',
+                      color=numpyColor,
+                      resetzoom=False)
+
+    def updatePeak(self, peakModel):
+        self.removePeak(peakModel)
+        self.addPeak(peakModel)
+
+
 class PeakPickingTask(AbstractCalibrationTask):
 
     def __init__(self):
@@ -131,7 +211,12 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__dialogState = None
 
         layout = qt.QVBoxLayout(self._imageHolder)
-        self.__plot = self.__createPlot()
+        self.__plot = _PeakPickingPlot(parent=self._imageHolder)
+        toolBar = self.__createPlotToolBar(self.__plot)
+        self.__plot.addToolBar(toolBar)
+        statusBar = self.__createPlotStatusBar(self.__plot)
+        self.__plot.setStatusBar(statusBar)
+
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
@@ -139,31 +224,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         self._ringSelectionMode.setIcon(icons.getQIcon("search-ring"))
         self._peakSelectionMode.setIcon(icons.getQIcon("search-peak"))
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
-
-    def __createPlot(self):
-        plot = silx.gui.plot.PlotWidget(parent=self._imageHolder)
-        plot.setKeepDataAspectRatio(True)
-        toolBar = self.__createPlotToolBar(plot)
-        plot.addToolBar(toolBar)
-        statusBar = self.__createPlotStatusBar(plot)
-        plot.setStatusBar(statusBar)
-
-        if isinstance(plot._backend, silx.gui.plot.BackendMatplotlib.BackendMatplotlib):
-            # hide axes and viewbox rect
-            plot._backend.ax.set_axis_off()
-            plot._backend.ax2.set_axis_off()
-            # remove external margins
-            plot._backend.ax.set_position([0, 0, 1, 1])
-            plot._backend.ax2.set_position([0, 0, 1, 1])
-
-        colormap = {
-            'name': "inferno",
-            'normalization': 'log',
-            'autoscale': True,
-        }
-        plot.setDefaultColormap(colormap)
-
-        return plot
 
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
@@ -217,25 +277,11 @@ class PeakPickingTask(AbstractCalibrationTask):
         # FIXME improve color list
         colors = [qt.QColor(255, 0, 0), qt.QColor(0, 255, 0), qt.QColor(0, 0, 255)]
         color = colors[(len(selection)) % len(colors)]
-        numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
 
         peakModel = PeakModel(self.model().peakSelectionModel())
         peakModel.setName(name)
         peakModel.setColor(color)
         peakModel.setCoords(points)
-
-        y, x = points[0]
-        self.__plot.addMarker(x=x, y=y,
-                              legend="marker" + name,
-                              text=name)
-        y = map(lambda p: p[0], points)
-        x = map(lambda p: p[1], points)
-        self.__plot.addCurve(x=x, y=y,
-                             legend="coord" + name,
-                             linestyle=' ',
-                             symbol='o',
-                             color=numpyColor,
-                             resetzoom=False)
 
         return peakModel
 
@@ -266,6 +312,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
         settings.mask().changed.connect(self.__maskUpdated)
+        self.__plot.setModel(model.peakSelectionModel())
         self.__initPeakSelectionView(model)
 
     def __initPeakSelectionView(self, model):
