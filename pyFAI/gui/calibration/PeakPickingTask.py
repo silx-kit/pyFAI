@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/02/2017"
+__date__ = "22/02/2017"
 
 import logging
 import numpy
@@ -324,6 +324,12 @@ class PeakPickingTask(AbstractCalibrationTask):
         self._undoButton.setDefaultAction(self.__undoStack.createUndoAction(self, "Undo"))
         self._redoButton.setDefaultAction(self.__undoStack.createRedoAction(self, "Redo"))
 
+        self.__mode = qt.QButtonGroup()
+        self.__mode.setExclusive(True)
+        self.__mode.addButton(self._peakSelectionMode)
+        self.__mode.addButton(self._ringSelectionMode)
+        self._ringSelectionMode.setChecked(True)
+
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
 
@@ -361,19 +367,29 @@ class PeakPickingTask(AbstractCalibrationTask):
         if event["event"] == "imageClicked":
             x, y, button = event["col"], event["row"], event["button"]
             if button == "left":
-                image = self.model().experimentSettingsModel().image().value()
-                massif = pyFAI.massif.Massif(image)
-                points = massif.find_peaks([y, x], stdout=_DummyStdOut())
-                if len(points) > 0:
-                    peakModel = self.__createNewPeak(points)
-                    oldState = self.__copyPeaks(self.__undoStack)
-                    self.model().peakSelectionModel().append(peakModel)
-                    newState = self.__copyPeaks(self.__undoStack)
-                    command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
-                    command.setText("Add peaks named %s" % peakModel.name())
-                    command.setRedoInhibited(True)
-                    self.__undoStack.push(command)
-                    command.setRedoInhibited(False)
+                self.__plotClicked(x, y)
+
+    def __plotClicked(self, x, y):
+        image = self.model().experimentSettingsModel().image().value()
+        massif = pyFAI.massif.Massif(image)
+        points = massif.find_peaks([y, x], stdout=_DummyStdOut())
+        if len(points) > 0:
+            if self._ringSelectionMode.isChecked():
+                pass
+            elif self._peakSelectionMode.isChecked():
+                points = points[0:1]
+            else:
+                raise ValueError("Picking mode unknown")
+
+            peakModel = self.__createNewPeak(points)
+            oldState = self.__copyPeaks(self.__undoStack)
+            self.model().peakSelectionModel().append(peakModel)
+            newState = self.__copyPeaks(self.__undoStack)
+            command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+            command.setText("Add peaks named %s" % peakModel.name())
+            command.setRedoInhibited(True)
+            self.__undoStack.push(command)
+            command.setRedoInhibited(False)
 
     def __setRingNumber(self, peakModel, value):
         oldState = self.__copyPeaks(self.__undoStack)
