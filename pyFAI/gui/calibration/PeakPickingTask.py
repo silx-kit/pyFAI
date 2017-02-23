@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/02/2017"
+__date__ = "23/02/2017"
 
 import logging
 import numpy
@@ -83,6 +83,8 @@ class _PeakSelectionUndoCommand(qt.QUndoCommand):
 class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     requestRingChange = qt.Signal(object, int)
+
+    requestRemovePeak = qt.Signal(object)
 
     def __init__(self, parent, peakSelectionModel):
         assert isinstance(parent, PeakPickingTask)
@@ -166,6 +168,20 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         column = index.column()
         if column == 2:
             self.requestRingChange.emit(peakModel, value)
+
+    def removeRows(self, row, count, parent=qt.QModelIndex()):
+        # while the tablempdel is already connected to the data model
+        self.__peakSelectionModel.changed.disconnect(self.__invalidateModel)
+
+        self.beginRemoveRows(parent, row, row + count - 1)
+        for i in reversed(range(count)):
+            peakModel = self.__peakSelectionModel[row + i]
+            self.requestRemovePeak.emit(peakModel)
+        self.endRemoveRows()
+
+        # while the tablempdel is already connected to the data model
+        self.__peakSelectionModel.changed.connect(self.__invalidateModel)
+        return True
 
 
 class _PeakPickingPlot(silx.gui.plot.PlotWidget):
@@ -251,9 +267,6 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
 
-    def __init__(self, parent=None):
-        super(_SpinBoxItemDelegate, self).__init__(parent)
-
     def createEditor(self, parent, option, index):
         if not index.isValid():
             return super(_SpinBoxItemDelegate, self).createEditor(parent, option, index)
@@ -296,6 +309,43 @@ class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
         :param qt.QIndex index: Index of the data to display
         """
         editor.setGeometry(option.rect)
+
+
+class _PeakToolItemDelegate(qt.QStyledItemDelegate):
+
+    def createEditor(self, parent, option, index):
+        if not index.isValid():
+            return super(_PeakToolItemDelegate, self).createEditor(parent, option, index)
+
+        editor = qt.QToolBar(parent=parent)
+        editor.setIconSize(qt.QSize(32, 32))
+        editor.setStyleSheet("QToolBar { border: 0px }")
+        editor.setMinimumSize(32, 32)
+        editor.setSizePolicy(qt.QSizePolicy.Fixed, qt.QSizePolicy.Fixed)
+
+        remove = qt.QAction(editor)
+        remove.setIcon(icons.getQIcon("remove-peak"))
+        remove._customSignal = None
+        persistantIndex = qt.QPersistentModelIndex(index)
+        remove.triggered.connect(functools.partial(self.__removePeak, persistantIndex))
+        editor.addAction(remove)
+        return editor
+
+    def updateEditorGeometry(self, editor, option, index):
+        """
+        Update the geometry of the editor according to the changes of the view.
+
+        :param qt.QWidget editor: Editor widget
+        :param qt.QStyleOptionViewItem option: Control how the editor is shown
+        :param qt.QIndex index: Index of the data to display
+        """
+        editor.setGeometry(option.rect)
+
+    def __removePeak(self, persistantIndex, checked):
+        if not persistantIndex.isValid():
+            return
+        model = persistantIndex.model()
+        model.removeRow(persistantIndex.row(), persistantIndex.parent())
 
 
 class PeakPickingTask(AbstractCalibrationTask):
@@ -386,17 +436,27 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.model().peakSelectionModel().append(peakModel)
             newState = self.__copyPeaks(self.__undoStack)
             command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
-            command.setText("Add peaks named %s" % peakModel.name())
+            command.setText("add peak %s" % peakModel.name())
             command.setRedoInhibited(True)
             self.__undoStack.push(command)
             command.setRedoInhibited(False)
+
+    def __removePeak(self, peakModel):
+        oldState = self.__copyPeaks(self.__undoStack)
+        self.model().peakSelectionModel().remove(peakModel)
+        newState = self.__copyPeaks(self.__undoStack)
+        command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+        command.setText("remove peak %s" % peakModel.name())
+        command.setRedoInhibited(True)
+        self.__undoStack.push(command)
+        command.setRedoInhibited(False)
 
     def __setRingNumber(self, peakModel, value):
         oldState = self.__copyPeaks(self.__undoStack)
         peakModel.setRingNumber(value)
         newState = self.__copyPeaks(self.__undoStack)
         command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
-        command.setText("Update ring number of %s" % peakModel.name())
+        command.setText("update ring number of %s" % peakModel.name())
         command.setRedoInhibited(True)
         self.__undoStack.push(command)
         command.setRedoInhibited(False)
@@ -412,11 +472,31 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __createNewPeak(self, points):
         selection = self.model().peakSelectionModel()
 
-        # FIXME support more than 'z' names
-        name = chr(len(selection) + ord('a'))
+        # reach the bigger name
+        names = ["% 8s" % p.name() for p in selection]
+        if len(names) > 0:
+            names = list(sorted(names))
+            bigger = names[-1].strip()
+            number = 0
+            for c in bigger:
+                number = number * 26 + (ord(c) - ord('a'))
+        else:
+            number = -1
+
+        # compute the next one
+        name = ""
+        n = number + 1
+        if n == 0:
+            name = "a"
+        else:
+            while n > 0:
+                c = n % 26
+                n = n // 26
+                name = chr(c + ord('a')) + name
+
         # FIXME improve color list
         colors = [qt.QColor(255, 0, 0), qt.QColor(0, 255, 0), qt.QColor(0, 0, 255)]
-        color = colors[(len(selection)) % len(colors)]
+        color = colors[number % len(colors)]
 
         peakModel = PeakModel(self.model().peakSelectionModel())
         peakModel.setName(name)
@@ -472,16 +552,21 @@ class PeakPickingTask(AbstractCalibrationTask):
         setResizeMode(3, qt.QHeaderView.ResizeToContents)
 
         ringDelegate = _SpinBoxItemDelegate(self._peakSelection)
+        toolDelegate = _PeakToolItemDelegate(self._peakSelection)
         self._peakSelection.setItemDelegateForColumn(2, ringDelegate)
+        self._peakSelection.setItemDelegateForColumn(3, toolDelegate)
         tableModel.rowsInserted.connect(self.__openPersistantViewOnRowInserted)
         tableModel.modelReset.connect(self.__openPersistantViewOnModelReset)
         tableModel.requestRingChange.connect(self.__setRingNumber)
+        tableModel.requestRemovePeak.connect(self.__removePeak)
         self.__openPersistantViewOnModelReset()
 
     def __openPersistantViewOnRowInserted(self, parent, start, end):
         model = self._peakSelection.model()
         for row in range(start, end):
             index = model.index(row, 2, qt.QModelIndex())
+            self._peakSelection.openPersistentEditor(index)
+            index = model.index(row, 3, qt.QModelIndex())
             self._peakSelection.openPersistentEditor(index)
 
     def __openPersistantViewOnModelReset(self):

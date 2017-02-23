@@ -80,25 +80,11 @@
         <property name="title">
          <string>Pick peaking</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1,0,0">
-         <item row="2" column="3">
-          <widget class="QLabel" name="label_39">
-           <property name="text">
-            <string>px</string>
-           </property>
-          </widget>
-         </item>
+        <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,0,0,0">
          <item row="1" column="0">
           <widget class="QLabel" name="label_37">
            <property name="text">
             <string>Mode:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_38">
-           <property name="text">
-            <string>Search size:</string>
            </property>
           </widget>
          </item>
@@ -172,13 +158,6 @@
              </spacer>
             </item>
            </layout>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QSpinBox" name="_pickingBoxSize">
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
           </widget>
          </item>
         </layout>
