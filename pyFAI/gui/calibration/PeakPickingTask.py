@@ -207,6 +207,7 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
 
         self.__peakSelectionModel = None
         self.__callbacks = {}
+        self.__markerColors = {}
 
     def setModel(self, peakSelectionModel):
         assert self.__peakSelectionModel is None
@@ -263,6 +264,79 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
     def updatePeak(self, peakModel):
         self.removePeak(peakModel)
         self.addPeak(peakModel)
+
+    def markerColorList(self):
+        colormap = self.getDefaultColormap()
+
+        name = colormap['name']
+        if name not in self.__markerColors:
+            colors = self.createMarkerColors()
+            self.__markerColors[name] = colors
+        else:
+            colors = self.__markerColors[name]
+        return colors
+
+    def createMarkerColors(self):
+        colormap = self.getDefaultColormap()
+        name = colormap['name']
+
+        import matplotlib.cm
+        from silx.gui.plot import Colors
+        cmap = Colors.getMPLColormap(name)
+        norm = matplotlib.colors.Normalize(0, 255)
+        scalarMappable = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
+
+        # extract all hues from colormap
+        colors = scalarMappable.to_rgba(range(256))
+        hues = []
+        for c in colors:
+            c = qt.QColor.fromRgbF(c[0], c[1], c[2])
+            hues.append(c.hueF())
+
+        # search the bigger empty hue range
+        current = (0, 0.0, 0.2)
+        hues = filter(lambda x: x >= 0, set(hues))
+        hues = list(sorted(hues))
+        if len(hues) > 1:
+            for i in range(len(hues)):
+                h1 = hues[i]
+                h2 = hues[(i + 1) % len(hues)]
+                if h2 < h1:
+                    h2 = h2 + 1.0
+
+                diff = h2 - h1
+                if diff > 0.5:
+                    diff = 1.0 - diff
+
+                if diff > current[0]:
+                    current = diff, h1, h2
+        elif len(hues) == 1:
+            h = (hues[0] + 0.5) % 1.0
+            current = (0, h - 0.1, h + 0.1)
+        else:
+            pass
+
+        h1, h2 = current[1:]
+        delta = (h2 - h1) / 6.0
+
+        # move the range from the colormap
+        h1, h2 = h1 + delta, h2 - delta
+        hmin = (h1 + h2) / 2.0
+
+        # generate colors with 3 hsv control points
+        # (h1, 1, 1), (hmid, 1, 0.5), (h2, 1, 1)
+        colors = []
+        for i in range(5):
+            h = h1 + (hmin - h1) * (i / 5.0)
+            v = 0.5 + 0.1 * (5 - i)
+            c = qt.QColor.fromHsvF(h % 1.0, 1.0, v)
+            colors.append(c)
+        for i in range(5):
+            h = hmin + (h2 - hmin) * (i / 5.0)
+            v = 0.5 + 0.1 * (i)
+            c = qt.QColor.fromHsvF(h % 1.0, 1.0, v)
+            colors.append(c)
+        return colors
 
 
 class _SpinBoxItemDelegate(qt.QStyledItemDelegate):
@@ -482,20 +556,21 @@ class PeakPickingTask(AbstractCalibrationTask):
                 number = number * 26 + (ord(c) - ord('a'))
         else:
             number = -1
+        number = number + 1
 
         # compute the next one
         name = ""
-        n = number + 1
-        if n == 0:
+        if number == 0:
             name = "a"
         else:
+            n = number
             while n > 0:
                 c = n % 26
                 n = n // 26
                 name = chr(c + ord('a')) + name
 
         # FIXME improve color list
-        colors = [qt.QColor(255, 0, 0), qt.QColor(0, 255, 0), qt.QColor(0, 0, 255)]
+        colors = self.__plot.markerColorList()
         color = colors[number % len(colors)]
 
         peakModel = PeakModel(self.model().peakSelectionModel())
