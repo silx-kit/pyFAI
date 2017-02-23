@@ -497,6 +497,26 @@ class PeakPickingTask(AbstractCalibrationTask):
         image = self.model().experimentSettingsModel().image().value()
         massif = pyFAI.massif.Massif(image)
         points = massif.find_peaks([y, x], stdout=_DummyStdOut())
+        if len(points) == 0:
+            # toleration
+            toleration = 3
+
+            # clamp min to avoid negative values
+            ymin = y - toleration
+            if ymin < 0:
+                ymin = 0
+            ymax = y + toleration + 1
+            xmin = x - toleration
+            if xmin < 0:
+                xmin = 0
+            xmax = x + toleration + 1
+
+            data = image[ymin:ymax, xmin:xmax]
+            coord = numpy.argmax(data)
+            coord = numpy.unravel_index(coord, data.shape)
+            y, x = ymin + coord[0], xmin + coord[1]
+            points = massif.find_peaks([y, x], stdout=_DummyStdOut())
+
         if len(points) > 0:
             if self._ringSelectionMode.isChecked():
                 pass
