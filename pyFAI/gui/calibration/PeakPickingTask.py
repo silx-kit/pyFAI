@@ -82,6 +82,92 @@ class _PeakSelectionUndoCommand(qt.QUndoCommand):
             peakPickingModel.append(peakModel)
 
 
+class _PeakSelectionTableView(qt.QTableView):
+
+    def __init__(self, parent):
+        super(_PeakSelectionTableView, self).__init__(parent=parent)
+        ringDelegate = _SpinBoxItemDelegate(self)
+        toolDelegate = _PeakToolItemDelegate(self)
+        self.setItemDelegateForColumn(2, ringDelegate)
+        self.setItemDelegateForColumn(3, toolDelegate)
+
+        self.setSelectionMode(qt.QAbstractItemView.SingleSelection)
+        self.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
+        self.setVerticalScrollMode(qt.QAbstractItemView.ScrollPerPixel)
+        self.setShowGrid(False)
+        self.setWordWrap(False)
+        self.setFrameShape(qt.QFrame.NoFrame)
+
+        self.horizontalHeader().setHighlightSections(False)
+        self.verticalHeader().setVisible(False)
+        self.setStyleSheet("QTableView {background: transparent;}")
+
+    def setModel(self, model):
+        if self.model() is not None:
+            m = self.model()
+            m.rowsInserted.disconnect(self.__onRowInserted)
+            m.rowsRemoved.disconnect(self.__onRowRemoved)
+            m.modelReset.disconnect(self.__openPersistantViewOnModelReset)
+
+        super(_PeakSelectionTableView, self).setModel(model)
+
+        if self.model() is not None:
+            m = self.model()
+            m.rowsInserted.connect(self.__onRowInserted)
+            m.rowsRemoved.connect(self.__onRowRemoved)
+            m.modelReset.connect(self.__openPersistantViewOnModelReset)
+            self.__openPersistantViewOnModelReset()
+            # it is not possible to set column constraints while there is no model
+            self.__updateColumnConstraints()
+
+    def sizeHint(self):
+        """Size hint while grow according to the content of the view"""
+        rowCount = self.model().rowCount()
+        size = qt.QTableView.sizeHint(self)
+        if rowCount <= 0:
+            return size
+        height = self.horizontalHeader().size().height()
+        height = height + self.rowHeight(0) * rowCount
+        if height < size.height():
+            return size
+        size = qt.QSize(size.width(), height)
+        return size
+
+    def __updateColumnConstraints(self):
+        header = self.horizontalHeader()
+        if qt.qVersion() < "5.0":
+            setResizeMode = header.setResizeMode
+        else:
+            setResizeMode = header.setSectionResizeMode
+        setResizeMode(0, qt.QHeaderView.Stretch)
+        setResizeMode(1, qt.QHeaderView.ResizeToContents)
+        setResizeMode(2, qt.QHeaderView.ResizeToContents)
+        setResizeMode(3, qt.QHeaderView.ResizeToContents)
+
+    def __onRowRemoved(self, parent, start, end):
+        # sizeHint changed
+        self.updateGeometry()
+
+    def __onRowInserted(self, parent, start, end):
+        self.__openPersistantViewOnRowInserted(parent, start, end)
+        # sizeHint changed
+        self.updateGeometry()
+
+    def __openPersistantViewOnRowInserted(self, parent, start, end):
+        model = self.model()
+        for row in range(start, end):
+            index = model.index(row, 2, qt.QModelIndex())
+            self.openPersistentEditor(index)
+            index = model.index(row, 3, qt.QModelIndex())
+            self.openPersistentEditor(index)
+
+    def __openPersistantViewOnModelReset(self):
+        model = self.model()
+        index = qt.QModelIndex()
+        row = model.rowCount(index)
+        self.__onRowInserted(index, 0, row)
+
+
 class _PeakSelectionTableModel(qt.QAbstractTableModel):
 
     requestRingChange = qt.Signal(object, int)
@@ -123,7 +209,7 @@ class _PeakSelectionTableModel(qt.QAbstractTableModel):
         if section == 0:
             return "Name"
         if section == 1:
-            return "Number of points"
+            return "Peaks"
         if section == 2:
             return "Ring number"
         return None
@@ -397,6 +483,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         editor.setIconSize(qt.QSize(32, 32))
         editor.setStyleSheet("QToolBar { border: 0px }")
         editor.setMinimumSize(32, 32)
+        editor.setMaximumSize(32, 32)
         editor.setSizePolicy(qt.QSizePolicy.Fixed, qt.QSizePolicy.Fixed)
 
         remove = qt.QAction(editor)
@@ -444,6 +531,7 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self._ringSelectionMode.setIcon(icons.getQIcon("search-ring"))
         self._peakSelectionMode.setIcon(icons.getQIcon("search-peak"))
+        self.__peakSelectionView = None
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
         self.__undoStack = qt.QUndoStack(self)
@@ -686,42 +774,17 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__undoStack.clear()
 
     def __initPeakSelectionView(self, model):
+        if self.__peakSelectionView is None:
+            self.__peakSelectionView = _PeakSelectionTableView(self)
+            layout = qt.QHBoxLayout(self._peakSelectionHolder)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self.__peakSelectionView)
+            self._peakSelectionHolder.setLayout(layout)
+
         tableModel = _PeakSelectionTableModel(self, model.peakSelectionModel())
-        self._peakSelection.setModel(tableModel)
-
-        header = self._peakSelection.horizontalHeader()
-        if qt.qVersion() < "5.0":
-            setResizeMode = header.setResizeMode
-        else:
-            setResizeMode = header.setSectionResizeMode
-        setResizeMode(0, qt.QHeaderView.Stretch)
-        setResizeMode(1, qt.QHeaderView.ResizeToContents)
-        setResizeMode(2, qt.QHeaderView.ResizeToContents)
-        setResizeMode(3, qt.QHeaderView.ResizeToContents)
-
-        ringDelegate = _SpinBoxItemDelegate(self._peakSelection)
-        toolDelegate = _PeakToolItemDelegate(self._peakSelection)
-        self._peakSelection.setItemDelegateForColumn(2, ringDelegate)
-        self._peakSelection.setItemDelegateForColumn(3, toolDelegate)
-        tableModel.rowsInserted.connect(self.__openPersistantViewOnRowInserted)
-        tableModel.modelReset.connect(self.__openPersistantViewOnModelReset)
         tableModel.requestRingChange.connect(self.__setRingNumber)
         tableModel.requestRemovePeak.connect(self.__removePeak)
-        self.__openPersistantViewOnModelReset()
-
-    def __openPersistantViewOnRowInserted(self, parent, start, end):
-        model = self._peakSelection.model()
-        for row in range(start, end):
-            index = model.index(row, 2, qt.QModelIndex())
-            self._peakSelection.openPersistentEditor(index)
-            index = model.index(row, 3, qt.QModelIndex())
-            self._peakSelection.openPersistentEditor(index)
-
-    def __openPersistantViewOnModelReset(self):
-        model = self._peakSelection.model()
-        index = qt.QModelIndex()
-        row = model.rowCount(index)
-        self.__openPersistantViewOnRowInserted(index, 0, row)
+        self.__peakSelectionView.setModel(tableModel)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
