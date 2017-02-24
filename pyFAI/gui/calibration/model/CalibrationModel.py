@@ -27,11 +27,12 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "20/02/2017"
+__date__ = "24/02/2017"
 
 from .AbstractModel import AbstractModel
 from .ExperimentSettingsModel import ExperimentSettingsModel
 from .PeakSelectionModel import PeakSelectionModel
+from .GeometryModel import GeometryModel
 
 
 class CalibrationModel(AbstractModel):
@@ -40,6 +41,7 @@ class CalibrationModel(AbstractModel):
         super(CalibrationModel, self).__init__(parent)
         self.__experimentSettingsModel = ExperimentSettingsModel(self)
         self.__peakSelectionModel = PeakSelectionModel(self)
+        self.__fittedGeometry = GeometryModel(self)
 
     def isValid(self):
         return True
@@ -49,3 +51,6 @@ class CalibrationModel(AbstractModel):
 
     def peakSelectionModel(self):
         return self.__peakSelectionModel
+
+    def fittedGeometry(self):
+        return self.__fittedGeometry
