@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/02/2017"
+__date__ = "24/02/2017"
 
 import logging
 import numpy
@@ -38,6 +38,8 @@ import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
+from pyFAI.gui.calibration.RingExtractor import RingExtractor
+
 import silx.gui.plot
 from silx.gui.plot.PlotTools import PositionInfo
 from silx.gui.plot import PlotActions
@@ -454,6 +456,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         self.__mode.addButton(self._ringSelectionMode)
         self._ringSelectionMode.setChecked(True)
 
+        self._extract.clicked.connect(self.__autoExtractRings)
+
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
 
@@ -600,6 +604,55 @@ class PeakPickingTask(AbstractCalibrationTask):
         peakModel.setRingNumber(1)
 
         return peakModel
+
+    def __autoExtractRings(self):
+        maxRings = self._maxRingToExtract.value()
+        pointPerDegree = self._numberOfPeakPerDegree.value()
+
+        # extract peaks from settings info and current peaks
+        image = self.model().experimentSettingsModel().image().value()
+        calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
+        detector = self.model().experimentSettingsModel().detectorModel().detector()
+        wavelength = self.model().experimentSettingsModel().wavelength().value()
+        wavelength = wavelength / 1e10
+        extractor = RingExtractor(image, calibrant, detector, wavelength)
+
+        # FIXME numpy array can be allocated first
+        peaks = []
+        for peakModel in self.model().peakSelectionModel():
+            ringNumber = peakModel.ringNumber()
+            for coord in peakModel.coords():
+                peaks.append([coord[0], coord[1], ringNumber - 1])
+        peaks = numpy.array(peaks)
+
+        newPeaksRaw = extractor.extract(peaks=peaks,
+                                        method="massif",
+                                        maxRings=maxRings,
+                                        pointPerDegree=pointPerDegree)
+
+        # split peaks per rings
+        newPeaks = {}
+        for peak in newPeaksRaw:
+            y, x, ringNumber = peak
+            ringNumber = int(ringNumber) + 1
+            if ringNumber not in newPeaks:
+                newPeaks[ringNumber] = []
+            newPeaks[ringNumber].append((y, x))
+
+        # update the gui
+        oldState = self.__copyPeaks(self.__undoStack)
+        self.model().peakSelectionModel().clear()
+        for ringNumber in sorted(newPeaks.keys()):
+            coords = newPeaks[ringNumber]
+            peakModel = self.__createNewPeak(coords)
+            peakModel.setRingNumber(ringNumber)
+            self.model().peakSelectionModel().append(peakModel)
+        newState = self.__copyPeaks(self.__undoStack)
+        command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+        command.setText("extract rings")
+        command.setRedoInhibited(True)
+        self.__undoStack.push(command)
+        command.setRedoInhibited(False)
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
