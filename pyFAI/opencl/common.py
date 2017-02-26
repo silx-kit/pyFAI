@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "09/02/2017"
 __status__ = "stable"
 __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
            "measure_workgroup_size", "kernel_workgroup_size"]
@@ -266,6 +266,9 @@ def _measure_workgroup_size(device_or_context, fast=False):
 
     return max_valid_wg
 
+def _is_nvidia_gpu(vendor, devtype):
+    return (vendor == "NVIDIA Corporation") and (devtype == "GPU")
+
 
 class OpenCL(object):
     """
@@ -274,7 +277,6 @@ class OpenCL(object):
     This is a static class.
     ocl should be the only instance and shared among all python modules.
     """
-    def _is_nvidia_gpu(vendor, devtype) : return (vendor == "NVIDIA Corporation") and (devtype == "GPU")
 
     platforms = []
     nb_devices = 0

@@ -73,7 +73,7 @@ __kernel void medfilt2d(__global float *image,  // input image
         {
             float  ary[8];
             float8 vec;
-        } output, input, storage;
+        } output, input;
         input.vec = (float8)(MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT, MAXFLOAT);
         int kfs1 = 2 * khs1 + 1; //definition of kernel full size
         int kfs2 = 2 * khs2 + 1;
@@ -81,7 +81,7 @@ __kernel void medfilt2d(__global float *image,  // input image
         for (int y=0; y<height; y++)
         {
             //Select only the active threads, some may remain inactive
-            int nb_threads =  (nbands * 8 * kfs2);
+            int nb_threads =  (nbands * kfs2);
             int band_nr = threadid / kfs2;
             int band_id = threadid % kfs2;
             int pos_x = clamp((int)(x + band_id - khs2), (int) 0, (int) width-1);
@@ -99,48 +99,33 @@ __kernel void medfilt2d(__global float *image,  // input image
             }
             else
             {
+                //store storage.s0 to some shared memory to retrieve it from another thread.
+                l_data[threadid].s0 = input.vec.s0;
+
                 //Offset to the bottom
-                input.vec.s7 = MAXFLOAT;
-                input.vec.s6 = storage.vec.s7;
-                input.vec.s5 = storage.vec.s6;
-                input.vec.s4 = storage.vec.s5;
-                input.vec.s3 = storage.vec.s4;
-                input.vec.s2 = storage.vec.s3;
-                input.vec.s1 = storage.vec.s2;
-                input.vec.s0 = storage.vec.s1;
-                //storage.s0 is lost as we move down
+                input.vec = (float8)(input.vec.s1,
+                        input.vec.s2,
+                        input.vec.s3,
+                        input.vec.s4,
+                        input.vec.s5,
+                        input.vec.s6,
+                        input.vec.s7,
+                        MAXFLOAT);
 
-/*works*/
-                if (threadid<nb_threads)
-                {
-                    int pos_y = clamp((int)(y + 8 * band_nr + max_vec - 1 - khs1), (int) 0, (int) height-1);
-                    input.ary[max_vec - 1] = image[pos_x + width * pos_y];
-                }
-/* Does not work!
-                //store storage.s0 to some shared memory to retieve it from another thread.
-                l_data[threadid].x = storage.vec.s0;
                 barrier(CLK_LOCAL_MEM_FENCE);
+
                 int read_from = threadid + kfs2;
-                float value;
-                if (read_from<nb_threads)
-                {
-                    input.vec.s7 = l_data[read_from].x;
-                }
-//                if ((band_nr + 1) == nbands)  //we are on the last line
-                else if (threadid<nb_threads) //we are on the last line
+                if (read_from < nb_threads)
+                    input.vec.s7 = l_data[read_from].s0;
+                else if (threadid < nb_threads) //we are on the last band
                 {
                     int pos_y = clamp((int)(y + 8 * band_nr + max_vec - 1 - khs1), (int) 0, (int) height-1);
-                    //Coalesced read in global memory
                     input.ary[max_vec - 1] = image[pos_x + width * pos_y];
                 }
-*/
-
 
             }
-            //store a copy of the input
-            storage = input;
 
-            //This function is definied in bitonic.cl
+            //This function is defined in bitonic.cl
             output.vec = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
                                        input.vec, l_data);
 
