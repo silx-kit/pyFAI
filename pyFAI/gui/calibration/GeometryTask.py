@@ -184,9 +184,9 @@ class GeometryTask(AbstractCalibrationTask):
         self.addParameterToLayout(layout, self.__wavelength)
 
         layout = qt.QGridLayout(self._geometry)
-        self.__distance = FitParamView(self, "Distance:", "mm")
-        self.__poni1 = FitParamView(self, "PONI1:", u"mm")
-        self.__poni2 = FitParamView(self, "PONI2:", u"mm")
+        self.__distance = FitParamView(self, "Distance:", "m")
+        self.__poni1 = FitParamView(self, "PONI1:", u"m")
+        self.__poni2 = FitParamView(self, "PONI2:", u"m")
         self.__rotation1 = FitParamView(self, "Rotation 1:", u"rad")
         self.__rotation2 = FitParamView(self, "Rotation 2:", u"rad")
         self.__rotation3 = FitParamView(self, "Rotation 3:", u"rad")
@@ -332,13 +332,7 @@ class GeometryTask(AbstractCalibrationTask):
                 symbol="+")
 
         model = self.model().fittedGeometry()
-        model.wavelength().setValue(calibration.getParameter("wavelength") * 1e10)
-        model.distance().setValue(calibration.getParameter("distance") * 100)
-        model.poni1().setValue(calibration.getParameter("poni1") * 100)
-        model.poni2().setValue(calibration.getParameter("poni2") * 100)
-        model.rotation1().setValue(calibration.getParameter("rotation1"))
-        model.rotation2().setValue(calibration.getParameter("rotation2"))
-        model.rotation3().setValue(calibration.getParameter("rotation3"))
+        calibration.toGeometryModel(model)
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
