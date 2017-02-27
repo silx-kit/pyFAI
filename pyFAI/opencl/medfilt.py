@@ -59,7 +59,7 @@ class MedianFilter2D(OpenclProcessing):
                BufferDescription("result", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
-               BufferDescription("debug", 8 * 8, numpy.float32, mf.READ_WRITE),
+               #BufferDescription("debug", 8 * 8, numpy.float32, mf.READ_WRITE),
                ]
     kernel_files = ["preprocess.cl", "bitonic.cl", "medfilt.cl"]
     mapping = {numpy.int8: "s8_to_float",
@@ -223,10 +223,10 @@ class _MedFilt2d(object):
     @classmethod
     def medfilt2d(cls, ary, kernel_size=3):
         """Median filter a 2-dimensional array.
-    
+
         Apply a median filter to the `input` array using a local window-size
         given by `kernel_size` (must be odd).
-    
+
         :param ary: A 2-dimensional input array.
         :param kernel_size: A scalar or a list of length 2, giving the size of the
                             median filter window in each dimension.  Elements of
@@ -235,13 +235,13 @@ class _MedFilt2d(object):
                             Default is a kernel of size (3, 3).
         :return: An array the same size as input containing the median filtered
                 result. always work on float32 values
-    
+
         About the padding:
-         
+
         * The filling mode in scipy.signal.medfilt2d is zero-padding
-        * This implementation is equivalent to: 
+        * This implementation is equivalent to:
             scipy.ndimage.filters.median_filter(ary, kernel_size, mode="nearest")
-          
+
         """
         image = numpy.atleast_2d(ary)
         shape = numpy.array(image.shape)
