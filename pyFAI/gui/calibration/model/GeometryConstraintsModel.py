@@ -27,16 +27,16 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "27/02/2017"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
 
 
-class GeometryConstaintsModel(AbstractModel):
+class GeometryConstraintsModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(GeometryConstaintsModel, self).__init__(parent)
+        super(GeometryConstraintsModel, self).__init__(parent)
         self.__distance = ConstraintModel()
         self.__wavelength = ConstraintModel()
         self.__poni1 = ConstraintModel()

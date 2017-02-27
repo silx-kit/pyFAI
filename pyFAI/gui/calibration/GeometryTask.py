@@ -33,6 +33,7 @@ import logging
 import numpy
 
 from pyFAI.gui import qt
+from pyFAI.gui import icons
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
@@ -43,6 +44,10 @@ from silx.gui.plot import PlotActions
 from . import utils
 
 _logger = logging.getLogger(__name__)
+
+_iconVariableFixed = None
+_iconVariableConstrained = None
+_iconVariableConstrainedOut = None
 
 
 class FitParamView(qt.QObject):
@@ -59,7 +64,17 @@ class FitParamView(qt.QObject):
         self.__unit = qt.QLabel(parent)
         self.__unit.setText(unit)
         self.__contains = qt.QToolButton(parent)
+        self.__contains.setAutoRaise(True)
         self.__model = None
+        self.__constraintsModel = None
+
+        global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
+        if _iconVariableFixed is None:
+            _iconVariableFixed = icons.getQIcon("variable-fixed")
+        if _iconVariableConstrained is None:
+            _iconVariableConstrained = icons.getQIcon("variable-constrained")
+        if _iconVariableConstrainedOut is None:
+            _iconVariableConstrainedOut = icons.getQIcon("variable-constrained-out")
 
     def model(self):
         return self.__model
@@ -72,6 +87,14 @@ class FitParamView(qt.QObject):
             self.__model.changed.connect(self.__modelChanged)
             self.__modelChanged()
 
+    def setConstraintsModel(self, model):
+        if self.__constraintsModel is not None:
+            self.__constraintsModel.changed.disconnect(self.__constraintsModelChanged)
+        self.__constraintsModel = model
+        if self.__constraintsModel is not None:
+            self.__constraintsModel.changed.connect(self.__constraintsModelChanged)
+            self.__constraintsModelChanged()
+
     def __modelChanged(self):
         old = self.__lineEdit.blockSignals(True)
         if self.__model is None:
@@ -82,6 +105,14 @@ class FitParamView(qt.QObject):
                 value = ""
             self.__lineEdit.setText(str(value))
         self.__lineEdit.blockSignals(old)
+
+    def __constraintsModelChanged(self):
+        contraint = self.__constraintsModel
+        if contraint.isFixed():
+            icon = _iconVariableFixed
+        else:
+            icon = _iconVariableConstrained
+        self.__contains.setIcon(icon)
 
     def widgets(self):
         return [self.__label, self.__lineEdit, self.__unit, self.__contains]
@@ -345,6 +376,15 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation1.setModel(geometry.rotation1())
         self.__rotation2.setModel(geometry.rotation2())
         self.__rotation3.setModel(geometry.rotation3())
+
+        constrains = model.geometryConstraintsModel()
+        self.__distance.setConstraintsModel(constrains.distance())
+        self.__wavelength.setConstraintsModel(constrains.wavelength())
+        self.__poni1.setConstraintsModel(constrains.poni1())
+        self.__poni2.setConstraintsModel(constrains.poni2())
+        self.__rotation1.setConstraintsModel(constrains.rotation1())
+        self.__rotation2.setConstraintsModel(constrains.rotation2())
+        self.__rotation3.setConstraintsModel(constrains.rotation3())
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
