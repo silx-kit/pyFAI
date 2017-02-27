@@ -283,8 +283,22 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()
-        rings = calibration.get_rings()
+
+        rings = calibration.getRings()
         self.__plot.setRings(rings)
+
+        center = calibration.getBeamCenter()
+        if center is None:
+            self.__plot.removeMarker(legend="center")
+        else:
+            color = self.__plot.markerColorList()[0]
+            numpyColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            self.__plot.addMarker(
+                y=center[0],
+                x=center[1],
+                legend="center",
+                color=numpyColor,
+                symbol="+")
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
