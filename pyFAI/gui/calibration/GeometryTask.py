@@ -300,6 +300,15 @@ class GeometryTask(AbstractCalibrationTask):
                 color=numpyColor,
                 symbol="+")
 
+        model = self.model().fittedGeometry()
+        model.wavelength().setValue(calibration.getParameter("wavelength") * 1e10)
+        model.distance().setValue(calibration.getParameter("distance") * 100)
+        model.poni1().setValue(calibration.getParameter("poni1") * 100)
+        model.poni2().setValue(calibration.getParameter("poni2") * 100)
+        model.rotation1().setValue(calibration.getParameter("rotation1"))
+        model.rotation2().setValue(calibration.getParameter("rotation2"))
+        model.rotation3().setValue(calibration.getParameter("rotation3"))
+
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
 
@@ -331,6 +340,11 @@ class GeometryTask(AbstractCalibrationTask):
 
         self.__distance.setModel(geometry.distance())
         self.__wavelength.setModel(geometry.wavelength())
+        self.__poni1.setModel(geometry.poni1())
+        self.__poni2.setModel(geometry.poni2())
+        self.__rotation1.setModel(geometry.rotation1())
+        self.__rotation2.setModel(geometry.rotation2())
+        self.__rotation3.setModel(geometry.rotation3())
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
