@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1035</width>
-    <height>800</height>
+    <height>550</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,0,0">
+     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,1,0">
       <property name="margin">
        <number>0</number>
       </property>
@@ -111,16 +111,23 @@
          <string>Action</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_10">
-         <item row="2" column="0" colspan="2">
-          <widget class="QToolButton" name="_fitButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+         <item row="3" column="0" colspan="2">
+          <widget class="QPushButton" name="_fitButton">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
            </property>
            <property name="text">
             <string>Fit</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QPushButton" name="_resetButton">
+           <property name="text">
+            <string>Reset</string>
            </property>
           </widget>
          </item>
@@ -132,13 +139,10 @@
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>20</width>
-          <height>40</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
        </spacer>

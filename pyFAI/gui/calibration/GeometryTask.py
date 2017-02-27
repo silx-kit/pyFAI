@@ -27,16 +27,20 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/02/2017"
+__date__ = "27/02/2017"
 
 import logging
+import numpy
+
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from pyFAI.gui.calibration.RingCalibration import RingCalibration
 
 import silx.gui.plot
 from silx.gui.plot.PlotTools import PositionInfo
 from silx.gui.plot import PlotActions
+from . import utils
 
 _logger = logging.getLogger(__name__)
 
@@ -83,6 +87,53 @@ class FitParamView(qt.QObject):
         return [self.__label, self.__lineEdit, self.__unit, self.__contains]
 
 
+class _RingPlot(silx.gui.plot.PlotWidget):
+
+    def __init__(self, parent=None):
+        silx.gui.plot.PlotWidget.__init__(self, parent=parent)
+        self.__markerColors = {}
+        self.__ringLegends = []
+
+    def markerColorList(self):
+        colormap = self.getDefaultColormap()
+
+        name = colormap['name']
+        if name not in self.__markerColors:
+            colors = self.createMarkerColors()
+            self.__markerColors[name] = colors
+        else:
+            colors = self.__markerColors[name]
+        return colors
+
+    def createMarkerColors(self):
+        colormap = self.getDefaultColormap()
+        return utils.getFreeColorRange(colormap)
+
+    def setRings(self, rings):
+        for legend in self.__ringLegends:
+            self.removeCurve(legend)
+        self.__ringLegends = []
+
+        colors = self.markerColorList()
+        for ringId, polyline in enumerate(rings):
+            color = colors[ringId % len(colors)]
+            numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
+
+            color = colors
+            for lineId, line in enumerate(polyline):
+                y, x = line[:, 0], line[:, 1]
+                legend = "ring-%i-%i" % (ringId, lineId)
+                self.addCurve(
+                    x=x,
+                    y=y,
+                    legend=legend,
+                    resetzoom=False,
+                    color=numpyColor,
+                    linewidth=3,
+                    linestyle=":")
+            self.__ringLegends.append(legend)
+
+
 class GeometryTask(AbstractCalibrationTask):
 
     def __init__(self):
@@ -115,6 +166,10 @@ class GeometryTask(AbstractCalibrationTask):
         self.addParameterToLayout(layout, self.__rotation2)
         self.addParameterToLayout(layout, self.__rotation3)
 
+        self._fitButton.clicked.connect(self.__fitGeometry)
+        self._resetButton.clicked.connect(self.__resetGeometry)
+        self.__calibration = None
+
     def addParameterToLayout(self, layout, param):
         # an empty grid returns 1
         row = layout.rowCount()
@@ -123,7 +178,7 @@ class GeometryTask(AbstractCalibrationTask):
             layout.addWidget(widget, row, i)
 
     def __createPlot(self):
-        plot = silx.gui.plot.PlotWidget(parent=self._imageHolder)
+        plot = _RingPlot(parent=self._imageHolder)
         plot.setKeepDataAspectRatio(True)
         toolBar = self.__createPlotToolBar(plot)
         plot.addToolBar(toolBar)
@@ -179,6 +234,57 @@ class GeometryTask(AbstractCalibrationTask):
         statusBar.setSizeGripEnabled(False)
         statusBar.addWidget(info)
         return statusBar
+
+    def __createCalibration(self):
+        image = self.model().experimentSettingsModel().image().value()
+        calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
+        detector = self.model().experimentSettingsModel().detectorModel().detector()
+        wavelength = self.model().experimentSettingsModel().wavelength().value()
+        wavelength = wavelength / 1e10
+
+        peaks = []
+        for peakModel in self.model().peakSelectionModel():
+            ringNumber = peakModel.ringNumber()
+            for coord in peakModel.coords():
+                peaks.append([coord[0], coord[1], ringNumber - 1])
+        peaks = numpy.array(peaks)
+
+        calibration = RingCalibration(image,
+                                      calibrant,
+                                      detector,
+                                      wavelength,
+                                      peaks=peaks,
+                                      method="massif")
+
+        return calibration
+
+    def __getCalibration(self):
+        if self.__calibration is None:
+            self.__calibration = self.__createCalibration()
+        return self.__calibration
+
+    def __resetGeometry(self):
+        calibration = self.__getCalibration()
+
+        peaks = []
+        for peakModel in self.model().peakSelectionModel():
+            ringNumber = peakModel.ringNumber()
+            for coord in peakModel.coords():
+                peaks.append([coord[0], coord[1], ringNumber - 1])
+        peaks = numpy.array(peaks)
+
+        calibration.init(peaks, "massif")
+        self.__updateDisplay()
+
+    def __fitGeometry(self):
+        calibration = self.__getCalibration()
+        calibration.refine()
+        self.__updateDisplay()
+
+    def __updateDisplay(self):
+        calibration = self.__getCalibration()
+        rings = calibration.get_rings()
+        self.__plot.setRings(rings)
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
