@@ -149,10 +149,10 @@ class RingCalibration(object):
         if self.__calibrant:
             angles = [i for i in self.__calibrant.get_2th()
                       if (i is not None) and (i >= tth_min) and (i <= tth_max)]
-            if not angles:
-                angles = None
+            if len(angles) == 0:
+                return []
         else:
-            angles = None
+            return []
 
         # FIXME use documentaed function
         import matplotlib._cntr
