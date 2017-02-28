@@ -44,7 +44,8 @@ class RingExtractor(object):
     def __init__(self, image, calibrant, detector, wavelength):
         self.__image = image
         self.__calibrant = calibrant
-        self.__calibrant.set_wavelength(wavelength)
+        self.__calibrant.setWavelength_change2th(wavelength)
+        # self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
         self.__geoRef = None
