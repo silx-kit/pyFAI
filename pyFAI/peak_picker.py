@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/02/2017"
+__date__ = "28/02/2017"
 __status__ = "production"
 
 import os
@@ -1098,8 +1098,12 @@ class PointGroup(object):
         cls.last_label += 1
         if code < 26:
             label = chr(97 + code)
-        else:
+        elif code < 26 * 26:
             label = chr(96 + code // 26) + chr(97 + code % 26)
+        else:
+            a = code % 26
+            b = code // 26
+            label = chr(96 + b // 26) + chr(97 + b % 26) + chr(97 + a)
         return label, code
 
     @classmethod
@@ -1109,8 +1113,12 @@ class PointGroup(object):
         """
         if len(label) == 1:
             code = ord(label) - 97
-        else:
+        elif len(label) == 2:
             code = (ord(label[0]) - 96) * 26 + (ord(label[1]) - 97)
+        else:
+            code = (ord(label[0]) - 96) * 26 * 26 + \
+                   (ord(label[1]) - 97) * 26 + \
+                   (ord(label) - 97)
         if cls.last_label <= code:
             cls.last_label = code + 1
         return code
