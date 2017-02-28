@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "28/02/2017"
 
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
@@ -68,6 +68,7 @@ class GeometryModel(AbstractModel):
             return False
         if not self.__rotation3.isValid():
             return False
+        return True
 
     def distance(self):
         return self.__distance
@@ -79,7 +80,7 @@ class GeometryModel(AbstractModel):
         return self.__poni1
 
     def poni2(self):
-        return self.__poni1
+        return self.__poni2
 
     def rotation1(self):
         return self.__rotation1
