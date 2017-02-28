@@ -207,6 +207,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.addParameterToLayout(layout, self.__rotation3)
 
         self._fitButton.clicked.connect(self.__fitGeometry)
+        self._fitButton.setDisabledWhenWaiting(True)
         self._resetButton.clicked.connect(self.__resetGeometry)
         self.__calibration = None
 
@@ -318,10 +319,12 @@ class GeometryTask(AbstractCalibrationTask):
         calibration.toGeometryModel(model)
 
     def __fitGeometry(self):
+        self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
         calibration.refine()
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
+        self._fitButton.setWaiting(False)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()

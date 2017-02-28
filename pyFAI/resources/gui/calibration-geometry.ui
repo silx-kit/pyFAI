@@ -112,7 +112,7 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_10">
          <item row="3" column="0" colspan="2">
-          <widget class="QPushButton" name="_fitButton">
+          <widget class="WaitingPushButton" name="_fitButton">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -165,6 +165,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>WaitingPushButton</class>
+   <extends>QPushButton</extends>
+   <header>silx.gui.widgets.WaitingPushButton</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
