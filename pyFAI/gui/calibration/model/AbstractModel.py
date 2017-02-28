@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "28/02/2017"
 
 from pyFAI.gui import qt
 
@@ -38,9 +38,24 @@ class AbstractModel(qt.QObject):
 
     def __init__(self, parent=None):
         qt.QObject.__init__(self, parent)
+        self.__isLocked = 0
+        self.__wasChanged = False
 
     def isValid(self):
         return True
 
     def wasChanged(self):
-        self.changed.emit()
+        if self.__isLocked > 0:
+            self.__wasChanged = True
+        else:
+            self.changed.emit()
+
+    def lockSignals(self):
+        self.__isLocked = self.__isLocked + 1
+
+    def unlockSignals(self):
+        assert self.__isLocked > 0
+        self.__isLocked = self.__isLocked - 1
+        if self.__isLocked == 0 and self.__wasChanged:
+            self.__wasChanged = False
+            self.wasChanged()
