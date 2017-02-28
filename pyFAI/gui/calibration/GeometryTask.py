@@ -171,7 +171,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
                     color=numpyColor,
                     linewidth=3,
                     linestyle=":")
-            self.__ringLegends.append(legend)
+                self.__ringLegends.append(legend)
 
 
 class GeometryTask(AbstractCalibrationTask):
