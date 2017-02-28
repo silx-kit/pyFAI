@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/02/2017"
+__date__ = "28/02/2017"
 
 import logging
 from pyFAI.gui import qt
@@ -133,9 +133,9 @@ class MaskTask(AbstractCalibrationTask):
         image = self.__plot.getImage("image")
         if image is None:
             return value
-        data, params = image[0], image[4]
-        ox, oy = params['origin']
-        sx, sy = params['scale']
+        data = image.getData()
+        ox, oy = image.getOrigin()
+        sx, sy = image.getScale()
         row, col = (y - oy) / sy, (x - ox) / sx
         if row >= 0 and col >= 0:
             # Test positive before cast otherwise issue with int(-0.5) = 0
