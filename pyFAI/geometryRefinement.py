@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/02/2017"
+__date__ = "28/02/2017"
 __status__ = "development"
 
 import os
@@ -73,7 +73,7 @@ ROCA = "/opt/saxs/roca"
 
 
 class GeometryRefinement(AzimuthalIntegrator):
-    def __init__(self, data, dist=1, poni1=None, poni2=None,
+    def __init__(self, data=None, dist=1, poni1=None, poni2=None,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None,
                  wavelength=None, calibrant=None):
@@ -96,10 +96,13 @@ class GeometryRefinement(AzimuthalIntegrator):
         :param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
 
         """
-        self.data = numpy.array(data, dtype=numpy.float64)
-        assert self.data.ndim == 2
-        assert self.data.shape[1] in [3, 4]  # 3 for non weighted, 4 for weighted refinement
-        assert self.data.shape[0] > 0
+        if data is None:
+            self.data = None
+        else:
+            self.data = numpy.array(data, dtype=numpy.float64)
+            assert self.data.ndim == 2
+            assert self.data.shape[1] in [3, 4]  # 3 for non weighted, 4 for weighted refinement
+            assert self.data.shape[0] > 0
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
             raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")
