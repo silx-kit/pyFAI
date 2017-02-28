@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/02/2017"
+__date__ = "28/02/2017"
 
 import logging
 import numpy
@@ -61,6 +61,7 @@ class FitParamView(qt.QObject):
         validator = qt.QDoubleValidator(self.__lineEdit)
         self.__lineEdit.setValidator(validator)
         self.__lineEdit.setAlignment(qt.Qt.AlignRight)
+        self.__lineEdit.editingFinished.connect(self.__lineEditChanged)
         self.__unit = qt.QLabel(parent)
         self.__unit.setText(unit)
         self.__contains = qt.QToolButton(parent)
@@ -75,6 +76,14 @@ class FitParamView(qt.QObject):
             _iconVariableConstrained = icons.getQIcon("variable-constrained")
         if _iconVariableConstrainedOut is None:
             _iconVariableConstrainedOut = icons.getQIcon("variable-constrained-out")
+
+    def __lineEditChanged(self):
+        value = self.__lineEdit.text()
+        try:
+            value = float(value)
+            self.__model.setValue(value)
+        except ValueError:
+            pass
 
     def model(self):
         return self.__model
@@ -305,12 +314,21 @@ class GeometryTask(AbstractCalibrationTask):
         peaks = numpy.array(peaks)
 
         calibration.init(peaks, "massif")
-        self.__updateDisplay()
+        model = self.model().fittedGeometry()
+        calibration.toGeometryModel(model)
 
     def __fitGeometry(self):
         calibration = self.__getCalibration()
         calibration.refine()
-        self.__updateDisplay()
+        model = self.model().fittedGeometry()
+        calibration.toGeometryModel(model)
+
+    def __geometryUpdated(self):
+        calibration = self.__getCalibration()
+        model = self.model().fittedGeometry()
+        if model.isValid():
+            calibration.fromGeometryModel(model)
+            self.__updateDisplay()
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()
@@ -330,9 +348,6 @@ class GeometryTask(AbstractCalibrationTask):
                 legend="center",
                 color=numpyColor,
                 symbol="+")
-
-        model = self.model().fittedGeometry()
-        calibration.toGeometryModel(model)
 
     def __getImageValue(self, x, y):
         """Get value of top most image at position (x, y).
@@ -379,6 +394,8 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation1.setConstraintsModel(constrains.rotation1())
         self.__rotation2.setConstraintsModel(constrains.rotation2())
         self.__rotation3.setConstraintsModel(constrains.rotation3())
+
+        model.fittedGeometry().changed.connect(self.__geometryUpdated)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()

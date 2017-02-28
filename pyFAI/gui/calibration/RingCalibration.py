@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/02/2017"
+__date__ = "28/02/2017"
 
 import logging
 import numpy
@@ -176,6 +176,7 @@ class RingCalibration(object):
             return None
 
     def toGeometryModel(self, model):
+        model.lockSignals()
         model.wavelength().setValue(self.__geoRef.wavelength * 1e10)
         model.distance().setValue(self.__geoRef.dist)
         model.poni1().setValue(self.__geoRef.poni1)
@@ -183,3 +184,34 @@ class RingCalibration(object):
         model.rotation1().setValue(self.__geoRef.rot1)
         model.rotation2().setValue(self.__geoRef.rot2)
         model.rotation3().setValue(self.__geoRef.rot3)
+        model.unlockSignals()
+
+    def fromGeometryModel(self, model):
+        wavelength = model.wavelength().value() * 1e-10
+        self.__calibrant.setWavelength_change2th(wavelength)
+        self.__geoRef.wavelength = wavelength
+        self.__geoRef.dist = model.distance().value()
+        self.__geoRef.poni1 = model.poni1().value()
+        self.__geoRef.poni2 = model.poni2().value()
+        self.__geoRef.rot1 = model.rotation1().value()
+        self.__geoRef.rot2 = model.rotation2().value()
+        self.__geoRef.rot3 = model.rotation3().value()
+
+    def fromGeometryConstriansModel(self, contraintsModel):
+        # FIXME take care of range values
+        fixed = pyFAI.utils.FixedParameters()
+        if contraintsModel.wavelength().isFixed():
+            fixed.add("wavelength")
+        if contraintsModel.distance().isFixed():
+            fixed.add("dist")
+        if contraintsModel.poni1().isFixed():
+            fixed.add("poni1")
+        if contraintsModel.poni2().isFixed():
+            fixed.add("poni2")
+        if contraintsModel.rotation1().isFixed():
+            fixed.add("rot1")
+        if contraintsModel.rotation2().isFixed():
+            fixed.add("rot2")
+        if contraintsModel.rotation3().isFixed():
+            fixed.add("rot3")
+        self.__fixed = fixed

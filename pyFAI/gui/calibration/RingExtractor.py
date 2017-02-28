@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/02/2017"
+__date__ = "28/02/2017"
 
 import logging
 import numpy
@@ -47,6 +47,7 @@ class RingExtractor(object):
         self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
+        self.__geoRef = None
 
     def __initgeoRef(self):
         """
@@ -86,6 +87,7 @@ class RingExtractor(object):
                                     calibrant=self.__calibrant,
                                     **defaults)
         geoRef.refine2(1000000, fix=fixed)
+        self.__geoRef = geoRef
 
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
@@ -168,3 +170,14 @@ class RingExtractor(object):
         # else:
         #     self.data = peakPicker.points.getList()
         return peakPicker.points.getList()
+
+    def toGeometryModel(self, model):
+        model.lockSignals()
+        model.wavelength().setValue(self.__geoRef.wavelength * 1e10)
+        model.distance().setValue(self.__geoRef.dist)
+        model.poni1().setValue(self.__geoRef.poni1)
+        model.poni2().setValue(self.__geoRef.poni2)
+        model.rotation1().setValue(self.__geoRef.rot1)
+        model.rotation2().setValue(self.__geoRef.rot2)
+        model.rotation3().setValue(self.__geoRef.rot3)
+        model.unlockSignals()
