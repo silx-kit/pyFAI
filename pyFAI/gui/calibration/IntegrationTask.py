@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "02/03/2017"
 
 import logging
 from pyFAI.gui import qt
@@ -120,12 +120,15 @@ class IntegrationTask(AbstractCalibrationTask):
             y=result1d.intensity)
 
         # FIXME Add vertical line for each used calibration ring
-        # FIXME scale axes
+        # Assume that axes are linear
+        origin = (result2d.radial[0], result2d.azimuthal[0])
+        scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[0]
+        scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[1]
         self.__plot2d.addImage(
             legend="result2d",
-            data=result2d.intensity)
-        # pos_rad = result2d.radial # x
-        # pos_azim = result2d.azimuthal # y
+            data=result2d.intensity,
+            origin=origin,
+            scale=(scaleX, scaleY))
 
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
