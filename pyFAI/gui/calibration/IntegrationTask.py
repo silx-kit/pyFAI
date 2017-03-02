@@ -30,6 +30,7 @@ __license__ = "MIT"
 __date__ = "02/03/2017"
 
 import logging
+from .model.DataModel import DataModel
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -38,6 +39,44 @@ from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 import silx.gui.plot
 
 _logger = logging.getLogger(__name__)
+
+
+class EnablableDataModel(DataModel):
+
+    def __init__(self, parent, model):
+        DataModel.__init__(self, parent=parent)
+        self.__model = model
+        self.__model.changed.connect(self.__modelChanged)
+        self.__isEnabled = False
+        self.__modelChanged()
+
+    def setEnabled(self, isEnabled):
+        if self.__isEnabled == isEnabled:
+            return
+        self.__isEnabled = isEnabled
+        if self.__isEnabled:
+            self.__model.setValue(self.value())
+        else:
+            self.__model.setValue(None)
+        self.wasChanged()
+
+    def isEnabled(self):
+        return self.__isEnabled
+
+    def __modelChanged(self):
+        value = self.__model.value()
+        if self.value() == value:
+            return
+        self.lockSignals()
+        self.setEnabled(value is not None)
+        if value is not None:
+            self.setValue(value)
+        self.unlockSignals()
+
+    def setValue(self, value):
+        super(EnablableDataModel, self).setValue(value)
+        if self.__isEnabled:
+            self.__model.setValue(value)
 
 
 class IntegrationTask(AbstractCalibrationTask):
@@ -61,6 +100,19 @@ class IntegrationTask(AbstractCalibrationTask):
         layout.addWidget(self.__plot1d)
         self._integrateButton.clicked.connect(self.__invalidateIntegration)
         self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
+        self.__polarizationModel = None
+        self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
+
+    def __polarizationFactorChecked(self, checked):
+        self.__polarizationModel.setEnabled(checked)
+        self._polarizationFactor.setEnabled(checked)
+
+    def __polarizationModelChanged(self):
+        old = self._polarizationFactorCheck.blockSignals(True)
+        isEnabled = self.__polarizationModel.isEnabled()
+        self._polarizationFactorCheck.setChecked(isEnabled)
+        self._polarizationFactor.setEnabled(isEnabled)
+        self._polarizationFactorCheck.blockSignals(old)
 
     def __invalidateIntegration(self):
         self.__integrate()
@@ -82,6 +134,7 @@ class IntegrationTask(AbstractCalibrationTask):
         radialUnit = model.integrationSettingsModel().radialUnit().value()
         if radialUnit is None:
             return
+        polarizationFactor = model.experimentSettingsModel().polarizationFactor().value()
 
         wavelength = geometry.wavelength().value()
         wavelength = wavelength / 1e10
@@ -106,19 +159,21 @@ class IntegrationTask(AbstractCalibrationTask):
         numberPointRadial = 400
         numberPointAzimuthal = 360
 
-        # FIXME polarization factor, error model, method
+        # FIXME error model, method
 
         result1d = ai.integrate1d(
             data=image,
             npt=numberPoint1D,
             unit=radialUnit,
-            mask=mask)
+            mask=mask,
+            polarization_factor=polarizationFactor)
 
         result2d = ai.integrate2d(
             data=image,
             npt_rad=numberPointRadial,
             npt_azim=numberPointAzimuthal,
-            unit=radialUnit)
+            unit=radialUnit,
+            polarization_factor=polarizationFactor)
 
         # FIXME set axes
         self.__plot1d.addCurve(
@@ -140,10 +195,15 @@ class IntegrationTask(AbstractCalibrationTask):
     def _updateModel(self, model):
         experimentSettings = model.experimentSettingsModel()
         integrationSettings = model.integrationSettingsModel()
+        self.__polarizationModel = EnablableDataModel(self, experimentSettings.polarizationFactor())
+        if self.__polarizationModel.value() is None:
+            self.__polarizationModel.setValue(0.9)
         # connect widgets
-        self._polarizationFactor.setModel(experimentSettings.polarizationFactor())
+        self.__polarizationModelChanged()
+        self._polarizationFactor.setModel(self.__polarizationModel)
         self._radialUnit.setModel(integrationSettings.radialUnit())
         # connect model
+        self.__polarizationModel.changed.connect(self.__polarizationModelChanged)
         experimentSettings.mask().changed.connect(self.__invalidateIntegration)
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
