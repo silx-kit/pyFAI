@@ -184,8 +184,8 @@ class IntegrationTask(AbstractCalibrationTask):
         # FIXME Add vertical line for each used calibration ring
         # Assume that axes are linear
         origin = (result2d.radial[0], result2d.azimuthal[0])
-        scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[0]
-        scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[1]
+        scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[1]
+        scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[0]
         self.__plot2d.addImage(
             legend="result2d",
             data=result2d.intensity,
