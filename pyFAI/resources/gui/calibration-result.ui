@@ -57,7 +57,13 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_10">
          <item row="2" column="2">
-          <widget class="QComboBox" name="_methodSelector"/>
+          <widget class="QComboBox" name="_methodSelector">
+           <item>
+            <property name="text">
+             <string>Default</string>
+            </property>
+           </item>
+          </widget>
          </item>
          <item row="5" column="1">
           <widget class="QLabel" name="label_5">
@@ -96,7 +102,7 @@
          <item row="4" column="1">
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>Method:</string>
+            <string>Histogram:</string>
            </property>
           </widget>
          </item>
@@ -117,21 +123,21 @@
          <item row="3" column="2">
           <widget class="QLabel" name="_pixelSplitting">
            <property name="text">
-            <string/>
+            <string>Bounding box</string>
            </property>
           </widget>
          </item>
          <item row="4" column="2">
           <widget class="QLabel" name="_method">
            <property name="text">
-            <string/>
+            <string>Direct</string>
            </property>
           </widget>
          </item>
          <item row="5" column="2">
           <widget class="QLabel" name="_implementation">
            <property name="text">
-            <string/>
+            <string>Cython</string>
            </property>
           </widget>
          </item>
