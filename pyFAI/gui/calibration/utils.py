@@ -27,10 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/02/2017"
+__date__ = "02/03/2017"
 
 
 from pyFAI.gui import qt
+from pyFAI import units
+import numpy
+import collections
 
 
 def getFreeColorRange(colormap):
@@ -93,3 +96,29 @@ def getFreeColorRange(colormap):
         c = qt.QColor.fromHsvF(h % 1.0, 1.0, v)
         colors.append(c)
     return colors
+
+
+def from2ThRad(twoTheta, unit, wavelength=None, ai=None):
+    if isinstance(twoTheta, numpy.ndarray):
+        pass
+    elif isinstance(twoTheta, collections.Iterable):
+        twoTheta = numpy.array(twoTheta)
+
+    if unit == units.TTH_DEG:
+        return numpy.rad2deg(twoTheta)
+    elif unit == units.TTH_RAD:
+        return twoTheta
+    elif unit == units.Q_A:
+        return (4.e-10 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
+    elif unit == units.Q_NM:
+        return (4.e-9 * numpy.pi / wavelength) * numpy.sin(.5 * twoTheta)
+    elif unit == units.R_MM:
+        # GF: correct formula?
+        beamCentre = ai.getFit2D()["directDist"]  # in mm!!
+        return beamCentre * numpy.tan(twoTheta)
+    elif unit == units.R_M:
+        # GF: correct formula?
+        beamCentre = ai.getFit2D()["directDist"]  # in mm!!
+        return beamCentre * numpy.tan(twoTheta) * 0.001
+    else:
+        raise ValueError("Converting from 2th to unit %s is not supported", unit)

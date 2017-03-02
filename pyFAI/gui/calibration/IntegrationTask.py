@@ -37,6 +37,7 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 
 import silx.gui.plot
+from . import utils
 
 _logger = logging.getLogger(__name__)
 
@@ -85,6 +86,7 @@ class IntegrationTask(AbstractCalibrationTask):
         super(IntegrationTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-result.ui"), self)
 
+        self.__ringLegends = []
         self.__plot1d = silx.gui.plot.Plot1D(self)
         self.__plot2d = silx.gui.plot.Plot2D(self)
         colormap = {
@@ -175,13 +177,37 @@ class IntegrationTask(AbstractCalibrationTask):
             unit=radialUnit,
             polarization_factor=polarizationFactor)
 
+        # Add a marker for each rings on the plots
+        calibrant = model.experimentSettingsModel().calibrantModel().calibrant()
+        if calibrant:
+            for legend in self.__ringLegends:
+                self.__plot1d.removeMarker(legend)
+                self.__plot2d.removeMarker(legend)
+            self.__ringLegends = []
+
+            colors = utils.getFreeColorRange(self.__plot2d.getDefaultColormap())
+            rings = calibrant.get_2th()
+            rings = filter(lambda x: x <= result1d.radial[-1], rings)
+            try:
+                rings = utils.from2ThRad(rings, radialUnit, wavelength, ai)
+            except ValueError:
+                message = "Convertion to unit %s not supported. Ring marks ignored"
+                _logger.warning(message, radialUnit)
+                rings = []
+            for i, angle in enumerate(rings):
+                legend = "ring_%i" % (i + 1)
+                color = colors[i % len(colors)]
+                htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+                self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
+                self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
+                self.__ringLegends.append(legend)
+
         # FIXME set axes
         self.__plot1d.addCurve(
             legend="result1d",
             x=result1d.radial,
             y=result1d.intensity)
 
-        # FIXME Add vertical line for each used calibration ring
         # Assume that axes are linear
         origin = (result2d.radial[0], result2d.azimuthal[0])
         scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[1]
