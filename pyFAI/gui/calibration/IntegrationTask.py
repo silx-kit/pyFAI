@@ -88,7 +88,11 @@ class IntegrationTask(AbstractCalibrationTask):
 
         self.__ringLegends = []
         self.__plot1d = silx.gui.plot.Plot1D(self)
+        self.__plot1d.setGraphXLabel("Radial")
+        self.__plot1d.setGraphYLabel("Intensity")
         self.__plot2d = silx.gui.plot.Plot2D(self)
+        self.__plot2d.setGraphXLabel("Radial")
+        self.__plot2d.setGraphYLabel("Azimuthal")
         colormap = {
             'name': "inferno",
             'normalization': 'log',
