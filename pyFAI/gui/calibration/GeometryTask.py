@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "02/03/2017"
 
 import logging
 import numpy
@@ -344,12 +344,12 @@ class GeometryTask(AbstractCalibrationTask):
             self.__plot.removeMarker(legend="center")
         else:
             color = self.__plot.markerColorList()[0]
-            numpyColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
             self.__plot.addMarker(
                 y=center[0],
                 x=center[1],
                 legend="center",
-                color=numpyColor,
+                color=htmlColor,
                 symbol="+")
 
     def __getImageValue(self, x, y):
