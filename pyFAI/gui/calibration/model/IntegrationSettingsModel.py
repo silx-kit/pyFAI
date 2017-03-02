@@ -29,6 +29,7 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "02/03/2017"
 
+from pyFAI import units
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
 
@@ -38,6 +39,7 @@ class IntegrationSettingsModel(AbstractModel):
     def __init__(self, parent=None):
         super(IntegrationSettingsModel, self).__init__(parent)
         self.__radialUnit = DataModel()
+        self.__radialUnit.setValue(units.TTH_RAD)
         self.__radialUnit.changed.connect(self.wasChanged)
 
     def isValid(self):
