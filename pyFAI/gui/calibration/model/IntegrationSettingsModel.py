@@ -30,37 +30,20 @@ __license__ = "MIT"
 __date__ = "02/03/2017"
 
 from .AbstractModel import AbstractModel
-from .ExperimentSettingsModel import ExperimentSettingsModel
-from .PeakSelectionModel import PeakSelectionModel
-from .GeometryModel import GeometryModel
-from .GeometryConstraintsModel import GeometryConstraintsModel
-from .IntegrationSettingsModel import IntegrationSettingsModel
+from .DataModel import DataModel
 
 
-class CalibrationModel(AbstractModel):
+class IntegrationSettingsModel(AbstractModel):
 
     def __init__(self, parent=None):
-        super(CalibrationModel, self).__init__(parent)
-        self.__experimentSettingsModel = ExperimentSettingsModel(self)
-        self.__peakSelectionModel = PeakSelectionModel(self)
-        self.__fittedGeometry = GeometryModel(self)
-        self.__geometryConstraintsModel = GeometryConstraintsModel(self)
-        self.__integrationSettingsModel = IntegrationSettingsModel(self)
+        super(IntegrationSettingsModel, self).__init__(parent)
+        self.__radialUnit = DataModel()
+        self.__radialUnit.changed.connect(self.wasChanged)
 
     def isValid(self):
+        if self.__radialUnit.value() is None:
+            return False
         return True
 
-    def experimentSettingsModel(self):
-        return self.__experimentSettingsModel
-
-    def peakSelectionModel(self):
-        return self.__peakSelectionModel
-
-    def fittedGeometry(self):
-        return self.__fittedGeometry
-
-    def geometryConstraintsModel(self):
-        return self.__geometryConstraintsModel
-
-    def integrationSettingsModel(self):
-        return self.__integrationSettingsModel
+    def radialUnit(self):
+        return self.__radialUnit

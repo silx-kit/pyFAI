@@ -60,21 +60,29 @@ class IntegrationTask(AbstractCalibrationTask):
         layout.addWidget(self.__plot2d)
         layout.addWidget(self.__plot1d)
         self._integrateButton.clicked.connect(self.__invalidateIntegration)
+        self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
 
     def __invalidateIntegration(self):
         self.__integrate()
 
     def __integrate(self):
-        image = self.model().experimentSettingsModel().image().value()
+        model = self.model()
+        if model is None:
+            return
+        image = model.experimentSettingsModel().image().value()
         if image is None:
             return
-        mask = self.model().experimentSettingsModel().mask().value()
-        detector = self.model().experimentSettingsModel().detectorModel().detector()
+        mask = model.experimentSettingsModel().mask().value()
+        detector = model.experimentSettingsModel().detectorModel().detector()
         if detector is None:
             return
-        geometry = self.model().fittedGeometry()
+        geometry = model.fittedGeometry()
         if not geometry.isValid():
             return
+        radialUnit = model.integrationSettingsModel().radialUnit().value()
+        if radialUnit is None:
+            return
+
         wavelength = geometry.wavelength().value()
         wavelength = wavelength / 1e10
         distance = geometry.distance().value()
@@ -94,7 +102,6 @@ class IntegrationTask(AbstractCalibrationTask):
             detector=detector,
             wavelength=wavelength)
 
-        unit = pyFAI.units.to_unit("2th_deg")
         numberPoint1D = 1024
         numberPointRadial = 400
         numberPointAzimuthal = 360
@@ -104,14 +111,14 @@ class IntegrationTask(AbstractCalibrationTask):
         result1d = ai.integrate1d(
             data=image,
             npt=numberPoint1D,
-            unit=unit,
+            unit=radialUnit,
             mask=mask)
 
         result2d = ai.integrate2d(
             data=image,
             npt_rad=numberPointRadial,
             npt_azim=numberPointAzimuthal,
-            unit=unit)
+            unit=radialUnit)
 
         # FIXME set axes
         self.__plot1d.addCurve(
@@ -131,8 +138,13 @@ class IntegrationTask(AbstractCalibrationTask):
             scale=(scaleX, scaleY))
 
     def _updateModel(self, model):
-        settings = model.experimentSettingsModel()
-        settings.mask().changed.connect(self.__invalidateIntegration)
-        settings.polarizationFactor().changed.connect(self.__invalidateIntegration)
+        experimentSettings = model.experimentSettingsModel()
+        integrationSettings = model.integrationSettingsModel()
+        # connect widgets
+        self._polarizationFactor.setModel(experimentSettings.polarizationFactor())
+        self._radialUnit.setModel(integrationSettings.radialUnit())
+        # connect model
+        experimentSettings.mask().changed.connect(self.__invalidateIntegration)
+        experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
-        self._polarizationFactor.setModel(settings.polarizationFactor())
+        integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
