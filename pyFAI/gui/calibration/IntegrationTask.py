@@ -199,12 +199,13 @@ class IntegrationTask(AbstractCalibrationTask):
         self.__plot2d = silx.gui.plot.Plot2D(self)
         self.__plot2d.setGraphXLabel("Radial")
         self.__plot2d.setGraphYLabel("Azimuthal")
-        colormap = {
+
+        self.__defaultColorMap = {
             'name': "inferno",
             'normalization': 'log',
             'autoscale': True,
         }
-        self.__plot2d.setDefaultColormap(colormap)
+        self.__plot2d.setDefaultColormap(self.__defaultColorMap)
 
         layout = qt.QVBoxLayout(self._imageHolder)
         layout.setContentsMargins(1, 1, 1, 1)
@@ -248,7 +249,9 @@ class IntegrationTask(AbstractCalibrationTask):
     def __integrate(self):
         self.__integrationProcess = IntegrationProcess(self.model())
         if not self.__integrationProcess.isValid():
+            self.__integrationProcess = None
             return
+        self.__updateGUIWhileIntegrating()
         self._integrateButton.setCallable(self.__integrationProcess.run)
         self.__integrationUpToDate = True
 
@@ -259,7 +262,31 @@ class IntegrationTask(AbstractCalibrationTask):
             # Maybe it was invalidated while priocessing
             self._integrateButton.executeCallable()
 
+    def __updateGUIWhileIntegrating(self):
+        self.__defaultColorMap = self.__plot2d.getDefaultColormap()
+        colormap = {
+            'name': "Greys",
+            'normalization': 'log',
+            'autoscale': True,
+        }
+        self.__plot2d.setDefaultColormap(colormap)
+
+        # Update active image
+        image = self.__plot2d.getActiveImage()
+        if image is not None:
+            # Update image: This do not preserve pixmap
+            self.__plot2d.addImage(
+                image.getData(copy=False),
+                legend=image.getLegend(),
+                info=image.getInfo(),
+                colormap=colormap,
+                replace=False,
+                resetzoom=False)
+
     def __updateGUIWithIntegrationResult(self, integrationProcess):
+        colormap = self.__defaultColorMap
+        self.__plot2d.setDefaultColormap(colormap)
+
         # Add a marker for each rings on the plots
         ringAngles = integrationProcess.ringAngles()
         for legend in self.__ringLegends:
@@ -291,7 +318,8 @@ class IntegrationTask(AbstractCalibrationTask):
             legend="result2d",
             data=result2d.intensity,
             origin=origin,
-            scale=(scaleX, scaleY))
+            scale=(scaleX, scaleY),
+            colormap=colormap)
 
     def _updateModel(self, model):
         experimentSettings = model.experimentSettingsModel()
