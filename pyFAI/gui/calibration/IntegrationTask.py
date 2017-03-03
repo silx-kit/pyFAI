@@ -35,6 +35,7 @@ from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+import numpy
 
 import silx.gui.plot
 from . import utils
@@ -80,6 +81,110 @@ class EnablableDataModel(DataModel):
             self.__model.setValue(value)
 
 
+class IntegrationProcess(object):
+
+    def __init__(self, model):
+        self.__isValid = self._init(model)
+
+    def _init(self, model):
+        self.__isValid = True
+        if model is None:
+            return False
+        image = model.experimentSettingsModel().image().value()
+        if image is None:
+            return False
+        mask = model.experimentSettingsModel().mask().value()
+        detector = model.experimentSettingsModel().detectorModel().detector()
+        if detector is None:
+            return
+        geometry = model.fittedGeometry()
+        if not geometry.isValid():
+            return False
+        self.__radialUnit = model.integrationSettingsModel().radialUnit().value()
+        if self.__radialUnit is None:
+            return False
+        self.__polarizationFactor = model.experimentSettingsModel().polarizationFactor().value()
+
+        self.__calibrant = model.experimentSettingsModel().calibrantModel().calibrant()
+
+        if mask is not None:
+            mask = numpy.array(mask)
+        if image is not None:
+            image = numpy.array(image)
+
+        # FIXME calibrant and detector have to be cloned
+        self.__detector = detector
+        self.__image = image
+        self.__mask = mask
+
+        wavelength = geometry.wavelength().value()
+        self.__wavelength = wavelength / 1e10
+        self.__distance = geometry.distance().value()
+        self.__poni1 = geometry.poni1().value()
+        self.__poni2 = geometry.poni2().value()
+        self.__rotation1 = geometry.rotation1().value()
+        self.__rotation2 = geometry.rotation2().value()
+        self.__rotation3 = geometry.rotation3().value()
+        return True
+
+    def isValid(self):
+        return self.__isValid
+
+    def run(self):
+        ai = AzimuthalIntegrator(
+            dist=self.__distance,
+            poni1=self.__poni1,
+            poni2=self.__poni2,
+            rot1=self.__rotation1,
+            rot2=self.__rotation2,
+            rot3=self.__rotation3,
+            detector=self.__detector,
+            wavelength=self.__wavelength)
+
+        numberPoint1D = 1024
+        numberPointRadial = 400
+        numberPointAzimuthal = 360
+
+        # FIXME error model, method
+
+        self.__result1d = ai.integrate1d(
+            data=self.__image,
+            npt=numberPoint1D,
+            unit=self.__radialUnit,
+            mask=self.__mask,
+            polarization_factor=self.__polarizationFactor)
+
+        self.__result2d = ai.integrate2d(
+            data=self.__image,
+            npt_rad=numberPointRadial,
+            npt_azim=numberPointAzimuthal,
+            unit=self.__radialUnit,
+            polarization_factor=self.__polarizationFactor)
+
+        if self.__calibrant:
+
+            rings = self.__calibrant.get_2th()
+            rings = filter(lambda x: x <= self.__result1d.radial[-1], rings)
+            try:
+                rings = utils.from2ThRad(rings, self.__radialUnit, self.__wavelength, ai)
+            except ValueError:
+                message = "Convertion to unit %s not supported. Ring marks ignored"
+                _logger.warning(message, self.__radialUnit)
+                rings = []
+        else:
+            rings = []
+        self.__ringAngles = rings
+
+    def ringAngles(self):
+        return self.__ringAngles
+
+    def result1d(self):
+        return self.__result1d
+
+    def result2d(self):
+        return self.__result2d
+
+
 class IntegrationTask(AbstractCalibrationTask):
 
     def __init__(self):
@@ -105,11 +210,14 @@ class IntegrationTask(AbstractCalibrationTask):
         layout.setContentsMargins(1, 1, 1, 1)
         layout.addWidget(self.__plot2d)
         layout.addWidget(self.__plot1d)
-        self._integrateButton.clicked.connect(self.__invalidateIntegration)
         self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
         self.__polarizationModel = None
         self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
         self.widgetShow.connect(self.__widgetShow)
+
+        self._integrateButton.beforeExecuting.connect(self.__integrate)
+        self._integrateButton.setDisabledWhenWaiting(True)
+        self._integrateButton.finished.connect(self.__integratingFinished)
 
     def __polarizationFactorChecked(self, checked):
         self.__polarizationModel.setEnabled(checked)
@@ -124,106 +232,58 @@ class IntegrationTask(AbstractCalibrationTask):
 
     def __invalidateIntegration(self):
         if self.isVisible():
-            self.__integrate()
-            self.__integrationUpToDate = True
+            if not self._integrateButton.isWaiting():
+                self._integrateButton.executeCallable()
+            else:
+                # integration is processing
+                # but data are already outdated
+                self.__integrationUpToDate = False
         else:
+            # We can process data later
             self.__integrationUpToDate = False
 
     def __widgetShow(self):
-        if not self.__integrationUpToDate:
-            self.__integrate()
-            self.__integrationUpToDate = True
+        self._integrateButton.executeCallable()
 
     def __integrate(self):
-        model = self.model()
-        if model is None:
+        self.__integrationProcess = IntegrationProcess(self.model())
+        if not self.__integrationProcess.isValid():
             return
-        image = model.experimentSettingsModel().image().value()
-        if image is None:
-            return
-        mask = model.experimentSettingsModel().mask().value()
-        detector = model.experimentSettingsModel().detectorModel().detector()
-        if detector is None:
-            return
-        geometry = model.fittedGeometry()
-        if not geometry.isValid():
-            return
-        radialUnit = model.integrationSettingsModel().radialUnit().value()
-        if radialUnit is None:
-            return
-        polarizationFactor = model.experimentSettingsModel().polarizationFactor().value()
+        self._integrateButton.setCallable(self.__integrationProcess.run)
+        self.__integrationUpToDate = True
 
-        wavelength = geometry.wavelength().value()
-        wavelength = wavelength / 1e10
-        distance = geometry.distance().value()
-        poni1 = geometry.poni1().value()
-        poni2 = geometry.poni2().value()
-        rotation1 = geometry.rotation1().value()
-        rotation2 = geometry.rotation2().value()
-        rotation3 = geometry.rotation3().value()
+    def __integratingFinished(self):
+        self.__updateGUIWithIntegrationResult(self.__integrationProcess)
+        self.__integrationProcess = None
+        if not self.__integrationUpToDate:
+            # Maybe it was invalidated while priocessing
+            self._integrateButton.executeCallable()
 
-        ai = AzimuthalIntegrator(
-            dist=distance,
-            poni1=poni1,
-            poni2=poni2,
-            rot1=rotation1,
-            rot2=rotation2,
-            rot3=rotation3,
-            detector=detector,
-            wavelength=wavelength)
-
-        numberPoint1D = 1024
-        numberPointRadial = 400
-        numberPointAzimuthal = 360
-
-        # FIXME error model, method
-
-        result1d = ai.integrate1d(
-            data=image,
-            npt=numberPoint1D,
-            unit=radialUnit,
-            mask=mask,
-            polarization_factor=polarizationFactor)
-
-        result2d = ai.integrate2d(
-            data=image,
-            npt_rad=numberPointRadial,
-            npt_azim=numberPointAzimuthal,
-            unit=radialUnit,
-            polarization_factor=polarizationFactor)
-
+    def __updateGUIWithIntegrationResult(self, integrationProcess):
         # Add a marker for each rings on the plots
-        calibrant = model.experimentSettingsModel().calibrantModel().calibrant()
-        if calibrant:
-            for legend in self.__ringLegends:
-                self.__plot1d.removeMarker(legend)
-                self.__plot2d.removeMarker(legend)
-            self.__ringLegends = []
-
-            colors = utils.getFreeColorRange(self.__plot2d.getDefaultColormap())
-            rings = calibrant.get_2th()
-            rings = filter(lambda x: x <= result1d.radial[-1], rings)
-            try:
-                rings = utils.from2ThRad(rings, radialUnit, wavelength, ai)
-            except ValueError:
-                message = "Convertion to unit %s not supported. Ring marks ignored"
-                _logger.warning(message, radialUnit)
-                rings = []
-            for i, angle in enumerate(rings):
-                legend = "ring_%i" % (i + 1)
-                color = colors[i % len(colors)]
-                htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
-                self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
-                self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
-                self.__ringLegends.append(legend)
+        ringAngles = integrationProcess.ringAngles()
+        for legend in self.__ringLegends:
+            self.__plot1d.removeMarker(legend)
+            self.__plot2d.removeMarker(legend)
+        self.__ringLegends = []
+        colors = utils.getFreeColorRange(self.__plot2d.getDefaultColormap())
+        for i, angle in enumerate(ringAngles):
+            legend = "ring_%i" % (i + 1)
+            color = colors[i % len(colors)]
+            htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
+            self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
+            self.__ringLegends.append(legend)
 
         # FIXME set axes
+        result1d = integrationProcess.result1d()
         self.__plot1d.addCurve(
             legend="result1d",
             x=result1d.radial,
             y=result1d.intensity)
 
         # Assume that axes are linear
+        result2d = integrationProcess.result2d()
         origin = (result2d.radial[0], result2d.azimuthal[0])
         scaleX = (result2d.radial[-1] - result2d.radial[0]) / result2d.intensity.shape[1]
         scaleY = (result2d.azimuthal[-1] - result2d.azimuthal[0]) / result2d.intensity.shape[0]
