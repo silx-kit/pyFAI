@@ -244,7 +244,8 @@ class IntegrationTask(AbstractCalibrationTask):
             self.__integrationUpToDate = False
 
     def __widgetShow(self):
-        self._integrateButton.executeCallable()
+        if not self.__integrationUpToDate:
+            self._integrateButton.executeCallable()
 
     def __integrate(self):
         self.__integrationProcess = IntegrationProcess(self.model())
