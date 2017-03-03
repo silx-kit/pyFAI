@@ -460,7 +460,6 @@ class PeakPickingTask(AbstractCalibrationTask):
         super(PeakPickingTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-peakpicking.ui"), self)
         self.initNextStep()
-        self.__dialogState = None
 
         layout = qt.QVBoxLayout(self._imageHolder)
         self.__plot = _PeakPickingPlot(parent=self._imageHolder)

@@ -186,7 +186,6 @@ class GeometryTask(AbstractCalibrationTask):
         super(GeometryTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-geometry.ui"), self)
         self.initNextStep()
-        self.__dialogState = None
 
         self.__plot = self.__createPlot()
 

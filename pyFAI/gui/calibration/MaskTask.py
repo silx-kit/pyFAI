@@ -47,7 +47,6 @@ class MaskTask(AbstractCalibrationTask):
         super(MaskTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-mask.ui"), self)
         self.initNextStep()
-        self.__dialogState = None
 
         self.__plot = self.__createPlot()
         self.__maskPanel = silx.gui.plot.MaskToolsWidget.MaskToolsWidget(parent=self._toolHolder, plot=self.__plot)
