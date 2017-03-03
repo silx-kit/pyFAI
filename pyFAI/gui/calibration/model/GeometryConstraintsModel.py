@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "27/02/2017"
+__date__ = "03/03/2017"
 
 from .AbstractModel import AbstractModel
 from .ConstraintModel import ConstraintModel
@@ -79,7 +79,7 @@ class GeometryConstraintsModel(AbstractModel):
         return self.__poni1
 
     def poni2(self):
-        return self.__poni1
+        return self.__poni2
 
     def rotation1(self):
         return self.__rotation1
