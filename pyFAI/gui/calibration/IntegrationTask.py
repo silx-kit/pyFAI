@@ -159,6 +159,7 @@ class IntegrationProcess(object):
             npt_rad=numberPointRadial,
             npt_azim=numberPointAzimuthal,
             unit=self.__radialUnit,
+            mask=self.__mask,
             polarization_factor=self.__polarizationFactor)
 
         if self.__calibrant:
