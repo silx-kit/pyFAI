@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/03/2017"
+__date__ = "03/03/2017"
 
 import logging
 from .model.DataModel import DataModel
@@ -86,6 +86,7 @@ class IntegrationTask(AbstractCalibrationTask):
         super(IntegrationTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-result.ui"), self)
 
+        self.__integrationUpToDate = True
         self.__ringLegends = []
         self.__plot1d = silx.gui.plot.Plot1D(self)
         self.__plot1d.setGraphXLabel("Radial")
@@ -108,6 +109,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self._radialUnit.setUnits(pyFAI.units.RADIAL_UNITS.values())
         self.__polarizationModel = None
         self._polarizationFactorCheck.clicked[bool].connect(self.__polarizationFactorChecked)
+        self.widgetShow.connect(self.__widgetShow)
 
     def __polarizationFactorChecked(self, checked):
         self.__polarizationModel.setEnabled(checked)
@@ -121,7 +123,16 @@ class IntegrationTask(AbstractCalibrationTask):
         self._polarizationFactorCheck.blockSignals(old)
 
     def __invalidateIntegration(self):
-        self.__integrate()
+        if self.isVisible():
+            self.__integrate()
+            self.__integrationUpToDate = True
+        else:
+            self.__integrationUpToDate = False
+
+    def __widgetShow(self):
+        if not self.__integrationUpToDate:
+            self.__integrate()
+            self.__integrationUpToDate = True
 
     def __integrate(self):
         model = self.model()
