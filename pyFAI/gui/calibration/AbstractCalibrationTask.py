@@ -27,16 +27,28 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "03/03/2017"
 
 from pyFAI.gui import qt
 
 
 class AbstractCalibrationTask(qt.QWidget):
 
+    widgetShow = qt.Signal()
+    widgetHide = qt.Signal()
+
     def __init__(self):
         super(AbstractCalibrationTask, self).__init__()
         self.__model = None
+        self.installEventFilter(self)
+
+    def eventFilter(self, widget, event):
+        result = super(AbstractCalibrationTask, self).eventFilter(widget, event)
+        if event.type() == qt.QEvent.Show:
+            self.widgetShow.emit()
+        elif event.type() == qt.QEvent.Hide:
+            self.widgetHide.emit()
+        return result
 
     def model(self):
         return self.__model
