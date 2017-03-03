@@ -36,11 +36,16 @@ class AbstractCalibrationTask(qt.QWidget):
 
     widgetShow = qt.Signal()
     widgetHide = qt.Signal()
+    nextTaskRequested = qt.Signal()
 
     def __init__(self):
         super(AbstractCalibrationTask, self).__init__()
         self.__model = None
         self.installEventFilter(self)
+
+    def initNextStep(self):
+        if hasattr(self, "_nextStep"):
+            self._nextStep.clicked.connect(self.nextTask)
 
     def eventFilter(self, widget, event):
         result = super(AbstractCalibrationTask, self).eventFilter(widget, event)
@@ -56,3 +61,6 @@ class AbstractCalibrationTask(qt.QWidget):
     def setModel(self, model):
         self.__model = model
         self._updateModel(model)
+
+    def nextTask(self):
+        self.nextTaskRequested.emit()

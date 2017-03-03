@@ -191,6 +191,7 @@ class IntegrationTask(AbstractCalibrationTask):
     def __init__(self):
         super(IntegrationTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-result.ui"), self)
+        self.initNextStep()
 
         self.__integrationUpToDate = True
         self.__ringLegends = []

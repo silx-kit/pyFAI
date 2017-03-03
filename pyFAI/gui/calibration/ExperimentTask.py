@@ -29,7 +29,7 @@ from collections import OrderedDict
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/02/2017"
+__date__ = "03/03/2017"
 
 import os
 import fabio
@@ -48,6 +48,7 @@ class ExperimentTask(AbstractCalibrationTask):
     def __init__(self):
         super(ExperimentTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-experiment.ui"), self)
+        self.initNextStep()
         self.__dialogState = None
 
         self._imageLoader.clicked.connect(self.loadImage)

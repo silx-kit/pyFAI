@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "03/03/2017"
 
 from pyFAI.gui import qt
 import pyFAI.utils
@@ -44,6 +44,7 @@ class CalibrationWindow(qt.QMainWindow):
         self.__tasks = self.createTasks()
         for task in self.__tasks:
             task.setModel(self.__model)
+            task.nextTaskRequested.connect(self.nextTask)
             self._list.addItem(task.windowTitle())
             self._stack.addWidget(task)
         if len(self.__tasks) > 0:
@@ -72,3 +73,8 @@ class CalibrationWindow(qt.QMainWindow):
         self.__model = model
         for task in self.__tasks:
             task.setModel(self.__model)
+
+    def nextTask(self):
+        index = self._list.currentRow() + 1
+        if index < self._list.count():
+            self._list.setCurrentRow(index)

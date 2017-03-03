@@ -46,6 +46,7 @@ class MaskTask(AbstractCalibrationTask):
     def __init__(self):
         super(MaskTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-mask.ui"), self)
+        self.initNextStep()
         self.__dialogState = None
 
         self.__plot = self.__createPlot()
