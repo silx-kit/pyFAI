@@ -31,6 +31,7 @@ __date__ = "03/03/2017"
 
 import logging
 import numpy
+from collections import OrderedDict
 from .model.DataModel import DataModel
 from pyFAI.gui import qt
 import pyFAI.utils
@@ -222,6 +223,9 @@ class IntegrationTask(AbstractCalibrationTask):
         self._integrateButton.setDisabledWhenWaiting(True)
         self._integrateButton.finished.connect(self.__integratingFinished)
 
+        self._savePoniButton.clicked.connect(self.__saveAsPoni)
+        self._saveJsonButton.clicked.connect(self.__saveAsJson)
+
     def __polarizationFactorChecked(self, checked):
         self.__polarizationModel.setEnabled(checked)
         self._polarizationFactor.setEnabled(checked)
@@ -340,3 +344,53 @@ class IntegrationTask(AbstractCalibrationTask):
         experimentSettings.polarizationFactor().changed.connect(self.__invalidateIntegration)
         model.fittedGeometry().changed.connect(self.__invalidateIntegration)
         integrationSettings.radialUnit().changed.connect(self.__invalidateIntegration)
+
+    def createSaveDialog(self, title, poni=False, json=False):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setModal(True)
+        dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
+
+        extensions = OrderedDict()
+        if poni:
+            extensions["PONI files"] = "*.poni"
+        if json:
+            extensions["JSON files"] = "*.json"
+
+        filters = []
+        filters.append("All supported files (%s)" % " ".join(extensions.values()))
+        for name, extension in extensions.items():
+            filters.append("%s (%s)" % (name, extension))
+        filters.append("All files (*)")
+
+        dialog.setNameFilters(filters)
+        return dialog
+
+    def __saveAsPoni(self):
+        # FIXME test the validity of the geometry before opening the dialog
+        dialog = self.createSaveDialog("Save as PONI file", poni=True)
+        result = dialog.exec_()
+        if not result:
+            return
+        filename = dialog.selectedFiles()[0]
+
+        pyfaiGeometry = pyFAI.geometry.Geometry()
+
+        geometry = self.model().fittedGeometry()
+        pyfaiGeometry.dist = geometry.distance().value()
+        pyfaiGeometry.poni1 = geometry.poni1().value()
+        pyfaiGeometry.poni2 = geometry.poni2().value()
+        pyfaiGeometry.rot1 = geometry.rotation1().value()
+        pyfaiGeometry.rot2 = geometry.rotation2().value()
+        pyfaiGeometry.rot3 = geometry.rotation3().value()
+
+        experimentSettingsModel = self.model().experimentSettingsModel()
+        detector = experimentSettingsModel.detectorModel().detector()
+        pyfaiGeometry.detector = detector
+        wavelength = experimentSettingsModel.wavelength().value() * 1e-10
+        pyfaiGeometry.wavelength = wavelength
+
+        pyfaiGeometry.save(filename)
+
+    def __saveAsJson(self):
+        pass

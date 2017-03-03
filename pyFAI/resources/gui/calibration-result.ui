@@ -32,24 +32,10 @@
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,1,0">
+     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,1,0">
       <property name="margin">
        <number>0</number>
       </property>
-      <item>
-       <widget class="QGroupBox" name="_settings">
-        <property name="title">
-         <string>Experiment settings</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="_geometry">
-        <property name="title">
-         <string>Geometry</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QGroupBox" name="groupBox_14">
         <property name="title">
@@ -150,6 +136,38 @@
          </item>
          <item row="0" column="2">
           <widget class="UnitSelector" name="_radialUnit"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Result</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QPushButton" name="_savePoniButton">
+           <property name="toolTip">
+            <string>A PONI file contains the geometry, the wavelength and the detector information.</string>
+           </property>
+           <property name="text">
+            <string>Save as PONI file...</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="_saveJsonButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>A JSON file contains all informations provided by PONI files, plus files used for filtering plus parameters for the integrator.</string>
+           </property>
+           <property name="text">
+            <string>Save as JSON file...</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
