@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "03/03/2017"
 
 import logging
 from pyFAI.gui import qt
@@ -62,6 +62,14 @@ class MaskTask(AbstractCalibrationTask):
         layout.addWidget(self.__plot)
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
+
+        # FIXME ask for a stable API
+        self.__maskPanel._mask.sigChanged.connect(self.__maskFromPlotChanged)
+        self.widgetShow.connect(self.__widgetShow)
+        self.widgetHide.connect(self.__widgetHide)
+
+        self.__plotMaskChanged = False
+        self.__modelMaskChanged = False
 
     def __createPlot(self):
         plot = silx.gui.plot.PlotWidget(parent=self._imageHolder)
@@ -147,15 +155,37 @@ class MaskTask(AbstractCalibrationTask):
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
-        settings.mask().changed.connect(self.__maskUpdated)
+        settings.mask().changed.connect(self.__maskFromModelChanged)
+        self.__maskFromModelChanged()
+        self.__imageUpdated()
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
-        self.__plot.addImage(image, legend="image")
         if image is not None:
+            self.__plot.addImage(image, legend="image")
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
+        else:
+            self.__plot.removeImage("image")
 
-    def __maskUpdated(self):
-        mask = self.model().experimentSettingsModel().mask().value()
-        self.__maskPanel.setSelectionMask(mask)
+    def __maskFromPlotChanged(self):
+        self.__plotMaskChanged = True
+
+    def __maskFromModelChanged(self):
+        self.__modelMaskChanged = True
+        if self.isVisible():
+            self.__widgetShow()
+
+    def __widgetShow(self):
+        if self.__modelMaskChanged:
+            mask = self.model().experimentSettingsModel().mask().value()
+            # FIXME if mask is not, the mask should be cleaned up
+            if mask is not None:
+                self.__maskPanel.setSelectionMask(mask)
+                self.__modelMaskChanged = False
+
+    def __widgetHide(self):
+        if self.__plotMaskChanged:
+            mask = self.__maskPanel.getSelectionMask()
+            self.model().experimentSettingsModel().mask().setValue(mask)
+            self.__plotMaskChanged = False
