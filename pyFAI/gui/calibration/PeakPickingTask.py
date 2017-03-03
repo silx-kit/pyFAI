@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "03/03/2017"
 
 import logging
 import numpy
@@ -738,5 +738,5 @@ class PeakPickingTask(AbstractCalibrationTask):
             self.__plot.setGraphYLimits(0, image.shape[1])
 
     def __maskUpdated(self):
-        mask = self.model().experimentSettingsModel().mask().value()
-        self.__maskPanel.setSelectionMask(mask)
+        _mask = self.model().experimentSettingsModel().mask().value()
+        # FIXME maybe it is good to display the mask somewhere here
