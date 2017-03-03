@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/03/2017"
+__date__ = "03/03/2017"
 
 import logging
 import numpy
@@ -64,8 +64,9 @@ class FitParamView(qt.QObject):
         self.__lineEdit.editingFinished.connect(self.__lineEditChanged)
         self.__unit = qt.QLabel(parent)
         self.__unit.setText(unit)
-        self.__contains = qt.QToolButton(parent)
-        self.__contains.setAutoRaise(True)
+        self.__constraints = qt.QToolButton(parent)
+        self.__constraints.setAutoRaise(True)
+        self.__constraints.clicked.connect(self.__constraintsClicked)
         self.__model = None
         self.__constraintsModel = None
 
@@ -116,15 +117,20 @@ class FitParamView(qt.QObject):
         self.__lineEdit.blockSignals(old)
 
     def __constraintsModelChanged(self):
-        contraint = self.__constraintsModel
-        if contraint.isFixed():
+        constraint = self.__constraintsModel
+        if constraint.isFixed():
             icon = _iconVariableFixed
         else:
             icon = _iconVariableConstrained
-        self.__contains.setIcon(icon)
+        self.__constraints.setIcon(icon)
+
+    def __constraintsClicked(self):
+        constraint = self.__constraintsModel
+        # FIXME implement popup with range
+        constraint.setFixed(not constraint.isFixed())
 
     def widgets(self):
-        return [self.__label, self.__lineEdit, self.__unit, self.__contains]
+        return [self.__label, self.__lineEdit, self.__unit, self.__constraints]
 
 
 class _RingPlot(silx.gui.plot.PlotWidget):
@@ -322,6 +328,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
         calibration.fromGeometryModel(self.model().fittedGeometry())
+        calibration.fromGeometryConstriansModel(self.model().geometryConstraintsModel())
         calibration.refine()
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
