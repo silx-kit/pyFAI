@@ -30,12 +30,12 @@ __license__ = "MIT"
 __date__ = "03/03/2017"
 
 import logging
+import numpy
 from .model.DataModel import DataModel
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-import numpy
 
 import silx.gui.plot
 from . import utils

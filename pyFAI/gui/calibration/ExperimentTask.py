@@ -24,8 +24,6 @@
 # ###########################################################################*/
 
 from __future__ import absolute_import
-from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
-from collections import OrderedDict
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
@@ -35,10 +33,12 @@ import os
 import fabio
 import logging
 from contextlib import contextmanager
+from collections import OrderedDict
 import silx.gui.plot
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
+from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
 
 _logger = logging.getLogger(__name__)
 
