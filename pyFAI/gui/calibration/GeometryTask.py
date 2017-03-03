@@ -321,6 +321,7 @@ class GeometryTask(AbstractCalibrationTask):
     def __fitGeometry(self):
         self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
+        calibration.fromGeometryModel(self.model().fittedGeometry())
         calibration.refine()
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
