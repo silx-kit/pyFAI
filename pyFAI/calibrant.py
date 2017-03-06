@@ -331,6 +331,59 @@ class Calibrant(object):
         if self._dSpacing and self._wavelength:
             self._calc_2th()
 
+    def __eq__(self, other):
+        """
+        Test the equality with another object
+
+        It only takes into acount the wavelength and dSpacing, not the
+        filename.
+
+        :param object other: Another object
+        :rtype: bool
+        """
+        if other is None:
+            return False
+        if not isinstance(other, Calibrant):
+            return False
+        if self._wavelength != other._wavelength:
+            return False
+        if self._dSpacing != other._dSpacing:
+            return False
+        return True
+
+    def __ne__(self, other):
+        """
+        Test the non-equality with another object
+
+        It only takes into acount the wavelength and dSpacing, not the
+        filename.
+
+        :param object other: Another object
+        :rtype: bool
+        """
+        return not (self == other)
+
+    def __hash__(self):
+        """
+        Returns the hash of the object.
+
+        It only takes into acount the wavelength and dSpacing, not the
+        filename.
+
+        :rtype: int
+        """
+        return hash(self._wavelength) ^ hash(self._dSpacing)
+
+    def __copy__(self):
+        """
+        Copy a calibrant
+
+        :rtype: Calibrant
+        """
+        return Calibrant(filename=self._filename,
+                         dSpacing=self._dSpacing,
+                         wavelength=self._wavelength)
+
     def __repr__(self):
         name = "undefined"
         if self._filename:
