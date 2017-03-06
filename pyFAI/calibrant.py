@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/10/2016"
+__date__ = "06/03/2017"
 __status__ = "production"
 
 
@@ -52,6 +52,8 @@ import itertools
 from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
+from .decorators import deprecated
+
 logger = logging.getLogger("pyFAI.calibrant")
 epsilon = 1.0e-6  # for floating point comparison
 
@@ -514,7 +516,7 @@ class Calibrant(object):
         return res
 
 
-class calibrant_factory(object):
+class CalibrantFactory(object):
     """Behaves like a dict but is actually a factory:
 
     Each time one retrieves an object it is a new geniune new calibrant (unmodified)
@@ -568,3 +570,8 @@ class calibrant_factory(object):
     has_key = __contains__
 
 ALL_CALIBRANTS = calibrant_factory()
+
+
+@deprecated  # added on 2017-03-06
+class calibrant_factory(CalibrantFactory):
+    pass
