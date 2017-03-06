@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "06/03/2017"
 __status__ = "production"
 
 import os
@@ -75,7 +75,7 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
 from . import date as PyFAI_DATE
-from .calibrant import Calibrant, ALL_CALIBRANTS
+from .calibrant import Calibrant, CALIBRANT_FACTORY
 try:
     from ._convolution import gaussian_filter
 except ImportError:
@@ -202,8 +202,8 @@ class AbstractCalibration(object):
         if calibrant:
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
-            elif calibrant in ALL_CALIBRANTS:
-                self.calibrant = ALL_CALIBRANTS[calibrant]
+            elif calibrant in CALIBRANT_FACTORY:
+                self.calibrant = CALIBRANT_FACTORY(calibrant)
             elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
@@ -422,8 +422,8 @@ class AbstractCalibration(object):
 
         self.pointfile = options.npt
         if options.spacing:
-            if options.spacing in ALL_CALIBRANTS:
-                self.calibrant = ALL_CALIBRANTS[options.spacing]
+            if options.spacing in CALIBRANT_FACTORY:
+                self.calibrant = CALIBRANT_FACTORY(options.spacing)
             elif os.path.isfile(options.spacing):
                 self.calibrant = Calibrant(options.spacing)
             else:
@@ -550,8 +550,8 @@ class AbstractCalibration(object):
             while valid:
                 ans = six.moves.input("Please enter the calibrant name or the file"
                             " containing the d-spacing:\t").strip()
-                if ans in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[ans]
+                if ans in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(ans)
                     valid = True
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(ans)
@@ -1429,7 +1429,7 @@ Angstrom (in decreasing order).
 %s
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
-The --calibrant option is mandatory !""" % str(ALL_CALIBRANTS)
+The --calibrant option is mandatory !""" % str(CALIBRANT_FACTORY)
 
         epilog = """The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
@@ -1631,7 +1631,7 @@ Angstrom (in decreasing order).
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
 The --calibrant option is mandatory !
-""" % str(ALL_CALIBRANTS)
+""" % str(CALIBRANT_FACTORY)
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
 rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
@@ -2013,8 +2013,8 @@ class MultiCalib(object):
 
     def read_dSpacingFile(self):
         """Read the name of the calibrant or the file with d-spacing"""
-        if self.calibrant in ALL_CALIBRANTS:
-            self.calibrant = ALL_CALIBRANTS[self.calibrant]
+        if self.calibrant in CALIBRANT_FACTORY:
+            self.calibrant = CALIBRANT_FACTORY(self.calibrant)
         elif os.path.isfile(self.calibrant):
             self.calibrant = Calibrant(filename=self.calibrant)
         else:
@@ -2031,8 +2031,8 @@ class MultiCalib(object):
             while not self.calibrant:
                 ans = six.moves.input("Please enter the name of the calibrant"
                             " or the file containing the d-spacing:\t").strip()
-                if ans in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[ans]
+                if ans in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(ans)
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(filename=ans)
 

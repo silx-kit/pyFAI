@@ -57,7 +57,7 @@ Zn0, SiO2, ... Evaluating them is left as an exercise.
 .. code:: python
 
     import pyFAI.calibrant
-    print(pyFAI.calibrant.ALL_CALIBRANTS)
+    print(pyFAI.calibrant.names())
 
 
 .. parsed-literal::
@@ -69,7 +69,7 @@ You may wonder where the names of the calibrant came from and how they
 have been established.
 
 The name of all calibrant available in your version of pyFAI can be
-listed by just printing out the content of ALL\_CALIBRANTS. New
+listed by printing out the content of `names()`. New
 calibrant may have been added in pyFAI in more recent releases, just
 have a look at the `developent web
 page <https://github.com/kif/pyFAI/tree/master/calibration>`__.
@@ -87,7 +87,7 @@ dictionnary in a single line.
 
 .. code:: python
 
-    cals = dict((name,pyFAI.calibrant.ALL_CALIBRANTS(name)) for name in ("Si", "LaB6", "CeO2", "alpha_Al2O3"))
+    cals = dict((name,pyFAI.calibrant.get_calibrant(name)) for name in ("Si", "LaB6", "CeO2", "alpha_Al2O3"))
     print(cals)
 
 

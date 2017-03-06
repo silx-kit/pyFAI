@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "06/03/2017"
 __status__ = "development"
 
 import os
@@ -39,7 +39,7 @@ import numpy
 import types
 from math import pi
 from . import azimuthalIntegrator
-from .calibrant import Calibrant, ALL_CALIBRANTS
+from .calibrant import Calibrant, CALIBRANT_FACTORY
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp
 try:
@@ -104,8 +104,8 @@ class GeometryRefinement(AzimuthalIntegrator):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
             elif type(calibrant) in types.StringTypes:
-                if calibrant in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                if calibrant in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(calibrant)
                 else:
                     self.calibrant = Calibrant(filename=calibrant)
             else:
