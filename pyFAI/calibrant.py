@@ -538,8 +538,9 @@ class CalibrantFactory(object):
                              for i in os.listdir(self.directory)
                              if i.endswith(".D")])
 
-    def __getitem__(self, what):
-        return Calibrant(self.all[what])
+    def __call__(self, calibrant_name):
+        """Returns a new instance of a calibrant by it's name."""
+        return Calibrant(self.all[calibrant_name])
 
     def get(self, what, notfound=None):
         if what in self.all:
@@ -565,7 +566,9 @@ class CalibrantFactory(object):
     def items(self):
         return [(i, Calibrant(j)) for i, j in self.all.items()]
 
-    __call__ = __getitem__
+    @deprecated  # added on 2017-03-06
+    def __getitem__(self, calibration_name):
+        return self(calibration_name)
 
     has_key = __contains__
 
