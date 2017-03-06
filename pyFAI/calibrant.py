@@ -569,7 +569,12 @@ class CalibrantFactory(object):
 
     has_key = __contains__
 
-ALL_CALIBRANTS = calibrant_factory()
+
+CALIBRANT_FACTORY = CalibrantFactory()
+"""Default calibration factory provided by the library."""
+
+
+ALL_CALIBRANTS = CALIBRANT_FACTORY
 
 
 @deprecated  # added on 2017-03-06
