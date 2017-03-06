@@ -583,3 +583,22 @@ ALL_CALIBRANTS = CALIBRANT_FACTORY
 @deprecated  # added on 2017-03-06
 class calibrant_factory(CalibrantFactory):
     pass
+
+
+def get_calibrant(calibrant_name):
+    """
+    Returns a new instance of the calibrant by it's name.
+
+    :param str calibrant_name: Name of the calibrant
+    """
+    return CALIBRANT_FACTORY(calibrant_name)
+
+
+def names(calibrant_name):
+    """
+    Returns the list of registred calibrant names.
+
+    :param str calibrant_name: Name of the calibrant
+    :rtype: str
+    """
+    return CALIBRANT_FACTORY.keys()
