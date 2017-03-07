@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "07/03/2017"
 __status__ = "stable"
 
 
@@ -119,6 +119,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         if os.path.isfile(name):
             return NexusDetector(name)
+        if isinstance(name, Detector):
+            return name
         name = name.lower()
         names = [name, name.replace(" ", "_")]
         for name in names:
