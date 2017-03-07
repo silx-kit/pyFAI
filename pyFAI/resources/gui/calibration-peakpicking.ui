@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1035</width>
-    <height>639</height>
+    <width>713</width>
+    <height>623</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,33 +45,13 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>How to</string>
+         <string>Help</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_12">
          <item>
           <widget class="QLabel" name="label_40">
            <property name="text">
-            <string>The target is to identify at least 2 rings by location and number. Then to extract all peaks automatically.</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_41">
-           <property name="text">
-            <string>Click on the ring you want to select. Usually it is the first one, else update it's number in the list of the picked rings.</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_43">
-           <property name="text">
-            <string>Use the recalibration tool to extract more peaks automatically.</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Identify rings from the image.&lt;/p&gt;&lt;p&gt;Click on the ring you want to select. Usually it is the first one, else update it's number in the list of the picked rings bellow.&lt;/p&gt;&lt;p&gt;You have to identify at least 5 peaks distributed on 2 rings. Then use the extraction tool to find more peaks automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="wordWrap">
             <bool>true</bool>

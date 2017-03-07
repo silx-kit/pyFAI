@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1035</width>
-    <height>550</height>
+    <width>714</width>
+    <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,43 +45,13 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>How to</string>
+         <string>Help</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_12">
          <item>
           <widget class="QLabel" name="label_48">
            <property name="text">
-            <string>The target is to identify all rings of the image.</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_92">
-           <property name="text">
-            <string>The algorithm is iterative. It will adjust parameters to improve the fit. You can lock values to avoid modification of them.</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_93">
-           <property name="text">
-            <string>You can reset the state to start again from the begining.</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_54">
-           <property name="text">
-            <string>If rings are well identified on the image you can check the integration on the next step.</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fit the modelization of the rings to your acquisition.&lt;/p&gt;&lt;p&gt;The reset button will use the previously picked rings to reach an aproximation of the geometry, while the fit fonction will tune current parameters to improve the result.&lt;/p&gt;&lt;p&gt;You can custom locks on the physical parameters to avoid the algorithm to change the values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="wordWrap">
             <bool>true</bool>
