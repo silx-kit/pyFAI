@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "08/03/2017"
 
 import logging
 import numpy
@@ -50,7 +50,7 @@ class RingExtractor(object):
         self.__wavelength = wavelength
         self.__geoRef = None
 
-    def __initgeoRef(self):
+    def __initGeoRef(self):
         """
         Tries to initialise the GeometryRefinement (dist, poni, rot)
         Returns a dictionary of key value pairs
@@ -71,6 +71,54 @@ class RingExtractor(object):
         #            defaults[key] = val
         return defaults
 
+    def __createGeoRef(self, peaks, fixed):
+        """
+        Contains the geometry refinement part specific to Calibration
+        Sets up the initial guess when starting pyFAI-calib
+        """
+
+        scores = []
+        PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
+
+        # First attempt
+        defaults = self.__initGeoRef()
+        geoRef = GeometryRefinement(
+            data=peaks,
+            wavelength=self.__wavelength,
+            detector=self.__detector,
+            calibrant=self.__calibrant,
+            **defaults)
+        geoRef.refine2(1000000, fix=fixed)
+        score = geoRef.chi2()
+        parameters = [getattr(geoRef, p) for p in PARAMETERS]
+        scores.append((score, parameters))
+
+        # Second attempt
+        defaults = self.__initGeoRef()
+        geoRef = GeometryRefinement(
+            data=peaks,
+            wavelength=self.__wavelength,
+            detector=self.__detector,
+            calibrant=self.__calibrant,
+            **defaults)
+        geoRef.guess_poni()
+        geoRef.refine2(1000000, fix=fixed)
+        score = geoRef.chi2()
+        parameters = [getattr(geoRef, p) for p in PARAMETERS]
+        scores.append((score, parameters))
+
+        # Third attempt
+        # FIXME use the geometry from the computed model
+
+        # Choose the best scoring method: At this point we might also ask
+        # a user to just type the numbers in?
+        scores.sort()
+        _score, parameters = scores[0]
+        for parval, parname in zip(parameters, PARAMETERS):
+            setattr(geoRef, parname, parval)
+
+        return geoRef
+
     def extract(self, peaks, method="massif", maxRings=None, pointPerDegree=1.0):
         """
         Performs an automatic keypoint extraction:
@@ -78,16 +126,10 @@ class RingExtractor(object):
 
         # FIXME pts_per_deg
         """
-        defaults = self.__initgeoRef()
         fixed = pyFAI.utils.FixedParameters()
         fixed.add("wavelength")
 
-        geoRef = GeometryRefinement(data=peaks,
-                                    wavelength=self.__wavelength,
-                                    detector=self.__detector,
-                                    calibrant=self.__calibrant,
-                                    **defaults)
-        geoRef.refine2(1000000, fix=fixed)
+        geoRef = self.__createGeoRef(peaks, fixed=fixed)
         self.__geoRef = geoRef
 
         peakPicker = PeakPicker(data=self.__image,
