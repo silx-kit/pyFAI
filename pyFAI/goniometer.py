@@ -26,13 +26,17 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Everything you need to calibrate a detector mounted on a goniometer or any
+translation table
+"""
+
 from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2017"
+__date__ = "08/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -40,7 +44,7 @@ __docformat__ = 'restructuredtext'
 import os
 import logging
 import numpy
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from .massif import Massif
 from .control_points import ControlPoints
 from .detectors import detector_factory
@@ -48,8 +52,12 @@ from .geometry import Geometry
 from .geometryRefinement import GeometryRefinement
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .utils import StringTypes
+from .multi_geometry import MultiGeometry
 from .ext.marchingsquares import isocontour
 logger = logging.getLogger("pyFAI.goniometer")
+
+# Parameter set used in PyFAI:
+PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
 
 
 class SingleGeometry(object):
@@ -205,9 +213,146 @@ class SingleGeometry(object):
         return AzimuthalIntegrator(detector=self.detector,
                                    **self.geometry_refinement.getPyFAI())
 
-class Goniometer(object):
-    """This class represents the goniometer modelisation
+
+class GeometryTranslation(object):
+    """This class, once instanciated, behaves like a function (via the __call__
+    method). It is responsible for taking any input geometry and translate it into 
+    a set of parameters compatible with pyFAI, i.e. a tuple with: 
+    (dist, poni1, poni2, rot1, rot2, rot3) 
+    
+    This function uses numexpr for formula evaluation
+    
+     
+     
     """
+    def __init__(self, dist_expr, poni1_expr, poni2_expr,
+                 rot1_expr, rot2_expr, rot3_expr, 
+                 param_names, pos_names=None, constants=None):
+        """Constructor of the class
+        
+        :param dist_expr: formula (as string) providing with the dist
+        :param poni1_expr: formula (as string) providing with the poni1
+        :param poni2_expr: formula (as string) providing with the poni2
+        :param rot1_expr: formula (as string) providing with the rot1
+        :param rot2_expr: formula (as string) providing with the rot2
+        :param rot3_expr: formula (as string) providing with the rot3
+        :param param_names: list of names of the parameters used in the model
+        :param pos_names: list of motor names for gonio with >1 degree of freedom
+        :param constants: a dictionary with some constants the user may want to use 
+        """
+        self.dist_expr = dist_expr
+        self.poni1_expr = poni1_expr
+        self.poni2_expr = poni2_expr
+        self.rot1_expr = rot1_expr
+        self.rot2_expr = rot2_expr
+        self.rot3_expr = rot3_expr
+        self.param_names = param_names
+        self.pos_names = pos_names
+        self.globals = {}
+        if constants is not None:
+            self.globals.update(constants)
+    
+    
+    def __call__(self):
+        pass
+    
+    def __repr__(self):
+        res = ["GeometryTranslation with param: %s and pos: %s" % (self.param_names, self.pos_names),
+               "dist= %s" % self.dist_expr,
+               "poni1=" % self.poni1_expr, 
+               "poni2= " % self.poni2_expr,
+               "rot1= " % self.rot1_expr, 
+               "rot2= " % self.rot2_expr, 
+               "rot3= " % self.rot3_expr]
+        return os.linesep.join(res)
+    
+    def to_dict(self):
+        """Export the instance representation for serialization as a dictionary
+        """ 
+        res = {"dist_expr": self.dist_expr, 
+               "poni1_expr": self.poni1_expr, 
+               "poni2_expr": self.poni2_expr,
+               "rot1_expr": self.rot1_expr, 
+               "rot2_expr": self.rot2_expr, 
+               "rot3_expr": self.rot3_expr, 
+               "param_names": self.param_names, 
+               "pos_names": self.pos_names}
+        constants = {}
+        for key, val in self.globals.items():
+            if key in self.param_name:
+                continue
+            if self.pos_names and key in self.pos_names:
+                continue
+            constants[key] = val
+        res["constants"] = constants
+        return res
+
+
+class Goniometer(object):
+    """This class represents the goniometer model. Unlike this name suggests,
+    it may include translation in addition to rotations
+    """
+    
+    file_version = 1
+    
+    def __init__(self, param, translation_function, detector="Detector", 
+                 wavelength=None, names=None):
+        """Constructor of the Goniometer class
+        
+        :param param: vector of parameter to refine for defining the detector 
+                        position on the goniometer
+        :param translation_function: function taking the parameters of the 
+                                    goniometer and the gonopmeter position and return the
+                                    6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
+        :param detector: detector mounted on the moving arm
+        :param wavelength: the wavelength used for the experiment
+        :param names: list of names to "label" the param vector. 
+                      This is only syntaxic sugar for ease 
+        """
+        
+        self.gonioparam = param
+        self.translation_function = translation_function
+        self.detector = detector_factory(detector)
+        self.wavelength = wavelength
+        self.namedtuple = namedtuple("GonioParam", names) if names else tuple
+        
+    def __repr__(self):
+        return "%s %s with patam %s"%(self.detector, os.linesep, self.namedtuple(*self.gonioparam))
+
+    def get_ai(self, position):
+        """Creates an azimuthal integrator from the motor position
+        
+        :param position: the goniometer position, a float for a 1 axis goniometer
+        :return: A freshly build AzimuthalIntegrator 
+        """
+        res = self.translate(self.gonioparam, position)
+        ai = AzimuthalIntegrator(detector=self.detector, wavelength=self.wavelength)
+        ai.dist, ai.poni1, ai.poni2, ai.rot1, ai.rot2, ai.rot3 = res
+        return ai
+        
+    def get_mg(self, positions):
+        """Creates a MultiGeometry integrator from a list of goniometer positions.
+        
+        :param positions: A list of goniometer positions
+        :return: A freshly build multi- 
+        """
+        ais = [self.get_ai(pos) for pos in positions]
+        mg = MultiGeometry(ais)
+        return mg
+    
+    def save(self, filename):
+        """Save the goniometer configuration to a text file
+        
+        :param filename: name of the file
+        """
+        pass
+        #TODO
+        
+    @classmethod
+    def sload(cls, filename):
+        gonio = cls()
+        return gonio
+
 
 class GoniometerRefinement(Goniometer):
     """This class allow the translation of a goniometer geometry into a pyFAI 
@@ -226,11 +371,10 @@ class GoniometerRefinement(Goniometer):
                                     6 parameters [dist, poni1, poni2, rot1, rot2, rot3] 
         :param bounds: 
         """
+        Goniometer.
         self.single_geometries = OrderedDict()  # a dict of labels: SingleGeometry
-        self.multiparam = param
         self.bounds = bounds
         self.position_function = position_function
-        self.translation_function = translation_function
 
     def new_geometry(self, label, image=None, metadata=None, controlpoints=None, calibrant=None, geometryrefinement=None):
         self.single_geometries[label] = SingleGeometry(label, image, metadata, controlpoints, calibrant, geometryrefinement)
@@ -239,12 +383,12 @@ class GoniometerRefinement(Goniometer):
         return "MultiGeometryRefinement with %i geometries labeled: %s" % \
                 (len(self.single_geometries), " ".join(self.single_geometries.keys()))
 
-    def translate(self, multiparam, motor_pos):
+    def translate(self, gonioparam, motor_pos):
         """translate a set of param of the multigeometry into a paramter for SingleGeometry
         This is where the goniometer definition is
         """
-        return numpy.concatenate((multiparam[0:3] , [-numpy.radians(multiparam[5] * motor_pos + multiparam[4]), multiparam[3], numpy.pi / 2.0]))
-        # return numpy.concatenate((multiparam[0:4], [numpy.radians(motor_pos * multiparam[5]+ multiparam[4]), 0]))
+        return numpy.concatenate((gonioparam[0:3] , [-numpy.radians(gonioparam[5] * motor_pos + gonioparam[4]), gonioparam[3], numpy.pi / 2.0]))
+        # return numpy.concatenate((gonioparam[0:4], [numpy.radians(motor_pos * gonioparam[5]+ gonioparam[4]), 0]))
 
     def residu2(self, param):
         sumsquare = 0
@@ -259,32 +403,17 @@ class GoniometerRefinement(Goniometer):
         if param is not None:
             return self.residu2(param)
         else:
-            return self.residu2(self.multiparam)
+            return self.residu2(self.gonioparam)
 
     def refine2(self, maxiter=1000):
-        self.multiparam = numpy.asarray(self.multiparam, dtype=numpy.float64)
-        newparam = fmin_slsqp(self.residu2, self.multiparam, iter=maxiter,
+        self.gonioparam = numpy.asarray(self.gonioparam, dtype=numpy.float64)
+        newparam = fmin_slsqp(self.residu2, self.gonioparam, iter=maxiter,
                               iprint=2, bounds=self.bounds,
                               acc=1.0e-12)
         print(newparam)
         print("Constrained Least square", self.chi2(), "--> ", self.chi2(newparam))
         if self.chi2(newparam) < self.chi2():
-            i = abs(self.multiparam - newparam).argmax()
-            print("maxdelta on: ", i, self.multiparam[i], "-->", newparam[i])
-            self.multiparam = newparam
-        return self.multiparam
-    def get_ai(self, motor_pos):
-        """Creates an azimuthal integrator from the motor position"""
-        r = self.translate(self.multiparam, motor_pos)
-
-    def get_mg(self, lbl, motor_pos):
-
-        gr = self.single_geometries[lbl].geometryrefinement
-        ai = AzimuthalIntegrator(detector=gr.detector, wavelength=gr.wavelength)
-        ai.dist = r[0]
-        ai.poni1 = r[1]
-        ai.poni2 = r[2]
-        ai.rot1 = r[3]
-        ai.rot2 = r[4]
-        ai.rot3 = r[5]
-        return ai
+            i = abs(self.gonioparam - newparam).argmax()
+            print("maxdelta on: ", i, self.gonioparam[i], "-->", newparam[i])
+            self.gonioparam = newparam
+        return self.gonioparam
