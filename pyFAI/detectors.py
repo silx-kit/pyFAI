@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/03/2017"
+__date__ = "09/03/2017"
 __status__ = "stable"
 
 
@@ -117,10 +117,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :return: an instance of the right detector, set-up if possible
         :rtype: pyFAI.detectors.Detector
         """
-        if os.path.isfile(name):
-            return NexusDetector(name)
         if isinstance(name, Detector):
             return name
+        if os.path.isfile(name):
+            return NexusDetector(name)
         name = name.lower()
         names = [name, name.replace(" ", "_")]
         for name in names:
@@ -233,7 +233,14 @@ class Detector(with_metaclass(DetectorMeta, object)):
         "binning": integer or 2-tuple of integers. If only one integer is provided,
         "offset": coordinate (in pixels) of the start of the detector
         """
-        raise NotImplementedError
+        if not self.force_pixel:
+            if "pixel1" in config:
+                self.set_pixel1(config["pixel1"])
+            if "pixel2" in config:
+                self.set_pixel2(config["pixel2"])
+            if "splineFile" in config:
+                self.set_splineFile(config["splineFile"])
+        # TODO: complete
 
     def get_splineFile(self):
         return self._splineFile
@@ -375,6 +382,15 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 setattr(self, kw, kwarg[kw])
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
+
+    @classmethod
+    def from_dict(cls, dico):
+        """Creates a brand new detector from the description of the detector as a dict
+        
+        :param dico: JSON serializable dictionary
+        :return: Detector instance
+        """
+        return cls.factory(dico.get("detector"), dico)
 
     def setFit2D(self, **kwarg):
         """
