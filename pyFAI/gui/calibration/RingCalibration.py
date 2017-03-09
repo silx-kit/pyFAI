@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "09/03/2017"
 
 import logging
 import numpy
@@ -173,6 +173,21 @@ class RingCalibration(object):
             f2d = self.__geoRef.getFit2D()
             return f2d["centerY"], f2d["centerX"]
         except TypeError:
+            return None
+
+    def getPoni(self):
+        """"Returns the PONI coord in image coordinate.
+
+        That's an approximation of the PONI coordinate at pixel precision
+        """
+        solidAngle = self.__geoRef.solidAngleArray(shape=self.__image.shape)
+        index = numpy.argmax(solidAngle)
+        coord = numpy.unravel_index(index, solidAngle.shape)
+        dmin = self.__geoRef.dssa.min()
+        dmax = self.__geoRef.dssa.max()
+        if dmax > 1 - (dmax - dmin) * 0.001:
+            return coord
+        else:
             return None
 
     def toGeometryModel(self, model):

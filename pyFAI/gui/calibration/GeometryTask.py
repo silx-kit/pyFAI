@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "09/03/2017"
 
 import logging
 import numpy
@@ -354,9 +354,24 @@ class GeometryTask(AbstractCalibrationTask):
             color = self.__plot.markerColorList()[0]
             htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
             self.__plot.addMarker(
+                text="Beam",
                 y=center[0],
                 x=center[1],
                 legend="center",
+                color=htmlColor,
+                symbol="+")
+
+        poni = calibration.getPoni()
+        if poni is None:
+            self.__plot.removeMarker(legend="poni")
+        else:
+            color = self.__plot.markerColorList()[0]
+            htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            self.__plot.addMarker(
+                text="PONI",
+                y=poni[0],
+                x=poni[1],
+                legend="poni",
                 color=htmlColor,
                 symbol="+")
 
