@@ -445,7 +445,9 @@ class GoniometerRefinement(Goniometer):
         :param pos_names: list of names to "label" the position vector of the gonio.   
         :param bounds: list of 2-tuple with the lower and upper bound of each function
         """
-        Goniometer.__init__(self, param, position_function,)
+        Goniometer.__init__(self, param, position_function,
+                            detector=detector, wavelength=wavelength,
+                            param_names=param_names, pos_names=pos_names)
         self.single_geometries = OrderedDict()  # a dict of labels: SingleGeometry
         self.bounds = bounds
         self.position_function = position_function
