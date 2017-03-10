@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2016"
+__date__ = "06/03/2017"
 __status__ = "production"
 
 import os
@@ -52,7 +52,7 @@ if qt is not None:
     from .gui import utils as gui_utils
 
 import fabio
-from .calibrant import Calibrant, ALL_CALIBRANTS
+from .calibrant import Calibrant, CALIBRANT_FACTORY
 from .blob_detection import BlobDetection
 from .massif import Massif
 from .ext.reconstruct import reconstruct
@@ -575,7 +575,7 @@ class PeakPicker(object):
         if not callback:
             if not self.points.calibrant.dSpacing:
                 logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
-                print(ALL_CALIBRANTS)
+                print(CALIBRANT_FACTORY)
                 raise RuntimeError("Invalid calibrant")
             six.moves.input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
@@ -725,8 +725,8 @@ class ControlPoints(object):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
             elif type(calibrant) in types.StringTypes:
-                if calibrant in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                if calibrant in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(calibrant)
                 elif os.path.isfile(calibrant):
                     self.calibrant = Calibrant(calibrant)
                 else:
@@ -901,8 +901,8 @@ class ControlPoints(object):
                 key = key.strip().lower()
                 if key == "calibrant":
                     words = value.split()
-                    if words[0] in ALL_CALIBRANTS:
-                        calibrant = ALL_CALIBRANTS[words[0]]
+                    if words[0] in CALIBRANT_FACTORY:
+                        calibrant = CALIBRANT_FACTORY(words[0])
                     try:
                         wavelength = float(words[-1])
                         calibrant.set_wavelength(wavelength)
