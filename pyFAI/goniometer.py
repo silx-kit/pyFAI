@@ -131,8 +131,11 @@ class GeometryTranslation(object):
         variables = self.variables.copy()
         for name, value in zip(self.param_names, param):
             variables[name] = value
-        for name, value in zip(self.pos_names, pos):
-            variables[name] = value
+        if len(self.pos_names) == 1 and self.pos_names[0] == "pos":
+            variables["pos"] = pos
+        else:
+            for name, value in zip(self.pos_names, pos):
+                variables[name] = value
         for code in self.codes:
             signa = [variables.get(name, numpy.NaN) for name in code.input_names]
             res.append(float(code(*signa)))
