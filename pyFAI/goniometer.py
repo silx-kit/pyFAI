@@ -447,21 +447,21 @@ class GoniometerRefinement(Goniometer):
         self.bounds = bounds
         self.position_function = position_function
 
-    def new_geometry(self, label, image=None, metadata=None, controlpoints=None,
+    def new_geometry(self, label, image=None, metadata=None, control_points=None,
                      calibrant=None, geometry=None):
         """Add a new geometry for calibration
         
         :param label: usually a string
         :param image: 2D numpy array with the Debye scherrer rings
         :param metadata: some metadata
-        :param controlpoints: an instance of ControlPoints
+        :param control_points: an instance of ControlPoints
         :param calibrant: the calibrant used for calibrating
         :param geometry: poni or AzimuthalIntegrator instance.
         """
         self.single_geometries[label] = SingleGeometry(label=label,
                                                        image=image,
                                                        metadata=metadata,
-                                                       controlpoints=controlpoints,
+                                                       control_points=control_points,
                                                        calibrant=calibrant,
                                                        detector=self.detector,
                                                        position_function=self.position_function,
