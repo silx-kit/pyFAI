@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2017"
+__date__ = "10/03/2017"
 __status__ = "production"
 
 
@@ -639,19 +639,16 @@ class calibrant_factory(CalibrantFactory):
 
 
 def get_calibrant(calibrant_name):
-    """
-    Returns a new instance of the calibrant by it's name.
+    """Returns a new instance of the calibrant by it's name.
 
     :param str calibrant_name: Name of the calibrant
     """
     return CALIBRANT_FACTORY(calibrant_name)
 
 
-def names(calibrant_name):
-    """
-    Returns the list of registred calibrant names.
+def names():
+    """ Returns the list of registred calibrant names.
 
-    :param str calibrant_name: Name of the calibrant
     :rtype: str
     """
     return CALIBRANT_FACTORY.keys()
