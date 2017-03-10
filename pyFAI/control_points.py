@@ -78,7 +78,7 @@ class ControlPoints(object):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
             elif type(calibrant) in StringTypes:
-                if calibrant in calibrant_names:
+                if calibrant in calibrant_names():
                     self.calibrant = get_calibrant(calibrant)
                 elif os.path.isfile(calibrant):
                     self.calibrant = Calibrant(calibrant)
@@ -254,7 +254,7 @@ class ControlPoints(object):
                 key = key.strip().lower()
                 if key == "calibrant":
                     words = value.split()
-                    if words[0] in calibrant_names:
+                    if words[0] in calibrant_names():
                         calibrant = get_calibrant(words[0])
                     try:
                         wavelength = float(words[-1])
