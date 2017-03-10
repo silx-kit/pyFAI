@@ -420,7 +420,6 @@ class SingleGeometry(object):
                                    **self.geometry_refinement.getPyFAI())
 
 
-
 class GoniometerRefinement(Goniometer):
     """This class allow the translation of a goniometer geometry into a pyFAI 
     geometry using a set of parameter to refine. 
@@ -448,11 +447,25 @@ class GoniometerRefinement(Goniometer):
         self.bounds = bounds
         self.position_function = position_function
 
-    def new_geometry(self, label, image=None, metadata=None, controlpoints=None, calibrant=None, poni=None):
+    def new_geometry(self, label, image=None, metadata=None, controlpoints=None,
+                     calibrant=None, geometry=None):
         """Add a new geometry for calibration
+        
+        :param label: usually a string
+        :param image: 2D numpy array with the Debye scherrer rings
+        :param metadata: some metadata
+        :param controlpoints: an instance of ControlPoints
+        :param calibrant: the calibrant used for calibrating
+        :param geometry: poni or AzimuthalIntegrator instance.
         """
-        self.single_geometries[label] = SingleGeometry(label, image, metadata, controlpoints, calibrant, detector=self.detector,
-                                                       geometry=poni)
+        self.single_geometries[label] = SingleGeometry(label=label,
+                                                       image=image,
+                                                       metadata=metadata,
+                                                       controlpoints=controlpoints,
+                                                       calibrant=calibrant,
+                                                       detector=self.detector,
+                                                       position_function=self.position_function,
+                                                       geometry=geometry)
 
     def __repr__(self):
         return "MultiGeometryRefinement with %i geometries labeled: %s" % \
