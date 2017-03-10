@@ -469,14 +469,16 @@ class GoniometerRefinement(Goniometer):
         """
         if geometry is None:
             geometry = self.get_ai(self.position_function(metadata))
-        self.single_geometries[label] = SingleGeometry(label=label,
-                                                       image=image,
-                                                       metadata=metadata,
-                                                       control_points=control_points,
-                                                       calibrant=calibrant,
-                                                       detector=self.detector,
-                                                       position_function=self.position_function,
-                                                       geometry=geometry)
+        sg = SingleGeometry(label=label,
+                            image=image,
+                            metadata=metadata,
+                            control_points=control_points,
+                            calibrant=calibrant,
+                            detector=self.detector,
+                            position_function=self.position_function,
+                            geometry=geometry)
+        self.single_geometries[label] = sg
+        return sg
 
     def __repr__(self):
         return "MultiGeometryRefinement with %i geometries labeled: %s" % \
