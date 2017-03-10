@@ -67,160 +67,6 @@ except ImportError:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
 
 
-class SingleGeometry(object):
-    """This class represents a single geometry of a detector position on a 
-    goniometer arm
-    """
-    def __init__(self, label, image=None, metadata=None, position_function=None,
-                 control_points=None, calibrant=None, detector=None, geometry=None):
-        """Constructor of the SingleGeometry class, used for calibrating a 
-        multi-geometry setup with a moving detector
-        
-        :param label: name of the geometry, a string or anything unmutable
-        :param image: image with Debye-Scherrer rings as 2d numpy array
-        :param metadata: anything which contains the goniometer position
-        :param position_function: a function which takes the metadata as input 
-                                 and returns the goniometer arm position
-        Optional parameters:
-        :param control_points: a pyFAI.control_points.ControlPoints instance
-        :param calibrant: a pyFAI.calibrant.Calibrant instance. 
-                        Contains the wavelength to be used
-         :param detector: a pyFAI.detectors.Detector instance or something like that 
-                        Contains the mask to be used
-        :param geometry: an azimuthal integrator or a ponifile 
-                        (or a dict with the geometry)  
-                         
-        """
-        self.label = label
-        self.image = image
-        self.metadata = metadata  # may be anything
-        self.control_points = control_points
-        self.calibrant = calibrant
-        if detector is not None:
-            self.detector = detector_factory(detector)
-        else:
-            self.detector = None
-        if isinstance(geometry, Geometry):
-            dict_geo = geometry.getPyFAI()
-        elif isinstance(geometry, StringTypes) and os.path.exists(geometry):
-            dict_geo = Geometry.sload(geometry).getPyFAI()
-        elif isinstance(geometry, dict):
-            dict_geo = geometry
-        if self.detector is not None:
-            dict_geo["detector"] = self.detector
-        self.geometry_refinement = GeometryRefinement(**dict_geo)
-        if self.detector is None:
-            self.detector = self.geometry_refinement.detector
-        self.position_function = position_function
-        self.massif = None
-
-    def get_position(self):
-        """This method  is in charge of calculating the motor position from metadata/label/..."""
-        return self.position_function(self.metadata)
-
-    def extract_cp(self, max_rings=None, pts_per_deg=1.0):
-        """Performs an automatic keypoint extraction and update the geometry refinement part
-
-        :param max_ring: extract at most N rings from the image
-        :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
-        """
-        if self.massif is None:
-            self.massif = Massif(self.image)
-
-        tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
-        tth = numpy.unique(tth)
-        tth_min = numpy.zeros_like(tth)
-        tth_max = numpy.zeros_like(tth)
-        delta = (tth[1:] - tth[:-1]) / 4.0
-        tth_max[:-1] = delta
-        tth_max[-1] = delta[-1]
-        tth_min[1:] = -delta
-        tth_min[0] = -delta[0]
-        tth_max += tth
-        tth_min += tth
-        shape = self.image.shape
-        ttha = self.geometry_refinement.twoThetaArray(shape)
-        chia = self.geometry_refinement.chiArray(shape)
-        rings = 0
-        cp = ControlPoints(calibrant=self.calibrant)
-        if max_rings is None:
-            max_rings = tth.size
-        for i in range(tth.size):
-            if rings >= max_rings:
-                break
-            mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
-            if self.detector.mask is not None:
-                mask = numpy.logical_and(mask, numpy.logical_not(self.geometry_refinement.detector.mask))
-            size = mask.sum(dtype=int)
-            if (size > 0):
-                rings += 1
-                sub_data = self.image.ravel()[numpy.where(mask.ravel())]
-                mean = sub_data.mean(dtype=numpy.float64)
-                std = sub_data.std(dtype=numpy.float64)
-                upper_limit = mean + std
-                mask2 = numpy.logical_and(self.image > upper_limit, mask)
-                size2 = mask2.sum(dtype=int)
-                if size2 < 1000:
-                    upper_limit = mean
-                    mask2 = numpy.logical_and(self.image > upper_limit, mask)
-                    size2 = mask2.sum()
-                # length of the arc:
-                points = isocontour(ttha, tth[i]).round().astype(int)
-                seeds = set((i[1], i[0]) for i in points if mask2[i[1], i[0]])
-                # max number of points: 360 points for a full circle
-                azimuthal = chia[points[:, 1].clip(0, shape[0]), points[:, 0].clip(0, shape[1])]
-                nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
-                keep = int(nb_deg_azim * pts_per_deg)
-                if keep == 0:
-                    continue
-                dist_min = len(seeds) / 2.0 / keep
-                # why 3.0, why not ?
-
-                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); " +
-                            "searching for %i pts out of %i with I>%.1f, dmin=%.1f",
-                            i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
-                res = self.massif.peaks_from_area(mask2, Imin=0, keep=keep, dmin=dist_min, seed=seeds, ring=i)
-                cp.append(res, i)
-        self.control_points = cp
-        self.geometry_refinement.data = numpy.asarray(cp.getList(), dtype=numpy.float64)
-        return cp
-
-    def display(self):
-        """
-        Display the image with the control points and the iso-contour overlaid. 
-        
-        @return: the figure to be showed
-        """
-        # should already be set-up ...
-        from pylab import figure, legend
-
-        if self.image is None:
-            return
-        fig = figure()
-        ax = fig.add_subplot(1, 1, 1)
-        ax.imshow(numpy.arcsinh(self.image), origin="lower")
-        if self.control_points is not None:
-            cp = self.control_points
-            for lbl in cp.get_labels():
-                pt = numpy.array(cp.get(lbl=lbl).points)
-                ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
-            legend()
-        if self.geometry_refinement is not None and self.calibrant is not None:
-            ai = self.geometry_refinement
-            tth = self.calibrant.get_2th()
-            ttha = ai.twoThetaArray()
-            ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
-        return fig
-
-    def get_ai(self):
-        """Create a new azimuthal integrator to be used.
-
-        @return: Azimuthal Integrator instance
-        """
-        return AzimuthalIntegrator(detector=self.detector,
-                                   **self.geometry_refinement.getPyFAI())
-
-
 class GeometryTranslation(object):
     """This class, once instanciated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it into 
@@ -419,6 +265,162 @@ class Goniometer(object):
         return gonio
 
 
+class SingleGeometry(object):
+    """This class represents a single geometry of a detector position on a 
+    goniometer arm
+    """
+    def __init__(self, label, image=None, metadata=None, position_function=None,
+                 control_points=None, calibrant=None, detector=None, geometry=None):
+        """Constructor of the SingleGeometry class, used for calibrating a 
+        multi-geometry setup with a moving detector
+        
+        :param label: name of the geometry, a string or anything unmutable
+        :param image: image with Debye-Scherrer rings as 2d numpy array
+        :param metadata: anything which contains the goniometer position
+        :param position_function: a function which takes the metadata as input 
+                                 and returns the goniometer arm position
+        Optional parameters:
+        :param control_points: a pyFAI.control_points.ControlPoints instance
+        :param calibrant: a pyFAI.calibrant.Calibrant instance. 
+                        Contains the wavelength to be used
+         :param detector: a pyFAI.detectors.Detector instance or something like that 
+                        Contains the mask to be used
+        :param geometry: an azimuthal integrator or a ponifile 
+                        (or a dict with the geometry)  
+                         
+        """
+        self.label = label
+        self.image = image
+        self.metadata = metadata  # may be anything
+        self.control_points = control_points
+        self.calibrant = calibrant
+        if detector is not None:
+            self.detector = detector_factory(detector)
+        else:
+            self.detector = None
+        print(geometry)
+        if isinstance(geometry, Geometry):
+            dict_geo = geometry.getPyFAI()
+        elif isinstance(geometry, StringTypes) and os.path.exists(geometry):
+            dict_geo = Geometry.sload(geometry).getPyFAI()
+        elif isinstance(geometry, dict):
+            dict_geo = geometry
+        if self.detector is not None:
+            dict_geo["detector"] = self.detector
+        self.geometry_refinement = GeometryRefinement(**dict_geo)
+        if self.detector is None:
+            self.detector = self.geometry_refinement.detector
+        self.position_function = position_function
+        self.massif = None
+
+    def get_position(self):
+        """This method  is in charge of calculating the motor position from metadata/label/..."""
+        return self.position_function(self.metadata)
+
+    def extract_cp(self, max_rings=None, pts_per_deg=1.0):
+        """Performs an automatic keypoint extraction and update the geometry refinement part
+
+        :param max_ring: extract at most N rings from the image
+        :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
+        """
+        if self.massif is None:
+            self.massif = Massif(self.image)
+
+        tth = numpy.array([i for i in self.calibrant.get_2th() if i is not None])
+        tth = numpy.unique(tth)
+        tth_min = numpy.zeros_like(tth)
+        tth_max = numpy.zeros_like(tth)
+        delta = (tth[1:] - tth[:-1]) / 4.0
+        tth_max[:-1] = delta
+        tth_max[-1] = delta[-1]
+        tth_min[1:] = -delta
+        tth_min[0] = -delta[0]
+        tth_max += tth
+        tth_min += tth
+        shape = self.image.shape
+        ttha = self.geometry_refinement.twoThetaArray(shape)
+        chia = self.geometry_refinement.chiArray(shape)
+        rings = 0
+        cp = ControlPoints(calibrant=self.calibrant)
+        if max_rings is None:
+            max_rings = tth.size
+        for i in range(tth.size):
+            if rings >= max_rings:
+                break
+            mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
+            if self.detector.mask is not None:
+                mask = numpy.logical_and(mask, numpy.logical_not(self.geometry_refinement.detector.mask))
+            size = mask.sum(dtype=int)
+            if (size > 0):
+                rings += 1
+                sub_data = self.image.ravel()[numpy.where(mask.ravel())]
+                mean = sub_data.mean(dtype=numpy.float64)
+                std = sub_data.std(dtype=numpy.float64)
+                upper_limit = mean + std
+                mask2 = numpy.logical_and(self.image > upper_limit, mask)
+                size2 = mask2.sum(dtype=int)
+                if size2 < 1000:
+                    upper_limit = mean
+                    mask2 = numpy.logical_and(self.image > upper_limit, mask)
+                    size2 = mask2.sum()
+                # length of the arc:
+                points = isocontour(ttha, tth[i]).round().astype(int)
+                seeds = set((i[1], i[0]) for i in points if mask2[i[1], i[0]])
+                # max number of points: 360 points for a full circle
+                azimuthal = chia[points[:, 1].clip(0, shape[0]), points[:, 0].clip(0, shape[1])]
+                nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
+                keep = int(nb_deg_azim * pts_per_deg)
+                if keep == 0:
+                    continue
+                dist_min = len(seeds) / 2.0 / keep
+                # why 3.0, why not ?
+
+                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); " +
+                            "searching for %i pts out of %i with I>%.1f, dmin=%.1f",
+                            i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min)
+                res = self.massif.peaks_from_area(mask2, Imin=0, keep=keep, dmin=dist_min, seed=seeds, ring=i)
+                cp.append(res, i)
+        self.control_points = cp
+        self.geometry_refinement.data = numpy.asarray(cp.getList(), dtype=numpy.float64)
+        return cp
+
+    def display(self):
+        """
+        Display the image with the control points and the iso-contour overlaid. 
+        
+        @return: the figure to be showed
+        """
+        # should already be set-up ...
+        from pylab import figure, legend
+
+        if self.image is None:
+            return
+        fig = figure()
+        ax = fig.add_subplot(1, 1, 1)
+        ax.imshow(numpy.arcsinh(self.image), origin="lower")
+        if self.control_points is not None:
+            cp = self.control_points
+            for lbl in cp.get_labels():
+                pt = numpy.array(cp.get(lbl=lbl).points)
+                ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
+            legend()
+        if self.geometry_refinement is not None and self.calibrant is not None:
+            ai = self.geometry_refinement
+            tth = self.calibrant.get_2th()
+            ttha = ai.twoThetaArray()
+            ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
+        return fig
+
+    def get_ai(self):
+        """Create a new azimuthal integrator to be used.
+
+        @return: Azimuthal Integrator instance
+        """
+        return AzimuthalIntegrator(detector=self.detector,
+                                   **self.geometry_refinement.getPyFAI())
+
+
+
 class GoniometerRefinement(Goniometer):
     """This class allow the translation of a goniometer geometry into a pyFAI 
     geometry using a set of parameter to refine. 
@@ -446,10 +448,11 @@ class GoniometerRefinement(Goniometer):
         self.bounds = bounds
         self.position_function = position_function
 
-    def new_geometry(self, label, image=None, metadata=None, controlpoints=None, calibrant=None, geometryrefinement=None):
+    def new_geometry(self, label, image=None, metadata=None, controlpoints=None, calibrant=None, poni=None):
         """Add a new geometry for calibration
         """
-        self.single_geometries[label] = SingleGeometry(label, image, metadata, controlpoints, calibrant, geometryrefinement)
+        self.single_geometries[label] = SingleGeometry(label, image, metadata, controlpoints, calibrant, detector=self.detector,
+                                                       geometry=poni)
 
     def __repr__(self):
         return "MultiGeometryRefinement with %i geometries labeled: %s" % \
