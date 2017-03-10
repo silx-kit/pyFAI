@@ -467,6 +467,8 @@ class GoniometerRefinement(Goniometer):
         :param calibrant: the calibrant used for calibrating
         :param geometry: poni or AzimuthalIntegrator instance.
         """
+        if geometry is None:
+            geometry = self.get_ai(self.position_function(metadata))
         self.single_geometries[label] = SingleGeometry(label=label,
                                                        image=image,
                                                        metadata=metadata,
