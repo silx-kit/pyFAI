@@ -415,6 +415,7 @@ class SingleGeometry(object):
             tth = self.calibrant.get_2th()
             ttha = ai.twoThetaArray()
             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
+        ax.set_title(self.label)
         return fig
 
     def get_ai(self):
@@ -511,7 +512,7 @@ class GoniometerRefinement(Goniometer):
         print(self.nt_param(*newparam))
 
         print("Constrained Least square %s --> %s" % (former_error, new_error))
-        if new_error < new_error:
+        if new_error < former_error:
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
                 name = self.nt_param._fields[i]
