@@ -298,7 +298,6 @@ class SingleGeometry(object):
             self.detector = detector_factory(detector)
         else:
             self.detector = None
-        print(geometry)
         if isinstance(geometry, Geometry):
             dict_geo = geometry.getPyFAI()
         elif isinstance(geometry, StringTypes) and os.path.exists(geometry):
@@ -309,9 +308,9 @@ class SingleGeometry(object):
             dict_geo["detector"] = self.detector
         if self.control_points is not None:
             dict_geo["data"] = self.control_points.getList()
-        print(dict_geo)
+        if self.calibrant is not None:
+            dict_geo["calibrant"] = self.calibrant
         self.geometry_refinement = GeometryRefinement(**dict_geo)
-        print(self.geometry_refinement)
         if self.detector is None:
             self.detector = self.geometry_refinement.detector
         self.position_function = position_function
