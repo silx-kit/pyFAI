@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2017"
+__date__ = "10/03/2017"
 __status__ = "production"
 
 import os
@@ -53,7 +53,7 @@ if qt is not None:
     from .gui import utils as gui_utils
 
 import fabio
-from .calibrant import ALL_CALIBRANTS
+from .calibrant import ALL_CALIBRANTS, Calibrant
 from .blob_detection import BlobDetection
 from .massif import Massif
 from .ext.reconstruct import reconstruct
