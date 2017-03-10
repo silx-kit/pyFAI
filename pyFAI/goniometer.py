@@ -516,7 +516,7 @@ class GoniometerRefinement(Goniometer):
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
                 name = self.nt_param._fields[i]
-                print("maxdelta on: %s (%i) %s --> %s" % (name[i], i, self.param[i], newparam[i]))
+                print("maxdelta on: %s (%i) %s --> %s" % (name, i, self.param[i], newparam[i]))
             else:
                 print("maxdelta on: %i %s --> %s" % (i, self.param[i], newparam[i]))
             self.param = newparam
