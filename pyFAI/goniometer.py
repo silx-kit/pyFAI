@@ -482,10 +482,10 @@ class GoniometerRefinement(Goniometer):
         npt = 0
         for single in self.single_geometries.values():
             motor_pos = single.get_position()
-            single_param = self.translate(param, motor_pos)
-            if single.geometryrefinement is not None:
-                sumsquare += single.geometryrefinement.chi2(single_param)
-                npt += single.geometryrefinement.data.shape[0]
+            single_param = self.translation_function(param, motor_pos)
+            if single.geometry_refinement is not None:
+                sumsquare += single.geometry_refinement.chi2(single_param)
+                npt += single.geometry_refinement.data.shape[0]
         return sumsquare / max(npt, 1)
 
     def chi2(self, param=None):
