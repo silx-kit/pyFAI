@@ -202,12 +202,7 @@ class Goniometer(object):
         self.wavelength = wavelength
         if param_names is None and "param_names" in dir(translation_function):
             param_names = translation_function.param_names
-        if param_names:
-            self.nt_param = namedtuple("GonioParam", param_names)
-            self.param = self.nt_param(self.param)
-        else:
-            self.nt_param = lambda *x: tuple(x)
-
+        self.nt_param = namedtuple("GonioParam", param_names) if param_names else lambda *x: tuple(x)
         if pos_names is None and "pos_names" in dir(translation_function):
             pos_names = translation_function.pos_names
         self.nt_pos = namedtuple("GonioPos", pos_names) if pos_names else lambda *x: tuple(x)
@@ -514,7 +509,7 @@ class GoniometerRefinement(Goniometer):
         print(res)
         newparam = res.x
         new_error = res.fun
-        print(self.nt_param(*newparam))
+        print("After refinement: " + str(self.nt_param(*newparam)))
 
         print("Constrained Least square %s --> %s" % (former_error, new_error))
         if new_error < former_error:
@@ -524,5 +519,5 @@ class GoniometerRefinement(Goniometer):
                 print("maxdelta on: %s (%i) %s --> %s" % (name[i], i, self.param[i], newparam[i]))
             else:
                 print("maxdelta on: %i %s --> %s" % (i, self.param[i], newparam[i]))
-            self.param = self.nt_param(newparam)
+            self.param = newparam
         return self.param
