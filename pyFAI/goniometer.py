@@ -453,7 +453,9 @@ class GoniometerRefinement(Goniometer):
                             detector=detector, wavelength=wavelength,
                             param_names=param_names, pos_names=pos_names)
         self.single_geometries = OrderedDict()  # a dict of labels: SingleGeometry
-        self.bounds = bounds
+        if bounds is None:
+            bounds = [(None, None) for i in param]
+        self.bounds = list(bounds)
         self.position_function = position_function
 
     def new_geometry(self, label, image=None, metadata=None, control_points=None,
@@ -525,3 +527,16 @@ class GoniometerRefinement(Goniometer):
                 print("maxdelta on: %i %s --> %s" % (i, self.param[i], newparam[i]))
             self.param = newparam
         return self.param
+
+    def set_bounds(self, name, mini=None, maxi=None):
+        """Redefines the bounds for the refinement
+        
+        :param name: name of the parameter or index in the parameter set
+        :param mini: minimum value
+        :param maxi: maximum value
+        """
+        if isinstance(name, StringTypes) and "_fields" in dir(self.nt_param):
+            idx = self.nt_param._fields.index(name)
+        else:
+            idx = int(name)
+        self.bounds[idx] = (mini, maxi)
