@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/10/2016"
+__date__ = "06/03/2017"
 __status__ = "production"
 
 
@@ -52,6 +52,8 @@ import itertools
 from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
+from .decorators import deprecated
+
 logger = logging.getLogger("pyFAI.calibrant")
 epsilon = 1.0e-6  # for floating point comparison
 
@@ -329,6 +331,59 @@ class Calibrant(object):
         if self._dSpacing and self._wavelength:
             self._calc_2th()
 
+    def __eq__(self, other):
+        """
+        Test the equality with another object
+
+        It only takes into acount the wavelength and dSpacing, not the
+        filename.
+
+        :param object other: Another object
+        :rtype: bool
+        """
+        if other is None:
+            return False
+        if not isinstance(other, Calibrant):
+            return False
+        if self._wavelength != other._wavelength:
+            return False
+        if self._dSpacing != other._dSpacing:
+            return False
+        return True
+
+    def __ne__(self, other):
+        """
+        Test the non-equality with another object
+
+        It only takes into acount the wavelength and dSpacing, not the
+        filename.
+
+        :param object other: Another object
+        :rtype: bool
+        """
+        return not (self == other)
+
+    def __hash__(self):
+        """
+        Returns the hash of the object.
+
+        It only takes into acount the wavelength and dSpacing, not the
+        filename.
+
+        :rtype: int
+        """
+        return hash(self._wavelength) ^ hash(self._dSpacing)
+
+    def __copy__(self):
+        """
+        Copy a calibrant
+
+        :rtype: Calibrant
+        """
+        return Calibrant(filename=self._filename,
+                         dSpacing=self._dSpacing,
+                         wavelength=self._wavelength)
+
     def __repr__(self):
         name = "undefined"
         if self._filename:
@@ -514,7 +569,7 @@ class Calibrant(object):
         return res
 
 
-class calibrant_factory(object):
+class CalibrantFactory(object):
     """Behaves like a dict but is actually a factory:
 
     Each time one retrieves an object it is a new geniune new calibrant (unmodified)
@@ -536,8 +591,9 @@ class calibrant_factory(object):
                              for i in os.listdir(self.directory)
                              if i.endswith(".D")])
 
-    def __getitem__(self, what):
-        return Calibrant(self.all[what])
+    def __call__(self, calibrant_name):
+        """Returns a new instance of a calibrant by it's name."""
+        return Calibrant(self.all[calibrant_name])
 
     def get(self, what, notfound=None):
         if what in self.all:
@@ -563,8 +619,39 @@ class calibrant_factory(object):
     def items(self):
         return [(i, Calibrant(j)) for i, j in self.all.items()]
 
-    __call__ = __getitem__
+    @deprecated  # added on 2017-03-06
+    def __getitem__(self, calibration_name):
+        return self(calibration_name)
 
     has_key = __contains__
 
-ALL_CALIBRANTS = calibrant_factory()
+
+CALIBRANT_FACTORY = CalibrantFactory()
+"""Default calibration factory provided by the library."""
+
+
+ALL_CALIBRANTS = CALIBRANT_FACTORY
+
+
+@deprecated  # added on 2017-03-06
+class calibrant_factory(CalibrantFactory):
+    pass
+
+
+def get_calibrant(calibrant_name):
+    """
+    Returns a new instance of the calibrant by it's name.
+
+    :param str calibrant_name: Name of the calibrant
+    """
+    return CALIBRANT_FACTORY(calibrant_name)
+
+
+def names(calibrant_name):
+    """
+    Returns the list of registred calibrant names.
+
+    :param str calibrant_name: Name of the calibrant
+    :rtype: str
+    """
+    return CALIBRANT_FACTORY.keys()

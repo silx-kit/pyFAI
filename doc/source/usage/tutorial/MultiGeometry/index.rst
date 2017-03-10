@@ -37,8 +37,8 @@ and its position in space
 
     import pyFAI
     import pyFAI.calibrant
-    print("Number of known calibrants: %s"%len(pyFAI.calibrant.ALL_CALIBRANTS))
-    print(" ".join(pyFAI.calibrant.ALL_CALIBRANTS.keys()))
+    print("Number of known calibrants: %s"%len(pyFAI.calibrant.names()))
+    print(" ".join(pyFAI.calibrant.names()))
 
 .. parsed-literal::
 
@@ -49,7 +49,7 @@ and its position in space
 .. code:: python
 
     wl = 1e-10
-    LaB6 = pyFAI.calibrant.ALL_CALIBRANTS("LaB6")
+    LaB6 = pyFAI.calibrant.get_calibrant("LaB6")
     LaB6.set_wavelength(wl)
     print(LaB6)
 
