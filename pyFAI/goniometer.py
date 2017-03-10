@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2017"
+__date__ = "10/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -57,6 +57,11 @@ from .utils import StringTypes
 from .multi_geometry import MultiGeometry
 from .ext.marchingsquares import isocontour
 logger = logging.getLogger("pyFAI.goniometer")
+
+try:
+    import numexpr
+except ImportError:
+    numexpr = None
 
 # Parameter set used in PyFAI:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
@@ -242,9 +247,7 @@ class GeometryTranslation(object):
         :param pos_names: list of motor names for gonio with >1 degree of freedom
         :param constants: a dictionary with some constants the user may want to use 
         """
-        try:
-            import numexpr
-        except ImportError:
+        if numexpr is None:
             raise RuntimeError("Geometry translation requires the *numexpr* package")
         self.dist_expr = dist_expr
         self.poni1_expr = poni1_expr

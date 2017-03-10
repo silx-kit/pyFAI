@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2017"
+__date__ = "10/03/2017"
 
 import unittest
 import logging
@@ -48,9 +48,10 @@ except:
     import six
 import numpy
 from .. import AzimuthalIntegrator
-from ..goniometer import GeometryTranslation, Goniometer
+from ..goniometer import GeometryTranslation, Goniometer, numexpr
 
 
+@unittest.skipUnless(numexpr, "Numexpr package is missing")
 class TestTranslation(unittest.TestCase):
     """
     Test the proper working of the translation class
@@ -110,7 +111,9 @@ class TestTranslation(unittest.TestCase):
         g2 = Goniometer.sload(fname)
         self.assertEqual(str(g), str(g2), "goniometer description are the same")
         ai = g2.get_ai((1, 2))
+        str(ai)
         mg = g.get_mg([(1, 2), (2, 3)])
+        str(mg)
 
 
 def suite():
