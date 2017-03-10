@@ -26,7 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""This modules contrains only one (large) class in charge of:
+"""This modules contains only one (large) class in charge of:
 
 * calculating the geometry, i.e. the position in the detector space of each pixel of the detector
 * manages caches to store intermediate results
