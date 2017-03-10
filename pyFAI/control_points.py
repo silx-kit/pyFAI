@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2017"
+__date__ = "10/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -52,7 +52,7 @@ import numpy
 import array
 
 from .utils import StringTypes, six
-from .calibrant import Calibrant, ALL_CALIBRANTS
+from .calibrant import Calibrant, get_calibrant, names as calibrant_names
 logger = logging.getLogger("pyFAI.control_points")
 
 ################################################################################
@@ -78,8 +78,8 @@ class ControlPoints(object):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
             elif type(calibrant) in StringTypes:
-                if calibrant in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                if calibrant in calibrant_names:
+                    self.calibrant = get_calibrant(calibrant)
                 elif os.path.isfile(calibrant):
                     self.calibrant = Calibrant(calibrant)
                 else:
@@ -254,8 +254,8 @@ class ControlPoints(object):
                 key = key.strip().lower()
                 if key == "calibrant":
                     words = value.split()
-                    if words[0] in ALL_CALIBRANTS:
-                        calibrant = ALL_CALIBRANTS[words[0]]
+                    if words[0] in calibrant_names:
+                        calibrant = get_calibrant(words[0])
                     try:
                         wavelength = float(words[-1])
                         calibrant.set_wavelength(wavelength)
