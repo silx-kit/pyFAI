@@ -307,6 +307,8 @@ class SingleGeometry(object):
             dict_geo = geometry
         if self.detector is not None:
             dict_geo["detector"] = self.detector
+        if self.control_points is not None:
+            dict_geo["data"] = self.control_points.getList()
         self.geometry_refinement = GeometryRefinement(**dict_geo)
         if self.detector is None:
             self.detector = self.geometry_refinement.detector
