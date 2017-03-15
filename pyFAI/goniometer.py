@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2017"
+__date__ = "15/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -295,8 +295,13 @@ class SingleGeometry(object):
         self.label = label
         self.image = image
         self.metadata = metadata  # may be anything
-        self.control_points = control_points
         self.calibrant = calibrant
+        if control_points is None or isinstance(control_points, ControlPoints):
+            self.control_points = control_points
+        else:
+            # Probaly a NPT file
+            self.control_points = ControlPoints(control_points, calibrant=calibrant)
+
         if detector is not None:
             self.detector = detector_factory(detector)
         else:
