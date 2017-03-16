@@ -35,11 +35,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2017"
+__date__ = "16/03/2017"
 
+import os
 import unittest
 import logging
-import sys, os
 from .utilstest import getLogger, UtilsTest
 logger = getLogger(__file__)
 try:
@@ -47,8 +47,8 @@ try:
 except:
     import six
 import numpy
-from .. import AzimuthalIntegrator
 from ..goniometer import GeometryTranslation, Goniometer, numexpr
+logger = logging.getLogger("pyFAI.test.test_goniometer")
 
 
 @unittest.skipUnless(numexpr, "Numexpr package is missing")
@@ -114,6 +114,8 @@ class TestTranslation(unittest.TestCase):
         str(ai)
         mg = g.get_mg([(1, 2), (2, 3)])
         str(mg)
+        if os.path.exists(fname):
+            os.unlink(fname)
 
 
 def suite():
