@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2017"
+__date__ = "16/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -155,15 +155,16 @@ class GeometryTranslation(object):
     def to_dict(self):
         """Export the instance representation for serialization as a dictionary
         """
-        res = {"dist_expr": self.dist_expr,
-               "poni1_expr": self.poni1_expr,
-               "poni2_expr": self.poni2_expr,
-               "rot1_expr": self.rot1_expr,
-               "rot2_expr": self.rot2_expr,
-               "rot3_expr": self.rot3_expr,
-               "param_names": self.param_names,
-               "pos_names": self.pos_names}
-        constants = {}
+        res = OrderedDict([("param_names", self.param_names),
+                           ("pos_names", self.pos_names),
+                           ("dist_expr", self.dist_expr),
+                           ("poni1_expr", self.poni1_expr),
+                           ("poni2_expr", self.poni2_expr),
+                           ("rot1_expr", self.rot1_expr),
+                           ("rot2_expr", self.rot2_expr),
+                           ("rot3_expr", self.rot3_expr),
+                           ])
+        constants = OrderedDict()
         for key, val in self.variables.items():
             if key in self.param_names:
                 continue
@@ -231,27 +232,35 @@ class Goniometer(object):
         mg = MultiGeometry(ais)
         return mg
 
-    def save(self, filename):
-        """Save the goniometer configuration to a text file
+    def to_dict(self):
+        """Export the goniometer configuration to a dictionary
         
-        :param filename: name of the file
+        :return: Ordered dictionary
         """
-        res = self.detector.getPyFAI()
-        res["content"] = self.file_version
+        dico = OrderedDict([("content", self.file_version)])
+        dico.update(self.detector.getPyFAI())
         if self.wavelength:
-            res["wavelength"] = self.wavelength
-        res["param"] = tuple(self.param)
+            dico["wavelength"] = self.wavelength
+        dico["param"] = tuple(self.param)
         if "_fields" in dir(self.nt_param):
-            res["param_names"] = self.nt_param._fields
+            dico["param_names"] = self.nt_param._fields
         if "_fields" in dir(self.nt_pos):
-            res["pos_names"] = self.nt_pos._fields
+            dico["pos_names"] = self.nt_pos._fields
         if "to_dict" in dir(self.translation_function):
-            res["translation_function"] = self.translation_function.to_dict()
+            dico["translation_function"] = self.translation_function.to_dict()
         else:
             logger.warning("translation_function is not serializable")
+        return dico
+
+    def save(self, filename):
+        """Save the goniometer configuration to file
+        
+        :param filename: name of the file to save configuration to
+        """
+        dico = self.to_dict()
         try:
             with open(filename, "w") as f:
-                f.write(json.dumps(res, indent=4))
+                f.write(json.dumps(dico, indent=2))
         except IOError:
             logger.error("IOError while writing to file %s", filename)
     write = save

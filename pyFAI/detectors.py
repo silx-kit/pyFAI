@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2017"
+__date__ = "16/03/2017"
 __status__ = "stable"
 
 
@@ -45,6 +45,7 @@ import numpy
 import os
 import posixpath
 import threading
+from collections import OrderedDict
 
 from . import io
 from . import spline
@@ -352,10 +353,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :return: representation of the detector easy to serialize
         :rtype: dict
         """
-        return {"detector": self.name,
-                "pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "splineFile": self._splineFile}
+        dico = OrderedDict()
+        dico["detector"] = self.name
+        dico["pixel1"] = self._pixel1
+        dico["pixel2"] = self._pixel2
+        if self._splineFile:
+            dico["splineFile"] = self._splineFile
+        return dico
 
     def getFit2D(self):
         """
