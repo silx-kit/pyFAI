@@ -499,8 +499,9 @@ class GoniometerRefinement(Goniometer):
         return sg
 
     def __repr__(self):
-        return "MultiGeometryRefinement with %i geometries labeled: %s" % \
-                (len(self.single_geometries), " ".join(self.single_geometries.keys()))
+        return "%s with %i geometries labeled: %s" % \
+                (self.__class__.__name__, len(self.single_geometries),
+                 ", ".join(self.single_geometries.keys()) + ".")
 
     def residu2(self, param):
         "Actually performs the calulation of the average of the error squared"
