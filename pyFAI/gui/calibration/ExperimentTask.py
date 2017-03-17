@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "17/03/2017"
 
 import os
 import fabio
@@ -54,6 +54,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._imageLoader.clicked.connect(self.loadImage)
         self._maskLoader.clicked.connect(self.loadMask)
         self._darkLoader.clicked.connect(self.loadDark)
+        self._splineLoader.clicked.connect(self.loadSpline)
 
         self.__plot2D = silx.gui.plot.Plot2D(parent=self._imageHolder)
         self.__plot2D.setKeepDataAspectRatio(True)
@@ -80,6 +81,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._image.setModel(settings.imageFile())
         self._mask.setModel(settings.maskFile())
         self._dark.setModel(settings.darkFile())
+        self._spline.setModel(settings.splineFile())
 
         adaptor = WavelengthToEnergyAdaptor(self, settings.wavelength())
         self._wavelength.setModel(settings.wavelength())
@@ -89,7 +91,22 @@ class ExperimentTask(AbstractCalibrationTask):
 
         # FIXME debug purpous
         settings.calibrantModel().changed.connect(self.printSelectedCalibrant)
-        settings.detectorModel().changed.connect(self.printSelectedDetector)
+        settings.detectorModel().changed.connect(self.__detectorUpdated)
+        self.__updateSplineFileVisibility()
+
+    def __detectorUpdated(self):
+        detector = self.model().experimentSettingsModel().detectorModel().detector()
+        print(detector)
+        self.__updateSplineFileVisibility()
+
+    def __updateSplineFileVisibility(self):
+        detector = self.model().experimentSettingsModel().detectorModel().detector()
+        if detector is not None:
+            enabled = detector.__class__.HAVE_TAPER
+        else:
+            enabled = False
+        self._spline.setEnabled(enabled)
+        self._splineLoader.setEnabled(enabled)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
@@ -156,6 +173,24 @@ class ExperimentTask(AbstractCalibrationTask):
         except KeyboardInterrupt:
             raise
 
+    def createSplineDialog(self, title):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setModal(True)
+
+        extensions = OrderedDict()
+        extensions["Spline files"] = "*.spline"
+
+        filters = []
+        filters.append("All supported files (%s)" % " ".join(extensions.values()))
+        for name, extension in extensions.items():
+            filters.append("%s (%s)" % (name, extension))
+        filters.append("All files (*)")
+
+        dialog.setNameFilters(filters)
+        dialog.setFileMode(qt.QFileDialog.ExistingFile)
+        return dialog
+
     def loadImage(self):
         with self.getImageFromDialog("Load calibration image") as image:
             if image is not None:
@@ -177,8 +212,30 @@ class ExperimentTask(AbstractCalibrationTask):
                 settings.darkFile().setValue(image.filename)
                 settings.dark().setValue(image.data)
 
+    def loadSpline(self):
+        dialog = self.createSplineDialog("Load spline image")
+
+        if self.__dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(self.__dialogState)
+
+        result = dialog.exec_()
+        if not result:
+            return
+
+        self.__dialogState = dialog.saveState()
+        filename = dialog.selectedFiles()[0]
+        try:
+            settings = self.model().experimentSettingsModel()
+            settings.splineFile().setValue(filename)
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            # FIXME Display error dialog
+        except KeyboardInterrupt:
+            raise
+
     def printSelectedCalibrant(self):
         print(self.model().experimentSettingsModel().calibrantModel().calibrant())
-
-    def printSelectedDetector(self):
-        print(self.model().experimentSettingsModel().detectorModel().detector())

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "17/03/2017"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -45,6 +45,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__imageFile = DataModel()
         self.__maskFile = DataModel()
         self.__darkFile = DataModel()
+        self.__splineFile = DataModel()
         self.__wavelength = DataModel()
         self.__polarizationFactor = DataModel()
         self.__calibrantModel = CalibrantModel()
@@ -54,6 +55,7 @@ class ExperimentSettingsModel(AbstractModel):
         self.__mask.changed.connect(self.wasChanged)
         self.__dark.changed.connect(self.wasChanged)
         self.__imageFile.changed.connect(self.wasChanged)
+        self.__splineFile.changed.connect(self.wasChanged)
         self.__maskFile.changed.connect(self.wasChanged)
         self.__darkFile.changed.connect(self.wasChanged)
         self.__wavelength.changed.connect(self.wasChanged)
@@ -69,6 +71,9 @@ class ExperimentSettingsModel(AbstractModel):
 
     def detectorModel(self):
         return self.__detectorModel
+
+    def splineFile(self):
+        return self.__splineFile
 
     def image(self):
         return self.__image
