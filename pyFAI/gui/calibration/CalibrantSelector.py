@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "17/03/2017"
 
 from pyFAI.gui import qt
 import pyFAI.calibrant
@@ -40,7 +40,7 @@ class CalibrantSelector(qt.QComboBox):
         super(CalibrantSelector, self).__init__(parent)
 
         # feed the widget with default calibrants
-        items = pyFAI.calibrant.ALL_CALIBRANTS.items()
+        items = pyFAI.calibrant.CALIBRANT_FACTORY.items()
         items = sorted(items)
         for calibrantName, calibrant in items:
             self.addItem(calibrantName, calibrant)
