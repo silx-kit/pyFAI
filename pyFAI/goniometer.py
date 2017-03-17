@@ -470,8 +470,9 @@ class GoniometerRefinement(Goniometer):
                             param_names=param_names, pos_names=pos_names)
         self.single_geometries = OrderedDict()  # a dict of labels: SingleGeometry
         if bounds is None:
-            bounds = [(None, None) for i in param]
-        self.bounds = list(bounds)
+            bounds = [(None, None)] * len(self.param)
+        else:
+            self.bounds = list(bounds)
         self.position_function = position_function
 
     def new_geometry(self, label, image=None, metadata=None, control_points=None,
