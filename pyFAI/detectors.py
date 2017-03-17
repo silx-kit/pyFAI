@@ -1300,6 +1300,8 @@ class FReLoN(Detector):
 
     TODO: create automatically a mask that removes pixels out of the "valid reagion"
     """
+    MAX_SHAPE = (2048, 2048)
+
     def __init__(self, splineFile=None):
         super(FReLoN, self).__init__(splineFile=splineFile)
         if splineFile:
