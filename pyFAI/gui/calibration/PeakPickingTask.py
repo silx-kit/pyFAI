@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "17/03/2017"
 
 import logging
 import numpy
@@ -643,7 +643,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         # extract peaks from settings info and current peaks
         image = self.model().experimentSettingsModel().image().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
-        detector = self.model().experimentSettingsModel().detectorModel().detector()
+        detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
         wavelength = wavelength / 1e10
         extractor = RingExtractor(image, calibrant, detector, wavelength)

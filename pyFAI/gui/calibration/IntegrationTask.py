@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "03/03/2017"
+__date__ = "17/03/2017"
 
 import logging
 import numpy
@@ -95,7 +95,7 @@ class IntegrationProcess(object):
         if image is None:
             return False
         mask = model.experimentSettingsModel().mask().value()
-        detector = model.experimentSettingsModel().detectorModel().detector()
+        detector = model.experimentSettingsModel().detector()
         if detector is None:
             return
         geometry = model.fittedGeometry()
@@ -385,7 +385,7 @@ class IntegrationTask(AbstractCalibrationTask):
         pyfaiGeometry.rot3 = geometry.rotation3().value()
 
         experimentSettingsModel = self.model().experimentSettingsModel()
-        detector = experimentSettingsModel.detectorModel().detector()
+        detector = experimentSettingsModel.detector()
         pyfaiGeometry.detector = detector
         wavelength = experimentSettingsModel.wavelength().value() * 1e-10
         pyfaiGeometry.wavelength = wavelength

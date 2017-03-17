@@ -72,6 +72,23 @@ class ExperimentSettingsModel(AbstractModel):
     def detectorModel(self):
         return self.__detectorModel
 
+    def detector(self):
+        detector = self.__detectorModel.detector()
+        splineFile = self.__splineFile.value()
+        image = self.__image.value()
+        if detector is None:
+            return None
+
+        detector = detector.__class__()
+        if detector.__class__.HAVE_TAPER:
+            if splineFile is not None:
+                detector.set_splineFile(splineFile)
+
+        if image is not None:
+            detector.guess_binning(image)
+
+        return detector
+
     def splineFile(self):
         return self.__splineFile
 
