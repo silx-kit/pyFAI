@@ -531,18 +531,27 @@ class GoniometerRefinement(Goniometer):
         else:
             return self.residu2(self.param)
 
-    def refine2(self):
-        "Geometry refinement tool"
+    def refine2(self, method="slsqp", **options):
+        """Geometry refinement tool
+        
+        See https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.minimize.html
+        
+        :param method: name of the minimizer
+        :param options: options for the minimizer
+        """
         former_error = self.chi2()
+        print("Cost function before refinement: %s" % former_error)
         param = numpy.asarray(self.param, dtype=numpy.float64)
-        res = minimize(self.residu2, param, method="slsqp",
-                       bounds=self.bounds, tol=1e-12)
+        res = minimize(self.residu2, param, method=method,
+                       bounds=self.bounds, tol=1e-12,
+                       options=options)
         print(res)
         newparam = res.x
         new_error = res.fun
-        print("After refinement: " + str(self.nt_param(*newparam)))
+        print("Cost function after refinement: %s" % new_error)
+        print(self.nt_param(*newparam))
 
-        print("Constrained Least square %s --> %s" % (former_error, new_error))
+#        print("Constrained Least square %s --> %s" % (former_error, new_error))
         if new_error < former_error:
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
