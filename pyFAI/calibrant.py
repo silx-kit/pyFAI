@@ -647,7 +647,7 @@ def get_calibrant(calibrant_name):
     return CALIBRANT_FACTORY(calibrant_name)
 
 
-def names(calibrant_name):
+def names():
     """
     Returns the list of registred calibrant names.
 
