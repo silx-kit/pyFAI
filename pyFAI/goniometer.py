@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2017"
+__date__ = "17/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -203,6 +203,8 @@ class Goniometer(object):
         self.wavelength = wavelength
         if param_names is None and "param_names" in dir(translation_function):
             param_names = translation_function.param_names
+            if isinstance(param, dict):
+                self.param = [param.get(i, 0) for i in param_names]
         self.nt_param = namedtuple("GonioParam", param_names) if param_names else lambda *x: tuple(x)
         if pos_names is None and "pos_names" in dir(translation_function):
             pos_names = translation_function.pos_names
