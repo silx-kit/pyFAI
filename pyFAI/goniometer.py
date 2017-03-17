@@ -476,7 +476,7 @@ class GoniometerRefinement(Goniometer):
             self.bounds = [(None, None)] * len(self.param)
         else:
             if isinstance(bounds, dict) and "_fields" in dir(self.nt_param):
-                self.bounds = [param.get(i, (None, None))
+                self.bounds = [bounds.get(i, (None, None))
                                for i in self.nt_param._fields]
             else:
                 self.bounds = list(bounds)
