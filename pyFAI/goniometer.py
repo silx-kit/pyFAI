@@ -203,9 +203,12 @@ class Goniometer(object):
         self.wavelength = wavelength
         if param_names is None and "param_names" in dir(translation_function):
             param_names = translation_function.param_names
+        if param_names is not None:
             if isinstance(param, dict):
                 self.param = [param.get(i, 0) for i in param_names]
-        self.nt_param = namedtuple("GonioParam", param_names) if param_names else lambda *x: tuple(x)
+            self.nt_param = namedtuple("GonioParam", param_names)
+        else:
+            self.nt_param = lambda *x: tuple(x)
         if pos_names is None and "pos_names" in dir(translation_function):
             pos_names = translation_function.pos_names
         self.nt_pos = namedtuple("GonioPos", pos_names) if pos_names else lambda *x: tuple(x)
@@ -472,7 +475,11 @@ class GoniometerRefinement(Goniometer):
         if bounds is None:
             self.bounds = [(None, None)] * len(self.param)
         else:
-            self.bounds = list(bounds)
+            if isinstance(bounds, dict) and "_fields" in dir(self.nt_param):
+                self.bounds = [param.get(i, (None, None))
+                               for i in self.nt_param._fields]
+            else:
+                self.bounds = list(bounds)
         self.position_function = position_function
 
     def new_geometry(self, label, image=None, metadata=None, control_points=None,
