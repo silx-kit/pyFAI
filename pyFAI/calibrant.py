@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2017"
+__date__ = "17/03/2017"
 __status__ = "production"
 
 
@@ -347,7 +347,7 @@ class Calibrant(object):
             return False
         if self._wavelength != other._wavelength:
             return False
-        if self._dSpacing != other._dSpacing:
+        if self.dSpacing != other.dSpacing:
             return False
         return True
 
@@ -372,7 +372,7 @@ class Calibrant(object):
 
         :rtype: int
         """
-        return hash(self._wavelength) ^ hash(self._dSpacing)
+        return hash(self._wavelength) ^ hash(self.dSpacing)
 
     def __copy__(self):
         """
@@ -381,7 +381,7 @@ class Calibrant(object):
         :rtype: Calibrant
         """
         return Calibrant(filename=self._filename,
-                         dSpacing=self._dSpacing,
+                         dSpacing=self.dSpacing,
                          wavelength=self._wavelength)
 
     def __repr__(self):
