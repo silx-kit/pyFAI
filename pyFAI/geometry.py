@@ -649,11 +649,13 @@ class Geometry(object):
             unit = units.to_unit(unit)
             space = unit.name.split("_")[0]
         else:
+            #If no unit is asked, any is OK for extracting the Chi array
             unit = None
-            space = "2th"  # there must be a default one
-            ary = self._cached_array.get(space + "_corner_")
-            if (ary is not None) and (shape == ary.shape[:2]):
-                return ary
+            for space in [ u.split("_")[0] for u in units.ANGLE_UNITS]:
+                ary = self._cached_array.get(space + "_corner_")
+                if (ary is not None) and (shape == ary.shape[:2]):
+                    return ary
+            space = "r" # This is the fastest to calculate 
         key = space + "_corner_"
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
