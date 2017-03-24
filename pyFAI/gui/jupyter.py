@@ -43,9 +43,9 @@ import numpy
 from pylab import subplots, legend
 
 
-def display_cp(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
+def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
     """Display an image with the control points and the calibrated rings
-    in Jupyter notbooks
+    in Jupyter notebooks
     
     :param img: 2D numpy array with an image
     :param cp: ControlPoint instance
