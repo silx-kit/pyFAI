@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2017"
+__date__ = "20/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -155,7 +155,8 @@ class GeometryTranslation(object):
     def to_dict(self):
         """Export the instance representation for serialization as a dictionary
         """
-        res = OrderedDict([("param_names", self.param_names),
+        res = OrderedDict([("content", self.__class__.__name__),
+                           ("param_names", self.param_names),
                            ("pos_names", self.pos_names),
                            ("dist_expr", self.dist_expr),
                            ("poni1_expr", self.poni1_expr),
@@ -277,7 +278,12 @@ class Goniometer(object):
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
         assert "translation_function" in dico, "No translation function defined in JSON file"
         detector = Detector.from_dict(dico)
-        funct = GeometryTranslation(**dico.get("translation_function"))
+        tansfun = dico.get("translation_function", {})
+        if "content" in tansfun:
+            content = tansfun.pop("content")
+            assert content == "GeometryTranslation"
+            # May be addapted for other classes of GeometryTranslation functions
+        funct = GeometryTranslation(**tansfun)
         gonio = cls(dico.get("param", []), funct, detector, dico.get("wavelength"))
         return gonio
 
@@ -422,7 +428,7 @@ class SingleGeometry(object):
             return
         fig = figure()
         ax = fig.add_subplot(1, 1, 1)
-        ax.imshow(numpy.arcsinh(self.image), origin="lower")
+        ax.imshow(numpy.arcsinh(self.image), origin="lower", cmap="inferno")
         if self.control_points is not None:
             cp = self.control_points
             for lbl in cp.get_labels():
