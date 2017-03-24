@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2017"
+__date__ = "17/03/2017"
 
 import unittest
 import logging
@@ -137,8 +137,9 @@ class TestCalibrant(unittest.TestCase):
         self.assertEquals(c1, c2)
 
     def test_not_same_dspace(self):
-        c1 = CALIBRANT_FACTORY("AgBh")
-        c2 = CALIBRANT_FACTORY("LaB6")
+        # this 2 calibrant must only be used there to test the lazy-loading
+        c1 = CALIBRANT_FACTORY("LaB6_SRM660a")
+        c2 = CALIBRANT_FACTORY("LaB6_SRM660b")
         self.assertEquals(c1, c2)
 
     def test_not_same_wavelength(self):
