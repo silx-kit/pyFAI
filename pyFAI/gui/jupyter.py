@@ -26,7 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Jupyter helper function
+"""Jupyter helper functions
 """
 
 from __future__ import division, print_function
