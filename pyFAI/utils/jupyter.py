@@ -35,32 +35,47 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/02/2017"
+__date__ = "24/03/2017"
 __status__ = "Development"
 __docformat__ = 'restructuredtext'
 
 import numpy
-from pylab import figure, legend
+from pylab import subplots, legend
 
 
-def display_cp(img, cp=None, ai=None):
+def display_cp(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
     """Display an image with the control points and the calibrated rings
-    in jupyter
+    in Jupyter notbooks
     
     :param img: 2D numpy array with an image
     :param cp: ControlPoint instance
-    :param ai: azimuthal integrator for iso-2th curves 
+    :param ai: azimuthal integrator for iso-2th curves
+    :param label: name of the curve
+    :param sg: single geometry object regrouping img, cp and ai
+    :param ax: subplot object to display in, if None, a new one is created.  
+    :rerturn: Matplotlib subplot
     """
-    fig = figure()
-    ax = fig.add_subplot(1, 1, 1)
-    ax.imshow(numpy.arcsinh(img), origin="lower")
+    if ax is None:
+        fig, ax = subplots()
+    if sg is not None:
+        if img is None:
+            img = sg.image
+        if cp is None:
+            cp = sg.control_points
+        if ai is None:
+            ai = sg.geometry_refinement
+        if label is None:
+            label = sg.label
+
+    ax.imshow(numpy.arcsinh(img), origin="lower", cmap="inferno")
+    ax.set_title(label)
     if cp is not None:
         for lbl in cp.get_labels():
             pt = numpy.array(cp.get(lbl=lbl).points)
             ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
-        if ai is not None:
+        if ai is not None and cp.calibrant is not None:
             tth = cp.calibrant.get_2th()
             ttha = ai.twoThetaArray()
             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
         legend()
-    return fig
+    return ax

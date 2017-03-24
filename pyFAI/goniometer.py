@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2017"
+__date__ = "24/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -415,33 +415,34 @@ class SingleGeometry(object):
         self.geometry_refinement.data = numpy.asarray(cp.getList(), dtype=numpy.float64)
         return cp
 
-    def display(self):
-        """
-        Display the image with the control points and the iso-contour overlaid. 
-        
-        @return: the figure to be showed
-        """
-        # should already be set-up ...
-        from pylab import figure, legend
-
-        if self.image is None:
-            return
-        fig = figure()
-        ax = fig.add_subplot(1, 1, 1)
-        ax.imshow(numpy.arcsinh(self.image), origin="lower", cmap="inferno")
-        if self.control_points is not None:
-            cp = self.control_points
-            for lbl in cp.get_labels():
-                pt = numpy.array(cp.get(lbl=lbl).points)
-                ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
-            legend()
-        if self.geometry_refinement is not None and self.calibrant is not None:
-            ai = self.geometry_refinement
-            tth = self.calibrant.get_2th()
-            ttha = ai.twoThetaArray()
-            ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
-        ax.set_title(self.label)
-        return fig
+#     def display(self, ax=None):
+#         """
+#         Display the image with the control points and the iso-contour overlaid.
+#
+#         @return: the figure to be showed
+#         """
+#         if ax is None:
+#             # should already be set-up ...
+#             from pylab import figure, legend
+#
+#             if self.image is None:
+#                 return
+#             fig = figure()
+#             ax = fig.add_subplot(1, 1, 1)
+#         ax.imshow(numpy.arcsinh(self.image), origin="lower", cmap="inferno")
+#         if self.control_points is not None:
+#             cp = self.control_points
+#             for lbl in cp.get_labels():
+#                 pt = numpy.array(cp.get(lbl=lbl).points)
+#                 ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
+#             legend()
+#         if self.geometry_refinement is not None and self.calibrant is not None:
+#             ai = self.geometry_refinement
+#             tth = self.calibrant.get_2th()
+#             ttha = ai.twoThetaArray()
+#             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
+#         ax.set_title(self.label)
+#         return fig
 
     def get_ai(self):
         """Create a new azimuthal integrator to be used.
