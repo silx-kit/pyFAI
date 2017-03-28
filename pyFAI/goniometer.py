@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/03/2017"
+__date__ = "28/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -80,7 +80,8 @@ class GeometryTranslation(object):
     """
     def __init__(self, dist_expr, poni1_expr, poni2_expr,
                  rot1_expr, rot2_expr, rot3_expr,
-                 param_names, pos_names=None, constants=None):
+                 param_names, pos_names=None, constants=None,
+                 content=None):
         """Constructor of the class
         
         :param dist_expr: formula (as string) providing with the dist
@@ -91,8 +92,13 @@ class GeometryTranslation(object):
         :param rot3_expr: formula (as string) providing with the rot3
         :param param_names: list of names of the parameters used in the model
         :param pos_names: list of motor names for gonio with >1 degree of freedom
-        :param constants: a dictionary with some constants the user may want to use 
+        :param constants: a dictionary with some constants the user may want to use
+        :param content: Should be None or the name of the class 
+                (may be used in the future to dispatch to multiple derivative classes) 
         """
+        if content is not None:
+            # Ensures we use the constructor of the right class
+            assert content == self.__class__.__name__
         if numexpr is None:
             raise RuntimeError("Geometry translation requires the *numexpr* package")
         self.dist_expr = dist_expr
