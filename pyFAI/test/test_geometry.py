@@ -298,6 +298,23 @@ class ParamFastPath(ParameterisedTestCase):
         self.assertTrue(numpy.alltrue(delta.max() < self.epsilon), msg)
         logger.debug(msg)
 
+    def test_deltachi(self):
+        """Test the deltaChi"""
+        kwds = self.param
+        geo = geometry.Geometry(**kwds)
+        t0 = timer()
+        py_res = geo.deltaChi(use_cython=False)
+#         t1 = timer()
+        geo.reset()
+        t1 = timer()
+        cy_res = geo.deltaChi(use_cython=True)
+        t2 = timer()
+        delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
+        logger.info("TIMINGS\t meth: deltaChi %s python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
+                    kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
+        msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
+        self.assertTrue(numpy.alltrue(delta.max() < self.epsilon), msg)
+        logger.debug(msg)
 
 class ParamTestGeometry(ParameterisedTestCase):
     size = 1024
@@ -381,16 +398,18 @@ def suite():
     testsuite.addTest(TestRecprocalSpacingSquarred("test_center"))
     testsuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
     testsuite.addTest(TestRecprocalSpacingSquarred("test_delta"))
-
+ 
     for param in ParamTestGeometry.TESTCASES_FUNCT:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamTestGeometry, "test_geometry_functions", param))
     for param in ParamTestGeometry.TESTCASES_XYZ:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamTestGeometry, "test_XYZ", param))
-
+ 
     for param in ParamFastPath.geometries:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamFastPath, "test_XYZ", param))
     for param in ParamFastPath.TESTSPACE:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamFastPath, "test_corner_array", param))
+    for param in ParamFastPath.geometries:
+        testsuite.addTest(ParameterisedTestCase.parameterise(ParamFastPath, "test_deltachi", param))
 
     return testsuite
 

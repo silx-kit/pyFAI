@@ -839,17 +839,17 @@ class Geometry(object):
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
         """
-
-        if self._cached_array.get("2th_delta") is None:
+        key = "2th_delta"
+        if self._cached_array.get(key) is None:
             center = self.twoThetaArray(shape)
             corners = self.corner_array(shape, unit=units.TTH)
             with self._sem:
-                if self._cached_array.get("2th_delta") is None:
+                if self._cached_array.get(key) is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array["2th_delta"] = delta.max(axis=-1)
-        return self._cached_array["2th_delta"]
+                    self._cached_array[key] = delta.max(axis=-1)
+        return self._cached_array[key]
 
-    def deltaChi(self, shape=None):
+    def deltaChi(self, shape=None, use_cython=True):
         """
         Generate a 3D array of the given shape with (i,j) with the max
         distance between the center and any corner in chi-angle (rad)
@@ -857,16 +857,24 @@ class Geometry(object):
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
         """
-        if self._cached_array.get("chi_delta") is None:
-            center = numpy.atleast_3d(self.chiArray(shape))
+        key = "chi_delta"
+        if self._cached_array.get(key) is None:
+            center = self.chiArray(shape)
             corner = self.corner_array(shape, None)
             with self._sem:
-                if self._cached_array.get("chi_delta") is None:
-                    twoPi = 2.0 * numpy.pi
-                    delta = numpy.minimum(((corner[:, :, :, 1] - center) % twoPi),
-                                          ((center - corner[:, :, :, 1]) % twoPi))
-                    self._cached_array["chi_delta"] = delta.max(axis=-1)
-        return self._cached_array["chi_delta"]
+                if self._cached_array.get(key) is None:
+                    if use_cython:
+                        print(center.shape, center.dtype)
+                        print(corner.shape, corner.dtype)
+                        delta = _geometry.calc_delta_chi(center, corner)
+                        self._cached_array[key] = delta
+                    else:
+                        twoPi = 2.0 * numpy.pi
+                        center = numpy.atleast_3d(center)
+                        delta = numpy.minimum(((corner[:, :, :, 1] - center) % twoPi),
+                                              ((center - corner[:, :, :, 1]) % twoPi))
+                        self._cached_array[key] = delta.max(axis=-1)
+        return self._cached_array[key]
 
     def deltaQ(self, shape=None):
         """
@@ -877,14 +885,15 @@ class Geometry(object):
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        if self._cached_array.get("q_delta") is None:
+        key = "q_delta"
+        if self._cached_array.get(key) is None:
             center = self.qArray(shape)
             corners = self.corner_array(shape, unit=units.Q)
             with self._sem:
-                if self._cached_array.get("q_delta") is None:
+                if self._cached_array.get(key) is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array["q_delta"] = delta.max(axis=-1)
-        return self._cached_array["q_delta"]
+                    self._cached_array[key] = delta.max(axis=-1)
+        return self._cached_array[key]
 
     def deltaR(self, shape=None):
         """
@@ -894,14 +903,15 @@ class Geometry(object):
         :param shape: The shape of the detector array: 2-tuple of integer
         :return: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
         """
-        if self._cached_array.get("r_delta") is None:
+        key = "r_delta"
+        if self._cached_array.get(key) is None:
             center = self.rArray(shape)
             corners = self.corner_array(shape, unit=units.R)
             with self._sem:
-                if self._cached_array.get("r_delta") is None:
+                if self._cached_array.get(key) is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
-                    self._cached_array["r_delta"] = delta.max(axis=-1)
-        return self._cached_array["r_delta"]
+                    self._cached_array[key] = delta.max(axis=-1)
+        return self._cached_array[key]
 
     def deltaRd2(self, shape=None):
         """
