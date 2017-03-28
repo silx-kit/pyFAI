@@ -652,11 +652,11 @@ class Geometry(object):
             #If no unit is asked, any is OK for extracting the Chi array
             unit = None
             for space in [ u.split("_")[0] for u in units.ANGLE_UNITS]:
-                ary = self._cached_array.get(space + "_corner_")
+                ary = self._cached_array.get(space + "_corner")
                 if (ary is not None) and (shape == ary.shape[:2]):
                     return ary
             space = "r" # This is the fastest to calculate 
-        key = space + "_corner_"
+        key = space + "_corner"
         if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
             with self._sem:
                 if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
@@ -864,8 +864,6 @@ class Geometry(object):
             with self._sem:
                 if self._cached_array.get(key) is None:
                     if use_cython:
-                        print(center.shape, center.dtype)
-                        print(corner.shape, corner.dtype)
                         delta = _geometry.calc_delta_chi(center, corner)
                         self._cached_array[key] = delta
                     else:
