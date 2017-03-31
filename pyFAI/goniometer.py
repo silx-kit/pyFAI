@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/03/2017"
+__date__ = "31/03/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -67,7 +67,7 @@ except ImportError:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
 
 
-class GeometryTranslation(object):
+class GeometryTransformation(object):
     """This class, once instanciated, behaves like a function (via the __call__
     method). It is responsible for taking any input geometry and translate it into 
     a set of parameters compatible with pyFAI, i.e. a tuple with: 
@@ -75,8 +75,6 @@ class GeometryTranslation(object):
     
     This function uses numexpr for formula evaluation
     
-     
-     
     """
     def __init__(self, dist_expr, poni1_expr, poni2_expr,
                  rot1_expr, rot2_expr, rot3_expr,
@@ -98,7 +96,7 @@ class GeometryTranslation(object):
         """
         if content is not None:
             # Ensures we use the constructor of the right class
-            assert content == self.__class__.__name__
+            assert content in (self.__class__.__name__, "GeometryTranlation")
         if numexpr is None:
             raise RuntimeError("Geometry translation requires the *numexpr* package")
         self.dist_expr = dist_expr
@@ -149,7 +147,7 @@ class GeometryTranslation(object):
         return PoniParam(*res)
 
     def __repr__(self):
-        res = ["GeometryTranslation with param: %s and pos: %s" % (self.param_names, self.pos_names),
+        res = ["GeometryTransformation with param: %s and pos: %s" % (self.param_names, self.pos_names),
                "    dist= %s" % self.dist_expr,
                "    poni1= %s" % self.poni1_expr,
                "    poni2= %s" % self.poni2_expr,
@@ -180,6 +178,8 @@ class GeometryTranslation(object):
             constants[key] = val
         res["constants"] = constants
         return res
+    
+GeometryTranslation = GeometryTransformation
 
 
 class Goniometer(object):
@@ -189,14 +189,14 @@ class Goniometer(object):
 
     file_version = "Goniometer calibration v1.0"
 
-    def __init__(self, param, translation_function, detector="Detector",
+    def __init__(self, param, trans_function, detector="Detector",
                  wavelength=None, param_names=None, pos_names=None):
         """Constructor of the Goniometer class
         
         :param param: vector of parameter to refine for defining the detector 
                         position on the goniometer
-        :param translation_function: function taking the parameters of the 
-                                    goniometer and the gonopmeter position and return the
+        :param trans_function: function taking the parameters of the 
+                                    goniometer and the goniometer position and return the
                                     6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
         :param detector: detector mounted on the moving arm
         :param wavelength: the wavelength used for the experiment
@@ -205,19 +205,19 @@ class Goniometer(object):
         """
 
         self.param = param
-        self.translation_function = translation_function
+        self.trans_function = trans_function
         self.detector = detector_factory(detector)
         self.wavelength = wavelength
-        if param_names is None and "param_names" in dir(translation_function):
-            param_names = translation_function.param_names
+        if param_names is None and "param_names" in dir(trans_function):
+            param_names = trans_function.param_names
         if param_names is not None:
             if isinstance(param, dict):
                 self.param = [param.get(i, 0) for i in param_names]
             self.nt_param = namedtuple("GonioParam", param_names)
         else:
             self.nt_param = lambda *x: tuple(x)
-        if pos_names is None and "pos_names" in dir(translation_function):
-            pos_names = translation_function.pos_names
+        if pos_names is None and "pos_names" in dir(trans_function):
+            pos_names = trans_function.pos_names
         self.nt_pos = namedtuple("GonioPos", pos_names) if pos_names else lambda *x: tuple(x)
 
     def __repr__(self):
@@ -229,7 +229,7 @@ class Goniometer(object):
         :param position: the goniometer position, a float for a 1 axis goniometer
         :return: A freshly build AzimuthalIntegrator 
         """
-        res = self.translation_function(self.param, position)
+        res = self.trans_function(self.param, position)
         ai = AzimuthalIntegrator(detector=self.detector, wavelength=self.wavelength)
         ai.dist, ai.poni1, ai.poni2, ai.rot1, ai.rot2, ai.rot3 = res
         return ai
@@ -258,10 +258,10 @@ class Goniometer(object):
             dico["param_names"] = self.nt_param._fields
         if "_fields" in dir(self.nt_pos):
             dico["pos_names"] = self.nt_pos._fields
-        if "to_dict" in dir(self.translation_function):
-            dico["translation_function"] = self.translation_function.to_dict()
+        if "to_dict" in dir(self.trans_function):
+            dico["trans_function"] = self.trans_function.to_dict()
         else:
-            logger.warning("translation_function is not serializable")
+            logger.warning("trans_function is not serializable")
         return dico
 
     def save(self, filename):
@@ -282,14 +282,14 @@ class Goniometer(object):
         with open(filename) as f:
             dico = json.load(f)
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
-        assert "translation_function" in dico, "No translation function defined in JSON file"
+        assert "trans_function" in dico, "No translation function defined in JSON file"
         detector = Detector.from_dict(dico)
-        tansfun = dico.get("translation_function", {})
+        tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
             content = tansfun.pop("content")
-            assert content == "GeometryTranslation"
-            # May be addapted for other classes of GeometryTranslation functions
-        funct = GeometryTranslation(**tansfun)
+            assert content in ("GeometryTranslation", "GeometryTransformation") 
+            # May be adapted for other classes of GeometryTransformation functions
+        funct = GeometryTransformation(**tansfun)
         gonio = cls(dico.get("param", []), funct, detector, dico.get("wavelength"))
         return gonio
 
@@ -298,7 +298,7 @@ class SingleGeometry(object):
     """This class represents a single geometry of a detector position on a 
     goniometer arm
     """
-    def __init__(self, label, image=None, metadata=None, position_function=None,
+    def __init__(self, label, image=None, metadata=None, pos_function=None,
                  control_points=None, calibrant=None, detector=None, geometry=None):
         """Constructor of the SingleGeometry class, used for calibrating a 
         multi-geometry setup with a moving detector
@@ -306,7 +306,7 @@ class SingleGeometry(object):
         :param label: name of the geometry, a string or anything unmutable
         :param image: image with Debye-Scherrer rings as 2d numpy array
         :param metadata: anything which contains the goniometer position
-        :param position_function: a function which takes the metadata as input 
+        :param pos_function: a function which takes the metadata as input 
                                  and returns the goniometer arm position
         Optional parameters:
         :param control_points: a pyFAI.control_points.ControlPoints instance
@@ -347,12 +347,12 @@ class SingleGeometry(object):
         self.geometry_refinement = GeometryRefinement(**dict_geo)
         if self.detector is None:
             self.detector = self.geometry_refinement.detector
-        self.position_function = position_function
+        self.pos_function = pos_function
         self.massif = None
 
     def get_position(self):
         """This method  is in charge of calculating the motor position from metadata/label/..."""
-        return self.position_function(self.metadata)
+        return self.pos_function(self.metadata)
 
     def extract_cp(self, max_rings=None, pts_per_deg=1.0):
         """Performs an automatic keypoint extraction and update the geometry refinement part
@@ -421,35 +421,6 @@ class SingleGeometry(object):
         self.geometry_refinement.data = numpy.asarray(cp.getList(), dtype=numpy.float64)
         return cp
 
-#     def display(self, ax=None):
-#         """
-#         Display the image with the control points and the iso-contour overlaid.
-#
-#         @return: the figure to be showed
-#         """
-#         if ax is None:
-#             # should already be set-up ...
-#             from pylab import figure, legend
-#
-#             if self.image is None:
-#                 return
-#             fig = figure()
-#             ax = fig.add_subplot(1, 1, 1)
-#         ax.imshow(numpy.arcsinh(self.image), origin="lower", cmap="inferno")
-#         if self.control_points is not None:
-#             cp = self.control_points
-#             for lbl in cp.get_labels():
-#                 pt = numpy.array(cp.get(lbl=lbl).points)
-#                 ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
-#             legend()
-#         if self.geometry_refinement is not None and self.calibrant is not None:
-#             ai = self.geometry_refinement
-#             tth = self.calibrant.get_2th()
-#             ttha = ai.twoThetaArray()
-#             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
-#         ax.set_title(self.label)
-#         return fig
-
     def get_ai(self):
         """Create a new azimuthal integrator to be used.
 
@@ -463,16 +434,16 @@ class GoniometerRefinement(Goniometer):
     """This class allow the translation of a goniometer geometry into a pyFAI 
     geometry using a set of parameter to refine. 
     """
-    def __init__(self, param, position_function, translation_function,
+    def __init__(self, param, pos_function, trans_function,
                  detector="Detector", wavelength=None, param_names=None, pos_names=None,
                  bounds=None):
         """Constructor of the GoniometerRefinement class
         
         :param param: vector of parameter to refine for defining the detector 
                         position on the goniometer
-        :parma position_function: a function taking metadata and extracting the 
+        :parma pos_function: a function taking metadata and extracting the 
                                   goniometer position
-        :param translation_function: function taking the parameters of the 
+        :param trans_function: function taking the parameters of the 
                                     goniometer and the gonopmeter position and return the
                                     6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
         :param detector: detector mounted on the moving arm
@@ -481,7 +452,7 @@ class GoniometerRefinement(Goniometer):
         :param pos_names: list of names to "label" the position vector of the gonio.   
         :param bounds: list of 2-tuple with the lower and upper bound of each function
         """
-        Goniometer.__init__(self, param, translation_function,
+        Goniometer.__init__(self, param, trans_function,
                             detector=detector, wavelength=wavelength,
                             param_names=param_names, pos_names=pos_names)
         self.single_geometries = OrderedDict()  # a dict of labels: SingleGeometry
@@ -493,7 +464,7 @@ class GoniometerRefinement(Goniometer):
                                for i in self.nt_param._fields]
             else:
                 self.bounds = list(bounds)
-        self.position_function = position_function
+        self.pos_function = pos_function
 
     def new_geometry(self, label, image=None, metadata=None, control_points=None,
                      calibrant=None, geometry=None):
@@ -507,14 +478,14 @@ class GoniometerRefinement(Goniometer):
         :param geometry: poni or AzimuthalIntegrator instance.
         """
         if geometry is None:
-            geometry = self.get_ai(self.position_function(metadata))
+            geometry = self.get_ai(self.pos_function(metadata))
         sg = SingleGeometry(label=label,
                             image=image,
                             metadata=metadata,
                             control_points=control_points,
                             calibrant=calibrant,
                             detector=self.detector,
-                            position_function=self.position_function,
+                            pos_function=self.pos_function,
                             geometry=geometry)
         self.single_geometries[label] = sg
         return sg
@@ -530,7 +501,7 @@ class GoniometerRefinement(Goniometer):
         npt = 0
         for single in self.single_geometries.values():
             motor_pos = single.get_position()
-            single_param = self.translation_function(param, motor_pos)
+            single_param = self.trans_function(param, motor_pos)
             if single.geometry_refinement is not None and len(single.geometry_refinement.data) > 1:
                 sumsquare += single.geometry_refinement.chi2(single_param)
                 npt += single.geometry_refinement.data.shape[0]
