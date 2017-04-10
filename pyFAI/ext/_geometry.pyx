@@ -39,7 +39,7 @@ import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
-#We declare a second cython.floating so that it behaves like an actual template 
+# We declare a second cython.floating so that it behaves like an actual template
 ctypedef fused float_or_double:
     cython.double
     cython.float
@@ -600,7 +600,7 @@ def calc_rad_azim(double L,
 def calc_delta_chi(cython.floating[:, ::1] centers,
                    float_or_double[:, :, :, ::1] corners):
     """Calculate the delta chi array (azimuthal angles) using OpenMP
-    
+
     :param centers: numpy array with chi angles of the center of the pixels
     :param corners: numpy array with chi angles of the corners of the pixels
     :return: ndarray of double with same shape and size as centers woth the delta chi per pixel
@@ -609,13 +609,13 @@ def calc_delta_chi(cython.floating[:, ::1] centers,
         int width, height, row, col, corn, nbcorn
         double co, ce, delta0, delta1, delta2, delta, twopi = 2*M_PI
         double[:, ::1] res
-        
+
     height = centers.shape[0]
     width =  centers.shape[1]
     assert corners.shape[0] == height, "height match"
     assert corners.shape[1] == width, "width match"
     nbcorn = corners.shape[2]
-    
+
     res = numpy.empty((height, width), dtype=numpy.float64)
     with nogil:
         for row in prange(height):
