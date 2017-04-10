@@ -304,7 +304,7 @@ class ParamFastPath(ParameterisedTestCase):
         geo = geometry.Geometry(**kwds)
         t0 = timer()
         py_res = geo.deltaChi(use_cython=False)
-#         t1 = timer()
+        # t1 = timer()
         geo.reset()
         t1 = timer()
         cy_res = geo.deltaChi(use_cython=True)
@@ -398,12 +398,12 @@ def suite():
     testsuite.addTest(TestRecprocalSpacingSquarred("test_center"))
     testsuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
     testsuite.addTest(TestRecprocalSpacingSquarred("test_delta"))
- 
+
     for param in ParamTestGeometry.TESTCASES_FUNCT:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamTestGeometry, "test_geometry_functions", param))
     for param in ParamTestGeometry.TESTCASES_XYZ:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamTestGeometry, "test_XYZ", param))
- 
+
     for param in ParamFastPath.geometries:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamFastPath, "test_XYZ", param))
     for param in ParamFastPath.TESTSPACE:
