@@ -26,7 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Test suite for Goniometer class and associated 
+"""Test suite for Goniometer class and associated
 """
 
 from __future__ import absolute_import, division, print_function
@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2017"
+__date__ = "11/04/2017"
 
 import os
 import unittest
@@ -77,9 +77,10 @@ class TestTranslation(unittest.TestCase):
     @staticmethod
     def reference_function(gonio_params, motor_pos):
         """1-axis goniometer (vertical) with 1 translation on the distance
-        
-        :param gonio_params: 7 parameter model  dist_scale, dist_offset, poni1, poni2, rot1, rot2_scale, rot2_offset
-        :param motor_pos: 2 parameters of the gonio: distance, angle 
+
+        :param gonio_params: 7 parameter model  dist_scale, dist_offset, poni1,
+            poni2, rot1, rot2_scale, rot2_offset
+        :param motor_pos: 2 parameters of the gonio: distance, angle
         :return 6-tuple representing pyFAI geometry
         """
         pos_dist, pos_angle = motor_pos

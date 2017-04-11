@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "11/04/2017"
 __status__ = "stable"
 
 install_warning = True
@@ -566,7 +566,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
                "Topic :: Scientific/Engineering :: Physics"
                ]
 
-install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
+install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy", "numexpr"]
 setup_requires = ["numpy", "cython"]
 
 packages = ["pyFAI", "pyFAI.ext", "pyFAI.gui", "pyFAI.utils", "pyFAI.test", "pyFAI.benchmark", "pyFAI.resources", "pyFAI.opencl", "pyFAI.opencl.test"]

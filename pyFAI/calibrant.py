@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/03/2017"
+__date__ = "11/04/2017"
 __status__ = "production"
 
 
@@ -647,7 +647,7 @@ def get_calibrant(calibrant_name):
 
 
 def names():
-    """ Returns the list of registred calibrant names.
+    """Returns the list of registred calibrant names.
 
     :rtype: str
     """

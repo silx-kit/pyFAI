@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/03/2017"
+__date__ = "11/04/2017"
 __status__ = "Development"
 __docformat__ = 'restructuredtext'
 
@@ -46,17 +46,17 @@ from pylab import subplots, legend
 def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
     """Display an image with the control points and the calibrated rings
     in Jupyter notebooks
-    
+
     :param img: 2D numpy array with an image
     :param cp: ControlPoint instance
     :param ai: azimuthal integrator for iso-2th curves
     :param label: name of the curve
     :param sg: single geometry object regrouping img, cp and ai
-    :param ax: subplot object to display in, if None, a new one is created.  
+    :param ax: subplot object to display in, if None, a new one is created.
     :rerturn: Matplotlib subplot
     """
     if ax is None:
-        fig, ax = subplots()
+        _fig, ax = subplots()
     if sg is not None:
         if img is None:
             img = sg.image

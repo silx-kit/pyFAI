@@ -29,7 +29,7 @@
 """
 ControlPoints: a set of control points associated with a calibration image
 
-PointGroup: a group of points, usd in 
+PointGroup: a group of points
 """
 
 from __future__ import absolute_import, print_function, with_statement, division
@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2017"
+__date__ = "11/04/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -62,8 +62,8 @@ logger = logging.getLogger("pyFAI.control_points")
 
 class ControlPoints(object):
     """
-    This class contains a set of control points with (optionally) their ring number 
-    hence d-spacing and diffraction  2Theta angle ...
+    This class contains a set of control points with (optionally) their
+    ring number hence d-spacing and diffraction  2Theta angle ...
     """
     def __init__(self, filename=None, calibrant=None, wavelength=None):
         self._sem = threading.Semaphore()
@@ -133,7 +133,7 @@ class ControlPoints(object):
 
     def append_2theta_deg(self, points, angle=None, ring=None):
         """Append a group of points to a given ring
-        
+
         :param point: list of points
         :param angle: 2-theta angle in degrees
         :param: ring: ring number
@@ -147,7 +147,7 @@ class ControlPoints(object):
         """Retireves the last group of points for a given ring (by default the last)
 
         :param ring: index of ring to search for
-        :param lbl: label of the group to retrieve 
+        :param lbl: label of the group to retrieve
         """
         out = None
         with self._sem:
@@ -428,9 +428,9 @@ class ControlPoints(object):
     dSpacing = property(get_dSpacing, set_dSpacing)
 
     def get_labels(self):
-        """Retieve the list of labels 
-        
-        :return: list of labels as string  
+        """Retieve the list of labels
+
+        :return: list of labels as string
         """
         labels = list(self._groups.keys())
         labels.sort(key=lambda item: self._groups[item].code)
