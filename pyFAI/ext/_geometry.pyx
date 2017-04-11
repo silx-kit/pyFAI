@@ -39,6 +39,10 @@ import numpy
 from cython.parallel cimport prange
 from libc.math cimport sin, cos, atan2, sqrt, M_PI
 
+# We declare a second cython.floating so that it behaves like an actual template
+ctypedef fused float_or_double:
+    cython.double
+    cython.float
 
 cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """Calculate t2 (aka y) for 1 pixel
@@ -587,3 +591,43 @@ def calc_rad_azim(double L,
         return nout.reshape(pos1.shape[0], pos1.shape[1], 2)
     else:
         return nout
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
+def calc_delta_chi(cython.floating[:, ::1] centers,
+                   float_or_double[:, :, :, ::1] corners):
+    """Calculate the delta chi array (azimuthal angles) using OpenMP
+
+    :param centers: numpy array with chi angles of the center of the pixels
+    :param corners: numpy array with chi angles of the corners of the pixels
+    :return: ndarray of double with same shape and size as centers woth the delta chi per pixel
+    """
+    cdef:
+        int width, height, row, col, corn, nbcorn
+        double co, ce, delta0, delta1, delta2, delta, twopi = 2*M_PI
+        double[:, ::1] res
+
+    height = centers.shape[0]
+    width =  centers.shape[1]
+    assert corners.shape[0] == height, "height match"
+    assert corners.shape[1] == width, "width match"
+    nbcorn = corners.shape[2]
+
+    res = numpy.empty((height, width), dtype=numpy.float64)
+    with nogil:
+        for row in prange(height):
+            for col in range(width):
+                ce = centers[row, col]
+                delta = 0.0
+                for corn in range(nbcorn):
+                    co = corners[row, col, corn, 1]
+                    delta1 = (co - ce + twopi) % twopi
+                    delta2 = (ce - co + twopi ) % twopi
+                    delta0 = min(delta1, delta2)
+                    if delta0 > delta:
+                        delta = delta0
+                res[row, col] = delta
+    return numpy.asarray(res)

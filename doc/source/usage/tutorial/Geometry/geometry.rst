@@ -23,7 +23,7 @@ The tutorial uses the ipython notebook (aka Jupyter).
 .. code:: python
 
     import pyFAI
-    from pyFAI.calibrant import ALL_CALIBRANTS
+    from pyFAI.calibrant import get_calibrant
 
 
 .. parsed-literal::
@@ -39,7 +39,7 @@ originally be placed at 1\_m from the sample.
 .. code:: python
 
     wl = 1e-10
-    cal = ALL_CALIBRANTS["AgBh"]
+    cal = get_calibrant("AgBh")
     cal.wavelength=wl
 
     detector = pyFAI.detectors.Detector(100e-6, 100e-6)

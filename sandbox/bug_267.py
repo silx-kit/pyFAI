@@ -4,10 +4,8 @@ import numpy
 
 import fabio
 from pyFAI.calibration import calib, get_detector
-from pyFAI.calibrant import ALL_CALIBRANTS
+from pyFAI.calibrant import get_calibrant
 
-def get_calibrant(calibrant_name):
-    return ALL_CALIBRANTS[calibrant_name]
 
 def calibration(img, calibrant_name, detector_name, wavelength):
     calibrant = get_calibrant(calibrant_name)

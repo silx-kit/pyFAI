@@ -79,8 +79,8 @@ class TestScriptsHelp(unittest.TestCase):
             logger.error("Stderr:")
             logger.error(err)
             envString = "Environment:"
-            for k, v in self.env.items():
-                env += "%s    %s: %s" % (os.linesep, k, v)
+            for k, v in env.items():
+                envString += "%s    %s: %s" % (os.linesep, k, v)
             logger.error(envString)
             self.fail()
 
