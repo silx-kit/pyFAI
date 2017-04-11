@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2017"
+__date__ = "11/04/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1415,7 +1415,8 @@ class Geometry(object):
         return res
 
     def set_param(self, param):
-        """set the geometry from a 6-tuple with dist, poni1, poni2, rot1, rot2, rot3
+        """set the geometry from a 6-tuple with dist, poni1, poni2, rot1, rot2,
+        rot3
         """
         if len(param) == 6:
             self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3 = param

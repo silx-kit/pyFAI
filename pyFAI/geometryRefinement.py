@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2017"
+__date__ = "11/04/2017"
 __status__ = "development"
 
 import os
@@ -146,8 +146,8 @@ class GeometryRefinement(AzimuthalIntegrator):
 
     def guess_poni(self):
         """PONI can be guessed by the centroid of the ring with lowest 2Theta
-        
-        It may try to fit an ellipse and sometimes it works 
+
+        It may try to fit an ellipse and sometimes it works
         """
 
         if len(self.calibrant.dSpacing):

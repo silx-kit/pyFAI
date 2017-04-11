@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2017"
+__date__ = "11/04/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -69,19 +69,18 @@ PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "
 
 class GeometryTransformation(object):
     """This class, once instanciated, behaves like a function (via the __call__
-    method). It is responsible for taking any input geometry and translate it into 
-    a set of parameters compatible with pyFAI, i.e. a tuple with: 
-    (dist, poni1, poni2, rot1, rot2, rot3) 
-    
-    This function uses numexpr for formula evaluation
-    
+    method). It is responsible for taking any input geometry and translate it
+    into a set of parameters compatible with pyFAI, i.e. a tuple with:
+    (dist, poni1, poni2, rot1, rot2, rot3)
+
+    This function uses numexpr for formula evaluation.
     """
     def __init__(self, dist_expr, poni1_expr, poni2_expr,
                  rot1_expr, rot2_expr, rot3_expr,
                  param_names, pos_names=None, constants=None,
                  content=None):
         """Constructor of the class
-        
+
         :param dist_expr: formula (as string) providing with the dist
         :param poni1_expr: formula (as string) providing with the poni1
         :param poni2_expr: formula (as string) providing with the poni2
@@ -91,8 +90,8 @@ class GeometryTransformation(object):
         :param param_names: list of names of the parameters used in the model
         :param pos_names: list of motor names for gonio with >1 degree of freedom
         :param constants: a dictionary with some constants the user may want to use
-        :param content: Should be None or the name of the class 
-                (may be used in the future to dispatch to multiple derivative classes) 
+        :param content: Should be None or the name of the class (may be used
+            in the future to dispatch to multiple derivative classes)
         """
         if content is not None:
             # Ensures we use the constructor of the right class
@@ -125,11 +124,14 @@ class GeometryTransformation(object):
 
     def __call__(self, param, pos):
         """This makes the class instance behave like a function,
-        actually a function that translates the n-parameter of the detector positioning on the goniometer and the m-parameters of the   
-        
+        actually a function that translates the n-parameter of the detector
+        positioning on the goniometer and the m-parameters.
+
         :param param: parameter of the fit
-        :param pos: position of the goniometer (representation from the goniometer) 
-        :return: 6-tuple with (dist, poni1, poni2, rot1, rot2, rot3) as needed for pyFAI.
+        :param pos: position of the goniometer (representation from the
+            goniometer)
+        :return: 6-tuple with (dist, poni1, poni2, rot1, rot2, rot3) as needed
+            for pyFAI.
         """
         res = []
         variables = self.variables.copy()
@@ -178,7 +180,7 @@ class GeometryTransformation(object):
             constants[key] = val
         res["constants"] = constants
         return res
-    
+
 GeometryTranslation = GeometryTransformation
 
 
@@ -191,17 +193,18 @@ class Goniometer(object):
 
     def __init__(self, param, trans_function, detector="Detector",
                  wavelength=None, param_names=None, pos_names=None):
-        """Constructor of the Goniometer class
-        
-        :param param: vector of parameter to refine for defining the detector 
+        """Constructor of the Goniometer class.
+
+        :param param: vector of parameter to refine for defining the detector
                         position on the goniometer
-        :param trans_function: function taking the parameters of the 
-                                    goniometer and the goniometer position and return the
-                                    6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
+        :param trans_function: function taking the parameters of the
+                        goniometer and the goniometer position and return the
+                        6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
         :param detector: detector mounted on the moving arm
         :param wavelength: the wavelength used for the experiment
         :param param_names: list of names to "label" the param vector.
-        :param pos_names: list of names to "label" the position vector of the gonio.  
+        :param pos_names: list of names to "label" the position vector of
+            the gonio.
         """
 
         self.param = param
@@ -225,9 +228,10 @@ class Goniometer(object):
 
     def get_ai(self, position):
         """Creates an azimuthal integrator from the motor position
-        
-        :param position: the goniometer position, a float for a 1 axis goniometer
-        :return: A freshly build AzimuthalIntegrator 
+
+        :param position: the goniometer position, a float for a 1 axis
+            goniometer
+        :return: A freshly build AzimuthalIntegrator
         """
         res = self.trans_function(self.param, position)
         ai = AzimuthalIntegrator(detector=self.detector, wavelength=self.wavelength)
@@ -235,10 +239,11 @@ class Goniometer(object):
         return ai
 
     def get_mg(self, positions):
-        """Creates a MultiGeometry integrator from a list of goniometer positions.
-        
+        """Creates a MultiGeometry integrator from a list of goniometer
+        positions.
+
         :param positions: A list of goniometer positions
-        :return: A freshly build multi- 
+        :return: A freshly build multi-geometry
         """
         ais = [self.get_ai(pos) for pos in positions]
         mg = MultiGeometry(ais)
@@ -246,7 +251,7 @@ class Goniometer(object):
 
     def to_dict(self):
         """Export the goniometer configuration to a dictionary
-        
+
         :return: Ordered dictionary
         """
         dico = OrderedDict([("content", self.file_version)])
@@ -266,7 +271,7 @@ class Goniometer(object):
 
     def save(self, filename):
         """Save the goniometer configuration to file
-        
+
         :param filename: name of the file to save configuration to
         """
         dico = self.to_dict()
@@ -287,7 +292,7 @@ class Goniometer(object):
         tansfun = dico.get("trans_function", {})
         if "content" in tansfun:
             content = tansfun.pop("content")
-            assert content in ("GeometryTranslation", "GeometryTransformation") 
+            assert content in ("GeometryTranslation", "GeometryTransformation")
             # May be adapted for other classes of GeometryTransformation functions
         funct = GeometryTransformation(**tansfun)
         gonio = cls(dico.get("param", []), funct, detector, dico.get("wavelength"))
@@ -295,28 +300,27 @@ class Goniometer(object):
 
 
 class SingleGeometry(object):
-    """This class represents a single geometry of a detector position on a 
+    """This class represents a single geometry of a detector position on a
     goniometer arm
     """
     def __init__(self, label, image=None, metadata=None, pos_function=None,
                  control_points=None, calibrant=None, detector=None, geometry=None):
-        """Constructor of the SingleGeometry class, used for calibrating a 
-        multi-geometry setup with a moving detector
-        
+        """Constructor of the SingleGeometry class, used for calibrating a
+        multi-geometry setup with a moving detector.
+
         :param label: name of the geometry, a string or anything unmutable
         :param image: image with Debye-Scherrer rings as 2d numpy array
         :param metadata: anything which contains the goniometer position
-        :param pos_function: a function which takes the metadata as input 
+        :param pos_function: a function which takes the metadata as input
                                  and returns the goniometer arm position
-        Optional parameters:
         :param control_points: a pyFAI.control_points.ControlPoints instance
-        :param calibrant: a pyFAI.calibrant.Calibrant instance. 
-                        Contains the wavelength to be used
-         :param detector: a pyFAI.detectors.Detector instance or something like that 
-                        Contains the mask to be used
-        :param geometry: an azimuthal integrator or a ponifile 
-                        (or a dict with the geometry)  
-                         
+            (optional parameter)
+        :param calibrant: a pyFAI.calibrant.Calibrant instance.
+                        Contains the wavelength to be used (optional parameter)
+        :param detector: a pyFAI.detectors.Detector instance or something like
+                        that Contains the mask to be used (optional parameter)
+        :param geometry: an azimuthal integrator or a ponifile
+                        (or a dict with the geometry) (optional parameter)
         """
         self.label = label
         self.image = image
@@ -424,32 +428,33 @@ class SingleGeometry(object):
     def get_ai(self):
         """Create a new azimuthal integrator to be used.
 
-        @return: Azimuthal Integrator instance
+        :return: Azimuthal Integrator instance
         """
         return AzimuthalIntegrator(detector=self.detector,
                                    **self.geometry_refinement.getPyFAI())
 
 
 class GoniometerRefinement(Goniometer):
-    """This class allow the translation of a goniometer geometry into a pyFAI 
-    geometry using a set of parameter to refine. 
+    """This class allow the translation of a goniometer geometry into a pyFAI
+    geometry using a set of parameter to refine.
     """
     def __init__(self, param, pos_function, trans_function,
                  detector="Detector", wavelength=None, param_names=None, pos_names=None,
                  bounds=None):
         """Constructor of the GoniometerRefinement class
-        
-        :param param: vector of parameter to refine for defining the detector 
-                        position on the goniometer
-        :parma pos_function: a function taking metadata and extracting the 
-                                  goniometer position
-        :param trans_function: function taking the parameters of the 
-                                    goniometer and the gonopmeter position and return the
-                                    6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
+
+        :param param: vector of parameter to refine for defining the detector
+                            position on the goniometer
+        :param pos_function: a function taking metadata and extracting the
+                            goniometer position
+        :param trans_function: function taking the parameters of the
+                            goniometer and the gonopmeter position and return the
+                            6 parameters [dist, poni1, poni2, rot1, rot2, rot3]
         :param detector: detector mounted on the moving arm
         :param wavelength: the wavelength used for the experiment
         :param param_names: list of names to "label" the param vector.
-        :param pos_names: list of names to "label" the position vector of the gonio.   
+        :param pos_names: list of names to "label" the position vector of the
+                            gonio.
         :param bounds: list of 2-tuple with the lower and upper bound of each function
         """
         Goniometer.__init__(self, param, trans_function,
@@ -469,7 +474,7 @@ class GoniometerRefinement(Goniometer):
     def new_geometry(self, label, image=None, metadata=None, control_points=None,
                      calibrant=None, geometry=None):
         """Add a new geometry for calibration
-        
+
         :param label: usually a string
         :param image: 2D numpy array with the Debye scherrer rings
         :param metadata: some metadata
@@ -517,9 +522,9 @@ class GoniometerRefinement(Goniometer):
 
     def refine2(self, method="slsqp", **options):
         """Geometry refinement tool
-        
+
         See https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.minimize.html
-        
+
         :param method: name of the minimizer
         :param options: options for the minimizer
         """
@@ -535,7 +540,7 @@ class GoniometerRefinement(Goniometer):
         print("Cost function after refinement: %s" % new_error)
         print(self.nt_param(*newparam))
 
-#        print("Constrained Least square %s --> %s" % (former_error, new_error))
+        # print("Constrained Least square %s --> %s" % (former_error, new_error))
         if new_error < former_error:
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
@@ -548,7 +553,7 @@ class GoniometerRefinement(Goniometer):
 
     def set_bounds(self, name, mini=None, maxi=None):
         """Redefines the bounds for the refinement
-        
+
         :param name: name of the parameter or index in the parameter set
         :param mini: minimum value
         :param maxi: maximum value

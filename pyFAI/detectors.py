@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2017"
+__date__ = "11/04/2017"
 __status__ = "stable"
 
 
@@ -223,16 +223,20 @@ class Detector(with_metaclass(DetectorMeta, object)):
     def set_config(self, config):
         """
         Sets the configuration of the detector. This implies:
+
         - Orientation: integers
         - Binning
         - ROI
 
-        The configuration is either a python dictionary or a JSON string or a file containing this JSON configuration
+        The configuration is either a python dictionary or a JSON string or a
+        file containing this JSON configuration
 
         keys in that dictionary are :
-        "orientation": integers from 0 to 7
-        "binning": integer or 2-tuple of integers. If only one integer is provided,
-        "offset": coordinate (in pixels) of the start of the detector
+
+        - "orientation": integers from 0 to 7
+        - "binning": integer or 2-tuple of integers. If only one integer is
+            provided,
+        - "offset": coordinate (in pixels) of the start of the detector
         """
         if not self.force_pixel:
             if "pixel1" in config:
@@ -389,8 +393,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     @classmethod
     def from_dict(cls, dico):
-        """Creates a brand new detector from the description of the detector as a dict
-        
+        """Creates a brand new detector from the description of the detector as
+        a dict
+
         :param dico: JSON serializable dictionary
         :return: Detector instance
         """
@@ -2606,5 +2611,3 @@ class RaspberryPi8M(Detector):
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
 load = NexusDetector.sload
-
-
