@@ -12,3 +12,4 @@ scipy
 matplotlib
 #mako
 #pyopencl
+numexpr
