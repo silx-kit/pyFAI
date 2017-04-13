@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "11/04/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3356,6 +3356,37 @@ class AzimuthalIntegrator(Geometry):
             bragg[wmask] = maskdata
             amorphous[wmask] = maskdata
         return bragg, amorphous
+
+    def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
+                   unit="r_m", method="bbox",
+                   ):
+        """Re-invent the values of pixels masked  
+
+        :param data: input image as 2d numpy array
+        :param mask: masked out pixels array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param unit: unit to be used for integration
+        :param method: pathway for integration
+        
+        :return: inpainting object which contains the restored image as .data 
+        """
+        from .ext import inpainting
+        mask = numpy.asarray(mask, dtype=numpy.int8)
+
+        assert mask.shape == mask.shape
+
+        blank_data = numpy.zeros_like(mask)
+
+        imgd = self.integrate2d(blank_data, npt_rad, npt_azim, unit=unit, dummy=-1, mask=blank_data, method=method)
+        imgp = self.integrate2d(blank_data, npt_rad, npt_azim, unit=unit, dummy=-1, mask=mask, method=method)
+        delta = ((imgd.data - imgp.data) != 0).astype(numpy.int8)
+
+        largest_width = inpainting.largest_width(delta)
+        largest_height = inpainting.largest_width(delta.T)
+
+
+
 
 ################################################################################
 # Some properties

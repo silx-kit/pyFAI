@@ -47,49 +47,79 @@ cdef class Bilinear:
     def __dealloc__(self):
         self.data = None
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def f_cy(self, x):
         """
-        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
+        Function -f((y,x)) where f is a continuous function 
+        (y,x) are pixel coordinates
+        pixels outside the image are given an arbitrary high value to help the minimizer  
 
         :param x: 2-tuple of float
-        :return: Interpolated signal from the image (negative for minimizer)
+        :return: Interpolated negative signal from the image 
+        (negative for using minimizer to search for peaks)
         """
         cdef:
             float d0 = x[0]
             float d1 = x[1]
+        if d0 < 0:
+            res = self.mini + d0
+        elif d1 < 0:
+            res = self.mini + d1
+        elif d0 > (self.height - 1):
+            res = self.mini - d0 + self.height - 1
+        elif d1 > self.width - 1:
+            res = self.mini - d1 + self.width - 1
+        else:
+            res = self._f_cy(d0, d1)
+        return -res 
+    
+    def __call__(self, x):
+        "Function f((y,x)) where f is a continuous function "
+        cdef:
+            float d0 = x[0]
+            float d1 = x[1]
+        if d0 < 0:
+            d0 = 0
+        elif d1 < 0:
+            d1 = 0
+        elif d0 > (self.height - 1):
+            d0 = self.height - 1
+        elif d1 > self.width - 1:
+            d1 = self.width - 1
+        return self._f_cy(d0, d1)
+        
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:
+        """
+        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
+
+        :param x: 2-tuple of float
+        :return: Interpolated signal from the image
+        """
+
+        cdef:
             int i0, i1, j0, j1
             float x0, x1, y0, y1, res
-        with nogil:
-            x0 = floor(d0)
-            x1 = ceil(d0)
-            y0 = floor(d1)
-            y1 = ceil(d1)
-            i0 = < int > x0
-            i1 = < int > x1
-            j0 = < int > y0
-            j1 = < int > y1
-            if d0 < 0:
-                res = self.mini + d0
-            elif d1 < 0:
-                res = self.mini + d1
-            elif d0 > (self.height - 1):
-                res = self.mini - d0 + self.height - 1
-            elif d1 > self.width - 1:
-                res = self.mini - d1 + self.width - 1
-            elif (i0 == i1) and (j0 == j1):
-                res = self.data[i0, j0]
-            elif i0 == i1:
-                res = (self.data[i0, j0] * (y1 - d1)) + (self.data[i0, j1] * (d1 - y0))
-            elif j0 == j1:
-                res = (self.data[i0, j0] * (x1 - d0)) + (self.data[i1, j0] * (d0 - x0))
-            else:
-                res = (self.data[i0, j0] * (x1 - d0) * (y1 - d1))  \
-                    + (self.data[i1, j0] * (d0 - x0) * (y1 - d1))  \
-                    + (self.data[i0, j1] * (x1 - d0) * (d1 - y0))  \
-                    + (self.data[i1, j1] * (d0 - x0) * (d1 - y0))
-        return - res
+        x0 = floor(d0)
+        x1 = ceil(d0)
+        y0 = floor(d1)
+        y1 = ceil(d1)
+        i0 = < int > x0
+        i1 = < int > x1
+        j0 = < int > y0
+        j1 = < int > y1
+        if (i0 == i1) and (j0 == j1):
+            res = self.data[i0, j0]
+        elif i0 == i1:
+            res = (self.data[i0, j0] * (y1 - d1)) + (self.data[i0, j1] * (d1 - y0))
+        elif j0 == j1:
+            res = (self.data[i0, j0] * (x1 - d0)) + (self.data[i1, j0] * (d0 - x0))
+        else:
+            res = (self.data[i0, j0] * (x1 - d0) * (y1 - d1))  \
+                + (self.data[i1, j0] * (d0 - x0) * (y1 - d1))  \
+                + (self.data[i0, j1] * (x1 - d0) * (d1 - y0))  \
+                + (self.data[i1, j1] * (d0 - x0) * (d1 - y0))
+        return res
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
