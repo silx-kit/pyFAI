@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "18/04/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3372,18 +3372,43 @@ class AzimuthalIntegrator(Geometry):
         :return: inpainting object which contains the restored image as .data 
         """
         from .ext import inpainting
-        mask = numpy.asarray(mask, dtype=numpy.int8)
+        dummy = -1
+        delta_dummy = 0.9
 
-        assert mask.shape == mask.shape
+        assert mask.shape == self.detector.shape
 
-        blank_data = numpy.zeros_like(mask)
+        blank_data = numpy.zeros(mask.shape, dtype=numpy.float32)
 
-        imgd = self.integrate2d(blank_data, npt_rad, npt_azim, unit=unit, dummy=-1, mask=blank_data, method=method)
-        imgp = self.integrate2d(blank_data, npt_rad, npt_azim, unit=unit, dummy=-1, mask=mask, method=method)
-        delta = ((imgd.data - imgp.data) != 0).astype(numpy.int8)
+        to_mask = numpy.where(mask)
 
-        largest_width = inpainting.largest_width(delta)
-        largest_height = inpainting.largest_width(delta.T)
+        blank_mask = numpy.zeros_like(mask)
+        masked = numpy.zeros(mask.shape, dtype=numpy.float32)
+        masked[to_mask] = dummy
+
+        masked_data = data.astype(numpy.float32)  # explicit copy
+        masked_data[to_mask] = dummy
+
+        kwargs = {"npt_rad": npt_rad,
+                  "npt_azim": npt_azim,
+                  "unit": unit,
+                  "dummy": dummy,
+                  "delta_dummy": delta_dummy,
+                  "method": method,
+                  "correctSolidAngle": False,
+                  "mask": blank_mask}
+        imgb = self.integrate2d(blank_data, **kwargs)
+        imgp = self.integrate2d(masked, **kwargs)
+        imgd = self.integrate2d(masked_data, **kwargs)
+        omask = numpy.ascontiguousarray(numpy.round(imgb.intensity / dummy), numpy.int8)
+        imask = numpy.ascontiguousarray(numpy.round(imgp.intensity / dummy), numpy.int8)
+        to_paint = (imask - omask)
+
+        polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
+                                                   to_paint, omask, 0)
+
+
+
+
 
 
 

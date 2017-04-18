@@ -233,6 +233,7 @@ ext_modules = [
     Extension('_tree'),
     Extension('sparse_utils'),
     Extension('preproc', can_use_openmp=True),
+    Extension('inpainting')
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):

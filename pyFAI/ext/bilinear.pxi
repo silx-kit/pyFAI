@@ -22,6 +22,8 @@
 #
 
 from libc.math cimport floor, ceil
+import logging
+logger = logging.getLogger("bilinear")
 
 cdef class Bilinear:
     """Bilinear interpolator for finding max.
