@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "20/01/2017"
+__date__ = "02/02/2017"
 __copyright__ = "2011-2017, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -353,8 +353,8 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
                                 floating[::1] polarization=None,
                                 floating[::1] absorption=None,
                                 any_int_t[::1] mask=None,
-                                floating dummy=0,
-                                floating delta_dummy=0,
+                                floating dummy=0.0,
+                                floating delta_dummy=0.0,
                                 bint check_dummy=False,
                                 floating normalization_factor=1.0,
                                 floating[::1] variance=None,
