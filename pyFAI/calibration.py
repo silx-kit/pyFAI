@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2017"
+__date__ = "18/04/2017"
 __status__ = "production"
 
 import os
@@ -985,7 +985,8 @@ class AbstractCalibration(object):
             elif action == "assign":
                 # Re assign a group of point to a ring ...
                 if self.peakPicker and self.peakPicker.points:
-                    self.peakPicker.points.readRingNrFromKeyboard()
+                    control_points = self.peakPicker.points
+                    control_points.readRingNrFromKeyboard()
                     if self.weighted:
                         self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
                     else:

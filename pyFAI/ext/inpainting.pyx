@@ -26,7 +26,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "18/04/2017"
+__date__ = "24/04/2017"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -64,18 +64,11 @@ def largest_width(numpy.int8_t[:, :]image):
     return largest
 
 
-def inpaint(img, topaint, mask=None):
-    """Relaplce the values flagged in topaint with possible values
-    If mask is provided, those values are knows to be invalid and not re-calculated
-    """
-    pass
-
-
 def polar_interpolate(data, 
                       numpy.int8_t[:, ::1] mask, 
                       cython.floating[:, ::1] radial, 
                       cython.floating[:, ::1] azimuthal,
-                      float[:, ::1] polar, 
+                      polar, 
                       cython.floating[::1] rad_pos, 
                       cython.floating[::1] azim_pos 
                       ):
@@ -91,7 +84,7 @@ def polar_interpolate(data,
     :return: inpainted image 
     """
     cdef:
-        float[:, ::1] cdata, cpolar
+        float[:, ::1] cdata
         int row, col, npt_radial, npt_azim, nb_col, nb_row 
         double azimuthal_min, radial_min, azimuthal_slope, radial_slope, r, a
         Bilinear bili 
@@ -105,7 +98,7 @@ def polar_interpolate(data,
     nb_col = data.shape[1]
     
     assert mask.shape[0] == nb_row, "mask.shape == data.shape"
-    assert mask.shape[0] == nb_col, "mask.shape == data.shape"
+    assert mask.shape[1] == nb_col, "mask.shape == data.shape"
     assert radial.shape[0] == nb_row, "radial == data.shape"
     assert radial.shape[1] == nb_col, "radial == data.shape"
     assert azimuthal.shape[0] == nb_row, "azimuthal == data.shape"
@@ -119,7 +112,7 @@ def polar_interpolate(data,
     bili = Bilinear(polar)
 
     cdata = numpy.array(data, dtype=numpy.float32)  # explicit copy
-    cpolar = numpy.ascontiguousarray(polar, dtype=numpy.float32)
+    
     for row in range(nb_row):
         for col in range(nb_col):
             if mask[row, col]:
@@ -144,10 +137,11 @@ def polar_inpaint(cython.floating[:, :] img not None,
     """
     cdef:
         int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, cnt, radius
-        int start_col, end_col, start_row, end_row
+        int start_col, end_col, start_row, end_row, dist, dist2, dist2_min
         float[:, ::1] res
         bint do_dummy = empty is not None
-        float value, sum, dist, dist_min, dist_max, dummy
+        float value, dummy
+        double sum
         list values, distances2
         
     npt_azim = img.shape[0]
@@ -172,17 +166,17 @@ def polar_inpaint(cython.floating[:, :] img not None,
                 values = []
                 distances2 = [] 
                 for idx_row in range(row, -1, -1):
-                    if topaint[idx_row, col] != 0 and mask[idx_row, col] != 0:  
+                    if topaint[idx_row, col] == 0 and mask[idx_row, col] == 0:  
                         values.append(img[idx_row, col])
                         dist = (row - idx_row)
                         distances2.append(dist * dist)
                         break
                 if len(values):
-                    tar_row = min(npt_azim, 2 * row - idx_row) 
+                    tar_row = min(npt_azim, 2 * row - idx_row + 1) 
                 else:
                     tar_row = npt_azim 
                 for idx_row in range(row, tar_row, 1):
-                    if topaint[idx_row, col] != 0 and mask[idx_row, col] != 0:  
+                    if topaint[idx_row, col] == 0 and mask[idx_row, col] == 0:  
                         values.append(img[idx_row, col])
                         dist = (row - idx_row)
                         distances2.append(dist * dist)
@@ -193,39 +187,36 @@ def polar_inpaint(cython.floating[:, :] img not None,
                     radius = 0
                     while len(values) == 0:
                         radius += 1
+                        print(row, col, radius)
                         idx_col = max(0, col - radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)): 
-                            if topaint[idx_row, idx_col] != 0 and mask[idx_row, idx_col] != 0:  
+                            if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
                                 values.append(img[idx_row, idx_col])
-                                dist = (row - idx_row) ** 2 + (col - idx_col) ** 2
-                                distances2.append(dist)
+                                distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)
                                 
-                        idx_col = min(npt_radial, col + radius + 1)
+                        idx_col = min(npt_radial - 1, col + radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)): 
-                            if topaint[idx_row, idx_col] != 0 and mask[idx_row, idx_col] != 0:  
+                            if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
                                 values.append(img[idx_row, idx_col])
-                                dist = (row - idx_row) ** 2 + (col - idx_col) ** 2
-                                distances2.append(dist)
+                                distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)
 
                         idx_row = max(0, row - radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)): 
-                            if topaint[idx_row, idx_col] != 0 and mask[idx_row, idx_col] != 0:  
+                            if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
                                 values.append(img[idx_row, idx_col])
-                                dist = (row - idx_row) ** 2 + (col - idx_col) ** 2
-                                distances2.append(dist)
+                                distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)
 
-                        idx_row = min(npt_azim, row + radius + 1)
+                        idx_row = min(npt_azim - 1, row + radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)): 
-                            if topaint[idx_row, idx_col] != 0 and mask[idx_row, idx_col] != 0:  
+                            if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
                                 values.append(img[idx_row, idx_col])
-                                dist = (row - idx_row) ** 2 + (col - idx_col) ** 2
-                                distances2.append(dist)
+                                distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)
                                 
-                dist_min = min(distances2) + 0.1
+                dist2_min = min(distances2) + 0.1
                 cnt = 0
                 sum = 0.0
-                for dist, value in zip(distances2, values):
-                    if dist <= dist_min:
+                for dist2, value in zip(distances2, values):
+                    if dist2 <= dist2_min:
                         sum += value
                         cnt += 1
                 value = sum / cnt
