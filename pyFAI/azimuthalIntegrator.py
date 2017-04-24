@@ -3378,7 +3378,7 @@ class AzimuthalIntegrator(Geometry):
         delta_dummy = 0.9
 
         assert mask.shape == self.detector.shape
-
+        mask = numpy.ascontiguousarray(mask, numpy.int8)
         blank_data = numpy.zeros(mask.shape, dtype=numpy.float32)
 
         to_mask = numpy.where(mask)
