@@ -22,12 +22,16 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Semi-graphical tool for peak-picking and extracting visually control points
+from an image with Debye-Scherer rings"""
+
 from __future__ import print_function, absolute_import
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2017"
+__date__ = "10/03/2017"
 __status__ = "production"
 
 import os

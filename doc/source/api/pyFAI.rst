@@ -56,6 +56,16 @@
     :undoc-members:
     :show-inheritance:
 
+:mod:`goniometer` Module
+------------------------
+
+.. automodule:: pyFAI.goniometer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+
 :mod:`detectors` Module
 -----------------------
 
@@ -87,6 +97,15 @@
     :members:
     :undoc-members:
     :show-inheritance:
+
+:mod:`control_points` Module
+----------------------------
+
+.. automodule:: pyFAI.control_points
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 :mod:`peak_picker` Module
 -------------------------

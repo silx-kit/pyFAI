@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/01/2017"
+__date__ = "11/04/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1413,6 +1413,18 @@ class Geometry(object):
         if abs(self.rot1) > 1e-6 or abs(self.rot2) > 1e-6 or abs(self.rot3) > 1e-6:
             logger.warning("Rotation conversion from pyFAI to SPD is not yet implemented")
         return res
+
+    def set_param(self, param):
+        """set the geometry from a 6-tuple with dist, poni1, poni2, rot1, rot2,
+        rot3
+        """
+        if len(param) == 6:
+            self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3 = param
+        elif len(param) == 7:
+            self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3, self.wavelength = param
+        else:
+            raise RuntimeError("Only 6 or 7-uplet are possible")
+        self.reset()
 
     def setChiDiscAtZero(self):
         """
