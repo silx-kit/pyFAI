@@ -84,7 +84,8 @@ build_script:
     # Build
     - "del pyFAI\\ext\\histogram.c"
     - "python setup.py build %BUILD_ARGS%"
-    - "python setup.py test"
+    #- "python setup.py test"
+    - "python runtest.py -i -m"
     - "python setup.py bdist_wheel bdist_msi"
     - ps: "ls dist"
     # Install the generated wheel package to test it
