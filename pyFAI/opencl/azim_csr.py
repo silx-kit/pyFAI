@@ -29,17 +29,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "02/02/2017"
+__date__ = "25/04/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import gc
 import logging
-import threading
 from collections import OrderedDict
 import numpy
-from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
-from .utils import concatenate_cl_kernel
+from .common import ocl, pyopencl, kernel_workgroup_size
 from ..utils import  calc_checksum
 
 if pyopencl:
@@ -127,7 +124,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             block_size = self.BLOCK_SIZE
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
-        self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
+        self.workgroup_size = {}
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
 
@@ -197,7 +194,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE)
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
-
+        for kernel in self.program.all_kernels():
+            kernel_name = kernel.function_name
+            wg = kernel_workgroup_size(self.program, kernel)
+            self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),) # this is a tuple
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -291,8 +291,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            memset = self.program.memset_out(self.queue, self.wdim_bins, self.workgroup_size, *list(self.cl_kernel_args["memset_out"].values()))
-            events.append(EventDescription("memset", memset))
+            wg = self.workgroup_size["memset_out"]
+            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
+            memset = self.program.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
+            events.append(EventDescription("memset_out", memset))
             kw1 = self.cl_kernel_args["corrections"]
             kw2 = self.cl_kernel_args["csr_integrate"]
 
@@ -367,7 +369,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw1["do_absorption"] = do_absorption
 
-            ev = self.program.corrections(self.queue, self.wdim_data, self.workgroup_size, *list(kw1.values()))
+            wg = self.workgroup_size["corrections"]
+            ev = self.program.corrections(self.queue, self.wdim_data, wg, *list(kw1.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -379,7 +382,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 ev.wait()
                 return image
 
-            integrate = self.program.csr_integrate(self.queue, self.wdim_bins, self.workgroup_size, *list(kw2.values()))
+            wg = self.workgroup_size["csr_integrate"]
+            wdim_bins = (self.bins * wg[0]),
+            integrate = self.program.csr_integrate(self.queue, wdim_bins, wg, *list(kw2.values()))
             events.append(EventDescription("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
