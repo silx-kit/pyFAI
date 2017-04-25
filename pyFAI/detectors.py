@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "11/04/2017"
 __status__ = "stable"
 
 
@@ -45,6 +45,7 @@ import numpy
 import os
 import posixpath
 import threading
+from collections import OrderedDict
 
 from . import io
 from . import spline
@@ -117,6 +118,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :return: an instance of the right detector, set-up if possible
         :rtype: pyFAI.detectors.Detector
         """
+        if isinstance(name, Detector):
+            return name
         if os.path.isfile(name):
             return NexusDetector(name)
         name = name.lower()
@@ -220,18 +223,29 @@ class Detector(with_metaclass(DetectorMeta, object)):
     def set_config(self, config):
         """
         Sets the configuration of the detector. This implies:
+
         - Orientation: integers
         - Binning
         - ROI
 
-        The configuration is either a python dictionary or a JSON string or a file containing this JSON configuration
+        The configuration is either a python dictionary or a JSON string or a
+        file containing this JSON configuration
 
         keys in that dictionary are :
-        "orientation": integers from 0 to 7
-        "binning": integer or 2-tuple of integers. If only one integer is provided,
-        "offset": coordinate (in pixels) of the start of the detector
+
+        - "orientation": integers from 0 to 7
+        - "binning": integer or 2-tuple of integers. If only one integer is
+            provided,
+        - "offset": coordinate (in pixels) of the start of the detector
         """
-        raise NotImplementedError
+        if not self.force_pixel:
+            if "pixel1" in config:
+                self.set_pixel1(config["pixel1"])
+            if "pixel2" in config:
+                self.set_pixel2(config["pixel2"])
+            if "splineFile" in config:
+                self.set_splineFile(config["splineFile"])
+        # TODO: complete
 
     def get_splineFile(self):
         return self._splineFile
@@ -343,10 +357,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :return: representation of the detector easy to serialize
         :rtype: dict
         """
-        return {"detector": self.name,
-                "pixel1": self._pixel1,
-                "pixel2": self._pixel2,
-                "splineFile": self._splineFile}
+        dico = OrderedDict()
+        dico["detector"] = self.name
+        dico["pixel1"] = self._pixel1
+        dico["pixel2"] = self._pixel2
+        if self._splineFile:
+            dico["splineFile"] = self._splineFile
+        return dico
 
     def getFit2D(self):
         """
@@ -373,6 +390,16 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 setattr(self, kw, kwarg[kw])
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
+
+    @classmethod
+    def from_dict(cls, dico):
+        """Creates a brand new detector from the description of the detector as
+        a dict
+
+        :param dico: JSON serializable dictionary
+        :return: Detector instance
+        """
+        return cls.factory(dico.get("detector"), dico)
 
     def setFit2D(self, **kwarg):
         """
@@ -2584,5 +2611,3 @@ class RaspberryPi8M(Detector):
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
 load = NexusDetector.sload
-
-

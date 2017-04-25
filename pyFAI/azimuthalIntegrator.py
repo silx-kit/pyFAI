@@ -3306,7 +3306,7 @@ class AzimuthalIntegrator(Geometry):
             old = npt_azim
             npt_azim = int(2 ** numpy.round(numpy.log2(npt_azim)))
             logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s", old, npt_azim)
-#             self._ocl_sem.acquire()
+            # self._ocl_sem.acquire()
         integ2d, radial, _ = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                               unit=unit, method=method,
                                               dummy=dummy, correctSolidAngle=True)
@@ -3360,7 +3360,7 @@ class AzimuthalIntegrator(Geometry):
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
                    unit="r_m", method="bbox", poissonian=False
                    ):
-        """Re-invent the values of pixels masked  
+        """Re-invent the values of masked pixels
 
         :param data: input image as 2d numpy array
         :param mask: masked out pixels array
@@ -3368,8 +3368,8 @@ class AzimuthalIntegrator(Geometry):
         :param npt_azim: number of azimuthal points
         :param unit: unit to be used for integration
         :param method: pathway for integration
-        :param poissonian: If True, add some poisonian noise to the data to make 
-                           then more realistic 
+        :param poissonian: If True, add some poisonian noise to the data to make
+                           then more realistic
         
         :return: inpainting object which contains the restored image as .data 
         """
@@ -3378,7 +3378,7 @@ class AzimuthalIntegrator(Geometry):
         delta_dummy = 0.9
 
         assert mask.shape == self.detector.shape
-
+        mask = numpy.ascontiguousarray(mask, numpy.int8)
         blank_data = numpy.zeros(mask.shape, dtype=numpy.float32)
 
         to_mask = numpy.where(mask)
@@ -3420,8 +3420,6 @@ class AzimuthalIntegrator(Geometry):
         else:
             res = cart_inpatined
         return res
-
-
 
 ################################################################################
 # Some properties
