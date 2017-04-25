@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/04/2017"
+__date__ = "25/04/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3358,7 +3358,7 @@ class AzimuthalIntegrator(Geometry):
         return bragg, amorphous
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
-                   unit="r_m", method="bbox", poissonian=False
+                   unit="r_m", method="cython", poissonian=False
                    ):
         """Re-invent the values of masked pixels
 
