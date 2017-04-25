@@ -32,12 +32,11 @@ __authors__ = ["Jérôme Kieffer", "Pierre Paleo"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "25/04/2017"
 __status__ = "beta"
 
 import os
 import numpy
-from ..resources import resource_filename
 from ..utils import get_cl_file
 from math import log, ceil
 
@@ -99,4 +98,4 @@ def concatenate_cl_kernel(filenames):
 
     this method concatenates all the kernel from the list
     """
-    return  os.linesep.join(read_cl_file(fn) for fn in filenames)
+    return os.linesep.join(read_cl_file(fn) for fn in filenames)

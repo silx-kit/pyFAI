@@ -28,11 +28,12 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "28/11/2016"
+__date__ = "25/04/2017"
 __license__ = "MIT"
-__copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
 
+from collections import OrderedDict
 import json
 import sys
 import time
@@ -212,7 +213,7 @@ class Bench(object):
         self.LIMIT = 8
         self.repeat = repeat
         self.nbr = nbr
-        self.results = {}
+        self.results = OrderedDict()
         self.meth = []
         self._cpu = None
         self.fig = None
