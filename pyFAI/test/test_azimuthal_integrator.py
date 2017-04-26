@@ -322,7 +322,7 @@ class TestSaxs(unittest.TestCase):
 
         data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0], :ai.detector.shape[1]]
         for method in methods:
-            logger.warning("TestSaxs.test_normalization_factor method= " + method)
+            logger.debug("TestSaxs.test_normalization_factor method= " + method)
             ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, error_model="poisson")
             ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
@@ -340,7 +340,7 @@ class TestSaxs(unittest.TestCase):
             # ai.reset()
 
     def test_inpainting(self):
-        logger.warning("TestSaxs.test_inpainting")
+        logger.debug("TestSaxs.test_inpainting")
         img = fabio.open(self.edfPilatus).data
         ai = AzimuthalIntegrator(detector="Pilatus1M")
         ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
@@ -348,7 +348,7 @@ class TestSaxs(unittest.TestCase):
         inp = ai.inpainting(img, mask)
         neg = (inp < 0).sum()
         logger.warning("neg=%s" % neg)
-        self.assertTrue(neg == 0, "all negative pixels got inpainted actually %s" % neg)
+        self.assertTrue(neg == 0, "all negative pixels got inpainted actually all but %s" % neg)
         self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
 
 

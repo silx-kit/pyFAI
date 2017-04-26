@@ -79,14 +79,6 @@ cdef class Bilinear:
         cdef:
             float d0 = x[0]
             float d1 = x[1]
-        if d0 < 0:
-            d0 = 0
-        elif d1 < 0:
-            d1 = 0
-        elif d0 > (self.height - 1):
-            d0 = self.height - 1
-        elif d1 > self.width - 1:
-            d1 = self.width - 1
         return self._f_cy(d0, d1)
         
     @cython.boundscheck(False)
@@ -102,6 +94,14 @@ cdef class Bilinear:
         cdef:
             int i0, i1, j0, j1
             float x0, x1, y0, y1, res
+        if d0 < 0:
+            d0 = 0
+        elif d1 < 0:
+            d1 = 0
+        elif d0 > (self.height - 1):
+            d0 = self.height - 1
+        elif d1 > self.width - 1:
+            d1 = self.width - 1
         x0 = floor(d0)
         x1 = ceil(d0)
         y0 = floor(d1)

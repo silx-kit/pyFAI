@@ -2778,7 +2778,6 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8Bilinear_6__call__(struct __
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   float __pyx_t_2;
-  int __pyx_t_3;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -2789,7 +2788,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8Bilinear_6__call__(struct __
  *         cdef:
  *             float d0 = x[0]             # <<<<<<<<<<<<<<
  *             float d1 = x[1]
- *         if d0 < 0:
+ *         return self._f_cy(d0, d1)
  */
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_x, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 80; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
@@ -2801,8 +2800,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8Bilinear_6__call__(struct __
  *         cdef:
  *             float d0 = x[0]
  *             float d1 = x[1]             # <<<<<<<<<<<<<<
- *         if d0 < 0:
- *             d0 = 0
+ *         return self._f_cy(d0, d1)
+ * 
  */
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_x, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
@@ -2813,97 +2812,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8Bilinear_6__call__(struct __
   /* "pyFAI/ext/bilinear.pxi":82
  *             float d0 = x[0]
  *             float d1 = x[1]
- *         if d0 < 0:             # <<<<<<<<<<<<<<
- *             d0 = 0
- *         elif d1 < 0:
- */
-  __pyx_t_3 = ((__pyx_v_d0 < 0.0) != 0);
-  if (__pyx_t_3) {
-
-    /* "pyFAI/ext/bilinear.pxi":83
- *             float d1 = x[1]
- *         if d0 < 0:
- *             d0 = 0             # <<<<<<<<<<<<<<
- *         elif d1 < 0:
- *             d1 = 0
- */
-    __pyx_v_d0 = 0.0;
-    goto __pyx_L3;
-  }
-
-  /* "pyFAI/ext/bilinear.pxi":84
- *         if d0 < 0:
- *             d0 = 0
- *         elif d1 < 0:             # <<<<<<<<<<<<<<
- *             d1 = 0
- *         elif d0 > (self.height - 1):
- */
-  __pyx_t_3 = ((__pyx_v_d1 < 0.0) != 0);
-  if (__pyx_t_3) {
-
-    /* "pyFAI/ext/bilinear.pxi":85
- *             d0 = 0
- *         elif d1 < 0:
- *             d1 = 0             # <<<<<<<<<<<<<<
- *         elif d0 > (self.height - 1):
- *             d0 = self.height - 1
- */
-    __pyx_v_d1 = 0.0;
-    goto __pyx_L3;
-  }
-
-  /* "pyFAI/ext/bilinear.pxi":86
- *         elif d1 < 0:
- *             d1 = 0
- *         elif d0 > (self.height - 1):             # <<<<<<<<<<<<<<
- *             d0 = self.height - 1
- *         elif d1 > self.width - 1:
- */
-  __pyx_t_3 = ((__pyx_v_d0 > (__pyx_v_self->height - 1)) != 0);
-  if (__pyx_t_3) {
-
-    /* "pyFAI/ext/bilinear.pxi":87
- *             d1 = 0
- *         elif d0 > (self.height - 1):
- *             d0 = self.height - 1             # <<<<<<<<<<<<<<
- *         elif d1 > self.width - 1:
- *             d1 = self.width - 1
- */
-    __pyx_v_d0 = (__pyx_v_self->height - 1);
-    goto __pyx_L3;
-  }
-
-  /* "pyFAI/ext/bilinear.pxi":88
- *         elif d0 > (self.height - 1):
- *             d0 = self.height - 1
- *         elif d1 > self.width - 1:             # <<<<<<<<<<<<<<
- *             d1 = self.width - 1
- *         return self._f_cy(d0, d1)
- */
-  __pyx_t_3 = ((__pyx_v_d1 > (__pyx_v_self->width - 1)) != 0);
-  if (__pyx_t_3) {
-
-    /* "pyFAI/ext/bilinear.pxi":89
- *             d0 = self.height - 1
- *         elif d1 > self.width - 1:
- *             d1 = self.width - 1             # <<<<<<<<<<<<<<
- *         return self._f_cy(d0, d1)
- * 
- */
-    __pyx_v_d1 = (__pyx_v_self->width - 1);
-    goto __pyx_L3;
-  }
-  __pyx_L3:;
-
-  /* "pyFAI/ext/bilinear.pxi":90
- *         elif d1 > self.width - 1:
- *             d1 = self.width - 1
  *         return self._f_cy(d0, d1)             # <<<<<<<<<<<<<<
  * 
  *     @cython.boundscheck(False)
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(((struct __pyx_vtabstruct_5pyFAI_3ext_10inpainting_Bilinear *)__pyx_v_self->__pyx_vtab)->__pyx_fuse_0_f_cy(__pyx_v_self, __pyx_v_d0, __pyx_v_d1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(((struct __pyx_vtabstruct_5pyFAI_3ext_10inpainting_Bilinear *)__pyx_v_self->__pyx_vtab)->__pyx_fuse_0_f_cy(__pyx_v_self, __pyx_v_d0, __pyx_v_d1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2928,7 +2842,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8Bilinear_6__call__(struct __
   return __pyx_r;
 }
 
-/* "pyFAI/ext/bilinear.pxi":94
+/* "pyFAI/ext/bilinear.pxi":86
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:             # <<<<<<<<<<<<<<
@@ -2971,9 +2885,94 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
 
-  /* "pyFAI/ext/bilinear.pxi":105
+  /* "pyFAI/ext/bilinear.pxi":97
  *             int i0, i1, j0, j1
  *             float x0, x1, y0, y1, res
+ *         if d0 < 0:             # <<<<<<<<<<<<<<
+ *             d0 = 0
+ *         elif d1 < 0:
+ */
+  __pyx_t_1 = ((__pyx_v_d0 < 0.0) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":98
+ *             float x0, x1, y0, y1, res
+ *         if d0 < 0:
+ *             d0 = 0             # <<<<<<<<<<<<<<
+ *         elif d1 < 0:
+ *             d1 = 0
+ */
+    __pyx_v_d0 = 0.0;
+    goto __pyx_L3;
+  }
+
+  /* "pyFAI/ext/bilinear.pxi":99
+ *         if d0 < 0:
+ *             d0 = 0
+ *         elif d1 < 0:             # <<<<<<<<<<<<<<
+ *             d1 = 0
+ *         elif d0 > (self.height - 1):
+ */
+  __pyx_t_1 = ((__pyx_v_d1 < 0.0) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":100
+ *             d0 = 0
+ *         elif d1 < 0:
+ *             d1 = 0             # <<<<<<<<<<<<<<
+ *         elif d0 > (self.height - 1):
+ *             d0 = self.height - 1
+ */
+    __pyx_v_d1 = 0.0;
+    goto __pyx_L3;
+  }
+
+  /* "pyFAI/ext/bilinear.pxi":101
+ *         elif d1 < 0:
+ *             d1 = 0
+ *         elif d0 > (self.height - 1):             # <<<<<<<<<<<<<<
+ *             d0 = self.height - 1
+ *         elif d1 > self.width - 1:
+ */
+  __pyx_t_1 = ((__pyx_v_d0 > (__pyx_v_self->height - 1)) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":102
+ *             d1 = 0
+ *         elif d0 > (self.height - 1):
+ *             d0 = self.height - 1             # <<<<<<<<<<<<<<
+ *         elif d1 > self.width - 1:
+ *             d1 = self.width - 1
+ */
+    __pyx_v_d0 = (__pyx_v_self->height - 1);
+    goto __pyx_L3;
+  }
+
+  /* "pyFAI/ext/bilinear.pxi":103
+ *         elif d0 > (self.height - 1):
+ *             d0 = self.height - 1
+ *         elif d1 > self.width - 1:             # <<<<<<<<<<<<<<
+ *             d1 = self.width - 1
+ *         x0 = floor(d0)
+ */
+  __pyx_t_1 = ((__pyx_v_d1 > (__pyx_v_self->width - 1)) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":104
+ *             d0 = self.height - 1
+ *         elif d1 > self.width - 1:
+ *             d1 = self.width - 1             # <<<<<<<<<<<<<<
+ *         x0 = floor(d0)
+ *         x1 = ceil(d0)
+ */
+    __pyx_v_d1 = (__pyx_v_self->width - 1);
+    goto __pyx_L3;
+  }
+  __pyx_L3:;
+
+  /* "pyFAI/ext/bilinear.pxi":105
+ *         elif d1 > self.width - 1:
+ *             d1 = self.width - 1
  *         x0 = floor(d0)             # <<<<<<<<<<<<<<
  *         x1 = ceil(d0)
  *         y0 = floor(d1)
@@ -2981,7 +2980,7 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   __pyx_v_x0 = floor(__pyx_v_d0);
 
   /* "pyFAI/ext/bilinear.pxi":106
- *             float x0, x1, y0, y1, res
+ *             d1 = self.width - 1
  *         x0 = floor(d0)
  *         x1 = ceil(d0)             # <<<<<<<<<<<<<<
  *         y0 = floor(d1)
@@ -3054,11 +3053,11 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   if (__pyx_t_2) {
   } else {
     __pyx_t_1 = __pyx_t_2;
-    goto __pyx_L4_bool_binop_done;
+    goto __pyx_L5_bool_binop_done;
   }
   __pyx_t_2 = ((__pyx_v_j0 == __pyx_v_j1) != 0);
   __pyx_t_1 = __pyx_t_2;
-  __pyx_L4_bool_binop_done:;
+  __pyx_L5_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "pyFAI/ext/bilinear.pxi":114
@@ -3072,7 +3071,7 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_3 = __pyx_v_i0;
     __pyx_t_4 = __pyx_v_j0;
     __pyx_v_res = (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_3 * __pyx_v_self->data.strides[0]) )) + __pyx_t_4)) )));
-    goto __pyx_L3;
+    goto __pyx_L4;
   }
 
   /* "pyFAI/ext/bilinear.pxi":115
@@ -3099,7 +3098,7 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_7 = __pyx_v_i0;
     __pyx_t_8 = __pyx_v_j1;
     __pyx_v_res = (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_5 * __pyx_v_self->data.strides[0]) )) + __pyx_t_6)) ))) * (__pyx_v_y1 - __pyx_v_d1)) + ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_7 * __pyx_v_self->data.strides[0]) )) + __pyx_t_8)) ))) * (__pyx_v_d1 - __pyx_v_y0)));
-    goto __pyx_L3;
+    goto __pyx_L4;
   }
 
   /* "pyFAI/ext/bilinear.pxi":117
@@ -3126,7 +3125,7 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_11 = __pyx_v_i1;
     __pyx_t_12 = __pyx_v_j0;
     __pyx_v_res = (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_9 * __pyx_v_self->data.strides[0]) )) + __pyx_t_10)) ))) * (__pyx_v_x1 - __pyx_v_d0)) + ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_11 * __pyx_v_self->data.strides[0]) )) + __pyx_t_12)) ))) * (__pyx_v_d0 - __pyx_v_x0)));
-    goto __pyx_L3;
+    goto __pyx_L4;
   }
   /*else*/ {
 
@@ -3175,7 +3174,7 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_20 = __pyx_v_j1;
     __pyx_v_res = ((((((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_13 * __pyx_v_self->data.strides[0]) )) + __pyx_t_14)) ))) * (__pyx_v_x1 - __pyx_v_d0)) * (__pyx_v_y1 - __pyx_v_d1)) + (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_15 * __pyx_v_self->data.strides[0]) )) + __pyx_t_16)) ))) * (__pyx_v_d0 - __pyx_v_x0)) * (__pyx_v_y1 - __pyx_v_d1))) + (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_17 * __pyx_v_self->data.strides[0]) )) + __pyx_t_18)) ))) * (__pyx_v_x1 - __pyx_v_d0)) * (__pyx_v_d1 - __pyx_v_y0))) + (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_19 * __pyx_v_self->data.strides[0]) )) + __pyx_t_20)) ))) * (__pyx_v_d0 - __pyx_v_x0)) * (__pyx_v_d1 - __pyx_v_y0)));
   }
-  __pyx_L3:;
+  __pyx_L4:;
 
   /* "pyFAI/ext/bilinear.pxi":124
  *                 + (self.data[i0, j1] * (x1 - d0) * (d1 - y0))  \
@@ -3187,7 +3186,7 @@ static float __pyx_fuse_0__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   __pyx_r = __pyx_v_res;
   goto __pyx_L0;
 
-  /* "pyFAI/ext/bilinear.pxi":94
+  /* "pyFAI/ext/bilinear.pxi":86
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:             # <<<<<<<<<<<<<<
@@ -3238,9 +3237,94 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
 
-  /* "pyFAI/ext/bilinear.pxi":105
+  /* "pyFAI/ext/bilinear.pxi":97
  *             int i0, i1, j0, j1
  *             float x0, x1, y0, y1, res
+ *         if d0 < 0:             # <<<<<<<<<<<<<<
+ *             d0 = 0
+ *         elif d1 < 0:
+ */
+  __pyx_t_1 = ((__pyx_v_d0 < 0.0) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":98
+ *             float x0, x1, y0, y1, res
+ *         if d0 < 0:
+ *             d0 = 0             # <<<<<<<<<<<<<<
+ *         elif d1 < 0:
+ *             d1 = 0
+ */
+    __pyx_v_d0 = 0.0;
+    goto __pyx_L3;
+  }
+
+  /* "pyFAI/ext/bilinear.pxi":99
+ *         if d0 < 0:
+ *             d0 = 0
+ *         elif d1 < 0:             # <<<<<<<<<<<<<<
+ *             d1 = 0
+ *         elif d0 > (self.height - 1):
+ */
+  __pyx_t_1 = ((__pyx_v_d1 < 0.0) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":100
+ *             d0 = 0
+ *         elif d1 < 0:
+ *             d1 = 0             # <<<<<<<<<<<<<<
+ *         elif d0 > (self.height - 1):
+ *             d0 = self.height - 1
+ */
+    __pyx_v_d1 = 0.0;
+    goto __pyx_L3;
+  }
+
+  /* "pyFAI/ext/bilinear.pxi":101
+ *         elif d1 < 0:
+ *             d1 = 0
+ *         elif d0 > (self.height - 1):             # <<<<<<<<<<<<<<
+ *             d0 = self.height - 1
+ *         elif d1 > self.width - 1:
+ */
+  __pyx_t_1 = ((__pyx_v_d0 > (__pyx_v_self->height - 1)) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":102
+ *             d1 = 0
+ *         elif d0 > (self.height - 1):
+ *             d0 = self.height - 1             # <<<<<<<<<<<<<<
+ *         elif d1 > self.width - 1:
+ *             d1 = self.width - 1
+ */
+    __pyx_v_d0 = (__pyx_v_self->height - 1);
+    goto __pyx_L3;
+  }
+
+  /* "pyFAI/ext/bilinear.pxi":103
+ *         elif d0 > (self.height - 1):
+ *             d0 = self.height - 1
+ *         elif d1 > self.width - 1:             # <<<<<<<<<<<<<<
+ *             d1 = self.width - 1
+ *         x0 = floor(d0)
+ */
+  __pyx_t_1 = ((__pyx_v_d1 > (__pyx_v_self->width - 1)) != 0);
+  if (__pyx_t_1) {
+
+    /* "pyFAI/ext/bilinear.pxi":104
+ *             d0 = self.height - 1
+ *         elif d1 > self.width - 1:
+ *             d1 = self.width - 1             # <<<<<<<<<<<<<<
+ *         x0 = floor(d0)
+ *         x1 = ceil(d0)
+ */
+    __pyx_v_d1 = (__pyx_v_self->width - 1);
+    goto __pyx_L3;
+  }
+  __pyx_L3:;
+
+  /* "pyFAI/ext/bilinear.pxi":105
+ *         elif d1 > self.width - 1:
+ *             d1 = self.width - 1
  *         x0 = floor(d0)             # <<<<<<<<<<<<<<
  *         x1 = ceil(d0)
  *         y0 = floor(d1)
@@ -3248,7 +3332,7 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   __pyx_v_x0 = floor(__pyx_v_d0);
 
   /* "pyFAI/ext/bilinear.pxi":106
- *             float x0, x1, y0, y1, res
+ *             d1 = self.width - 1
  *         x0 = floor(d0)
  *         x1 = ceil(d0)             # <<<<<<<<<<<<<<
  *         y0 = floor(d1)
@@ -3321,11 +3405,11 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   if (__pyx_t_2) {
   } else {
     __pyx_t_1 = __pyx_t_2;
-    goto __pyx_L4_bool_binop_done;
+    goto __pyx_L5_bool_binop_done;
   }
   __pyx_t_2 = ((__pyx_v_j0 == __pyx_v_j1) != 0);
   __pyx_t_1 = __pyx_t_2;
-  __pyx_L4_bool_binop_done:;
+  __pyx_L5_bool_binop_done:;
   if (__pyx_t_1) {
 
     /* "pyFAI/ext/bilinear.pxi":114
@@ -3339,7 +3423,7 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_3 = __pyx_v_i0;
     __pyx_t_4 = __pyx_v_j0;
     __pyx_v_res = (*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_3 * __pyx_v_self->data.strides[0]) )) + __pyx_t_4)) )));
-    goto __pyx_L3;
+    goto __pyx_L4;
   }
 
   /* "pyFAI/ext/bilinear.pxi":115
@@ -3366,7 +3450,7 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_7 = __pyx_v_i0;
     __pyx_t_8 = __pyx_v_j1;
     __pyx_v_res = (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_5 * __pyx_v_self->data.strides[0]) )) + __pyx_t_6)) ))) * (__pyx_v_y1 - __pyx_v_d1)) + ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_7 * __pyx_v_self->data.strides[0]) )) + __pyx_t_8)) ))) * (__pyx_v_d1 - __pyx_v_y0)));
-    goto __pyx_L3;
+    goto __pyx_L4;
   }
 
   /* "pyFAI/ext/bilinear.pxi":117
@@ -3393,7 +3477,7 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_11 = __pyx_v_i1;
     __pyx_t_12 = __pyx_v_j0;
     __pyx_v_res = (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_9 * __pyx_v_self->data.strides[0]) )) + __pyx_t_10)) ))) * (__pyx_v_x1 - __pyx_v_d0)) + ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_11 * __pyx_v_self->data.strides[0]) )) + __pyx_t_12)) ))) * (__pyx_v_d0 - __pyx_v_x0)));
-    goto __pyx_L3;
+    goto __pyx_L4;
   }
   /*else*/ {
 
@@ -3442,7 +3526,7 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
     __pyx_t_20 = __pyx_v_j1;
     __pyx_v_res = ((((((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_13 * __pyx_v_self->data.strides[0]) )) + __pyx_t_14)) ))) * (__pyx_v_x1 - __pyx_v_d0)) * (__pyx_v_y1 - __pyx_v_d1)) + (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_15 * __pyx_v_self->data.strides[0]) )) + __pyx_t_16)) ))) * (__pyx_v_d0 - __pyx_v_x0)) * (__pyx_v_y1 - __pyx_v_d1))) + (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_17 * __pyx_v_self->data.strides[0]) )) + __pyx_t_18)) ))) * (__pyx_v_x1 - __pyx_v_d0)) * (__pyx_v_d1 - __pyx_v_y0))) + (((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_self->data.data + __pyx_t_19 * __pyx_v_self->data.strides[0]) )) + __pyx_t_20)) ))) * (__pyx_v_d0 - __pyx_v_x0)) * (__pyx_v_d1 - __pyx_v_y0)));
   }
-  __pyx_L3:;
+  __pyx_L4:;
 
   /* "pyFAI/ext/bilinear.pxi":124
  *                 + (self.data[i0, j1] * (x1 - d0) * (d1 - y0))  \
@@ -3454,7 +3538,7 @@ static float __pyx_fuse_1__pyx_f_5pyFAI_3ext_10inpainting_8Bilinear__f_cy(struct
   __pyx_r = __pyx_v_res;
   goto __pyx_L0;
 
-  /* "pyFAI/ext/bilinear.pxi":94
+  /* "pyFAI/ext/bilinear.pxi":86
  *     @cython.boundscheck(False)
  *     @cython.wraparound(False)
  *     cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:             # <<<<<<<<<<<<<<
