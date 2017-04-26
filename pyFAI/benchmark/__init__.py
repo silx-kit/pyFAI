@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "28/11/2016"
+__date__ = "09/02/2017"
 __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -206,6 +206,8 @@ class Bench(object):
               "csr": "CPU_CSR_OpenMP",
               "csr_ocl": "CSR",
               }
+    _cpu = None
+    _gpu = None
 
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg", max_size=None):
         self.reference_1d = {}
@@ -214,7 +216,6 @@ class Bench(object):
         self.nbr = nbr
         self.results = {}
         self.meth = []
-        self._cpu = None
         self.fig = None
         self.ax = None
         self.starttime = time.time()
@@ -230,37 +231,42 @@ class Bench(object):
         self.out_2d = (500, 360)
         self.max_size = max_size or sys.maxunicode
 
-    def get_cpu(self):
-        if self._cpu is None:
+    @classmethod
+    def get_cpu(cls):
+        if cls._cpu is None:
             if os.name == "nt":
-                self._cpu = platform.processor()
+                cls._cpu = platform.processor()
             elif os.path.exists("/proc/cpuinfo"):
                 cpuinfo = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")]
                 if not cpuinfo:
                     cpuinfo = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("cpu")]
-                self._cpu = cpuinfo[0].strip()
+                cls._cpu = cpuinfo[0].strip()
             elif os.path.exists("/usr/sbin/sysctl"):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
-                self._cpu = proc.stdout.read().strip()
+                cls._cpu = proc.stdout.read().strip()
                 if six.PY3:
-                    self._cpu = self._cpu.decode("ASCII")
-            old = self._cpu
-            self._cpu = old.replace("  ", " ")
-            while old != self._cpu:
-                old = self._cpu
-                self._cpu = old.replace("  ", " ")
-        return self._cpu
+                    cls._cpu = cls._cpu.decode("ASCII")
+            old = cls._cpu
+            cls._cpu = old.replace("  ", " ")
+            while old != cls._cpu:
+                old = cls._cpu
+                cls._cpu = old.replace("  ", " ")
+        return cls._cpu
 
-    def get_gpu(self, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
+    @classmethod
+    def get_gpu(cls, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
+
         if ocl is None:
-            return "NoGPU"
-        try:
-            ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
-        except:
-            return "NoGPU"
+            cls._gpu = "NoGPU"
         else:
-            return ctx.devices[0].name
+            try:
+                ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
+            except:
+                cls._gpu = "NoGPU"
+            else:
+                cls._gpu = ctx.devices[0].name
+        return cls._gpu
 
     def get_mem(self):
         """

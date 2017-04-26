@@ -30,16 +30,14 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "02/02/2017"
+__date__ = "03/02/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import gc
 import logging
-import threading
 import numpy
 from collections import OrderedDict
-from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from .common import ocl, pyopencl
 from ..ext.splitBBoxLUT import HistoBBox1d
 from .utils import concatenate_cl_kernel
 from ..utils import calc_checksum
@@ -220,12 +218,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                             ("outCount", self.cl_mem["outCount"]),
                                                             ("outMerge", self.cl_mem["outMerge"])))
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("outData", "outCount", "outMerge")))
-        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        for val in self.mapping.values():
+            self.cl_kernel_args[val] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
 
     def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible
