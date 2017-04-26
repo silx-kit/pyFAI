@@ -302,17 +302,6 @@ class TestSaxs(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         self.edfPilatus = self.maskFile = self.maskRef = None
 
-    def test_inpainting(self):
-
-        img = fabio.open(self.edfPilatus).data
-        ai = AzimuthalIntegrator(detector="Pilatus1M")
-        ai.setFit2D(2000, 870.1, 102.1)
-        mask = img < 0
-        inp = ai.inpainting(img, mask)
-        neg = (inp < 0).sum()
-        self.assertTrue((inp < 0).sum() == 0, "all negative pixels got inpainted actually %s" % neg)
-        self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
-
     def test_mask(self):
         """test the generation of mask"""
         ai = AzimuthalIntegrator(detector="Pilatus1M")
@@ -324,6 +313,7 @@ class TestSaxs(unittest.TestCase):
 #         self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
 
     def test_normalization_factor(self):
+
         ai = AzimuthalIntegrator(detector="Pilatus100k")
         ai.wavelength = 1e-10
         methods = ["cython", "numpy", "lut", "csr", "ocl_lut", "ocl_csr", "splitpixel"]
@@ -332,6 +322,7 @@ class TestSaxs(unittest.TestCase):
 
         data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0], :ai.detector.shape[1]]
         for method in methods:
+            logger.warning("TestSaxs.test_normalization_factor method= " + method)
             ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, error_model="poisson")
             ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
@@ -347,6 +338,18 @@ class TestSaxs(unittest.TestCase):
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
 #             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
             # ai.reset()
+
+    def test_inpainting(self):
+        logger.warning("TestSaxs.test_inpainting")
+        img = fabio.open(self.edfPilatus).data
+        ai = AzimuthalIntegrator(detector="Pilatus1M")
+        ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
+        mask = img < 0
+        inp = ai.inpainting(img, mask)
+        neg = (inp < 0).sum()
+        logger.warning("neg=%s" % neg)
+        self.assertTrue(neg == 0, "all negative pixels got inpainted actually %s" % neg)
+        self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
 
 
 class TestSetter(unittest.TestCase):
