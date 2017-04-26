@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2017"
+__date__ = "26/04/2017"
 
 
 import unittest
@@ -306,10 +306,11 @@ class TestSaxs(unittest.TestCase):
 
         img = fabio.open(self.edfPilatus).data
         ai = AzimuthalIntegrator(detector="Pilatus1M")
-        ai.setFit2D(2000, 870, 102)
+        ai.setFit2D(2000, 870.1, 102.1)
         mask = img < 0
         inp = ai.inpainting(img, mask)
-        self.assertTrue((inp < 0).sum() == 0, "all negative pixels got inpainted")
+        neg = (inp < 0).sum()
+        self.assertTrue((inp < 0).sum() == 0, "all negative pixels got inpainted actually %s" % neg)
         self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
 
     def test_mask(self):
