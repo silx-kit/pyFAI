@@ -985,8 +985,9 @@ class AbstractCalibration(object):
             elif action == "assign":
                 # Re assign a group of point to a ring ...
                 if self.peakPicker and self.peakPicker.points:
-                    self.peakPicker.points.readRingNrFromKeyboard()
-                    self.peakPicker.points.save(self.basename + ".npt")
+                    control_points = self.peakPicker.points
+                    control_points.readRingNrFromKeyboard()
+                    control_points.save(self.basename + ".npt")
                     if self.weighted:
                         self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
                     else:

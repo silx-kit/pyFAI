@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "02/02/2017"
+__date__ = "25/04/2017"
 __copyright__ = "2011-2017, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,15 +38,7 @@ cimport numpy as cnp
 from cython cimport floating
 from cython.parallel import prange
 from libc.math cimport fabs
-
-
-IF UNAME_SYSNAME == "Windows":
-    cdef extern from "numpy/npy_math.h" nogil:
-        long double NAN "NPY_NAN"
-        bint isnan "npy_isnan"(long double)
-ELSE:
-    from libc.math cimport isnan
-
+from isnan cimport isnan  
 
 ctypedef fused any_int_t:
     cnp.uint8_t

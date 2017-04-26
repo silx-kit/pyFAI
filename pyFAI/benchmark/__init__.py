@@ -28,11 +28,12 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "28/11/2016"
+__date__ = "26/04/2017"
 __license__ = "MIT"
-__copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
 
+from collections import OrderedDict
 import json
 import sys
 import time
@@ -212,7 +213,7 @@ class Bench(object):
         self.LIMIT = 8
         self.repeat = repeat
         self.nbr = nbr
-        self.results = {}
+        self.results = OrderedDict()
         self.meth = []
         self._cpu = None
         self.fig = None
@@ -334,7 +335,7 @@ class Bench(object):
             print("Working on processor: %s" % self.get_cpu())
             label = "1D_" + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
-        results = {}
+        results = OrderedDict()
         first = True
         for param in ds_list:
             self.update_mp()
@@ -434,7 +435,7 @@ class Bench(object):
             label = "2D_" + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
 
-        results = {}
+        results = OrderedDict()
         first = True
         for param in ds_list:
             self.update_mp()
@@ -485,7 +486,7 @@ class Bench(object):
         if ocl is None or not ocl.select_device(devicetype):
             print("No pyopencl or no such device: skipping benchmark")
             return
-        results = {}
+        results = OrderedDict()
         label = "Forward_OpenCL_%s_%s_bits" % (devicetype, ("64" if useFp64 else"32"))
         first = True
         for param in ds_list:

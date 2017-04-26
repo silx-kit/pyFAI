@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/01/2017"
+__date__ = "26/04/2017"
 
 
 import unittest
@@ -313,6 +313,7 @@ class TestSaxs(unittest.TestCase):
 #         self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
 
     def test_normalization_factor(self):
+
         ai = AzimuthalIntegrator(detector="Pilatus100k")
         ai.wavelength = 1e-10
         methods = ["cython", "numpy", "lut", "csr", "ocl_lut", "ocl_csr", "splitpixel"]
@@ -321,6 +322,7 @@ class TestSaxs(unittest.TestCase):
 
         data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0], :ai.detector.shape[1]]
         for method in methods:
+            logger.debug("TestSaxs.test_normalization_factor method= " + method)
             ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, error_model="poisson")
             ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
@@ -336,6 +338,18 @@ class TestSaxs(unittest.TestCase):
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
 #             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
             # ai.reset()
+
+    def test_inpainting(self):
+        logger.debug("TestSaxs.test_inpainting")
+        img = fabio.open(self.edfPilatus).data
+        ai = AzimuthalIntegrator(detector="Pilatus1M")
+        ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
+        mask = img < 0
+        inp = ai.inpainting(img, mask)
+        neg = (inp < 0).sum()
+        logger.debug("neg=%s" % neg)
+        self.assertTrue(neg == 0, "all negative pixels got inpainted actually all but %s" % neg)
+        self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
 
 
 class TestSetter(unittest.TestCase):
@@ -382,6 +396,8 @@ def suite():
     testsuite.addTest(TestAzimPilatus("test_separate"))
     testsuite.addTest(TestSaxs("test_mask"))
     testsuite.addTest(TestSaxs("test_normalization_factor"))
+    testsuite.addTest(TestSaxs("test_inpainting"))
+
     return testsuite
 
 if __name__ == '__main__':

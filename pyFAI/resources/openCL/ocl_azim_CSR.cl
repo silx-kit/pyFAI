@@ -72,6 +72,7 @@ csr_integrate(	const 	__global	float	*weights,
 {
     int thread_id_loc = get_local_id(0);
     int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
+    int active_threads = get_local_size(0);
     int2 bin_bounds;
 //    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
     bin_bounds.x = col_ptr[bin_num];
@@ -122,7 +123,7 @@ csr_integrate(	const 	__global	float	*weights,
     __local float super_sum_count_correction[WORKGROUP_SIZE];
     
     float super_sum_temp = 0.0f;
-    int index, active_threads = WORKGROUP_SIZE;
+    int index;
     
     if (bin_size < WORKGROUP_SIZE)
     {
@@ -219,7 +220,8 @@ csr_integrate_padded(   const   __global    float   *weights,
                     )
 {
     int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
+    int bin_num = get_group_id(0); // each workgroup of size=warp is assigned to 1 bin
+    int active_threads = get_local_size(0);
     int2 bin_bounds;
 //    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
     bin_bounds.x = col_ptr[bin_num];
@@ -233,7 +235,7 @@ csr_integrate_padded(   const   __global    float   *weights,
     float coef, data;
     int idx, k, j;
 
-    for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads)
     {
         k = j+thread_id_loc;
            coef = coefs[k];
@@ -271,7 +273,7 @@ csr_integrate_padded(   const   __global    float   *weights,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     float super_sum_temp = 0.0f;
-    int index, active_threads = WORKGROUP_SIZE;
+    int index;
     cd = 0;
     cc = 0;
     
@@ -332,7 +334,8 @@ csr_integrate_dis(  const   __global    float   *weights,
                  )
 {
     int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
+    int bin_num = get_group_id(0); // each workgroup of size=warp is assigned to 1 bin
+    int active_threads = get_local_size(0);
     int2 bin_bounds;
 //    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
     bin_bounds.x = col_ptr[bin_num];
@@ -344,7 +347,7 @@ csr_integrate_dis(  const   __global    float   *weights,
     float coef, data;
     int idx, k, j;
 
-    for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads)
     {
         k = j+thread_id_loc;
         if (k < bin_bounds.y)     // I don't like conditionals!!
@@ -373,11 +376,11 @@ csr_integrate_dis(  const   __global    float   *weights,
     __local float super_sum_data[WORKGROUP_SIZE];
     __local float super_sum_data_correction[WORKGROUP_SIZE];
     float super_sum_temp = 0.0f;
-    int index, active_threads = WORKGROUP_SIZE;
+    int index;
     
     
     
-    if (bin_size < WORKGROUP_SIZE)
+    if (bin_size < active_threads)
     {
         if (thread_id_loc < bin_size)
         {
