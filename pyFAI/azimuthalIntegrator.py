@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/04/2017"
+__date__ = "26/04/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3397,7 +3397,8 @@ class AzimuthalIntegrator(Geometry):
                   "delta_dummy": delta_dummy,
                   "method": method,
                   "correctSolidAngle": False,
-                  "mask": blank_mask}
+                  "mask": blank_mask,
+                  "azimuth_range": (-180, 180)}
         imgb = self.integrate2d(blank_data, **kwargs)
         imgp = self.integrate2d(masked, **kwargs)
         imgd = self.integrate2d(masked_data, **kwargs)
