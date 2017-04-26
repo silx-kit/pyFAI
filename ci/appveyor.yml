@@ -80,6 +80,7 @@ build_script:
     # Print Python info
     - "python ci\\info_platform.py"
     - "pip list"
+    - "dir"
 
     # Build
     - "del pyFAI\\ext\\histogram.c"
