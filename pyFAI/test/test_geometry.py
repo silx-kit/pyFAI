@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/12/2016"
+__date__ = "26/04/2017"
 
 
 import unittest
@@ -45,6 +45,7 @@ import random
 import time
 import numpy
 import itertools
+import logging
 from .utilstest import UtilsTest, getLogger, ParameterisedTestCase
 logger = getLogger(__file__)
 
@@ -193,11 +194,14 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         size = (50, 60)
         det = Detector(*size, max_shape=self.shape)
         self.geo = geometry.Geometry(detector=det, wavelength=1e-10)
+        self.former_loglevel = geometry.logger.level
+        geometry.logger.setLevel(logging.ERROR)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
         self.geo = None
         self.size = None
+        geometry.logger.setLevel(self.former_loglevel)
 
     def test_center(self):
         rd2 = self.geo.rd2Array(self.shape)
@@ -260,6 +264,14 @@ class ParamFastPath(ParameterisedTestCase):
     dunits = dict((u.split("_")[0], v) for u, v in units.RADIAL_UNITS.items())
     TESTSPACE = itertools.product(geometries, dunits.values())
 
+    def setUp(self):
+        ParameterisedTestCase.setUp(self)
+        self.former_loglevel = geometry.logger.level
+        geometry.logger.setLevel(logging.ERROR)
+
+    def tearDown(self):
+        geometry.logger.setLevel(self.former_loglevel)
+
     def test_corner_array(self):
         """test pyFAI.geometry.corner_array with full detectors
         """
@@ -315,6 +327,7 @@ class ParamFastPath(ParameterisedTestCase):
         msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
         self.assertTrue(numpy.alltrue(delta.max() < self.epsilon), msg)
         logger.debug(msg)
+
 
 class ParamTestGeometry(ParameterisedTestCase):
     size = 1024
