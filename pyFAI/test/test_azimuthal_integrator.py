@@ -347,7 +347,7 @@ class TestSaxs(unittest.TestCase):
         mask = img < 0
         inp = ai.inpainting(img, mask)
         neg = (inp < 0).sum()
-        logger.warning("neg=%s" % neg)
+        logger.debug("neg=%s" % neg)
         self.assertTrue(neg == 0, "all negative pixels got inpainted actually all but %s" % neg)
         self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
 

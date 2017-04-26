@@ -3408,12 +3408,12 @@ class AzimuthalIntegrator(Geometry):
 
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
                                                    to_paint, omask, 0)
-
+        azimuthal_range = numpy.linspace(-180, 180, npt_azim, endpoint=True)
         cart_inpatined = inpainting.polar_interpolate(data, mask,
                                                       self._cached_array[unit.split("_")[0] + "_center"],
                                                       self._cached_array["chi_center"],
                                                       polar_inpainted,
-                                                      imgd.radial, imgd.azimuthal)
+                                                      imgd.radial, azimuthal_range)
 
         if poissonian:
             res = data.copy()
