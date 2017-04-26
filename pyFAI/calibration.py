@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/04/2017"
+__date__ = "19/04/2017"
 __status__ = "production"
 
 import os
@@ -987,6 +987,7 @@ class AbstractCalibration(object):
                 if self.peakPicker and self.peakPicker.points:
                     control_points = self.peakPicker.points
                     control_points.readRingNrFromKeyboard()
+                    control_points.save(self.basename + ".npt")
                     if self.weighted:
                         self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
                     else:
