@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "09/05/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -630,13 +630,17 @@ class Geometry(object):
         """Derecated version of positionArray, left for compatibility see doc of position_array"""
         return self.position_array(*arg, **kwarg)
 
-    def corner_array(self, shape=None, unit=None, use_cython=True):
+    def corner_array(self, shape=None, unit=None, use_cython=True, scale=True):
         """
         Generate a 3D array of the given shape with (i,j) (radial
         angle 2th, azimuthal angle chi ) for all elements.
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
+        :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
+        :param use_cython: set to False to use the slower Python path (for tests)
+        :param scale: set to False for returning the internal representation 
+                        (S.I. often) which is faster 
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
@@ -651,7 +655,7 @@ class Geometry(object):
         else:
             # If no unit is asked, any is OK for extracting the Chi array
             unit = None
-            for space in [ u.split("_")[0] for u in units.ANGLE_UNITS]:
+            for space in [u.split("_")[0] for u in units.ANGLE_UNITS]:
                 ary = self._cached_array.get(space + "_corner")
                 if (ary is not None) and (shape == ary.shape[:2]):
                     return ary
@@ -716,7 +720,11 @@ class Geometry(object):
                                 corners[:shape[0], :shape[1], :, 0] = rad[:shape[0], :shape[1], :]
                     self._cached_array[key] = corners
 
-        return self._cached_array[key]
+        res = self._cached_array[key]
+        if scale and unit:
+            return res * unit.scale
+        else:
+            return res
 
     @deprecated
     def cornerArray(self, shape=None):
@@ -729,7 +737,7 @@ class Geometry(object):
            * dim3[0]: radial angle 2th
            * dim3[1]: azimuthal angle chi
         """
-        return self.corner_array(shape, unit=units.TTH_RAD)
+        return self.corner_array(shape, unit=units.TTH_RAD, scale=False)
 
     @deprecated
     def cornerQArray(self, shape=None):
@@ -741,7 +749,7 @@ class Geometry(object):
         :type shape: 2-tuple of integer
         :return: 3d array with shape=(*shape,4,2) the two elements are (scattering vector q, azimuthal angle chi)
         """
-        return self.corner_array(shape, unit=units.Q, use_cython=False)
+        return self.corner_array(shape, unit=units.Q, use_cython=False, scale=False)
 
     @deprecated
     def cornerRArray(self, shape=None):
@@ -753,7 +761,7 @@ class Geometry(object):
         :type shape: 2-tuple of integer
         :return: 3d array with shape=(*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
         """
-        return self.corner_array(shape, unit=units.R, use_cython=False)
+        return self.corner_array(shape, unit=units.R, use_cython=False, scale=False)
 
     @deprecated
     def cornerRd2Array(self, shape=None):
@@ -765,15 +773,18 @@ class Geometry(object):
         :type shape: 2-tuple of integer
         :return: 3d array with shape=(*shape,4,2) the two elements are (reciprocal spacing squared, azimuthal angle chi)
         """
-        return self.corner_array(shape, unit=units.RecD2_NM)
+        return self.corner_array(shape, unit=units.RecD2_NM, scale=False)
 
-    def center_array(self, shape=None, unit="2th"):
+    def center_array(self, shape=None, unit="2th_deg", scale=True):
         """
         Generate a 2D array of the given shape with (i,j) (radial
         angle ) for all elements.
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
+        :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
+        :param scale: set to False for returning the internal representation 
+                (S.I. often) which is faster 
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
@@ -790,7 +801,10 @@ class Geometry(object):
                          "neither in the detector: %s", self.detector)
 
         if (ary is not None) and (ary.shape == shape):
-            return ary
+            if scale and unit:
+                return ary * unit.scale
+            else:
+                return ary
 
         pos = self.position_array(shape, corners=False)
         x = pos[..., 2]
@@ -798,15 +812,21 @@ class Geometry(object):
         z = pos[..., 0]
         ary = unit.equation(x, y, z, self.wavelength)
         self._cached_array[key] = ary
-        return ary
+        if scale and unit:
+            return ary * unit.scale
+        else:
+            return ary
 
-    def delta_array(self, shape=None, unit="2th"):
+    def delta_array(self, shape=None, unit="2th_deg", scale=False):
         """
         Generate a 2D array of the given shape with (i,j) (delta-radial
         angle) for all elements.
 
         :param shape: expected shape
         :type shape: 2-tuple of integer
+        :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
+        :param scale: set to False for returning the internal representation 
+                (S.I. often) which is faster 
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
 
             - dim3[0]: radial angle 2th, q, r...
@@ -823,13 +843,19 @@ class Geometry(object):
                          "neither in the detector: %s", self.detector)
 
         if (ary is not None) and (ary.shape == shape):
-            return ary
-        center = self.center_array(shape, unit=unit)
-        corners = self.corner_array(shape, unit=unit)
+            if scale and unit:
+                return ary * unit.scale
+            else:
+                return ary
+        center = self.center_array(shape, unit=unit, scale=False)
+        corners = self.corner_array(shape, unit=unit, scale=False)
         delta = abs(corners[..., 0] - numpy.atleast_3d(center))
         ary = delta.max(axis=-1)
         self._cached_array[space] = ary
-        return ary
+        if scale and unit:
+            return ary * unit.scale
+        else:
+            return ary
 
     def delta2Theta(self, shape=None):
         """
@@ -842,7 +868,7 @@ class Geometry(object):
         key = "2th_delta"
         if self._cached_array.get(key) is None:
             center = self.twoThetaArray(shape)
-            corners = self.corner_array(shape, unit=units.TTH)
+            corners = self.corner_array(shape, unit=units.TTH, scale=False)
             with self._sem:
                 if self._cached_array.get(key) is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
@@ -886,7 +912,7 @@ class Geometry(object):
         key = "q_delta"
         if self._cached_array.get(key) is None:
             center = self.qArray(shape)
-            corners = self.corner_array(shape, unit=units.Q)
+            corners = self.corner_array(shape, unit=units.Q, scale=False)
             with self._sem:
                 if self._cached_array.get(key) is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
@@ -904,7 +930,7 @@ class Geometry(object):
         key = "r_delta"
         if self._cached_array.get(key) is None:
             center = self.rArray(shape)
-            corners = self.corner_array(shape, unit=units.R)
+            corners = self.corner_array(shape, unit=units.R, scale=False)
             with self._sem:
                 if self._cached_array.get(key) is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
@@ -920,8 +946,8 @@ class Geometry(object):
         :return: array 2D containing the max delta (d*)^2 between a pixel center and any corner in reciprocal spacing squarred (1/nm^2)
         """
         if self._cached_array.get("d*2_delta") is None:
-            center = self.center_array(shape, unit=units.RecD2_NM)
-            corners = self.corner_array(shape, unit=units.RecD2_NM)
+            center = self.center_array(shape, unit=units.RecD2_NM, scale=False)
+            corners = self.corner_array(shape, unit=units.RecD2_NM, scale=False)
             with self._sem:
                 if self._cached_array.get("d*2_delta") is None:
                     delta = abs(corners[..., 0] - numpy.atleast_3d(center))
@@ -960,11 +986,11 @@ class Geometry(object):
         else:
             # fast path is definitely not available, use the generic formula
             if typ == "center":
-                out = self.center_array(shape, unit)
+                out = self.center_array(shape, unit, scale=False)
             elif typ == "corner":
-                out = self.corner_array(shape, unit)
+                out = self.corner_array(shape, unit, scale=False)
             else:  # typ == "delta":
-                out = self.delta_array(shape, unit)
+                out = self.delta_array(shape, unit, scale=False)
         return out
 
     def cosIncidance(self, d1, d2, path="cython"):

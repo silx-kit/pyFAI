@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2017"
+__date__ = "09/05/2017"
 
 
 import unittest
@@ -278,11 +278,11 @@ class ParamFastPath(ParameterisedTestCase):
         data, space = self.param
         geo = geometry.Geometry(**data)
         t00 = timer()
-        py_res = geo.corner_array(unit=space, use_cython=False)
+        py_res = geo.corner_array(unit=space, use_cython=False, scale=False)
         t01 = timer()
         geo.reset()
         t10 = timer()
-        cy_res = geo.corner_array(unit=space, use_cython=True)
+        cy_res = geo.corner_array(unit=space, use_cython=True, scale=False)
         t11 = timer()
         delta = abs(py_res - cy_res)
         # We expect precision on radial position

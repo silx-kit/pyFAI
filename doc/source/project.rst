@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 01/12/2016
+:Date: 09/05/2017
 :Keywords: Project management description
 :Target: developers
 
@@ -52,10 +52,11 @@ into the main branch via pull-requests.
 Getting help
 ------------
 
-A mailing list: pyfai@esrf.fr is publicly available, it is the best place to ask
-your questions: the author and many advanced users are there and willing to help you.
+A mailing list, pyfai@esrf.fr, is publicly available.
+I t is the best place to ask your questions: the author and many advanced users
+are there and willing to help you.
 To subscribe to this mailing list, send an email to
-`sympa@esrf.fr with "subscribe pyfai" as subject <mailto:sympa@esrf.fr?Subject=subscribe%20pyfai>`_.
+`pyfai-subscribe@esrf.fr <mailto:pyfai-subscribe@esrf.fr>`_.
 
 On this mailing list, you will have information about release of the software,
 new features available and meet experts to help you solve issues related to
@@ -86,7 +87,7 @@ continue funding development.
 Run dependencies
 ----------------
 
-* Python version 2.7, 3.4, 3.5
+* Python version 2.7, 3.4, 3.5, 3.6
 * NumPy
 * SciPy
 * Matplotlib
@@ -94,6 +95,7 @@ Run dependencies
 * h5py
 * pyopencl (optional)
 * PyQt4 or PySide (for the graphical user interface)
+* Silx
 
 Build dependencies
 ------------------
