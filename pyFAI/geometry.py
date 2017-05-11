@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2017"
+__date__ = "11/05/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -954,7 +954,7 @@ class Geometry(object):
                     self._cached_array["d*2_delta"] = delta.max(axis=-1)
         return self._cached_array.get("d*2_delta")
 
-    def array_from_unit(self, shape=None, typ="center", unit=units.TTH):
+    def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
         Generate an array of position in different dimentions (R, Q,
         2Theta)
@@ -965,7 +965,8 @@ class Geometry(object):
         :type typ: str
         :param unit: can be Q, TTH, R for now
         :type unit: pyFAI.units.Enum
-
+        :param scale: set to False for returning the internal representation 
+                (S.I. often) which is faster 
         :return: R, Q or 2Theta array depending on unit
         :rtype: ndarray
         """
@@ -991,6 +992,12 @@ class Geometry(object):
                 out = self.corner_array(shape, unit, scale=False)
             else:  # typ == "delta":
                 out = self.delta_array(shape, unit, scale=False)
+
+        if scale and unit:
+            return out * unit.scale
+        else:
+            return out
+
         return out
 
     def cosIncidance(self, d1, d2, path="cython"):
