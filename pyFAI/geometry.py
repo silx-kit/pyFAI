@@ -984,20 +984,16 @@ class Geometry(object):
         if meth_name and meth_name in dir(Geometry):
             # fast path may be available
             out = Geometry.__dict__[meth_name](self, shape)
+            if scale and unit:
+                out = out * unit.scale
         else:
             # fast path is definitely not available, use the generic formula
             if typ == "center":
-                out = self.center_array(shape, unit, scale=False)
+                out = self.center_array(shape, unit, scale=scale)
             elif typ == "corner":
-                out = self.corner_array(shape, unit, scale=False)
+                out = self.corner_array(shape, unit, scale=scale)
             else:  # typ == "delta":
-                out = self.delta_array(shape, unit, scale=False)
-
-        if scale and unit:
-            return out * unit.scale
-        else:
-            return out
-
+                out = self.delta_array(shape, unit, scale=scale)
         return out
 
     def cosIncidance(self, d1, d2, path="cython"):

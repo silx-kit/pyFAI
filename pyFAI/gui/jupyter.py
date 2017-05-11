@@ -86,6 +86,8 @@ def plot1d(result, calibrant=None, label=None, ax=None):
     """Display the powder diffraction pattern in the jupyter notebook
     
     :param result: instance of Integrate1dResult
+    :param calibrant: Calibrant instance to overlay diffraction lines
+    :param label: (str) name of the curve
     :param ax: subplot object to display in, if None, a new one is created.
     :return: Matplotlib subplot
     """
@@ -124,17 +126,28 @@ def plot1d(result, calibrant=None, label=None, ax=None):
 
     return ax
 
-# TODO: 2D integration results.
-#             img = res2.intensity
-#             pos_rad = res2.radial
-#             pos_azim = res2.azimuthal
-#             self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
-#                                    extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
-#                                    aspect="auto")
-#             self.ax_xrpd_2d.set_title("2D regrouping")
-#             self.ax_xrpd_2d.set_xlabel(self.unit.label)
-#             self.ax_xrpd_2d.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
-#             if not gui_utils.main_loop:
-#                 self.fig_integrate.show()
-#             update_fig(self.fig_integrate)
-#     """
+
+def plot2d(result, label=None, ax=None):
+    """Display the caked image in the jupyter notebook
+    
+    :param result: instance of Integrate1dResult
+    :param ax: subplot object to display in, if None, a new one is created.
+    :return: Matplotlib subplot
+    """
+    img = result.intensity
+    pos_rad = result.radial
+    pos_azim = result.azimuthal
+    if ax is None:
+        _fig, ax = subplots()
+    ax.imshow(numpy.arcsinh(img),
+              origin="lower",
+              extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
+              aspect="auto",
+              cmap="inferno")
+    if label:
+        ax.set_title("2D regrouping")
+    else:
+        ax.set_title(label)
+    ax.set_xlabel(result.unit.label)
+    ax.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
+    return ax

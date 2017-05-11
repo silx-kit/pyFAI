@@ -1051,8 +1051,8 @@ class AzimuthalIntegrator(Geometry):
             int2d = True
         else:
             int2d = False
-        pos0 = self.array_from_unit(shape, "center", unit)
-        dpos0 = self.array_from_unit(shape, "delta", unit)
+        pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+        dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
         if (pos1_range is None) and (not int2d):
             pos1 = None
             dpos1 = None
@@ -1147,13 +1147,13 @@ class AzimuthalIntegrator(Geometry):
         else:
             int2d = False
         if split == "full":
-            pos = self.array_from_unit(shape, "corner", unit)
+            pos = self.array_from_unit(shape, "corner", unit, scale=False)
         else:
-            pos0 = self.array_from_unit(shape, "center", unit)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             if split == "no":
                 dpos0 = None
             else:
-                dpos0 = self.array_from_unit(shape, "delta", unit)
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
             if (pos1_range is None) and (not int2d):
                 pos1 = None
                 dpos1 = None
@@ -2515,7 +2515,7 @@ class AzimuthalIntegrator(Geometry):
                     method = self.DEFAULT_METHOD
                 else:
                     logger.debug("integrate1d uses SplitPixel implementation")
-                    pos = self.array_from_unit(shape, "corner", unit)
+                    pos = self.array_from_unit(shape, "corner", unit, scale=False)
                     qAxis, I, sum_, count = splitPixel.fullSplit1D(pos=pos,
                                                                    weights=data,
                                                                    bins=npt,
@@ -2559,8 +2559,8 @@ class AzimuthalIntegrator(Geometry):
                     dchi = self.deltaChi(shape)
                 else:
                     dchi = None
-                pos0 = self.array_from_unit(shape, "center", unit)
-                dpos0 = self.array_from_unit(shape, "delta", unit)
+                pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
                 qAxis, I, sum_, count = splitBBox.histoBBox1d(weights=data,
                                                               pos0=pos0,
                                                               delta_pos0=dpos0,
@@ -2600,7 +2600,7 @@ class AzimuthalIntegrator(Geometry):
             # Common part for  Numpy and Cython
             data = data.astype(numpy.float32)
             mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
-            pos0 = self.array_from_unit(shape, "center", unit)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range))
                 mask *= (pos0 <= max(radial_range))
@@ -3013,7 +3013,7 @@ class AzimuthalIntegrator(Geometry):
                 method = self.DEFAULT_METHOD
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
-                pos = self.array_from_unit(shape, "corner", unit)
+                pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 I, bins_rad, bins_azim, sum_, count = splitPixel.fullSplit2D(pos=pos,
                                                                              weights=data,
                                                                              bins=(npt_rad, npt_azim),
@@ -3036,8 +3036,8 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("integrate2d uses BBox implementation")
                 chi = self.chiArray(shape)
                 dchi = self.deltaChi(shape)
-                pos0 = self.array_from_unit(shape, "center", unit)
-                dpos0 = self.array_from_unit(shape, "delta", unit)
+                pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
                 I, bins_rad, bins_azim, sum_, count = splitBBox.histoBBox2d(weights=data,
                                                                             pos0=pos0,
                                                                             delta_pos0=dpos0,
@@ -3060,7 +3060,7 @@ class AzimuthalIntegrator(Geometry):
             data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
             mask = self.create_mask(data, mask, dummy, delta_dummy,
                                     mode="numpy")
-            pos0 = self.array_from_unit(shape, "center", unit)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             pos1 = self.chiArray(shape)
 
             if radial_range is not None:
