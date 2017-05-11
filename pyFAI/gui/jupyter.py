@@ -124,6 +124,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
 
     return ax
 
+# TODO: 2D integration results.
 #             img = res2.intensity
 #             pos_rad = res2.radial
 #             pos_azim = res2.azimuthal
