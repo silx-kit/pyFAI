@@ -26,7 +26,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "24/04/2017"
+__date__ = "11/05/2017"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -187,7 +187,6 @@ def polar_inpaint(cython.floating[:, :] img not None,
                     radius = 0
                     while len(values) == 0:
                         radius += 1
-                        print(row, col, radius)
                         idx_col = max(0, col - radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)): 
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
