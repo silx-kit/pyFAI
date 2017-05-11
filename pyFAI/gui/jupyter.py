@@ -94,7 +94,6 @@ def plot1d(result, calibrant=None, label=None, ax=None):
     if ax is None:
         _fig, ax = subplots()
 
-    from pyFAI import units
     unit = result.unit
     if result.sigma:
         ax.errorbar(result.radial, result.intensity, result.sigma, label=label)
@@ -104,6 +103,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
     if label:
         ax.legend()
     if calibrant:
+        from pyFAI import units
         x_values = None
         twotheta = numpy.array([i for i in calibrant.get_2th() if i])  # in radian
         if unit == units.TTH_DEG:
@@ -127,10 +127,13 @@ def plot1d(result, calibrant=None, label=None, ax=None):
     return ax
 
 
-def plot2d(result, label=None, ax=None):
+def plot2d(result, calibrant=None, label=None, ax=None):
     """Display the caked image in the jupyter notebook
     
-    :param result: instance of Integrate1dResult
+    :param result: instance of Integrate2dResult
+    :param calibrant: Calibrant instance to overlay diffraction lines
+    :param label: (str) name of the curve
+
     :param ax: subplot object to display in, if None, a new one is created.
     :return: Matplotlib subplot
     """
@@ -150,4 +153,22 @@ def plot2d(result, label=None, ax=None):
         ax.set_title(label)
     ax.set_xlabel(result.unit.label)
     ax.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
+    if calibrant:
+        from pyFAI import units
+        x_values = None
+        twotheta = numpy.array([i for i in calibrant.get_2th() if i])  # in radian
+        unit = result.unit
+        if unit == units.TTH_DEG:
+            x_values = numpy.rad2deg(twotheta)
+        elif unit == units.TTH_RAD:
+            x_values = twotheta
+        elif unit == units.Q_A:
+            x_values = (4.e-10 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
+        elif unit == units.Q_NM:
+            x_values = (4.e-9 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
+        if x_values is not None:
+            for x in x_values:
+                line = lines.Line2D([x, x], [pos_azim.min(), pos_azim.max()],
+                                    color='red', linestyle='--')
+                ax.add_line(line)
     return ax
