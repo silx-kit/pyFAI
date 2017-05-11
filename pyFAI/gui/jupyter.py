@@ -35,12 +35,13 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "11/05/2017"
 __status__ = "Development"
 __docformat__ = 'restructuredtext'
 
 import numpy
 from pylab import subplots, legend
+from matplotlib import lines
 
 
 def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
@@ -53,7 +54,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
     :param label: name of the curve
     :param sg: single geometry object regrouping img, cp and ai
     :param ax: subplot object to display in, if None, a new one is created.
-    :rerturn: Matplotlib subplot
+    :return: Matplotlib subplot
     """
     if ax is None:
         _fig, ax = subplots()
@@ -75,7 +76,64 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
             ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
         if ai is not None and cp.calibrant is not None:
             tth = cp.calibrant.get_2th()
-            ttha = ai.twoThetaArray()
+            ttha = ai.twothetaArray()
             ax.contour(ttha, levels=tth, cmap="autumn", linewidths=2, linestyles="dashed")
         legend()
     return ax
+
+
+def plot1d(result, calibrant=None, label=None, ax=None):
+    """Display the powder diffraction pattern in the jupyter notebook
+    
+    :param result: instance of Integrate1dResult
+    :param ax: subplot object to display in, if None, a new one is created.
+    :return: Matplotlib subplot
+    """
+    if ax is None:
+        _fig, ax = subplots()
+
+    from pyFAI import units
+    unit = result.unit
+    if result.sigma:
+        ax.errorbar(result.radial, result.intensity, result.sigma, label=label)
+    else:
+        ax.plot(result.radial, result.intensity, label=label)
+
+    if label:
+        ax.legend()
+    if calibrant:
+        x_values = None
+        twotheta = numpy.array([i for i in calibrant.get_2th() if i])  # in radian
+        if unit == units.TTH_DEG:
+            x_values = numpy.rad2deg(twotheta)
+        elif unit == units.TTH_RAD:
+            x_values = twotheta
+        elif unit == units.Q_A:
+            x_values = (4.e-10 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
+        elif unit == units.Q_NM:
+            x_values = (4.e-9 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
+        if x_values is not None:
+            for x in x_values:
+                line = lines.Line2D([x, x], ax.axis()[2:4],
+                                    color='red', linestyle='--')
+                ax.add_line(line)
+
+    ax.set_title("1D integration")
+    ax.set_xlabel(unit.label)
+    ax.set_ylabel("Intensity")
+
+    return ax
+
+#             img = res2.intensity
+#             pos_rad = res2.radial
+#             pos_azim = res2.azimuthal
+#             self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
+#                                    extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
+#                                    aspect="auto")
+#             self.ax_xrpd_2d.set_title("2D regrouping")
+#             self.ax_xrpd_2d.set_xlabel(self.unit.label)
+#             self.ax_xrpd_2d.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
+#             if not gui_utils.main_loop:
+#                 self.fig_integrate.show()
+#             update_fig(self.fig_integrate)
+#     """
