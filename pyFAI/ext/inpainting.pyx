@@ -37,13 +37,18 @@ from libc.math cimport floor, ceil, M_PI as pi
 
 include "bilinear.pxi"
 
-cdef class ValDist:
-    cdef:
-        float value, dist2
-        
-    def _cinit__(self, float value, float dist2):
-        self.value = value
-        self.dist2 = dist2
+# cdef class ValDist:
+#     cdef:
+#         readonly float value, dist2
+#         
+#     def _init__(self, value, dist2):
+#         self.value = <float> value
+#         self.dist2 = <float> dist2
+from collections import namedtuple
+ValDist = namedtuple("ValDist", ["value", "dist2"])
+# cdef struct ValDist:
+#     float value
+#     float dist2
 
 
 def largest_width(numpy.int8_t[:, :]image):
@@ -145,13 +150,13 @@ def polar_inpaint(cython.floating[:, :] img not None,
     """
     cdef:
         int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, radius
-        int start_col, end_col, start_row, end_row, dist, dist2, dist2_min
+        int start_col, end_col, start_row, end_row
         float[:, ::1] res
         bint do_dummy = empty is not None
-        float value, dummy
+        float value, dummy, dist
         double sum, cnt, weight
         list values
-        ValDist vd
+        #ValDist vd
         
     npt_azim = img.shape[0]
     npt_radial = img.shape[1]
@@ -173,27 +178,32 @@ def polar_inpaint(cython.floating[:, :] img not None,
     for row in range(npt_azim):
         for col in range(npt_radial):
             if topaint[row, col]:  # this pixel deserves inpaining
+                if row==0 and col==300:
+                    print(img[row, col],mask[row, col],topaint[row, col])
                 values = []
-                distances2 = [] 
-                for idx_row in range(row, -1, -1):
-                    if topaint[idx_row, col] == 0 and mask[idx_row, col] == 0:  
-                        dist = (row - idx_row)
+                for idx_row in range(row - 1, -1, -1):
+                    if (topaint[idx_row, col] == 0) and (mask[idx_row, col] == 0):  
+                        dist = row - idx_row
                         values.append(ValDist(img[idx_row, col], dist * dist))                        
+                        if row==0 and col==300:
+                            print("up",row,col, idx_row, tar_row, dist, img[idx_row, col])
                         break
                 if values:
                     tar_row = min(npt_azim, 2 * row - idx_row + 1) 
                 else:
                     tar_row = npt_azim 
-                for idx_row in range(row, tar_row, 1):
+                for idx_row in range(row + 1, tar_row, 1):
                     if topaint[idx_row, col] == 0 and mask[idx_row, col] == 0:  
-                        dist = (row - idx_row)
+                        dist = idx_row - row 
                         values.append(ValDist(img[idx_row, col], dist * dist))
+                        if row==0 and col==300:
+                            print("down",row,col, idx_row, tar_row, dist, img[idx_row, col], dist*dist, values[0].value, values[0].dist2)
                         break
                 
-                if len(values) == 0:
+                if not values:
                     # radial search:
                     radius = 0
-                    while len(values) == 0:
+                    while not values:
                         radius += 1
                         idx_col = max(0, col - radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)): 
@@ -219,9 +229,19 @@ def polar_inpaint(cython.floating[:, :] img not None,
                                 values.append(ValDist(img[idx_row, idx_col],
                                                       (row - idx_row) ** 2 + (col - idx_col) ** 2))
                                 
+                    if values: print("pixel:", row, col, radius)
                 cnt = 0.0
                 sum = 0.0
                 for vd in values:
+                    if vd.dist2 == 0.0:
+                        print("shape",npt_azim, npt_radial )
+                        print("pixel", row, col)
+                        for vd in values:
+                            print(vd.value, vd.dist2)
+                        radius=3
+                        print(numpy.asarray(img[row:row+radius, col-radius:col+radius+1]))
+                        print(numpy.asarray(mask[row:row+radius, col-radius:col+radius+1]))
+                        print(numpy.asarray(topaint[row:row+radius, col-radius:col+radius+1]))
                     weight = 1.0 / vd.dist2
                     sum += vd.value * weight
                     cnt += weight
