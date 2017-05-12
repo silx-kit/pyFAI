@@ -221,7 +221,7 @@ def polar_inpaint(cython.floating[:, :] img not None,
                                 
                 cnt = 0.0
                 sum = 0.0
-                for vd in zip(values):
+                for vd in values:
                     weight = 1.0 / vd.dist2
                     sum += vd.value * weight
                     cnt += weight
