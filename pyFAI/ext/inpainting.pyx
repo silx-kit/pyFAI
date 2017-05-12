@@ -178,16 +178,16 @@ def polar_inpaint(cython.floating[:, :] img not None,
     for row in range(npt_azim):
         for col in range(npt_radial):
             if topaint[row, col]:  # this pixel deserves inpaining
-                if row==0 and col==300:
-                    print(img[row, col],mask[row, col],topaint[row, col])
+#                 if row==0 and col==300:
+#                     print(img[row, col],mask[row, col],topaint[row, col])
                 values = []
                 for idx_row in range(row - 1, -1, -1):
                     if (topaint[idx_row, col] == 0) and (mask[idx_row, col] == 0):  
                         dist = row - idx_row
                         #values.append(ValDist(img[idx_row, col], dist * dist))
                         values.append(ValDist(-1, dist * dist))                        
-                        if row==0 and col==300:
-                            print("up",row,col, idx_row, tar_row, dist, img[idx_row, col])
+#                         if row==0 and col==300:
+#                             print("up",row,col, idx_row, tar_row, dist, img[idx_row, col])
                         break
                 if values:
                     tar_row = min(npt_azim, 2 * row - idx_row + 1) 
@@ -198,8 +198,8 @@ def polar_inpaint(cython.floating[:, :] img not None,
                         dist = idx_row - row 
                         #values.append(ValDist(img[idx_row, col], dist * dist))
                         values.append(ValDist(1, dist * dist))
-                        if row==0 and col==300:
-                            print("down",row,col, idx_row, tar_row, dist, img[idx_row, col], dist*dist, values[0].value, values[0].dist2)
+#                         if row==0 and col==300:
+#                             print("down",row,col, idx_row, tar_row, dist, img[idx_row, col], dist*dist, values[0].value, values[0].dist2)
                         break
                 
                 if not values:
@@ -240,8 +240,8 @@ def polar_inpaint(cython.floating[:, :] img not None,
                     cnt += weight
                 #if sum>0:
                     
-                #value = sum / cnt
-                value = col
+                value = sum / cnt
+                #value = col
             elif do_dummy and mask[row, col]:
                 value = dummy
             else:
