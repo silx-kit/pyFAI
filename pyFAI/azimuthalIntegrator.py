@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/05/2017"
+__date__ = "12/05/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -413,7 +413,8 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0 there is correction for circular 
+        polarization, When set to None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -538,7 +539,7 @@ class AzimuthalIntegrator(Geometry):
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
         :param polarization_factor: polarization factor correction
-        :type polarization_factor: float
+        :type polarization_factor: float or None
         :param dark: dark noise image
         :type dark: ndarray
         :param flat: flat field image
@@ -587,7 +588,8 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0, the circular polarization is used. 
+        When None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -744,7 +746,8 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0: circular polarization. 
+        None for no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -996,7 +999,7 @@ class AzimuthalIntegrator(Geometry):
                     self._ocl_integrator.unsetMask()
             tthAxis, I, _, = self._ocl_integrator.execute(data)
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
     def setup_LUT(self, shape, npt, mask=None,
@@ -1719,7 +1722,7 @@ class AzimuthalIntegrator(Geometry):
                                                   weights=data,
                                                   range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
-        self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
+        self.save2D(filename, I, bins2Th, binsChi)
 
         return I, bins2Th, binsChi
 
@@ -1835,7 +1838,7 @@ class AzimuthalIntegrator(Geometry):
                                                               empty=dummy if dummy is not None else self._empty)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
+        self.save2D(filename, I, bins2Th, binsChi)
         return I, bins2Th, binsChi
 
     @deprecated
@@ -1917,7 +1920,8 @@ class AzimuthalIntegrator(Geometry):
 
         the polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0: circular polarization. When None there 
+        is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -2061,7 +2065,8 @@ class AzimuthalIntegrator(Geometry):
 
         the polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0: circular polarization. 
+        When None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -2122,7 +2127,8 @@ class AzimuthalIntegrator(Geometry):
                                                            polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
+        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None,
+                    has_flat=flat is not None,
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
@@ -2134,7 +2140,8 @@ class AzimuthalIntegrator(Geometry):
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
-                    method="csr", unit=units.Q, safe=True, normalization_factor=1.0,
+                    method="csr", unit=units.Q, safe=True,
+                    normalization_factor=1.0,
                     block_size=32, profile=False, all=False):
         """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
@@ -2224,11 +2231,9 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = None
-        elif polarization_factor is True:
-            polarization = self._polarization
+            polarization = polarization_checksum = None
         else:
-            polarization = self.polarization(shape, float(polarization_factor))
+            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
             dark = self.darkcurrent
@@ -2337,7 +2342,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                 dummy=dummy,
                                                                                 delta_dummy=delta_dummy,
                                                                                 polarization=polarization,
-                                                                                polarization_checksum=self._polarization_crc,
+                                                                                polarization_checksum=polarization_checksum,
                                                                                 normalization_factor=normalization_factor)
                                 qAxis = self._lut_integrator.outPos  # this will be copied later
                                 if error_model == "azimuthal":
@@ -2474,7 +2479,7 @@ class AzimuthalIntegrator(Geometry):
                                                                             dummy=dummy,
                                                                             delta_dummy=delta_dummy,
                                                                             polarization=polarization,
-                                                                            polarization_checksum=self._polarization_crc,
+                                                                            polarization_checksum=polarization_checksum,
                                                                             normalization_factor=normalization_factor)
                             qAxis = self._csr_integrator.outPos  # this will be copied later
                             if error_model == "azimuthal":
@@ -2671,7 +2676,8 @@ class AzimuthalIntegrator(Geometry):
             qAxis = qAxis * pos0_scale
 
         self.save1D(filename, qAxis, I, sigma, unit,
-                    dark is not None, flat is not None, polarization_factor, normalization_factor)
+                    dark is not None, flat is not None,
+                    polarization_factor, normalization_factor)
 
         result = Integrate1dResult(qAxis, I, sigma)
         result._set_unit(unit)
@@ -2683,7 +2689,8 @@ class AzimuthalIntegrator(Geometry):
         result._set_normalization_factor(normalization_factor)
 
         if all:
-            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
+            logger.warning("integrate1d(all=True) is deprecated. "
+                    "Please refer to the documentation of Integrate2dResult")
 
             res = {"radial": result.radial,
                    "unit": result.unit,
@@ -2733,7 +2740,9 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
+        :param polarization_factor: polarization factor between -1 (vertical) 
+                and +1 (horizontal). 0 for circular polarization or random, 
+                None for no correction
         :type polarization_factor: float
         :param dark: dark noise image
         :type dark: ndarray
@@ -2783,9 +2792,9 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = None
+            polarization = polarization_checksum = None
         else:
-            polarization = self.polarization(shape, polarization_factor)
+            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
             dark = self.darkcurrent
@@ -2882,7 +2891,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                 dummy=dummy,
                                                                                 delta_dummy=delta_dummy,
                                                                                 polarization=polarization,
-                                                                                polarization_checksum=self._polarization_crc,
+                                                                                polarization_checksum=polarization_checksum,
                                                                                 normalization_factor=normalization_factor,
                                                                                 safe=safe)
                                 I.shape = npt
@@ -2991,7 +3000,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                 dummy=dummy,
                                                                                 delta_dummy=delta_dummy,
                                                                                 polarization=polarization,
-                                                                                polarization_checksum=self._polarization_crc,
+                                                                                polarization_checksum=polarization_checksum,
                                                                                 safe=safe,
                                                                                 normalization_factor=normalization_factor)
                                 I.shape = npt
@@ -3120,7 +3129,8 @@ class AzimuthalIntegrator(Geometry):
         bins_azim = bins_azim * 180.0 / pi
 
         self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    has_dark=dark is not None, has_flat=flat is not None, polarization_factor=polarization_factor,
+                    has_dark=dark is not None, has_flat=flat is not None,
+                    polarization_factor=polarization_factor,
                     normalization_factor=normalization_factor)
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
@@ -3181,7 +3191,8 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        :param polarization_factor: polarization factor between -1 and +1. 
+                               0 for circular correction, None for no correction
         :type polarization_factor: float
         :param dark: dark noise image
         :type dark: ndarray
@@ -3251,10 +3262,12 @@ class AzimuthalIntegrator(Geometry):
         if not filename:
             return
         writer = self.__get_default_writer()
-        writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
+        writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat,
+                      polarization_factor, normalization_factor)
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
-               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
+               has_dark=False, has_flat=False,
+               polarization_factor=None, normalization_factor=None):
         """
         :param filename: the filename used to save the 2D histogram
         :type filename: str
@@ -3282,7 +3295,8 @@ class AzimuthalIntegrator(Geometry):
         if not filename:
             return
         writer = self.__get_default_writer()
-        writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
+        writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
+                      polarization_factor, normalization_factor)
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
@@ -3399,7 +3413,8 @@ class AzimuthalIntegrator(Geometry):
                   "method": method,
                   "correctSolidAngle": False,
                   "mask": blank_mask,
-                  "azimuth_range": (-180, 180)}
+                  "azimuth_range": (-180, 180),
+                  "polarization_factor": None}
         imgb = self.integrate2d(blank_data, **kwargs)
         imgp = self.integrate2d(masked, **kwargs)
         imgd = self.integrate2d(masked_data, **kwargs)
