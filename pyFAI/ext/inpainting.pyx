@@ -231,23 +231,17 @@ def polar_inpaint(cython.floating[:, :] img not None,
                                 values.append(ValDist(img[idx_row, idx_col],
                                                       (row - idx_row) ** 2 + (col - idx_col) ** 2))
                                 
-                    if values: print("pixel:", row, col, radius)
+                    #if values: print("pixel:", row, col, radius)
                 cnt = 0.0
                 sum = 0.0
                 for vd in values:
-                    if vd.dist2 == 0.0:
-                        print("shape",npt_azim, npt_radial )
-                        print("pixel", row, col)
-                        for vd in values:
-                            print(vd.value, vd.dist2)
-                        radius=3
-                        print(numpy.asarray(img[row:row+radius, col-radius:col+radius+1]))
-                        print(numpy.asarray(mask[row:row+radius, col-radius:col+radius+1]))
-                        print(numpy.asarray(topaint[row:row+radius, col-radius:col+radius+1]))
                     weight = 1.0 / vd.dist2
                     sum += vd.value * weight
                     cnt += weight
-                value = sum / cnt
+                #if sum>0:
+                    
+                #value = sum / cnt
+                value = col
             elif do_dummy and mask[row, col]:
                 value = dummy
             else:
