@@ -3405,6 +3405,12 @@ class AzimuthalIntegrator(Geometry):
         masked_data = data.astype(numpy.float32)  # explicit copy
         masked_data[to_mask] = dummy
 
+        if self.chiDiscAtPi:
+            azimuth_range = (-180, 180)
+        else:
+            azimuth_range = (0, 360)
+        r = self.array_from_unit(typ="corner", unit=unit, scale=True)
+        rmax = (1.0 + numpy.finfo(numpy.float32).eps) * r[..., 0].max()
         kwargs = {"npt_rad": npt_rad,
                   "npt_azim": npt_azim,
                   "unit": unit,
@@ -3413,7 +3419,8 @@ class AzimuthalIntegrator(Geometry):
                   "method": method,
                   "correctSolidAngle": False,
                   "mask": blank_mask,
-                  "azimuth_range": (-180, 180),
+                  "azimuth_range": azimuth_range,
+                  "radial_range": (0, rmax),
                   "polarization_factor": None}
         imgb = self.integrate2d(blank_data, **kwargs)
         imgp = self.integrate2d(masked, **kwargs)
@@ -3424,12 +3431,13 @@ class AzimuthalIntegrator(Geometry):
 
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
                                                    to_paint, omask, 0)
-        azimuthal_range = numpy.linspace(-180, 180, npt_azim, endpoint=True)
+        r = self.array_from_unit(typ="center", unit=unit, scale=True)
+        chi = numpy.rad2deg(self.chiArray())
         cart_inpatined = inpainting.polar_interpolate(data, mask,
-                                                      self._cached_array[unit.split("_")[0] + "_center"],
-                                                      self._cached_array["chi_center"],
+                                                      r,
+                                                      chi,
                                                       polar_inpainted,
-                                                      imgd.radial, azimuthal_range)
+                                                      imgd.radial, imgd.azimuthal)
 
         if poissonian:
             res = data.copy()

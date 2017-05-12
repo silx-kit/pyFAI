@@ -26,7 +26,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "11/05/2017"
+__date__ = "12/05/2017"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -104,9 +104,9 @@ def polar_interpolate(data,
     assert azimuthal.shape[0] == nb_row, "azimuthal == data.shape"
     assert azimuthal.shape[1] == nb_col, "azimuthal == data.shape"
     
-    azimuthal_min = azim_pos[0] * pi / 180.
+    azimuthal_min = azim_pos[0]
     radial_min = rad_pos[0]
-    azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.
+    azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)
     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)
 
     bili = Bilinear(polar)
@@ -136,12 +136,12 @@ def polar_inpaint(cython.floating[:, :] img not None,
     :return: image with missing values interpolated from neighbors.
     """
     cdef:
-        int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, cnt, radius
+        int row, col, npt_radial, npt_azim, idx_col, idx_row, tar_row, radius
         int start_col, end_col, start_row, end_row, dist, dist2, dist2_min
         float[:, ::1] res
         bint do_dummy = empty is not None
         float value, dummy
-        double sum
+        double sum, cnt, weight
         list values, distances2
         
     npt_azim = img.shape[0]
@@ -211,13 +211,14 @@ def polar_inpaint(cython.floating[:, :] img not None,
                                 values.append(img[idx_row, idx_col])
                                 distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)
                                 
-                dist2_min = min(distances2) + 0.1
-                cnt = 0
+                #dist2_min = min(distances2) + 0.1
+                cnt = 0.0
                 sum = 0.0
                 for dist2, value in zip(distances2, values):
-                    if dist2 <= dist2_min:
-                        sum += value
-                        cnt += 1
+                    #if dist2 <= dist2_min:
+                        weight = 1.0 / dist2
+                        sum += value * weight
+                        cnt += weight
                 value = sum / cnt
             elif do_dummy and mask[row, col]:
                 value = dummy

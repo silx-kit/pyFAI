@@ -1463,6 +1463,8 @@ class Geometry(object):
         Set the position of the discontinuity of the chi axis between
         0 and 2pi.  By default it is between pi and -pi
         """
+        if self.chiDiscAtPi == False:
+            return
         with self._sem:
             self.chiDiscAtPi = False
             self._cached_array["chi_center"] = None
@@ -1475,6 +1477,8 @@ class Geometry(object):
         Set the position of the discontinuity of the chi axis between
         -pi and +pi.  This is the default behavour
         """
+        if self.chiDiscAtPi == True:
+            return
         with self._sem:
             self.chiDiscAtPi = True
             self._cached_array["chi_center"] = None

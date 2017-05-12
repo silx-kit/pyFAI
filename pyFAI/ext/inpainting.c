@@ -1696,7 +1696,6 @@ static PyObject *__pyx_builtin_AttributeError;
 static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_ord;
 static PyObject *__pyx_builtin_zip;
-static PyObject *__pyx_builtin_min;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_RuntimeError;
 static PyObject *__pyx_builtin_MemoryError;
@@ -1854,6 +1853,7 @@ static char __pyx_k_radius[] = "radius";
 static char __pyx_k_struct[] = "struct";
 static char __pyx_k_unpack[] = "unpack";
 static char __pyx_k_values[] = "values";
+static char __pyx_k_weight[] = "weight";
 static char __pyx_k_xrange[] = "xrange";
 static char __pyx_k_asarray[] = "asarray";
 static char __pyx_k_contact[] = "__contact__";
@@ -1887,7 +1887,7 @@ static char __pyx_k_enumerate[] = "enumerate";
 static char __pyx_k_getLogger[] = "getLogger";
 static char __pyx_k_start_col[] = "start_col";
 static char __pyx_k_start_row[] = "start_row";
-static char __pyx_k_11_05_2017[] = "11/05/2017";
+static char __pyx_k_12_05_2017[] = "12/05/2017";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_distances2[] = "distances2";
@@ -1959,7 +1959,7 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_11_05_2017;
+static PyObject *__pyx_kp_s_12_05_2017;
 static PyObject *__pyx_n_s_AttributeError;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
 static PyObject *__pyx_kp_s_Can_only_create_a_buffer_that_is;
@@ -2129,11 +2129,11 @@ static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_kp_s_users_kieffer_workspace_400_pyF;
 static PyObject *__pyx_n_s_value;
 static PyObject *__pyx_n_s_values;
+static PyObject *__pyx_n_s_weight;
 static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_xrange;
 static PyObject *__pyx_n_s_zeros;
 static PyObject *__pyx_n_s_zip;
-static PyObject *__pyx_float_0_1;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
 static PyObject *__pyx_int_2;
@@ -5854,14 +5854,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
   Py_ssize_t __pyx_t_7;
   long __pyx_t_8;
   Py_ssize_t __pyx_t_9;
-  double __pyx_t_10;
+  float __pyx_t_10;
   long __pyx_t_11;
   Py_ssize_t __pyx_t_12;
-  float __pyx_t_13;
-  long __pyx_t_14;
+  long __pyx_t_13;
+  PyObject *__pyx_t_14 = NULL;
   PyObject *__pyx_t_15 = NULL;
-  PyObject *__pyx_t_16 = NULL;
-  __Pyx_memviewslice __pyx_t_17 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_16 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_t_17;
   int __pyx_t_18;
   int __pyx_t_19;
   int __pyx_t_20;
@@ -5869,7 +5869,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
   int __pyx_t_22;
   int __pyx_t_23;
   int __pyx_t_24;
-  int __pyx_t_25;
+  double __pyx_t_25;
   int __pyx_t_26;
   int __pyx_t_27;
   int __pyx_t_28;
@@ -6084,7 +6084,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
  *     assert azimuthal.shape[0] == nb_row, "azimuthal == data.shape"
  *     assert azimuthal.shape[1] == nb_col, "azimuthal == data.shape"             # <<<<<<<<<<<<<<
  * 
- *     azimuthal_min = azim_pos[0] * pi / 180.
+ *     azimuthal_min = azim_pos[0]
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
   if (unlikely(!Py_OptimizeFlag)) {
@@ -6098,9 +6098,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
   /* "pyFAI/ext/inpainting.pyx":107
  *     assert azimuthal.shape[1] == nb_col, "azimuthal == data.shape"
  * 
- *     azimuthal_min = azim_pos[0] * pi / 180.             # <<<<<<<<<<<<<<
+ *     azimuthal_min = azim_pos[0]             # <<<<<<<<<<<<<<
  *     radial_min = rad_pos[0]
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)
  */
   __pyx_t_6 = 0;
   __pyx_t_3 = -1;
@@ -6112,13 +6112,13 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_azimuthal_min = (((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_azim_pos.data) + __pyx_t_6)) ))) * M_PI) / 180.);
+  __pyx_v_azimuthal_min = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_azim_pos.data) + __pyx_t_6)) )));
 
   /* "pyFAI/ext/inpainting.pyx":108
  * 
- *     azimuthal_min = azim_pos[0] * pi / 180.
+ *     azimuthal_min = azim_pos[0]
  *     radial_min = rad_pos[0]             # <<<<<<<<<<<<<<
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)
  *     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)
  */
   __pyx_t_7 = 0;
@@ -6134,9 +6134,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
   __pyx_v_radial_min = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_rad_pos.data) + __pyx_t_7)) )));
 
   /* "pyFAI/ext/inpainting.pyx":109
- *     azimuthal_min = azim_pos[0] * pi / 180.
+ *     azimuthal_min = azim_pos[0]
  *     radial_min = rad_pos[0]
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.             # <<<<<<<<<<<<<<
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)             # <<<<<<<<<<<<<<
  *     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)
  * 
  */
@@ -6160,7 +6160,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_10 = (M_PI * ((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_azim_pos.data) + __pyx_t_8)) ))) - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_azim_pos.data) + __pyx_t_9)) )))));
+  __pyx_t_10 = ((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_azim_pos.data) + __pyx_t_8)) ))) - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_azim_pos.data) + __pyx_t_9)) ))));
   __pyx_t_11 = (__pyx_v_npt_azim - 1);
   if (unlikely(__pyx_t_11 == 0)) {
     #ifdef WITH_THREAD
@@ -6172,11 +6172,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
     #endif
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_azimuthal_slope = ((__pyx_t_10 / __pyx_t_11) / 180.);
+  __pyx_v_azimuthal_slope = (__pyx_t_10 / __pyx_t_11);
 
   /* "pyFAI/ext/inpainting.pyx":110
  *     radial_min = rad_pos[0]
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)
  *     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)             # <<<<<<<<<<<<<<
  * 
  *     bili = Bilinear(polar)
@@ -6201,9 +6201,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_13 = ((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_rad_pos.data) + __pyx_t_11)) ))) - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_rad_pos.data) + __pyx_t_12)) ))));
-  __pyx_t_14 = (__pyx_v_npt_radial - 1);
-  if (unlikely(__pyx_t_14 == 0)) {
+  __pyx_t_10 = ((*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_rad_pos.data) + __pyx_t_11)) ))) - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_rad_pos.data) + __pyx_t_12)) ))));
+  __pyx_t_13 = (__pyx_v_npt_radial - 1);
+  if (unlikely(__pyx_t_13 == 0)) {
     #ifdef WITH_THREAD
     PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
     #endif
@@ -6213,7 +6213,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
     #endif
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_radial_slope = (__pyx_t_13 / __pyx_t_14);
+  __pyx_v_radial_slope = (__pyx_t_10 / __pyx_t_13);
 
   /* "pyFAI/ext/inpainting.pyx":112
  *     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)
@@ -6252,24 +6252,24 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
   __Pyx_GIVEREF(__pyx_v_data);
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_15 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_14);
+  __pyx_t_15 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s_float32); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_15);
-  __pyx_t_16 = __Pyx_PyObject_GetAttrStr(__pyx_t_15, __pyx_n_s_float32); if (unlikely(!__pyx_t_16)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_16);
+  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_15) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_16) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
-  __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_16)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_16);
+  __pyx_t_15 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_15);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_17 = __Pyx_PyObject_to_MemoryviewSlice_d_dc_float(__pyx_t_16);
-  if (unlikely(!__pyx_t_17.memview)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
-  __pyx_v_cdata = __pyx_t_17;
-  __pyx_t_17.memview = NULL;
-  __pyx_t_17.data = NULL;
+  __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_d_dc_float(__pyx_t_15);
+  if (unlikely(!__pyx_t_16.memview)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
+  __pyx_v_cdata = __pyx_t_16;
+  __pyx_t_16.memview = NULL;
+  __pyx_t_16.data = NULL;
 
   /* "pyFAI/ext/inpainting.pyx":116
  *     cdata = numpy.array(data, dtype=numpy.float32)  # explicit copy
@@ -6279,8 +6279,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
  *             if mask[row, col]:
  */
   __pyx_t_3 = __pyx_v_nb_row;
-  for (__pyx_t_18 = 0; __pyx_t_18 < __pyx_t_3; __pyx_t_18+=1) {
-    __pyx_v_row = __pyx_t_18;
+  for (__pyx_t_17 = 0; __pyx_t_17 < __pyx_t_3; __pyx_t_17+=1) {
+    __pyx_v_row = __pyx_t_17;
 
     /* "pyFAI/ext/inpainting.pyx":117
  * 
@@ -6289,9 +6289,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
  *             if mask[row, col]:
  *                 r = (radial[row, col] - radial_min) / radial_slope
  */
-    __pyx_t_19 = __pyx_v_nb_col;
-    for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_19; __pyx_t_20+=1) {
-      __pyx_v_col = __pyx_t_20;
+    __pyx_t_18 = __pyx_v_nb_col;
+    for (__pyx_t_19 = 0; __pyx_t_19 < __pyx_t_18; __pyx_t_19+=1) {
+      __pyx_v_col = __pyx_t_19;
 
       /* "pyFAI/ext/inpainting.pyx":118
  *     for row in range(nb_row):
@@ -6300,22 +6300,22 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
  *                 r = (radial[row, col] - radial_min) / radial_slope
  *                 a = (azimuthal[row, col] - azimuthal_min) / azimuthal_slope
  */
-      __pyx_t_21 = __pyx_v_row;
-      __pyx_t_22 = __pyx_v_col;
-      __pyx_t_23 = -1;
+      __pyx_t_20 = __pyx_v_row;
+      __pyx_t_21 = __pyx_v_col;
+      __pyx_t_22 = -1;
+      if (__pyx_t_20 < 0) {
+        __pyx_t_20 += __pyx_v_mask.shape[0];
+        if (unlikely(__pyx_t_20 < 0)) __pyx_t_22 = 0;
+      } else if (unlikely(__pyx_t_20 >= __pyx_v_mask.shape[0])) __pyx_t_22 = 0;
       if (__pyx_t_21 < 0) {
-        __pyx_t_21 += __pyx_v_mask.shape[0];
-        if (unlikely(__pyx_t_21 < 0)) __pyx_t_23 = 0;
-      } else if (unlikely(__pyx_t_21 >= __pyx_v_mask.shape[0])) __pyx_t_23 = 0;
-      if (__pyx_t_22 < 0) {
-        __pyx_t_22 += __pyx_v_mask.shape[1];
-        if (unlikely(__pyx_t_22 < 0)) __pyx_t_23 = 1;
-      } else if (unlikely(__pyx_t_22 >= __pyx_v_mask.shape[1])) __pyx_t_23 = 1;
-      if (unlikely(__pyx_t_23 != -1)) {
-        __Pyx_RaiseBufferIndexError(__pyx_t_23);
+        __pyx_t_21 += __pyx_v_mask.shape[1];
+        if (unlikely(__pyx_t_21 < 0)) __pyx_t_22 = 1;
+      } else if (unlikely(__pyx_t_21 >= __pyx_v_mask.shape[1])) __pyx_t_22 = 1;
+      if (unlikely(__pyx_t_22 != -1)) {
+        __Pyx_RaiseBufferIndexError(__pyx_t_22);
         {__pyx_filename = __pyx_f[1]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
-      __pyx_t_5 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ ((char *) (((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_21 * __pyx_v_mask.strides[0]) )) + __pyx_t_22)) ))) != 0);
+      __pyx_t_5 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ ((char *) (((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_20 * __pyx_v_mask.strides[0]) )) + __pyx_t_21)) ))) != 0);
       if (__pyx_t_5) {
 
         /* "pyFAI/ext/inpainting.pyx":119
@@ -6325,22 +6325,22 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
  *                 a = (azimuthal[row, col] - azimuthal_min) / azimuthal_slope
  *                 cdata[row, col] = bili._f_cy(a, r)
  */
-        __pyx_t_23 = __pyx_v_row;
-        __pyx_t_24 = __pyx_v_col;
-        __pyx_t_25 = -1;
+        __pyx_t_22 = __pyx_v_row;
+        __pyx_t_23 = __pyx_v_col;
+        __pyx_t_24 = -1;
+        if (__pyx_t_22 < 0) {
+          __pyx_t_22 += __pyx_v_radial.shape[0];
+          if (unlikely(__pyx_t_22 < 0)) __pyx_t_24 = 0;
+        } else if (unlikely(__pyx_t_22 >= __pyx_v_radial.shape[0])) __pyx_t_24 = 0;
         if (__pyx_t_23 < 0) {
-          __pyx_t_23 += __pyx_v_radial.shape[0];
-          if (unlikely(__pyx_t_23 < 0)) __pyx_t_25 = 0;
-        } else if (unlikely(__pyx_t_23 >= __pyx_v_radial.shape[0])) __pyx_t_25 = 0;
-        if (__pyx_t_24 < 0) {
-          __pyx_t_24 += __pyx_v_radial.shape[1];
-          if (unlikely(__pyx_t_24 < 0)) __pyx_t_25 = 1;
-        } else if (unlikely(__pyx_t_24 >= __pyx_v_radial.shape[1])) __pyx_t_25 = 1;
-        if (unlikely(__pyx_t_25 != -1)) {
-          __Pyx_RaiseBufferIndexError(__pyx_t_25);
+          __pyx_t_23 += __pyx_v_radial.shape[1];
+          if (unlikely(__pyx_t_23 < 0)) __pyx_t_24 = 1;
+        } else if (unlikely(__pyx_t_23 >= __pyx_v_radial.shape[1])) __pyx_t_24 = 1;
+        if (unlikely(__pyx_t_24 != -1)) {
+          __Pyx_RaiseBufferIndexError(__pyx_t_24);
           {__pyx_filename = __pyx_f[1]; __pyx_lineno = 119; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
-        __pyx_t_10 = ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_radial.data + __pyx_t_23 * __pyx_v_radial.strides[0]) )) + __pyx_t_24)) ))) - __pyx_v_radial_min);
+        __pyx_t_25 = ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_radial.data + __pyx_t_22 * __pyx_v_radial.strides[0]) )) + __pyx_t_23)) ))) - __pyx_v_radial_min);
         if (unlikely(__pyx_v_radial_slope == 0)) {
           #ifdef WITH_THREAD
           PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
@@ -6351,7 +6351,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
           #endif
           {__pyx_filename = __pyx_f[1]; __pyx_lineno = 119; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
-        __pyx_v_r = (__pyx_t_10 / __pyx_v_radial_slope);
+        __pyx_v_r = (__pyx_t_25 / __pyx_v_radial_slope);
 
         /* "pyFAI/ext/inpainting.pyx":120
  *             if mask[row, col]:
@@ -6360,13 +6360,13 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
  *                 cdata[row, col] = bili._f_cy(a, r)
  *     return numpy.asarray(cdata)
  */
-        __pyx_t_25 = __pyx_v_row;
+        __pyx_t_24 = __pyx_v_row;
         __pyx_t_26 = __pyx_v_col;
         __pyx_t_27 = -1;
-        if (__pyx_t_25 < 0) {
-          __pyx_t_25 += __pyx_v_azimuthal.shape[0];
-          if (unlikely(__pyx_t_25 < 0)) __pyx_t_27 = 0;
-        } else if (unlikely(__pyx_t_25 >= __pyx_v_azimuthal.shape[0])) __pyx_t_27 = 0;
+        if (__pyx_t_24 < 0) {
+          __pyx_t_24 += __pyx_v_azimuthal.shape[0];
+          if (unlikely(__pyx_t_24 < 0)) __pyx_t_27 = 0;
+        } else if (unlikely(__pyx_t_24 >= __pyx_v_azimuthal.shape[0])) __pyx_t_27 = 0;
         if (__pyx_t_26 < 0) {
           __pyx_t_26 += __pyx_v_azimuthal.shape[1];
           if (unlikely(__pyx_t_26 < 0)) __pyx_t_27 = 1;
@@ -6375,7 +6375,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
           __Pyx_RaiseBufferIndexError(__pyx_t_27);
           {__pyx_filename = __pyx_f[1]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
-        __pyx_t_10 = ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_azimuthal.data + __pyx_t_25 * __pyx_v_azimuthal.strides[0]) )) + __pyx_t_26)) ))) - __pyx_v_azimuthal_min);
+        __pyx_t_25 = ((*((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_azimuthal.data + __pyx_t_24 * __pyx_v_azimuthal.strides[0]) )) + __pyx_t_26)) ))) - __pyx_v_azimuthal_min);
         if (unlikely(__pyx_v_azimuthal_slope == 0)) {
           #ifdef WITH_THREAD
           PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
@@ -6386,7 +6386,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
           #endif
           {__pyx_filename = __pyx_f[1]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
-        __pyx_v_a = (__pyx_t_10 / __pyx_v_azimuthal_slope);
+        __pyx_v_a = (__pyx_t_25 / __pyx_v_azimuthal_slope);
 
         /* "pyFAI/ext/inpainting.pyx":121
  *                 r = (radial[row, col] - radial_min) / radial_slope
@@ -6443,23 +6443,23 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
     }
   }
   if (!__pyx_t_2) {
-    __pyx_t_16 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_16)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_15 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __Pyx_GOTREF(__pyx_t_16);
-  } else {
-    __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_15);
-    PyTuple_SET_ITEM(__pyx_t_15, 0, __pyx_t_2); __Pyx_GIVEREF(__pyx_t_2); __pyx_t_2 = NULL;
-    PyTuple_SET_ITEM(__pyx_t_15, 0+1, __pyx_t_1);
+  } else {
+    __pyx_t_14 = PyTuple_New(1+1); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_14);
+    PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_2); __Pyx_GIVEREF(__pyx_t_2); __pyx_t_2 = NULL;
+    PyTuple_SET_ITEM(__pyx_t_14, 0+1, __pyx_t_1);
     __Pyx_GIVEREF(__pyx_t_1);
     __pyx_t_1 = 0;
-    __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_15, NULL); if (unlikely(!__pyx_t_16)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_16);
-    __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
+    __pyx_t_15 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_14, NULL); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_15);
+    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_r = __pyx_t_16;
-  __pyx_t_16 = 0;
+  __pyx_r = __pyx_t_15;
+  __pyx_t_15 = 0;
   goto __pyx_L0;
 
   /* "pyFAI/ext/inpainting.pyx":67
@@ -6475,9 +6475,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_6polar_interpolate(CYTHON_UNU
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_14);
   __Pyx_XDECREF(__pyx_t_15);
-  __Pyx_XDECREF(__pyx_t_16);
-  __PYX_XDEC_MEMVIEW(&__pyx_t_17, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_16, 1);
   __Pyx_AddTraceback("pyFAI.ext.inpainting.polar_interpolate", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
@@ -6855,7 +6855,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8polar_interpolate(CYTHON_UNU
  *     assert azimuthal.shape[0] == nb_row, "azimuthal == data.shape"
  *     assert azimuthal.shape[1] == nb_col, "azimuthal == data.shape"             # <<<<<<<<<<<<<<
  * 
- *     azimuthal_min = azim_pos[0] * pi / 180.
+ *     azimuthal_min = azim_pos[0]
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
   if (unlikely(!Py_OptimizeFlag)) {
@@ -6869,9 +6869,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8polar_interpolate(CYTHON_UNU
   /* "pyFAI/ext/inpainting.pyx":107
  *     assert azimuthal.shape[1] == nb_col, "azimuthal == data.shape"
  * 
- *     azimuthal_min = azim_pos[0] * pi / 180.             # <<<<<<<<<<<<<<
+ *     azimuthal_min = azim_pos[0]             # <<<<<<<<<<<<<<
  *     radial_min = rad_pos[0]
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)
  */
   __pyx_t_6 = 0;
   __pyx_t_3 = -1;
@@ -6883,13 +6883,13 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8polar_interpolate(CYTHON_UNU
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_azimuthal_min = (((*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_azim_pos.data) + __pyx_t_6)) ))) * M_PI) / 180.);
+  __pyx_v_azimuthal_min = (*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_azim_pos.data) + __pyx_t_6)) )));
 
   /* "pyFAI/ext/inpainting.pyx":108
  * 
- *     azimuthal_min = azim_pos[0] * pi / 180.
+ *     azimuthal_min = azim_pos[0]
  *     radial_min = rad_pos[0]             # <<<<<<<<<<<<<<
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)
  *     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)
  */
   __pyx_t_7 = 0;
@@ -6905,9 +6905,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8polar_interpolate(CYTHON_UNU
   __pyx_v_radial_min = (*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_rad_pos.data) + __pyx_t_7)) )));
 
   /* "pyFAI/ext/inpainting.pyx":109
- *     azimuthal_min = azim_pos[0] * pi / 180.
+ *     azimuthal_min = azim_pos[0]
  *     radial_min = rad_pos[0]
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.             # <<<<<<<<<<<<<<
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)             # <<<<<<<<<<<<<<
  *     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)
  * 
  */
@@ -6931,7 +6931,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8polar_interpolate(CYTHON_UNU
     __Pyx_RaiseBufferIndexError(__pyx_t_3);
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_10 = (M_PI * ((*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_azim_pos.data) + __pyx_t_8)) ))) - (*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_azim_pos.data) + __pyx_t_9)) )))));
+  __pyx_t_10 = ((*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_azim_pos.data) + __pyx_t_8)) ))) - (*((double *) ( /* dim=0 */ ((char *) (((double *) __pyx_v_azim_pos.data) + __pyx_t_9)) ))));
   __pyx_t_11 = (__pyx_v_npt_azim - 1);
   if (unlikely(__pyx_t_11 == 0)) {
     #ifdef WITH_THREAD
@@ -6943,11 +6943,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_8polar_interpolate(CYTHON_UNU
     #endif
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_azimuthal_slope = ((__pyx_t_10 / __pyx_t_11) / 180.);
+  __pyx_v_azimuthal_slope = (__pyx_t_10 / __pyx_t_11);
 
   /* "pyFAI/ext/inpainting.pyx":110
  *     radial_min = rad_pos[0]
- *     azimuthal_slope = pi * (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1) / 180.
+ *     azimuthal_slope = (azim_pos[npt_azim - 1] - azim_pos[0]) / (npt_azim - 1)
  *     radial_slope = (rad_pos[npt_radial - 1] - rad_pos[0]) / (npt_radial - 1)             # <<<<<<<<<<<<<<
  * 
  *     bili = Bilinear(polar)
@@ -8073,16 +8073,16 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
   int __pyx_v_idx_col;
   int __pyx_v_idx_row;
   int __pyx_v_tar_row;
-  int __pyx_v_cnt;
   int __pyx_v_radius;
   int __pyx_v_dist;
   int __pyx_v_dist2;
-  int __pyx_v_dist2_min;
   __Pyx_memviewslice __pyx_v_res = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_v_do_dummy;
   float __pyx_v_value;
   float __pyx_v_dummy;
   double __pyx_v_sum;
+  double __pyx_v_cnt;
+  double __pyx_v_weight;
   PyObject *__pyx_v_values = 0;
   PyObject *__pyx_v_distances2 = 0;
   PyObject *__pyx_r = NULL;
@@ -8164,7 +8164,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
  *         float[:, ::1] res
  *         bint do_dummy = empty is not None             # <<<<<<<<<<<<<<
  *         float value, dummy
- *         double sum
+ *         double sum, cnt, weight
  */
   __pyx_t_1 = (__pyx_v_empty != Py_None);
   __pyx_v_do_dummy = __pyx_t_1;
@@ -9323,7 +9323,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
  *                                 values.append(img[idx_row, idx_col])
  *                                 distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)             # <<<<<<<<<<<<<<
  * 
- *                 dist2_min = min(distances2) + 0.1
+ *                 #dist2_min = min(distances2) + 0.1
  */
                 __pyx_t_3 = __Pyx_PyInt_From_long((__Pyx_pow_long(((long)(__pyx_v_row - __pyx_v_idx_row)), 2) + __Pyx_pow_long(((long)(__pyx_v_col - __pyx_v_idx_col)), 2))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
                 __Pyx_GOTREF(__pyx_t_3);
@@ -9338,52 +9338,30 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
         }
         __pyx_L21:;
 
-        /* "pyFAI/ext/inpainting.pyx":214
- *                                 distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)
- * 
- *                 dist2_min = min(distances2) + 0.1             # <<<<<<<<<<<<<<
- *                 cnt = 0
- *                 sum = 0.0
- */
-        __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_INCREF(__pyx_v_distances2);
-        PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_v_distances2);
-        __Pyx_GIVEREF(__pyx_v_distances2);
-        __pyx_t_9 = __Pyx_PyObject_Call(__pyx_builtin_min, __pyx_t_3, NULL); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_9);
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_t_3 = PyNumber_Add(__pyx_t_9, __pyx_float_0_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-        __pyx_t_18 = __Pyx_PyInt_As_int(__pyx_t_3); if (unlikely((__pyx_t_18 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_v_dist2_min = __pyx_t_18;
-
         /* "pyFAI/ext/inpainting.pyx":215
  * 
- *                 dist2_min = min(distances2) + 0.1
- *                 cnt = 0             # <<<<<<<<<<<<<<
+ *                 #dist2_min = min(distances2) + 0.1
+ *                 cnt = 0.0             # <<<<<<<<<<<<<<
  *                 sum = 0.0
  *                 for dist2, value in zip(distances2, values):
  */
-        __pyx_v_cnt = 0;
+        __pyx_v_cnt = 0.0;
 
         /* "pyFAI/ext/inpainting.pyx":216
- *                 dist2_min = min(distances2) + 0.1
- *                 cnt = 0
+ *                 #dist2_min = min(distances2) + 0.1
+ *                 cnt = 0.0
  *                 sum = 0.0             # <<<<<<<<<<<<<<
  *                 for dist2, value in zip(distances2, values):
- *                     if dist2 <= dist2_min:
+ *                     #if dist2 <= dist2_min:
  */
         __pyx_v_sum = 0.0;
 
         /* "pyFAI/ext/inpainting.pyx":217
- *                 cnt = 0
+ *                 cnt = 0.0
  *                 sum = 0.0
  *                 for dist2, value in zip(distances2, values):             # <<<<<<<<<<<<<<
- *                     if dist2 <= dist2_min:
- *                         sum += value
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2
  */
         __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_3);
@@ -9491,50 +9469,56 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
           __pyx_v_dist2 = __pyx_t_18;
           __pyx_v_value = __pyx_t_2;
 
-          /* "pyFAI/ext/inpainting.pyx":218
- *                 sum = 0.0
+          /* "pyFAI/ext/inpainting.pyx":219
  *                 for dist2, value in zip(distances2, values):
- *                     if dist2 <= dist2_min:             # <<<<<<<<<<<<<<
- *                         sum += value
- *                         cnt += 1
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2             # <<<<<<<<<<<<<<
+ *                         sum += value * weight
+ *                         cnt += weight
  */
-          __pyx_t_1 = ((__pyx_v_dist2 <= __pyx_v_dist2_min) != 0);
-          if (__pyx_t_1) {
+          if (unlikely(__pyx_v_dist2 == 0)) {
+            #ifdef WITH_THREAD
+            PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+            #endif
+            PyErr_SetString(PyExc_ZeroDivisionError, "float division");
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          }
+          __pyx_v_weight = (1.0 / __pyx_v_dist2);
 
-            /* "pyFAI/ext/inpainting.pyx":219
- *                 for dist2, value in zip(distances2, values):
- *                     if dist2 <= dist2_min:
- *                         sum += value             # <<<<<<<<<<<<<<
- *                         cnt += 1
+          /* "pyFAI/ext/inpainting.pyx":220
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2
+ *                         sum += value * weight             # <<<<<<<<<<<<<<
+ *                         cnt += weight
  *                 value = sum / cnt
  */
-            __pyx_v_sum = (__pyx_v_sum + __pyx_v_value);
+          __pyx_v_sum = (__pyx_v_sum + (__pyx_v_value * __pyx_v_weight));
 
-            /* "pyFAI/ext/inpainting.pyx":220
- *                     if dist2 <= dist2_min:
- *                         sum += value
- *                         cnt += 1             # <<<<<<<<<<<<<<
+          /* "pyFAI/ext/inpainting.pyx":221
+ *                         weight = 1.0 / dist2
+ *                         sum += value * weight
+ *                         cnt += weight             # <<<<<<<<<<<<<<
  *                 value = sum / cnt
  *             elif do_dummy and mask[row, col]:
  */
-            __pyx_v_cnt = (__pyx_v_cnt + 1);
-            goto __pyx_L48;
-          }
-          __pyx_L48:;
+          __pyx_v_cnt = (__pyx_v_cnt + __pyx_v_weight);
 
           /* "pyFAI/ext/inpainting.pyx":217
- *                 cnt = 0
+ *                 cnt = 0.0
  *                 sum = 0.0
  *                 for dist2, value in zip(distances2, values):             # <<<<<<<<<<<<<<
- *                     if dist2 <= dist2_min:
- *                         sum += value
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2
  */
         }
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-        /* "pyFAI/ext/inpainting.pyx":221
- *                         sum += value
- *                         cnt += 1
+        /* "pyFAI/ext/inpainting.pyx":222
+ *                         sum += value * weight
+ *                         cnt += weight
  *                 value = sum / cnt             # <<<<<<<<<<<<<<
  *             elif do_dummy and mask[row, col]:
  *                 value = dummy
@@ -9547,14 +9531,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
           #ifdef WITH_THREAD
           PyGILState_Release(__pyx_gilstate_save);
           #endif
-          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         __pyx_v_value = (__pyx_v_sum / __pyx_v_cnt);
         goto __pyx_L9;
       }
 
-      /* "pyFAI/ext/inpainting.pyx":222
- *                         cnt += 1
+      /* "pyFAI/ext/inpainting.pyx":223
+ *                         cnt += weight
  *                 value = sum / cnt
  *             elif do_dummy and mask[row, col]:             # <<<<<<<<<<<<<<
  *                 value = dummy
@@ -9564,7 +9548,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
       if (__pyx_t_22) {
       } else {
         __pyx_t_1 = __pyx_t_22;
-        goto __pyx_L49_bool_binop_done;
+        goto __pyx_L48_bool_binop_done;
       }
       __pyx_t_18 = __pyx_v_row;
       __pyx_t_60 = __pyx_v_col;
@@ -9579,14 +9563,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
       } else if (unlikely(__pyx_t_60 >= __pyx_v_mask.shape[1])) __pyx_t_63 = 1;
       if (unlikely(__pyx_t_63 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_63);
-        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 223; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __pyx_t_22 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_18 * __pyx_v_mask.strides[0]) ) + __pyx_t_60 * __pyx_v_mask.strides[1]) ))) != 0);
       __pyx_t_1 = __pyx_t_22;
-      __pyx_L49_bool_binop_done:;
+      __pyx_L48_bool_binop_done:;
       if (__pyx_t_1) {
 
-        /* "pyFAI/ext/inpainting.pyx":223
+        /* "pyFAI/ext/inpainting.pyx":224
  *                 value = sum / cnt
  *             elif do_dummy and mask[row, col]:
  *                 value = dummy             # <<<<<<<<<<<<<<
@@ -9598,7 +9582,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
       }
       /*else*/ {
 
-        /* "pyFAI/ext/inpainting.pyx":225
+        /* "pyFAI/ext/inpainting.pyx":226
  *                 value = dummy
  *             else:
  *                 value = img[row, col]             # <<<<<<<<<<<<<<
@@ -9618,13 +9602,13 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
         } else if (unlikely(__pyx_t_64 >= __pyx_v_img.shape[1])) __pyx_t_65 = 1;
         if (unlikely(__pyx_t_65 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_65);
-          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         __pyx_v_value = (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_63 * __pyx_v_img.strides[0]) ) + __pyx_t_64 * __pyx_v_img.strides[1]) )));
       }
       __pyx_L9:;
 
-      /* "pyFAI/ext/inpainting.pyx":226
+      /* "pyFAI/ext/inpainting.pyx":227
  *             else:
  *                 value = img[row, col]
  *             res[row, col] = value             # <<<<<<<<<<<<<<
@@ -9644,24 +9628,24 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
       } else if (unlikely(__pyx_t_66 >= __pyx_v_res.shape[1])) __pyx_t_67 = 1;
       if (unlikely(__pyx_t_67 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_67);
-        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_res.data + __pyx_t_65 * __pyx_v_res.strides[0]) )) + __pyx_t_66)) )) = __pyx_v_value;
     }
   }
 
-  /* "pyFAI/ext/inpainting.pyx":228
+  /* "pyFAI/ext/inpainting.pyx":229
  *             res[row, col] = value
  * 
  *     return numpy.asarray(res)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_asarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_asarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_res, 2, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_res, 2, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_t_6 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -9674,17 +9658,17 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_12polar_inpaint(CYTHON_UNUSED
     }
   }
   if (!__pyx_t_6) {
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_9); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_9); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_GOTREF(__pyx_t_3);
   } else {
-    __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_7);
     PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6); __Pyx_GIVEREF(__pyx_t_6); __pyx_t_6 = NULL;
     PyTuple_SET_ITEM(__pyx_t_7, 0+1, __pyx_t_9);
     __Pyx_GIVEREF(__pyx_t_9);
     __pyx_t_9 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
@@ -9876,16 +9860,16 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
   int __pyx_v_idx_col;
   int __pyx_v_idx_row;
   int __pyx_v_tar_row;
-  int __pyx_v_cnt;
   int __pyx_v_radius;
   int __pyx_v_dist;
   int __pyx_v_dist2;
-  int __pyx_v_dist2_min;
   __Pyx_memviewslice __pyx_v_res = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_v_do_dummy;
   float __pyx_v_value;
   float __pyx_v_dummy;
   double __pyx_v_sum;
+  double __pyx_v_cnt;
+  double __pyx_v_weight;
   PyObject *__pyx_v_values = 0;
   PyObject *__pyx_v_distances2 = 0;
   PyObject *__pyx_r = NULL;
@@ -9967,7 +9951,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
  *         float[:, ::1] res
  *         bint do_dummy = empty is not None             # <<<<<<<<<<<<<<
  *         float value, dummy
- *         double sum
+ *         double sum, cnt, weight
  */
   __pyx_t_1 = (__pyx_v_empty != Py_None);
   __pyx_v_do_dummy = __pyx_t_1;
@@ -11126,7 +11110,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
  *                                 values.append(img[idx_row, idx_col])
  *                                 distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)             # <<<<<<<<<<<<<<
  * 
- *                 dist2_min = min(distances2) + 0.1
+ *                 #dist2_min = min(distances2) + 0.1
  */
                 __pyx_t_3 = __Pyx_PyInt_From_long((__Pyx_pow_long(((long)(__pyx_v_row - __pyx_v_idx_row)), 2) + __Pyx_pow_long(((long)(__pyx_v_col - __pyx_v_idx_col)), 2))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
                 __Pyx_GOTREF(__pyx_t_3);
@@ -11141,52 +11125,30 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
         }
         __pyx_L21:;
 
-        /* "pyFAI/ext/inpainting.pyx":214
- *                                 distances2.append((row - idx_row) ** 2 + (col - idx_col) ** 2)
- * 
- *                 dist2_min = min(distances2) + 0.1             # <<<<<<<<<<<<<<
- *                 cnt = 0
- *                 sum = 0.0
- */
-        __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_INCREF(__pyx_v_distances2);
-        PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_v_distances2);
-        __Pyx_GIVEREF(__pyx_v_distances2);
-        __pyx_t_9 = __Pyx_PyObject_Call(__pyx_builtin_min, __pyx_t_3, NULL); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_9);
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_t_3 = PyNumber_Add(__pyx_t_9, __pyx_float_0_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-        __pyx_t_18 = __Pyx_PyInt_As_int(__pyx_t_3); if (unlikely((__pyx_t_18 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_v_dist2_min = __pyx_t_18;
-
         /* "pyFAI/ext/inpainting.pyx":215
  * 
- *                 dist2_min = min(distances2) + 0.1
- *                 cnt = 0             # <<<<<<<<<<<<<<
+ *                 #dist2_min = min(distances2) + 0.1
+ *                 cnt = 0.0             # <<<<<<<<<<<<<<
  *                 sum = 0.0
  *                 for dist2, value in zip(distances2, values):
  */
-        __pyx_v_cnt = 0;
+        __pyx_v_cnt = 0.0;
 
         /* "pyFAI/ext/inpainting.pyx":216
- *                 dist2_min = min(distances2) + 0.1
- *                 cnt = 0
+ *                 #dist2_min = min(distances2) + 0.1
+ *                 cnt = 0.0
  *                 sum = 0.0             # <<<<<<<<<<<<<<
  *                 for dist2, value in zip(distances2, values):
- *                     if dist2 <= dist2_min:
+ *                     #if dist2 <= dist2_min:
  */
         __pyx_v_sum = 0.0;
 
         /* "pyFAI/ext/inpainting.pyx":217
- *                 cnt = 0
+ *                 cnt = 0.0
  *                 sum = 0.0
  *                 for dist2, value in zip(distances2, values):             # <<<<<<<<<<<<<<
- *                     if dist2 <= dist2_min:
- *                         sum += value
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2
  */
         __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_3);
@@ -11294,50 +11256,56 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
           __pyx_v_dist2 = __pyx_t_18;
           __pyx_v_value = __pyx_t_2;
 
-          /* "pyFAI/ext/inpainting.pyx":218
- *                 sum = 0.0
+          /* "pyFAI/ext/inpainting.pyx":219
  *                 for dist2, value in zip(distances2, values):
- *                     if dist2 <= dist2_min:             # <<<<<<<<<<<<<<
- *                         sum += value
- *                         cnt += 1
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2             # <<<<<<<<<<<<<<
+ *                         sum += value * weight
+ *                         cnt += weight
  */
-          __pyx_t_1 = ((__pyx_v_dist2 <= __pyx_v_dist2_min) != 0);
-          if (__pyx_t_1) {
+          if (unlikely(__pyx_v_dist2 == 0)) {
+            #ifdef WITH_THREAD
+            PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+            #endif
+            PyErr_SetString(PyExc_ZeroDivisionError, "float division");
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          }
+          __pyx_v_weight = (1.0 / __pyx_v_dist2);
 
-            /* "pyFAI/ext/inpainting.pyx":219
- *                 for dist2, value in zip(distances2, values):
- *                     if dist2 <= dist2_min:
- *                         sum += value             # <<<<<<<<<<<<<<
- *                         cnt += 1
+          /* "pyFAI/ext/inpainting.pyx":220
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2
+ *                         sum += value * weight             # <<<<<<<<<<<<<<
+ *                         cnt += weight
  *                 value = sum / cnt
  */
-            __pyx_v_sum = (__pyx_v_sum + __pyx_v_value);
+          __pyx_v_sum = (__pyx_v_sum + (__pyx_v_value * __pyx_v_weight));
 
-            /* "pyFAI/ext/inpainting.pyx":220
- *                     if dist2 <= dist2_min:
- *                         sum += value
- *                         cnt += 1             # <<<<<<<<<<<<<<
+          /* "pyFAI/ext/inpainting.pyx":221
+ *                         weight = 1.0 / dist2
+ *                         sum += value * weight
+ *                         cnt += weight             # <<<<<<<<<<<<<<
  *                 value = sum / cnt
  *             elif do_dummy and mask[row, col]:
  */
-            __pyx_v_cnt = (__pyx_v_cnt + 1);
-            goto __pyx_L48;
-          }
-          __pyx_L48:;
+          __pyx_v_cnt = (__pyx_v_cnt + __pyx_v_weight);
 
           /* "pyFAI/ext/inpainting.pyx":217
- *                 cnt = 0
+ *                 cnt = 0.0
  *                 sum = 0.0
  *                 for dist2, value in zip(distances2, values):             # <<<<<<<<<<<<<<
- *                     if dist2 <= dist2_min:
- *                         sum += value
+ *                     #if dist2 <= dist2_min:
+ *                         weight = 1.0 / dist2
  */
         }
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-        /* "pyFAI/ext/inpainting.pyx":221
- *                         sum += value
- *                         cnt += 1
+        /* "pyFAI/ext/inpainting.pyx":222
+ *                         sum += value * weight
+ *                         cnt += weight
  *                 value = sum / cnt             # <<<<<<<<<<<<<<
  *             elif do_dummy and mask[row, col]:
  *                 value = dummy
@@ -11350,14 +11318,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
           #ifdef WITH_THREAD
           PyGILState_Release(__pyx_gilstate_save);
           #endif
-          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         __pyx_v_value = (__pyx_v_sum / __pyx_v_cnt);
         goto __pyx_L9;
       }
 
-      /* "pyFAI/ext/inpainting.pyx":222
- *                         cnt += 1
+      /* "pyFAI/ext/inpainting.pyx":223
+ *                         cnt += weight
  *                 value = sum / cnt
  *             elif do_dummy and mask[row, col]:             # <<<<<<<<<<<<<<
  *                 value = dummy
@@ -11367,7 +11335,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
       if (__pyx_t_22) {
       } else {
         __pyx_t_1 = __pyx_t_22;
-        goto __pyx_L49_bool_binop_done;
+        goto __pyx_L48_bool_binop_done;
       }
       __pyx_t_18 = __pyx_v_row;
       __pyx_t_60 = __pyx_v_col;
@@ -11382,14 +11350,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
       } else if (unlikely(__pyx_t_60 >= __pyx_v_mask.shape[1])) __pyx_t_63 = 1;
       if (unlikely(__pyx_t_63 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_63);
-        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 223; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __pyx_t_22 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_18 * __pyx_v_mask.strides[0]) ) + __pyx_t_60 * __pyx_v_mask.strides[1]) ))) != 0);
       __pyx_t_1 = __pyx_t_22;
-      __pyx_L49_bool_binop_done:;
+      __pyx_L48_bool_binop_done:;
       if (__pyx_t_1) {
 
-        /* "pyFAI/ext/inpainting.pyx":223
+        /* "pyFAI/ext/inpainting.pyx":224
  *                 value = sum / cnt
  *             elif do_dummy and mask[row, col]:
  *                 value = dummy             # <<<<<<<<<<<<<<
@@ -11401,7 +11369,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
       }
       /*else*/ {
 
-        /* "pyFAI/ext/inpainting.pyx":225
+        /* "pyFAI/ext/inpainting.pyx":226
  *                 value = dummy
  *             else:
  *                 value = img[row, col]             # <<<<<<<<<<<<<<
@@ -11421,13 +11389,13 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
         } else if (unlikely(__pyx_t_64 >= __pyx_v_img.shape[1])) __pyx_t_65 = 1;
         if (unlikely(__pyx_t_65 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_65);
-          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          {__pyx_filename = __pyx_f[1]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         __pyx_v_value = (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_63 * __pyx_v_img.strides[0]) ) + __pyx_t_64 * __pyx_v_img.strides[1]) )));
       }
       __pyx_L9:;
 
-      /* "pyFAI/ext/inpainting.pyx":226
+      /* "pyFAI/ext/inpainting.pyx":227
  *             else:
  *                 value = img[row, col]
  *             res[row, col] = value             # <<<<<<<<<<<<<<
@@ -11447,24 +11415,24 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
       } else if (unlikely(__pyx_t_66 >= __pyx_v_res.shape[1])) __pyx_t_67 = 1;
       if (unlikely(__pyx_t_67 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_67);
-        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[1]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_res.data + __pyx_t_65 * __pyx_v_res.strides[0]) )) + __pyx_t_66)) )) = __pyx_v_value;
     }
   }
 
-  /* "pyFAI/ext/inpainting.pyx":228
+  /* "pyFAI/ext/inpainting.pyx":229
  *             res[row, col] = value
  * 
  *     return numpy.asarray(res)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_asarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s_asarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_res, 2, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_res, 2, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_t_6 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_5))) {
@@ -11477,17 +11445,17 @@ static PyObject *__pyx_pf_5pyFAI_3ext_10inpainting_14polar_inpaint(CYTHON_UNUSED
     }
   }
   if (!__pyx_t_6) {
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_9); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_9); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_GOTREF(__pyx_t_3);
   } else {
-    __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_7);
     PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6); __Pyx_GIVEREF(__pyx_t_6); __pyx_t_6 = NULL;
     PyTuple_SET_ITEM(__pyx_t_7, 0+1, __pyx_t_9);
     __Pyx_GIVEREF(__pyx_t_9);
     __pyx_t_9 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
@@ -24970,7 +24938,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_11_05_2017, __pyx_k_11_05_2017, sizeof(__pyx_k_11_05_2017), 0, 0, 1, 0},
+  {&__pyx_kp_s_12_05_2017, __pyx_k_12_05_2017, sizeof(__pyx_k_12_05_2017), 0, 0, 1, 0},
   {&__pyx_n_s_AttributeError, __pyx_k_AttributeError, sizeof(__pyx_k_AttributeError), 0, 0, 1, 1},
   {&__pyx_kp_s_Buffer_view_does_not_expose_stri, __pyx_k_Buffer_view_does_not_expose_stri, sizeof(__pyx_k_Buffer_view_does_not_expose_stri), 0, 0, 1, 0},
   {&__pyx_kp_s_Can_only_create_a_buffer_that_is, __pyx_k_Can_only_create_a_buffer_that_is, sizeof(__pyx_k_Can_only_create_a_buffer_that_is), 0, 0, 1, 0},
@@ -25140,6 +25108,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_k_users_kieffer_workspace_400_pyF, sizeof(__pyx_k_users_kieffer_workspace_400_pyF), 0, 0, 1, 0},
   {&__pyx_n_s_value, __pyx_k_value, sizeof(__pyx_k_value), 0, 0, 1, 1},
   {&__pyx_n_s_values, __pyx_k_values, sizeof(__pyx_k_values), 0, 0, 1, 1},
+  {&__pyx_n_s_weight, __pyx_k_weight, sizeof(__pyx_k_weight), 0, 0, 1, 1},
   {&__pyx_n_s_x, __pyx_k_x, sizeof(__pyx_k_x), 0, 0, 1, 1},
   {&__pyx_n_s_xrange, __pyx_k_xrange, sizeof(__pyx_k_xrange), 0, 0, 1, 1},
   {&__pyx_n_s_zeros, __pyx_k_zeros, sizeof(__pyx_k_zeros), 0, 0, 1, 1},
@@ -25154,7 +25123,6 @@ static int __Pyx_InitCachedBuiltins(void) {
   __pyx_builtin_TypeError = __Pyx_GetBuiltinName(__pyx_n_s_TypeError); if (!__pyx_builtin_TypeError) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_ord = __Pyx_GetBuiltinName(__pyx_n_s_ord); if (!__pyx_builtin_ord) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_zip = __Pyx_GetBuiltinName(__pyx_n_s_zip); if (!__pyx_builtin_zip) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_builtin_min = __Pyx_GetBuiltinName(__pyx_n_s_min); if (!__pyx_builtin_min) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25467,10 +25435,10 @@ static int __Pyx_InitCachedConstants(void) {
  *                   numpy.int8_t[:, :] topaint not None,
  *                   numpy.int8_t[:, :] mask=None,
  */
-  __pyx_tuple__37 = PyTuple_Pack(27, __pyx_n_s_img, __pyx_n_s_topaint, __pyx_n_s_mask, __pyx_n_s_empty, __pyx_n_s_row, __pyx_n_s_col, __pyx_n_s_npt_radial, __pyx_n_s_npt_azim, __pyx_n_s_idx_col, __pyx_n_s_idx_row, __pyx_n_s_tar_row, __pyx_n_s_cnt, __pyx_n_s_radius, __pyx_n_s_start_col, __pyx_n_s_end_col, __pyx_n_s_start_row, __pyx_n_s_end_row, __pyx_n_s_dist, __pyx_n_s_dist2, __pyx_n_s_dist2_min, __pyx_n_s_res, __pyx_n_s_do_dummy, __pyx_n_s_value, __pyx_n_s_dummy, __pyx_n_s_sum, __pyx_n_s_values, __pyx_n_s_distances2); if (unlikely(!__pyx_tuple__37)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__37 = PyTuple_Pack(28, __pyx_n_s_img, __pyx_n_s_topaint, __pyx_n_s_mask, __pyx_n_s_empty, __pyx_n_s_row, __pyx_n_s_col, __pyx_n_s_npt_radial, __pyx_n_s_npt_azim, __pyx_n_s_idx_col, __pyx_n_s_idx_row, __pyx_n_s_tar_row, __pyx_n_s_radius, __pyx_n_s_start_col, __pyx_n_s_end_col, __pyx_n_s_start_row, __pyx_n_s_end_row, __pyx_n_s_dist, __pyx_n_s_dist2, __pyx_n_s_dist2_min, __pyx_n_s_res, __pyx_n_s_do_dummy, __pyx_n_s_value, __pyx_n_s_dummy, __pyx_n_s_sum, __pyx_n_s_cnt, __pyx_n_s_weight, __pyx_n_s_values, __pyx_n_s_distances2); if (unlikely(!__pyx_tuple__37)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__37);
   __Pyx_GIVEREF(__pyx_tuple__37);
-  __pyx_codeobj__38 = (PyObject*)__Pyx_PyCode_New(4, 0, 27, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__37, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_polar_inpaint, 125, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__38)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__38 = (PyObject*)__Pyx_PyCode_New(4, 0, 28, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__37, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_polar_inpaint, 125, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__38)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":276
  *         return self.name
@@ -25535,7 +25503,6 @@ static int __Pyx_InitCachedConstants(void) {
 
 static int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
-  __pyx_float_0_1 = PyFloat_FromDouble(0.1); if (unlikely(!__pyx_float_0_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_2 = PyInt_FromLong(2); if (unlikely(!__pyx_int_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25704,7 +25671,7 @@ PyMODINIT_FUNC PyInit_inpainting(void)
  * Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
  * """
  * __author__ = "Jrme Kieffer"             # <<<<<<<<<<<<<<
- * __date__ = "11/05/2017"
+ * __date__ = "12/05/2017"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jrme_Kieffer) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25712,15 +25679,15 @@ PyMODINIT_FUNC PyInit_inpainting(void)
   /* "pyFAI/ext/inpainting.pyx":29
  * """
  * __author__ = "Jrme Kieffer"
- * __date__ = "11/05/2017"             # <<<<<<<<<<<<<<
+ * __date__ = "12/05/2017"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_11_05_2017) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_12_05_2017) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/inpainting.pyx":30
  * __author__ = "Jrme Kieffer"
- * __date__ = "11/05/2017"
+ * __date__ = "12/05/2017"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -25728,7 +25695,7 @@ PyMODINIT_FUNC PyInit_inpainting(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/inpainting.pyx":31
- * __date__ = "11/05/2017"
+ * __date__ = "12/05/2017"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
