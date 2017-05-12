@@ -184,10 +184,7 @@ def polar_inpaint(cython.floating[:, :] img not None,
                 for idx_row in range(row - 1, -1, -1):
                     if (topaint[idx_row, col] == 0) and (mask[idx_row, col] == 0):  
                         dist = row - idx_row
-                        #values.append(ValDist(img[idx_row, col], dist * dist))
-                        values.append(ValDist(-1, dist * dist))                        
-#                         if row==0 and col==300:
-#                             print("up",row,col, idx_row, tar_row, dist, img[idx_row, col])
+                        values.append(ValDist(img[idx_row, col], dist * dist))
                         break
                 if values:
                     tar_row = min(npt_azim, 2 * row - idx_row + 1) 
@@ -196,10 +193,7 @@ def polar_inpaint(cython.floating[:, :] img not None,
                 for idx_row in range(row + 1, tar_row, 1):
                     if topaint[idx_row, col] == 0 and mask[idx_row, col] == 0:  
                         dist = idx_row - row 
-                        #values.append(ValDist(img[idx_row, col], dist * dist))
-                        values.append(ValDist(1, dist * dist))
-#                         if row==0 and col==300:
-#                             print("down",row,col, idx_row, tar_row, dist, img[idx_row, col], dist*dist, values[0].value, values[0].dist2)
+                        values.append(ValDist(img[idx_row, col], dist * dist))
                         break
                 
                 if not values:
@@ -231,7 +225,6 @@ def polar_inpaint(cython.floating[:, :] img not None,
                                 values.append(ValDist(img[idx_row, idx_col],
                                                       (row - idx_row) ** 2 + (col - idx_col) ** 2))
                                 
-                    #if values: print("pixel:", row, col, radius)
                 cnt = 0.0
                 sum = 0.0
                 for vd in values:
