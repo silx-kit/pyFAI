@@ -26,7 +26,6 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
 pyFAI-saxs is the Saxs script of pyFAI that allows data reduction

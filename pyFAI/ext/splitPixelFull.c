@@ -1684,7 +1684,6 @@ static char __pyx_k_A_lim[] = "A_lim";
 static char __pyx_k_B_lim[] = "B_lim";
 static char __pyx_k_C_lim[] = "C_lim";
 static char __pyx_k_D_lim[] = "D_lim";
-static char __pyx_k_GPLv3[] = "GPLv3+";
 static char __pyx_k_bins0[] = "bins0";
 static char __pyx_k_bins1[] = "bins1";
 static char __pyx_k_cdark[] = "cdark";
@@ -1766,8 +1765,8 @@ static char __pyx_k_is_inside[] = "is_inside";
 static char __pyx_k_mask_size[] = "mask size";
 static char __pyx_k_pos0Range[] = "pos0Range";
 static char __pyx_k_pos1Range[] = "pos1Range";
-static char __pyx_k_13_05_2016[] = "13/05/2016";
-static char __pyx_k_27_09_2016[] = "27/09/2016";
+static char __pyx_k_02_02_2017[] = "02/02/2017";
+static char __pyx_k_15_05_2017[] = "15/05/2017";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_areaPixel2[] = "areaPixel2";
@@ -1853,8 +1852,8 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_13_05_2016;
-static PyObject *__pyx_kp_s_27_09_2016;
+static PyObject *__pyx_kp_s_02_02_2017;
+static PyObject *__pyx_kp_s_15_05_2017;
 static PyObject *__pyx_n_s_A;
 static PyObject *__pyx_n_s_A0;
 static PyObject *__pyx_n_s_A1;
@@ -1884,7 +1883,6 @@ static PyObject *__pyx_n_s_Ellipsis;
 static PyObject *__pyx_kp_s_Empty_shape_tuple_for_cython_arr;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor_2;
-static PyObject *__pyx_kp_s_GPLv3;
 static PyObject *__pyx_kp_s_Giannis_Ashiotis;
 static PyObject *__pyx_n_s_IndexError;
 static PyObject *__pyx_kp_s_Indirect_dimensions_not_supporte;
@@ -24038,8 +24036,8 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_13_05_2016, __pyx_k_13_05_2016, sizeof(__pyx_k_13_05_2016), 0, 0, 1, 0},
-  {&__pyx_kp_s_27_09_2016, __pyx_k_27_09_2016, sizeof(__pyx_k_27_09_2016), 0, 0, 1, 0},
+  {&__pyx_kp_s_02_02_2017, __pyx_k_02_02_2017, sizeof(__pyx_k_02_02_2017), 0, 0, 1, 0},
+  {&__pyx_kp_s_15_05_2017, __pyx_k_15_05_2017, sizeof(__pyx_k_15_05_2017), 0, 0, 1, 0},
   {&__pyx_n_s_A, __pyx_k_A, sizeof(__pyx_k_A), 0, 0, 1, 1},
   {&__pyx_n_s_A0, __pyx_k_A0, sizeof(__pyx_k_A0), 0, 0, 1, 1},
   {&__pyx_n_s_A1, __pyx_k_A1, sizeof(__pyx_k_A1), 0, 0, 1, 1},
@@ -24069,7 +24067,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_Empty_shape_tuple_for_cython_arr, __pyx_k_Empty_shape_tuple_for_cython_arr, sizeof(__pyx_k_Empty_shape_tuple_for_cython_arr), 0, 0, 1, 0},
   {&__pyx_kp_u_Format_string_allocated_too_shor, __pyx_k_Format_string_allocated_too_shor, sizeof(__pyx_k_Format_string_allocated_too_shor), 0, 1, 0, 0},
   {&__pyx_kp_u_Format_string_allocated_too_shor_2, __pyx_k_Format_string_allocated_too_shor_2, sizeof(__pyx_k_Format_string_allocated_too_shor_2), 0, 1, 0, 0},
-  {&__pyx_kp_s_GPLv3, __pyx_k_GPLv3, sizeof(__pyx_k_GPLv3), 0, 0, 1, 0},
   {&__pyx_kp_s_Giannis_Ashiotis, __pyx_k_Giannis_Ashiotis, sizeof(__pyx_k_Giannis_Ashiotis), 0, 0, 1, 0},
   {&__pyx_n_s_IndexError, __pyx_k_IndexError, sizeof(__pyx_k_IndexError), 0, 0, 1, 1},
   {&__pyx_kp_s_Indirect_dimensions_not_supporte, __pyx_k_Indirect_dimensions_not_supporte, sizeof(__pyx_k_Indirect_dimensions_not_supporte), 0, 0, 1, 0},
@@ -24877,7 +24874,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * """
  * __author__ = "Giannis Ashiotis"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Giannis_Ashiotis) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -24885,7 +24882,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * """
  * __author__ = "Giannis Ashiotis"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24893,29 +24890,29 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
   /* "pyFAI/ext/splitPixelFull.pyx":36
  * __author__ = "Giannis Ashiotis"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "15/05/2017"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
- * __license__ = "GPLv3+"
+ * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_27_09_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_15_05_2017) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFull.pyx":37
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
- * __license__ = "GPLv3+"
+ * __license__ = "MIT"
  * 
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFull.pyx":38
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  * __status__ = "stable"
- * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
+ * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
  * import cython
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFull.pyx":42
  * import cython
@@ -24943,7 +24940,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -24951,7 +24948,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24959,15 +24956,15 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
   /* "pyFAI/ext/regrid_common.pxi":31
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2017"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_13_05_2016) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2017) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":32
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -24975,7 +24972,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":33
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
