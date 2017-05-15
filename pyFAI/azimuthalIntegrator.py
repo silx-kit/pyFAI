@@ -3374,8 +3374,7 @@ class AzimuthalIntegrator(Geometry):
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
                    unit="r_m", method="splitpixel", poissonian=False,
-                   grow_mask=3
-                   ):
+                   grow_mask=3):
         """Re-invent the values of masked pixels
 
         :param data: input image as 2d numpy array
