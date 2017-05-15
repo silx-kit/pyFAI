@@ -29,7 +29,7 @@
 
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
-__license__ = "GPLv3"
+__license__ = "MIT"
 __date__ = "15/05/2017"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"

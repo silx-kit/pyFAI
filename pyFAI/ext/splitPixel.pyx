@@ -32,9 +32,9 @@ Histogram (direct) implementation
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/02/2017"
+__date__ = "15/05/2017"
 __status__ = "stable"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 
 import cython
 cimport numpy

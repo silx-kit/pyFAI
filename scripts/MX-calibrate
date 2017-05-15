@@ -41,7 +41,7 @@ calibrate the by hand the most distant frame then calibrate subsequently all fra
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "15/05/2017"
 __satus__ = "development"

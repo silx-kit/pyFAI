@@ -611,7 +611,7 @@ if __name__ == "__main__":
           data_files=data_files,
           classifiers=classifiers,
           long_description=get_readme(),
-          license="GPL",
+          license="MIT",
           install_requires=install_requires,
           setup_requires=setup_requires,
           package_data={  # Add here all resources files

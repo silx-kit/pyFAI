@@ -31,9 +31,9 @@ A tool for determining the geometry of a detector using a reference sample.
 from __future__ import print_function, division
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2017"
+__date__ = "15/05/2017"
 __status__ = "production"
 
 import os

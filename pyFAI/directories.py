@@ -43,7 +43,7 @@ https://github.com/kif/pyFAI/issues/144
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "15/05/2017"
 __status__ = "development"
