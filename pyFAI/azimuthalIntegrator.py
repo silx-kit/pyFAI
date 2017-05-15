@@ -3373,7 +3373,7 @@ class AzimuthalIntegrator(Geometry):
         return bragg, amorphous
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
-                   unit="r_m", method="bbox", poissonian=False,
+                   unit="r_m", method="cython", poissonian=False,
                    grow_mask=1
                    ):
         """Re-invent the values of masked pixels
@@ -3434,8 +3434,9 @@ class AzimuthalIntegrator(Geometry):
         if grow_mask:
             # inpaint a bit more than needed to avoid "side" effects.
             from scipy.ndimage import binary_dilation
-            to_paint = binary_dilation(to_paint, structure=[[1], [1], [1]],
-                                       iterations=grow_mask).astype(numpy.int8)
+#             structure=[[1], [1], [1]]
+            to_paint = binary_dilation(to_paint, iterations=grow_mask)
+            to_paint = to_paint.astype(numpy.int8)
 
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
                                                    to_paint, omask, 0)
