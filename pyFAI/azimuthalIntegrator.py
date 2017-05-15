@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2017"
+__date__ = "15/05/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3373,7 +3373,8 @@ class AzimuthalIntegrator(Geometry):
         return bragg, amorphous
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
-                   unit="r_m", method="cython", poissonian=False
+                   unit="r_m", method="bbox", poissonian=False,
+                   grow_mask=1
                    ):
         """Re-invent the values of masked pixels
 
@@ -3385,6 +3386,7 @@ class AzimuthalIntegrator(Geometry):
         :param method: pathway for integration
         :param poissonian: If True, add some poisonian noise to the data to make
                            then more realistic
+        :param grow_mask: grow mask in polar coordinated to accomodate pixel splitting algoritm
         
         :return: inpainting object which contains the restored image as .data 
         """
@@ -3428,6 +3430,12 @@ class AzimuthalIntegrator(Geometry):
         omask = numpy.ascontiguousarray(numpy.round(imgb.intensity / dummy), numpy.int8)
         imask = numpy.ascontiguousarray(numpy.round(imgp.intensity / dummy), numpy.int8)
         to_paint = (imask - omask)
+
+        if grow_mask:
+            # inpaint a bit more than needed to avoid "side" effects.
+            from scipy.ndimage import binary_dilation
+            to_paint = binary_dilation(to_paint, structure=[[1], [1], [1]],
+                                       iterations=grow_mask)
 
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
                                                    to_paint, omask, 0)

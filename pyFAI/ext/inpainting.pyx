@@ -26,29 +26,16 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "12/05/2017"
+__date__ = "15/05/2017"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
 import cython
 cimport numpy
 import numpy
-from libc.math cimport floor, ceil, M_PI as pi
+from libc.math cimport floor, ceil
 
 include "bilinear.pxi"
-
-# cdef class ValDist:
-#     cdef:
-#         readonly float value, dist2
-#         
-#     def _init__(self, value, dist2):
-#         self.value = <float> value
-#         self.dist2 = <float> dist2
-from collections import namedtuple
-ValDist = namedtuple("ValDist", ["value", "dist2"])
-# cdef struct ValDist:
-#     float value
-#     float dist2
 
 
 def largest_width(numpy.int8_t[:, :]image):
@@ -156,7 +143,6 @@ def polar_inpaint(cython.floating[:, :] img not None,
         float value, dummy, dist
         double sum, cnt, weight
         list values
-        #ValDist vd
         
     npt_azim = img.shape[0]
     npt_radial = img.shape[1]
@@ -178,14 +164,13 @@ def polar_inpaint(cython.floating[:, :] img not None,
     for row in range(npt_azim):
         for col in range(npt_radial):
             if topaint[row, col]:  # this pixel deserves inpaining
-#                 if row==0 and col==300:
-#                     print(img[row, col],mask[row, col],topaint[row, col])
                 values = []
                 for idx_row in range(row - 1, -1, -1):
                     if (topaint[idx_row, col] == 0) and (mask[idx_row, col] == 0):  
                         dist = row - idx_row
-                        values.append(ValDist(img[idx_row, col], dist * dist))
-                        break
+                        values.append((img[idx_row, col], dist * dist))
+                        if len(values) > 1:
+                            break
                 if values:
                     tar_row = min(npt_azim, 2 * row - idx_row + 1) 
                 else:
@@ -193,9 +178,9 @@ def polar_inpaint(cython.floating[:, :] img not None,
                 for idx_row in range(row + 1, tar_row, 1):
                     if topaint[idx_row, col] == 0 and mask[idx_row, col] == 0:  
                         dist = idx_row - row 
-                        values.append(ValDist(img[idx_row, col], dist * dist))
-                        break
-                
+                        values.append((img[idx_row, col], dist * dist))
+                        if len(values) > 3:
+                            break
                 if not values:
                     # radial search:
                     radius = 0
@@ -204,37 +189,34 @@ def polar_inpaint(cython.floating[:, :] img not None,
                         idx_col = max(0, col - radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)): 
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
-                                values.append(ValDist(img[idx_row, idx_col],
-                                                      (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                values.append((img[idx_row, idx_col],
+                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
                                 
                         idx_col = min(npt_radial - 1, col + radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)): 
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
-                                values.append(ValDist(img[idx_row, idx_col],
-                                                      (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                values.append((img[idx_row, idx_col],
+                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
 
                         idx_row = max(0, row - radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)): 
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
-                                values.append(ValDist(img[idx_row, idx_col],
-                                                      (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                values.append((img[idx_row, idx_col],
+                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
 
                         idx_row = min(npt_azim - 1, row + radius)
                         for idx_col in range(max(0, col - radius), min(npt_radial, col + radius + 1)): 
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:  
-                                values.append(ValDist(img[idx_row, idx_col],
-                                                      (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                                values.append((img[idx_row, idx_col],
+                                               (row - idx_row) ** 2 + (col - idx_col) ** 2))
                                 
                 cnt = 0.0
                 sum = 0.0
                 for vd in values:
-                    weight = 1.0 / vd.dist2
-                    sum += vd.value * weight
-                    cnt += weight
-                #if sum>0:
-                    
+                    weight = 1.0 / vd[1]
+                    sum += vd[0] * weight
+                    cnt += weight                    
                 value = sum / cnt
-                #value = col
             elif do_dummy and mask[row, col]:
                 value = dummy
             else:
