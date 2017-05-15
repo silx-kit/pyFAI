@@ -3373,7 +3373,7 @@ class AzimuthalIntegrator(Geometry):
         return bragg, amorphous
 
     def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
-                   unit="r_m", method="bbox", poissonian=False,
+                   unit="r_m", method="splitpixel", poissonian=False,
                    grow_mask=3
                    ):
         """Re-invent the values of masked pixels
