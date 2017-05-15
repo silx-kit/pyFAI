@@ -103,7 +103,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 2.7, 3.4 and 3.5 are well tested.
+Python 2.7, 3.4, 3.5 and 3.6 are well tested.
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
 For full functionality of pyFAI the following modules need to be installed.
 
@@ -114,6 +114,7 @@ For full functionality of pyFAI the following modules need to be installed.
     * h5py		-  	http://www.h5py.org/
     * pyopencl		-	http://mathema.tician.de/software/pyopencl/
     * python-qt4	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
+    * silx          -   http://www.silx.org
 
 Those dependencies can simply be installed by::
 
@@ -130,7 +131,7 @@ or using apt-get on from the command line in a terminal::
 
    sudo apt-get install pyfai
 
-The extra ubuntu packages needed are:
+The extra Ubuntu packages needed are:
 
     * python-numpy
     * python-scipy
@@ -139,10 +140,11 @@ The extra ubuntu packages needed are:
     * python-fabio
     * python-pyopencl
     * python-qt4
+    * python-silx
 
 using apt-get these can be installed as::
 
-    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-qt4
+    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-qt4 python-silx
 
 MacOSX
 ------
