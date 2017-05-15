@@ -3434,8 +3434,8 @@ class AzimuthalIntegrator(Geometry):
         if grow_mask:
             # inpaint a bit more than needed to avoid "side" effects.
             from scipy.ndimage import binary_dilation
-#             structure=[[1], [1], [1]]
-            to_paint = binary_dilation(to_paint, iterations=grow_mask)
+            structure = [[1], [1], [1]]
+            to_paint = binary_dilation(to_paint, structure=structure, iterations=grow_mask)
             to_paint = to_paint.astype(numpy.int8)
 
         polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
