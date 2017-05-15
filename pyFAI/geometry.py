@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2017"
+__date__ = "15/05/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -106,6 +106,7 @@ class Geometry(object):
     .. literalinclude:: ../../mathematica/geometry.txt
         :language: mathematica
     """
+    _LAST_POLARIZATION = "last_polarization"
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None):
@@ -1541,6 +1542,7 @@ class Geometry(object):
                         (intensity/polarisation)
 
         """
+
         shape = self.get_shape(shape)
         if shape is None:
             raise RuntimeError(("You should provide a shape if the"
@@ -1551,10 +1553,11 @@ class Geometry(object):
                 return PolarizationArray(one, crc32(one))
             else:
                 return numpy.ones(shape, dtype=numpy.float32)
-        elif factor is True:
-            for key, pol in self._cached_array.items():
-                if isinstance(key, PolarizationDescription):
-                    return pol if with_checksum else pol.array
+        elif ((factor is True) and
+              (self._LAST_POLARIZATION in self._cached_array)):
+            pol = self._cached_array[self._LAST_POLARIZATION]
+            return pol if with_checksum else pol.array
+
         factor = float(factor)
         axis_offset = float(axis_offset)
         desc = PolarizationDescription(factor, axis_offset)
@@ -1571,6 +1574,7 @@ class Geometry(object):
                     polc = crc32(pola)
                     pol = PolarizationArray(pola, polc)
                     self._cached_array[desc] = pol
+        self._cached_array[self._LAST_POLARIZATION] = pol
         return pol if with_checksum else pol.array
 
     def calc_transmission(self, t0, shape=None):
@@ -1631,7 +1635,8 @@ class Geometry(object):
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
                    dummy=0.0,
-                   polarization_factor=None, dark=None, flat=None,
+                   polarization_factor=None, polarization_axis_offset=0,
+                   dark=None, flat=None,
                    ):
         """
         Computes a 2D image from a 1D integrated profile
@@ -1643,6 +1648,7 @@ class Geometry(object):
         :param correctSolidAngle:
         :param dummy: value for masked pixels
         :param polarization_factor: set to true to use previously used value
+        :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
         :param flat: flatfield corrction
         :return: 2D image reconstructed
@@ -1663,16 +1669,9 @@ class Geometry(object):
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
         if polarization_factor is not None:
-            polarization = None
-            for desc in self._cached_array:
-                if isinstance(desc, PolarizationDescription):
-                    if polarization_factor is True:
-                        polarization = self._cached_array[desc].array
-                        break
-                    elif desc.polarization_factor == polarization_factor:
-                        polarization = self._cached_array[desc].array
-            assert polarization.shape == tuple(shape)
-            calcimage *= polarization
+            calcimage *= self.polarization(shape, polarization_factor,
+                                           axis_offset=polarization_axis_offset,
+                                           with_checksum=False)
         if flat is not None:
             assert dark.shape == tuple(shape)
             calcimage *= flat
