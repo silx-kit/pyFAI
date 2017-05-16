@@ -28,8 +28,6 @@
 '''Spline evaluation function
 
 Created on Nov 4, 2013
-
-@author: zubair & Jerome Kieffer
 '''
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
