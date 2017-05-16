@@ -9,8 +9,9 @@ Project
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
-PyFAI is an open source project licensed under the GPL (switching to MIT) mainly
-written in Python (v2.7 or newer, 3.4 or newer) and heavily relying on the
+PyFAI is an open source project licensed under the MIT license (previously
+under GPL) mainly written in Python (v2.7, 3.4 or newer).
+It is managed by the Silx team and is heavily relying on the
 Python scientific ecosystem: numpy, scipy and matplotlib.
 It provides high performances image treatment thanks to Cython and
 OpenCL... but only a C-compiler is needed to build it.
