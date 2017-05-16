@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "12/05/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -488,8 +488,8 @@ class DefaultAiWriter(Writer):
                     headerLst.append("Flat field: %s" % ai.flatfiles)
                 else:
                     headerLst.append("Flat field: Done with unknown file")
-            if polarization_factor is None and ai._polarization is not None:
-                polarization_factor = ai._polarization_factor
+#             if polarization_factor is None and ai._polarization is not None:
+#                 polarization_factor = ai._polarization_factor
             headerLst.append("Polarization factor: %s" % polarization_factor)
             headerLst.append("Normalization factor: %s" % normalization_factor)
             self._header = "\n".join([hdr + " " + i for i in headerLst])

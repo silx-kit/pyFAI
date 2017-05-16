@@ -3801,20 +3801,20 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_19, __pyx_t_12, __pyx_t_13, __pyx_t_18, __pyx_t_20, __pyx_t_17, __pyx_t_16, __pyx_t_21, __pyx_t_14, __pyx_t_11, __pyx_t_22, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_13, __pyx_t_10, __pyx_t_14, __pyx_t_20, __pyx_t_22, __pyx_t_21, __pyx_t_11, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_is_valid) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_one_den) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_one_flat = ((float)__PYX_NAN());
-                              __pyx_v_one_den = ((float)__PYX_NAN());
-                              __pyx_v_one_num = ((float)__PYX_NAN());
                               __pyx_v_is_valid = ((int)0xbad0bad0);
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_num = ((float)__PYX_NAN());
+                              __pyx_v_one_den = ((float)__PYX_NAN());
 
                               /* "pyFAI/ext/preproc.pyx":105
  * 
@@ -4560,20 +4560,20 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_19, __pyx_t_12, __pyx_t_13, __pyx_t_18, __pyx_t_20, __pyx_t_22, __pyx_t_17, __pyx_t_16, __pyx_t_14, __pyx_t_11, __pyx_t_23, __pyx_t_21, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_13, __pyx_t_10, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_11, __pyx_t_21, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_one_num) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_flat) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_flat) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_den) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
                               __pyx_v_one_num = ((float)__PYX_NAN());
-                              __pyx_v_one_den = ((float)__PYX_NAN());
                               __pyx_v_is_valid = ((int)0xbad0bad0);
                               __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_den = ((float)__PYX_NAN());
 
                               /* "pyFAI/ext/preproc.pyx":196
  * 
@@ -5350,21 +5350,21 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_13, __pyx_t_12, __pyx_t_18, __pyx_t_26, __pyx_t_20, __pyx_t_27, __pyx_t_17, __pyx_t_11, __pyx_t_16, __pyx_t_25, __pyx_t_21, __pyx_t_24, __pyx_t_14, __pyx_t_19, __pyx_t_23, __pyx_t_22, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_10, __pyx_t_27, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_21, __pyx_t_13, __pyx_t_26, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18, __pyx_t_24, __pyx_t_25, __pyx_t_11)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_one_var) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_num) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_one_var) lastprivate(__pyx_v_one_flat) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_is_valid) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_one_den = ((float)__PYX_NAN());
                               __pyx_v_one_var = ((float)__PYX_NAN());
-                              __pyx_v_is_valid = ((int)0xbad0bad0);
-                              __pyx_v_one_num = ((float)__PYX_NAN());
                               __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_num = ((float)__PYX_NAN());
+                              __pyx_v_one_den = ((float)__PYX_NAN());
+                              __pyx_v_is_valid = ((int)0xbad0bad0);
 
                               /* "pyFAI/ext/preproc.pyx":290
  * 
@@ -6216,7 +6216,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_13, __pyx_t_19, __pyx_t_18, __pyx_t_12, __pyx_t_26, __pyx_t_20, __pyx_t_27, __pyx_t_17, __pyx_t_16, __pyx_t_25, __pyx_t_21, __pyx_t_24, __pyx_t_14, __pyx_t_11, __pyx_t_23, __pyx_t_22, __pyx_t_10, __pyx_t_15)
+                  #pragma omp parallel private(__pyx_t_10, __pyx_t_12, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_21, __pyx_t_11, __pyx_t_13, __pyx_t_26, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_27, __pyx_t_18, __pyx_t_24, __pyx_t_25)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP

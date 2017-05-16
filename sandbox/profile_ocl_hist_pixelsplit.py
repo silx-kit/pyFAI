@@ -36,7 +36,7 @@ data = fabio.open("halfccd.edf").data
 workgroup_size = 256
 bins = 1000
 
-pos_in = ai.array_from_unit(data.shape, "corner", unit="2th_deg")
+pos_in = ai.array_from_unit(data.shape, "corner", unit="2th_deg", scale=False)
 
 pos = pos_in.reshape(pos_in.size / 8, 4, 2)
 

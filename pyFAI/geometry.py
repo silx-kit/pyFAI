@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2017"
+__date__ = "15/05/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -49,6 +49,7 @@ import numpy
 import os
 import threading
 import time
+from collections import namedtuple
 
 from . import detectors
 from . import units
@@ -77,6 +78,10 @@ try:
 except ImportError:
     from zlib import crc32
 
+PolarizationArray = namedtuple("PolarizationArray", ["array", "checksum"])
+PolarizationDescription = namedtuple("PolarizationDescription",
+                                     ["polarization_factor", "axis_offset"])
+
 
 class Geometry(object):
     """
@@ -101,6 +106,7 @@ class Geometry(object):
     .. literalinclude:: ../../mathematica/geometry.txt
         :language: mathematica
     """
+    _LAST_POLARIZATION = "last_polarization"
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None):
@@ -151,10 +157,6 @@ class Geometry(object):
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
-        self._polarization_factor = 0
-        self._polarization_axis_offset = 0
-        self._polarization = None
-        self._polarization_crc = None  # checksum associated with _polarization
         self._cosa = None  # cosine of the incidance angle
         self._transmission_normal = None
         self._transmission_corr = None
@@ -581,11 +583,13 @@ class Geometry(object):
                          "neither in the detector: %s", self.detector)
 
         if self._cached_array.get("chi_center") is None:
-            chia = numpy.fromfunction(self.chi, shape,
-                                      dtype=numpy.float32)
-            if not self.chiDiscAtPi:
-                chia = chia % (2.0 * numpy.pi)
-            self._cached_array["chi_center"] = chia
+            with self._sem:
+                if self._cached_array.get("chi_center") is None:
+                    chia = numpy.fromfunction(self.chi, shape,
+                                              dtype=numpy.float32)
+                    if not self.chiDiscAtPi:
+                        chia = chia % (2.0 * numpy.pi)
+                    self._cached_array["chi_center"] = chia
         return self._cached_array["chi_center"]
 
     def position_array(self, shape=None, corners=False, dtype=numpy.float64, use_cython=True):
@@ -954,7 +958,7 @@ class Geometry(object):
                     self._cached_array["d*2_delta"] = delta.max(axis=-1)
         return self._cached_array.get("d*2_delta")
 
-    def array_from_unit(self, shape=None, typ="center", unit=units.TTH):
+    def array_from_unit(self, shape=None, typ="center", unit=units.TTH, scale=True):
         """
         Generate an array of position in different dimentions (R, Q,
         2Theta)
@@ -965,7 +969,8 @@ class Geometry(object):
         :type typ: str
         :param unit: can be Q, TTH, R for now
         :type unit: pyFAI.units.Enum
-
+        :param scale: set to False for returning the internal representation 
+                (S.I. often) which is faster 
         :return: R, Q or 2Theta array depending on unit
         :rtype: ndarray
         """
@@ -983,14 +988,16 @@ class Geometry(object):
         if meth_name and meth_name in dir(Geometry):
             # fast path may be available
             out = Geometry.__dict__[meth_name](self, shape)
+            if scale and unit:
+                out = out * unit.scale
         else:
             # fast path is definitely not available, use the generic formula
             if typ == "center":
-                out = self.center_array(shape, unit, scale=False)
+                out = self.center_array(shape, unit, scale=scale)
             elif typ == "corner":
-                out = self.corner_array(shape, unit, scale=False)
+                out = self.corner_array(shape, unit, scale=scale)
             else:  # typ == "delta":
-                out = self.delta_array(shape, unit, scale=False)
+                out = self.delta_array(shape, unit, scale=scale)
         return out
 
     def cosIncidance(self, d1, d2, path="cython"):
@@ -1457,6 +1464,8 @@ class Geometry(object):
         Set the position of the discontinuity of the chi axis between
         0 and 2pi.  By default it is between pi and -pi
         """
+        if self.chiDiscAtPi == False:
+            return
         with self._sem:
             self.chiDiscAtPi = False
             self._cached_array["chi_center"] = None
@@ -1469,6 +1478,8 @@ class Geometry(object):
         Set the position of the discontinuity of the chi axis between
         -pi and +pi.  This is the default behavour
         """
+        if self.chiDiscAtPi == True:
+            return
         with self._sem:
             self.chiDiscAtPi = True
             self._cached_array["chi_center"] = None
@@ -1505,50 +1516,66 @@ class Geometry(object):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
 
-    def polarization(self, shape=None, factor=None, axis_offset=0):
+    def polarization(self, shape=None, factor=None, axis_offset=0, with_checksum=False):
         """
         Calculate the polarization correction accoding to the
         polarization factor:
 
-        * If the polarization factor is None, the correction is not applied (returns 1)
-        * If the polarization factor is 0 (circular polarization), the correction correspond to (1+(cos2θ)^2)/2
-        * If the polarization factor is 1 (linear horizontal polarization), there is no correction in the vertical plane  and a node at 2th=90, chi=0
-        * If the polarization factor is -1 (linear vertical polarization), there is no correction in the horizontal plane and a node at 2th=90, chi=90
+        * If the polarization factor is None, 
+            the correction is not applied (returns 1)
+        * If the polarization factor is 0 (circular polarization), 
+            the correction correspond to (1+(cos2θ)^2)/2
+        * If the polarization factor is 1 (linear horizontal polarization), 
+            there is no correction in the vertical plane  and a node at 2th=90, chi=0
+        * If the polarization factor is -1 (linear vertical polarization), 
+            there is no correction in the horizontal plane and a node at 2th=90, chi=90
         * If the polarization is elliptical, the polarization factor varies between -1 and +1.
 
-        The axis_offset parameter allows correction for the misalignement of the polarization plane (or ellipse main axis) and the the detector's X axis.
+        The axis_offset parameter allows correction for the misalignement of 
+        the polarization plane (or ellipse main axis) and the the detector's X axis.
 
-        :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure at 2th=90, chi=0)
-        :param axis_offset: Angle between the polarization main axis and detector X direction (in radians !!!)
-        :return: 2D array with polarization correction array (intensity/polarisation)
+        :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization) 
+                    and 1 (where division by 0 could occure at 2th=90, chi=0)
+        :param axis_offset: Angle between the polarization main axis and 
+                            detector's X direction (in radians !!!)
+        :return: 2D array with polarization correction array 
+                        (intensity/polarisation)
 
         """
+
         shape = self.get_shape(shape)
         if shape is None:
             raise RuntimeError(("You should provide a shape if the"
                                 " geometry is not yet initiallized"))
-
         if factor is None:
-            return numpy.ones(shape, dtype=numpy.float32)
-        else:
-            factor = float(factor)
+            if with_checksum:
+                one = numpy.ones(shape, dtype=numpy.float32)
+                return PolarizationArray(one, crc32(one))
+            else:
+                return numpy.ones(shape, dtype=numpy.float32)
+        elif ((factor is True) and
+              (self._LAST_POLARIZATION in self._cached_array)):
+            pol = self._cached_array[self._LAST_POLARIZATION]
+            return pol if with_checksum else pol.array
 
-        if self._polarization is not None:
+        factor = float(factor)
+        axis_offset = float(axis_offset)
+        desc = PolarizationDescription(factor, axis_offset)
+        pol = self._cached_array.get(desc)
+        if pol is None or (pol.array.shape != shape):
+            tth = self.twoThetaArray(shape)
+            chi = self.chiArray(shape)
             with self._sem:
-                if ((factor == self._polarization_factor) and
-                        (shape == self._polarization.shape) and
-                        (axis_offset == self._polarization_axis_offset)):
-                    return self._polarization
-
-        tth = self.twoThetaArray(shape)
-        chi = self.chiArray(shape) + axis_offset
-        with self._sem:
-            cos2_tth = numpy.cos(tth) ** 2
-            self._polarization = ((1 + cos2_tth - factor * numpy.cos(2 * chi) * (1 - cos2_tth)) / 2.0)  # .astype(numpy.float32)
-            self._polarization_factor = factor
-            self._polarization_axis_offset = axis_offset
-            self._polarization_crc = crc32(self._polarization)
-            return self._polarization
+                if pol is None or (pol.array.shape != shape):
+                    cos2_tth = numpy.cos(tth) ** 2
+                    pola = 0.5 * (1.0 + cos2_tth -
+                      factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
+                    pola = pola.astype(numpy.float32)
+                    polc = crc32(pola)
+                    pol = PolarizationArray(pola, polc)
+                    self._cached_array[desc] = pol
+        self._cached_array[self._LAST_POLARIZATION] = pol
+        return pol if with_checksum else pol.array
 
     def calc_transmission(self, t0, shape=None):
         """
@@ -1599,8 +1626,6 @@ class Geometry(object):
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         self._dssa = None
-        self._polarization = None
-        self._polarization_factor = None
         self._transmission_normal = None
         self._transmission_corr = None
         self._transmission_crc = None
@@ -1610,7 +1635,8 @@ class Geometry(object):
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
                    dummy=0.0,
-                   polarization_factor=None, dark=None, flat=None,
+                   polarization_factor=None, polarization_axis_offset=0,
+                   dark=None, flat=None,
                    ):
         """
         Computes a 2D image from a 1D integrated profile
@@ -1622,6 +1648,7 @@ class Geometry(object):
         :param correctSolidAngle:
         :param dummy: value for masked pixels
         :param polarization_factor: set to true to use previously used value
+        :param polarization_axis_offset: axis_offset to be send to the polarization method
         :param dark: dark current correction
         :param flat: flatfield corrction
         :return: 2D image reconstructed
@@ -1642,13 +1669,9 @@ class Geometry(object):
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
         if polarization_factor is not None:
-            if (polarization_factor is True) and (self._polarization is not None):
-                polarization = self._polarization
-            else:
-                polarization = self.polarization(shape, polarization_factor,
-                                                 axis_offset=0)
-            assert polarization.shape == tuple(shape)
-            calcimage *= polarization
+            calcimage *= self.polarization(shape, polarization_factor,
+                                           axis_offset=polarization_axis_offset,
+                                           with_checksum=False)
         if flat is not None:
             assert dark.shape == tuple(shape)
             calcimage *= flat
@@ -1668,11 +1691,10 @@ class Geometry(object):
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
-                     '_polarization_factor', '_polarization_axis_offset',
-                     '_polarization_crc', '_transmission_crc', '_transmission_normal',
+                     '_transmission_crc', '_transmission_normal',
                      ]
         array = ["_dssa",
-                 '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
+                 '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
@@ -1687,11 +1709,10 @@ class Geometry(object):
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
-                     '_polarization_factor', '_polarization_axis_offset',
-                     '_polarization_crc', '_transmission_crc', '_transmission_normal',
+                     '_transmission_crc', '_transmission_normal',
                      ]
         array = ["_dssa",
-                 '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
+                 '_cosa', '_transmission_normal', '_transmission_corr']
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -1736,7 +1757,10 @@ class Geometry(object):
         if shape is None:
             for ary in self._cached_array.values():
                 if ary is not None:
-                    shape = ary.shape[:2]
+                    if hasattr(ary, "shape"):
+                        shape = ary.shape[:2]
+                    elif hasattr(ary, "array"):
+                        shape = ary.array.shape[:2]
                     break
         return shape
 
