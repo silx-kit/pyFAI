@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "01/12/2016"
+__date__ = "18/05/2017"
 __license__ = "MIT"
 
 import distutils.util
@@ -375,6 +375,7 @@ PROJECT_PATH = module.__path__[0]
 # Run the tests
 runnerArgs = {}
 runnerArgs["verbosity"] = test_verbosity
+runnerArgs["buffer"] = options.display_buffer
 if options.memprofile:
     runnerArgs["resultclass"] = ProfileTextTestResult
 runner = unittest.TextTestRunner(**runnerArgs)
