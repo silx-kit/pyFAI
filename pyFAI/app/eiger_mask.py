@@ -51,6 +51,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("eiger-mask")
 import fabio
 
+import pyFAI
 try:
     from argparse import ArgumentParser
 except ImportError:
@@ -78,10 +79,12 @@ def extract_mask(infile):
 
 def main():
     description = "A tool to extract the mask from an Eiger detector file."
+    version = "eiger-mask version %s from %s" % (pyFAI.version, pyFAI.date)
     epilog = None
     if h5py is None:
         epilog = "Python h5py module is missing. It have to be installed to use this application"
     parser = ArgumentParser(description=description, epilog=epilog)
+    parser.add_argument("-V", "--version", action='version', version=version)
     parser.add_argument('input_file', help='Input file. Must be an HDF5 file.')
     parser.add_argument('output_file', nargs="?", help='Output file. It can be an msk, tif, or an edf file.')
     options = parser.parse_args()
