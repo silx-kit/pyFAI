@@ -4,6 +4,7 @@
 #    Project: Fast Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
+#
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
@@ -28,21 +29,22 @@
 #  THE SOFTWARE.
 #
 """
-pyFAI-saxs is the Saxs script of pyFAI that allows data reduction
-for Small Angle Scattering and PDF.
+pyFAI-waxs is the Waxs script of pyFAI that allows data reduction for
+Wide Angle Scattering, producing output in 2-theta range output in
+radial dimension (and in degrees).
 """
+
 __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __status__ = "production"
 
 import os
 import sys
 import time
 import fabio
-import pyFAI
 import pyFAI.units
 import pyFAI.utils
 hc = pyFAI.units.hc
@@ -57,12 +59,13 @@ except ImportError:
 
 
 def main():
-    usage = "pyFAI-saxs [options] -n 1000 -p ponifile file1.edf file2.edf ..."
-    version = "PyFAI-saxs version %s from %s " % (pyFAI.version, pyFAI.date)
-    description = """Azimuthal integration for SAXS users."""
-    epilog = """pyFAI-saxs is the SAXS script of pyFAI that allows data
-    reduction (azimuthal integration) for Small Angle Scattering with output
-    axis in q space."""
+    usage = "pyFAI-waxs [options] -p ponifile file1.edf file2.edf ..."
+    version = "pyFAI-waxs version %s from %s" % (pyFAI.version, pyFAI.date)
+    description = "Azimuthal integration for powder diffraction."
+    epilog = """pyFAI-waxs is the script of pyFAI that allows data reduction
+    (azimuthal integration) for Wide Angle Scattering to produce X-Ray Powder
+    Diffraction Pattern with output axis in 2-theta space.
+    """
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-v", "--version", action='version', version=version)
     parser.add_argument("args", metavar="FILE", type=str, nargs='+',
@@ -93,31 +96,41 @@ def main():
     parser.add_argument("-f", "--flat", dest="flat",
                       type=str, default=None,
                       help="name of the file containing the flat field")
-#    parser.add_argument("-b", "--background", dest="background",
-#                      type="string", default=None,
-#                      help="name of the file containing the background")
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
                       type=float, default=None,
                       help="Polarization factor, from -1 (vertical) to +1 (horizontal), \
                       default is None for no correction, synchrotrons are around 0.95")
+
+#    parser.add_argument("-b", "--background", dest="background",
+#                      type=str, default=None,
+#                      help="name of the file containing the background")
     parser.add_argument("--error-model", dest="error_model",
                       type=str, default=None,
                       help="Error model to use. Currently on 'poisson' is implemented ")
     parser.add_argument("--unit", dest="unit",
-                      type=str, default="q_nm^-1",
+                      type=str, default="2th_deg",
                       help="unit for the radial dimension: can be q_nm^-1, q_A^-1, 2th_deg, \
                       2th_rad or r_mm")
     parser.add_argument("--ext", dest="ext",
-                      type=str, default=".dat",
-                      help="extension of the regrouped filename (.dat)")
+                      type=str, default=".xy",
+                      help="extension of the regrouped filename (.xy) ")
     parser.add_argument("--method", dest="method",
                         type=str, default=None,
                         help="Integration method ")
-
+    parser.add_argument("--multi", dest="multiframe",  # type=bool,
+                        default=False, action="store_true",
+                        help="Average out all frame in a file before integrating extracting variance, otherwise treat every single frame")
+    parser.add_argument("--average", dest="average", type=str,
+                        default="mean",
+                        help="Method for averaging out: can be 'mean' (default), 'min', 'max' or 'median")
+    parser.add_argument("--do-2D", dest="do_2d",
+                        default=False, action="store_true",
+                        help="Perform 2D integration in addition to 1D")
 
     options = parser.parse_args()
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
+
     to_process = pyFAI.utils.expand_args(options.args)
 
     if options.ponifile and to_process:
@@ -142,40 +155,45 @@ def main():
                 method = "splitpixel"
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
-
         for afile in to_process:
             sys.stdout.write("Integrating %s --> " % afile)
             outfile = os.path.splitext(afile)[0] + options.ext
+            azimFile = os.path.splitext(afile)[0] + ".azim"
             t0 = time.time()
-            fabioFile = fabio.open(afile)
-            t1 = time.time()
-            if fabioFile.nframes > 1:
-                integrator.integrate1d(data=fabioFile.data,
-                                npt=options.npt or min(fabioFile.data.shape),
-                                dummy=options.dummy,
-                                delta_dummy=options.delta_dummy,
-                                filename=outfile,
-                                variance=fabioFile.next().data,
-                                method=method,
-                                unit=options.unit,
-                                error_model=options.error_model,
-                                polarization_factor=options.polarization_factor
-                                )
+            fabimg = fabio.open(afile)
+            if options.multiframe:
+                data = pyFAI.average.average_dark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
             else:
-                integrator.integrate1d(data=fabioFile.data,
-                                npt=options.npt or min(fabioFile.data.shape),
-                                dummy=options.dummy,
-                                delta_dummy=options.delta_dummy,
-                                filename=outfile,
-                                method=method,
-                                unit=options.unit,
-                                error_model=options.error_model,
-                                polarization_factor=options.polarization_factor)
+                data = fabimg.data
+            t1 = time.time()
+            integrator.integrate1d(data,
+                                   options.npt or min(fabimg.data.shape),
+                                   filename=outfile,
+                                   dummy=options.dummy,
+                                   delta_dummy=options.delta_dummy,
+                                   method=method,
+                                   unit=options.unit,
+                                   error_model=options.error_model,
+                                   polarization_factor=options.polarization_factor
+                                   )
             t2 = time.time()
-
-            print("%s,\t reading: %.3fs\t 1D integration: %.3fs." %
+            if options.do_2d:
+                integrator.integrate2d(data,
+                                       options.npt or min(fabimg.data.shape),
+                                       360,
+                                       filename=azimFile,
+                                       dummy=options.dummy,
+                                       delta_dummy=options.delta_dummy,
+                                       method=method,
+                                       unit=options.unit,
+                                       error_model=options.error_model,
+                                       polarization_factor=options.polarization_factor
+                                       )
+                print("%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs." %
+                      (outfile, t1 - t0, t2 - t1, time.time() - t2))
+            else:
+                print("%s,\t reading: %.3fs\t 1D integration: %.3fs." %
                       (outfile, t1 - t0, t2 - t1))
-
 
 if __name__ == "__main__":
     main()

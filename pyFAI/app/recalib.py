@@ -6,8 +6,7 @@
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -29,40 +28,44 @@
 
 
 """
-diff_tomo
+pyFAI - recalib
 
-A tool for fast processing of diffraction tomography
+A tool for refining the geometry of a detector using a reference sample and a previously known calibration file.
+
+
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
-__satus__ = "Production"
+__date__ = "18/05/2017"
+__satus__ = "development"
 
 import logging
-import sys
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("diff_tomo")
-from pyFAI.diffmap import DiffMap
+logger = logging.getLogger("pyFAI.recalib")
+from pyFAI.calibration import Recalibration
+try:
+    from pyFAI.third_party import six
+except (ImportError, Exception):
+    import six
+try:
+    from rfoo.utils import rconsole
+    rconsole.spawn_server()
+except ImportError:
+    logging.debug("No socket opened for debugging -> install rfoo")
 
+
+def main():
+    c = Recalibration()
+    c.parse()
+    c.preprocess()
+    c.extract_cpt("blob")
+    c.refine()
+    c.postProcess()
+    if c.interactive:
+        six.moves.input("Press enter to quit")
 
 if __name__ == "__main__":
-    dt = DiffMap()
-    options, config = dt.parse(with_config=True)
-
-    if not options.gui:
-        dt.setup_ai()
-        dt.makeHDF5()
-        dt.process()
-        dt.show_stats()
-    else:
-        from pyFAI.gui import qt
-        from pyFAI.diffmap_widget import DiffMapWidget
-        app = qt.QApplication([])
-        window = DiffMapWidget()
-        window.set_config(config)
-#         window.restore()
-        window.show()
-        sys.exit(app.exec_())
+    main()

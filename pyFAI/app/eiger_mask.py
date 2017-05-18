@@ -33,14 +33,14 @@ eiger-mask
 
 A tool for extracting the mask from an Eiger master file.
 
-$ eiger-mask master.h5 
+$ eiger-mask master.h5
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __satus__ = "development"
 
 
@@ -49,7 +49,6 @@ import sys
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("eiger-mask")
-import numpy
 import fabio
 
 try:
@@ -76,7 +75,8 @@ def extract_mask(infile):
     detectorSpecific = detector["detectorSpecific"]
     return detectorSpecific["pixel_mask"].value
 
-if __name__ == "__main__":
+
+def main():
     description = "A tool to extract the mask from an Eiger detector file."
     epilog = None
     if h5py is None:
@@ -103,3 +103,6 @@ if __name__ == "__main__":
         fabio.tifimage.tifimage(data=mask).write(outfile)
     else:
         fabio.edfimage.edfimage(header={"data_file": infile}, data=mask).write(outfile)
+
+if __name__ == "__main__":
+    main()

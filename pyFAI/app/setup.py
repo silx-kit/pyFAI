@@ -1,7 +1,6 @@
 # coding: utf-8
 # /*##########################################################################
-#
-# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
+# Copyright (C) 2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,32 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ###########################################################################*/
+# ############################################################################*/
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "18/05/2017"
 
-import os
 from numpy.distutils.misc_util import Configuration
 
 
 def configuration(parent_package='', top_path=None):
-    config = Configuration('pyFAI', parent_package, top_path)
-    config.add_subpackage('app')
-    config.add_subpackage('benchmark')
-    config.add_subpackage('ext')
-    config.add_subpackage('gui')
-    config.add_subpackage('opencl')
-    config.add_subpackage('resources')
-    config.add_subpackage('test')
-    config.add_subpackage('utils')
-
-    # includes third_party only if it is available
-    local_path = os.path.join(top_path, parent_package, "pyFAI", "third_party")
-    if os.path.exists(local_path):
-        config.add_subpackage('third_party')
-
+    config = Configuration('app', parent_package, top_path)
     return config
 
 

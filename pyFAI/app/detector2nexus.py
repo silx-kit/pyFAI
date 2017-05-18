@@ -35,16 +35,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __status__ = "development"
 
-import os
-import sys
-import fabio
 import logging
-import pyFAI
-import pyFAI.utils
 import numpy
+import fabio
+import pyFAI
+
 try:
     from argparse import ArgumentParser
 except ImportError:

@@ -28,16 +28,17 @@
 #  THE SOFTWARE.
 
 """
-pyFAI-benchmark is a small utility that runs the benchmark for azimuthal 
+pyFAI-benchmark is a small utility that runs the benchmark for azimuthal
 integration on images of various sizes
 """
 __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __status__ = "development"
 
+import logging
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
@@ -50,7 +51,8 @@ except (ImportError, Exception):
 
 import pyFAI.benchmark
 
-if __name__ == "__main__":
+
+def main():
     try:
         from argparse import ArgumentParser
     except:
@@ -109,3 +111,6 @@ if __name__ == "__main__":
 
     pyFAI.benchmark.pylab.ion()
     six.moves.input("Enter to quit")
+
+if __name__ == "__main__":
+    main()

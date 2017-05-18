@@ -40,15 +40,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __satus__ = "production"
-import sys, logging, json, os, time, types, threading
+import sys
+import logging
+import time
 import os.path
-import numpy
+import fabio
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI")
-import pyFAI, fabio
-from pyFAI.opencl import ocl
 import pyFAI.utils
 import pyFAI.worker
 from pyFAI.io import DefaultAiWriter
@@ -78,10 +78,10 @@ def integrate_gui(options, args):
         dia.setFileMode(qt.QFileDialog.ExistingFiles)
         dia.exec_()
         try:
-            args = [str(i) for i in  dia.selectedFiles()]
+            args = [str(i) for i in dia.selectedFiles()]
         except UnicodeEncodeError as err:
             logger.error("Problem with the name of some files: %s" % (err))
-            args = [unicode(i) for i in  dia.selectedFiles()]
+            args = [unicode(i) for i in dia.selectedFiles()]
 
     window = AIWidget(args, options.output, options.format, options.slow, options.rapid, options.json)
     window.set_input_data(args)
@@ -116,7 +116,7 @@ def integrate_shell(options, args):
         logger.debug("Processing %s" % item)
 
         if len(item) > 100:
-            message = op.basename(item)
+            message = os.path.basename(item)
         else:
             message = item
         progress_bar.update(i + 1, message=message)
@@ -159,7 +159,7 @@ def integrate_shell(options, args):
     logger.info("Processing done in %.3fs !" % (time.time() - start_time))
 
 
-if __name__ == "__main__":
+def main():
     usage = "pyFAI-integrate [options] file1.edf file2.edf ..."
     version = "pyFAI-integrate version %s from %s" % (pyFAI.version, pyFAI.date)
     description = """
@@ -211,3 +211,6 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     else:
         result = integrate_shell(options, args)
     sys.exit(result)
+
+if __name__ == "__main__":
+    main()

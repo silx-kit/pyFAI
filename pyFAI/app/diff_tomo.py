@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __satus__ = "Production"
 
 import logging
@@ -57,7 +57,6 @@ except ImportError:
 
 
 if sys.version_info[0] < 3:
-    bytes = str
     from urlparse import urlparse
 else:
     from urllib.parse import urlparse
@@ -210,10 +209,13 @@ user interface.
         return options
 
 
-if __name__ == "__main__":
+def main():
     dt = DiffTomo()
     dt.parse()
     dt.setup_ai()
     dt.makeHDF5()
     dt.process()
     dt.show_stats()
+
+if __name__ == "__main__":
+    main()

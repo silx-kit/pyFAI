@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2017"
+__date__ = "18/05/2017"
 __status__ = "stable"
 
 
@@ -711,9 +711,25 @@ def get_project_configuration(dry_run):
             'openCL/*.cl']
     }
 
-    ### FIXME
+    console_scripts = [
+        'check_calib = pyFAI.app.check_calib:main',
+        'detector2nexus = pyFAI.app.detector2nexus:main',
+        'diff_map = pyFAI.app.diff_map:main',
+        'diff_tomo = pyFAI.app.diff_tomo:main',
+        'eiger-mask = pyFAI.app.eiger_mask:main',
+        'MX-calibrate = pyFAI.app.mx_calibrate:main',
+        'pyFAI-average = pyFAI.app.average:main',
+        'pyFAI-benchmark = pyFAI.app.benchmark:main',
+        'pyFAI-calib = pyFAI.app.calib:main',
+        'pyFAI-drawmask = pyFAI.app.drawmask:main',
+        'pyFAI-integrate = pyFAI.app.integrate:main',
+        'pyFAI-recalib = pyFAI.app.recalib:main',
+        'pyFAI-saxs = pyFAI.app.saxs:main',
+        'pyFAI-waxs = pyFAI.app.waxs:main',
+    ]
+
     entry_points = {
-        'console_scripts': [],
+        'console_scripts': console_scripts,
         # 'gui_scripts': [],
     }
 
@@ -730,9 +746,6 @@ def get_project_configuration(dry_run):
         testimages=PyFaiTestData,
     )
 
-    data_files = []
-    script_files = []
-
     if dry_run:
         # DRY_RUN implies actions which do not require NumPy
         #
@@ -743,28 +756,6 @@ def get_project_configuration(dry_run):
     else:
         config = configuration()
         setup_kwargs = config.todict()
-
-        if sys.platform == "win32":
-            # This is for mingw32/gomp
-            if tuple.__itemsize__ == 4:
-                rule = (PROJECT, glob.glob("packages/win32/*.dll"))
-                data_files.append(rule)
-            root = os.path.dirname(os.path.abspath(__file__))
-            tocopy_files = []
-            script_files = []
-            for i in os.listdir(os.path.join(root, "scripts")):
-                if os.path.isfile(os.path.join(root, "scripts", i)):
-                    if i.endswith(".py"):
-                        script_files.append(os.path.join("scripts", i))
-                    else:
-                        tocopy_files.append(os.path.join("scripts", i))
-            for i in tocopy_files:
-                filein = os.path.join(root, i)
-                if (filein + ".py") not in script_files:
-                    shutil.copyfile(filein, filein + ".py")
-                    script_files.append(filein + ".py")
-        else:
-            script_files = glob.glob("scripts/*")
 
     setup_kwargs.update(name=PROJECT,
                         version=get_version(),
@@ -784,10 +775,7 @@ def get_project_configuration(dry_run):
                         cmdclass=cmdclass,
                         package_data=package_data,
                         zip_safe=False,
-                        # entry_points=entry_points,
-                        # pyfai specific
-                        scripts=script_files,
-                        data_files=data_files,
+                        entry_points=entry_points,
                         )
     return setup_kwargs
 

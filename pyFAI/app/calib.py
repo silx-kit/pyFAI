@@ -39,15 +39,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __satus__ = "development"
 
-import os
-import sys
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calib")
-import pyFAI
 from pyFAI.calibration import Calibration
 try:
     from pyFAI.third_party import six
@@ -61,11 +58,13 @@ except ImportError:
 
 
 # This is for debugging with rconsole
-c = None
-if __name__ == "__main__":
+def main():
     c = Calibration()
     c.parse()
     c.read_pixelsSize()
     c.preprocess()
     c.gui_peakPicker()
     six.moves.input("Press enter to quit")
+
+if __name__ == "__main__":
+    main()

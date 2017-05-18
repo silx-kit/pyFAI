@@ -43,11 +43,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __satus__ = "development"
 
-import os, types, logging
-import pyFAI, pyFAI.calibration
+import logging
+import pyFAI.calibration
 try:
     from pyFAI.third_party import six
 except (ImportError, Exception):
@@ -59,10 +59,7 @@ except ImportError:
     logging.debug("No socket opened for debugging. Please install rfoo")
 
 
-
-# This is for debugin wtih rconsole
-c = None
-if __name__ == "__main__":
+def main():
     c = pyFAI.calibration.MultiCalib()
     c.parse()
     c.read_pixelsSize()
@@ -70,3 +67,6 @@ if __name__ == "__main__":
     c.process()
     c.regression()
     six.moves.input("Press enter to quit")
+
+if __name__ == "__main__":
+    main()

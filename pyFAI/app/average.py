@@ -35,47 +35,69 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 __status__ = "production"
 
 import os
-import sys
 import logging
 
-# Must be defined before libraries which define there own basicConfig
-
-class PreEmitStreamHandler(logging.StreamHandler):
-    """Add a hook before emit function"""
-
-    def emit(self, record):
-        """
-        :type record: logging.LogRecord
-        """
-        self.pre_emit()
-        super(PreEmitStreamHandler, self).emit(record)
-
-    def pre_emit(self):
-        pass
-
-# Same as basicConfig with a custom handler but portable Python 2 and 3
-log_root = logging.getLogger()
-log_handler = PreEmitStreamHandler()
-log_root.addHandler(log_handler)
-log_root.setLevel(logging.INFO)
-
 logger = logging.getLogger("average")
+logging.basicConfig()
 
-import fabio
-import pyFAI
-import pyFAI.utils
 import pyFAI.utils.shell
 import pyFAI.utils.stringutil
 from pyFAI import average
-
 try:
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
+
+
+class PreEmitStreamHandler(logging.Handler):
+    """Handler allowing to hook a function before the emit function.
+
+    The main logging feature is delegated to a sub handler.
+    """
+
+    def __init__(self, handler):
+        self._handler = handler
+
+    def emit(self, record):
+        """
+        Call pre_emit function then delegate the emit to the sub handler.
+
+        :type record: logging.LogRecord
+        """
+        self.pre_emit()
+        self._handler.emit(record)
+
+    def __getattr__(self, attr):
+        """Reach the attribute from the sub handler and cache it to the current
+        object"""
+        value = getattr(self._handler, attr)
+        setattr(self, attr, value)
+        return value
+
+    def pre_emit(self):
+        pass
+
+
+def patch_logging_handler(callback):
+    """Patch the logging system to have a working progress bar with out glitch.
+    pyFAI define a default handler then we have to rework it"""
+    """"""
+    # remove the default logging handler
+    # it can come from pyFAI.__init__
+    root_logger = logging.getLogger()
+    # assume there is a logger
+    assert(len(root_logger.handlers) == 1)
+    root_handler = root_logger.handlers[0]
+    root_logger.removeHandler(root_handler)
+    # use our custom handler
+    handler = PreEmitStreamHandler(root_handler)
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.INFO)
+    handler.pre_emit = callback
 
 
 def parse_algorithms(options):
@@ -198,6 +220,7 @@ class ShellAverageObserver(average.AverageObserver):
         if self.__bar is not None:
             self.__bar.clear()
 
+
 def main():
     usage = "pyFAI-average [options] [options] -o output.edf file1.edf file2.edf ..."
     version = "pyFAI-average version %s from %s" % (pyFAI.version, pyFAI.date)
@@ -261,7 +284,7 @@ def main():
     if options.verbose is not False:
         observer = ShellAverageObserver()
         # clean up the progress bar before displaying a log
-        log_handler.pre_emit = observer.clear
+        patch_logging_handler(observer.clear)
     else:
         observer = None
 
