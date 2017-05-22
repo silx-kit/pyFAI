@@ -54,5 +54,5 @@ override_dh_installman:
 	dh_installman -p pyfai build/man/*.1
 
 override_dh_installdocs:
-	dh_installdocs "build/html" -p python-pyfai-doc
+	dh_installdocs "build/sphinx/html" -p python-pyfai-doc
 	dh_installdocs
