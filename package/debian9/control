@@ -20,7 +20,6 @@ Build-Depends: cython,
                python-scipy,
                python-sphinx,
                python-sphinxcontrib.programoutput,
-               python-tk,
                python3-all-dev,
                python3-fabio,
                python3-lxml,
@@ -29,8 +28,7 @@ Build-Depends: cython,
                python3-pyqt5|python3-pyqt4|python3-pyside,
                python3-scipy,
                python3-sphinx,
-               python3-sphinxcontrib.programoutput,
-               python3-tk,
+               python3-sphinxcontrib.programoutput
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/pyfai.git
@@ -43,6 +41,7 @@ Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          ${shlibs:Depends},
+         python-pkg-resources,
          python-pyfai (>= ${source:Version})
 Description: Fast Azimuthal Integration scripts
  PyFAI is a Python library for azimuthal integration; it allows the conversion
