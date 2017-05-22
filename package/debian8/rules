@@ -45,7 +45,7 @@ override_dh_install:
 	#Finally install stuff
 	dh_install
 
-# unactive test for now
+# inactive test for now
 override_dh_auto_test:
 	PYBUILD_SYSTEM=custom \
 	PYBUILD_TEST_ARGS="PYTHONPATH={build_dir} PYFAI_TESTIMAGES=testimages PYFAI_DATA=$(shell pwd) {interpreter} ./run_tests.py" dh_auto_test
