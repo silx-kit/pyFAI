@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "22/05/2017"
 
 import logging
 import numpy
@@ -232,7 +232,8 @@ class GeometryTask(AbstractCalibrationTask):
         statusBar = self.__createPlotStatusBar(plot)
         plot.setStatusBar(statusBar)
 
-        if isinstance(plot._backend, silx.gui.plot.BackendMatplotlib.BackendMatplotlib):
+        # FIXME Fix using silx 0.5
+        if "BackendMatplotlib" in plot._backend.__class__.__name__:
             # hide axes and viewbox rect
             plot._backend.ax.set_axis_off()
             plot._backend.ax2.set_axis_off()

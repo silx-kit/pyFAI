@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "22/05/2017"
 
 import logging
 import numpy
@@ -279,7 +279,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         super(_PeakPickingPlot, self).__init__(parent=parent)
         self.setKeepDataAspectRatio(True)
 
-        if isinstance(self._backend, silx.gui.plot.BackendMatplotlib.BackendMatplotlib):
+        # FIXME Fix using silx 0.5
+        if "BackendMatplotlib" in self._backend.__class__.__name__:
             # hide axes and viewbox rect
             self._backend.ax.set_axis_off()
             self._backend.ax2.set_axis_off()
