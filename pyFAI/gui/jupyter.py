@@ -35,8 +35,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/05/2017"
-__status__ = "Development"
+__date__ = "22/05/2017"
+__status__ = "Production"
 __docformat__ = 'restructuredtext'
 
 import numpy
@@ -68,7 +68,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
         if label is None:
             label = sg.label
 
-    ax.imshow(numpy.arcsinh(img), origin="lower", cmap="inferno")
+    ax.imshow(numpy.arcsinh(img).astype(numpy.float32), origin="lower", cmap="inferno")
     ax.set_title(label)
     if cp is not None:
         for lbl in cp.get_labels():
