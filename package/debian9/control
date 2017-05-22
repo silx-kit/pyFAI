@@ -72,7 +72,7 @@ Depends: ${misc:Depends},
          python-scipy
 Recommends: python-h5py,
             python-pyopencl,
-            python-qt4 | python-pyside|python-pyqt5
+            python-qt4|python-pyside|python-pyqt5
 Suggests: pymca,
           python-silx,
           python-rfoo
@@ -109,7 +109,7 @@ Depends: ${misc:Depends},
          python3-matplotlib,
          python3-scipy
 Recommends: python3-pyopencl,
-            python3-pyqt5 | python3-pyside
+            python3-pyqt5|python3-pyside
 Suggests: python3-h5py,
           python3-silx
 Description: Fast Azimuthal Integration scripts - Python3
