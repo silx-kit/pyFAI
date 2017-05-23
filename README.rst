@@ -37,8 +37,14 @@ Provide the *--user* to perform an installation local to your user.
 Under UNIX, you may have to run the command via *sudo* to gain root access an
 perform a system wide installation.
 
+pyFAI is also available via conda (for Linux and Mac, currently)::
+
+  conda install pyfai -c conda-forge
+
+To install conda please see either `conda <https://conda.io/docs/install/quick.html>`_ or `Anaconda <https://www.continuum.io/downloads>`_.
+
 The latest release of pyFAI can be downloaded from
-`Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_ .
+`Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_.
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
