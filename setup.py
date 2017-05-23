@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2017"
+__date__ = "23/05/2017"
 __status__ = "stable"
 
 
@@ -732,7 +732,10 @@ def get_project_configuration(dry_run):
             # Add here all resources files
             'calibration/*.D',
             'gui/*.ui',
-            'openCL/*.cl']
+            'gui/icons/*.svg',
+            'gui/icons/*.png',
+            'openCL/*.cl',
+        ]
     }
 
     console_scripts = [
@@ -745,6 +748,7 @@ def get_project_configuration(dry_run):
         'pyFAI-average = pyFAI.app.average:main',
         'pyFAI-benchmark = pyFAI.app.benchmark:main',
         'pyFAI-calib = pyFAI.app.calib:main',
+        'pyFAI-calib2 = pyFAI.app.calib2:main',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
         'pyFAI-recalib = pyFAI.app.recalib:main',

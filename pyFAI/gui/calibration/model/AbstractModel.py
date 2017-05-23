@@ -1,6 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
-# Copyright (C) 2016 European Synchrotron Radiation Facility
+#
+# Copyright (c) 2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +21,41 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ############################################################################*/
+# ###########################################################################*/
+
+from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "28/02/2017"
 
-from numpy.distutils.misc_util import Configuration
-
-
-def configuration(parent_package='', top_path=None):
-    config = Configuration('gui', parent_package, top_path)
-    config.add_subpackage('calibration')
-    return config
+from pyFAI.gui import qt
 
 
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(configuration=configuration)
+class AbstractModel(qt.QObject):
+
+    changed = qt.Signal()
+
+    def __init__(self, parent=None):
+        qt.QObject.__init__(self, parent)
+        self.__isLocked = 0
+        self.__wasChanged = False
+
+    def isValid(self):
+        return True
+
+    def wasChanged(self):
+        if self.__isLocked > 0:
+            self.__wasChanged = True
+        else:
+            self.changed.emit()
+
+    def lockSignals(self):
+        self.__isLocked = self.__isLocked + 1
+
+    def unlockSignals(self):
+        assert self.__isLocked > 0
+        self.__isLocked = self.__isLocked - 1
+        if self.__isLocked == 0 and self.__wasChanged:
+            self.__wasChanged = False
+            self.wasChanged()

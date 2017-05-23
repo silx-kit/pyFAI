@@ -1,6 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
-# Copyright (C) 2016 European Synchrotron Radiation Facility
+#
+# Copyright (c) 2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +21,46 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ############################################################################*/
+# ###########################################################################*/
+
+from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "03/03/2017"
 
-from numpy.distutils.misc_util import Configuration
-
-
-def configuration(parent_package='', top_path=None):
-    config = Configuration('gui', parent_package, top_path)
-    config.add_subpackage('calibration')
-    return config
+from pyFAI.gui import qt
 
 
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(configuration=configuration)
+class AbstractCalibrationTask(qt.QWidget):
+
+    widgetShow = qt.Signal()
+    widgetHide = qt.Signal()
+    nextTaskRequested = qt.Signal()
+
+    def __init__(self):
+        super(AbstractCalibrationTask, self).__init__()
+        self.__model = None
+        self.installEventFilter(self)
+
+    def initNextStep(self):
+        if hasattr(self, "_nextStep"):
+            self._nextStep.clicked.connect(self.nextTask)
+
+    def eventFilter(self, widget, event):
+        result = super(AbstractCalibrationTask, self).eventFilter(widget, event)
+        if event.type() == qt.QEvent.Show:
+            self.widgetShow.emit()
+        elif event.type() == qt.QEvent.Hide:
+            self.widgetHide.emit()
+        return result
+
+    def model(self):
+        return self.__model
+
+    def setModel(self, model):
+        self.__model = model
+        self._updateModel(model)
+
+    def nextTask(self):
+        self.nextTaskRequested.emit()
