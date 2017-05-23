@@ -105,6 +105,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
     IS_CONTIGUOUS = True  # No gaps: all pixels are adjacents, speeds-up calculation
     API_VERSION = "1.0"
 
+    HAVE_TAPER = False
+    """If true a spline file is mandatory to correct the geometry"""
+
     @classmethod
     def factory(cls, name, config=None):
         """
@@ -1300,6 +1303,10 @@ class FReLoN(Detector):
 
     TODO: create automatically a mask that removes pixels out of the "valid reagion"
     """
+    MAX_SHAPE = (2048, 2048)
+
+    HAVE_TAPER = True
+
     def __init__(self, splineFile=None):
         super(FReLoN, self).__init__(splineFile=splineFile)
         if splineFile:

@@ -1,6 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
-# Copyright (C) 2016 European Synchrotron Radiation Facility
+#
+# Copyright (c) 2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +21,50 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ############################################################################*/
+# ###########################################################################*/
+
+from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "21/02/2017"
 
-from numpy.distutils.misc_util import Configuration
-
-
-def configuration(parent_package='', top_path=None):
-    config = Configuration('gui', parent_package, top_path)
-    config.add_subpackage('calibration')
-    return config
+from .AbstractModel import AbstractModel
 
 
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(configuration=configuration)
+class PeakSelectionModel(AbstractModel):
+
+    def __init__(self, parent=None):
+        super(PeakSelectionModel, self).__init__(parent)
+        self.__peaks = []
+
+    def isValid(self):
+        for p in self.__peaks:
+            if not p.isValid():
+                return
+        return True
+
+    def __len__(self):
+        return len(self.__peaks)
+
+    def __iter__(self):
+        for p in self.__peaks:
+            yield p
+
+    def __getitem__(self, index):
+        return self.__peaks[index]
+
+    def append(self, peak):
+        self.__peaks.append(peak)
+        self.wasChanged()
+
+    def remove(self, peak):
+        self.__peaks.remove(peak)
+        self.wasChanged()
+
+    def clear(self):
+        self.__peaks = []
+        self.wasChanged()
+
+    def index(self, peak):
+        return self.__peaks.index(peak)
