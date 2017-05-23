@@ -2,11 +2,10 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: pyfai
 Source: https://github.com/silx-kit/pyFAI
 Files-Excluded: pyFAI/third_party
-                package/win32
 
 Files: *
 Copyright: 2011-2016 European Synchrotron Radiation Facility
-License: GPL-3.0+
+License: MIT/X11 (BSD like)
 
 Files: package/debian?/*
 Copyright: 2012-2014 Jerome Kieffer <jerome.kieffer@esrf.fr>
@@ -24,98 +23,9 @@ Copyright: 2012, Almar Klein
 	       2015-2016 European Synchrotron Radiation Facility
 License: BSD-3
 
-
 Files: doc/source/mathjax.py
 Copyright: 2007-2013 by the Sphinx team
 License: BSD-3
-
-Files:  setup.py
-        version.py
-        pyFAI/azimuthalIntegrator.py
-        pyFAI/io.py
-        pyFAI/calibrant.py
-        pyFAI/diffmap_widget.py
-        pyFAI/diffmap.py
-        pyFAI/decorators.py
-        pyFAI/detectors.py
-        pyFAI/distortion.py
-        pyFAI/geometry.py
-		pyFAI/integrate_widget.py
-        pyFAI/tree.py
-        pyFAI/orderedset.py
-        pyFAI/opencl.py
-        pyFAI/multi_geometry.py
-        pyFAI/spline.py
-        pyFAI/worker.py
-        pyFAI/ocl_sort.py
-        pyFAI/ext/splitPixelFull.pyx
-        pyFAI/ext/morphology.pyx
-        pyFAI/ext/_geometry.pyx
-        pyFAI/ext/_tree.pyx
-        pyFAI/ext/_convolution.pyx
-        pyFAI/ext/_distortion.pyx
-        pyFAI/ext/splitBBox.pyx
-        pyFAI/ext/fastcrc.pyx
-        pyFAI/ext/splitPixelFullLUT.pyx
-        pyFAI/ext/sparse_utils.pyx
-        pyFAI/ext/splitPixelFullLUT_double.pyx
-        pyFAI/ext/splitPixel.pyx
-        pyFAI/ext/reconstruct.pyx
-        pyFAI/ext/splitBBoxCSR.pyx
-        pyFAI/ext/bilinear.pyx
-        pyFAI/ext/splitPixelFullCSR.pyx
-        pyFAI/ext/histogram.pyx
-        pyFAI/ext/watershed.pyx
-        pyFAI/ext/*.pxi
-        pyFAI/ext/src/*
-        pyFAI/opencl/*
-        pyFAI/resources/gui/*
-        pyFAI/resources/openCL/bitonic.cl
-        pyFAI/resources/openCL/for_eclipse.cl
-        pyFAI/resources/openCL/ocl_azim_CSR.cl
-        pyFAI/resources/openCL/memset.cl
-        pyFAI/resources/openCL/ocl_azim_CSR.cl
-        pyFAI/resources/openCL/ocl_azim_LUT.cl
-        pyFAI/resources/openCL/preprocess.cl
-        pyFAI/resources/openCL/reduction_test.cl
-        pyFAI/resources/openCL/reduction_test4.cl
-        pyFAI/resources/openCL/separate.cl
-        pyFAI/benchmark/*
-        pyFAI/test/test_mask.py
-        pyFAI/test/test_integrate.py
-        pyFAI/test/test_dummy.py
-        pyFAI/test/test_openCL.py
-        pyFAI/test/test_distortion.py
-        pyFAI/test/test_multi_geometry.py
-        pyFAI/test/utilstest.py
-        pyFAI/test/test_sparse.py
-        pyFAI/test/__init__.py
-        pyFAI/test/test_split_pixel.py
-        pyFAI/test/test_polarization.py
-        pyFAI/test/test_all.py
-        pyFAI/test/test_utils.py
-        pyFAI/test/test_bug_regression.py
-        pyFAI/test/test_watershed.py
-        pyFAI/test/test_io.py
-        pyFAI/test/test_bispev.py
-        pyFAI/test/test_histogram.py
-        pyFAI/test/test_marchingsquares.py
-        pyFAI/test/test_ocl_sort.py
-        pyFAI/test/test_calibrant.py
-        pyFAI/test/test_bilinear.py
-        pyFAI/test/test_saxs.py
-        pyFAI/test/test_peak_picking.py
-        pyFAI/test/test_flat.py
-        pyFAI/test/test_geometry.py
-        pyFAI/test/test_csr.py
-        pyFAI/test/test_export.py
-        pyFAI/test/test_convolution.py
-        pyFAI/test/test_geometry_refinement.py
-        pyFAI/test/test_blob_detection.py
-        pyFAI/test/test_azimuthal_integrator.py
-        run_tests.py
-Copyright: 2015-2016 European Synchrotron Radiation Facility
-License: MIT/X11 (BSD like)
 
 Files: pyFAI/gui/_pyside_dynamic.py
 Copyright: Copyright (c) 2011 Sebastian Wiesner <lunaryorn@gmail.com>

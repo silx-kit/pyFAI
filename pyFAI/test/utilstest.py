@@ -258,25 +258,35 @@ class UtilsTest(object):
     @classmethod
     def script_path(cls, script):
         """
-        Return the path of the executable and the associated environment
+        Returns the path of the executable and the associated environment
+
+        In Windows, it checks availability of script using .py .bat, and .exe
+        file extensions.
         """
-        if (sys.platform == "win32") and not script.endswith(".py"):
-                script += ".py"
+        if (sys.platform == "win32"):
+            available_extensions = [".py", ".bat", ".exe"]
+        else:
+            available_extensions = [""]
+
         env = dict((str(k), str(v)) for k, v in os.environ.items())
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
         paths = os.environ.get("PATH", "").split(os.pathsep)
         if cls.script_dir is not None:
             paths.insert(0, cls.script_dir)
-        for i in paths:
+
+        for base in paths:
             # clean up extra quotes from paths
-            if i.startswith('"') and i.endswith('"'):
-                i = i[1:-1]
-            script_path = os.path.join(i, script)
-            if os.path.exists(script_path):
-                break
-        else:
-            logger.warning("No scipt %s found in path: %s", script, paths)
-            script_path = script
+            if base.startswith('"') and base.endswith('"'):
+                base = base[1:-1]
+            for file_extension in available_extensions:
+                script_path = os.path.join(base, script + file_extension)
+                print(script_path)
+                if os.path.exists(script_path):
+                    # script found
+                    return script_path, env
+        # script not found
+        logger.warning("Script '%s' not found in paths: %s", script, ":".join(paths))
+        script_path = script
         return script_path, env
 
 

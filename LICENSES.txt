@@ -1,5 +1,1 @@
-The pyFAI library is released under GPL (v+3) license.
-
-However some modules/sub-parts are available under MIT or BSD license.
-Please refer to the copyright file for a complete description.
-
+The pyFAI library is released under MIT license.

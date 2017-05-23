@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
@@ -9,23 +9,28 @@
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #                            Giannis Ashiotis
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
-__license__ = "GPLv3"
-__date__ = "27/10/2016"
+__license__ = "MIT"
+__date__ = "15/05/2017"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -234,11 +239,11 @@ class OCLFullSplit1d(object):
         size_of_float = numpy.dtype(numpy.float32).itemsize
         size_of_int = numpy.dtype(numpy.int32).itemsize
 
-        ualloc = (self.pos_size * size_of_float)   # pos
-        ualloc += (4 * size_of_float)              # minmax
-        ualloc += (2 * size_of_float) * 2          # pos0Range, pos1Range
-        ualloc += (self.bins * size_of_int)        # outMax
-        ualloc += (1 * size_of_int)                # lutsize
+        ualloc = (self.pos_size * size_of_float)  # pos
+        ualloc += (4 * size_of_float)  # minmax
+        ualloc += (2 * size_of_float) * 2  # pos0Range, pos1Range
+        ualloc += (self.bins * size_of_int)  # outMax
+        ualloc += (1 * size_of_int)  # lutsize
         ualloc += ((self.bins + 1) * size_of_int)  # idx_ptr
         memory = self.device.memory
         if ualloc >= memory:
@@ -283,8 +288,8 @@ class OCLFullSplit1d(object):
             self.events += [("get_lutsize", get_lutsize)]
         # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # #  check  memory  # # # # # # # #
-        ualloc += (self.lutsize * size_of_int)     # indices
-        ualloc += (self.lutsize * size_of_float)   # data
+        ualloc += (self.lutsize * size_of_int)  # indices
+        ualloc += (self.lutsize * size_of_float)  # data
         if ualloc >= memory:
             raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         # # # # # # # # # # # # # # # # # # # # # # # #
