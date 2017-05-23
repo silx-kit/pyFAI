@@ -15,8 +15,8 @@ thanks to pixel splitting.
 Finally pyFAI provides also tools to calibrate the experimental setup using Debye-Scherrer
 rings of a reference compound.
 
-References:
------------
+References
+----------
 
 * The philosophy of pyFAI is described in the proceedings of SRI2012:
   doi:10.1088/1742-6596/425/20/202012 http://iopscience.iop.org/1742-6596/425/20/202012/
@@ -29,6 +29,9 @@ References:
 Installation
 ------------
 
+With PIP
+........
+
 As most Python packages, pyFAI is available via PIP::
 
    pip install pyFAI [--user]
@@ -37,11 +40,17 @@ Provide the *--user* to perform an installation local to your user.
 Under UNIX, you may have to run the command via *sudo* to gain root access an
 perform a system wide installation.
 
+With conda
+..........
+
 pyFAI is also available via conda (for Linux and Mac, currently)::
 
   conda install pyfai -c conda-forge
 
 To install conda please see either `conda <https://conda.io/docs/install/quick.html>`_ or `Anaconda <https://www.continuum.io/downloads>`_.
+
+From source code
+................
 
 The latest release of pyFAI can be downloaded from
 `Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_.
@@ -127,8 +136,8 @@ Those dependencies can simply be installed by::
    pip install -r requirements.txt
 
 
-Ubuntu and Debian Like linux distributions:
--------------------------------------------
+Ubuntu and Debian-like Linux distributions
+------------------------------------------
 
 To use pyFAI on Ubuntu/Debian the needed python modules
 can be installed either through the Synaptic Package Manager
@@ -207,8 +216,8 @@ Contributors
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
 
-Indirect contributors (ideas, ...):
------------------------------------
+Indirect contributors (ideas...)
+--------------------------------
 
  * Peter Boesecke
  * Manuel Sánchez del Río
