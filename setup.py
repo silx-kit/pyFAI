@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/05/2017"
+__date__ = "18/05/2017"
 __status__ = "stable"
 
 
@@ -178,6 +178,22 @@ class BuildMan(Command):
     def finalize_options(self):
         pass
 
+    def entry_points_iterator(self):
+        """Iterate other entry points available on the project."""
+        entry_points = self.distribution.entry_points
+        console_scripts = entry_points.get('console_scripts', [])
+        gui_scripts = entry_points.get('gui_scripts', [])
+        scripts = []
+        scripts.extend(console_scripts)
+        scripts.extend(gui_scripts)
+        for script in scripts:
+            elements = script.split("=")
+            target_name = elements[0].strip()
+            elements = elements[1].split(":")
+            module_name = elements[0].strip()
+            function_name = elements[1].strip()
+            yield target_name, module_name, function_name
+
     def run(self):
         build = self.get_finalized_command('build')
         path = sys.path
@@ -192,36 +208,45 @@ class BuildMan(Command):
         if status != 0:
             raise RuntimeError("Fail to create build/man directory")
 
-        try:
-            import tempfile
-            import stat
-            script_name = None
+        import tempfile
+        import stat
+        script_name = None
 
+        entry_points = self.entry_points_iterator()
+        for target_name, module_name, function_name in entry_points:
+            logger.info("Build man for entry-point target '%s'" % target_name)
             # help2man expect a single executable file to extract the help
             # we create it, execute it, and delete it at the end
 
-            # create a launcher using the right python interpreter
-            script_fid, script_name = tempfile.mkstemp(prefix="%s_" % PROJECT, text=True)
-            script = os.fdopen(script_fid, 'wt')
-            script.write("#!%s\n" % sys.executable)
-            script.write("import runpy\n")
-            script.write("runpy.run_module('%s', run_name='__main__')\n" % PROJECT)
-            script.close()
+            py3 = sys.version_info >= (3, 0)
+            try:
+                # create a launcher using the right python interpreter
+                script_fid, script_name = tempfile.mkstemp(prefix="%s_" % target_name, text=True)
+                script = os.fdopen(script_fid, 'wt')
+                script.write("#!%s\n" % sys.executable)
+                script.write("import %s as app\n" % module_name)
+                script.write("app.%s()\n" % function_name)
+                script.close()
+                # make it executable
+                mode = os.stat(script_name).st_mode
+                os.chmod(script_name, mode + stat.S_IEXEC)
 
-            # make it executable
-            mode = os.stat(script_name).st_mode
-            os.chmod(script_name, mode + stat.S_IEXEC)
+                # execute help2man
+                man_file = "build/man/%s.1" % target_name
+                command_line = ["help2man", script_name, "-o", man_file]
+                if not py3:
+                    # Before Python 3.4, ArgParser --version was using
+                    # stderr to print the version
+                    command_line.append("--no-discard-stderr")
 
-            ### FIXME
-            # execute help2man
-            p = subprocess.Popen(["help2man", script_name, "-o", "build/man/silx.1"], env=env)
-            status = p.wait()
-            if status != 0:
-                raise RuntimeError("Fail to generate man documentation")
-        finally:
-            # clean up the script
-            if script_name is not None:
-                os.remove(script_name)
+                p = subprocess.Popen(command_line, env=env)
+                status = p.wait()
+                if status != 0:
+                    raise RuntimeError("Fail to generate '%s' man documentation" % target_name)
+            finally:
+                # clean up the script
+                if script_name is not None:
+                    os.remove(script_name)
 
 
 if sphinx is not None:
@@ -431,7 +456,6 @@ class Build(_build):
                 msg = "Cython is not available. Cythonization is skipped."
                 logger.warning(msg)
                 use_cython = "no"
-
 
         # Remove attribute used by distutils parsing
         # use 'use_cython' and 'force_cython' instead
@@ -711,9 +735,25 @@ def get_project_configuration(dry_run):
             'openCL/*.cl']
     }
 
-    ### FIXME
+    console_scripts = [
+        'check_calib = pyFAI.app.check_calib:main',
+        'detector2nexus = pyFAI.app.detector2nexus:main',
+        'diff_map = pyFAI.app.diff_map:main',
+        'diff_tomo = pyFAI.app.diff_tomo:main',
+        'eiger-mask = pyFAI.app.eiger_mask:main',
+        'MX-calibrate = pyFAI.app.mx_calibrate:main',
+        'pyFAI-average = pyFAI.app.average:main',
+        'pyFAI-benchmark = pyFAI.app.benchmark:main',
+        'pyFAI-calib = pyFAI.app.calib:main',
+        'pyFAI-drawmask = pyFAI.app.drawmask:main',
+        'pyFAI-integrate = pyFAI.app.integrate:main',
+        'pyFAI-recalib = pyFAI.app.recalib:main',
+        'pyFAI-saxs = pyFAI.app.saxs:main',
+        'pyFAI-waxs = pyFAI.app.waxs:main',
+    ]
+
     entry_points = {
-        'console_scripts': [],
+        'console_scripts': console_scripts,
         # 'gui_scripts': [],
     }
 
@@ -730,9 +770,6 @@ def get_project_configuration(dry_run):
         testimages=PyFaiTestData,
     )
 
-    data_files = []
-    script_files = []
-
     if dry_run:
         # DRY_RUN implies actions which do not require NumPy
         #
@@ -743,28 +780,6 @@ def get_project_configuration(dry_run):
     else:
         config = configuration()
         setup_kwargs = config.todict()
-
-        if sys.platform == "win32":
-            # This is for mingw32/gomp
-            if tuple.__itemsize__ == 4:
-                rule = (PROJECT, glob.glob("packages/win32/*.dll"))
-                data_files.append(rule)
-            root = os.path.dirname(os.path.abspath(__file__))
-            tocopy_files = []
-            script_files = []
-            for i in os.listdir(os.path.join(root, "scripts")):
-                if os.path.isfile(os.path.join(root, "scripts", i)):
-                    if i.endswith(".py"):
-                        script_files.append(os.path.join("scripts", i))
-                    else:
-                        tocopy_files.append(os.path.join("scripts", i))
-            for i in tocopy_files:
-                filein = os.path.join(root, i)
-                if (filein + ".py") not in script_files:
-                    shutil.copyfile(filein, filein + ".py")
-                    script_files.append(filein + ".py")
-        else:
-            script_files = glob.glob("scripts/*")
 
     setup_kwargs.update(name=PROJECT,
                         version=get_version(),
@@ -784,10 +799,7 @@ def get_project_configuration(dry_run):
                         cmdclass=cmdclass,
                         package_data=package_data,
                         zip_safe=False,
-                        # entry_points=entry_points,
-                        # pyfai specific
-                        scripts=script_files,
-                        data_files=data_files,
+                        entry_points=entry_points,
                         )
     return setup_kwargs
 

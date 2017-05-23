@@ -1,51 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#    Project: Fast Azimuthal integration
-#             https://github.com/silx-kit/pyFAI
-#
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
-#
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
-#  furnished to do so, subject to the following conditions:
-#  .
-#  The above copyright notice and this permission notice shall be included in
-#  all copies or substantial portions of the Software.
-#  .
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#  THE SOFTWARE.
-
 """
-
-Bootstrap helps you to test pyFAI scripts without installing them
+Bootstrap helps you to test scripts without installing them
 by patching your PYTHONPATH on the fly
 
-example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
-
+example: ./bootstrap.py ipython
 """
 
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "15/05/2017"
+__date__ = "18/05/2017"
 
 
 import sys
 import os
 import distutils.util
-import distutils.dir_util
 import subprocess
 import logging
+
+logging.basicConfig()
+logger = logging.getLogger("bootstrap")
 
 
 def _distutils_dir_name(dname="lib"):
@@ -75,59 +50,136 @@ def _get_available_scripts(path):
 
 
 if sys.version_info[0] >= 3:  # Python3
-    def execfile(fullpath):
+    def execfile(fullpath, globals=None, locals=None):
         "Python3 implementation for execfile"
         with open(fullpath) as f:
-            code = compile(f.read(), fullpath, 'exec')
-            exec(code)
+            try:
+                data = f.read()
+            except UnicodeDecodeError:
+                raise SyntaxError("Not a Python script")
+            code = compile(data, fullpath, 'exec')
+            exec(code, globals, locals)
 
 
-def runfile(fname):
+def run_file(filename, argv):
+    """
+    Execute a script trying first to use execfile, then a subprocess
+
+    :param str filename: Script to execute
+    :param list[str] argv: Arguments passed to the filename
+    """
+    full_args = [filename]
+    full_args.extend(argv)
+
     try:
-        execfile(fname)
-    except (SyntaxError, NameError) as error:
-        print(error)
+        logger.info("Execute target using exec")
+        # execfile is considered as a local call.
+        # Providing globals() as locals will force to feed the file into
+        # globals() (for examples imports).
+        # Without this any function call from the executed file loses imports
+        try:
+            old_argv = sys.argv
+            sys.argv = full_args
+            logger.info("Patch the sys.argv: %s", sys.argv)
+            logger.info("Executing %s.main()", filename)
+            print("########### EXECFILE ###########")
+            execfile(filename, globals(), globals())
+        finally:
+            sys.argv = old_argv
+    except SyntaxError as error:
+        logger.error(error)
+        logger.info("Execute target using subprocess")
         env = os.environ.copy()
         env.update({"PYTHONPATH": LIBPATH + os.pathsep + os.environ.get("PYTHONPATH", ""),
-                    "PATH": SCRIPTSPATH + os.pathsep + os.environ.get("PATH", "")})
-        run = subprocess.Popen(sys.argv, shell=False, env=env)
+                    "PATH": os.environ.get("PATH", "")})
+        print("########### SUBPROCESS ###########")
+        run = subprocess.Popen(full_args, shell=False, env=env)
         run.wait()
 
-def get_project_name(root_dir):
-    """Retrieve project name by running python setup.py --name in root_dir.
 
-    :param str root_dir: Directory where to run the command.
-    :return: The name of the project stored in root_dir
+def run_entry_point(entry_point, argv):
     """
-    logger.debug("Getting project name in %s", root_dir)
-    p = subprocess.Popen([sys.executable, "setup.py", "--name"],
-                         shell=False, cwd=root_dir, stdout=subprocess.PIPE)
-    name, _stderr_data = p.communicate()
-    logger.debug("subprocess ended with rc= %s", p.returncode)
-    return name.split()[-1].decode('ascii')
+    Execute an entry_point using the current python context
+    (http://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation)
 
-logging.basicConfig()
-logger = logging.getLogger("bootstrap")
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_NAME = get_project_name(PROJECT_DIR)
+    :param str entry_point: A string identifying a function from a module
+        (NAME = PACKAGE.MODULE:FUNCTION)
+    """
+    import importlib
+    elements = entry_point.split("=")
+    target_name = elements[0].strip()
+    elements = elements[1].split(":")
+    module_name = elements[0].strip()
+    function_name = elements[1].strip()
+
+    logger.info("Execute target %s (function %s from module %s) using importlib", target_name, function_name, module_name)
+    full_args = [target_name]
+    full_args.extend(argv)
+    try:
+        old_argv = sys.argv
+        sys.argv = full_args
+        print("########### IMPORTLIB ###########")
+        module = importlib.import_module(module_name)
+        if hasattr(module, function_name):
+            func = getattr(module, function_name)
+            func()
+        else:
+            logger.info("Function %s not found", function_name)
+    finally:
+        sys.argv = old_argv
+
+
+def find_executable(target):
+    """Find a filename from a script name.
+
+    - Check the script name as file path,
+    - Then checks if the name is a target of the setup.py
+    - Then search the script from the PATH environment variable.
+
+    :param str target: Name of the script
+    :returns: Returns a tuple: kind, name.
+    """
+    if os.path.isfile(target):
+        return ("path", os.path.abspath(target))
+
+    # search the file from setup.py
+    import setup
+    config = setup.get_project_configuration(dry_run=True)
+    # scripts from project configuration
+    if "scripts" in config:
+        for script_name in config["scripts"]:
+            if os.path.basename(script) == target:
+                return ("path", os.path.abspath(script_name))
+    # entry-points from project configuration
+    if "entry_points" in config:
+        for kind in config["entry_points"]:
+            for entry_point in config["entry_points"][kind]:
+                elements = entry_point.split("=")
+                name = elements[0].strip()
+                if name == target:
+                    return ("entry_point", entry_point)
+
+    # search the file from env PATH
+    for dirname in os.environ.get("PATH", "").split(os.pathsep):
+        path = os.path.join(dirname, target)
+        if os.path.isfile(path):
+            return ("path", path)
+
+    return None, None
+
 
 home = os.path.dirname(os.path.abspath(__file__))
-SCRIPTSPATH = os.path.join(home, 'build', _distutils_scripts_name())
 LIBPATH = os.path.join(home, 'build', _distutils_dir_name('lib'))
 cwd = os.getcwd()
 os.chdir(home)
 build = subprocess.Popen([sys.executable, "setup.py", "build"],
-                shell=False, cwd=os.path.dirname(os.path.abspath(__file__)))
+                         shell=False, cwd=os.path.dirname(os.path.abspath(__file__)))
 logger.info("Build process ended with rc= %s", build.wait())
-distutils.dir_util.copy_tree("pyFAI/resources", os.path.join(LIBPATH, PROJECT_NAME, "resources"), update=1)
-
 os.chdir(cwd)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        logging.warning("usage: ./bootstrap.py <script>\n")
-        logging.warning("Available scripts : %s\n" %
-                        _get_available_scripts(SCRIPTSPATH))
+        logger.warning("usage: ./bootstrap.py <script>\n")
         script = None
     else:
         script = sys.argv[1]
@@ -137,35 +189,19 @@ if __name__ == "__main__":
     else:
         logging.info("Running iPython by default")
     sys.path.insert(0, LIBPATH)
-    logger.info("01. Patched sys.path with %s", LIBPATH)
-
-    sys.path.insert(0, SCRIPTSPATH)
-    logger.info("02. Patched sys.path with %s", SCRIPTSPATH)
+    logger.info("Patched sys.path with %s", LIBPATH)
 
     if script:
-        sys.argv = sys.argv[1:]
-        logger.info("03. patch the sys.argv: %s", sys.argv)
-        logger.info("04. Executing %s.main()", script)
-        fullpath = os.path.join(SCRIPTSPATH, script)
-        if os.path.exists(fullpath):
-            exec_file = fullpath
+        argv = sys.argv[2:]
+        kind, target = find_executable(script)
+        if kind == "path":
+            run_file(target, argv)
+        elif kind == "entry_point":
+            run_entry_point(target, argv)
         else:
-            if os.path.exists(script):
-                exec_file = script
-            else:
-                for dirname in os.environ.get("PATH", "").split(os.pathsep):
-                    fullpath = os.path.join(dirname, script)
-                    if os.path.exists(fullpath):
-                        exec_file = fullpath
-                        break
-                else:
-                    exec_file = None
-        if exec_file is not None:
-            runfile(exec_file)
-        else:
-            logger.error("Script not found")
+            logger.error("Script %s not found", script)
     else:
-        logger.info("03. patch the sys.argv: %s", sys.argv)
+        logger.info("Patch the sys.argv: %s", sys.argv)
         sys.path.insert(2, "")
         try:
             from IPython import embed

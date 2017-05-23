@@ -25,7 +25,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "16/05/2017"
+__date__ = "18/05/2017"
 
 import os
 from numpy.distutils.misc_util import Configuration
@@ -33,6 +33,7 @@ from numpy.distutils.misc_util import Configuration
 
 def configuration(parent_package='', top_path=None):
     config = Configuration('pyFAI', parent_package, top_path)
+    config.add_subpackage('app')
     config.add_subpackage('benchmark')
     config.add_subpackage('ext')
     config.add_subpackage('gui')

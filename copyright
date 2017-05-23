@@ -2,7 +2,6 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: pyfai
 Source: https://github.com/silx-kit/pyFAI
 Files-Excluded: pyFAI/third_party
-                package/win32
 
 Files: *
 Copyright: 2011-2016 European Synchrotron Radiation Facility
