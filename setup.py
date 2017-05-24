@@ -714,7 +714,11 @@ def get_project_configuration(dry_run):
 
     install_requires = [
         "numpy",
-        "h5py",
+        # h5py was removed from dependencies cause it creates an issue with
+        # Debian 8. Pip is not aware that h5py is installed and pkg_resources
+        # check dependencies and in this case raise an exception
+        # FIXME we still have to investigate
+        # "h5py",
         "fabio",
         "matplotlib",
         "scipy",
