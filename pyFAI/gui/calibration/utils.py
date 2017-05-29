@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/03/2017"
+__date__ = "24/05/2017"
 
 
 from pyFAI.gui import qt
@@ -40,8 +40,15 @@ def getFreeColorRange(colormap):
     name = colormap['name']
 
     import matplotlib.cm
-    from silx.gui.plot import Colors
-    cmap = Colors.getMPLColormap(name)
+
+    try:
+        from silx.gui.plot.matplotlib import Colormap
+        cmap = silx.gui.plot.matplotlib.getColormap(name)
+    except ImportError:
+        # Compatibility with silx <= 0.5
+        from silx.gui.plot import Colors
+        cmap = Colors.getMPLColormap(name)
+
     norm = matplotlib.colors.Normalize(0, 255)
     scalarMappable = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
 
