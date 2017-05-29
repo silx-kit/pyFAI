@@ -1,0 +1,49 @@
+{
+  "content": "Goniometer calibration v1.0",
+  "detector": "Pilatus 100k",
+  "pixel1": 0.000172,
+  "pixel2": 0.000172,
+  "wavelength": 7.7490120575e-11,
+  "param": [
+    0.8058864049319562,
+    0.01622186466786302,
+    0.043280336616327734,
+    -0.0026199663308397385,
+    -0.0022167400134821824,
+    0.01745626155217883
+  ],
+  "param_names": [
+    "dist",
+    "poni1",
+    "poni2",
+    "rot1",
+    "rot2_offset",
+    "rot2_scale"
+  ],
+  "pos_names": [
+    "pos"
+  ],
+  "trans_function": {
+    "content": "GeometryTransformation",
+    "param_names": [
+      "dist",
+      "poni1",
+      "poni2",
+      "rot1",
+      "rot2_offset",
+      "rot2_scale"
+    ],
+    "pos_names": [
+      "pos"
+    ],
+    "dist_expr": "dist",
+    "poni1_expr": "poni1",
+    "poni2_expr": "poni2",
+    "rot1_expr": "rot1",
+    "rot2_expr": "rot2_scale * pos + rot2_offset",
+    "rot3_expr": "0.0",
+    "constants": {
+      "pi": 3.141592653589793
+    }
+  }
+}
