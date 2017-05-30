@@ -143,16 +143,16 @@ class _PeakSelectionTableView(qt.QTableView):
         setResizeMode(0, qt.QHeaderView.Stretch)
         setResizeMode(1, qt.QHeaderView.ResizeToContents)
         setResizeMode(2, qt.QHeaderView.ResizeToContents)
-        setResizeMode(3, qt.QHeaderView.ResizeToContents)
+        setResizeMode(3, qt.QHeaderView.Fixed)
 
     def __onRowRemoved(self, parent, start, end):
-        # sizeHint changed
         self.updateGeometry()
 
     def __onRowInserted(self, parent, start, end):
         self.__openPersistantViewOnRowInserted(parent, start, end)
-        # sizeHint changed
         self.updateGeometry()
+        # It have to be done only on the 3, else the layout is wrong
+        self.resizeColumnToContents(3)
 
     def __openPersistantViewOnRowInserted(self, parent, start, end):
         model = self.model()
