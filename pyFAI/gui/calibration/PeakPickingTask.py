@@ -559,14 +559,24 @@ class PeakPickingTask(AbstractCalibrationTask):
             points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] != 1, points)
 
         if len(points) > 0:
+            # reach bigger ring
+            selection = self.model().peakSelectionModel()
+            ringNumbers = [p.ringNumber() for p in selection]
+            if ringNumbers == []:
+                lastRingNumber = 0
+            else:
+                lastRingNumber = max(ringNumbers)
+
             if self._ringSelectionMode.isChecked():
-                pass
+                ringNumber = lastRingNumber + 1
             elif self._peakSelectionMode.isChecked():
+                ringNumber = lastRingNumber
                 points = points[0:1]
             else:
                 raise ValueError("Picking mode unknown")
 
             peakModel = self.__createNewPeak(points)
+            peakModel.setRingNumber(ringNumber)
             oldState = self.__copyPeaks(self.__undoStack)
             self.model().peakSelectionModel().append(peakModel)
             newState = self.__copyPeaks(self.__undoStack)
