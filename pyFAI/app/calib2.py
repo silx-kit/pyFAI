@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/05/2017"
+__date__ = "30/05/2017"
 __status__ = "production"
 
 import logging
@@ -71,7 +71,7 @@ def configure_parser_arguments(parser):
     # Not yet used
     parser.add_argument("-o", "--out", dest="outfile",
                         help="Filename where processed image is saved", metavar="FILE",
-                        default="merged.edf")
+                        default=None)
     parser.add_argument("-v", "--verbose",
                         action="store_true", dest="debug", default=False,
                         help="switch to debug/verbose mode")
@@ -116,7 +116,7 @@ def configure_parser_arguments(parser):
     # Not yet used
     parser.add_argument("--filter", dest="filter",
                         help="select the filter, either mean(default), max or median",
-                        default="mean")
+                        default=None)
 
     # Geometry
     parser.add_argument("-l", "--distance", dest="distance", type=float,
@@ -181,15 +181,15 @@ def configure_parser_arguments(parser):
     # Not yet used
     parser.add_argument("--npt", dest="nPt_1D",
                         help="Number of point in 1D integrated pattern, Default: 1024", type=int,
-                        default=1024)
+                        default=None)
     # Not yet used
     parser.add_argument("--npt-azim", dest="nPt_2D_azim",
                         help="Number of azimuthal sectors in 2D integrated images. Default: 360", type=int,
-                        default=360)
+                        default=None)
     # Not yet used
     parser.add_argument("--npt-rad", dest="nPt_2D_rad",
                         help="Number of radial bins in 2D integrated images. Default: 400", type=int,
-                        default=400)
+                        default=None)
     # Not yet used
     parser.add_argument("--unit", dest="unit",
                         help="Valid units for radial range: 2th_deg, 2th_rad, q_nm^-1,"
@@ -327,6 +327,11 @@ def setup(model):
     if options.fix_rot3 is not None:
         constraints.rotation3().setFixed(options.fix_rot3)
 
+    # Integration
+    if options.unit:
+        unit = pyFAI.units.to_unit(options.unit)
+        model.integrationSettingsModel().radialUnit().setValue(unit)
+
     if options.outfile:
         logger.error("outfile option not supported")
     if options.debug:
@@ -368,12 +373,9 @@ def setup(model):
     if options.nPt_2D_rad:
         logger.error("nPt_2D_rad option not supported")
 
-    # FIXME unit should be supported
-    if options.unit:
-        logger.error("unit option not supported")
-    if options.gui:
+    if options.gui is not True:
         logger.error("gui option not supported")
-    if options.interactive:
+    if options.interactive is not True:
         logger.error("interactive option not supported")
 
 
