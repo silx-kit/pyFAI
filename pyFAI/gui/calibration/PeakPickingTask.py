@@ -743,6 +743,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         if image is not None:
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
+            self.__plot.resetZoom()
 
     def __maskUpdated(self):
         _mask = self.model().experimentSettingsModel().mask().value()

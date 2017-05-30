@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "30/05/2017"
 
 import os
 import fabio
@@ -120,6 +120,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         image = self.model().experimentSettingsModel().image().value()
         self.__plot2D.addImage(image, legend="image")
+        self.__plot2D.resetZoom()
 
     def createImageDialog(self, title, forMask=False):
         dialog = qt.QFileDialog(self)

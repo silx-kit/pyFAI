@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "30/05/2017"
 
 import logging
 from pyFAI.gui import qt
@@ -166,6 +166,7 @@ class MaskTask(AbstractCalibrationTask):
             self.__plot.addImage(image, legend="image")
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
+            self.__plot.resetZoom()
         else:
             self.__plot.removeImage("image")
 
