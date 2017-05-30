@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "30/05/2017"
 
 import logging
 import numpy
@@ -648,11 +648,12 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         # extract peaks from settings info and current peaks
         image = self.model().experimentSettingsModel().image().value()
+        mask = self.model().experimentSettingsModel().mask().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
         wavelength = wavelength / 1e10
-        extractor = RingExtractor(image, calibrant, detector, wavelength)
+        extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
 
         # FIXME numpy array can be allocated first
         peaks = []
