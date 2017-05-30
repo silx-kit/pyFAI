@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "29/05/2017"
 
 from .AbstractModel import AbstractModel
 from .DetectorModel import DetectorModel
@@ -79,7 +79,10 @@ class ExperimentSettingsModel(AbstractModel):
         if detector is None:
             return None
 
-        detector = detector.__class__()
+        # Do not create another instance of the detector
+        # While things are not fixed as expected
+        # detector = detector.__class__()
+
         if detector.__class__.HAVE_TAPER:
             if splineFile is not None:
                 detector.set_splineFile(splineFile)
