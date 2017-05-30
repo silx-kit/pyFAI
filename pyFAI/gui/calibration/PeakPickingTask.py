@@ -553,6 +553,11 @@ class PeakPickingTask(AbstractCalibrationTask):
             y, x = ymin + coord[0], xmin + coord[1]
             points = massif.find_peaks([y, x], stdout=_DummyStdOut())
 
+        # filter peaks from the mask
+        mask = self.model().experimentSettingsModel().mask().value()
+        if mask is not None:
+            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] != 1, points)
+
         if len(points) > 0:
             if self._ringSelectionMode.isChecked():
                 pass
