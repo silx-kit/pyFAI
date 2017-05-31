@@ -65,22 +65,23 @@ to use the **pyFAI.calibrant.Cell** class.
     print(Cell.__init__.__doc__)
 
 
+
 .. parsed-literal::
 
-
+    
         This is a cell object, able to calculate the volume and d-spacing according to formula from:
-
+    
         http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
-
+        
     Constructor of the Cell class:
-
+    
             Crystalographic units are Angstrom for distances and degrees for angles !
-
+    
             :param a,b,c: unit cell length in Angstrom
             :param alpha, beta, gamma: unit cell angle in degrees
             :param lattice: "cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"
             :param lattice_type: P, I, F, C or R
-
+            
 
 
 The constructor of the class is used to build and well suited to
@@ -89,10 +90,9 @@ triclinic crystal.
 Specific constructors
 ~~~~~~~~~~~~~~~~~~~~~
 
-Nevertheless, most used calibrants are of much higher symmetry, like
+| Nevertheless, most used calibrants are of much higher symmetry, like
 cubic which takes only **one** parameter.
-
-Here is an example for defining
+| Here is an example for defining
 `Polonium <http://www.periodictable.com/Elements/084/data.html>`__ which
 is a simple cubic cell (Primitive) with a cell parameter of 335.9pm.
 This example was chosen as Polonium is apparently the only element with
@@ -103,6 +103,7 @@ such primitive cubic packing.
     Po = Cell.cubic(3.359)
     print(Po)
 
+
 .. parsed-literal::
 
     Primitive cubic cell a=3.3590 b=3.3590 c=3.3590 alpha=90.000 beta=90.000 gamma=90.000
@@ -111,6 +112,7 @@ such primitive cubic packing.
 .. code:: python
 
     print(Po.volume)
+
 
 .. parsed-literal::
 
@@ -124,25 +126,26 @@ such primitive cubic packing.
     print("Po.save?")
     print(Po.save.__doc__)
 
+
 .. parsed-literal::
 
     Po.d_spacing?
     Calculate all d-spacing down to dmin
-
+    
             applies selection rules
-
+    
             :param dmin: minimum value of spacing requested
             :return: dict d-spacing as string, list of tuple with Miller indices
                     preceded with the numerical value
-
+            
     Po.save?
     Save informations about the cell in a d-spacing file, usable as Calibrant
-
+    
             :param name: name of the calibrant
             :param doi: reference of the publication used to parametrize the cell
             :param dmin: minimal d-spacing
             :param dest_dir: name of the directory where to save the result
-
+            
 
 
 To generate a *d-spacing* file usable as calibrant, one simply has to
@@ -153,9 +156,13 @@ call the *save* method of the *Cell* instance.
 .. code:: python
 
     Po.save("Po",doi="http://www.periodictable.com/Elements/084/data.html", dmin=1)
+
 .. code:: python
 
-    !cat Po.D
+    with open("Po.D") as f:
+        for l in f:
+            print(l.strip())
+
 
 .. parsed-literal::
 
@@ -193,23 +200,33 @@ time-consuming this will be:
     %time d=LaB6.d_spacing(0.1)
     print("Number of reflections: %s"%len(d))
 
+
 .. parsed-literal::
 
-    CPU times: user 976 ms, sys: 76 ms, total: 1.05 s
-    Wall time: 964 ms
+    CPU times: user 2.7 s, sys: 8 ms, total: 2.71 s
+    Wall time: 2.71 s
     Number of reflections: 1441
 
 
 .. code:: python
 
-    LaB6.save("LaB6",doi="https://www-s.nist.gov/srmors/certificates/660C.pdf", dmin=0.1)
+    LaB6.save("my_LaB6",doi="https://www-s.nist.gov/srmors/certificates/660C.pdf", dmin=0.1)
+
 .. code:: python
 
-    !head LaB6.D
+    #Print the 10 first lines:
+    with open("my_LaB6.D") as f:
+        for i, l in enumerate(f):
+            if i<10:
+                print(l.strip())
+            else:
+                break
+        
+
 
 .. parsed-literal::
 
-    # Calibrant: LaB6
+    # Calibrant: my_LaB6
     # Primitive cubic cell a=4.1568 b=4.1568 c=4.1568 alpha=90.000 beta=90.000 gamma=90.000
     # Ref: https://www-s.nist.gov/srmors/certificates/660C.pdf
     4.15682600 # (1, 0, 0) 6
@@ -238,6 +255,7 @@ equivalent FCC structure:
     Si = Cell.diamond(5.431179)
     print(Si)
 
+
 .. parsed-literal::
 
     Face centered cubic cell a=5.4312 b=5.4312 c=5.4312 alpha=90.000 beta=90.000 gamma=90.000
@@ -245,8 +263,9 @@ equivalent FCC structure:
 
 .. code:: python
 
-    FCC = Cell.cubic(5.431179,"F")
+    FCC = Cell.cubic(5.431179, "F")
     print(FCC)
+
 
 .. parsed-literal::
 
@@ -262,15 +281,16 @@ lines down to 1A and compare them:
     for key, val in sid.items():
         print("%s: %s"%(sorted(val[1:][-1]),key))
 
+
 .. parsed-literal::
 
     [2, 2, 4]: 1.10863477e+00
-    [1, 1, 3]: 1.63756208e+00
-    [0, 2, 2]: 1.92021175e+00
+    [0, 0, 4]: 1.35779475e+00
     [1, 1, 1]: 3.13569266e+00
+    [0, 2, 2]: 1.92021175e+00
     [1, 1, 5]: 1.04523089e+00
     [1, 3, 3]: 1.24599792e+00
-    [0, 0, 4]: 1.35779475e+00
+    [1, 1, 3]: 1.63756208e+00
 
 
 .. code:: python
@@ -279,18 +299,19 @@ lines down to 1A and compare them:
     for key, val in fccd.items():
         print("%s: %s"%(sorted(val[1:][-1]),key))
 
+
 .. parsed-literal::
 
-    [2, 2, 4]: 1.10863477e+00
-    [1, 1, 3]: 1.63756208e+00
-    [0, 2, 2]: 1.92021175e+00
-    [1, 1, 1]: 3.13569266e+00
-    [1, 1, 5]: 1.04523089e+00
-    [0, 2, 4]: 1.21444854e+00
     [2, 2, 2]: 1.56784633e+00
     [1, 3, 3]: 1.24599792e+00
-    [0, 0, 2]: 2.71558950e+00
+    [2, 2, 4]: 1.10863477e+00
     [0, 0, 4]: 1.35779475e+00
+    [0, 0, 2]: 2.71558950e+00
+    [0, 2, 2]: 1.92021175e+00
+    [1, 1, 5]: 1.04523089e+00
+    [1, 1, 1]: 3.13569266e+00
+    [0, 2, 4]: 1.21444854e+00
+    [1, 1, 3]: 1.63756208e+00
 
 
 So there are many more reflection in the FCC structure compared to the
@@ -308,10 +329,11 @@ allowed or not. Those *selection\_rules* can be introspected:
     print(Si.selection_rules)
     print(FCC.selection_rules)
 
+
 .. parsed-literal::
 
-    [<function <lambda> at 0x7f8080fad848>, <function <lambda> at 0x7f8080fad938>, <function <lambda> at 0x7f8080fad9b0>]
-    [<function <lambda> at 0x7f8080fadaa0>, <function <lambda> at 0x7f8080fada28>]
+    [<function Cell.set_type.<locals>.<lambda> at 0x7f8a4dac0950>, <function Cell.set_type.<locals>.<lambda> at 0x7f8a4dac08c8>, <function Cell.diamond.<locals>.<lambda> at 0x7f8a4dac0840>]
+    [<function Cell.set_type.<locals>.<lambda> at 0x7f8a4dac09d8>, <function Cell.set_type.<locals>.<lambda> at 0x7f8a4dac0730>]
 
 
 The *Si* object has one additionnal selection rule which explains the
@@ -327,17 +349,15 @@ demonstration
 .. code:: python
 
     import inspect
-    for rule in Si.selection_rules:
-        print(inspect.getsource(rule))
+    for rule in Si.selection_rules: 
+        print(inspect.getsource(rule).strip())
+
 
 .. parsed-literal::
 
-            self.selection_rules = [lambda h, k, l: not(h == 0 and k == 0 and l == 0)]
-
-                self.selection_rules.append(lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3))
-
-                lambda h, k, l:not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0))
-
+    self.selection_rules = [lambda h, k, l: not(h == 0 and k == 0 and l == 0)]
+    self.selection_rules.append(lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3))
+    self.selection_rules.append(lambda h, k, l: not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0)))
 
 
 Actually the last line correspond to an anonymous function (lambda)
@@ -359,4 +379,3 @@ to generate crystal structure cell object to write such calibrant files
 automatically, including all metadata needed for redistribution. Most
 advanced programmers can now modify the selection rules to remove
 forbidden reflection for a given cell.
-

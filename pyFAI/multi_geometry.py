@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2016"
+__date__ = "29/05/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -242,6 +242,7 @@ class MultiGeometry(object):
             result = Integrate2dResult(I, res.radial, res.azimuthal)
         result._set_sum(sum_)
         result._set_count(count)
+        result._set_unit(self.unit)
 
         if all:
             logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
@@ -249,7 +250,8 @@ class MultiGeometry(object):
                    "radial": res.radial,
                    "azimuthal": res.azimuthal,
                    "count": count,
-                   "sum": sum_}
+                   "sum": sum_,
+                   "unit": self.unit}
             return out
 
         return result
