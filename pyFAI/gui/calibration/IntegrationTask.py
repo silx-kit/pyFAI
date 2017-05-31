@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/03/2017"
+__date__ = "30/05/2017"
 
 import logging
 import numpy
@@ -199,6 +199,7 @@ class IntegrationTask(AbstractCalibrationTask):
         self.__plot1d = silx.gui.plot.Plot1D(self)
         self.__plot1d.setGraphXLabel("Radial")
         self.__plot1d.setGraphYLabel("Intensity")
+        self.__plot1d.setGraphGrid(True)
         self.__plot2d = silx.gui.plot.Plot2D(self)
         self.__plot2d.setGraphXLabel("Radial")
         self.__plot2d.setGraphYLabel("Azimuthal")
@@ -311,10 +312,19 @@ class IntegrationTask(AbstractCalibrationTask):
 
         # FIXME set axes
         result1d = integrationProcess.result1d()
-        self.__plot1d.addCurve(
-            legend="result1d",
-            x=result1d.radial,
-            y=result1d.intensity)
+        if hasattr(self.__plot1d, "addHistogram"):
+            # silx 0.5
+            self.__plot1d.addHistogram(
+                legend="result1d",
+                align="right",
+                edges=result1d.radial,
+                histogram=result1d.intensity)
+        else:
+            # older
+            self.__plot1d.addCurve(
+                legend="result1d",
+                x=result1d.radial,
+                y=result1d.intensity)
 
         # Assume that axes are linear
         result2d = integrationProcess.result2d()

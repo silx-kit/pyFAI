@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "08/03/2017"
+__date__ = "29/05/2017"
 
 import logging
 import numpy
@@ -41,8 +41,9 @@ _logger = logging.getLogger(__name__)
 
 class RingExtractor(object):
 
-    def __init__(self, image, calibrant, detector, wavelength):
+    def __init__(self, image, mask, calibrant, detector, wavelength):
         self.__image = image
+        self.__mask = mask
         self.__calibrant = calibrant
         self.__calibrant.setWavelength_change2th(wavelength)
         # self.__calibrant.set_wavelength(wavelength)
@@ -133,6 +134,7 @@ class RingExtractor(object):
         self.__geoRef = geoRef
 
         peakPicker = PeakPicker(data=self.__image,
+                                mask=self.__mask,
                                 calibrant=self.__calibrant,
                                 wavelength=self.__wavelength,
                                 detector=self.__detector,

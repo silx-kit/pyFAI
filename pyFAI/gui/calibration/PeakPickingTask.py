@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "30/05/2017"
 
 import logging
 import numpy
@@ -143,16 +143,16 @@ class _PeakSelectionTableView(qt.QTableView):
         setResizeMode(0, qt.QHeaderView.Stretch)
         setResizeMode(1, qt.QHeaderView.ResizeToContents)
         setResizeMode(2, qt.QHeaderView.ResizeToContents)
-        setResizeMode(3, qt.QHeaderView.ResizeToContents)
+        setResizeMode(3, qt.QHeaderView.Fixed)
 
     def __onRowRemoved(self, parent, start, end):
-        # sizeHint changed
         self.updateGeometry()
 
     def __onRowInserted(self, parent, start, end):
         self.__openPersistantViewOnRowInserted(parent, start, end)
-        # sizeHint changed
         self.updateGeometry()
+        # It have to be done only on the 3, else the layout is wrong
+        self.resizeColumnToContents(3)
 
     def __openPersistantViewOnRowInserted(self, parent, start, end):
         model = self.model()
@@ -553,15 +553,30 @@ class PeakPickingTask(AbstractCalibrationTask):
             y, x = ymin + coord[0], xmin + coord[1]
             points = massif.find_peaks([y, x], stdout=_DummyStdOut())
 
+        # filter peaks from the mask
+        mask = self.model().experimentSettingsModel().mask().value()
+        if mask is not None:
+            points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] != 1, points)
+
         if len(points) > 0:
+            # reach bigger ring
+            selection = self.model().peakSelectionModel()
+            ringNumbers = [p.ringNumber() for p in selection]
+            if ringNumbers == []:
+                lastRingNumber = 0
+            else:
+                lastRingNumber = max(ringNumbers)
+
             if self._ringSelectionMode.isChecked():
-                pass
+                ringNumber = lastRingNumber + 1
             elif self._peakSelectionMode.isChecked():
+                ringNumber = lastRingNumber
                 points = points[0:1]
             else:
                 raise ValueError("Picking mode unknown")
 
             peakModel = self.__createNewPeak(points)
+            peakModel.setRingNumber(ringNumber)
             oldState = self.__copyPeaks(self.__undoStack)
             self.model().peakSelectionModel().append(peakModel)
             newState = self.__copyPeaks(self.__undoStack)
@@ -643,11 +658,12 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         # extract peaks from settings info and current peaks
         image = self.model().experimentSettingsModel().image().value()
+        mask = self.model().experimentSettingsModel().mask().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
         wavelength = wavelength / 1e10
-        extractor = RingExtractor(image, calibrant, detector, wavelength)
+        extractor = RingExtractor(image, mask, calibrant, detector, wavelength)
 
         # FIXME numpy array can be allocated first
         peaks = []
@@ -737,6 +753,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         if image is not None:
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
+            self.__plot.resetZoom()
 
     def __maskUpdated(self):
         _mask = self.model().experimentSettingsModel().mask().value()

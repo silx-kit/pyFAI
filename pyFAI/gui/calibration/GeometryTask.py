@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "30/05/2017"
 
 import logging
 import numpy
@@ -430,3 +430,4 @@ class GeometryTask(AbstractCalibrationTask):
         if image is not None:
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
+            self.__plot.resetZoom()
