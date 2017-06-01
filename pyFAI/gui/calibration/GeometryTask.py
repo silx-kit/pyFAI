@@ -166,9 +166,17 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             color = colors[ringId % len(colors)]
             numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
 
+            deltas = [(0.0, 0.0), (0.99, 0.0), (0.0, 0.99), (0.99, 0.99)]
+
+            def filter_coord_over_mask(coord):
+                for dx, dy in deltas:
+                    if mask[int(coord[0] + dx), int(coord[1] + dy)] != 0:
+                        return float("nan"), float("nan")
+                return coord
+
             for lineId, line in enumerate(polyline):
                 if mask is not None:
-                    line = [coord if mask[int(coord[0]), int(coord[1])] != 1 else (float("nan"), float("nan")) for coord in line]
+                    line = map(filter_coord_over_mask, line)
                     line = numpy.array(line)
                 y, x = line[:, 0], line[:, 1]
                 legend = "ring-%i-%i" % (ringId, lineId)
