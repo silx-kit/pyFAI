@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "01/06/2017"
 __status__ = "development"
 
 import os
@@ -170,7 +170,6 @@ class GeometryRefinement(AzimuthalIntegrator):
             # If there are many control point on the inner-most ring, fit an ellipse
             try:
                 ellipse = fit_ellipse(*smallRing_in_m[:2])
-                print(ellipse)
                 direct_dist = ellipse.half_long_axis / numpy.tan(tth_min)
                 tilt = numpy.arctan2(ellipse.half_long_axis - ellipse.half_short_axis, ellipse.half_short_axis)
                 cos_tilt = numpy.cos(tilt)
