@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/05/2017"
+__date__ = "01/06/2017"
 
 import logging
 import numpy
@@ -313,11 +313,14 @@ class IntegrationTask(AbstractCalibrationTask):
         # FIXME set axes
         result1d = integrationProcess.result1d()
         if hasattr(self.__plot1d, "addHistogram"):
-            # silx 0.5
+            # silx >= 0.5
+            # Removing item fixes bug in silx 0.5 when histogram data changed
+            self.__plot1d.remove(legend="result1d", kind="histogram")
             self.__plot1d.addHistogram(
                 legend="result1d",
                 align="right",
                 edges=result1d.radial,
+                color="blue",
                 histogram=result1d.intensity)
         else:
             # older

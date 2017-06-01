@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/05/2017"
+__date__ = "01/06/2017"
 
 import logging
 import numpy
@@ -68,6 +68,8 @@ class FitParamView(qt.QObject):
         self.__constraints.setAutoRaise(True)
         self.__constraints.clicked.connect(self.__constraintsClicked)
         self.__model = None
+        self.__wavelengthInvalidated = False
+        self.__peaksInvalidated = False
         self.__constraintsModel = None
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
@@ -155,7 +157,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         colormap = self.getDefaultColormap()
         return utils.getFreeColorRange(colormap)
 
-    def setRings(self, rings):
+    def setRings(self, rings, mask):
         for legend in self.__ringLegends:
             self.removeCurve(legend)
         self.__ringLegends = []
@@ -165,8 +167,18 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             color = colors[ringId % len(colors)]
             numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
 
-            color = colors
+            deltas = [(0.0, 0.0), (0.99, 0.0), (0.0, 0.99), (0.99, 0.99)]
+
+            def filter_coord_over_mask(coord):
+                for dx, dy in deltas:
+                    if mask[int(coord[0] + dx), int(coord[1] + dy)] != 0:
+                        return float("nan"), float("nan")
+                return coord
+
             for lineId, line in enumerate(polyline):
+                if mask is not None:
+                    line = map(filter_coord_over_mask, line)
+                    line = numpy.array(line)
                 y, x = line[:, 0], line[:, 1]
                 legend = "ring-%i-%i" % (ringId, lineId)
                 self.addCurve(
@@ -306,31 +318,58 @@ class GeometryTask(AbstractCalibrationTask):
 
         return calibration
 
+    def __invalidateWavelength(self):
+        self.__wavelengthInvalidated = True
+
     def __getCalibration(self):
         if self.__calibration is None:
             self.__calibration = self.__createCalibration()
+
+        # It have to be updated only if it changes
+        image = self.model().experimentSettingsModel().image().value()
+        calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
+        detector = self.model().experimentSettingsModel().detector()
+        if self.__wavelengthInvalidated:
+            self.__wavelengthInvalidated = False
+            wavelength = self.model().experimentSettingsModel().wavelength().value()
+            wavelength = wavelength / 1e10
+        else:
+            wavelength = None
+        self.__calibration.update(image, calibrant, detector, wavelength)
+
         return self.__calibration
 
-    def __resetGeometry(self):
-        calibration = self.__getCalibration()
+    def __invalidatePeaks(self):
+        self.__peaksInvalidated = True
 
+    def __initGeometryFromPeaks(self):
+        calibration = self.__getCalibration()
         peaks = []
         for peakModel in self.model().peakSelectionModel():
             ringNumber = peakModel.ringNumber()
             for coord in peakModel.coords():
                 peaks.append([coord[0], coord[1], ringNumber - 1])
         peaks = numpy.array(peaks)
-
         calibration.init(peaks, "massif")
+        self.__peaksInvalidated = False
+
+    def __resetGeometry(self):
+        calibration = self.__getCalibration()
+        self.__initGeometryFromPeaks()
+        # write result to the fitted model
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
 
     def __fitGeometry(self):
         self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
-        calibration.fromGeometryModel(self.model().fittedGeometry())
+        if self.__peaksInvalidated:
+            self.__initGeometryFromPeaks()
+        else:
+            calibration.fromGeometryModel(self.model().fittedGeometry())
         calibration.fromGeometryConstriansModel(self.model().geometryConstraintsModel())
         calibration.refine()
+        # write result to the fitted model
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
         self._fitButton.setWaiting(False)
@@ -345,8 +384,9 @@ class GeometryTask(AbstractCalibrationTask):
     def __updateDisplay(self):
         calibration = self.__getCalibration()
 
+        mask = self.model().experimentSettingsModel().mask().value()
         rings = calibration.getRings()
-        self.__plot.setRings(rings)
+        self.__plot.setRings(rings, mask)
 
         center = calibration.getBeamCenter()
         if center is None:
@@ -402,6 +442,7 @@ class GeometryTask(AbstractCalibrationTask):
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
+        settings.wavelength().changed.connect(self.__invalidateWavelength)
 
         geometry = model.fittedGeometry()
 
@@ -423,6 +464,8 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation3.setConstraintsModel(constrains.rotation3())
 
         model.fittedGeometry().changed.connect(self.__geometryUpdated)
+
+        model.peakSelectionModel().changed.connect(self.__invalidatePeaks)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
