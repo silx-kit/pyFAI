@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/05/2017"
+__date__ = "01/06/2017"
 
 import logging
 import numpy
@@ -155,7 +155,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
         colormap = self.getDefaultColormap()
         return utils.getFreeColorRange(colormap)
 
-    def setRings(self, rings):
+    def setRings(self, rings, mask):
         for legend in self.__ringLegends:
             self.removeCurve(legend)
         self.__ringLegends = []
@@ -165,8 +165,10 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             color = colors[ringId % len(colors)]
             numpyColor = numpy.array([color.redF(), color.greenF(), color.blueF()])
 
-            color = colors
             for lineId, line in enumerate(polyline):
+                if mask is not None:
+                    line = [coord if mask[int(coord[0]), int(coord[1])] != 1 else (float("nan"), float("nan")) for coord in line]
+                    line = numpy.array(line)
                 y, x = line[:, 0], line[:, 1]
                 legend = "ring-%i-%i" % (ringId, lineId)
                 self.addCurve(
@@ -345,8 +347,9 @@ class GeometryTask(AbstractCalibrationTask):
     def __updateDisplay(self):
         calibration = self.__getCalibration()
 
+        mask = self.model().experimentSettingsModel().mask().value()
         rings = calibration.getRings()
-        self.__plot.setRings(rings)
+        self.__plot.setRings(rings, mask)
 
         center = calibration.getBeamCenter()
         if center is None:
