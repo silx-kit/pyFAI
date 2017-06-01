@@ -68,6 +68,7 @@ class FitParamView(qt.QObject):
         self.__constraints.setAutoRaise(True)
         self.__constraints.clicked.connect(self.__constraintsClicked)
         self.__model = None
+        self.__wavelengthInvalidated = False
         self.__constraintsModel = None
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
@@ -308,9 +309,25 @@ class GeometryTask(AbstractCalibrationTask):
 
         return calibration
 
+    def __invalidateWavelength(self):
+        self.__wavelengthInvalidated = True
+
     def __getCalibration(self):
         if self.__calibration is None:
             self.__calibration = self.__createCalibration()
+
+        # It have to be updated only if it changes
+        image = self.model().experimentSettingsModel().image().value()
+        calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
+        detector = self.model().experimentSettingsModel().detector()
+        if self.__wavelengthInvalidated:
+            self.__wavelengthInvalidated = False
+            wavelength = self.model().experimentSettingsModel().wavelength().value()
+            wavelength = wavelength / 1e10
+        else:
+            wavelength = None
+        self.__calibration.update(image, calibrant, detector, wavelength)
+
         return self.__calibration
 
     def __resetGeometry(self):
@@ -405,6 +422,7 @@ class GeometryTask(AbstractCalibrationTask):
     def _updateModel(self, model):
         settings = model.experimentSettingsModel()
         settings.image().changed.connect(self.__imageUpdated)
+        settings.wavelength().changed.connect(self.__invalidateWavelength)
 
         geometry = model.fittedGeometry()
 

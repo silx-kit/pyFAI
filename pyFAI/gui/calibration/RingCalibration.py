@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/03/2017"
+__date__ = "01/06/2017"
 
 import logging
 import numpy
@@ -97,6 +97,14 @@ class RingCalibration(object):
 
     def init(self, peaks, method):
         self.__init(peaks, method)
+
+    def update(self, image, calibrant, detector, wavelength=None):
+        self.__image = image
+        self.__calibrant = calibrant
+        self.__detector = detector
+        if wavelength is not None:
+            self.__wavelength = wavelength
+        self.__calibrant.set_wavelength(self.__wavelength)
 
     def refine(self, max_iter=1000):
         """
