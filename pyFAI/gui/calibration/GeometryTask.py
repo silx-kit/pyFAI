@@ -69,6 +69,7 @@ class FitParamView(qt.QObject):
         self.__constraints.clicked.connect(self.__constraintsClicked)
         self.__model = None
         self.__wavelengthInvalidated = False
+        self.__peaksInvalidated = False
         self.__constraintsModel = None
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
@@ -338,26 +339,37 @@ class GeometryTask(AbstractCalibrationTask):
 
         return self.__calibration
 
-    def __resetGeometry(self):
-        calibration = self.__getCalibration()
+    def __invalidatePeaks(self):
+        self.__peaksInvalidated = True
 
+    def __initGeometryFromPeaks(self):
+        calibration = self.__getCalibration()
         peaks = []
         for peakModel in self.model().peakSelectionModel():
             ringNumber = peakModel.ringNumber()
             for coord in peakModel.coords():
                 peaks.append([coord[0], coord[1], ringNumber - 1])
         peaks = numpy.array(peaks)
-
         calibration.init(peaks, "massif")
+        self.__peaksInvalidated = False
+
+    def __resetGeometry(self):
+        calibration = self.__getCalibration()
+        self.__initGeometryFromPeaks()
+        # write result to the fitted model
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
 
     def __fitGeometry(self):
         self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
-        calibration.fromGeometryModel(self.model().fittedGeometry())
+        if self.__peaksInvalidated:
+            self.__initGeometryFromPeaks()
+        else:
+            calibration.fromGeometryModel(self.model().fittedGeometry())
         calibration.fromGeometryConstriansModel(self.model().geometryConstraintsModel())
         calibration.refine()
+        # write result to the fitted model
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
         self._fitButton.setWaiting(False)
@@ -452,6 +464,8 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation3.setConstraintsModel(constrains.rotation3())
 
         model.fittedGeometry().changed.connect(self.__geometryUpdated)
+
+        model.peakSelectionModel().changed.connect(self.__invalidatePeaks)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
