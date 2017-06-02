@@ -13,7 +13,7 @@ Diff_map provides a Graphical User Interface (based on top of PyQt, pyFAI and h5
 which allows the reduction of this 4D dataset into a 3D dataset containing the
 two dimension of movement and the many diffraction angles (the output can be q-space for PDF-CT).
 
-.. figure:: diffmap_main.png
+.. figure:: ../img/diffmap_main.png
    :align: center
    :alt: image
 
@@ -25,7 +25,7 @@ On the right-hand side, the motor range can be specified togeather with their
 names. The diffraction parameters can be setup in a similar way to *pyFAI-integrate*.
 The output name can also be specified.
 
-.. figure:: diffmap_integrate.png
+.. figure:: ../img/diffmap_integrate.png
    :align: center
    :alt: image
 
@@ -35,7 +35,7 @@ construction.
 During this processing, one can select a scatering range to highlight the regions
 of interest.
 
-.. figure:: diffmap_running.png
+.. figure:: ../img/diffmap_running.png
    :align: center
    :alt: image
 
