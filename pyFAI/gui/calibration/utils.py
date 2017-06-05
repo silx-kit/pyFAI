@@ -43,7 +43,7 @@ def getFreeColorRange(colormap):
 
     try:
         from silx.gui.plot.matplotlib import Colormap
-        cmap = silx.gui.plot.matplotlib.getColormap(name)
+        cmap = Colormap.getColormap(name)
     except ImportError:
         # Compatibility with silx <= 0.5
         from silx.gui.plot import Colors
