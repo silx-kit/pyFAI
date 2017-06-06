@@ -39,9 +39,11 @@ __status__ = "production"
 
 import logging
 import os
+import sys
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI-calib2")
+logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
 import silx.gui
 from pyFAI.gui import qt
@@ -379,7 +381,27 @@ def setup(model):
         logger.error("interactive option not supported")
 
 
+def logUncaughtExceptions(exceptionClass, exception, stack):
+    try:
+        import traceback
+        if stack is not None:
+            # Mimic the syntax of the default Python exception
+            message = (''.join(traceback.format_tb(stack)))
+            message = '{1}\nTraceback (most recent call last):\n{2}{0}: {1}'.format(exceptionClass.__name__, exception, message)
+        else:
+            # There is no backtrace
+            message = '{0}: {1}'.format(exceptionClass.__name__, exception)
+        logger_uncaught.error(message)
+    except Exception as _e:
+        # Make sure there is no problem at all in this funbction
+        try:
+            logger_uncaught.error(exception)
+        except:
+            print("Error:" + str(exception))
+
+
 def main():
+    sys.excepthook = logUncaughtExceptions
     app = qt.QApplication([])
     widget = CalibrationWindow()
     setup(widget.model())
