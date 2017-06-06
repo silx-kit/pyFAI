@@ -167,6 +167,7 @@ class IntegrationProcess(object):
 
             rings = self.__calibrant.get_2th()
             rings = filter(lambda x: x <= self.__result1d.radial[-1], rings)
+            rings = list(rings)
             try:
                 rings = utils.from2ThRad(rings, self.__radialUnit, self.__wavelength, ai)
             except ValueError:

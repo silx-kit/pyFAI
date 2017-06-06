@@ -178,6 +178,7 @@ class _RingPlot(silx.gui.plot.PlotWidget):
             for lineId, line in enumerate(polyline):
                 if mask is not None:
                     line = map(filter_coord_over_mask, line)
+                    line = list(line)
                     line = numpy.array(line)
                 y, x = line[:, 0], line[:, 1]
                 legend = "ring-%i-%i" % (ringId, lineId)
