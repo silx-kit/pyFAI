@@ -342,8 +342,8 @@ class _PeakPickingPlot(silx.gui.plot.PlotWidget):
         self.addMarker(x=x, y=y,
                        legend="marker" + name,
                        text=name)
-        y = map(lambda p: p[0], points)
-        x = map(lambda p: p[1], points)
+        y = list(map(lambda p: p[0], points))
+        x = list(map(lambda p: p[1], points))
         self.addCurve(x=x, y=y,
                       legend="coord" + name,
                       linestyle=' ',
@@ -557,6 +557,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         mask = self.model().experimentSettingsModel().mask().value()
         if mask is not None:
             points = filter(lambda coord: mask[int(coord[0]), int(coord[1])] != 1, points)
+            points = list(points)
 
         if len(points) > 0:
             # reach bigger ring
