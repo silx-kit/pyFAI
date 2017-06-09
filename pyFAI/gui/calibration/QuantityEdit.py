@@ -27,32 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "15/02/2017"
+__date__ = "09/06/2017"
 
 import logging
 from pyFAI.gui import qt
+from . import validators
 
 _logger = logging.getLogger(__name__)
-
-
-class _DoubleAndEmptyValidator(qt.QDoubleValidator):
-    """
-    Validate double values and also an empty string.
-    """
-
-    def validate(self, inputText, pos):
-        """
-        Reimplemented from `QDoubleValidator.validate`.
-
-        Allow to provide an empty value.
-
-        :param str inputText: Text to validate
-        :param int pos: Position of the cursor
-        """
-        if inputText.strip() == "":
-            # python API is not the same as C++ one
-            return qt.QValidator.Acceptable, inputText, pos
-        return super(_DoubleAndEmptyValidator, self).validate(inputText, pos)
 
 
 class QuantityEdit(qt.QLineEdit):
@@ -65,8 +46,11 @@ class QuantityEdit(qt.QLineEdit):
 
     def __init__(self, parent=None):
         super(QuantityEdit, self).__init__(parent)
-        self.setLocale(qt.QLocale("C"))
-        self.setValidator(_DoubleAndEmptyValidator(self))
+        validator = validators.DoubleAndEmptyValidator(self)
+        locale = qt.QLocale(qt.QLocale.C)
+        locale.setNumberOptions(qt.QLocale.RejectGroupSeparator)
+        validator.setLocale(locale)
+        self.setValidator(validator)
 
         self.__model = None
         self.__applyedWhenFocusOut = True
