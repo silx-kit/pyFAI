@@ -111,12 +111,15 @@ class QuantityEdit(qt.QLineEdit):
         text = self.text()
 
         if text.strip() == "":
-            value = None
+            value, validated = None, True
         else:
-            value = float(text)
+            value, validated = self.validator().locale().toDouble(text)
 
         try:
-            self.__model.setValue(value)
+            if validated:
+                self.__model.setValue(value)
+            else:
+                self.__cancelText()
         except ValueError as e:
             _logger.debug(e, exc_info=True)
             self.__cancelText()
