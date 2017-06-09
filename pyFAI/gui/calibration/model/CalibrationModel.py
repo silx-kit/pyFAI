@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "02/03/2017"
+__date__ = "09/06/2017"
 
 from .AbstractModel import AbstractModel
 from .ExperimentSettingsModel import ExperimentSettingsModel
@@ -44,6 +44,7 @@ class CalibrationModel(AbstractModel):
         self.__experimentSettingsModel = ExperimentSettingsModel(self)
         self.__peakSelectionModel = PeakSelectionModel(self)
         self.__fittedGeometry = GeometryModel(self)
+        self.__peakGeometry = GeometryModel(self)
         self.__geometryConstraintsModel = GeometryConstraintsModel(self)
         self.__integrationSettingsModel = IntegrationSettingsModel(self)
 
@@ -58,6 +59,9 @@ class CalibrationModel(AbstractModel):
 
     def fittedGeometry(self):
         return self.__fittedGeometry
+
+    def peakGeometry(self):
+        return self.__peakGeometry
 
     def geometryConstraintsModel(self):
         return self.__geometryConstraintsModel

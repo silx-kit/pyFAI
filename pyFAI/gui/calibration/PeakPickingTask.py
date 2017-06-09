@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/05/2017"
+__date__ = "09/06/2017"
 
 import logging
 import numpy
@@ -678,6 +678,7 @@ class PeakPickingTask(AbstractCalibrationTask):
                                         method="massif",
                                         maxRings=maxRings,
                                         pointPerDegree=pointPerDegree)
+        extractor.toGeometryModel(self.model().peakGeometry())
         extractor.toGeometryModel(self.model().fittedGeometry())
 
         # split peaks per rings

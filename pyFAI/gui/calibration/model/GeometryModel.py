@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "28/02/2017"
+__date__ = "09/06/2017"
 
 from .AbstractModel import AbstractModel
 from .DataModel import DataModel
@@ -90,3 +90,14 @@ class GeometryModel(AbstractModel):
 
     def rotation3(self):
         return self.__rotation3
+
+    def setFrom(self, geometry):
+        self.lockSignals()
+        self.distance().setValue(geometry.distance().value())
+        self.wavelength().setValue(geometry.wavelength().value())
+        self.poni1().setValue(geometry.poni1().value())
+        self.poni2().setValue(geometry.poni2().value())
+        self.rotation1().setValue(geometry.rotation1().value())
+        self.rotation2().setValue(geometry.rotation2().value())
+        self.rotation3().setValue(geometry.rotation3().value())
+        self.unlockSignals()
