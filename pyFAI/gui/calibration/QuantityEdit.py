@@ -47,9 +47,6 @@ class QuantityEdit(qt.QLineEdit):
     def __init__(self, parent=None):
         super(QuantityEdit, self).__init__(parent)
         validator = validators.DoubleAndEmptyValidator(self)
-        locale = qt.QLocale(qt.QLocale.C)
-        locale.setNumberOptions(qt.QLocale.RejectGroupSeparator)
-        validator.setLocale(locale)
         self.setValidator(validator)
 
         self.__model = None

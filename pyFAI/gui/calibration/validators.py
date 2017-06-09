@@ -39,12 +39,21 @@ class DoubleValidator(qt.QDoubleValidator):
     """
     Double validator with extra feature.
 
+    The default locale used is not the default one. It uses locale C with
+    RejectGroupSeparator option. This allows to have consistant rendering of
+    double using dot separator without any comma.
+
     QLocale provides an API to support or not groups on numbers. Unfortunatly
     the default Qt QDoubleValidator do not filter out the group character in
     case the locale rejected it. This implementation reject the group character
     from the validation, and remove it from the fixup. Only if the locale is
     defined to reject it.
     """
+    def __init__(self, parent):
+        qt.QDoubleValidator.__init__(self, parent)
+        locale = qt.QLocale(qt.QLocale.C)
+        locale.setNumberOptions(qt.QLocale.RejectGroupSeparator)
+        self.setLocale(locale)
 
     def validate(self, inputText, pos):
         """

@@ -55,12 +55,7 @@ class FitParamView(qt.QObject):
 
     def __init__(self, parent, label, unit):
         qt.QObject.__init__(self, parent=parent)
-
         validator = validators.DoubleValidator(self)
-        locale = qt.QLocale(qt.QLocale.C)
-        locale.setNumberOptions(qt.QLocale.RejectGroupSeparator)
-        validator.setLocale(locale)
-
         self.__label = qt.QLabel(parent)
         self.__label.setText(label)
         self.__lineEdit = qt.QLineEdit(parent)
