@@ -510,6 +510,61 @@ class PeakPickingTask(AbstractCalibrationTask):
         dialog.setNameFilters(filters)
         return dialog
 
+    def __createLoadPeakDialog(self):
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle("Load peaks")
+        dialog.setModal(True)
+
+        extensions = OrderedDict()
+        extensions["Control point files"] = "*.npt"
+
+        filters = []
+        for name, extension in extensions.items():
+            filters.append("%s (%s)" % (name, extension))
+
+        dialog.setNameFilters(filters)
+        return dialog
+
+    def __loadPeaksFromFile(self):
+        dialog = self.__createLoadPeakDialog()
+
+        if self.__dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(self.__dialogState)
+
+        result = dialog.exec_()
+        if not result:
+            return
+
+        self.__dialogState = dialog.saveState()
+
+        filename = dialog.selectedFiles()[0]
+        if os.path.exists(filename):
+            try:
+                controlPoints = pyFAI.control_points.ControlPoints(filename)
+                oldState = self.__copyPeaks(self.__undoStack)
+                self.model().peakSelectionModel().clear()
+                for label in controlPoints.get_labels():
+                    group = controlPoints.get(lbl=label)
+                    peakModel = self.__createNewPeak(group.points)
+                    peakModel.setRingNumber(group.ring)
+                    peakModel.setName(label)
+                    self.model().peakSelectionModel().append(peakModel)
+                newState = self.__copyPeaks(self.__undoStack)
+                command = _PeakSelectionUndoCommand(None, self.model().peakSelectionModel(), oldState, newState)
+                command.setText("load rings")
+                command.setRedoInhibited(True)
+                self.__undoStack.push(command)
+                command.setRedoInhibited(False)
+            except Exception as e:
+                _logger.error(e.args[0])
+                _logger.error("Backtrace", exc_info=True)
+                # FIXME Display error dialog
+            except KeyboardInterrupt:
+                raise
+
     def __savePeaksAsFile(self):
         dialog = self.__createSavePeakDialog()
 
@@ -546,6 +601,15 @@ class PeakPickingTask(AbstractCalibrationTask):
 
     def __createOptionsWidget(self):
         menu = qt.QMenu(self)
+
+        # Load peak selection as file
+        loadPeaksFromFile = qt.QAction(self)
+        icon = icons.getQIcon('document-open')
+        loadPeaksFromFile.setIcon(icon)
+        loadPeaksFromFile.setText("Load peak selection from file")
+        loadPeaksFromFile.triggered.connect(self.__loadPeaksFromFile)
+        loadPeaksFromFile.setIconVisibleInMenu(True)
+        menu.addAction(loadPeaksFromFile)
 
         # Save peak selection as file
         savePeaksAsFile = qt.QAction(self)
