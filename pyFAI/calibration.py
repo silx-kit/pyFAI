@@ -734,7 +734,7 @@ class AbstractCalibration(object):
                     if (count == 0):
                         previous = six.MAXSIZE
                     else:
-                        previous = self.geoRef.chi2()
+                        previous = self.geoRef.chi2_wavelength()
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
