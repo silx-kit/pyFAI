@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/06/2017"
+__date__ = "12/06/2017"
 
 import logging
 import numpy
@@ -39,8 +39,11 @@ import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.PeakModel import PeakModel
 from pyFAI.gui.calibration.RingExtractor import RingExtractor
+from collections import OrderedDict
+import pyFAI.control_points
 
 import silx.gui.plot
+import os
 from silx.gui.plot.PlotTools import PositionInfo
 from silx.gui.plot import PlotActions
 from . import utils
@@ -461,6 +464,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         super(PeakPickingTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-peakpicking.ui"), self)
         self.initNextStep()
+        self.__dialogState = None
 
         layout = qt.QVBoxLayout(self._imageHolder)
         self.__plot = _PeakPickingPlot(parent=self._imageHolder)
@@ -490,6 +494,75 @@ class PeakPickingTask(AbstractCalibrationTask):
 
         self._extract.clicked.connect(self.__autoExtractRings)
 
+    def __createSavePeakDialog(self):
+        dialog = qt.QFileDialog(self)
+        dialog.setAcceptMode(qt.QFileDialog.AcceptSave)
+        dialog.setWindowTitle("Save selected peaks")
+        dialog.setModal(True)
+
+        extensions = OrderedDict()
+        extensions["Control point files"] = "*.npt"
+
+        filters = []
+        for name, extension in extensions.items():
+            filters.append("%s (%s)" % (name, extension))
+
+        dialog.setNameFilters(filters)
+        return dialog
+
+    def __savePeaksAsFile(self):
+        dialog = self.__createSavePeakDialog()
+
+        if self.__dialogState is None:
+            currentDirectory = os.getcwd()
+            dialog.setDirectory(currentDirectory)
+        else:
+            dialog.restoreState(self.__dialogState)
+
+        result = dialog.exec_()
+        if not result:
+            return
+
+        self.__dialogState = dialog.saveState()
+        filename = dialog.selectedFiles()[0]
+        if not os.path.exists(filename) and not filename.endswith(".npt"):
+            filename = filename + ".npt"
+        try:
+            calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
+            wavelength = self.model().experimentSettingsModel().wavelength().value()
+            wavelength = wavelength / 1e10
+            controlPoints = pyFAI.control_points.ControlPoints(None, calibrant, wavelength)
+            for peakModel in self.model().peakSelectionModel():
+                ringNumber = peakModel.ringNumber()
+                points = peakModel.coords()
+                controlPoints.append(points=points, ring=ringNumber)
+            controlPoints.save(filename)
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.error("Backtrace", exc_info=True)
+            # FIXME Display error dialog
+        except KeyboardInterrupt:
+            raise
+
+    def __createOptionsWidget(self):
+        menu = qt.QMenu(self)
+
+        # Save peak selection as file
+        savePeaksAsFile = qt.QAction(self)
+        icon = icons.getQIcon('document-save')
+        savePeaksAsFile.setIcon(icon)
+        savePeaksAsFile.setText("Save peak selection as file")
+        savePeaksAsFile.triggered.connect(self.__savePeaksAsFile)
+        savePeaksAsFile.setIconVisibleInMenu(True)
+        menu.addAction(savePeaksAsFile)
+
+        options = qt.QToolButton(self)
+        icon = icons.getQIcon('options')
+        options.setIcon(icon)
+        options.setPopupMode(qt.QToolButton.InstantPopup)
+        options.setMenu(menu)
+        return options
+
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
 
@@ -503,6 +576,13 @@ class PeakPickingTask(AbstractCalibrationTask):
         toolBar.addAction(PlotActions.CopyAction(plot, toolBar))
         toolBar.addAction(PlotActions.SaveAction(plot, toolBar))
         toolBar.addAction(PlotActions.PrintAction(plot, toolBar))
+
+        stretch = qt.QWidget(self)
+        stretch.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Fixed)
+        toolBar.addWidget(stretch)
+
+        self.__options = self.__createOptionsWidget()
+        toolBar.addWidget(self.__options)
 
         return toolBar
 
