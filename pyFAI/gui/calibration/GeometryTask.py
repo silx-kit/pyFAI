@@ -345,13 +345,8 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __initGeometryFromPeaks(self):
         calibration = self.__getCalibration()
-        peaks = []
-        for peakModel in self.model().peakSelectionModel():
-            ringNumber = peakModel.ringNumber()
-            for coord in peakModel.coords():
-                peaks.append([coord[0], coord[1], ringNumber - 1])
-        peaks = numpy.array(peaks)
-        calibration.init(peaks, "massif")
+        self.model().fittedGeometry().setFrom(self.model().peakGeometry())
+        calibration.fromGeometryModel(self.model().fittedGeometry())
         self.__peaksInvalidated = False
 
     def __resetGeometry(self):
@@ -465,8 +460,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation3.setConstraintsModel(constrains.rotation3())
 
         model.fittedGeometry().changed.connect(self.__geometryUpdated)
-
-        model.peakSelectionModel().changed.connect(self.__invalidatePeaks)
+        model.peakGeometry().changed.connect(self.__invalidatePeaks)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
