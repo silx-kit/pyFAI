@@ -349,7 +349,6 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __initGeometryFromPeaks(self):
         if self.__peaksInvalidated:
-            print("__initGeometryFromPeaks COMPUTE")
             # recompute the geometry from the peaks
             # FIXME numpy array can be allocated first
             peaks = []
@@ -363,8 +362,6 @@ class GeometryTask(AbstractCalibrationTask):
             calibration.init(peaks, "massif")
             calibration.toGeometryModel(self.model().peakGeometry())
             self.__peaksInvalidated = False
-        else:
-            print("__initGeometryFromPeaks USE CACHE")
 
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
 
