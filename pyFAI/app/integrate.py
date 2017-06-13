@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2017"
+__date__ = "13/06/2017"
 __satus__ = "production"
 import sys
 import logging
@@ -134,12 +134,14 @@ def integrate_shell(options, args):
             writer.init(config)
 
             for i in range(img.nframes):
-                data = img.getframe(i).data
+                fimg = img.getframe(i)
+                data = fimg.data
                 if worker.do_2D():
                     res = worker.process(data)
                 else:
                     res = worker.process(data)
                     res = res.T[1]
+                res._set_metadata(fimg.header)
                 writer.write(res, index=i)
             writer.close()
         else:
@@ -149,10 +151,7 @@ def integrate_shell(options, args):
                 filename = outpath + ".dat"
             data = img.data
             writer = DefaultAiWriter(filename, worker.ai)
-            if worker.do_2D():
-                worker.process(data, writer=writer)
-            else:
-                worker.process(data, writer=writer)
+            worker.process(data, writer=writer)
             writer.close()
 
     progress_bar.clear()
@@ -175,26 +174,26 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-V", "--version", action='version', version=version)
     parser.add_argument("-v", "--verbose",
-                      action="store_true", dest="verbose", default=False,
-                      help="switch to verbose/debug mode")
+                        action="store_true", dest="verbose", default=False,
+                        help="switch to verbose/debug mode")
     parser.add_argument("-o", "--output",
-                      dest="output", default=None,
-                      help="Directory or file where to store the output data")
+                        dest="output", default=None,
+                        help="Directory or file where to store the output data")
     parser.add_argument("-f", "--format",
-                      dest="format", default=None,
-                      help="output data format (can be HDF5)")
+                        dest="format", default=None,
+                        help="output data format (can be HDF5)")
     parser.add_argument("-s", "--slow-motor",
-                      dest="slow", default=None,
-                      help="Dimension of the scan on the slow direction (makes sense only with HDF5)")
+                        dest="slow", default=None,
+                        help="Dimension of the scan on the slow direction (makes sense only with HDF5)")
     parser.add_argument("-r", "--fast-motor",
-                      dest="rapid", default=None,
-                      help="Dimension of the scan on the fast direction (makes sense only with HDF5)")
+                        dest="rapid", default=None,
+                        help="Dimension of the scan on the fast direction (makes sense only with HDF5)")
     parser.add_argument("--no-gui",
-                      dest="gui", default=True, action="store_false",
-                      help="Process the dataset without showing the user interface.")
+                        dest="gui", default=True, action="store_false",
+                        help="Process the dataset without showing the user interface.")
     parser.add_argument("-j", "--json",
-                      dest="json", default=".azimint.json",
-                      help="Configuration file containing the processing to be done")
+                        dest="json", default=".azimint.json",
+                        help="Configuration file containing the processing to be done")
     parser.add_argument("args", metavar='FILE', type=str, nargs='*',
                         help="Files to be integrated")
     options = parser.parse_args()

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "13/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -53,7 +53,12 @@ from .utils import EPS32, deg2rad
 from .decorators import deprecated
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
-import fabio
+from .io import DefaultAiWriter
+try:
+    import fabio
+except ImportError:
+    logger.warning("FabIO package is missing")
+    fabio = None
 error = None
 
 
@@ -216,8 +221,6 @@ class AzimuthalIntegrator(Geometry):
         self._writer = None
         self.flatfiles = None
         self.darkfiles = None
-
-        self.header = None
 
         self._ocl_integrator = None
         self._ocl_lut_integr = None
@@ -2142,7 +2145,7 @@ class AzimuthalIntegrator(Geometry):
                     polarization_factor=None, dark=None, flat=None,
                     method="csr", unit=units.Q, safe=True,
                     normalization_factor=1.0,
-                    block_size=32, profile=False, all=False):
+                    block_size=32, profile=False, all=False, metadata=None):
         """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
@@ -2192,6 +2195,7 @@ class AzimuthalIntegrator(Geometry):
         :param profile: set to True to enable profiling in OpenCL
         :param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
         :type all: bool
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         :rtype: Integrate1dResult, dict
         """
@@ -2675,10 +2679,6 @@ class AzimuthalIntegrator(Geometry):
             # not in place to make a copy
             qAxis = qAxis * pos0_scale
 
-        self.save1D(filename, qAxis, I, sigma, unit,
-                    dark is not None, flat is not None,
-                    polarization_factor, normalization_factor)
-
         result = Integrate1dResult(qAxis, I, sigma)
         result._set_unit(unit)
         result._set_sum(sum_)
@@ -2687,6 +2687,11 @@ class AzimuthalIntegrator(Geometry):
         result._set_has_flat_correction(flat is not None)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_metadata(metadata)
+
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
 
         if all:
             logger.warning("integrate1d(all=True) is deprecated. "
@@ -2710,7 +2715,7 @@ class AzimuthalIntegrator(Geometry):
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     method="bbox", unit=units.Q, safe=True,
-                    normalization_factor=1.0, all=False):
+                    normalization_factor=1.0, all=False, metadata=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -2757,6 +2762,7 @@ class AzimuthalIntegrator(Geometry):
         :param normalization_factor: Value of a normalization monitor
         :type normalization_factor: float
         :param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :type all: bool
         :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         :rtype: Integrate2dResult, dict
@@ -3128,11 +3134,6 @@ class AzimuthalIntegrator(Geometry):
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
 
-        self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    has_dark=dark is not None, has_flat=flat is not None,
-                    polarization_factor=polarization_factor,
-                    normalization_factor=normalization_factor)
-
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_unit(unit)
         result._set_count(count)
@@ -3141,6 +3142,11 @@ class AzimuthalIntegrator(Geometry):
         result._set_has_flat_correction(flat is not None)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_metadata(metadata)
+
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
 
         if all:
             logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
@@ -3224,20 +3230,13 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def _create_default_writer(self):
-        """Default writer constructor"""
-        from .io import DefaultAiWriter
-        return DefaultAiWriter(None, self)
-
-    def __get_default_writer(self):
-        """Get the default writer. Used when a filename is defined."""
-        if self._writer is None:
-            self._writer = self._create_default_writer()
-        return self._writer
-
+    @deprecated
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
-        """
+        """This method save the result of a 1D integration.
+        
+        Deprecated on 13/06/2017
+        
         :param filename: the filename used to save the 1D integration
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
@@ -3257,18 +3256,22 @@ class AzimuthalIntegrator(Geometry):
         :param normalization_factor: the monitor value
         :type normalization_factor: float
 
-        This method save the result of a 1D integration.
+        
         """
         if not filename:
             return
-        writer = self.__get_default_writer()
+        writer = DefaultAiWriter(None, self)
         writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
+    @deprecated
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None):
-        """
+        """This method save the result of a 2D integration.
+        
+        Deprecated on 13/06/2017
+        
         :param filename: the filename used to save the 2D histogram
         :type filename: str
         :param dim1: the 1st coordinates of the histogram
@@ -3290,11 +3293,12 @@ class AzimuthalIntegrator(Geometry):
         :param normalization_factor: the monitor value
         :type normalization_factor: float
 
-        This method save the result of a 2D integration.
+        
         """
         if not filename:
             return
-        writer = self.__get_default_writer()
+        from .io import DefaultAiWriter
+        writer = DefaultAiWriter(None, self)
         writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
@@ -3499,6 +3503,8 @@ class AzimuthalIntegrator(Geometry):
         if len(files) == 0:
             self.set_darkcurrent(None)
         elif len(files) == 1:
+            if fabio is None:
+                raise RuntimeError("FabIO is missing")
             self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
             self.darkfiles = files[0]
         else:
@@ -3522,6 +3528,8 @@ class AzimuthalIntegrator(Geometry):
         if len(files) == 0:
             self.set_flatfield(None)
         elif len(files) == 1:
+            if fabio is None:
+                raise RuntimeError("FabIO is missing")
             self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
             self.flatfiles = files[0]
         else:
