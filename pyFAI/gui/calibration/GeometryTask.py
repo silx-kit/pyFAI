@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/06/2017"
+__date__ = "13/06/2017"
 
 import logging
 import numpy
@@ -298,6 +298,7 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __createCalibration(self):
         image = self.model().experimentSettingsModel().image().value()
+        mask = self.model().experimentSettingsModel().mask().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
@@ -311,6 +312,7 @@ class GeometryTask(AbstractCalibrationTask):
         peaks = numpy.array(peaks)
 
         calibration = RingCalibration(image,
+                                      mask,
                                       calibrant,
                                       detector,
                                       wavelength,
@@ -330,13 +332,14 @@ class GeometryTask(AbstractCalibrationTask):
         image = self.model().experimentSettingsModel().image().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
+        mask = self.model().experimentSettingsModel().mask().value()
         if self.__wavelengthInvalidated:
             self.__wavelengthInvalidated = False
             wavelength = self.model().experimentSettingsModel().wavelength().value()
             wavelength = wavelength / 1e10
         else:
             wavelength = None
-        self.__calibration.update(image, calibrant, detector, wavelength)
+        self.__calibration.update(image, mask, calibrant, detector, wavelength)
 
         return self.__calibration
 

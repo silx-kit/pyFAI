@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/06/2017"
+__date__ = "13/06/2017"
 
 import logging
 import numpy
@@ -44,8 +44,9 @@ _logger = logging.getLogger(__name__)
 
 class RingCalibration(object):
 
-    def __init__(self, image, calibrant, detector, wavelength, peaks, method):
+    def __init__(self, image, mask, calibrant, detector, wavelength, peaks, method):
         self.__image = image
+        self.__mask = mask
         self.__calibrant = calibrant
         self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
@@ -98,8 +99,9 @@ class RingCalibration(object):
     def init(self, peaks, method):
         self.__init(peaks, method)
 
-    def update(self, image, calibrant, detector, wavelength=None):
+    def update(self, image, mask, calibrant, detector, wavelength=None):
         self.__image = image
+        self.__mask = mask
         self.__calibrant = calibrant
         self.__detector = detector
         if wavelength is not None:
