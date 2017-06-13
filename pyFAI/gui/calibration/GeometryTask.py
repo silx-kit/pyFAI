@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/06/2017"
+__date__ = "09/06/2017"
 
 import logging
 import numpy
@@ -42,6 +42,7 @@ import silx.gui.plot
 from silx.gui.plot.PlotTools import PositionInfo
 from silx.gui.plot import PlotActions
 from . import utils
+from . import validators
 
 _logger = logging.getLogger(__name__)
 
@@ -54,11 +55,10 @@ class FitParamView(qt.QObject):
 
     def __init__(self, parent, label, unit):
         qt.QObject.__init__(self, parent=parent)
-
+        validator = validators.DoubleValidator(self)
         self.__label = qt.QLabel(parent)
         self.__label.setText(label)
         self.__lineEdit = qt.QLineEdit(parent)
-        validator = qt.QDoubleValidator(self.__lineEdit)
         self.__lineEdit.setValidator(validator)
         self.__lineEdit.setAlignment(qt.Qt.AlignRight)
         self.__lineEdit.editingFinished.connect(self.__lineEditChanged)
