@@ -53,6 +53,10 @@ class RingCalibration(object):
         self.__wavelength = wavelength
         self.__init(peaks, method)
 
+        fixed = pyFAI.utils.FixedParameters()
+        fixed.add("wavelength")
+        self.__fixed = fixed
+
     def __initgeoRef(self):
         """
         Tries to initialise the GeometryRefinement (dist, poni, rot)
@@ -94,7 +98,6 @@ class RingCalibration(object):
 
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
-        self.__fixed = fixed
 
     def init(self, peaks, method):
         self.__init(peaks, method)
