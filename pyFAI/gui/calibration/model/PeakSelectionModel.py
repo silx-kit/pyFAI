@@ -66,11 +66,8 @@ class PeakSelectionModel(AbstractModel):
 
     def clear(self):
         self.lockSignals()
-        print("clear", self.__peaks)
         for peak in list(self.__peaks):
-            print(peak)
             self.remove(peak)
-        print("end", self.__peaks)
         self.unlockSignals()
 
     def index(self, peak):
