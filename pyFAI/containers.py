@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2016"
+__date__ = "13/06/2017"
 __status__ = "development"
 
 
@@ -49,6 +49,7 @@ class IntegrateResult(tuple):
         self._has_flat_correction = None
         self._normalization_factor = None
         self._polarization_factor = None
+        self.metadata = None
 
     @property
     def sum(self):
