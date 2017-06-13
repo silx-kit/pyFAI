@@ -199,6 +199,7 @@ class GeometryTask(AbstractCalibrationTask):
         super(GeometryTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-geometry.ui"), self)
         self.initNextStep()
+        self.widgetShow.connect(self.__widgetShow)
 
         self.__plot = self.__createPlot()
 
@@ -343,14 +344,29 @@ class GeometryTask(AbstractCalibrationTask):
 
         return self.__calibration
 
-    def __invalidatePeaks(self):
+    def __invalidatePeakSelection(self):
         self.__peaksInvalidated = True
 
     def __initGeometryFromPeaks(self):
-        calibration = self.__getCalibration()
+        if self.__peaksInvalidated:
+            print("__initGeometryFromPeaks COMPUTE")
+            # recompute the geometry from the peaks
+            # FIXME numpy array can be allocated first
+            peaks = []
+            for peakModel in self.model().peakSelectionModel():
+                ringNumber = peakModel.ringNumber()
+                for coord in peakModel.coords():
+                    peaks.append([coord[0], coord[1], ringNumber - 1])
+            peaks = numpy.array(peaks)
+
+            calibration = self.__getCalibration()
+            calibration.init(peaks, "massif")
+            calibration.toGeometryModel(self.model().peakGeometry())
+            self.__peaksInvalidated = False
+        else:
+            print("__initGeometryFromPeaks USE CACHE")
+
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
-        calibration.fromGeometryModel(self.model().fittedGeometry())
-        self.__peaksInvalidated = False
 
     def __resetGeometry(self):
         calibration = self.__getCalibration()
@@ -463,7 +479,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation3.setConstraintsModel(constrains.rotation3())
 
         model.fittedGeometry().changed.connect(self.__geometryUpdated)
-        model.peakGeometry().changed.connect(self.__invalidatePeaks)
+        model.peakSelectionModel().changed.connect(self.__invalidatePeakSelection)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
@@ -472,3 +488,7 @@ class GeometryTask(AbstractCalibrationTask):
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()
+
+    def __widgetShow(self):
+        if self.__peaksInvalidated:
+            self.__initGeometryFromPeaks()
