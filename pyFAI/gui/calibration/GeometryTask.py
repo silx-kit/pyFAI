@@ -69,7 +69,6 @@ class FitParamView(qt.QObject):
         self.__constraints.clicked.connect(self.__constraintsClicked)
         self.__model = None
         self.__wavelengthInvalidated = False
-        self.__peaksInvalidated = False
         self.__constraintsModel = None
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
@@ -230,6 +229,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.setDisabledWhenWaiting(True)
         self._resetButton.clicked.connect(self.__resetGeometry)
         self.__calibration = None
+        self.__peaksInvalidated = False
 
     def addParameterToLayout(self, layout, param):
         # an empty grid returns 1
