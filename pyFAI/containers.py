@@ -158,17 +158,16 @@ class IntegrateResult(tuple):
 
     @property
     def metadata(self):
-        """Metadata associated to the input frame
+        """Metadata associated with the input frame
 
         :rtype: JSON serializable dict object
         """
         return self._metadata
 
     def _set_metadata(self, metadata):
-        """
-        Define the used polarization factor
+        """Define the metadata associated with the input frame
 
-        :type polarization_factor: float
+        :type metadata: JSON serializable dict object
         """
         self._metadata = metadata
 
