@@ -126,7 +126,7 @@ class RingCalibration(object):
         else:
             return self.__geoRef.refine2_wavelength(maxiter, fix)
 
-    def refine(self, max_iter=1000):
+    def refine(self, max_iter=500):
         """
         Contains the common geometry refinement part
         """
@@ -138,7 +138,7 @@ class RingCalibration(object):
 
         print("Initial residual: %s" % previous_residual)
 
-        for _ in range(max_iter):
+        for count in range(max_iter):
             residual = self.__refine(10000, fix=self.__fixed)
             print("Residual: %s" % residual)
             if residual >= previous_residual:
@@ -146,7 +146,7 @@ class RingCalibration(object):
             previous_residual = residual
 
         self.__residual = residual
-        print("Final residual: %s" % residual)
+        print("Final residual: %s (after %s iterations)" % (residual, count))
 
         self.__geoRef.del_ttha()
         self.__geoRef.del_dssa()
