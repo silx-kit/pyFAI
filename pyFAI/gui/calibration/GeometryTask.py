@@ -230,6 +230,7 @@ class GeometryTask(AbstractCalibrationTask):
         self._resetButton.clicked.connect(self.__resetGeometry)
         self.__calibration = None
         self.__peaksInvalidated = False
+        self.__fitting = False
 
     def addParameterToLayout(self, layout, param):
         # an empty grid returns 1
@@ -371,8 +372,10 @@ class GeometryTask(AbstractCalibrationTask):
         # write result to the fitted model
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
+        self.__formatResidual()
 
     def __fitGeometry(self):
+        self.__fitting = True
         self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
         if self.__peaksInvalidated:
@@ -385,13 +388,33 @@ class GeometryTask(AbstractCalibrationTask):
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
         self._fitButton.setWaiting(False)
+        self.__fitting = False
+
+    def __formatResidual(self):
+        calibration = self.__getCalibration()
+        previousResidual = calibration.getPreviousResidual()
+        residual = calibration.getResidual()
+        text = '%.6e' % residual
+        if previousResidual is not None:
+            if residual == previousResidual:
+                diff = "(no changes)"
+            else:
+                diff = '(%+.2e)' % (residual - previousResidual)
+                if residual < previousResidual:
+                    diff = '<font color="green">%s</font>' % diff
+                else:
+                    diff = '<font color="red">%s</font>' % diff
+            text = '%s %s' % (text, diff)
+        self._currentResidual.setText(text)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
         model = self.model().fittedGeometry()
         if model.isValid():
-            calibration.fromGeometryModel(model)
+            resetResidual = self.__fitting is not True
+            calibration.fromGeometryModel(model, resetResidual=resetResidual)
             self.__updateDisplay()
+            self.__formatResidual()
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()
@@ -489,3 +512,4 @@ class GeometryTask(AbstractCalibrationTask):
     def __widgetShow(self):
         if self.__peaksInvalidated:
             self.__initGeometryFromPeaks()
+            self.__formatResidual()
