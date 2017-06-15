@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/06/2017"
+__date__ = "15/06/2017"
 __status__ = "development"
 
 import logging
@@ -382,13 +382,13 @@ class AIWidget(qt.QWidget):
                         for i in range(fab_img.nframes):
                             frame = fab_img.getframe(i)
                             kwarg["data"] = frame.data
+                            kwarg["metadata"] = frame.header
                             if "npt_azim" in kwarg:
                                 res = ai.integrate2d(**kwarg)
                             else:
                                 if "npt_rad" in kwarg:  # convert npt_rad -> npt
                                     kwarg["npt"] = kwarg.pop("npt_rad")
                                 res = ai.integrate1d(**kwarg)
-                                res._set_metadata(frame.header)
                             writer.write(res, index=i)
                         writer.close()
                     else:

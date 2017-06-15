@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/06/2017"
+__date__ = "15/06/2017"
 __satus__ = "production"
 import sys
 import logging
@@ -137,11 +137,10 @@ def integrate_shell(options, args):
                 fimg = img.getframe(i)
                 data = fimg.data
                 if worker.do_2D():
-                    res = worker.process(data)
+                    res = worker.process(data, metadata=fimg.header)
                 else:
-                    res = worker.process(data)
+                    res = worker.process(data, metadata=fimg.header)
                     res = res.T[1]
-                res._set_metadata(fimg.header)
                 writer.write(res, index=i)
             writer.close()
         else:

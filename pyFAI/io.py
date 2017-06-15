@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/06/2017"
+__date__ = "15/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -64,7 +64,7 @@ except ImportError:
     OrderedDict = dict
 
 
-from .utils import StringTypes
+from .utils import StringTypes, fully_qualified_name
 from . import units
 from . import version
 
@@ -431,7 +431,7 @@ class HDF5Writer(Writer):
 
 class DefaultAiWriter(Writer):
 
-    def __init__(self, filename, ai):
+    def __init__(self, filename, ai=None):
         """
         Constructor of the historical writer of azimuthalIntegrator.
         """
@@ -591,39 +591,47 @@ class DefaultAiWriter(Writer):
         dim1_unit = units.to_unit(dim1_unit)
 
         header = OrderedDict()
+        # Warning: risk of cyclic import, not using isinstance on purpose
+        fqn = fully_qualified_name(self.ai)
+        if fqn == "pyFAI.azimuthalIntegrator.AzimuthalIntegrator":
+            ai = self._ai
+            header["dist"] = str(ai._dist)
+            header["poni1"] = str(ai._poni1)
+            header["poni2"] = str(ai._poni2)
+            header["rot1"] = str(ai._rot1)
+            header["rot2"] = str(ai._rot2)
+            header["rot3"] = str(ai._rot3)
+            header["pixelX"] = str(ai.pixel2)  # this is not a bug ... most people expect dim1 to be X
+            header["pixelY"] = str(ai.pixel1)  # this is not a bug ... most people expect dim2 to be Y
 
-        ai = self._ai
-        header["dist"] = str(ai._dist)
-        header["poni1"] = str(ai._poni1)
-        header["poni2"] = str(ai._poni2)
-        header["rot1"] = str(ai._rot1)
-        header["rot2"] = str(ai._rot2)
-        header["rot3"] = str(ai._rot3)
-        header["chi_min"] = str(dim2.min())
-        header["chi_max"] = str(dim2.max())
+            if ai.splineFile:
+                header["spline"] = str(ai.splineFile)
+
+            if has_dark:
+                if ai.darkfiles:
+                    header["dark"] = ai.darkfiles
+                else:
+                    header["dark"] = 'unknown dark applied'
+            if has_flat:
+                if ai.flatfiles:
+                    header["flat"] = ai.flatfiles
+                else:
+                    header["flat"] = 'unknown flat applied'
+            f2d = ai.getFit2D()
+            for key in f2d:
+                header["key"] = f2d[key]
+        # elif fqn == "pyFAI.multi_geometry.MultiGeometry":
+        else:
+            header["Engine"] = " ".join(str(self._ai).split())  # Remove \n
+
         header[dim1_unit.name + "_min"] = str(dim1.min())
         header[dim1_unit.name + "_max"] = str(dim1.max())
-        header["pixelX"] = str(ai.pixel2)  # this is not a bug ... most people expect dim1 to be X
-        header["pixelY"] = str(ai.pixel1)  # this is not a bug ... most people expect dim2 to be Y
+
+        header["chi_min"] = str(dim2.min())
+        header["chi_max"] = str(dim2.max())
+
         header["polarization_factor"] = str(polarization_factor)
         header["normalization_factor"] = str(normalization_factor)
-
-        if ai.splineFile:
-            header["spline"] = str(ai.splineFile)
-
-        if has_dark:
-            if ai.darkfiles:
-                header["dark"] = ai.darkfiles
-            else:
-                header["dark"] = 'unknown dark applied'
-        if has_flat:
-            if ai.flatfiles:
-                header["flat"] = ai.flatfiles
-            else:
-                header["flat"] = 'unknown flat applied'
-        f2d = ai.getFit2D()
-        for key in f2d:
-            header["key"] = f2d[key]
 
         if metadata is not None:
             blacklist = ['HEADERID', 'IMAGE', 'BYTEORDER', 'DATATYPE', 'DIM_1',
@@ -655,9 +663,7 @@ class DefaultAiWriter(Writer):
             raise Exception("This file format do not support multi frame. You have to change the filename.")
         self._already_written = True
 
-        from .containers import Integrate1dResult, Integrate2dResult
-
-        if isinstance(data, Integrate1dResult):
+        if fully_qualified_name(data) == 'pyFAI.containers.Integrate1dResult':
             self.save1D(self._filename,
                         data.radial,
                         data.intensity,
@@ -669,7 +675,7 @@ class DefaultAiWriter(Writer):
                         data.normalization_factor,
                         data.metadata)
 
-        elif isinstance(data, Integrate2dResult):
+        elif fully_qualified_name(data) == 'pyFAI.containers.Integrate2dResult':
             self.save2D(self._filename,
                         data.intensity,
                         data.radial,
