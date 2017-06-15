@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "15/06/2017"
 __status__ = "stable"
 
 
@@ -49,14 +49,10 @@ from collections import OrderedDict
 
 from . import io
 from . import spline
-from .utils import binning, expand2d
+from .utils import binning, expand2d, crc32
 
 logger = logging.getLogger("pyFAI.detectors")
 
-try:
-    from .ext.fastcrc import crc32
-except ImportError:
-    from zlib import crc32
 try:
     from .ext import bilinear
 except ImportError:

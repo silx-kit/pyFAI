@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/06/2017"
+__date__ = "15/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -49,7 +49,7 @@ from .geometry import Geometry
 from . import average
 from . import units
 from . import utils
-from .utils import EPS32, deg2rad
+from .utils import EPS32, deg2rad, crc32
 from .decorators import deprecated
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
@@ -61,7 +61,6 @@ except ImportError:
     fabio = None
 error = None
 
-
 try:
     from .ext import splitBBoxLUT
 except ImportError as error:
@@ -69,11 +68,6 @@ except ImportError as error:
                    " Look-up table based azimuthal integration")
     logger.debug("Backtrace", exc_info=True)
     splitBBoxLUT = None
-
-try:
-    from .fastcrc import crc32
-except ImportError:
-    from zlib import crc32
 
 try:
     # Used for 1D integration
@@ -127,7 +121,7 @@ if ocl:
         from .opencl import azim_hist as ocl_azim  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.ocl_azim: %s",
-                       error)
+                     error)
         ocl_azim = None
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
@@ -145,7 +139,7 @@ if ocl:
         from .opencl import sort as ocl_sort
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.ocl_sort for: %s",
-                      error)
+                     error)
         ocl_sort = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None

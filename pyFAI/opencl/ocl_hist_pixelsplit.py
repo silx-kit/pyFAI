@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "15/05/2017"
+__date__ = "15/06/2017"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -40,16 +40,14 @@ import threading
 import numpy
 from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .splitBBoxLUT import HistoBBox1d
-from .utils import concatenate_cl_kernel
+from ..utils import concatenate_cl_kernel
+from ..utils import crc32
 from pyopencl import array
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-try:
-    from .ext.fastcrc import crc32
-except:
-    from zlib import crc32
+
 logger = logging.getLogger("pyFAI.ocl_azim_csr")
 
 
