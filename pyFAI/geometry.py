@@ -63,7 +63,6 @@ except ImportError:
 
 logger = logging.getLogger("pyFAI.geometry")
 
-
 try:
     from .ext import _geometry
 except ImportError:
