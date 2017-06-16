@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "16/06/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -137,8 +137,8 @@ class GeometryTransformation(object):
         variables = self.variables.copy()
         for name, value in zip(self.param_names, param):
             variables[name] = value
-        if len(self.pos_names) == 1 and self.pos_names[0] == "pos":
-            variables["pos"] = pos
+        if len(self.pos_names) == 1:
+            variables[self.pos_names[0]] = pos
         else:
             for name, value in zip(self.pos_names, pos):
                 variables[name] = value
