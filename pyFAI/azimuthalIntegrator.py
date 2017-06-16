@@ -307,7 +307,7 @@ class AzimuthalIntegrator(Geometry):
         :param dark: ndarray with dark noise or None
         :return: 2tuple: corrected_data, dark_actually used (or None)
         """
-        dark = dark if dark is not None else self._darkcurrent
+        dark = dark if dark is not None else self.detector.darkcurrent
         if dark is not None:
             return data - dark, dark
         else:
