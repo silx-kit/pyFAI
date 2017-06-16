@@ -46,9 +46,7 @@ import numpy
 from math import pi
 from numpy import rad2deg
 from .geometry import Geometry
-# from . import average
 from . import units
-# from . import utils
 from .utils import EPS32, deg2rad, crc32
 from .decorators import deprecated
 from .containers import Integrate1dResult
