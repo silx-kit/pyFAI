@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "21/02/2017"
+__date__ = "13/06/2017"
 
 from .AbstractModel import AbstractModel
 
@@ -56,15 +56,19 @@ class PeakSelectionModel(AbstractModel):
 
     def append(self, peak):
         self.__peaks.append(peak)
+        peak.changed.connect(self.wasChanged)
         self.wasChanged()
 
     def remove(self, peak):
         self.__peaks.remove(peak)
+        peak.changed.disconnect(self.wasChanged)
         self.wasChanged()
 
     def clear(self):
-        self.__peaks = []
-        self.wasChanged()
+        self.lockSignals()
+        for peak in list(self.__peaks):
+            self.remove(peak)
+        self.unlockSignals()
 
     def index(self, peak):
         return self.__peaks.index(peak)

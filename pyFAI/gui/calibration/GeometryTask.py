@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/06/2017"
+__date__ = "13/06/2017"
 
 import logging
 import numpy
@@ -69,7 +69,6 @@ class FitParamView(qt.QObject):
         self.__constraints.clicked.connect(self.__constraintsClicked)
         self.__model = None
         self.__wavelengthInvalidated = False
-        self.__peaksInvalidated = False
         self.__constraintsModel = None
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
@@ -199,6 +198,7 @@ class GeometryTask(AbstractCalibrationTask):
         super(GeometryTask, self).__init__()
         qt.loadUi(pyFAI.utils.get_ui_file("calibration-geometry.ui"), self)
         self.initNextStep()
+        self.widgetShow.connect(self.__widgetShow)
 
         self.__plot = self.__createPlot()
 
@@ -229,6 +229,8 @@ class GeometryTask(AbstractCalibrationTask):
         self._fitButton.setDisabledWhenWaiting(True)
         self._resetButton.clicked.connect(self.__resetGeometry)
         self.__calibration = None
+        self.__peaksInvalidated = False
+        self.__fitting = False
 
     def addParameterToLayout(self, layout, param):
         # an empty grid returns 1
@@ -298,6 +300,7 @@ class GeometryTask(AbstractCalibrationTask):
 
     def __createCalibration(self):
         image = self.model().experimentSettingsModel().image().value()
+        mask = self.model().experimentSettingsModel().mask().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
         wavelength = self.model().experimentSettingsModel().wavelength().value()
@@ -311,6 +314,7 @@ class GeometryTask(AbstractCalibrationTask):
         peaks = numpy.array(peaks)
 
         calibration = RingCalibration(image,
+                                      mask,
                                       calibrant,
                                       detector,
                                       wavelength,
@@ -330,24 +334,37 @@ class GeometryTask(AbstractCalibrationTask):
         image = self.model().experimentSettingsModel().image().value()
         calibrant = self.model().experimentSettingsModel().calibrantModel().calibrant()
         detector = self.model().experimentSettingsModel().detector()
+        mask = self.model().experimentSettingsModel().mask().value()
         if self.__wavelengthInvalidated:
             self.__wavelengthInvalidated = False
             wavelength = self.model().experimentSettingsModel().wavelength().value()
             wavelength = wavelength / 1e10
         else:
             wavelength = None
-        self.__calibration.update(image, calibrant, detector, wavelength)
+        self.__calibration.update(image, mask, calibrant, detector, wavelength)
 
         return self.__calibration
 
-    def __invalidatePeaks(self):
+    def __invalidatePeakSelection(self):
         self.__peaksInvalidated = True
 
     def __initGeometryFromPeaks(self):
-        calibration = self.__getCalibration()
+        if self.__peaksInvalidated:
+            # recompute the geometry from the peaks
+            # FIXME numpy array can be allocated first
+            peaks = []
+            for peakModel in self.model().peakSelectionModel():
+                ringNumber = peakModel.ringNumber()
+                for coord in peakModel.coords():
+                    peaks.append([coord[0], coord[1], ringNumber - 1])
+            peaks = numpy.array(peaks)
+
+            calibration = self.__getCalibration()
+            calibration.init(peaks, "massif")
+            calibration.toGeometryModel(self.model().peakGeometry())
+            self.__peaksInvalidated = False
+
         self.model().fittedGeometry().setFrom(self.model().peakGeometry())
-        calibration.fromGeometryModel(self.model().fittedGeometry())
-        self.__peaksInvalidated = False
 
     def __resetGeometry(self):
         calibration = self.__getCalibration()
@@ -355,8 +372,10 @@ class GeometryTask(AbstractCalibrationTask):
         # write result to the fitted model
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
+        self.__formatResidual()
 
     def __fitGeometry(self):
+        self.__fitting = True
         self._fitButton.setWaiting(True)
         calibration = self.__getCalibration()
         if self.__peaksInvalidated:
@@ -369,13 +388,33 @@ class GeometryTask(AbstractCalibrationTask):
         model = self.model().fittedGeometry()
         calibration.toGeometryModel(model)
         self._fitButton.setWaiting(False)
+        self.__fitting = False
+
+    def __formatResidual(self):
+        calibration = self.__getCalibration()
+        previousResidual = calibration.getPreviousResidual()
+        residual = calibration.getResidual()
+        text = '%.6e' % residual
+        if previousResidual is not None:
+            if residual == previousResidual:
+                diff = "(no changes)"
+            else:
+                diff = '(%+.2e)' % (residual - previousResidual)
+                if residual < previousResidual:
+                    diff = '<font color="green">%s</font>' % diff
+                else:
+                    diff = '<font color="red">%s</font>' % diff
+            text = '%s %s' % (text, diff)
+        self._currentResidual.setText(text)
 
     def __geometryUpdated(self):
         calibration = self.__getCalibration()
         model = self.model().fittedGeometry()
         if model.isValid():
-            calibration.fromGeometryModel(model)
+            resetResidual = self.__fitting is not True
+            calibration.fromGeometryModel(model, resetResidual=resetResidual)
             self.__updateDisplay()
+            self.__formatResidual()
 
     def __updateDisplay(self):
         calibration = self.__getCalibration()
@@ -460,7 +499,7 @@ class GeometryTask(AbstractCalibrationTask):
         self.__rotation3.setConstraintsModel(constrains.rotation3())
 
         model.fittedGeometry().changed.connect(self.__geometryUpdated)
-        model.peakGeometry().changed.connect(self.__invalidatePeaks)
+        model.peakSelectionModel().changed.connect(self.__invalidatePeakSelection)
 
     def __imageUpdated(self):
         image = self.model().experimentSettingsModel().image().value()
@@ -469,3 +508,8 @@ class GeometryTask(AbstractCalibrationTask):
             self.__plot.setGraphXLimits(0, image.shape[0])
             self.__plot.setGraphYLimits(0, image.shape[1])
             self.__plot.resetZoom()
+
+    def __widgetShow(self):
+        if self.__peaksInvalidated:
+            self.__initGeometryFromPeaks()
+            self.__formatResidual()

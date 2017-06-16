@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/06/2017"
+__date__ = "13/06/2017"
 
 import logging
 import numpy
@@ -44,13 +44,20 @@ _logger = logging.getLogger(__name__)
 
 class RingCalibration(object):
 
-    def __init__(self, image, calibrant, detector, wavelength, peaks, method):
+    def __init__(self, image, mask, calibrant, detector, wavelength, peaks, method):
         self.__image = image
+        self.__mask = mask
         self.__calibrant = calibrant
         self.__calibrant.set_wavelength(wavelength)
         self.__detector = detector
         self.__wavelength = wavelength
         self.__init(peaks, method)
+
+        fixed = pyFAI.utils.FixedParameters()
+        fixed.add("wavelength")
+        self.__fixed = fixed
+        self.__residual = None
+        self.__peakResidual = None
 
     def __initgeoRef(self):
         """
@@ -83,7 +90,9 @@ class RingCalibration(object):
                                     detector=self.__detector,
                                     calibrant=self.__calibrant,
                                     **defaults)
-        geoRef.refine2(1000000, fix=fixed)
+        self.__residual = geoRef.refine2(1000000, fix=fixed)
+        self.__peakResidual = self.__residual
+        self.__previousResidual = None
 
         peakPicker = PeakPicker(data=self.__image,
                                 calibrant=self.__calibrant,
@@ -93,58 +102,69 @@ class RingCalibration(object):
 
         self.__peakPicker = peakPicker
         self.__geoRef = geoRef
-        self.__fixed = fixed
 
     def init(self, peaks, method):
         self.__init(peaks, method)
 
-    def update(self, image, calibrant, detector, wavelength=None):
+    def update(self, image, mask, calibrant, detector, wavelength=None):
         self.__image = image
+        self.__mask = mask
         self.__calibrant = calibrant
         self.__detector = detector
         if wavelength is not None:
             self.__wavelength = wavelength
-        self.__calibrant.set_wavelength(self.__wavelength)
 
-    def refine(self, max_iter=1000):
+    def __computeResidual(self):
+        if "wavelength" in self.__fixed:
+            return self.__geoRef.chi2() / self.__geoRef.data.shape[0]
+        else:
+            return self.__geoRef.chi2_wavelength() / self.__geoRef.data.shape[0]
+
+    def __refine(self, maxiter=1000000, fix=None):
+        if "wavelength" in self.__fixed:
+            return self.__geoRef.refine2(maxiter, fix)
+        else:
+            return self.__geoRef.refine2_wavelength(maxiter, fix)
+
+    def refine(self, max_iter=500):
         """
         Contains the common geometry refinement part
         """
-        print("Before refinement, the geometry is:")
-        print(self.__geoRef)
+        self.__calibrant.set_wavelength(self.__wavelength)
+        self.__peakPicker.points.setWavelength_change2th(self.__wavelength)
 
-        previous = six.MAXSIZE
-        finished = False
+        self.__previousResidual = self.getResidual()
+        previous_residual = float("+inf")
 
-        while not finished:
-            count = 0
-            if "wavelength" in self.__fixed:
-                while (previous > self.__geoRef.chi2()) and (count < max_iter):
-                    if (count == 0):
-                        previous = six.MAXSIZE
-                    else:
-                        previous = self.__geoRef.chi2()
-                    self.__geoRef.refine2(1000000, fix=self.__fixed)
-                    print(self.__geoRef)
-                    count += 1
-            else:
-                while previous > self.__geoRef.chi2_wavelength() and (count < max_iter):
-                    if (count == 0):
-                        previous = six.MAXSIZE
-                    else:
-                        previous = self.__geoRef.chi2()
-                    self.__geoRef.refine2_wavelength(1000000, fix=self.__fixed)
-                    print(self.__geoRef)
-                    count += 1
-                self.__peakPicker.points.setWavelength_change2th(self.__geoRef.wavelength)
+        print("Initial residual: %s" % previous_residual)
 
-            self.__geoRef.del_ttha()
-            self.__geoRef.del_dssa()
-            self.__geoRef.del_chia()
+        for count in range(max_iter):
+            residual = self.__refine(10000, fix=self.__fixed)
+            print("Residual: %s" % residual)
+            if residual >= previous_residual:
+                break
+            previous_residual = residual
 
-            finished = True
-            if not finished:
-                previous = six.MAXSIZE
+        self.__residual = residual
+        print("Final residual: %s (after %s iterations)" % (residual, count))
+
+        self.__geoRef.del_ttha()
+        self.__geoRef.del_dssa()
+        self.__geoRef.del_chia()
+
+    def getResidual(self):
+        """Returns the residual computed from the current fitting."""
+        if self.__residual is None:
+            self.__residual = self.__computeResidual()
+        return self.__residual
+
+    def getPreviousResidual(self):
+        """Returns the previous residual computed before the last fitting."""
+        return self.__previousResidual
+
+    def getPeakResidual(self):
+        """Returns the residual computed from the peak selection."""
+        return self.__peakResidual
 
     def getRings(self):
         """
@@ -209,7 +229,7 @@ class RingCalibration(object):
         model.rotation3().setValue(self.__geoRef.rot3)
         model.unlockSignals()
 
-    def fromGeometryModel(self, model):
+    def fromGeometryModel(self, model, resetResidual=True):
         wavelength = model.wavelength().value() * 1e-10
         self.__calibrant.setWavelength_change2th(wavelength)
         self.__geoRef.wavelength = wavelength
@@ -219,6 +239,9 @@ class RingCalibration(object):
         self.__geoRef.rot1 = model.rotation1().value()
         self.__geoRef.rot2 = model.rotation2().value()
         self.__geoRef.rot3 = model.rotation3().value()
+        if resetResidual:
+            self.__previousResidual = None
+            self.__residual = None
 
     def fromGeometryConstriansModel(self, contraintsModel):
         # FIXME take care of range values
