@@ -49,14 +49,12 @@ from collections import OrderedDict
 
 from . import io
 from . import spline
-from .utils import binning, expand2d
+from . import utils
+from . import average
+from .utils import binning, expand2d, crc32
 
 logger = logging.getLogger("pyFAI.detectors")
 
-try:
-    from .ext.fastcrc import crc32
-except ImportError:
-    from zlib import crc32
 try:
     from .ext import bilinear
 except ImportError:
@@ -172,7 +170,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
         self._dx = None
         self._dy = None
         self._flatfield = None
-        self._flatfield_crc = None
+        self._flatfield_crc = None  # not saved as part of HDF5 structure
+        self._darkcurrent = None
+        self._darkcurrent_crc = None  # not saved as part of HDF5 structure
+        self.flatfiles = None  # not saved as part of HDF5 structure
+        self.darkfiles = None  # not saved as part of HDF5 structure
+
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
         self._sem = threading.Semaphore()
         if splineFile:
@@ -188,8 +191,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def __copy__(self):
         ":return: a shallow copy of itself"
-        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
-        mutable = ['_mask', '_dx', '_dy', 'flatfield']
+        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
+                     '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
+                     "_darkcurrent_crc", "flatfiles", "darkfiles"]
+        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
         new = self.__class__()
         for key in unmutable + mutable:
             new.__setattr__(key, self.__getattribute__(key))
@@ -199,8 +204,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def __deepcopy__(self, memo=None):
         ":return: a deep copy of itself"
-        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
-        mutable = ['_mask', '_dx', '_dy', 'flatfield']
+        unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning',
+                     '_mask_crc', '_maskfile', "_splineFile", "_flatfield_crc",
+                     "_darkcurrent_crc", "flatfiles", "darkfiles"]
+        mutable = ['_mask', '_dx', '_dy', '_flatfield', "_darkcurrent"]
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -607,6 +614,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 dset = det_grp.create_dataset("flatfield", data=self.flatfield,
                                               compression="gzip", compression_opts=9, shuffle=True)
                 dset.attrs["interpretation"] = "image"
+            if self.darkcurrent is not None:
+                dset = det_grp.create_dataset("darkcurrent", data=self.darkcurrent,
+                                              compression="gzip", compression_opts=9, shuffle=True)
+                dset.attrs["interpretation"] = "image"
             if self.mask is not None:
                 dset = det_grp.create_dataset("mask", data=self.mask,
                                               compression="gzip", compression_opts=9, shuffle=True)
@@ -751,12 +762,71 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_flatfield(self, flat):
         self._flatfield = flat
-        if flat is not None:
-            self._flatfield_crc = crc32(flat)
-        else:
-            self._flatfield_crc = None
+        self._flatfield_crc = crc32(flat) if flat is not None else None
 
     flatfield = property(get_flatfield, set_flatfield)
+
+    def set_flatfiles(self, files, method="mean"):
+        """
+        :param files: file(s) used to compute the flat-field.
+        :type files: str or list(str) or None
+        :param method: method used to compute the dark, "mean" or "median"
+        :type method: str
+
+        Set the flat field from one or mutliple files, averaged
+        according to the method provided
+        """
+        if type(files) in utils.StringTypes:
+            files = [i.strip() for i in files.split(",")]
+        elif not files:
+            files = []
+        if len(files) == 0:
+            self.set_flatfield(None)
+        elif len(files) == 1:
+            if fabio is None:
+                raise RuntimeError("FabIO is missing")
+            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
+            self.flatfiles = files[0]
+        else:
+            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
+            self.flatfiles = "%s(%s)" % (method, ",".join(files))
+
+    def get_darkcurrent(self):
+        return self._darkcurrent
+
+    def get_darkcurrent_crc(self):
+        return self._darkcurrent_crc
+
+    def set_darkcurrent(self, dark):
+        self._darkcurrent = dark
+        self._darkcurrent_crc = crc32(dark) if dark is not None else None
+
+    darkcurrent = property(get_darkcurrent, set_darkcurrent)
+
+    def set_darkfiles(self, files=None, method="mean"):
+        """
+        :param files: file(s) used to compute the dark.
+        :type files: str or list(str) or None
+        :param method: method used to compute the dark, "mean" or "median"
+        :type method: str
+
+        Set the dark current from one or mutliple files, avaraged
+        according to the method provided
+        """
+        if type(files) in utils.StringTypes:
+            files = [i.strip() for i in files.split(",")]
+        elif not files:
+            files = []
+        if len(files) == 0:
+            self.set_darkcurrent(None)
+        elif len(files) == 1:
+            if fabio is None:
+                raise RuntimeError("FabIO is missing")
+            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
+            self.darkfiles = files[0]
+        else:
+            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
+            self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
 
 class NexusDetector(Detector):
@@ -795,7 +865,9 @@ class NexusDetector(Detector):
             if "IS_CONTIGUOUS" in det_grp:
                 self.IS_CONTIGUOUS = det_grp["IS_CONTIGUOUS"].value
             if "flatfield" in det_grp:
-                self.flat = det_grp["flatfield"].value
+                self.flatfield = det_grp["flatfield"].value
+            if "darkcurrent" in det_grp:
+                self.darkcurrent = det_grp["darkcurrent"].value
             if "pixel_size" in det_grp:
                 self.pixel1, self.pixel2 = det_grp["pixel_size"]
             if "binning" in det_grp:

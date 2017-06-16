@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "15/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -54,6 +54,7 @@ from collections import namedtuple
 from . import detectors
 from . import units
 from .decorators import deprecated
+from .utils import crc32
 from . import utils
 try:
     from .third_party import six
@@ -61,7 +62,6 @@ except ImportError:
     import six
 
 logger = logging.getLogger("pyFAI.geometry")
-
 
 try:
     from .ext import _geometry
@@ -72,11 +72,6 @@ try:
     from .ext import bilinear
 except ImportError:
     bilinear = None
-
-try:
-    from .ext.fastcrc import crc32
-except ImportError:
-    from zlib import crc32
 
 PolarizationArray = namedtuple("PolarizationArray", ["array", "checksum"])
 PolarizationDescription = namedtuple("PolarizationDescription",

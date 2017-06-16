@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2017"
+__date__ = "13/06/2017"
 __status__ = "production"
 
 import os
@@ -71,49 +71,49 @@ def main():
     parser.add_argument("args", metavar="FILE", type=str, nargs='+',
                         help="Image files to integrate")
     parser.add_argument("-p", dest="ponifile",
-                      type=str, default=None,
-                      help="PyFAI parameter file (.poni)")
+                        type=str, default=None,
+                        help="PyFAI parameter file (.poni)")
     parser.add_argument("-n", "--npt", dest="npt",
-                      type=int, default=None,
-                      help="Number of points in radial dimension")
+                        type=int, default=None,
+                        help="Number of points in radial dimension")
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                  help="wavelength of the X-Ray beam in Angstrom", default=None)
+                        help="wavelength of the X-Ray beam in Angstrom", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                  help="energy of the X-Ray beam in keV (hc=%skeV.A)" %
-                  hc, default=None)
+                        help="energy of the X-Ray beam in keV (hc=%skeV.A)" %
+                        hc, default=None)
     parser.add_argument("-u", "--dummy", dest="dummy",
-                      type=float, default=None,
-                      help="dummy value for dead pixels")
+                        type=float, default=None,
+                        help="dummy value for dead pixels")
     parser.add_argument("-U", "--delta_dummy", dest="delta_dummy",
-                      type=float, default=None,
-                      help="delta dummy value")
+                        type=float, default=None,
+                        help="delta dummy value")
     parser.add_argument("-m", "--mask", dest="mask",
-                      type=str, default=None,
-                      help="name of the file containing the mask image")
+                        type=str, default=None,
+                        help="name of the file containing the mask image")
     parser.add_argument("-d", "--dark", dest="dark",
-                      type=str, default=None,
-                      help="name of the file containing the dark current")
+                        type=str, default=None,
+                        help="name of the file containing the dark current")
     parser.add_argument("-f", "--flat", dest="flat",
-                      type=str, default=None,
-                      help="name of the file containing the flat field")
+                        type=str, default=None,
+                        help="name of the file containing the flat field")
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
-                      type=float, default=None,
-                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), \
-                      default is None for no correction, synchrotrons are around 0.95")
+                        type=float, default=None,
+                        help="Polarization factor, from -1 (vertical) to +1 (horizontal), \
+                          default is None for no correction, synchrotrons are around 0.95")
 
 #    parser.add_argument("-b", "--background", dest="background",
 #                      type=str, default=None,
 #                      help="name of the file containing the background")
     parser.add_argument("--error-model", dest="error_model",
-                      type=str, default=None,
-                      help="Error model to use. Currently on 'poisson' is implemented ")
+                        type=str, default=None,
+                        help="Error model to use. Currently on 'poisson' is implemented ")
     parser.add_argument("--unit", dest="unit",
-                      type=str, default="2th_deg",
-                      help="unit for the radial dimension: can be q_nm^-1, q_A^-1, 2th_deg, \
-                      2th_rad or r_mm")
+                        type=str, default="2th_deg",
+                        help="unit for the radial dimension: can be q_nm^-1, q_A^-1, 2th_deg, \
+                          2th_rad or r_mm")
     parser.add_argument("--ext", dest="ext",
-                      type=str, default=".xy",
-                      help="extension of the regrouped filename (.xy) ")
+                        type=str, default=".xy",
+                        help="extension of the regrouped filename (.xy) ")
     parser.add_argument("--method", dest="method",
                         type=str, default=None,
                         help="Integration method ")
@@ -174,7 +174,8 @@ def main():
                                    method=method,
                                    unit=options.unit,
                                    error_model=options.error_model,
-                                   polarization_factor=options.polarization_factor
+                                   polarization_factor=options.polarization_factor,
+                                   metadata=fabimg.header
                                    )
             t2 = time.time()
             if options.do_2d:
@@ -187,7 +188,8 @@ def main():
                                        method=method,
                                        unit=options.unit,
                                        error_model=options.error_model,
-                                       polarization_factor=options.polarization_factor
+                                       polarization_factor=options.polarization_factor,
+                                       metadata=fabimg.header
                                        )
                 print("%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs." %
                       (outfile, t1 - t0, t2 - t1, time.time() - t2))
