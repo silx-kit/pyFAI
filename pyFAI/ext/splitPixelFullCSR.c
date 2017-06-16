@@ -1880,8 +1880,7 @@ static char __pyx_k_pos0Range[] = "pos0Range";
 static char __pyx_k_pos1Range[] = "pos1Range";
 static char __pyx_k_sum_count[] = "sum_count";
 static char __pyx_k_undefined[] = "undefined";
-static char __pyx_k_13_05_2016[] = "13/05/2016";
-static char __pyx_k_27_09_2016[] = "27/09/2016";
+static char __pyx_k_02_02_2017[] = "02/02/2017";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_areaPixel2[] = "areaPixel2";
@@ -1977,8 +1976,7 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_13_05_2016;
-static PyObject *__pyx_kp_s_27_09_2016;
+static PyObject *__pyx_kp_s_02_02_2017;
 static PyObject *__pyx_n_s_A;
 static PyObject *__pyx_n_s_A0;
 static PyObject *__pyx_n_s_A1;
@@ -7452,7 +7450,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_17, __pyx_t_21, __pyx_t_19, __pyx_t_22, __pyx_t_23, __pyx_t_13, __pyx_t_12, __pyx_t_18, __pyx_t_20) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_21, __pyx_t_22, __pyx_t_19, __pyx_t_13, __pyx_t_18, __pyx_t_12, __pyx_t_23, __pyx_t_17, __pyx_t_20) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7653,7 +7651,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates16)
+                                #pragma omp critical(__pyx_parallel_lastprivates2)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -7780,7 +7778,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
                 if (__pyx_t_2 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_25, __pyx_t_24, __pyx_t_28, __pyx_t_12, __pyx_t_26, __pyx_t_27, __pyx_t_29) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_24, __pyx_t_25, __pyx_t_12, __pyx_t_26, __pyx_t_28, __pyx_t_27, __pyx_t_29) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7936,7 +7934,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates17)
+                                #pragma omp critical(__pyx_parallel_lastprivates3)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -8167,7 +8165,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_12, __pyx_t_32, __pyx_t_31, __pyx_t_30, __pyx_t_13)
+                    #pragma omp parallel private(__pyx_t_30, __pyx_t_13, __pyx_t_12, __pyx_t_31, __pyx_t_32)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -8365,22 +8363,22 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
             if (__pyx_t_2 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_36, __pyx_t_13, __pyx_t_40, __pyx_t_33, __pyx_t_41, __pyx_t_35, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_12, __pyx_t_37)
+                #pragma omp parallel private(__pyx_t_36, __pyx_t_40, __pyx_t_33, __pyx_t_41, __pyx_t_39, __pyx_t_38, __pyx_t_35, __pyx_t_34, __pyx_t_12, __pyx_t_13, __pyx_t_37)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum_count) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_data) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_j) schedule(guided)
+                    #pragma omp for lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_data) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_2; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
                             __pyx_v_coef = ((float)__PYX_NAN());
-                            __pyx_v_sum_count = ((float)__PYX_NAN());
                             __pyx_v_sum_data = ((float)__PYX_NAN());
-                            __pyx_v_data = ((float)__PYX_NAN());
-                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
+                            __pyx_v_sum_count = ((float)__PYX_NAN());
                             __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
+                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
+                            __pyx_v_data = ((float)__PYX_NAN());
 
                             /* "pyFAI/ext/splitPixelFullCSR.pyx":563
  * 
@@ -15386,8 +15384,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
             __pyx_t_4 = __pyx_v_size;
             if (1 == 0) abort();
             {
-                __pyx_t_5numpy_int32_t __pyx_parallel_temp0 = 0xbad0bad0;
-                float __pyx_parallel_temp1 = __PYX_NAN();
+                float __pyx_parallel_temp0 = __PYX_NAN();
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
                 const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
                 PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
                 int __pyx_parallel_why;
@@ -15402,7 +15400,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_17, __pyx_t_21, __pyx_t_19, __pyx_t_22, __pyx_t_23, __pyx_t_13, __pyx_t_12, __pyx_t_18, __pyx_t_20) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_21, __pyx_t_22, __pyx_t_19, __pyx_t_13, __pyx_t_18, __pyx_t_12, __pyx_t_23, __pyx_t_17, __pyx_t_20) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -15412,7 +15410,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                         Py_BEGIN_ALLOW_THREADS
                         #endif /* _OPENMP */
                         #ifdef _OPENMP
-                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
                             if (__pyx_parallel_why < 2)
@@ -15603,11 +15601,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates18)
+                                #pragma omp critical(__pyx_parallel_lastprivates4)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_i;
-                                    __pyx_parallel_temp1 = __pyx_v_data;
+                                    __pyx_parallel_temp0 = __pyx_v_data;
+                                    __pyx_parallel_temp1 = __pyx_v_i;
                                 }
                                 __pyx_L28:;
                                 #ifdef _OPENMP
@@ -15637,8 +15635,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_i = __pyx_parallel_temp0;
-                  __pyx_v_data = __pyx_parallel_temp1;
+                  __pyx_v_data = __pyx_parallel_temp0;
+                  __pyx_v_i = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L11_return;
                         case 4:
@@ -15714,8 +15712,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
             __pyx_t_16 = __pyx_v_size;
             if (1 == 0) abort();
             {
-                __pyx_t_5numpy_int32_t __pyx_parallel_temp0 = 0xbad0bad0;
-                float __pyx_parallel_temp1 = __PYX_NAN();
+                float __pyx_parallel_temp0 = __PYX_NAN();
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
                 const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
                 PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
                 int __pyx_parallel_why;
@@ -15730,7 +15728,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                 if (__pyx_t_4 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_25, __pyx_t_24, __pyx_t_28, __pyx_t_12, __pyx_t_26, __pyx_t_27, __pyx_t_29) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_24, __pyx_t_25, __pyx_t_12, __pyx_t_26, __pyx_t_28, __pyx_t_27, __pyx_t_29) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -15740,7 +15738,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                         Py_BEGIN_ALLOW_THREADS
                         #endif /* _OPENMP */
                         #ifdef _OPENMP
-                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_4; __pyx_t_15++){
                             if (__pyx_parallel_why < 2)
@@ -15886,11 +15884,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates19)
+                                #pragma omp critical(__pyx_parallel_lastprivates5)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_i;
-                                    __pyx_parallel_temp1 = __pyx_v_data;
+                                    __pyx_parallel_temp0 = __pyx_v_data;
+                                    __pyx_parallel_temp1 = __pyx_v_i;
                                 }
                                 __pyx_L41:;
                                 #ifdef _OPENMP
@@ -15920,8 +15918,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_i = __pyx_parallel_temp0;
-                  __pyx_v_data = __pyx_parallel_temp1;
+                  __pyx_v_data = __pyx_parallel_temp0;
+                  __pyx_v_i = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L29_return;
                         case 4:
@@ -16117,11 +16115,11 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_12, __pyx_t_32, __pyx_t_31, __pyx_t_30, __pyx_t_13)
+                    #pragma omp parallel private(__pyx_t_30, __pyx_t_13, __pyx_t_12, __pyx_t_31, __pyx_t_32)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
-                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
                             {
@@ -16315,22 +16313,22 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
             if (__pyx_t_4 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_36, __pyx_t_13, __pyx_t_40, __pyx_t_33, __pyx_t_41, __pyx_t_35, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_12, __pyx_t_37)
+                #pragma omp parallel private(__pyx_t_36, __pyx_t_40, __pyx_t_33, __pyx_t_41, __pyx_t_39, __pyx_t_38, __pyx_t_35, __pyx_t_34, __pyx_t_12, __pyx_t_13, __pyx_t_37)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_coef) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_data) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_sum_count) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) schedule(guided)
+                    #pragma omp for lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_sum_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) lastprivate(__pyx_v_j) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_idx) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_4; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
+                            __pyx_v_sum_count = ((float)__PYX_NAN());
+                            __pyx_v_sum_data = ((float)__PYX_NAN());
+                            __pyx_v_data = ((float)__PYX_NAN());
+                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_coef = ((float)__PYX_NAN());
                             __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
-                            __pyx_v_data = ((float)__PYX_NAN());
-                            __pyx_v_sum_data = ((float)__PYX_NAN());
-                            __pyx_v_sum_count = ((float)__PYX_NAN());
-                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
 
                             /* "pyFAI/ext/splitPixelFullCSR.pyx":1201
  * 
@@ -29925,8 +29923,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_13_05_2016, __pyx_k_13_05_2016, sizeof(__pyx_k_13_05_2016), 0, 0, 1, 0},
-  {&__pyx_kp_s_27_09_2016, __pyx_k_27_09_2016, sizeof(__pyx_k_27_09_2016), 0, 0, 1, 0},
+  {&__pyx_kp_s_02_02_2017, __pyx_k_02_02_2017, sizeof(__pyx_k_02_02_2017), 0, 0, 1, 0},
   {&__pyx_n_s_A, __pyx_k_A, sizeof(__pyx_k_A), 0, 0, 1, 1},
   {&__pyx_n_s_A0, __pyx_k_A0, sizeof(__pyx_k_A0), 0, 0, 1, 1},
   {&__pyx_n_s_A1, __pyx_k_A1, sizeof(__pyx_k_A1), 0, 0, 1, 1},
@@ -30915,7 +30912,7 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
  * """
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"
+ * __date__ = "02/02/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -30923,7 +30920,7 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
  * """
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "27/09/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -30931,15 +30928,15 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
   /* "pyFAI/ext/splitPixelFullCSR.pyx":34
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2017"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_27_09_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2017) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFullCSR.pyx":35
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -30947,7 +30944,7 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFullCSR.pyx":36
- * __date__ = "27/09/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
@@ -31005,7 +31002,7 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -31013,7 +31010,7 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -31021,15 +31018,15 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
   /* "pyFAI/ext/regrid_common.pxi":31
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2017"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_13_05_2016) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2017) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":32
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -31037,7 +31034,7 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":33
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 

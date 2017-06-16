@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "16/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -209,7 +209,6 @@ class AzimuthalIntegrator(Geometry):
         #
         # mask and maskfile are properties pointing to self.detector
 
-        self._flatfield = None
         self._darkcurrent = None
         self._flatfield_crc = None
         self._darkcurrent_crc = None
@@ -334,13 +333,12 @@ class AzimuthalIntegrator(Geometry):
         If flat is not defined, correct for a flat set by "set_flatfiles"
 
         :param data: input ndarray with the image
-        :param dark: ndarray with dark noise or None
+        :param flat: ndarray with flatfield or None for no correction
         :return: 2tuple: corrected_data, flat_actually used (or None)
         """
+        flat = flat or self.detector.flatfield
         if flat is not None:
             return data / flat, flat
-        if self._flatfield is not None:
-            return data / self._flatfield, self._flatfield
         else:
             return data, None
 
@@ -3471,14 +3469,10 @@ class AzimuthalIntegrator(Geometry):
     darkcurrent = property(get_darkcurrent, set_darkcurrent)
 
     def set_flatfield(self, flat):
-        self._flatfield = flat
-        if flat is not None:
-            self._flatfield_crc = crc32(flat)
-        else:
-            self._flatfield_crc = None
+        self.detector.set_flatfield(flat)
 
     def get_flatfield(self):
-        return self._flatfield
+        return self.detector.get_flatfield()
 
     flatfield = property(get_flatfield, set_flatfield)
 

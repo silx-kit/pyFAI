@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "16/06/2017"
 __status__ = "stable"
 
 
@@ -171,8 +171,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         self.spline = None
         self._dx = None
         self._dy = None
-        self.flat = None
-        self.dark = None
+        self._flatfield = None
+        self._flatfield_crc = None
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
         self._sem = threading.Semaphore()
         if splineFile:
@@ -189,7 +189,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     def __copy__(self):
         ":return: a shallow copy of itself"
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
-        mutable = ['_mask', '_dx', '_dy', 'flat', 'dark']
+        mutable = ['_mask', '_dx', '_dy', 'flatfield']
         new = self.__class__()
         for key in unmutable + mutable:
             new.__setattr__(key, self.__getattribute__(key))
@@ -200,7 +200,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     def __deepcopy__(self, memo=None):
         ":return: a deep copy of itself"
         unmutable = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile', "_splineFile"]
-        mutable = ['_mask', '_dx', '_dy', 'flat', 'dark']
+        mutable = ['_mask', '_dx', '_dy', 'flatfield']
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -269,6 +269,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._splineFile = None
             self.spline = None
             self.uniform_pixel = True
+
     splineFile = property(get_splineFile, set_splineFile)
 
     def set_dx(self, dx=None):
@@ -538,101 +539,6 @@ class Detector(with_metaclass(DetectorMeta, object)):
         p2 = (self._pixel2 * (dX + d2c))
         return p1, p2, None
 
-    def calc_mask(self):
-        """Method calculating the mask for a given detector
-
-        Detectors with gaps should overwrite this method with
-        something actually calculating the mask!
-
-        :return: the mask with valid pixel to 0
-        :rtype: numpy ndarray of int8 or None
-        """
-#        logger.debug("Detector.calc_mask is not implemented for generic detectors")
-        return None
-
-    ############################################################################
-    # Few properties
-    ############################################################################
-    def get_mask(self):
-        if self._mask is False:
-            with self._sem:
-                if self._mask is False:
-                    self._mask = self.calc_mask()  # gets None in worse cases
-                    if self._mask is not None:
-                        self._mask = numpy.ascontiguousarray(self._mask, numpy.int8)
-                        self._mask_crc = crc32(self._mask)
-        return self._mask
-
-    def set_mask(self, mask):
-        with self._sem:
-            self._mask = mask
-            if mask is not None:
-                self._mask_crc = crc32(mask)
-            else:
-                self._mask_crc = None
-    mask = property(get_mask, set_mask)
-
-    def set_maskfile(self, maskfile):
-        if fabio:
-            with self._sem:
-                self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
-                                                     dtype=numpy.int8)
-                self._mask_crc = crc32(self._mask)
-                self._maskfile = maskfile
-        else:
-            logger.error("FabIO is not available, unable to load the image to set the mask.")
-
-    def get_maskfile(self):
-        return self._maskfile
-    maskfile = property(get_maskfile, set_maskfile)
-
-    def get_pixel1(self):
-        return self._pixel1
-
-    def set_pixel1(self, value):
-        if isinstance(value, float):
-            value = value
-        elif isinstance(value, (tuple, list)):
-            value = float(value[0])
-        else:
-            value = float(value)
-        if self._pixel1:
-            err = abs(value - self._pixel1) / self._pixel1
-            if self.force_pixel and (err > epsilon):
-                logger.warning("Enforcing pixel size 1 for a detector %s" %
-                               self.__class__.__name__)
-        self._pixel1 = value
-    pixel1 = property(get_pixel1, set_pixel1)
-
-    def get_pixel2(self):
-        return self._pixel2
-
-    def set_pixel2(self, value):
-        if isinstance(value, float):
-            value = value
-        elif isinstance(value, (tuple, list)):
-            value = float(value[0])
-        else:
-            value = float(value)
-        if self._pixel2:
-            err = abs(value - self._pixel2) / self._pixel2
-            if self.force_pixel and (err > epsilon):
-                logger.warning("Enforcing pixel size 2 for a detector %s" %
-                               self.__class__.__name__)
-        self._pixel2 = value
-    pixel2 = property(get_pixel2, set_pixel2)
-
-    def get_name(self):
-        """
-        Get a meaningful name for detector
-        """
-        if self.aliases:
-            name = self.aliases[0]
-        else:
-            name = self.__class__.__name__
-        return name
-    name = property(get_name)
-
     def get_pixel_corners(self):
         """Calculate the position of the corner of the pixels
 
@@ -697,8 +603,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 det_grp["shape"] = numpy.array(self.shape, dtype=numpy.int32)
             if self.binning is not None:
                 det_grp["binning"] = numpy.array(self._binning, dtype=numpy.int32)
-            if self.flat is not None:
-                dset = det_grp.create_dataset("flat", data=self.flat,
+            if self.flatfield is not None:
+                dset = det_grp.create_dataset("flatfield", data=self.flatfield,
                                               compression="gzip", compression_opts=9, shuffle=True)
                 dset.attrs["interpretation"] = "image"
             if self.mask is not None:
@@ -740,6 +646,118 @@ class Detector(with_metaclass(DetectorMeta, object)):
         else:
             logger.debug("guess_binning for generic detectors !")
 
+    def calc_mask(self):
+        """Method calculating the mask for a given detector
+
+        Detectors with gaps should overwrite this method with
+        something actually calculating the mask!
+
+        :return: the mask with valid pixel to 0
+        :rtype: numpy ndarray of int8 or None
+        """
+#        logger.debug("Detector.calc_mask is not implemented for generic detectors")
+        return None
+
+    ############################################################################
+    # Few properties
+    ############################################################################
+    def get_mask(self):
+        if self._mask is False:
+            with self._sem:
+                if self._mask is False:
+                    self._mask = self.calc_mask()  # gets None in worse cases
+                    if self._mask is not None:
+                        self._mask = numpy.ascontiguousarray(self._mask, numpy.int8)
+                        self._mask_crc = crc32(self._mask)
+        return self._mask
+
+    def set_mask(self, mask):
+        with self._sem:
+            self._mask = mask
+            if mask is not None:
+                self._mask_crc = crc32(mask)
+            else:
+                self._mask_crc = None
+    mask = property(get_mask, set_mask)
+
+    def set_maskfile(self, maskfile):
+        if fabio:
+            with self._sem:
+                self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
+                                                     dtype=numpy.int8)
+                self._mask_crc = crc32(self._mask)
+                self._maskfile = maskfile
+        else:
+            logger.error("FabIO is not available, unable to load the image to set the mask.")
+
+    def get_maskfile(self):
+        return self._maskfile
+    maskfile = property(get_maskfile, set_maskfile)
+
+    def get_pixel1(self):
+        return self._pixel1
+
+    def set_pixel1(self, value):
+        if isinstance(value, float):
+            value = value
+        elif isinstance(value, (tuple, list)):
+            value = float(value[0])
+        else:
+            value = float(value)
+        if self._pixel1:
+            err = abs(value - self._pixel1) / self._pixel1
+            if self.force_pixel and (err > epsilon):
+                logger.warning("Enforcing pixel size 1 for a detector %s" %
+                               self.__class__.__name__)
+        self._pixel1 = value
+
+    pixel1 = property(get_pixel1, set_pixel1)
+
+    def get_pixel2(self):
+        return self._pixel2
+
+    def set_pixel2(self, value):
+        if isinstance(value, float):
+            value = value
+        elif isinstance(value, (tuple, list)):
+            value = float(value[0])
+        else:
+            value = float(value)
+        if self._pixel2:
+            err = abs(value - self._pixel2) / self._pixel2
+            if self.force_pixel and (err > epsilon):
+                logger.warning("Enforcing pixel size 2 for a detector %s" %
+                               self.__class__.__name__)
+        self._pixel2 = value
+
+    pixel2 = property(get_pixel2, set_pixel2)
+
+    def get_name(self):
+        """
+        Get a meaningful name for detector
+        """
+        if self.aliases:
+            name = self.aliases[0]
+        else:
+            name = self.__class__.__name__
+        return name
+    name = property(get_name)
+
+    def get_flatfield(self):
+        return self._flatfield
+
+    def get_flatfield_crc(self):
+        return self._flatfield_crc
+
+    def set_flatfield(self, flat):
+        self._flatfield = flat
+        if flat is not None:
+            self._flatfield_crc = crc32(flat)
+        else:
+            self._flatfield_crc = None
+
+    flatfield = property(get_flatfield, set_flatfield)
+
 
 class NexusDetector(Detector):
     """
@@ -776,8 +794,8 @@ class NexusDetector(Detector):
                 self.IS_FLAT = det_grp["IS_FLAT"].value
             if "IS_CONTIGUOUS" in det_grp:
                 self.IS_CONTIGUOUS = det_grp["IS_CONTIGUOUS"].value
-            if "flat" in det_grp:
-                self.flat = det_grp["flat"].value
+            if "flatfield" in det_grp:
+                self.flat = det_grp["flatfield"].value
             if "pixel_size" in det_grp:
                 self.pixel1, self.pixel2 = det_grp["pixel_size"]
             if "binning" in det_grp:
@@ -1519,7 +1537,6 @@ class ImXPadS10(Detector):
                     edges1, edges2 = self.calc_pixels_edges()
                     p1 = expand2d(edges1, self.shape[1] + 1, False)
                     p2 = expand2d(edges2, self.shape[0] + 1, True)
-#                     p3 = None
                     self._pixel_corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
                     self._pixel_corners[:, :, 0, 1] = p1[:-1, :-1]
                     self._pixel_corners[:, :, 0, 2] = p2[:-1, :-1]
@@ -1529,12 +1546,6 @@ class ImXPadS10(Detector):
                     self._pixel_corners[:, :, 2, 2] = p2[1:, 1:]
                     self._pixel_corners[:, :, 3, 1] = p1[:-1, 1:]
                     self._pixel_corners[:, :, 3, 2] = p2[:-1, 1:]
-#                     if p3 is not None:
-#                         # non flat detector
-#                         self._pixel_corners[:, :, 0, 0] = p3[:-1, :-1]
-#                         self._pixel_corners[:, :, 1, 0] = p3[1:, :-1]
-#                         self._pixel_corners[:, :, 2, 0] = p3[1:, 1:]
-#                         self._pixel_corners[:, :, 3, 0] = p3[:-1, 1:]
         return self._pixel_corners
 
     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
