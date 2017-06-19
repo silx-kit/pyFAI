@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>General introduction to PyFAI &mdash; pyFAI 0.12.0 documentation</title>
+    <title>General introduction to PyFAI &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="index.html" />
     <link rel="next" title="Simple detector" href="detector.html" />
     <link rel="prev" title="Fast Azimuthal Integration using Python" href="index.html" /> 
   </head>
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="index.html" title="Fast Azimuthal Integration using Python"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -61,23 +61,23 @@
 source and already very popular for scientific data analysis (<a class="reference internal" href="biblio.html#pymca" id="id1">[PyMca]</a>,
 <a class="reference internal" href="biblio.html#pynx" id="id2">[PyNX]</a>, …). It relies on the scientific stack of python composed of <a class="reference internal" href="biblio.html#numpy" id="id3">[NumPy]</a>,
 <a class="reference internal" href="biblio.html#scipy" id="id4">[SciPy]</a> and <a class="reference internal" href="biblio.html#matplotlib" id="id5">[Matplotlib]</a> plus the <a class="reference internal" href="biblio.html#opencl" id="id6">[OpenCL]</a> binding <a class="reference internal" href="biblio.html#pyopencl" id="id7">[PyOpenCL]</a> for performances.</p>
-<p><span class="math">\(2D\)</span> area detectors like CCD or pixel detectors have become
+<p><img class="math" src="_images/math/4106b56306f84c6235988b76d741e092dd264a92.png" alt="2D"/> area detectors like CCD or pixel detectors have become
 popular in the last 15 years for diffraction experiments (e.g. for WAXS,
 SAXS, single crystal and powder diffraction).
 These detectors
 have a large sensitive area of millions of pixels with high spatial
 resolution. The software package pyFAI (<a class="reference internal" href="biblio.html#sri2012" id="id8">[SRI2012]</a>, <a class="reference internal" href="biblio.html#epdic13" id="id9">[EPDIC13]</a>)
 has been designed to reduce SAXS,
-WAXS and XRPD images taken with those detectors into <span class="math">\(1D\)</span> curves
+WAXS and XRPD images taken with those detectors into <img class="math" src="_images/math/6a0bfb5bcd39dd555dbbe1f8fd8d570c02afdf3f.png" alt="1D"/> curves
 (azimuthal integration) usable by other software for in-depth analysis
-such as Rietveld refinement, or <span class="math">\(2D\)</span> images (a radial
+such as Rietveld refinement, or <img class="math" src="_images/math/4106b56306f84c6235988b76d741e092dd264a92.png" alt="2D"/> images (a radial
 transformation named <em>caking</em> in <a class="reference internal" href="biblio.html#fit2d" id="id10">[FIT2D]</a>).
 As a library, the aim of pyFAI is to be
 integrated into other tools like <a class="reference internal" href="biblio.html#pymca" id="id11">[PyMca]</a>  or <a class="reference internal" href="biblio.html#edna" id="id12">[EDNA]</a> or <a class="reference internal" href="biblio.html#lima" id="id13">[LImA]</a> with a clean pythonic
 interface.
 However pyFAI features also command line and graphical tools for batch
 processing, converting data into <em>q-space</em> (q being the momentum
-transfer) or 2<span class="math">\(\theta\)</span>-space (<span class="math">\(\theta\)</span> being the Bragg
+transfer) or 2<img class="math" src="_images/math/a9cfbeb8ebee1f365919e147a79e242dcb67ee5d.png" alt="\theta"/>-space (<img class="math" src="_images/math/a9cfbeb8ebee1f365919e147a79e242dcb67ee5d.png" alt="\theta"/> being the Bragg
 angle) and a calibration graphical interface for optimizing the geometry
 of the experiment using the Debye-Scherrer rings of a reference sample.
 PyFAI shares the geometry definition of SPD but can directly import
@@ -85,8 +85,8 @@ geometries determined by the software FIT2D. PyFAI has been designed to
 work with any kind of detector and geometry (transmission or reflection)
 and relies on FabIO, a library able to read more than 20 image formats
 produced by detectors from 12 different manufacturers. During the
-transformation from cartesian space <span class="math">\((x,y)\)</span> to polar space
-<span class="math">\((2\theta, \chi )\)</span>, both local and total intensities are conserved
+transformation from cartesian space <img class="math" src="_images/math/5f81ea407dc24031569231ab2cd28222176f38ca.png" alt="(x,y)"/> to polar space
+<img class="math" src="_images/math/dcc63ec5cb01d0c1eab7ce4966714d745c4829ac.png" alt="(2\theta, \chi )"/>, both local and total intensities are conserved
 in order to obtain accurate quantitative results. Technical details on
 how this integration is implemented and how it has been ported to native
 code and parallelized on graphic cards are quickly presented but you can refer
@@ -157,22 +157,13 @@ beam, and can be calibrated using Debye-Scherrer rings of a reference compound.<
 <div class="section" id="pyfai-executables">
 <h3>PyFAI executables<a class="headerlink" href="#pyfai-executables" title="Permalink to this headline">¶</a></h3>
 <p>PyFAI was designed to be used by scientists needing a simple and
-effective tool for azimuthal integration. Two command line programs
-<em>pyFAI-waxs</em> and <em>pyFAI-saxs</em> are provided with pyFAI for performing the
-integration of one or more images on the command line.
-The waxs version outputs result in
-<span class="math">\(2\theta /I\)</span>, whereas the saxs version outputs result in
-<span class="math">\(q/I(/\sigma)\)</span>. Options for these programs are parameter file
-(<em>poni-file</em>)
-describing the geometry and the mask file. They can also do some
-pre-processing like dark-noise subtraction and flat-field correction
-(solid-angle correction is done by default).</p>
-<p>A new Graphical interface based on Qt called <em>pyFAI-integrate</em> is now available,
-offers all options possible for azimuthal integration (dark/flat/polarization,
-....) in addition to a finer tuning for the computing device selection (CPU/GPU).</p>
-<p>Finally couple of specialized tool called diff_tomo and diff_map are available to
+effective tool for azimuthal integration.
+There are a certain number of scripts which will help you in preprocessing images
+(dark current, flat-field, averaging, ...),
+calibrating the geometry, performing the integration.
+Finally couple of specialized tool called diff_tomo and diff_map are available to
 reduce a 2D/3D-mapping experiment of 2D images into a 3D volume
-(<span class="math">\(x, y, 2\theta\)</span> for mapping or <span class="math">\(rot, trans, 2\theta\)</span> for tomography)</p>
+(<img class="math" src="_images/math/413baa0badc073e491f0f2b77dc1fd4f82ec4913.png" alt="x, y, 2\theta"/> for mapping or <img class="math" src="_images/math/4fda8103b8cd8aa8b2c5199d4c28ec6d434560f3.png" alt="rot, trans, 2\theta"/> for tomography)</p>
 <p>There are cookbooks on these scripts in <a class="reference internal" href="usage/cookbook/index.html#cookbook"><em>Cookbook recipes</em></a> and their complete
 manual pages are available in the <a class="reference internal" href="man/scripts.html#manpage"><em>pyFAI scripts manual</em></a> section.</p>
 </div>
@@ -186,9 +177,9 @@ integrated before being plotted.</p>
 <div class="figure align-center">
 <img alt="image" src="_images/notebook.png" />
 </div>
-<p>The <em class="xref std std-ref">tutorial</em> section makes heavy use of <em>ipython</em>, now  <em>jupyter</em>
-to process data using pyFAI.
-The first tutorial also explains a bit how Python and Jupyter works to be
+<p>The <a class="reference internal" href="usage/tutorial/index.html#tutorials"><em>Tutorials</em></a> section makes heavy use of <em>IPython notebooks</em>, now called
+<em>Jupyter notebooks</em> to process data using <em>pyFAI</em>.
+The first tutorial also explains a bit how <em>Python</em> and <em>Jupyter</em> works to be
 able to perform basic processing efficiently with pyFAI.</p>
 </div>
 </div>
@@ -196,24 +187,24 @@ able to perform basic processing efficiently with pyFAI.</p>
 <h2>Regrouping mechanism<a class="headerlink" href="#regrouping-mechanism" title="Permalink to this headline">¶</a></h2>
 <p>In pyFAI, regrouping is performed using a histogram-like algorithm.
 Each pixel of the image is associated to its polar coordinates
-<span class="math">\((2\theta , \chi )\)</span> or <span class="math">\((q, \chi )\)</span>, then a pair of
-histograms versus <span class="math">\(2\theta\)</span> (or <span class="math">\(q\)</span>) are built, one non
+<img class="math" src="_images/math/2c68def95819a6565c064e5b7fc61a4157e8f340.png" alt="(2\theta , \chi )"/> or <img class="math" src="_images/math/2d92cccfc875dfeefad71e8e32182a77af9c4f74.png" alt="(q, \chi )"/>, then a pair of
+histograms versus <img class="math" src="_images/math/1eda8ab08bc3ae44b667343da40c9dc5618949a0.png" alt="2\theta"/> (or <img class="math" src="_images/math/23f1b45408e5b4130c0f940fcbfcec54492cbdcd.png" alt="q"/>) are built, one non
 weighted for measuring the number of pixels falling in each bin and
 another weighted by pixel intensities (after dark-current subtraction,
 and corrections for flat-field, solid-angle and polarization).
 The division of the weighted histogram by the number of pixels per bin gives
 the average signal over the given corona which provides the diffraction pattern.
-<span class="math">\(2D\)</span> regrouping (called <em>caking</em> in
+<img class="math" src="_images/math/4106b56306f84c6235988b76d741e092dd264a92.png" alt="2D"/> regrouping (called <em>caking</em> in
 FIT2D) is obtained in the same way using two-dimensional histograms over
-radial (<span class="math">\(2\theta\)</span> or <span class="math">\(q\)</span>) and azimuthal angles
-(<span class="math">\(\chi\)</span>).</p>
+radial (<img class="math" src="_images/math/1eda8ab08bc3ae44b667343da40c9dc5618949a0.png" alt="2\theta"/> or <img class="math" src="_images/math/23f1b45408e5b4130c0f940fcbfcec54492cbdcd.png" alt="q"/>) and azimuthal angles
+(<img class="math" src="_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>).</p>
 <div class="section" id="pixel-splitting-algorithm">
 <h3>Pixel splitting algorithm<a class="headerlink" href="#pixel-splitting-algorithm" title="Permalink to this headline">¶</a></h3>
 <p>Powder diffraction patterns obtained by histogramming have a major
 weakness where pixel statistics are low. A manifestation of this
-weakness becomes apparent in the <span class="math">\(2D\)</span>-regrouping where most of the
+weakness becomes apparent in the <img class="math" src="_images/math/4106b56306f84c6235988b76d741e092dd264a92.png" alt="2D"/>-regrouping where most of the
 bins close to the beam-stop are not populated by any pixel. In this figure,
-many pixels are missing in the low <span class="math">\(2\theta\)</span> region, due
+many pixels are missing in the low <img class="math" src="_images/math/1eda8ab08bc3ae44b667343da40c9dc5618949a0.png" alt="2\theta"/> region, due
 to the arbitrary discretization of the space in pixels as intensities
 were assigned to each pixel center which does not reflect the physical
 reality of the scattering experiment.</p>
@@ -401,7 +392,7 @@ the financial support of LinkSCEEM-2 (RI-261600).</p>
         <li class="right" >
           <a href="index.html" title="Fast Azimuthal Integration using Python"
              >previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

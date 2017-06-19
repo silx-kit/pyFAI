@@ -80,11 +80,13 @@ build_script:
     # Print Python info
     - "python ci\\info_platform.py"
     - "pip list"
+    - "dir"
 
     # Build
     - "del pyFAI\\ext\\histogram.c"
     - "python setup.py build %BUILD_ARGS%"
-    - "python setup.py test"
+    #- "python setup.py test"
+    - "python run_tests.py -i -m"
     - "python setup.py bdist_wheel bdist_msi"
     - ps: "ls dist"
     # Install the generated wheel package to test it

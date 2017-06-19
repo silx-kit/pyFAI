@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -34,15 +34,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2016"
+__date__ = "28/11/2016"
 
 
 import tempfile
 import os
 import unittest
-import numpy
 import numpy.testing
-import logging
 import fabio
 from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
@@ -51,8 +49,6 @@ from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
 
 
 class TestIntegrate1D(unittest.TestCase):

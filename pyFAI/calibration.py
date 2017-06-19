@@ -2,25 +2,29 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 """
 pyFAI-calib
@@ -31,9 +35,9 @@ A tool for determining the geometry of a detector using a reference sample.
 from __future__ import print_function, division
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/08/2016"
+__date__ = "16/05/2017"
 __status__ = "production"
 
 import os
@@ -53,7 +57,9 @@ else:
 
 logger = logging.getLogger("pyFAI.calibration")
 import numpy
-from .gui_utils import pylab, update_fig, matplotlib
+from .gui.matplotlib import pylab, matplotlib
+from .gui.utils import update_fig
+from .gui import utils as gui_utils
 from scipy.stats import linregress
 import fabio
 from . import utils
@@ -64,7 +70,7 @@ except (ImportError, Exception):
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
-from . import units, gui_utils
+from . import units
 from . import average
 from .utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, roundfft, \
@@ -73,7 +79,7 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
 from . import date as PyFAI_DATE
-from .calibrant import Calibrant, ALL_CALIBRANTS
+from .calibrant import Calibrant, CALIBRANT_FACTORY
 try:
     from ._convolution import gaussian_filter
 except ImportError:
@@ -93,17 +99,18 @@ from .ext.marchingsquares import isocontour
 def get_detector(detector, datafiles=None):
     """
     Detector factory taking into account the binning knowing the datafiles
-    @param detector: string or detector or other junk
-    @param datafiles: can be a list of images to be opened and their shape used.
-    @return pyFAI.detector.Detector instance
+
+    :param detector: string or detector or other junk
+    :param datafiles: can be a list of images to be opened and their shape used
+    :return: pyFAI.detector.Detector instance
+    :raise RuntimeError: If no detector found
     """
     res = None
     if type(detector) in utils.StringTypes:
         try:
             res = detector_factory(detector)
         except RuntimeError:
-            print("Not a valid detector: %s" % detector)
-            sys.exit(-1)
+            raise RuntimeError("Not a valid detector: %s" % detector)
     elif isinstance(detector, Detector):
         res = detector
     else:
@@ -158,14 +165,14 @@ class AbstractCalibration(object):
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """Constructor of AbstractCalibration
 
-        @param dataFiles: list of filenames containing data images
-        @param darkFiles: list of filenames containing dark current images
-        @param flatFiles: list of filenames containing flat images
-        @param pixelSize: size of the pixel in meter as 2 tuple
-        @param splineFile: file containing the distortion of the taper
-        @param detector: Detector name or instance
-        @param wavelength: radiation wavelength in meter
-        @param calibrant: pyFAI.calibrant.Calibrant instance
+        :param dataFiles: list of filenames containing data images
+        :param darkFiles: list of filenames containing dark current images
+        :param flatFiles: list of filenames containing flat images
+        :param pixelSize: size of the pixel in meter as 2 tuple
+        :param splineFile: file containing the distortion of the taper
+        :param detector: Detector name or instance
+        :param wavelength: radiation wavelength in meter
+        :param calibrant: pyFAI.calibrant.Calibrant instance
         """
         self.dataFiles = dataFiles
         self.darkFiles = darkFiles
@@ -199,8 +206,8 @@ class AbstractCalibration(object):
         if calibrant:
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
-            elif calibrant in ALL_CALIBRANTS:
-                self.calibrant = ALL_CALIBRANTS[calibrant]
+            elif calibrant in CALIBRANT_FACTORY:
+                self.calibrant = CALIBRANT_FACTORY(calibrant)
             elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
@@ -382,7 +389,7 @@ class AbstractCalibration(object):
     def analyse_options(self, options=None, args=None):
         """Analyzes options and arguments
 
-        @return: option,arguments
+        :return: option,arguments
         """
         if (options is None) and (args is None):
             options = self.parser.parse_args()
@@ -419,8 +426,8 @@ class AbstractCalibration(object):
 
         self.pointfile = options.npt
         if options.spacing:
-            if options.spacing in ALL_CALIBRANTS:
-                self.calibrant = ALL_CALIBRANTS[options.spacing]
+            if options.spacing in CALIBRANT_FACTORY:
+                self.calibrant = CALIBRANT_FACTORY(options.spacing)
             elif os.path.isfile(options.spacing):
                 self.calibrant = Calibrant(options.spacing)
             else:
@@ -547,8 +554,8 @@ class AbstractCalibration(object):
             while valid:
                 ans = six.moves.input("Please enter the calibrant name or the file"
                             " containing the d-spacing:\t").strip()
-                if ans in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[ans]
+                if ans in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(ans)
                     valid = True
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(ans)
@@ -617,8 +624,8 @@ class AbstractCalibration(object):
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
 
-        @param method: method for keypoint extraction
-        @param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
+        :param method: method for keypoint extraction
+        :param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
         logger.info("in extract_cpt with method %s", method)
         assert self.ai
@@ -727,7 +734,7 @@ class AbstractCalibration(object):
                     if (count == 0):
                         previous = six.MAXSIZE
                     else:
-                        previous = self.geoRef.chi2()
+                        previous = self.geoRef.chi2_wavelength()
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
@@ -770,7 +777,7 @@ class AbstractCalibration(object):
         """
         prompt for commands to guide the calibration process
 
-        @return: True when the user is happy with what he has, False to request another refinement
+        :return: True when the user is happy with what he has, False to request another refinement
         """
 
         while True:
@@ -982,7 +989,9 @@ class AbstractCalibration(object):
             elif action == "assign":
                 # Re assign a group of point to a ring ...
                 if self.peakPicker and self.peakPicker.points:
-                    self.peakPicker.points.readRingNrFromKeyboard()
+                    control_points = self.peakPicker.points
+                    control_points.readRingNrFromKeyboard()
+                    control_points.save(self.basename + ".npt")
                     if self.weighted:
                         self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
                     else:
@@ -1050,7 +1059,7 @@ class AbstractCalibration(object):
         """
         plot delta_2theta/2theta = f(chi) and fit the curve.
 
-        @param rings: list of rings to consider
+        :param rings: list of rings to consider
         """
         from scipy.optimize import leastsq
         model = lambda x, mean, amp, phase: mean + amp * numpy.sin(x + phase)
@@ -1143,7 +1152,8 @@ class AbstractCalibration(object):
         t2 = time.time()
         self.geoRef.chiArray(self.peakPicker.shape)
         t2a = time.time()
-        self.geoRef.corner_array(self.peakPicker.shape, "2th_deg")
+        self.geoRef.corner_array(self.peakPicker.shape, units.TTH_DEG,
+                                 scale=False)
         t2b = time.time()
         if self.gui:
             if self.fig_integrate is None:
@@ -1243,7 +1253,7 @@ class AbstractCalibration(object):
 
         Designed for orthogonal setup with centered beam...
 
-        @param slices: number of slices on which perform
+        :param slices: number of slices on which perform
         """
         if slices <= 0:
             logger.warning("The number of slices should be strictly positive")
@@ -1311,11 +1321,11 @@ class AbstractCalibration(object):
         """
         Reset the geometry: no tilt in all cases
 
-        @param how: multiple options
+        :param how: multiple options
             * center: set the PONI at the center of the detector
             * ring: center the poni at the middle of the inner-most ring
-            //* best: try both option and keeps the best
-        //@param refine: launch the refinement
+            * best: try both option and keeps the best (this option is not available)
+        :param refine: launch the refinement (argument not used)
         """
         if how not in ["center", "ring"]:  # ,"best"]:
             logger.warning("unknow geometry reset method: %s, fall back on detector center", how)
@@ -1350,7 +1360,7 @@ class AbstractCalibration(object):
                 self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
 
         if self.geoRef:
-#             reset geoRef object
+            # reset geoRef object
             self.geoRef.set_dist_min(0)
             self.geoRef.set_dist_max(100)
             self.geoRef.set_dist(self.ai.dist)
@@ -1390,14 +1400,14 @@ class Calibration(AbstractCalibration):
         """
         Constructor for calibration:
 
-        @param dataFiles: list of filenames containing data images
-        @param darkFiles: list of filenames containing dark current images
-        @param flatFiles: list of filenames containing flat images
-        @param pixelSize: size of the pixel in meter as 2 tuple
-        @param splineFile: file containing the distortion of the taper
-        @param detector: Detector name or instance
-        @param wavelength: radiation wavelength in meter
-        @param calibrant: pyFAI.calibrant.Calibrant instance
+        :param dataFiles: list of filenames containing data images
+        :param darkFiles: list of filenames containing dark current images
+        :param flatFiles: list of filenames containing flat images
+        :param pixelSize: size of the pixel in meter as 2 tuple
+        :param splineFile: file containing the distortion of the taper
+        :param detector: Detector name or instance
+        :param wavelength: radiation wavelength in meter
+        :param calibrant: pyFAI.calibrant.Calibrant instance
 
         """
         AbstractCalibration.__init__(self, dataFiles=dataFiles,
@@ -1426,7 +1436,7 @@ Angstrom (in decreasing order).
 %s
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
-The --calibrant option is mandatory !""" % str(ALL_CALIBRANTS)
+The --calibrant option is mandatory !""" % str(CALIBRANT_FACTORY)
 
         epilog = """The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
@@ -1598,14 +1608,14 @@ class Recalibration(AbstractCalibration):
         """
         Constructor for Recalibration:
 
-        @param dataFiles: list of filenames containing data images
-        @param darkFiles: list of filenames containing dark current images
-        @param flatFiles: list of filenames containing flat images
-        @param pixelSize: size of the pixel in meter as 2 tuple
-        @param splineFile: file containing the distortion of the taper
-        @param detector: Detector name or instance
-        @param wavelength: radiation wavelength in meter
-        @param calibrant: pyFAI.calibrant.Calibrant instance
+        :param dataFiles: list of filenames containing data images
+        :param darkFiles: list of filenames containing dark current images
+        :param flatFiles: list of filenames containing flat images
+        :param pixelSize: size of the pixel in meter as 2 tuple
+        :param splineFile: file containing the distortion of the taper
+        :param detector: Detector name or instance
+        :param wavelength: radiation wavelength in meter
+        :param calibrant: pyFAI.calibrant.Calibrant instance
         """
         AbstractCalibration.__init__(self, dataFiles=dataFiles,
                                      darkFiles=darkFiles,
@@ -1628,7 +1638,7 @@ Angstrom (in decreasing order).
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
 The --calibrant option is mandatory !
-""" % str(ALL_CALIBRANTS)
+""" % str(CALIBRANT_FACTORY)
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
 rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
@@ -1753,8 +1763,8 @@ class MultiCalib(object):
     def parse(self, exe=None, description=None, epilog=None):
         """
         parse options from command line
-        @param exe: name of the program (MX-calibrate)
-        @param description: Description of the program
+        :param exe: name of the program (MX-calibrate)
+        :param description: Description of the program
         """
         if exe is None:
             exe = "MX-Calibrate"
@@ -2010,8 +2020,8 @@ class MultiCalib(object):
 
     def read_dSpacingFile(self):
         """Read the name of the calibrant or the file with d-spacing"""
-        if self.calibrant in ALL_CALIBRANTS:
-            self.calibrant = ALL_CALIBRANTS[self.calibrant]
+        if self.calibrant in CALIBRANT_FACTORY:
+            self.calibrant = CALIBRANT_FACTORY(self.calibrant)
         elif os.path.isfile(self.calibrant):
             self.calibrant = Calibrant(filename=self.calibrant)
         else:
@@ -2028,8 +2038,8 @@ class MultiCalib(object):
             while not self.calibrant:
                 ans = six.moves.input("Please enter the name of the calibrant"
                             " or the file containing the d-spacing:\t").strip()
-                if ans in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[ans]
+                if ans in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(ans)
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(filename=ans)
 
@@ -2082,7 +2092,7 @@ class MultiCalib(object):
                 centerX = fabimg.data.shape[1] // 2
             if centerY is None:
                 centerY = fabimg.data.shape[0] // 2
-            self.results[fn] = {"wavelength":wavelength, "dist":dist}
+            self.results[fn] = {"wavelength": wavelength, "dist": dist}
             rec = Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
                                                   detector=self.detector, calibrant=self.calibrant, wavelength=wavelength)
             rec.outfile = os.path.splitext(fn)[0] + ".proc.edf"
@@ -2188,6 +2198,8 @@ correction, at a sub-pixel level.
 Note that `check_calib` program is obsolete as the same functionality is
 available from within pyFAI-calib, using the `validate` command in the
 refinement process.
+
+        :returns: True if the parsing succeed, else False
         """
         version = "check_calib from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage,
@@ -2224,7 +2236,7 @@ refinement process.
                 self.img = fabio.open(f).data.astype(numpy.float32)
             else:
                 print("Please enter diffraction images as arguments")
-                sys.exit(1)
+                return False
             for f in args[1:]:
                 self.img += fabio.open(f).data
         if options.dark and os.path.exists(options.dark):
@@ -2236,14 +2248,15 @@ refinement process.
         self.data = [f for f in args if os.path.isfile(f)]
         if options.poni is None:
             logger.error("PONI parameter is mandatory")
-            sys.exit(1)
+            return False
         self.ai = AzimuthalIntegrator.sload(options.poni)
         if options.wavelength:
             self.ai.wavelength = 1e-10 * options.wavelength
         elif options.energy:
             self.ai.wavelength = 1e-10 * hc / options.energy
-#        else:
-#            self.read_wavelength()
+        # else:
+        #     self.read_wavelength()
+        return True
 
     def get_1dsize(self):
         logger.debug("in get_1dsize")
@@ -2258,7 +2271,7 @@ refinement process.
     def rebuild(self):
         """
         Rebuild the diffraction image and measures the offset with the reference
-        @return: offset
+        :return: offset
         """
         logger.debug("in rebuild")
         if self.r is None:
@@ -2331,15 +2344,15 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     """
     Procedural interfact for calibration
 
-    @param img: 2d array representing the calibration image
-    @param calibrant: Instance of Calibrant, set-up with wavelength
-    @param detector: Detector instance containing the mask
-    @param basename: output file base
-    @param recontruct: perform image reconstruction of masked pixel ?
-    @param dist: initial distance
-    @param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
-    @param interactive: set to False for testing
-    @return: AzimuthalIntegrator instance
+    :param img: 2d array representing the calibration image
+    :param calibrant: Instance of Calibrant, set-up with wavelength
+    :param detector: Detector instance containing the mask
+    :param basename: output file base
+    :param recontruct: perform image reconstruction of masked pixel ?
+    :param dist: initial distance
+    :param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
+    :param interactive: set to False for testing
+    :return: AzimuthalIntegrator instance
     """
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)

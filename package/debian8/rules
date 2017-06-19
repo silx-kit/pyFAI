@@ -1,0 +1,58 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=pyfai
+
+# Make does not offer a recursive wildcard function, so here's one:
+rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+
+# How to recursively find all files with the same name in a given folder
+ALL_PYX := $(call rwildcard,pyFAI/,*.pyx)
+#NOTA: No space before *
+
+%:
+	dh $@ --with python2,python3,sphinxdoc --buildsystem=pybuild
+
+override_dh_clean:
+	dh_clean
+	# remove the cython generated file to force rebuild
+	rm -f $(patsubst %.pyx,%.cpp,${ALL_PYX})
+	rm -f $(patsubst %.pyx,%.c,${ALL_PYX})
+	rm -rf build/html
+	rm -rf *.egg-info
+
+override_dh_auto_build:
+	dh_auto_build
+	python setup.py build build_man build_doc
+	# PYBUILD_SYSTEM=custom \
+	# PYBUILD_BUILD_ARGS="PYTHONPATH={build_dir} http_proxy='localhost' sphinx-build -N -bhtml doc/source build/html" dh_auto_build
+
+override_dh_install:
+	dh_numpy
+	dh_numpy3
+
+	# move the scripts to right package
+	dh_install -p pyfai debian/python-pyfai/usr/bin usr/
+	# remove all scripts installed by pybuild
+	rm -rf debian/python-pyfai/usr/bin
+	rm -rf debian/python-pyfai-dbg/usr/bin
+	rm -rf debian/python3-pyfai/usr/bin
+	rm -rf debian/python3-pyfai-dbg/usr/bin
+
+	# remove all py/pyc/egg-info files from dbg packages
+	find debian/python-pyfai-dbg/usr -type f \( -not -name "*.so" \) -delete
+	find debian/python3-pyfai-dbg/usr -type f \( -not -name "*.so" \) -delete
+
+	#Finally install stuff
+	dh_install
+
+# inactive test for now
+override_dh_auto_test:
+	PYBUILD_SYSTEM=custom \
+	PYBUILD_TEST_ARGS="PYTHONPATH={build_dir} PYFAI_TESTIMAGES=testimages PYFAI_DATA=$(shell pwd) {interpreter} ./run_tests.py" dh_auto_test
+
+override_dh_installman:
+	dh_installman -p pyfai build/man/*.1
+
+override_dh_installdocs:
+	dh_installdocs "build/sphinx/html" -p python-pyfai-doc
+	dh_installdocs

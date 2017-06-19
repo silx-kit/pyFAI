@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -59,7 +59,7 @@ ref = ai.xrpd_LUT(data, 1000)[1]
 
 # ref = ai.integrate1d(data, 1000, method="ocl_csr", unit="2th_deg")[0]
 
-pos = ai.array_from_unit(data.shape, "corner", unit="2th_deg")
+pos = ai.array_from_unit(data.shape, "corner", unit="2th_deg", scale=False)
 foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos, 1000, unit="2th_deg")
 
 boo = foo.integrate(data)[1]

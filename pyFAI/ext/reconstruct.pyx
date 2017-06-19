@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2014-2016 European Synchrotron Radiation Facility,  France
 #
@@ -29,7 +29,7 @@
 __doc__ = """Cython module to reconstruct the masked values of an image"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "01/12/2016"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -46,10 +46,12 @@ cdef float invert_distance(size_t i0, size_t i1, size_t p0, size_t p1) nogil:
     return 1. / sqrt(<float> ((i0 - p0) ** 2 + (i1 - p1) ** 2))
 
 
-@cython.cdivision(True)
 @cython.boundscheck(False)
-cdef inline float processPoint(float[:, :] data,
-                               numpy.int8_t[:, :] mask,
+@cython.cdivision(True)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+cdef inline float processPoint(float[:, ::1] data,
+                               numpy.int8_t[:, ::1] mask,
                                size_t p0,
                                size_t p1,
                                size_t d0,
@@ -101,23 +103,25 @@ cdef inline float processPoint(float[:, :] data,
 
 
 @cython.boundscheck(False)
+@cython.cdivision(True)
 @cython.wraparound(False)
+@cython.initializedcheck(False)
 def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None, delta_dummy=None):
     """
     reconstruct missing part of an image (tries to be continuous)
 
-    @param data: the input image
-    @parma mask: where data should be reconstructed.
-    @param dummy: value of the dummy (masked out) data
-    @param delta_dummy: precision for dummy values
+    :param data: the input image
+    :param mask: where data should be reconstructed.
+    :param dummy: value of the dummy (masked out) data
+    :param delta_dummy: precision for dummy values
 
-    @return: reconstructed image.
+    :return: reconstructed image.
     """
     assert data.ndim == 2, "data.ndim == 2"
     cdef:
         ssize_t d0 = data.shape[0]
         ssize_t d1 = data.shape[1]
-        float[:, :] cdata
+        float[:, ::1] cdata
     data = numpy.ascontiguousarray(data, dtype=numpy.float32)
     cdata = data
     if mask is not None:
@@ -129,7 +133,8 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
             mask += (data == dummy)
         else:
             mask += (abs(data - dummy) <= delta_dummy)
-    cdef numpy.int8_t[:, :] cmask = mask.astype(numpy.int8)
+    cdef:
+        numpy.int8_t[:, ::1] cmask = mask.astype(numpy.int8)
     assert d0 == mask.shape[0], "mask.shape[0]"
     assert d1 == mask.shape[1], "mask.shape[1]"
     cdef numpy.ndarray[numpy.float32_t, ndim = 2]out = numpy.zeros_like(data)

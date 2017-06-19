@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,22 +33,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2016"
+__date__ = "28/11/2016"
 
 
-import fabio
-import logging, time
-import numpy
-import os
-import sys
 import unittest
-from .utilstest import UtilsTest, Rwp, getLogger
+from .utilstest import UtilsTest, getLogger
 from ..azimuthalIntegrator import AzimuthalIntegrator
 
 logger = getLogger(__file__)
-
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
 
 
 def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, pixelY=60):
@@ -67,10 +59,11 @@ def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, 
             try:
                 if round(abs(float(refv) - float(obtv))) != 0:
                     res += "%s: %s != %s" % (key, refv, obtv)
-            except TypeError as error:
+            except TypeError:
                 if refv != obtv:
                     res += "%s: %s != %s" % (key, refv, obtv)
     return res
+
 
 class TestFIT2D(unittest.TestCase):
     poniFile = "Pilatus1M.poni"
@@ -90,10 +83,10 @@ class TestFIT2D(unittest.TestCase):
         for key in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "pixel1", "pixel2", "splineFile"]:
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)
-            if refv is  None:
-                self.assertEqual(refv, obtv , "%s: %s != %s" % (key, refv, obtv))
+            if refv is None:
+                self.assertEqual(refv, obtv, "%s: %s != %s" % (key, refv, obtv))
             else:
-                self.assertAlmostEqual(refv, obtv , 4, "%s: %s != %s" % (key, refv, obtv))
+                self.assertAlmostEqual(refv, obtv, 4, "%s: %s != %s" % (key, refv, obtv))
 
     def test_export(self):
         res = testExport()
@@ -136,6 +129,4 @@ def suite():
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
-    if not runner.run(suite()).wasSuccessful():
-        sys.exit(1)
-
+    runner.run(suite())

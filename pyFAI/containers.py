@@ -55,7 +55,7 @@ class IntegrateResult(tuple):
         """
         Sum information
 
-        @rtype: numpy.ndarray
+        :rtype: numpy.ndarray
         """
         return self._sum
 
@@ -63,7 +63,7 @@ class IntegrateResult(tuple):
         """
         Set the sum information
 
-        @type count: numpy.ndarray
+        :type count: numpy.ndarray
         """
         self._sum = sum_
 
@@ -72,7 +72,7 @@ class IntegrateResult(tuple):
         """
         Count information
 
-        @rtype: numpy.ndarray
+        :rtype: numpy.ndarray
         """
         return self._count
 
@@ -80,7 +80,7 @@ class IntegrateResult(tuple):
         """
         Set the count information
 
-        @type count: numpy.ndarray
+        :type count: numpy.ndarray
         """
         self._count = count
 
@@ -89,7 +89,7 @@ class IntegrateResult(tuple):
         """
         Radial unit
 
-        @rtype: string
+        :rtype: string
         """
         return self._unit
 
@@ -97,7 +97,7 @@ class IntegrateResult(tuple):
         """
         Define the radial unit
 
-        @type unit: str
+        :type unit: str
         """
         self._unit = unit
 
@@ -106,7 +106,7 @@ class IntegrateResult(tuple):
         """
         True if a dark correction was applied
 
-        @rtype: bool
+        :rtype: bool
         """
         return self._has_dark_correction
 
@@ -114,7 +114,7 @@ class IntegrateResult(tuple):
         """
         Define if dark correction was applied
 
-        @type has_dark_correction: bool
+        :type has_dark_correction: bool
         """
         self._has_dark_correction = has_dark_correction
 
@@ -123,7 +123,7 @@ class IntegrateResult(tuple):
         """
         True if a flat correction was applied
 
-        @rtype: bool
+        :rtype: bool
         """
         return self._has_flat_correction
 
@@ -131,7 +131,7 @@ class IntegrateResult(tuple):
         """
         Define if flat correction was applied
 
-        @type has_flat_correction: bool
+        :type has_flat_correction: bool
         """
         self._has_flat_correction = has_flat_correction
 
@@ -140,7 +140,7 @@ class IntegrateResult(tuple):
         """
         The normalisation factor used
 
-        @rtype: float
+        :rtype: float
         """
         return self._normalization_factor
 
@@ -148,7 +148,7 @@ class IntegrateResult(tuple):
         """
         Define the used normalisation factor
 
-        @type normalization_factor: float
+        :type normalization_factor: float
         """
         self._normalization_factor = normalization_factor
 
@@ -157,7 +157,7 @@ class IntegrateResult(tuple):
         """
         The polarization factor used
 
-        @rtype: float
+        :rtype: float
         """
         return self._polarization_factor
 
@@ -165,7 +165,7 @@ class IntegrateResult(tuple):
         """
         Define the used polarization factor
 
-        @type polarization_factor: float
+        :type polarization_factor: float
         """
         self._polarization_factor = polarization_factor
 
@@ -200,7 +200,7 @@ class Integrate1dResult(IntegrateResult):
         """
         Radial positions (q/2theta/r)
 
-        @rtype: numpy.ndarray
+        :rtype: numpy.ndarray
         """
         return self[0]
 
@@ -209,7 +209,7 @@ class Integrate1dResult(IntegrateResult):
         """
         Regrouped intensity
 
-        @rtype: numpy.ndarray
+        :rtype: numpy.ndarray
         """
         return self[1]
 
@@ -218,7 +218,7 @@ class Integrate1dResult(IntegrateResult):
         """
         Error array if it was requested
 
-        @rtype: numpy.ndarray, None
+        :rtype: numpy.ndarray, None
         """
         if len(self) == 2:
             return None
@@ -255,7 +255,7 @@ class Integrate2dResult(IntegrateResult):
         """
         Azimuthaly regrouped intensity
 
-        @rtype: numpy.ndarray
+        :rtype: numpy.ndarray
         """
         return self[0]
 
@@ -264,7 +264,7 @@ class Integrate2dResult(IntegrateResult):
         """
         Radial positions (q/2theta/r)
 
-        @rtype: numpy.ndarray
+        :rtype: numpy.ndarray
         """
         return self[1]
 
@@ -273,7 +273,7 @@ class Integrate2dResult(IntegrateResult):
         """
         Azimuthal positions (chi)
 
-        @rtype: numpy.ndarray
+        :rtype: numpy.ndarray
         """
         return self[2]
 
@@ -282,7 +282,7 @@ class Integrate2dResult(IntegrateResult):
         """
         Error array if it was requested
 
-        @rtype: numpy.ndarray, None
+        :rtype: numpy.ndarray, None
         """
         if len(self) == 3:
             return None

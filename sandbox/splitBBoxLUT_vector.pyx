@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -30,7 +30,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "28/01/2016"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -82,16 +82,16 @@ class HistoBBox1d(object):
                  allow_pos0_neg=False,
                  unit="undefined"):
         """
-        @param pos0: 1D array with pos0: tth or q_vect or r ...
-        @param delta_pos0: 1D array with delta pos0: max center-corner distance
-        @param pos1: 1D array with pos1: chi
-        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-        @param bins: number of output bins, 100 by default
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param unit: can be 2th_deg or r_nm^-1 ...
+        :param pos0: 1D array with pos0: tth or q_vect or r ...
+        :param delta_pos0: 1D array with delta pos0: max center-corner distance
+        :param pos1: 1D array with pos1: chi
+        :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        :param bins: number of output bins, 100 by default
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param unit: can be 2th_deg or r_nm^-1 ...
         """
 
         self.size = pos0.size
@@ -408,22 +408,22 @@ class HistoBBox1d(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
@@ -435,7 +435,7 @@ class HistoBBox1d(object):
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
-        #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
+        #Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef vector[ vector[lut_point] ] lut = self._lut
@@ -570,17 +570,17 @@ class HistoBBox2d(object):
                  chiDiscAtPi=True
                  ):
         """
-        @param pos0: 1D array with pos0: tth or q_vect
-        @param delta_pos0: 1D array with delta pos0: max center-corner distance
-        @param pos1: 1D array with pos1: chi
-        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-        @param bins: number of output bins (tth=100, chi=36 by default)
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
-        @param unit: can be 2th_deg or r_nm^-1 ...
+        :param pos0: 1D array with pos0: tth or q_vect
+        :param delta_pos0: 1D array with delta pos0: max center-corner distance
+        :param pos1: 1D array with pos1: chi
+        :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        :param bins: number of output bins (tth=100, chi=36 by default)
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        :param unit: can be 2th_deg or r_nm^-1 ...
         """
         cdef numpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
@@ -973,22 +973,22 @@ class HistoBBox2d(object):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
-        @rtype: 5-tuple of ndarrays
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
+        :rtype: 5-tuple of ndarrays
 
         """
         cdef numpy.int32_t i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size, i0=0, i1=0

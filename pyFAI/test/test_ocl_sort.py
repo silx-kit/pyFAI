@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -29,12 +29,10 @@ from __future__ import absolute_import, print_function, division
 __doc__ = """Test for OpenCL sorting on GPU"""
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "02/08/2016"
+__date__ = "02/02/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import sys
-import os
 import unittest
 import numpy
 import logging
@@ -47,16 +45,11 @@ except (ImportError, Exception):
 logger = getLogger(__file__)
 
 
-try:
-    import pyopencl
-except ImportError as error:
-    logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
-    skip = True
-else:
-    skip = False
-    from .. import ocl_sort
+from ..opencl  import ocl, pyopencl
+if ocl:
+    from ..opencl import sort as ocl_sort
 
-
+@unittest.skipIf(ocl is None, "OpenCL is not available")
 class TestOclSort(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -78,7 +71,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_vertical(self.ary).get()
-        self.assert_(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -92,7 +85,7 @@ class TestOclSort(unittest.TestCase):
 #         pylab.legend()
 #         pylab.show()
 #         six.moves.input()
-        self.assert_(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
+        self.assertTrue(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -100,7 +93,7 @@ class TestOclSort(unittest.TestCase):
     def test_sort_hor(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_horizontal(self.ary).get()
-        self.assert_(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
+        self.assertTrue(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -114,7 +107,7 @@ class TestOclSort(unittest.TestCase):
 #         pylab.legend()
 #         pylab.show()
 #         six.moves.input()
-        self.assert_(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
+        self.assertTrue(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
         if self.PROFILE:
             s.log_profile()
             s.reset_timer()
@@ -122,13 +115,10 @@ class TestOclSort(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    if skip:
-        logger.warning("OpenCL module (pyopencl) is not present or no device available: skip test_ocl_sort")
-    else:
-        testsuite.addTest(TestOclSort("test_sort_hor"))
-        testsuite.addTest(TestOclSort("test_sort_vert"))
-        testsuite.addTest(TestOclSort("test_filter_hor"))
-        testsuite.addTest(TestOclSort("test_filter_vert"))
+    testsuite.addTest(TestOclSort("test_sort_hor"))
+    testsuite.addTest(TestOclSort("test_sort_vert"))
+    testsuite.addTest(TestOclSort("test_filter_hor"))
+    testsuite.addTest(TestOclSort("test_filter_vert"))
     return testsuite
 
 if __name__ == "__main__":

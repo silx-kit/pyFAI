@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>CCD calibration &mdash; pyFAI 0.12.0 documentation</title>
+    <title>CCD calibration &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="../../../index.html" />
     <link rel="up" title="Tutorials" href="../index.html" />
     <link rel="next" title="pyFAI scripts manual" href="../../../man/scripts.html" />
     <link rel="prev" title="Creation of a calibrant file" href="../MakeCalibrant/make_calibrant.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="../MakeCalibrant/make_calibrant.html" title="Creation of a calibrant file"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Tutorials</a> &raquo;</li> 
       </ul>
     </div>  
@@ -61,7 +61,7 @@
 coupled with a taper of optic fibers. If your camera is already
 calibrated using Fit2D and you have access to the corresponding <em>spline</em>
 file, this tutorial is not for you: simply create your detector object
-like this <strong>pyFAI.detectors.Detector(splineFile=&#8221;example.spline&#8221;)</strong> and
+like this <tt class="docutils literal"><span class="pre">pyFAI.detectors.Detector(splineFile=&quot;example.spline&quot;)</span></tt> and
 you are done. This tutorial uses the image of a regular grid on the
 detector.</p>
 <p>It uses a procedure described in: &#8220;Calibration and correction of spatial
@@ -69,37 +69,37 @@ distortions in 2D detector systems&#8221; from Hammersley, A. P.; Svensson, S.
 O.; Thompson, A. published in Nuclear Instruments and Methods in Physics
 Research Section A, Volume 346, Issue 1-2, p. 312-321.
 DOI:10.1016/0168-9002(94)90720-X</p>
-<p>The procedure is performed in 4 steps: 1. peak picking 2. grid
-assignment 3. distortion fitting 4. interpolation of the fitted data 5.
-saving into a detector definition file</p>
+<p>The procedure is performed in 4 steps:</p>
+<ol class="arabic simple">
+<li>peak picking</li>
+<li>grid assignment</li>
+<li>distortion fitting</li>
+<li>interpolation of the fitted data</li>
+<li>saving into a detector definition file</li>
+</ol>
 <p>The picture used is the one of a regular metallic grid of holes (spaced
 by 5mm), just in front of the detector. We will assume holes are
-circular what looks correct in first apploximation. Paralax error will
+circular what looks correct in first approximation. Parallax error will
 be ignored in a first time.</p>
 <div class="section" id="peak-picking">
 <h2>Peak picking<a class="headerlink" href="#peak-picking" title="Permalink to this headline">¶</a></h2>
 <p>Lets start with peak picking, for this, we will use the <em>FabIO</em> library
 able to read the image and <em>matplotlib</em> to display the image. The
-disortion is assumed to be minimal in the middle of the detector, so we
+distortion is assumed to be minimal in the middle of the detector, so we
 first focus on one spot in the middle:</p>
 <div class="code python highlight-python"><div class="highlight"><pre>#For final rendering switch from nbagg -&gt; inline
 #%pylab nbagg
 %pylab inline
-#
-# search for the image containing the grid
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">ls</span>
+<div class="code python highlight-python"><div class="highlight"><pre># search for the image containing the grid
+!ls *.edf
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>[0m[01;32m03jun102d.edf[0m*    [01;32mccd2_g3.edf[0m*     CCD_calibration.ipynb  [01;32mgrilHiCap_04jund.edf[0m*
-ccd2_g1_chk.edf   ccd2_g6_1.edf    corrected.edf          testdetector.h5
-[01;32mccd2_g2.edf[0m*      ccd2_g6_2.edf    [01;32mflm-4-1.edf[0m*
-ccd2_g2g.edf      ccd2_g6_3.edf    frelonID22_grid.edf
-[01;32mccd2_g3_chk.edf[0m*  ccd2_g6_chk.edf  [01;32mgrid.edf[0m*
+<div class="highlight-python"><div class="highlight"><pre>corrected.edf  frelonID22_grid.edf
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s">&quot;frelonID22_grid.edf&quot;</span>
@@ -108,17 +108,16 @@ ccd2_g2g.edf      ccd2_g6_3.edf    frelonID22_grid.edf
 <span class="n">img</span> <span class="o">=</span> <span class="n">fabio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>WARNING:xsdimage:lxml library is probably not part of your python installation: disabling xsdimage format
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre>WARNING: Not using BLAS, PCA calculation will be slower
-WARNING: Not using BLAS/ATLAS, PCA calculation will be slower
+<div class="highlight-python"><div class="highlight"><pre>WARNING:fabioimage:PIL is not installed ... trying to do without
+WARNING:tifimage:PIL is not installed ... trying to do without
+WARNING:bruker100image:PIL is not installed ... trying to do without
+WARNING:xsdimage:lxml library is probably not part of your python installation: disabling xsdimage format
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c4e70e588&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f2c70f1add8&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_4_1.png" src="../../../_images/output_4_1.png" />
@@ -126,7 +125,7 @@ WARNING: Not using BLAS/ATLAS, PCA calculation will be slower
 <span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="mi">1060</span><span class="p">:</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1040</span><span class="p">:</span><span class="mi">1080</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c4eae6908&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f2c70ebbba8&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_5_1.png" src="../../../_images/output_5_1.png" />
@@ -134,7 +133,7 @@ WARNING: Not using BLAS/ATLAS, PCA calculation will be slower
 <span class="n">plot</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="mi">1060</span><span class="o">+</span><span class="mi">25</span><span class="p">,</span><span class="mi">1040</span><span class="p">:</span><span class="mi">1060</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7f0c4ec89c50&gt;]
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7f2c70e383c8&gt;]
 </pre></div>
 </div>
 <img alt="../../../_images/output_6_1.png" src="../../../_images/output_6_1.png" />
@@ -158,7 +157,7 @@ peak-position.</p>
 <span class="n">imshow</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c49f72828&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f2c70d9c438&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_8_1.png" src="../../../_images/output_8_1.png" />
@@ -181,7 +180,7 @@ peak-position.</p>
 <span class="n">imshow</span><span class="p">(</span><span class="n">cnv</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c3cf93e80&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f2c5e259550&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_12_1.png" src="../../../_images/output_12_1.png" />
@@ -189,7 +188,7 @@ peak-position.</p>
 <span class="n">imshow</span><span class="p">(</span><span class="n">cnv</span><span class="p">[</span><span class="mi">1060</span><span class="p">:</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1040</span><span class="p">:</span><span class="mi">1080</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f0c3cef3160&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7f2c5e1f8e80&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_13_1.png" src="../../../_images/output_13_1.png" />
@@ -198,13 +197,13 @@ peak-position.</p>
 <span class="c"># the peak got broader (2x) but much smoother on the top: this is what we are interrested in.</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7f0c3cedc320&gt;]
+<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x7f2c5e160358&gt;]
 </pre></div>
 </div>
 <img alt="../../../_images/output_14_1.png" src="../../../_images/output_14_1.png" />
 <p>After convolution with a pattern of the same shape as the hole, the peak
 center is located with a sub-pixel resolution. The peak has a full size
-of 30 pix in 1 dimension.</p>
+of 30 pixels in 1 dimension.</p>
 <p>All peak positions will be extracted using the pyFAI inverse watershed
 algorithm. Once all regions are segmented, the ones too small are sieved
 out and the remaining ones are classifies according to their peak
@@ -233,11 +232,12 @@ is done on the log-scale of the intensity.</p>
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>WARNING:pyFAI.utils:Exception No module named &#39;fftw3&#39;: FFTw3 not available. Falling back on Scipy
-WARNING:pyFAI.timeit:init_labels took 2.123s
-WARNING:pyFAI.timeit:init_borders took 0.066s
-WARNING:pyFAI.timeit:init_regions took 0.646s
-WARNING:pyFAI.timeit:init_pass took 0.229s
-WARNING:pyFAI.timeit:merge_singleton took 0.054s
+WARNING:pyFAI.opencl:Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl
+WARNING:pyFAI.timeit:init_labels took 1.104s
+WARNING:pyFAI.timeit:init_borders took 0.048s
+WARNING:pyFAI.timeit:init_regions took 0.450s
+WARNING:pyFAI.timeit:init_pass took 0.143s
+WARNING:pyFAI.timeit:merge_singleton took 0.033s
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>Number of region segmented: 79513
@@ -265,14 +265,16 @@ Number of large enough regions : 8443
 </pre></div>
 </div>
 <img alt="../../../_images/output_18_1.png" src="../../../_images/output_18_1.png" />
-<p>There are clearly 3 groups of very different intensity, well segragated:</p>
+<p>There are clearly 3 groups of very different intensity, well segregated:</p>
 <ul class="simple">
-<li>around 10^2.1 (~125), those are the peaks where no tapper brings
-light</li>
-<li>around 10^3.4 (~2500), those are segmented region in the background</li>
-<li>above 10^3.9 (~8000), those are actual peaks, we are looking for.</li>
+<li>around <img class="math" src="../../../_images/math/5c816d1b231dbca6428e4ffddf53bc8c000b8364.png" alt="10^{2.1}"/> (~125), those are the peaks where no tapper
+brings light</li>
+<li>around <img class="math" src="../../../_images/math/d959caf592dfc969a5fed3cee233c5935ec7ec7a.png" alt="10^{3.4}"/> (~2500), those are segmented region in the
+background</li>
+<li>above <img class="math" src="../../../_images/math/47fd3e15f1be8a08bb10ce473e7dabe0afa29439.png" alt="10^{3.9}"/> (~8000), those are actual peaks, we are
+looking for.</li>
 </ul>
-<p>We retain all peaks &gt;10^3.5</p>
+<p>We retain all peaks &gt; <img class="math" src="../../../_images/math/584580e634815e4a6bd55b80dc50fd55359b73ad.png" alt="10^{3.5}"/></p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">peaks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="o">.</span><span class="n">index</span><span class="o">//</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="o">.</span><span class="n">index</span><span class="o">%</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">regions</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">maxi</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">10</span><span class="o">**</span><span class="mf">3.5</span><span class="p">]</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&quot;Number of remaining peaks: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">))</span>
 </pre></div>
@@ -291,7 +293,7 @@ light</li>
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>Raw peak coordinate:
-[(1187, 654), (35, 155), (1082, 1447), (1082, 1545), (39, 62), (1083, 1250), (1083, 1349), (1943, 1925), (1084, 1151), (1190, 455)]
+[(1273, 2027), (1664, 1742), (1666, 1646), (1866, 1155), (1274, 1933), (1867, 466), (1867, 563), (1867, 1056), (203, 1131), (107, 1226)]
 </pre></div>
 </div>
 <img alt="../../../_images/output_21_1.png" src="../../../_images/output_21_1.png" />
@@ -318,7 +320,7 @@ light</li>
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>Refined peak coordinate:
-[(1186.931446455419, 653.9433948583901), (34.4068917632103, 155.60163909196854), (1081.7659440785646, 1447.2154052853584), (1081.409073472023, 1545.5145089030266), (39.49280175566673, 62.08068184554577), (1083.1883269548416, 1249.924985870719), (1082.5653080940247, 1348.6598246097565), (1943.0012932673562, 1925.4793396294117), (1083.641106903553, 1150.8036927580833), (1189.607285887003, 455.1422745883465)]
+[(1272.9463423714042, 2026.5502902269363), (1664.0545781441033, 1742.1054049506783), (1666.296777099371, 1645.9045108556747), (1866.365830898285, 1154.7454472184181), (1274.126026943326, 1932.9975793703925), (1866.5777518451214, 465.5264100730419), (1867.4438569247723, 563.2241970151663), (1867.3492084741592, 1056.0545778758824), (203.06922163814306, 1131.10803706944), (106.92814844101667, 1226.3799100518227)]
 </pre></div>
 </div>
 <img alt="../../../_images/output_24_1.png" src="../../../_images/output_24_1.png" />
@@ -326,7 +328,7 @@ light</li>
 been properly segmented. If this is not the case, one can adapt:</p>
 <ul class="simple">
 <li>the size of the kernel</li>
-<li>the threshold comming out of the histogramming</li>
+<li>the threshold coming out of the histogramming</li>
 </ul>
 </div>
 <div class="section" id="pair-wise-distribution-function">
@@ -349,7 +351,7 @@ neighbors</p>
 <span class="n">title</span><span class="p">(</span><span class="s">&quot;Pair-wise distribution function&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f0bff0c5dd8&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f2c4e3468d0&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_29_1.png" src="../../../_images/output_29_1.png" />
@@ -361,7 +363,7 @@ neighbors</p>
 <li>... and so on.</li>
 </ul>
 <p>We now focus on the first neighbours which are all located between 70
-and 110 pixel appart.</p>
+and 110 pixels apart.</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c">#We define here a data-type for each peak (called center) with 4 neighbours (called north, east, south and west).</span>
 <span class="n">point_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([(</span><span class="s">&#39;center_y&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;center_x&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
                         <span class="p">(</span><span class="s">&#39;east_y&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;east_x&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span>
@@ -372,8 +374,8 @@ and 110 pixel appart.</p>
 <span class="n">neig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">dist</span><span class="o">&gt;</span><span class="mf">70.0</span><span class="p">,</span> <span class="n">dist</span><span class="o">&lt;</span><span class="mf">110.0</span><span class="p">)</span>
 <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">neig</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&quot;There are </span><span class="si">%i</span><span class="s"> control point with exactly 4 first neigbours&quot;</span><span class="o">%</span><span class="n">valid</span><span class="p">)</span>
-<span class="n">point</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">point_type</span><span class="p">)</span>
 <span class="c"># This initializes an empty structure to be populated</span>
+<span class="n">point</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">point_type</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>There are 359 control point with exactly 4 first neigbours
@@ -457,8 +459,8 @@ The XY angle is 89.6463263982 deg
 <span class="n">Xmax</span> <span class="o">=</span> <span class="n">IJ</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 <span class="n">Ymin</span> <span class="o">=</span> <span class="n">IJ</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 <span class="n">Ymax</span> <span class="o">=</span> <span class="n">IJ</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Xmin/max&quot;</span><span class="p">,</span><span class="n">Xmin</span><span class="p">,</span> <span class="n">Xmax</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Ymin/max&quot;</span><span class="p">,</span><span class="n">Ymin</span><span class="p">,</span><span class="n">Ymax</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Xmin/max&quot;</span><span class="p">,</span> <span class="n">Xmin</span><span class="p">,</span> <span class="n">Xmax</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Ymin/max&quot;</span><span class="p">,</span> <span class="n">Ymin</span><span class="p">,</span> <span class="n">Ymax</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&quot;Maximum error versus integrer: </span><span class="si">%s</span><span class="s"> * pitch size (5mm)&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">IJ</span><span class="o">-</span><span class="n">IJ</span><span class="o">.</span><span class="n">round</span><span class="p">())</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
 </pre></div>
 </div>
@@ -479,16 +481,18 @@ optimization later on.</p>
 <span class="n">title</span><span class="p">(</span><span class="s">&quot;Red: measured peaks, Green: Expected position&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f0bff096390&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f2c4e313278&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_39_1.png" src="../../../_images/output_39_1.png" />
 <div class="section" id="estimation-of-the-pixel-size">
 <h3>Estimation of the pixel size:<a class="headerlink" href="#estimation-of-the-pixel-size" title="Permalink to this headline">¶</a></h3>
 <p>The pixel size is obtained from the pitch of the grid, in vectorial:</p>
-<p>pitch^2 = (Px*Xx)^2 + (Py Xy)^2</p>
-<p>pitch^2 = (Px*Yx)^2 + (Py Yy)^2</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">pitch</span> <span class="o">=</span> <span class="mf">5e-3</span> <span class="c">#mm distance between holes</span>
+<div class="math">
+<p><img src="../../../_images/math/a63c6445abcbaeb499ad2b1c1e8c93695fb76ce6.png" alt="pitch^2 = (Px \cdot Xx)^2 + (Py \cdot Xy)^2"/></p>
+</div><div class="math">
+<p><img src="../../../_images/math/7a69bc63d90879aaab95e6d333f7eea7d23d1202.png" alt="pitch^2 = (Px \cdot Yx)^2 + (Py \cdot Yy)^2"/></p>
+</div><div class="code python highlight-python"><div class="highlight"><pre><span class="n">pitch</span> <span class="o">=</span> <span class="mf">5e-3</span> <span class="c">#mm distance between holes</span>
 <span class="n">Py</span> <span class="o">=</span> <span class="n">pitch</span><span class="o">*</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Yx</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="n">Xx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">Xy</span><span class="o">*</span><span class="n">Yx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">Xx</span><span class="o">*</span><span class="n">Yy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 <span class="n">Px</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">pitch</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">Xy</span><span class="o">*</span><span class="n">Py</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">Xx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&quot;Pixel size in average: x:</span><span class="si">%.3f</span><span class="s"> micron, y: </span><span class="si">%.3f</span><span class="s"> microns&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">Px</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">Py</span><span class="o">*</span><span class="mf">1e6</span><span class="p">))</span>
@@ -525,7 +529,6 @@ the peaks on the border with less than 4 neighbours.</p>
     <span class="s">&quot;Translate pixel -&gt; hole&quot;</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">P</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-
     <span class="c">#Transformation matrix from pixel to holes:</span>
     <span class="n">hole</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R</span><span class="p">),</span> <span class="p">(</span><span class="n">pixels</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
     <span class="k">return</span> <span class="n">hole</span>
@@ -559,32 +562,32 @@ the peaks on the border with less than 4 neighbours.</p>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>Total inital error  2.5995763607 [753.70350015163422, 1186.1879850327969, 97.719730182623479, 1.3821857949656571, -0.78797711765336542, 97.082699075794565]
 Maximum initial error versus integrer: 0.199838456433 * pitch size (5mm)
-      jac: array([ -1.49011612e-07,  -2.08616257e-07,  -2.68220901e-07,
-         1.19209290e-07,   1.19209290e-07,   3.87430191e-07])
+      fun: 2.123772842169884
+ hess_inv: array([[  1.41698853e+01,   5.02981780e-01,  -8.67450996e-01,
+          5.65400698e-01,  -2.23588556e-02,   3.62469793e-02],
+       [  5.02981780e-01,   1.44432486e+01,  -6.17043562e-03,
+          3.18737250e-02,  -8.80159842e-01,   5.53478243e-01],
+       [ -8.67450996e-01,  -6.17043562e-03,   2.99705132e-01,
+         -4.12312169e-03,   2.39113093e-03,  -1.79968692e-03],
+       [  5.65400698e-01,   3.18737250e-02,  -4.12312169e-03,
+          3.01702833e-01,  -1.78715958e-03,   3.83867286e-03],
+       [ -2.23588556e-02,  -8.80159842e-01,   2.39113093e-03,
+         -1.78715958e-03,   2.97818929e-01,  -3.46536500e-03],
+       [  3.62469793e-02,   5.53478243e-01,  -1.79968692e-03,
+          3.83867286e-03,  -3.46536500e-03,   2.93190623e-01]])
+      jac: array([ -2.98023224e-08,   5.66244125e-07,   1.19209290e-07,
+         3.57627869e-07,   8.34465027e-07,   1.10268593e-06])
+  message: &#39;Optimization terminated successfully.&#39;
      nfev: 160
       nit: 15
-  message: &#39;Optimization terminated successfully.&#39;
-   status: 0
      njev: 20
+   status: 0
   success: True
-        x: array([  7.53021133e+02,   1.18519692e+03,   9.81143527e+01,
-         1.47509463e+00,  -8.04478515e-01,   9.73166896e+01])
-      fun: 2.1237728421683415
- hess_inv: array([[  1.42100651e+01,   5.92064797e-01,  -8.65311650e-01,
-          5.71616778e-01,  -2.93157223e-02,   3.36330120e-02],
-       [  5.92064797e-01,   1.42890834e+01,  -3.28993124e-02,
-          1.71968068e-02,  -8.57363816e-01,   5.83878215e-01],
-       [ -8.65311650e-01,  -3.28993124e-02,   2.99126185e-01,
-         -4.37220702e-03,   4.01788293e-03,  -2.74807907e-03],
-       [  5.71616778e-01,   1.71968068e-02,  -4.37220702e-03,
-          3.02142044e-01,  -1.06852612e-03,   2.67366996e-03],
-       [ -2.93157223e-02,  -8.57363816e-01,   4.01788293e-03,
-         -1.06852612e-03,   2.95805859e-01,  -4.27421580e-03],
-       [  3.36330120e-02,   5.83878215e-01,  -2.74807907e-03,
-          2.67366996e-03,  -4.27421580e-03,   2.97301584e-01]])
-total Final error  2.12377284217 [  7.53021133e+02   1.18519692e+03   9.81143527e+01   1.47509463e+00
-  -8.04478515e-01   9.73166896e+01]
-Maximum final error versus integrer: 0.234645010209 * pitch size (5mm)
+        x: array([  7.53021133e+02,   1.18519693e+03,   9.81143528e+01,
+         1.47509462e+00,  -8.04478941e-01,   9.73166902e+01])
+total Final error  2.12377284217 [  7.53021133e+02   1.18519693e+03   9.81143528e+01   1.47509462e+00
+  -8.04478941e-01   9.73166902e+01]
+Maximum final error versus integrer: 0.234645015537 * pitch size (5mm)
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">clf</span><span class="p">()</span>
@@ -597,7 +600,7 @@ Maximum final error versus integrer: 0.234645010209 * pitch size (5mm)
 <span class="n">title</span><span class="p">(</span><span class="s">&quot;Peak position: measured (red) and expected (Green)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f0c04a54518&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7f2c4e3de668&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_45_1.png" src="../../../_images/output_45_1.png" />
@@ -613,7 +616,7 @@ Maximum final error versus integrer: 0.234645010209 * pitch size (5mm)
 </div>
 <p>Few comments:</p>
 <ul class="simple">
-<li>The maximum error grow during optimization without explainations</li>
+<li>The maximum error grow during optimization without explanations</li>
 <li>The outer part of the detector is the most distorted</li>
 </ul>
 </div>
@@ -643,7 +646,7 @@ needed as y,x (and not x,y) we use p instead of peaks_m</p>
 <span class="c">#Nota: the arrays are filled with &quot;NaN&quot; outside the convex Hull</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.colorbar.Colorbar at 0x7f0bfd478240&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.colorbar.Colorbar at 0x7f2c47ed3d30&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_48_1.png" src="../../../_images/output_48_1.png" />
@@ -681,7 +684,7 @@ needed as y,x (and not x,y) we use p instead of peaks_m</p>
 <span class="n">colorbar</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.colorbar.Colorbar at 0x7f0bfc1f8f60&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.colorbar.Colorbar at 0x7f2c46c55f98&gt;
 </pre></div>
 </div>
 <img alt="../../../_images/output_50_1.png" src="../../../_images/output_50_1.png" />
@@ -696,7 +699,7 @@ has no justification, it is there just to prevent numerical bugs.</p>
 <span class="n">detector</span><span class="o">.</span><span class="n">max_shape</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
 <span class="n">detector</span><span class="o">.</span><span class="n">set_dx</span><span class="p">(</span><span class="n">fill</span><span class="p">(</span><span class="n">delta_x</span><span class="p">))</span>
 <span class="n">detector</span><span class="o">.</span><span class="n">set_dy</span><span class="p">(</span><span class="n">fill</span><span class="p">(</span><span class="n">delta_y</span><span class="p">))</span>
-<span class="n">detector</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">delta_x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">delta_x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int8</span><span class="p">)[:</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
 <span class="n">detector</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;testdetector.h5&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -716,21 +719,16 @@ has no justification, it is there just to prevent numerical bugs.</p>
 <span class="n">fabio</span><span class="o">.</span><span class="n">edfimage</span><span class="o">.</span><span class="n">EdfImage</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">cor</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;corrected.edf&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>WARNING:pyFAI.timeit:calc_pos took 0.747s
-WARNING:pyFAI.timeit:calc_size took 0.944s
-WARNING:pyFAI.timeit:calc_LUT took 2.907s
-</pre></div>
-</div>
-<img alt="../../../_images/output_54_1.png" src="../../../_images/output_54_1.png" />
+<img alt="../../../_images/output_54_0.png" src="../../../_images/output_54_0.png" />
 </div>
 </div>
 <div class="section" id="conclusion">
 <h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
-<p>This procedure describes how to measure the detector
-distortion and how to create a detector description file directly
-useable in pyFAI. Only the region inside the convex hull of the grid
-data-points is valid and the region of the detector which is not
-calibrated has been masked out to preven accidental use of it.</p>
+<p>This procedure describes how to measure the detector distortion and how
+to create a detector description file directly usable in pyFAI. Only the
+region inside the convex hull of the grid data-points is valid and the
+region of the detector which is not calibrated has been masked out to
+prevent accidental use of it.</p>
 <p>The distortion corrected image can now be used to check how &#8220;good&#8221; the
 calibration actually is. This file can be injected in the third cell,
 and follow the same procedure (left as exercise). This gives a maximum
@@ -809,7 +807,7 @@ pixels which is acceptable and validates the whole procedure.</p>
         <li class="right" >
           <a href="../MakeCalibrant/make_calibrant.html" title="Creation of a calibrant file"
              >previous</a> |</li>
-        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Tutorials</a> &raquo;</li> 
       </ul>
     </div>

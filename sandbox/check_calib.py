@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -40,9 +40,9 @@ except (ImportError, Exception):
 def shift(input, shift):
     """
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order=0) but faster
-    @param input: 2d numpy array
-    @param shift: 2-tuple of integers
-    @return: shifted image
+    :param input: 2d numpy array
+    :param shift: 2-tuple of integers
+    :return: shifted image
     """
     re = numpy.zeros_like(input)
     s0, s1 = input.shape
@@ -61,9 +61,9 @@ def shiftFFT(inp, shift, method="fftw"):
     """
     Do shift using FFTs
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
-    @param input: 2d numpy array
-    @param shift: 2-tuple of float
-    @return: shifted image
+    :param input: 2d numpy array
+    :param shift: 2-tuple of float
+    :return: shifted image
 
     """
     d0, d1 = inp.shape
@@ -95,8 +95,8 @@ def maximum_position(img):
     Same as scipy.ndimage.measurements.maximum_position:
     Find the position of the maximum of the values of the array.
 
-    @param img: 2-D image
-    @return: 2-tuple of int with the position of the maximum
+    :param img: 2-D image
+    :return: 2-tuple of int with the position of the maximum
     """
     maxarg = numpy.argmax(img)
     s0, s1 = img.shape
@@ -106,8 +106,8 @@ def center_of_mass(img):
     """
     Calculate the center of mass of of the array.
     Like scipy.ndimage.measurements.center_of_mass
-    @param img: 2-D array
-    @return: 2-tuple of float with the center of mass
+    :param img: 2-D array
+    :return: 2-tuple of float with the center of mass
     """
     d0, d1 = img.shape
     a0, a1 = numpy.ogrid[:d0, :d1]
@@ -118,10 +118,10 @@ def center_of_mass(img):
 def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     """
     Measure the actual offset between 2 images
-    @param img1: ndarray, first image
-    @param img2: ndarray, second image, same shape as img1
-    @param withLog: shall we return logs as well ? boolean
-    @return: tuple of floats with the offsets
+    :param img1: ndarray, first image
+    :param img2: ndarray, second image, same shape as img1
+    :param withLog: shall we return logs as well ? boolean
+    :return: tuple of floats with the offsets
     """
     method = str(method)
     ################################################################################

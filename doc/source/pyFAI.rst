@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2016
+:Date: 01/12/2016
 :Keywords: generic description of the software
 :Target: General audiance
 
@@ -102,21 +102,10 @@ PyFAI executables
 .................
 
 PyFAI was designed to be used by scientists needing a simple and
-effective tool for azimuthal integration. Two command line programs
-*pyFAI-waxs* and *pyFAI-saxs* are provided with pyFAI for performing the
-integration of one or more images on the command line.
-The waxs version outputs result in
-:math:`2\theta /I`, whereas the saxs version outputs result in
-:math:`q/I(/\sigma)`. Options for these programs are parameter file
-(*poni-file*)
-describing the geometry and the mask file. They can also do some
-pre-processing like dark-noise subtraction and flat-field correction
-(solid-angle correction is done by default).
-
-A new Graphical interface based on Qt called *pyFAI-integrate* is now available,
-offers all options possible for azimuthal integration (dark/flat/polarization,
-....) in addition to a finer tuning for the computing device selection (CPU/GPU).
-
+effective tool for azimuthal integration.
+There are a certain number of scripts which will help you in preprocessing images
+(dark current, flat-field, averaging, ...),
+calibrating the geometry, performing the integration.
 Finally couple of specialized tool called diff_tomo and diff_map are available to
 reduce a 2D/3D-mapping experiment of 2D images into a 3D volume
 (:math:`x, y, 2\theta` for mapping or :math:`rot, trans, 2\theta` for tomography)
@@ -137,9 +126,9 @@ integrated before being plotted.
    :align: center
    :alt: image
 
-The :ref:`tutorials` section makes heavy use of *ipython*, now  *jupyter*
-to process data using pyFAI.
-The first tutorial also explains a bit how Python and Jupyter works to be
+The :ref:`tutorials` section makes heavy use of *IPython notebooks*, now called
+*Jupyter notebooks* to process data using *pyFAI*.
+The first tutorial also explains a bit how *Python* and *Jupyter* works to be
 able to perform basic processing efficiently with pyFAI.
 
 

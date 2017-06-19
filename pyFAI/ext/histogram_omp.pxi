@@ -1,7 +1,7 @@
 # coding: utf-8
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
@@ -29,7 +29,7 @@
 
 __doc__ = """Re-implementation of numpy histograms using OpenMP"""
 __author__ = "Jerome Kieffer"
-__date__ = "31/05/2016"
+__date__ = "02/02/2017"
 __license__ = "MIT"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -58,15 +58,15 @@ def histogram(numpy.ndarray pos not None, \
     """
     Calculates histogram of pos weighted by weights
 
-    @param pos: 2Theta array
-    @param weights: array with intensities
-    @param bins: number of output bins
-    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
-    @param nthread: OpenMP is disabled. unused
-    @param empty: value given to empty bins
-    @param normalization_factor: divide the result by this value
+    :param pos: 2Theta array
+    :param weights: array with intensities
+    :param bins: number of output bins
+    :param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
+    :param nthread: OpenMP is disabled. unused
+    :param empty: value given to empty bins
+    :param normalization_factor: divide the result by this value
 
-    @return 2theta, I, weighted histogram, raw histogram
+    :return: 2theta, I, weighted histogram, raw histogram
     """
 
     assert pos.size == weights.size
@@ -158,16 +158,16 @@ def histogram2d(numpy.ndarray pos0 not None,
     """
     Calculate 2D histogram of pos0,pos1 weighted by weights
 
-    @param pos0: 2Theta array
-    @param pos1: Chi array
-    @param weights: array with intensities
-    @param bins: number of output bins int or 2-tuple of int
-    @param split: pixel splitting is disabled in histogram
-    @param nthread: maximum number of thread to use. By default: maximum available.
-    @param empty: value given to empty bins
-    @param normalization_factor: divide the result by this value
+    :param pos0: 2Theta array
+    :param pos1: Chi array
+    :param weights: array with intensities
+    :param bins: number of output bins int or 2-tuple of int
+    :param split: pixel splitting is disabled in histogram
+    :param nthread: maximum number of thread to use. By default: maximum available.
+    :param empty: value given to empty bins
+    :param normalization_factor: divide the result by this value
 
-    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
 
     One can also limit this with OMP_NUM_THREADS environment variable
     """

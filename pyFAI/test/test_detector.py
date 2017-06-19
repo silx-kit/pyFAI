@@ -2,35 +2,39 @@
 # coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 #
 
 "test suite for masked arrays"
 
 __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
-__license__ = "GPLv3+"
+__license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "15/05/2017"
 
-import sys
 import os
 import tempfile
 import shutil
@@ -158,7 +162,7 @@ class TestDetector(unittest.TestCase):
                 else:
                     self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
             if (det.mask is not None) or (new_det.mask is not None):
-                self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+                self.assertTrue(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
 
             if det.shape[0] > 2000:
                 continue
@@ -178,11 +182,11 @@ class TestDetector(unittest.TestCase):
             if err2 > 1e-6:
                 logger.error("%s precision on pixel position 1 is better than 1µm, got %e", det_name, err2)
 
-            self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err1))
-            self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
+            self.assertTrue(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err1))
+            self.assertTrue(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
             if not det.IS_FLAT:
                 err = abs(r[2] - o[2]).max()
-                self.assert_(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
+                self.assertTrue(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
 
         # check Pilatus with displacement maps
         # check spline
@@ -228,8 +232,8 @@ class TestDetector(unittest.TestCase):
         d = detector_factory("Xpad S540 flat")
         cy = d.calc_cartesian_positions(use_cython=True)
         np = d.calc_cartesian_positions(use_cython=False)
-        self.assert_(numpy.allclose(cy[0], np[0]), "max_delta1=" % abs(cy[0] - np[0]).max())
-        self.assert_(numpy.allclose(cy[1], np[1]), "max_delta2=" % abs(cy[1] - np[1]).max())
+        self.assertTrue(numpy.allclose(cy[0], np[0]), "max_delta1=" % abs(cy[0] - np[0]).max())
+        self.assertTrue(numpy.allclose(cy[1], np[1]), "max_delta2=" % abs(cy[1] - np[1]).max())
 
     def test_non_flat(self):
         """
@@ -245,7 +249,7 @@ class TestDetector(unittest.TestCase):
         c = a.get_pixel_corners(use_cython=True)
         t2 = time.time()
         logger.info("Aarhus.get_pixel_corners timing Numpy: %.3fs Cython: %.3fs", t1 - t0, t2 - t1)
-        self.assert_(abs(n - c).max() < 1e-6, "get_pixel_corners cython == numpy")
+        self.assertTrue(abs(n - c).max() < 1e-6, "get_pixel_corners cython == numpy")
         # test pixel center coordinates
         t0 = time.time()
         n1, n2, n3 = a.calc_cartesian_positions(use_cython=False)
@@ -253,9 +257,9 @@ class TestDetector(unittest.TestCase):
         c1, c2, c3 = a.calc_cartesian_positions(use_cython=True)
         t2 = time.time()
         logger.info("Aarhus.calc_cartesian_positions timing Numpy: %.3fs Cython: %.3fs", t1 - t0, t2 - t1)
-        self.assert_(abs(n1 - c1).max() < 1e-6, "cartesian coord1 cython == numpy")
-        self.assert_(abs(n2 - c2).max() < 1e-6, "cartesian coord2 cython == numpy")
-        self.assert_(abs(n3 - c3).max() < 1e-6, "cartesian coord3 cython == numpy")
+        self.assertTrue(abs(n1 - c1).max() < 1e-6, "cartesian coord1 cython == numpy")
+        self.assertTrue(abs(n2 - c2).max() < 1e-6, "cartesian coord2 cython == numpy")
+        self.assertTrue(abs(n3 - c3).max() < 1e-6, "cartesian coord3 cython == numpy")
 
 
 def suite():

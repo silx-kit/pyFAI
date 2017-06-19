@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import sys, logging, json, os, time, types, threading
 import os.path as op
@@ -185,8 +185,8 @@ class AIWidget(QtGui.QWidget):
         """
         Dump the status of the current widget to a file in JSON
 
-        @param filename: path where to save the config
-        @type filename: str
+        :param filename: path where to save the config
+        :type filename: str
 
         """
         print "Dump!"
@@ -238,8 +238,8 @@ class AIWidget(QtGui.QWidget):
         """
         restore from JSON file the status of the current widget
 
-        @param filename: path where the config was saved
-        @type filename: str
+        :param filename: path where the config was saved
+        :type filename: str
 
         """
         logger.debug("Restore")

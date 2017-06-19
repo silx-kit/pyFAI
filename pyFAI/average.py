@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/09/2016"
+__date__ = "08/11/2016"
 __status__ = "production"
 
 import logging
@@ -291,8 +291,6 @@ def create_algorithm(filter_name, cut_off=None, quantiles=None):
     :raise AlgorithmCreationError: If it is not possible to create the
         algorithm
     """
-    global _FILTER_NAME_MAPPING, _AVERAGE_DARK_FILTERS
-
     if filter_name in _FILTER_NAME_MAPPING and cut_off is None:
         # use less memory
         filter_class = _FILTER_NAME_MAPPING[filter_name]

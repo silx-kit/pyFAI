@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2013-2016 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2013-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "23/09/2016"
+__date__ = "10/02/2017"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -115,7 +115,7 @@ cdef inline float _ceil_max4(float a, float b, float c, float d) nogil:
 cdef inline void integrate(float[:, ::1] box, float start, float stop, float slope, float intercept) nogil:
     """Integrate in a box a line between start and stop, line defined by its slope & intercept
 
-    @param box: buffer
+    :param box: buffer
     """
     cdef:
         int i, h = 0
@@ -248,29 +248,30 @@ cdef inline void integrate(float[:, ::1] box, float start, float stop, float slo
 # Functions used in python classes from PyFAI.distortion
 ################################################################################
 
-@cython.wraparound(False)
-@cython.boundscheck(False)
 @cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
              float pixel1, float pixel2, shape_out=None):
     """Calculate the pixel boundary position on the regular grid
 
-    @param pixel_corners: pixel corner coordinate as detector.get_pixel_corner()
-    @param shape: requested output shape. If None, it is calculated
-    @param pixel1, pixel2: pixel size along row and column coordinates
-    @return: pos, delta1, delta2, shape_out, offset
+    :param pixel_corners: pixel corner coordinate as detector.get_pixel_corner()
+    :param shape: requested output shape. If None, it is calculated
+    :param pixel1, pixel2: pixel size along row and column coordinates
+    :return: pos, delta1, delta2, shape_out, offset
     """
     cdef:
         float[:, :, :, ::1] pos
         int i, j, k, dim0, dim1, nb_corners
         bint do_shape = (shape_out is None)
-        float BIG = <float> sys.maxsize
+        float BIG = numpy.finfo(numpy.float32).max
         float min0, min1, max0, max1, delta0, delta1
         float all_min0, all_max0, all_max1, all_min1
         float p0, p1
-    
-    if (pixel1 == 0.0) or (pixel2 == 0):
-        raise RuntimeError("Pixel size cannot be null -> Zero division error") 
+
+    if (pixel1 == 0.0) or (pixel2 == 0.0):
+        raise RuntimeError("Pixel size cannot be null -> Zero division error")
 
     dim0 = pixel_corners.shape[0]
     dim1 = pixel_corners.shape[1]
@@ -280,7 +281,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
         delta0 = -BIG
         delta1 = -BIG
         all_min0 = BIG
-        all_min0 = BIG
+        all_min1 = BIG
         all_max0 = -BIG
         all_max1 = -BIG
         for i in range(dim0):
@@ -294,7 +295,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
                     p1 = pixel_corners[i, j, k, 2] / pixel2
                     pos[i, j, k, 0] = p0
                     pos[i, j, k, 1] = p1
-                    min0 = p0 if p0 < min0 else min0                        
+                    min0 = p0 if p0 < min0 else min0
                     min1 = p1 if p1 < min1 else min1
                     max0 = p0 if p0 > max0 else max0
                     max1 = p1 if p1 > max1 else max1
@@ -312,19 +313,21 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
     return res
 
 
-@cython.wraparound(False)
+@cython.cdivision(True)
 @cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def calc_size(floating[:, :, :, ::1] pos not None,
               shape,
               numpy.int8_t[:, ::1] mask=None,
               offset=None):
     """Calculate the number of items per output pixel
 
-    @param pos: 4D array with position in space
-    @param shape: shape of the output array
-    @param mask: input data mask
-    @param offset: 2-tuple of float with the minimal index of
-    @return: number of input element per output elements
+    :param pos: 4D array with position in space
+    :param shape: shape of the output array
+    :param mask: input data mask
+    :param offset: 2-tuple of float with the minimal index of
+    :return: number of input element per output elements
     """
     cdef:
         int i, j, k, l, shape_out0, shape_out1, shape_in0, shape_in1, min0, min1, max0, max1
@@ -370,25 +373,26 @@ def calc_size(floating[:, :, :, ::1] pos not None,
     return lut_size
 
 
-@cython.wraparound(False)
-@cython.boundscheck(False)
 @cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """
-    @param pos: 4D position array
-    @param shape: output shape
-    @param bin_size: number of input element per output element (numpy array)
-    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    @param mask: arry with bad pixels marked as True
-    @return: look-up table
+    :param pos: 4D position array
+    :param shape: output shape
+    :param bin_size: number of input element per output element (numpy array)
+    :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    :param mask: arry with bad pixels marked as True
+    :return: look-up table
     """
     cdef:
         int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1
         int offset0, offset1, box_size0, box_size1, size, k
         numpy.int32_t idx = 0
         int err_cnt = 0
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         lut_point[:, :, :] lut
         bint do_mask = mask is not None
@@ -401,7 +405,7 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
     delta0, delta1 = max_pixel_size
     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
     outMax[:, :] = 0
-    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)    
+    buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     buffer_nbytes = buffer.nbytes
     if (size == 0): # fix 271
         raise RuntimeError("The look-up table has dimension 0 which is a non-sense."
@@ -438,8 +442,8 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
                     # Increase size of the buffer
                     delta0 = offset0 if offset0 > delta0 else delta0
                     delta1 = offset1 if offset1 > delta1 else delta1
-                    with gil: 
-                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+                    with gil:
+                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
 
                 A0 -= foffset0
                 A1 -= foffset1
@@ -512,19 +516,20 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
                                     copy=True)
 
 
-@cython.wraparound(False)
-@cython.boundscheck(False)
 @cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """Calculate the Look-up table as CSR format
 
-    @param pos: 4D position array
-    @param shape: output shape
-    @param bin_size: number of input element per output element (as numpy array)
-    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    @return: look-up table in CSR format: 3-tuple of array"""
-    cdef: 
+    :param pos: 4D position array
+    :param shape: output shape
+    :param bin_size: number of input element per output element (as numpy array)
+    :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    :return: look-up table in CSR format: 3-tuple of array"""
+    cdef:
         int shape0, shape1, delta0, delta1, bins
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
@@ -532,7 +537,7 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
     cdef:
         int i, j, k, ms, ml, ns, nl, idx = 0, tmp_index, err_cnt=0
         int lut_size, offset0, offset1, box_size0, box_size1
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         numpy.ndarray[numpy.int32_t, ndim = 1] indptr, indices
         numpy.ndarray[numpy.float32_t, ndim = 1] data
@@ -584,8 +589,8 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
                     # Increase size of the buffer
                     delta0 = offset0 if offset0 > delta0 else delta0
                     delta1 = offset1 if offset1 > delta1 else delta1
-                    with gil: 
-                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+                    with gil:
+                        buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
 
                 A0 -= foffset0
                 A1 -= foffset1
@@ -661,12 +666,12 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                 int bins_per_pixel=8):
     """Calculate the look-up table (or CSR) using OpenMP
 
-    @param pos: 4D position array
-    @param shape: output shape
-    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    @param format: can be "CSR" or "LUT"
-    @param bins_per_pixel: average splitting factor (number of pixels per bin)
-    @return: look-up table in CSR/LUT format
+    :param pos: 4D position array
+    :param shape: output shape
+    :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    :param format: can be "CSR" or "LUT"
+    :param bins_per_pixel: average splitting factor (number of pixels per bin)
+    :return: look-up table in CSR/LUT format
     """
     cdef:
         int shape_in0, shape_in1, shape_out0, shape_out1, size_in, delta0, delta1, bins, large_size
@@ -683,7 +688,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
         int i0, i1, lut_size, offset0, offset1, box_size0, box_size1
         int counter, bin_number
         int idx, err_cnt=0
-        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, 
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         int[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
         float[::1] data, large_data
@@ -691,10 +696,10 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
         bint do_mask = mask is not None
         lut_point[:, :] lut
     if do_mask:
-        assert shape_in0 == mask.shape[0]
-        assert shape_in1 == mask.shape[1]
+        assert shape_in0 == mask.shape[0], "shape_in0 == mask.shape[0]"
+        assert shape_in1 == mask.shape[1], "shape_in1 == mask.shape[1]"
 
-    #count the number of pixel falling into every single bin
+    #  count the number of pixel falling into every single bin
     pixel_count = numpy.zeros(bins, dtype=numpy.int32)
     idx_pixel = numpy.zeros(large_size, dtype=numpy.int32)
     idx_bin = numpy.zeros(large_size, dtype=numpy.int32)
@@ -731,8 +736,8 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                 # Increase size of the buffer
                 delta0 = offset0 if offset0 > delta0 else delta0
                 delta1 = offset1 if offset1 > delta1 else delta1
-                with gil: 
-                    buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)    
+                with gil:
+                    buffer = numpy.zeros((delta0, delta1), dtype=numpy.float32)
 
             A0 = A0 - foffset0
             A1 = A1 - foffset1
@@ -762,7 +767,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                 cDA = D1 - pDA * D0
             else:
                 pDA = cDA = 0.0
-            
+
             integrate(buffer, B0, A0, pAB, cAB)
             integrate(buffer, A0, D0, pDA, cDA)
             integrate(buffer, D0, C0, pCD, cCD)
@@ -801,7 +806,7 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                     idx_pixel[counter] += idx
                     idx_bin[counter] += bin_number
                     large_data[counter] += value
-    logger.info("number of elements: %s, average per bin %.3f allocated max: %s", 
+    logger.info("number of elements: %s, average per bin %.3f allocated max: %s",
                 counter, counter / size_in, bins_per_pixel)
 
     if format == "csr":
@@ -846,18 +851,20 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
     return res
 
 
-@cython.wraparound(False)
+@cython.cdivision(True)
 @cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
 
-    @param image: 2D-array with the image
-    @param shape_in: shape of input image
-    @param shape_out: shape of output image
-    @param LUT: Look up table, here a 2D-array of struct
-    @param dummy: value for invalid pixels
-    @param delta_dummy: precision for invalid pixels
-    @return: corrected 2D image
+    :param image: 2D-array with the image
+    :param shape_in: shape of input image
+    :param shape_out: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :return: corrected 2D image
     """
     cdef:
         int i, j, lshape0, lshape1, idx, size
@@ -882,7 +889,7 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
                 new_image[:shape_img0, :shape_img1] = image
             else:
                 new_image[:shape_img0, :] = image[:, :shape_in1]
-        else: 
+        else:
             if shape_img1 < shape_in1:
                 new_image[:, :shape_img1] = image[:shape_in0, :]
             else:
@@ -921,19 +928,21 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
     return out
 
 
-@cython.wraparound(False)
+@cython.cdivision(True)
 @cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
 
-    @param image: 2D-array with the image
-    @param shape_in: shape of input image
-    @param shape_out: shape of output image
-    @param LUT: Look up table, here a 3-tuple array of ndarray
-    @param dummy: value for invalid pixels
-    @param delta_dummy: precision for invalid pixels
-    @return: corrected 2D image
+    :param image: 2D-array with the image
+    :param shape_in: shape of input image
+    :param shape_out: shape of output image
+    :param LUT: Look up table, here a 3-tuple array of ndarray
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :return: corrected 2D image
     """
     cdef:
         int i, j, idx, size, bins
@@ -960,7 +969,7 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
                 new_image[:shape_img0, :shape_img1] = image
             else:
                 new_image[:shape_img0, :] = image[:, :shape_in1]
-        else: 
+        else:
             if shape_img1 < shape_in1:
                 new_image[:, :shape_img1] = image[:shape_in0, :]
             else:
@@ -1000,13 +1009,18 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
     return out
 
 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
-    @param image: 2D-array with the image
-    @param shape: shape of output image
-    @param LUT: Look up table, here a 2D-array of struct
-    @return: uncorrected 2D image and a mask (pixels in raw image not existing)
+
+    :param image: 2D-array with the image
+    :param shape: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :return: uncorrected 2D image and a mask (pixels in raw image not existing)
     """
     cdef int idx, j
     cdef float total, coef
@@ -1033,13 +1047,17 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     return out, mask
 
 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def uncorrect_CSR(image, shape, LUT):
-    """
-    Take an image which has been corrected and transform it into it's raw (with loss of information)
-    @param image: 2D-array with the image
-    @param shape: shape of output image
-    @param LUT: Look up table, here a 3-tuple of ndarray
-    @return: uncorrected 2D image and a mask (pixels in raw image not existing)
+    """Take an image which has been corrected and transform it into it's raw (with loss of information)
+
+    :param image: 2D-array with the image
+    :param shape: shape of output image
+    :param LUT: Look up table, here a 3-tuple of ndarray
+    :return: uncorrected 2D image and a mask (pixels in raw image not existing)
     """
     cdef:
         int idx, j, nbins
@@ -1086,7 +1104,7 @@ class Distortion(object):
     """
     def __init__(self, detector="detector", shape=None):
         """
-        @param detector: detector instance or detector name
+        :param detector: detector instance or detector name
         """
         if isinstance(detector, six.string_types):
             self.detector = detector_factory(detector)
@@ -1275,8 +1293,8 @@ class Distortion(object):
         """
         Correct an image based on the look-up table calculated ...
 
-        @param image: 2D-array with the image
-        @return: corrected 2D image
+        :param image: 2D-array with the image
+        :return: corrected 2D image
         """
         cdef:
             int i, j, lshape0, lshape1, idx, size
@@ -1317,8 +1335,8 @@ class Distortion(object):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
 
-        @param image: 2D-array with the image
-        @return: uncorrected 2D image and a mask (pixels in raw image
+        :param image: 2D-array with the image
+        :return: uncorrected 2D image and a mask (pixels in raw image
         """
         if self.LUT is None:
             self.calc_LUT()

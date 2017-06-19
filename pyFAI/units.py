@@ -2,35 +2,51 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author: Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+"""Manages the different units
+
+Nota for developers: this module is used a singleton to store all units in a
+unique manner. This explains the number of top-level variables on the one
+hand and their CAPITALIZATION on the other.
+"""
+
+
+from __future__ import division, print_function
+
+
 __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/06/2016"
+__date__ = "02/02/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger("pyFAI.unit")
+logger = logging.getLogger("pyFAI.units")
 import numpy
 from numpy import pi
 
@@ -47,27 +63,57 @@ hc = CONST_hc = 12.398419292004204
 CONST_q = 1.602176565e-19
 
 
-class Enum(dict):
-    """
-    Simple class half way between a dict and a class, behaving as an enum
-    """
-    def __getattr__(self, name):
-        if name in self:
-            return self[name]
-        raise AttributeError
+class Unit(object):
+    """Represents a unit.
 
-    def __repr__(self, *args, **kwargs):
-        if "REPR" in self:
-            return self["REPR"]
-        else:
-            return dict.__repr__(self, *args, **kwargs)
+    It has at least a name and a scale (in SI-unit)
+    """
+    def __init__(self, name, scale=1, label=None, equation=None,
+                 center=None, corner=None, delta=None):
+        """Constructor of a unit.
+
+        :param (str) name: name of the unit
+        :param (float) scale: scale of th unit to go to SI
+        :param (string) label: label for nice representation in matplotlib,
+                                can use latex representation
+        :param (funct) equation: equation to calculate the value from coordinates
+                                 (x,y,z) in detector space.
+                                 Parameters of the function are x, y, z, lambda
+        :param (str) center: name of the fast-path function
+        """
+        self.name = name
+        self.scale = scale
+        self.label = label if label is not None else name
+        self.corner = corner
+        self.center = center
+        self.delta = delta
+        self.equation = equation
+
+    def get(self, key):
+        """Mimic the dictionary interface
+
+        :param (str) key: key wanted
+        :return: self.key
+        """
+        res = None
+        if key in dir(self):
+            res = self.__getattribute__(key)
+        return res
+
+    def __repr__(self):
+        return self.name
 
     # ensures hashability
     def __hash__(self):
-        return self.__repr__().__hash__()
+        return self.name.__hash__()
 
 
-UNDEFINED = Enum(REPR='?')
+RADIAL_UNITS = {}
+
+
+def register_radial_unit(name, scale=1, label=None, equation=None,
+                         center=None, corner=None, delta=None):
+    RADIAL_UNITS[name] = Unit(name, scale, label, equation, center, corner, delta)
 
 
 def eq_r(x, y, z=None, wavelength=None):
@@ -103,144 +149,127 @@ def eq_q(x, y, z, wavelength):
     return 4.0e-9 * numpy.pi * numpy.sin(eq_2th(x, y, z) / 2.0) / wavelength
 
 
-def eq_rd2(x, y, z, wavelength):
-    """Calculates the reciprocal spacing squared
+register_radial_unit("r_mm",
+                     center="rArray",
+                     delta="deltaR",
+                     scale=1000.0,
+                     label=r"Radius $r$ ($mm$)",
+                     equation=eq_r)
 
-    :param x: horizontal position, towards the center of the ring, from sample position
-    :param y: Vertical position, to the roof, from sample position
-    :param z: distance from sample along the beam
-    :param wavelength: in meter
-    """
-    return (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2
+register_radial_unit("r_m",
+                     center="rArray",
+                     delta="deltaR",
+                     scale=1.0,
+                     label=r"Radius $r$ ($m$)",
+                     equation=eq_r)
 
-
-def eq_logq(x, y, z, wavelength):
-    """Calculates the log (decimal) of the scattering vector
-
-    :param x: horizontal position, towards the center of the ring, from sample position
-    :param y: Vertical position, to the roof, from sample position
-    :param z: distance from sample along the beam
-    :param wavelength: in meter
-    """
-    return numpy.log10(eq_q(x, y, z, wavelength) * 1e9)  # convert in meter
-
-
-TTH_DEG = TTH = Enum(REPR="2th_deg",
-#                      corner="cornerArray",
+register_radial_unit("2th_deg", scale=180.0 / numpy.pi,
                      center="twoThetaArray",
                      delta="delta2Theta",
-                     scale=180.0 / numpy.pi,
                      label=r"Scattering angle $2\theta$ ($^{o}$)",
+                     equation=eq_2th
+                     )
+
+register_radial_unit("2th_rad",
+                     center="twoThetaArray",
+                     delta="delta2Theta",
+                     scale=1.0,
+                     label=r"Scattering angle $2\theta$ ($rad$)",
                      equation=eq_2th)
 
-TTH_RAD = Enum(REPR="2th_rad",
-#                corner="cornerArray",
-               center="twoThetaArray",
-               delta="delta2Theta",
-               scale=1.0,
-               label=r"Scattering angle $2\theta$ ($rad$)",
-               equation=eq_2th)
+register_radial_unit("q_nm^-1",
+                     center="qArray",
+                     delta="deltaQ",
+                     scale=1.0,
+                     label=r"Scattering vector $q$ ($nm^{-1}$)",
+                     equation=eq_q)
 
-Q = Q_NM = Enum(REPR="q_nm^-1",
-                center="qArray",
-#                 corner="cornerQArray",
-                delta="deltaQ",
-                scale=1.0,
-                label=r"Scattering vector $q$ ($nm^{-1}$)",
-                equation=eq_q)
+register_radial_unit("q_A^-1",
+                     center="qArray",
+                     delta="deltaQ",
+                     scale=0.1,
+                     label=r"Scattering vector $q$ ($\AA ^{-1}$)",
+                     equation=eq_q)
 
-Q_A = Enum(REPR="q_A^-1",
-           center="qArray",
-#            corner="cornerQArray",
-           delta="deltaQ",
-           scale=0.1,
-           label=r"Scattering vector $q$ ($\AA ^{-1}$)",
-           equation=eq_q)
+register_radial_unit("d*2_A^-2",
+                     center="rd2Array",
+                     delta="deltaRd2",
+                     scale=0.01,
+                     label=r"Reciprocal spacing squared $d^{*2}$ ($\AA ^{-2}$)",
+                     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2)
 
-RecD2_A = Enum(REPR="d*2_A^-2",
-               center="rd2Array",
-#                corner="cornerRd2Array",
-               delta="deltaRd2",
-               scale=0.01,
-               label=r"Reciprocal spacing squared $d^{*2}$ ($\AA ^{-2}$)",
-               equation=eq_rd2)
+register_radial_unit("d*2_nm^-2",
+                     center="rd2Array",
+                     delta="deltaRd2",
+                     scale=1.0,
+                     label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)",
+                     equation=lambda x, y, z, wavelength: (eq_q(x, y, z, wavelength) / (2.0 * numpy.pi)) ** 2)
 
-RecD2_NM = Enum(REPR="d*2_nm^-2",
-                center="rd2Array",
-#                 corner="cornerRd2Array",
-                delta="deltaRd2",
-                scale=1.0,
-                label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)",
-                equation=eq_rd2)
+register_radial_unit("log10(q.m)_None",
+                     scale=1.0,
+                     label=r"log10($q$.m)",
+                     equation=lambda x, y, z, wavelength: numpy.log10(eq_q(x, y, z, wavelength) * 1e9))
 
-R = R_MM = Enum(REPR="r_mm",
-                center="rArray",
-#                 corner="cornerRArray",
-                delta="deltaR",
-                scale=1000.0,
-                label=r"Radius $r$ ($mm$)",
-                equation=eq_r)
+register_radial_unit("log(q.nm)_None",
+                     scale=1.0,
+                     label=r"log($q$.nm)",
+                     equation=lambda x, y, z, wavelength: numpy.log(eq_q(x, y, z, wavelength)))
 
-R_M = Enum(REPR="r_m",
-                center="rArray",
-#                 corner="cornerRArray",
-                delta="deltaR",
-                scale=1.0,
-                label=r"Radius $r$ ($m$)",
-                equation=eq_r)
+register_radial_unit("log(1+q.nm)_None",
+                     scale=1.0,
+                     label=r"log(1+$q$.nm)",
+                     equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength)))
 
-LogQ = Enum(REPR="log(q)_m",
-            # center="rArray",
-            # corner="cornerRArray",
-            # delta="deltaR",
-            scale=1.0,
-            label=r"log10($q$)",
-            equation=eq_logq)
+register_radial_unit("log(1+q.A)_None",
+                     scale=1.0,
+                     label=r"log(1+$q$.A)",
+                     equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength) * 10.0))
+
+register_radial_unit("arcsinh(q.nm)_None",
+                     scale=1.0,
+                     label=r"arcsinh($q$.nm)",
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength)))
+
+register_radial_unit("arcsinh(q.A)_None",
+                     scale=1.0,
+                     label=r"arcsinh($q$.A)",
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength) * 10.0))
 
 
-RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, R_M, RecD2_A, RecD2_NM, LogQ)
-
-l_m = Enum(REPR="m",
-           scale=1.,
-           label=r"length $l$ ($m$)")
-l_mm = Enum(REPR="mm",
-            scale=1e3,
-            label=r"length $l$ ($mm$)")
-l_cm = Enum(REPR="cm",
-            scale=1e2,
-            label=r"length $l$ ($cm$)")
-l_um = Enum(REPR="micron",
-            scale=1e6,
-            label=r"length $l$ ($\mu m$)")
-l_nm = Enum(REPR="nm",
-            scale=1e9,
-            label=r"length $l$ ($nm$)")
-l_A = Enum(REPR="A",
-           scale=1e10,
-           label=r"length $l$ ($\AA$)")
-LENGTH_UNITS = (l_m, l_mm, l_cm, l_um, l_nm, l_A)
-
-A_deg = Enum(REPR="deg",
-             scale=180.0 / pi,
-             label=r"angle $\alpha$ ($^{o}$)")
-
-A_rad = Enum(REPR="rad",
-             scale=1.0,
-             label=r"angle $\alpha$ ($rad$)")
-
-ANGLE_UNITS = (A_deg, A_rad)
+LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
+                "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)"),
+                "cm": Unit("cm", scale=1e2, label=r"length $l$ ($cm$)"),
+                "micron": Unit("micron", scale=1e6, label=r"length $l$ ($\mu m$)"),
+                "nm": Unit("nm", scale=1e9, label=r"length $l$ ($nm$)"),
+                "A": Unit("A", scale=1e10, label=r"length $l$ ($\AA$)"),
+                }
 
 
-def to_unit(obj, type_=RADIAL_UNITS):
+ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o}$)"),
+               "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)"),
+               }
+
+
+def to_unit(obj, type_=None):
+    if type_ is None:
+        type_ = RADIAL_UNITS
     rad_unit = None
     if isinstance(obj, six.string_types):
-        for one_unit in type_:
-            if one_unit.REPR == obj:
-                rad_unit = one_unit
-                break
-    elif isinstance(obj, Enum):
+        rad_unit = type_.get(obj)
+    elif isinstance(obj, Unit):
         rad_unit = obj
     if rad_unit is None:
         logger.error("Unable to recognize this type unit '%s' of type %s. "
-                     "Valid units are %s" % (obj, type(obj), ", ".join([i.REPR for i in type_])))
+                     "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
     return rad_unit
+
+# To ensure the compatibility with former code:
+Q = Q_NM = RADIAL_UNITS["q_nm^-1"]
+Q_A = RADIAL_UNITS["q_A^-1"]
+TTH_RAD = RADIAL_UNITS["2th_rad"]
+TTH_DEG = TTH = RADIAL_UNITS["2th_deg"]
+R = R_MM = RADIAL_UNITS["r_mm"]
+R_M = RADIAL_UNITS["r_m"]
+RecD2_NM = RADIAL_UNITS["d*2_nm^-2"]
+l_m = LENGTH_UNITS["m"]
+A_rad = ANGLE_UNITS["rad"]

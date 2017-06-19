@@ -829,12 +829,17 @@ static char __pyx_k_update[] = "update";
 static char __pyx_k_contact[] = "__contact__";
 static char __pyx_k_license[] = "__license__";
 static char __pyx_k_previous[] = "previous";
+static char __pyx_k_type_str[] = "type: str";
 static char __pyx_k_add_child[] = "add_child";
 static char __pyx_k_copyright[] = "__copyright__";
 static char __pyx_k_has_child[] = "has_child";
-static char __pyx_k_31_05_2016[] = "31/05/2016";
+static char __pyx_k_label_str[] = "label: str";
+static char __pyx_k_order_int[] = "order: 'int'";
+static char __pyx_k_01_12_2016[] = "01/12/2016";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
+static char __pyx_k_extra_object[] = "extra: object";
+static char __pyx_k_children_list[] = "children: list";
 static char __pyx_k_2011_2015_ESRF[] = "2011-2015, ESRF";
 static char __pyx_k_Jerome_Kieffer[] = "Jerome Kieffer";
 static char __pyx_k_pyFAI_ext__tree[] = "pyFAI.ext._tree";
@@ -844,9 +849,10 @@ static char __pyx_k_jerome_kieffer_esrf_fr[] = "jerome.kieffer@esrf.fr";
 static char __pyx_k_Previous_does_not_exist[] = "Previous does not exist";
 static char __pyx_k_TreeItem_s_s_with_children[] = "TreeItem %s->%s with children: ";
 static char __pyx_k_Root_TreeItem_s_with_children_s[] = "Root TreeItem %s with children: %s";
+static char __pyx_k_parent_pyFAI_ext__tree_TreeItem[] = "parent: pyFAI.ext._tree.TreeItem";
 static PyObject *__pyx_kp_s_;
+static PyObject *__pyx_kp_s_01_12_2016;
 static PyObject *__pyx_kp_s_2011_2015_ESRF;
-static PyObject *__pyx_kp_s_31_05_2016;
 static PyObject *__pyx_n_s_IndexError;
 static PyObject *__pyx_kp_s_Jerome_Kieffer;
 static PyObject *__pyx_n_s_MIT;
@@ -893,7 +899,7 @@ static PyObject *__pyx_int_1;
 static PyObject *__pyx_tuple__3;
 static PyObject *__pyx_tuple__4;
 
-/* "pyFAI/ext/_tree.pyx":57
+/* "pyFAI/ext/_tree.pyx":59
  *     cdef public object extra
  * 
  *     def __init__(self, str label=None, TreeItem parent=None):             # <<<<<<<<<<<<<<
@@ -940,7 +946,7 @@ static int __pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_1__init__(PyObject *__pyx_v_sel
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -955,14 +961,14 @@ static int __pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_1__init__(PyObject *__pyx_v_sel
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 0, 0, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__init__", 0, 0, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyFAI.ext._tree.TreeItem.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), (&PyString_Type), 1, "label", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_parent), __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem, 1, "parent", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), (&PyString_Type), 1, "label", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_parent), __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem, 1, "parent", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self), __pyx_v_label, __pyx_v_parent);
 
   /* function exit code */
@@ -984,14 +990,14 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "pyFAI/ext/_tree.pyx":58
+  /* "pyFAI/ext/_tree.pyx":60
  * 
  *     def __init__(self, str label=None, TreeItem parent=None):
  *         self.children = []             # <<<<<<<<<<<<<<
  *         self.parent = parent
  *         self.label = label or ""
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->children);
@@ -999,7 +1005,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   __pyx_v_self->children = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/_tree.pyx":59
+  /* "pyFAI/ext/_tree.pyx":61
  *     def __init__(self, str label=None, TreeItem parent=None):
  *         self.children = []
  *         self.parent = parent             # <<<<<<<<<<<<<<
@@ -1012,14 +1018,14 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   __Pyx_DECREF(((PyObject *)__pyx_v_self->parent));
   __pyx_v_self->parent = __pyx_v_parent;
 
-  /* "pyFAI/ext/_tree.pyx":60
+  /* "pyFAI/ext/_tree.pyx":62
  *         self.children = []
  *         self.parent = parent
  *         self.label = label or ""             # <<<<<<<<<<<<<<
  *         if parent:
  *             parent.add_child(self)
  */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_label); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_label); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (!__pyx_t_2) {
   } else {
     __Pyx_INCREF(__pyx_v_label);
@@ -1035,28 +1041,28 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   __pyx_v_self->label = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/_tree.pyx":61
+  /* "pyFAI/ext/_tree.pyx":63
  *         self.parent = parent
  *         self.label = label or ""
  *         if parent:             # <<<<<<<<<<<<<<
  *             parent.add_child(self)
  *             self.order = parent.order + 1
  */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_parent)); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_parent)); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__pyx_t_2) {
 
-    /* "pyFAI/ext/_tree.pyx":62
+    /* "pyFAI/ext/_tree.pyx":64
  *         self.label = label or ""
  *         if parent:
  *             parent.add_child(self)             # <<<<<<<<<<<<<<
  *             self.order = parent.order + 1
  *         else:
  */
-    __pyx_t_1 = ((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_parent->__pyx_vtab)->add_child(__pyx_v_parent, __pyx_v_self, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = ((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_parent->__pyx_vtab)->add_child(__pyx_v_parent, __pyx_v_self, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "pyFAI/ext/_tree.pyx":63
+    /* "pyFAI/ext/_tree.pyx":65
  *         if parent:
  *             parent.add_child(self)
  *             self.order = parent.order + 1             # <<<<<<<<<<<<<<
@@ -1068,7 +1074,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   }
   /*else*/ {
 
-    /* "pyFAI/ext/_tree.pyx":65
+    /* "pyFAI/ext/_tree.pyx":67
  *             self.order = parent.order + 1
  *         else:
  *             self.order = 0             # <<<<<<<<<<<<<<
@@ -1079,7 +1085,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   }
   __pyx_L5:;
 
-  /* "pyFAI/ext/_tree.pyx":66
+  /* "pyFAI/ext/_tree.pyx":68
  *         else:
  *             self.order = 0
  *         self.extra = None             # <<<<<<<<<<<<<<
@@ -1092,7 +1098,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   __Pyx_DECREF(__pyx_v_self->extra);
   __pyx_v_self->extra = Py_None;
 
-  /* "pyFAI/ext/_tree.pyx":57
+  /* "pyFAI/ext/_tree.pyx":59
  *     cdef public object extra
  * 
  *     def __init__(self, str label=None, TreeItem parent=None):             # <<<<<<<<<<<<<<
@@ -1112,7 +1118,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem___init__(struct __pyx_obj_5pyFA
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":68
+/* "pyFAI/ext/_tree.pyx":70
  *         self.extra = None
  * 
  *     cpdef add_child(self, TreeItem child):             # <<<<<<<<<<<<<<
@@ -1138,7 +1144,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(struct __pyx_obj
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_add_child); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_add_child); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_3add_child)) {
       __Pyx_XDECREF(__pyx_r);
@@ -1154,16 +1160,16 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(struct __pyx_obj
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_child)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_child)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __Pyx_GIVEREF(__pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(((PyObject *)__pyx_v_child));
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, ((PyObject *)__pyx_v_child));
         __Pyx_GIVEREF(((PyObject *)__pyx_v_child));
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
@@ -1176,7 +1182,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(struct __pyx_obj
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":69
+  /* "pyFAI/ext/_tree.pyx":71
  * 
  *     cpdef add_child(self, TreeItem child):
  *         self.children.append(child)             # <<<<<<<<<<<<<<
@@ -1185,11 +1191,11 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(struct __pyx_obj
  */
   if (unlikely(__pyx_v_self->children == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "append");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_6 = __Pyx_PyList_Append(__pyx_v_self->children, ((PyObject *)__pyx_v_child)); if (unlikely(__pyx_t_6 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyList_Append(__pyx_v_self->children, ((PyObject *)__pyx_v_child)); if (unlikely(__pyx_t_6 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "pyFAI/ext/_tree.pyx":70
+  /* "pyFAI/ext/_tree.pyx":72
  *     cpdef add_child(self, TreeItem child):
  *         self.children.append(child)
  *         child.parent = self             # <<<<<<<<<<<<<<
@@ -1202,7 +1208,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(struct __pyx_obj
   __Pyx_DECREF(((PyObject *)__pyx_v_child->parent));
   __pyx_v_child->parent = __pyx_v_self;
 
-  /* "pyFAI/ext/_tree.pyx":68
+  /* "pyFAI/ext/_tree.pyx":70
  *         self.extra = None
  * 
  *     cpdef add_child(self, TreeItem child):             # <<<<<<<<<<<<<<
@@ -1229,6 +1235,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(struct __pyx_obj
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_3add_child(PyObject *__pyx_v_self, PyObject *__pyx_v_child); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_2add_child[] = "TreeItem.add_child(self, TreeItem child)";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_3add_child(PyObject *__pyx_v_self, PyObject *__pyx_v_child) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
@@ -1236,7 +1243,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_3add_child(PyObject *__py
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("add_child (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_child), __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem, 1, "child", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_child), __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem, 1, "child", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_2add_child(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self), ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_child));
 
   /* function exit code */
@@ -1257,7 +1264,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_2add_child(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("add_child", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(__pyx_v_self, __pyx_v_child, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_add_child(__pyx_v_self, __pyx_v_child, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -1274,7 +1281,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_2add_child(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":72
+/* "pyFAI/ext/_tree.pyx":74
  *         child.parent = self
  * 
  *     cpdef update(self, TreeItem new_root):             # <<<<<<<<<<<<<<
@@ -1303,7 +1310,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(struct __pyx_obj_5p
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_update); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_update); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_5update)) {
       __Pyx_XDECREF(__pyx_r);
@@ -1319,16 +1326,16 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(struct __pyx_obj_5p
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_new_root)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_new_root)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __Pyx_GIVEREF(__pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(((PyObject *)__pyx_v_new_root));
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, ((PyObject *)__pyx_v_new_root));
         __Pyx_GIVEREF(((PyObject *)__pyx_v_new_root));
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
@@ -1341,7 +1348,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(struct __pyx_obj_5p
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":76
+  /* "pyFAI/ext/_tree.pyx":78
  *         Add new children in tree
  *         """
  *         for new_child in new_root.children:             # <<<<<<<<<<<<<<
@@ -1350,75 +1357,75 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(struct __pyx_obj_5p
  */
   if (unlikely(__pyx_v_new_root->children == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_t_1 = __pyx_v_new_root->children; __Pyx_INCREF(__pyx_t_1); __pyx_t_6 = 0;
   for (;;) {
     if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_1)) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #else
-    __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #endif
     __Pyx_XDECREF_SET(__pyx_v_new_child, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "pyFAI/ext/_tree.pyx":77
+    /* "pyFAI/ext/_tree.pyx":79
  *         """
  *         for new_child in new_root.children:
  *             child = self.get(new_child.label)             # <<<<<<<<<<<<<<
  *             if child:
  *                 child.update(new_child)
  */
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_new_child, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_new_child, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 79; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    if (!(likely(PyString_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_3 = ((PyObject *)((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->__pyx_vtab)->get(__pyx_v_self, ((PyObject*)__pyx_t_2), 0)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(PyString_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 79; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = ((PyObject *)((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->__pyx_vtab)->get(__pyx_v_self, ((PyObject*)__pyx_t_2), 0)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 79; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_XDECREF_SET(__pyx_v_child, ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_3));
     __pyx_t_3 = 0;
 
-    /* "pyFAI/ext/_tree.pyx":78
+    /* "pyFAI/ext/_tree.pyx":80
  *         for new_child in new_root.children:
  *             child = self.get(new_child.label)
  *             if child:             # <<<<<<<<<<<<<<
  *                 child.update(new_child)
  *             else:
  */
-    __pyx_t_7 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_child)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_child)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 80; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     if (__pyx_t_7) {
 
-      /* "pyFAI/ext/_tree.pyx":79
+      /* "pyFAI/ext/_tree.pyx":81
  *             child = self.get(new_child.label)
  *             if child:
  *                 child.update(new_child)             # <<<<<<<<<<<<<<
  *             else:
  *                 self.add_child(new_child)
  */
-      if (!(likely(((__pyx_v_new_child) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_new_child, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 79; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_t_3 = ((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_child->__pyx_vtab)->update(__pyx_v_child, ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_new_child), 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 79; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_v_new_child) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_new_child, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = ((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_child->__pyx_vtab)->update(__pyx_v_child, ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_new_child), 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       goto __pyx_L5;
     }
     /*else*/ {
 
-      /* "pyFAI/ext/_tree.pyx":81
+      /* "pyFAI/ext/_tree.pyx":83
  *                 child.update(new_child)
  *             else:
  *                 self.add_child(new_child)             # <<<<<<<<<<<<<<
  * 
  *     cpdef bint has_child(self, str label):
  */
-      if (!(likely(((__pyx_v_new_child) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_new_child, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_t_3 = ((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->__pyx_vtab)->add_child(__pyx_v_self, ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_new_child), 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_v_new_child) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_new_child, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = ((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->__pyx_vtab)->add_child(__pyx_v_self, ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_new_child), 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     }
     __pyx_L5:;
 
-    /* "pyFAI/ext/_tree.pyx":76
+    /* "pyFAI/ext/_tree.pyx":78
  *         Add new children in tree
  *         """
  *         for new_child in new_root.children:             # <<<<<<<<<<<<<<
@@ -1428,7 +1435,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(struct __pyx_obj_5p
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/_tree.pyx":72
+  /* "pyFAI/ext/_tree.pyx":74
  *         child.parent = self
  * 
  *     cpdef update(self, TreeItem new_root):             # <<<<<<<<<<<<<<
@@ -1457,7 +1464,7 @@ static PyObject *__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(struct __pyx_obj_5p
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_5update(PyObject *__pyx_v_self, PyObject *__pyx_v_new_root); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_4update[] = "\n        Add new children in tree\n        ";
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_4update[] = "TreeItem.update(self, TreeItem new_root)\n\n        Add new children in tree\n        ";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_5update(PyObject *__pyx_v_self, PyObject *__pyx_v_new_root) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
@@ -1465,7 +1472,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_5update(PyObject *__pyx_v
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("update (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_new_root), __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem, 1, "new_root", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_new_root), __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem, 1, "new_root", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4update(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self), ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_new_root));
 
   /* function exit code */
@@ -1486,7 +1493,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4update(struct __pyx_obj_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("update", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(__pyx_v_self, __pyx_v_new_root, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_update(__pyx_v_self, __pyx_v_new_root, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -1503,7 +1510,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4update(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":83
+/* "pyFAI/ext/_tree.pyx":85
  *                 self.add_child(new_child)
  * 
  *     cpdef bint has_child(self, str label):             # <<<<<<<<<<<<<<
@@ -1531,7 +1538,7 @@ static int __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_has_child(struct __pyx_obj_5pyFA
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_has_child); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_has_child); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_7has_child)) {
       __Pyx_INCREF(__pyx_t_1);
@@ -1546,21 +1553,21 @@ static int __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_has_child(struct __pyx_obj_5pyFA
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __Pyx_GIVEREF(__pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_label);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_label);
         __Pyx_GIVEREF(__pyx_v_label);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_6;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -1569,41 +1576,41 @@ static int __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_has_child(struct __pyx_obj_5pyFA
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":84
+  /* "pyFAI/ext/_tree.pyx":86
  * 
  *     cpdef bint has_child(self, str label):
  *         return label in [i.label for i in self.children]             # <<<<<<<<<<<<<<
  * 
  *     cpdef TreeItem get(self, str label):
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_v_self->children == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_t_2 = __pyx_v_self->children; __Pyx_INCREF(__pyx_t_2); __pyx_t_7 = 0;
   for (;;) {
     if (__pyx_t_7 >= PyList_GET_SIZE(__pyx_t_2)) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_3); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_3); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #else
-    __pyx_t_3 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #endif
     __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_3);
     __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_3))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_3))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_6 = (__Pyx_PySequence_Contains(__pyx_v_label, __pyx_t_1, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = (__Pyx_PySequence_Contains(__pyx_v_label, __pyx_t_1, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_6;
   goto __pyx_L0;
 
-  /* "pyFAI/ext/_tree.pyx":83
+  /* "pyFAI/ext/_tree.pyx":85
  *                 self.add_child(new_child)
  * 
  *     cpdef bint has_child(self, str label):             # <<<<<<<<<<<<<<
@@ -1628,6 +1635,7 @@ static int __pyx_f_5pyFAI_3ext_5_tree_8TreeItem_has_child(struct __pyx_obj_5pyFA
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_7has_child(PyObject *__pyx_v_self, PyObject *__pyx_v_label); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_6has_child[] = "TreeItem.has_child(self, str label) -> bool";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_7has_child(PyObject *__pyx_v_self, PyObject *__pyx_v_label) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
@@ -1635,7 +1643,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_7has_child(PyObject *__py
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("has_child (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), (&PyString_Type), 1, "label", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), (&PyString_Type), 1, "label", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_6has_child(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self), ((PyObject*)__pyx_v_label));
 
   /* function exit code */
@@ -1656,7 +1664,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_6has_child(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("has_child", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_has_child(__pyx_v_self, __pyx_v_label, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_has_child(__pyx_v_self, __pyx_v_label, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -1673,7 +1681,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_6has_child(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":86
+/* "pyFAI/ext/_tree.pyx":88
  *         return label in [i.label for i in self.children]
  * 
  *     cpdef TreeItem get(self, str label):             # <<<<<<<<<<<<<<
@@ -1701,7 +1709,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_get); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_get); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_9get)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -1717,21 +1725,21 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __Pyx_GIVEREF(__pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_label);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_label);
         __Pyx_GIVEREF(__pyx_v_label);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -1740,7 +1748,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":87
+  /* "pyFAI/ext/_tree.pyx":89
  * 
  *     cpdef TreeItem get(self, str label):
  *         for i in self.children:             # <<<<<<<<<<<<<<
@@ -1749,33 +1757,33 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
  */
   if (unlikely(__pyx_v_self->children == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_t_1 = __pyx_v_self->children; __Pyx_INCREF(__pyx_t_1); __pyx_t_6 = 0;
   for (;;) {
     if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_1)) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #else
-    __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #endif
     __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "pyFAI/ext/_tree.pyx":88
+    /* "pyFAI/ext/_tree.pyx":90
  *     cpdef TreeItem get(self, str label):
  *         for i in self.children:
  *             if i.label == label:             # <<<<<<<<<<<<<<
  *                 return i
  * 
  */
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_v_label, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_t_2, __pyx_v_label, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     if (__pyx_t_7) {
 
-      /* "pyFAI/ext/_tree.pyx":89
+      /* "pyFAI/ext/_tree.pyx":91
  *         for i in self.children:
  *             if i.label == label:
  *                 return i             # <<<<<<<<<<<<<<
@@ -1783,14 +1791,14 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
  *     def __repr__(self):
  */
       __Pyx_XDECREF(((PyObject *)__pyx_r));
-      if (!(likely(((__pyx_v_i) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_i, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_v_i) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_i, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_INCREF(__pyx_v_i);
       __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_i);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       goto __pyx_L0;
     }
 
-    /* "pyFAI/ext/_tree.pyx":87
+    /* "pyFAI/ext/_tree.pyx":89
  * 
  *     cpdef TreeItem get(self, str label):
  *         for i in self.children:             # <<<<<<<<<<<<<<
@@ -1800,7 +1808,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/_tree.pyx":86
+  /* "pyFAI/ext/_tree.pyx":88
  *         return label in [i.label for i in self.children]
  * 
  *     cpdef TreeItem get(self, str label):             # <<<<<<<<<<<<<<
@@ -1828,6 +1836,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_9get(PyObject *__pyx_v_self, PyObject *__pyx_v_label); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_8get[] = "TreeItem.get(self, str label) -> TreeItem";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_9get(PyObject *__pyx_v_self, PyObject *__pyx_v_label) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
@@ -1835,7 +1844,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_9get(PyObject *__pyx_v_se
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), (&PyString_Type), 1, "label", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), (&PyString_Type), 1, "label", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_8get(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self), ((PyObject*)__pyx_v_label));
 
   /* function exit code */
@@ -1856,7 +1865,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_8get(struct __pyx_obj_5py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_get(__pyx_v_self, __pyx_v_label, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_get(__pyx_v_self, __pyx_v_label, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -1873,7 +1882,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_8get(struct __pyx_obj_5py
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":91
+/* "pyFAI/ext/_tree.pyx":93
  *                 return i
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -1909,17 +1918,17 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "pyFAI/ext/_tree.pyx":92
+  /* "pyFAI/ext/_tree.pyx":94
  * 
  *     def __repr__(self):
  *         if self.parent:             # <<<<<<<<<<<<<<
  *             return "TreeItem %s->%s with children: " % (self.parent.label, self.label) + ", ".join([i.label for i in self.children])
  *         else:
  */
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_self->parent)); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 92; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(((PyObject *)__pyx_v_self->parent)); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__pyx_t_1) {
 
-    /* "pyFAI/ext/_tree.pyx":93
+    /* "pyFAI/ext/_tree.pyx":95
  *     def __repr__(self):
  *         if self.parent:
  *             return "TreeItem %s->%s with children: " % (self.parent.label, self.label) + ", ".join([i.label for i in self.children])             # <<<<<<<<<<<<<<
@@ -1927,7 +1936,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
  *             return "Root TreeItem %s with children: %s" % (self.label, ", ".join([i.label for i in self.children]))
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_INCREF(__pyx_v_self->parent->label);
     PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_v_self->parent->label);
@@ -1935,52 +1944,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
     __Pyx_INCREF(__pyx_v_self->label);
     PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_v_self->label);
     __Pyx_GIVEREF(__pyx_v_self->label);
-    __pyx_t_3 = __Pyx_PyString_Format(__pyx_kp_s_TreeItem_s_s_with_children, __pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyString_Format(__pyx_kp_s_TreeItem_s_s_with_children, __pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_2);
-    if (unlikely(__pyx_v_self->children == Py_None)) {
-      PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    }
-    __pyx_t_4 = __pyx_v_self->children; __Pyx_INCREF(__pyx_t_4); __pyx_t_5 = 0;
-    for (;;) {
-      if (__pyx_t_5 >= PyList_GET_SIZE(__pyx_t_4)) break;
-      #if CYTHON_COMPILING_IN_CPYTHON
-      __pyx_t_6 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_6); __pyx_t_5++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      #else
-      __pyx_t_6 = PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      #endif
-      __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_6);
-      __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_6);
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_t_6))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    }
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyString_Join(__pyx_kp_s__2, __pyx_t_2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyNumber_Add(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_r = __pyx_t_2;
-    __pyx_t_2 = 0;
-    goto __pyx_L0;
-  }
-  /*else*/ {
-
-    /* "pyFAI/ext/_tree.pyx":95
- *             return "TreeItem %s->%s with children: " % (self.parent.label, self.label) + ", ".join([i.label for i in self.children])
- *         else:
- *             return "Root TreeItem %s with children: %s" % (self.label, ", ".join([i.label for i in self.children]))             # <<<<<<<<<<<<<<
- * 
- *     def sort(self):
- */
-    __Pyx_XDECREF(__pyx_r);
     __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     if (unlikely(__pyx_v_self->children == Py_None)) {
@@ -1991,22 +1957,65 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
     for (;;) {
       if (__pyx_t_5 >= PyList_GET_SIZE(__pyx_t_4)) break;
       #if CYTHON_COMPILING_IN_CPYTHON
-      __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_3); __pyx_t_5++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_6); __pyx_t_5++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       #else
-      __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       #endif
-      __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_3);
-      __pyx_t_3 = 0;
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_3);
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_t_3))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_6);
+      __pyx_t_6 = 0;
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_t_6))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_4 = __Pyx_PyString_Join(__pyx_kp_s__2, __pyx_t_2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyNumber_Add(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_r = __pyx_t_2;
+    __pyx_t_2 = 0;
+    goto __pyx_L0;
+  }
+  /*else*/ {
+
+    /* "pyFAI/ext/_tree.pyx":97
+ *             return "TreeItem %s->%s with children: " % (self.parent.label, self.label) + ", ".join([i.label for i in self.children])
+ *         else:
+ *             return "Root TreeItem %s with children: %s" % (self.label, ", ".join([i.label for i in self.children]))             # <<<<<<<<<<<<<<
+ * 
+ *     def sort(self):
+ */
+    __Pyx_XDECREF(__pyx_r);
+    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    if (unlikely(__pyx_v_self->children == Py_None)) {
+      PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    }
+    __pyx_t_4 = __pyx_v_self->children; __Pyx_INCREF(__pyx_t_4); __pyx_t_5 = 0;
+    for (;;) {
+      if (__pyx_t_5 >= PyList_GET_SIZE(__pyx_t_4)) break;
+      #if CYTHON_COMPILING_IN_CPYTHON
+      __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_5); __Pyx_INCREF(__pyx_t_3); __pyx_t_5++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      #else
+      __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_5); __pyx_t_5++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      #endif
+      __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_3);
+      __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s_label); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_2, (PyObject*)__pyx_t_3))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_4 = __Pyx_PyString_Join(__pyx_kp_s__2, __pyx_t_2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_INCREF(__pyx_v_self->label);
     PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_v_self->label);
@@ -2014,7 +2023,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
     PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_t_4);
     __Pyx_GIVEREF(__pyx_t_4);
     __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyString_Format(__pyx_kp_s_Root_TreeItem_s_with_children_s, __pyx_t_2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyString_Format(__pyx_kp_s_Root_TreeItem_s_with_children_s, __pyx_t_2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_r = __pyx_t_4;
@@ -2022,7 +2031,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":91
+  /* "pyFAI/ext/_tree.pyx":93
  *                 return i
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -2045,7 +2054,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":97
+/* "pyFAI/ext/_tree.pyx":99
  *             return "Root TreeItem %s with children: %s" % (self.label, ", ".join([i.label for i in self.children]))
  * 
  *     def sort(self):             # <<<<<<<<<<<<<<
@@ -2055,6 +2064,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_10__repr__(struct __pyx_o
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_13sort(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_12sort[] = "TreeItem.sort(self)";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_13sort(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -2066,7 +2076,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_13sort(PyObject *__pyx_v_
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":100
+/* "pyFAI/ext/_tree.pyx":102
  *         for child in self.children:
  *             child.sort()
  *         self.children.sort(key=lambda x: x.label)             # <<<<<<<<<<<<<<
@@ -2097,7 +2107,7 @@ static PyObject *__pyx_lambda_funcdef_lambda1(CYTHON_UNUSED PyObject *__pyx_self
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("lambda1", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_x, __pyx_n_s_label); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_x, __pyx_n_s_label); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2114,7 +2124,7 @@ static PyObject *__pyx_lambda_funcdef_lambda1(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":97
+/* "pyFAI/ext/_tree.pyx":99
  *             return "Root TreeItem %s with children: %s" % (self.label, ", ".join([i.label for i in self.children]))
  * 
  *     def sort(self):             # <<<<<<<<<<<<<<
@@ -2136,7 +2146,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_12sort(struct __pyx_obj_5
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("sort", 0);
 
-  /* "pyFAI/ext/_tree.pyx":98
+  /* "pyFAI/ext/_tree.pyx":100
  * 
  *     def sort(self):
  *         for child in self.children:             # <<<<<<<<<<<<<<
@@ -2145,27 +2155,27 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_12sort(struct __pyx_obj_5
  */
   if (unlikely(__pyx_v_self->children == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 98; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_t_1 = __pyx_v_self->children; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
   for (;;) {
     if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 98; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #else
-    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 98; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #endif
     __Pyx_XDECREF_SET(__pyx_v_child, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "pyFAI/ext/_tree.pyx":99
+    /* "pyFAI/ext/_tree.pyx":101
  *     def sort(self):
  *         for child in self.children:
  *             child.sort()             # <<<<<<<<<<<<<<
  *         self.children.sort(key=lambda x: x.label)
  * 
  */
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_child, __pyx_n_s_sort); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_child, __pyx_n_s_sort); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 101; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = NULL;
     if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_4))) {
@@ -2178,16 +2188,16 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_12sort(struct __pyx_obj_5
       }
     }
     if (__pyx_t_5) {
-      __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 101; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     } else {
-      __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 101; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "pyFAI/ext/_tree.pyx":98
+    /* "pyFAI/ext/_tree.pyx":100
  * 
  *     def sort(self):
  *         for child in self.children:             # <<<<<<<<<<<<<<
@@ -2197,28 +2207,28 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_12sort(struct __pyx_obj_5
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/_tree.pyx":100
+  /* "pyFAI/ext/_tree.pyx":102
  *         for child in self.children:
  *             child.sort()
  *         self.children.sort(key=lambda x: x.label)             # <<<<<<<<<<<<<<
  * 
  *     cpdef TreeItem next(self):
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->children, __pyx_n_s_sort); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->children, __pyx_n_s_sort); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_5_tree_8TreeItem_4sort_lambda1, 0, __pyx_n_s_sort_locals_lambda, NULL, __pyx_n_s_pyFAI_ext__tree, __pyx_d, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_5_tree_8TreeItem_4sort_lambda1, 0, __pyx_n_s_sort_locals_lambda, NULL, __pyx_n_s_pyFAI_ext__tree, __pyx_d, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_key, __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_key, __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pyFAI/ext/_tree.pyx":97
+  /* "pyFAI/ext/_tree.pyx":99
  *             return "Root TreeItem %s with children: %s" % (self.label, ", ".join([i.label for i in self.children]))
  * 
  *     def sort(self):             # <<<<<<<<<<<<<<
@@ -2243,7 +2253,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_12sort(struct __pyx_obj_5
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":102
+/* "pyFAI/ext/_tree.pyx":104
  *         self.children.sort(key=lambda x: x.label)
  * 
  *     cpdef TreeItem next(self):             # <<<<<<<<<<<<<<
@@ -2273,7 +2283,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_next); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_next); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_15next)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -2289,14 +2299,14 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2305,7 +2315,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":104
+  /* "pyFAI/ext/_tree.pyx":106
  *     cpdef TreeItem next(self):
  *         cdef int idx
  *         if self.parent is None:             # <<<<<<<<<<<<<<
@@ -2316,28 +2326,28 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   __pyx_t_6 = (__pyx_t_5 != 0);
   if (__pyx_t_6) {
 
-    /* "pyFAI/ext/_tree.pyx":105
+    /* "pyFAI/ext/_tree.pyx":107
  *         cdef int idx
  *         if self.parent is None:
  *             raise IndexError("Next does not exist")             # <<<<<<<<<<<<<<
  *         idx = self.parent.children.index(self)
  *         if idx < len(self.parent.children) - 1:
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_IndexError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 105; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_IndexError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 105; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "pyFAI/ext/_tree.pyx":106
+  /* "pyFAI/ext/_tree.pyx":108
  *         if self.parent is None:
  *             raise IndexError("Next does not exist")
  *         idx = self.parent.children.index(self)             # <<<<<<<<<<<<<<
  *         if idx < len(self.parent.children) - 1:
  *             return self.parent.children[idx + 1]
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->parent->children, __pyx_n_s_index); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->parent->children, __pyx_n_s_index); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_2))) {
@@ -2350,25 +2360,25 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     }
   }
   if (!__pyx_t_3) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, ((PyObject *)__pyx_v_self)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, ((PyObject *)__pyx_v_self)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
   } else {
-    __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3); __Pyx_GIVEREF(__pyx_t_3); __pyx_t_3 = NULL;
     __Pyx_INCREF(((PyObject *)__pyx_v_self));
     PyTuple_SET_ITEM(__pyx_t_4, 0+1, ((PyObject *)__pyx_v_self));
     __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_idx = __pyx_t_7;
 
-  /* "pyFAI/ext/_tree.pyx":107
+  /* "pyFAI/ext/_tree.pyx":109
  *             raise IndexError("Next does not exist")
  *         idx = self.parent.children.index(self)
  *         if idx < len(self.parent.children) - 1:             # <<<<<<<<<<<<<<
@@ -2379,14 +2389,14 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   __Pyx_INCREF(__pyx_t_1);
   if (unlikely(__pyx_t_1 == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_8 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_6 = ((__pyx_v_idx < (__pyx_t_8 - 1)) != 0);
   if (__pyx_t_6) {
 
-    /* "pyFAI/ext/_tree.pyx":108
+    /* "pyFAI/ext/_tree.pyx":110
  *         idx = self.parent.children.index(self)
  *         if idx < len(self.parent.children) - 1:
  *             return self.parent.children[idx + 1]             # <<<<<<<<<<<<<<
@@ -2396,19 +2406,19 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_XDECREF(((PyObject *)__pyx_r));
     if (unlikely(__pyx_v_self->parent->children == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __pyx_t_9 = (__pyx_v_idx + 1);
-    __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->parent->children, __pyx_t_9, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->parent->children, __pyx_t_9, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_1);
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1);
     __pyx_t_1 = 0;
     goto __pyx_L0;
   }
   /*else*/ {
 
-    /* "pyFAI/ext/_tree.pyx":110
+    /* "pyFAI/ext/_tree.pyx":112
  *             return self.parent.children[idx + 1]
  *         else:
  *             return self.parent.next().children[0]             # <<<<<<<<<<<<<<
@@ -2416,22 +2426,22 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
  *     cpdef TreeItem previous(self):
  */
     __Pyx_XDECREF(((PyObject *)__pyx_r));
-    __pyx_t_1 = ((PyObject *)((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->parent->__pyx_vtab)->next(__pyx_v_self->parent, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = ((PyObject *)((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->parent->__pyx_vtab)->next(__pyx_v_self->parent, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (unlikely(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1)->children == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_2 = __Pyx_GetItemInt_List(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1)->children, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_2 = __Pyx_GetItemInt_List(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1)->children, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_2);
     __pyx_t_2 = 0;
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":102
+  /* "pyFAI/ext/_tree.pyx":104
  *         self.children.sort(key=lambda x: x.label)
  * 
  *     cpdef TreeItem next(self):             # <<<<<<<<<<<<<<
@@ -2455,6 +2465,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_15next(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_14next[] = "TreeItem.next(self) -> TreeItem";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_15next(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -2475,7 +2486,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_14next(struct __pyx_obj_5
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("next", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_next(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_next(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2492,7 +2503,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_14next(struct __pyx_obj_5
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":112
+/* "pyFAI/ext/_tree.pyx":114
  *             return self.parent.next().children[0]
  * 
  *     cpdef TreeItem previous(self):             # <<<<<<<<<<<<<<
@@ -2521,7 +2532,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_previous); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_previous); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_17previous)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -2537,14 +2548,14 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2553,7 +2564,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":114
+  /* "pyFAI/ext/_tree.pyx":116
  *     cpdef TreeItem previous(self):
  *         cdef int idx
  *         if self.parent is None:             # <<<<<<<<<<<<<<
@@ -2564,28 +2575,28 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   __pyx_t_6 = (__pyx_t_5 != 0);
   if (__pyx_t_6) {
 
-    /* "pyFAI/ext/_tree.pyx":115
+    /* "pyFAI/ext/_tree.pyx":117
  *         cdef int idx
  *         if self.parent is None:
  *             raise IndexError("Previous does not exist")             # <<<<<<<<<<<<<<
  *         idx = self.parent.children.index(self)
  *         if idx > 0:
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_IndexError, __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_IndexError, __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 117; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 117; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "pyFAI/ext/_tree.pyx":116
+  /* "pyFAI/ext/_tree.pyx":118
  *         if self.parent is None:
  *             raise IndexError("Previous does not exist")
  *         idx = self.parent.children.index(self)             # <<<<<<<<<<<<<<
  *         if idx > 0:
  *             return self.parent.children[idx - 1]
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->parent->children, __pyx_n_s_index); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 116; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->parent->children, __pyx_n_s_index); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_2))) {
@@ -2598,25 +2609,25 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     }
   }
   if (!__pyx_t_3) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, ((PyObject *)__pyx_v_self)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 116; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, ((PyObject *)__pyx_v_self)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
   } else {
-    __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 116; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3); __Pyx_GIVEREF(__pyx_t_3); __pyx_t_3 = NULL;
     __Pyx_INCREF(((PyObject *)__pyx_v_self));
     PyTuple_SET_ITEM(__pyx_t_4, 0+1, ((PyObject *)__pyx_v_self));
     __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 116; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 116; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_idx = __pyx_t_7;
 
-  /* "pyFAI/ext/_tree.pyx":117
+  /* "pyFAI/ext/_tree.pyx":119
  *             raise IndexError("Previous does not exist")
  *         idx = self.parent.children.index(self)
  *         if idx > 0:             # <<<<<<<<<<<<<<
@@ -2626,7 +2637,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   __pyx_t_6 = ((__pyx_v_idx > 0) != 0);
   if (__pyx_t_6) {
 
-    /* "pyFAI/ext/_tree.pyx":118
+    /* "pyFAI/ext/_tree.pyx":120
  *         idx = self.parent.children.index(self)
  *         if idx > 0:
  *             return self.parent.children[idx - 1]             # <<<<<<<<<<<<<<
@@ -2636,19 +2647,19 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_XDECREF(((PyObject *)__pyx_r));
     if (unlikely(__pyx_v_self->parent->children == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __pyx_t_8 = (__pyx_v_idx - 1);
-    __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->parent->children, __pyx_t_8, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->parent->children, __pyx_t_8, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_1);
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1);
     __pyx_t_1 = 0;
     goto __pyx_L0;
   }
   /*else*/ {
 
-    /* "pyFAI/ext/_tree.pyx":120
+    /* "pyFAI/ext/_tree.pyx":122
  *             return self.parent.children[idx - 1]
  *         else:
  *             return self.parent.previous().children[-1]             # <<<<<<<<<<<<<<
@@ -2656,22 +2667,22 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
  *     cpdef TreeItem first(self):
  */
     __Pyx_XDECREF(((PyObject *)__pyx_r));
-    __pyx_t_1 = ((PyObject *)((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->parent->__pyx_vtab)->previous(__pyx_v_self->parent, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = ((PyObject *)((struct __pyx_vtabstruct_5pyFAI_3ext_5_tree_TreeItem *)__pyx_v_self->parent->__pyx_vtab)->previous(__pyx_v_self->parent, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (unlikely(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1)->children == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_2 = __Pyx_GetItemInt_List(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1)->children, -1, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_2 = __Pyx_GetItemInt_List(((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1)->children, -1, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_2);
     __pyx_t_2 = 0;
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":112
+  /* "pyFAI/ext/_tree.pyx":114
  *             return self.parent.next().children[0]
  * 
  *     cpdef TreeItem previous(self):             # <<<<<<<<<<<<<<
@@ -2695,6 +2706,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_17previous(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_16previous[] = "TreeItem.previous(self) -> TreeItem";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_17previous(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -2715,7 +2727,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_16previous(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("previous", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_previous(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_previous(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 114; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2732,7 +2744,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_16previous(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":122
+/* "pyFAI/ext/_tree.pyx":124
  *             return self.parent.previous().children[-1]
  * 
  *     cpdef TreeItem first(self):             # <<<<<<<<<<<<<<
@@ -2757,7 +2769,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_first); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_first); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_19first)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -2773,14 +2785,14 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2789,7 +2801,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":123
+  /* "pyFAI/ext/_tree.pyx":125
  * 
  *     cpdef TreeItem first(self):
  *         if self.children:             # <<<<<<<<<<<<<<
@@ -2799,7 +2811,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   __pyx_t_5 = (__pyx_v_self->children != Py_None) && (PyList_GET_SIZE(__pyx_v_self->children) != 0);
   if (__pyx_t_5) {
 
-    /* "pyFAI/ext/_tree.pyx":124
+    /* "pyFAI/ext/_tree.pyx":126
  *     cpdef TreeItem first(self):
  *         if self.children:
  *             return self.children[0].first()             # <<<<<<<<<<<<<<
@@ -2809,11 +2821,11 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_XDECREF(((PyObject *)__pyx_r));
     if (unlikely(__pyx_v_self->children == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_self->children, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_self->children, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_first); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_first); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_2 = NULL;
@@ -2827,21 +2839,21 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
       }
     }
     if (__pyx_t_2) {
-      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     } else {
-      __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1);
     __pyx_t_1 = 0;
     goto __pyx_L0;
   }
   /*else*/ {
 
-    /* "pyFAI/ext/_tree.pyx":126
+    /* "pyFAI/ext/_tree.pyx":128
  *             return self.children[0].first()
  *         else:
  *             return self             # <<<<<<<<<<<<<<
@@ -2854,7 +2866,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":122
+  /* "pyFAI/ext/_tree.pyx":124
  *             return self.parent.previous().children[-1]
  * 
  *     cpdef TreeItem first(self):             # <<<<<<<<<<<<<<
@@ -2878,6 +2890,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_19first(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_18first[] = "TreeItem.first(self) -> TreeItem";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_19first(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -2898,7 +2911,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_18first(struct __pyx_obj_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("first", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_first(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_first(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2915,7 +2928,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_18first(struct __pyx_obj_
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":128
+/* "pyFAI/ext/_tree.pyx":130
  *             return self
  * 
  *     cpdef TreeItem last(self):             # <<<<<<<<<<<<<<
@@ -2940,7 +2953,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_last); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_last); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_21last)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -2956,14 +2969,14 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2972,7 +2985,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":129
+  /* "pyFAI/ext/_tree.pyx":131
  * 
  *     cpdef TreeItem last(self):
  *         if self.children:             # <<<<<<<<<<<<<<
@@ -2982,7 +2995,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
   __pyx_t_5 = (__pyx_v_self->children != Py_None) && (PyList_GET_SIZE(__pyx_v_self->children) != 0);
   if (__pyx_t_5) {
 
-    /* "pyFAI/ext/_tree.pyx":130
+    /* "pyFAI/ext/_tree.pyx":132
  *     cpdef TreeItem last(self):
  *         if self.children:
  *             return self.children[-1].last()             # <<<<<<<<<<<<<<
@@ -2992,11 +3005,11 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     __Pyx_XDECREF(((PyObject *)__pyx_r));
     if (unlikely(__pyx_v_self->children == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_self->children, -1, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_self->children, -1, long, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_last); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_last); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_2 = NULL;
@@ -3010,21 +3023,21 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
       }
     }
     if (__pyx_t_2) {
-      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     } else {
-      __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_r = ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_1);
     __pyx_t_1 = 0;
     goto __pyx_L0;
   }
   /*else*/ {
 
-    /* "pyFAI/ext/_tree.pyx":132
+    /* "pyFAI/ext/_tree.pyx":134
  *             return self.children[-1].last()
  *         else:
  *             return self             # <<<<<<<<<<<<<<
@@ -3037,7 +3050,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":128
+  /* "pyFAI/ext/_tree.pyx":130
  *             return self
  * 
  *     cpdef TreeItem last(self):             # <<<<<<<<<<<<<<
@@ -3061,6 +3074,7 @@ static struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *__pyx_f_5pyFAI_3ext_5_tree_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_21last(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_20last[] = "TreeItem.last(self) -> TreeItem";
 static PyObject *__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_21last(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -3081,7 +3095,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_20last(struct __pyx_obj_5
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("last", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_last(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5pyFAI_3ext_5_tree_8TreeItem_last(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3098,7 +3112,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_20last(struct __pyx_obj_5
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":135
+/* "pyFAI/ext/_tree.pyx":137
  * 
  *     property size:
  *         def __get__(self):             # <<<<<<<<<<<<<<
@@ -3136,7 +3150,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pyFAI/ext/_tree.pyx":136
+  /* "pyFAI/ext/_tree.pyx":138
  *     property size:
  *         def __get__(self):
  *             cdef int s = 0             # <<<<<<<<<<<<<<
@@ -3145,7 +3159,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
  */
   __pyx_v_s = 0;
 
-  /* "pyFAI/ext/_tree.pyx":138
+  /* "pyFAI/ext/_tree.pyx":140
  *             cdef int s = 0
  *             cdef TreeItem child
  *             if self.children:             # <<<<<<<<<<<<<<
@@ -3155,7 +3169,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
   __pyx_t_1 = (__pyx_v_self->children != Py_None) && (PyList_GET_SIZE(__pyx_v_self->children) != 0);
   if (__pyx_t_1) {
 
-    /* "pyFAI/ext/_tree.pyx":139
+    /* "pyFAI/ext/_tree.pyx":141
  *             cdef TreeItem child
  *             if self.children:
  *                 for child in self.children:             # <<<<<<<<<<<<<<
@@ -3164,40 +3178,40 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
  */
     if (unlikely(__pyx_v_self->children == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __pyx_t_2 = __pyx_v_self->children; __Pyx_INCREF(__pyx_t_2); __pyx_t_3 = 0;
     for (;;) {
       if (__pyx_t_3 >= PyList_GET_SIZE(__pyx_t_2)) break;
       #if CYTHON_COMPILING_IN_CPYTHON
-      __pyx_t_4 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_4); __pyx_t_3++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_4); __pyx_t_3++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       #else
-      __pyx_t_4 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       #endif
-      if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_XDECREF_SET(__pyx_v_child, ((struct __pyx_obj_5pyFAI_3ext_5_tree_TreeItem *)__pyx_t_4));
       __pyx_t_4 = 0;
 
-      /* "pyFAI/ext/_tree.pyx":140
+      /* "pyFAI/ext/_tree.pyx":142
  *             if self.children:
  *                 for child in self.children:
  *                     s += child.size             # <<<<<<<<<<<<<<
  *                 return s
  *             else:
  */
-      __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_s); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_s); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_child), __pyx_n_s_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_child), __pyx_n_s_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_6 = PyNumber_InPlaceAdd(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = PyNumber_InPlaceAdd(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_6); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_6); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_v_s = __pyx_t_7;
 
-      /* "pyFAI/ext/_tree.pyx":139
+      /* "pyFAI/ext/_tree.pyx":141
  *             cdef TreeItem child
  *             if self.children:
  *                 for child in self.children:             # <<<<<<<<<<<<<<
@@ -3207,7 +3221,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "pyFAI/ext/_tree.pyx":141
+    /* "pyFAI/ext/_tree.pyx":143
  *                 for child in self.children:
  *                     s += child.size
  *                 return s             # <<<<<<<<<<<<<<
@@ -3215,7 +3229,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
  *                 return 1
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_s); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_s); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 143; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __pyx_r = __pyx_t_2;
     __pyx_t_2 = 0;
@@ -3223,7 +3237,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
   }
   /*else*/ {
 
-    /* "pyFAI/ext/_tree.pyx":143
+    /* "pyFAI/ext/_tree.pyx":145
  *                 return s
  *             else:
  *                 return 1             # <<<<<<<<<<<<<<
@@ -3236,7 +3250,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":135
+  /* "pyFAI/ext/_tree.pyx":137
  * 
  *     property size:
  *         def __get__(self):             # <<<<<<<<<<<<<<
@@ -3259,7 +3273,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4size___get__(struct __py
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":146
+/* "pyFAI/ext/_tree.pyx":148
  * 
  *     property name:
  *         def __get__(self):             # <<<<<<<<<<<<<<
@@ -3293,7 +3307,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pyFAI/ext/_tree.pyx":147
+  /* "pyFAI/ext/_tree.pyx":149
  *     property name:
  *         def __get__(self):
  *             if self.order <= 1:             # <<<<<<<<<<<<<<
@@ -3303,7 +3317,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
   __pyx_t_1 = ((__pyx_v_self->order <= 1) != 0);
   if (__pyx_t_1) {
 
-    /* "pyFAI/ext/_tree.pyx":148
+    /* "pyFAI/ext/_tree.pyx":150
  *         def __get__(self):
  *             if self.order <= 1:
  *                 return self.label or ""             # <<<<<<<<<<<<<<
@@ -3311,7 +3325,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
  *                 return self.parent.name + ":" + self.label
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_self->label); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_self->label); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     if (!__pyx_t_1) {
     } else {
       __Pyx_INCREF(__pyx_v_self->label);
@@ -3326,18 +3340,18 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":149
+  /* "pyFAI/ext/_tree.pyx":151
  *             if self.order <= 1:
  *                 return self.label or ""
  *             if self.parent.type == "file":             # <<<<<<<<<<<<<<
  *                 return self.parent.name + ":" + self.label
  *             elif self.parent.type == "group":
  */
-  __pyx_t_1 = (__Pyx_PyString_Equals(__pyx_v_self->parent->type, __pyx_n_s_file, Py_EQ)); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = (__Pyx_PyString_Equals(__pyx_v_self->parent->type, __pyx_n_s_file, Py_EQ)); if (unlikely(__pyx_t_1 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_3 = (__pyx_t_1 != 0);
   if (__pyx_t_3) {
 
-    /* "pyFAI/ext/_tree.pyx":150
+    /* "pyFAI/ext/_tree.pyx":152
  *                 return self.label or ""
  *             if self.parent.type == "file":
  *                 return self.parent.name + ":" + self.label             # <<<<<<<<<<<<<<
@@ -3345,41 +3359,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
  *                 return self.parent.name + "/" + self.label
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->parent), __pyx_n_s_name); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = PyNumber_Add(__pyx_t_2, __pyx_kp_s__5); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyNumber_Add(__pyx_t_4, __pyx_v_self->label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_r = __pyx_t_2;
-    __pyx_t_2 = 0;
-    goto __pyx_L0;
-  }
-
-  /* "pyFAI/ext/_tree.pyx":151
- *             if self.parent.type == "file":
- *                 return self.parent.name + ":" + self.label
- *             elif self.parent.type == "group":             # <<<<<<<<<<<<<<
- *                 return self.parent.name + "/" + self.label
- *             else:
- */
-  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_v_self->parent->type, __pyx_n_s_group, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_1 = (__pyx_t_3 != 0);
-  if (__pyx_t_1) {
-
-    /* "pyFAI/ext/_tree.pyx":152
- *                 return self.parent.name + ":" + self.label
- *             elif self.parent.type == "group":
- *                 return self.parent.name + "/" + self.label             # <<<<<<<<<<<<<<
- *             else:
- *                 return self.parent.name + os.sep + self.label
- */
-    __Pyx_XDECREF(__pyx_r);
     __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->parent), __pyx_n_s_name); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = PyNumber_Add(__pyx_t_2, __pyx_kp_s__6); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyNumber_Add(__pyx_t_2, __pyx_kp_s__5); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_2 = PyNumber_Add(__pyx_t_4, __pyx_v_self->label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -3389,26 +3371,58 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
     __pyx_t_2 = 0;
     goto __pyx_L0;
   }
-  /*else*/ {
+
+  /* "pyFAI/ext/_tree.pyx":153
+ *             if self.parent.type == "file":
+ *                 return self.parent.name + ":" + self.label
+ *             elif self.parent.type == "group":             # <<<<<<<<<<<<<<
+ *                 return self.parent.name + "/" + self.label
+ *             else:
+ */
+  __pyx_t_3 = (__Pyx_PyString_Equals(__pyx_v_self->parent->type, __pyx_n_s_group, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = (__pyx_t_3 != 0);
+  if (__pyx_t_1) {
 
     /* "pyFAI/ext/_tree.pyx":154
+ *                 return self.parent.name + ":" + self.label
+ *             elif self.parent.type == "group":
+ *                 return self.parent.name + "/" + self.label             # <<<<<<<<<<<<<<
+ *             else:
+ *                 return self.parent.name + os.sep + self.label
+ */
+    __Pyx_XDECREF(__pyx_r);
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->parent), __pyx_n_s_name); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_4 = PyNumber_Add(__pyx_t_2, __pyx_kp_s__6); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = PyNumber_Add(__pyx_t_4, __pyx_v_self->label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_r = __pyx_t_2;
+    __pyx_t_2 = 0;
+    goto __pyx_L0;
+  }
+  /*else*/ {
+
+    /* "pyFAI/ext/_tree.pyx":156
  *                 return self.parent.name + "/" + self.label
  *             else:
  *                 return self.parent.name + os.sep + self.label             # <<<<<<<<<<<<<<
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->parent), __pyx_n_s_name); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self->parent), __pyx_n_s_name); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_os); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_os); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_sep); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_sep); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyNumber_Add(__pyx_t_2, __pyx_t_5); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyNumber_Add(__pyx_t_2, __pyx_t_5); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyNumber_Add(__pyx_t_4, __pyx_v_self->label); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyNumber_Add(__pyx_t_4, __pyx_v_self->label); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_r = __pyx_t_5;
@@ -3416,7 +3430,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/_tree.pyx":146
+  /* "pyFAI/ext/_tree.pyx":148
  * 
  *     property name:
  *         def __get__(self):             # <<<<<<<<<<<<<<
@@ -3437,8 +3451,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4name___get__(struct __py
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":50
- *     add a next/previous method
+/* "pyFAI/ext/_tree.pyx":52
+ * 
  *     """
  *     cdef public list children             # <<<<<<<<<<<<<<
  *     cdef public TreeItem parent
@@ -3495,7 +3509,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_8children_2__set__(struct __pyx
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__set__", 0);
-  if (!(likely(PyList_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(PyList_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_1 = __pyx_v_value;
   __Pyx_INCREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
@@ -3545,7 +3559,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_8children_4__del__(struct __pyx
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":51
+/* "pyFAI/ext/_tree.pyx":53
  *     """
  *     cdef public list children
  *     cdef public TreeItem parent             # <<<<<<<<<<<<<<
@@ -3603,7 +3617,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_6parent_2__set__(struct __pyx_o
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__set__", 0);
-  if (!(likely(((__pyx_v_value) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_value, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(((__pyx_v_value) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_value, __pyx_ptype_5pyFAI_3ext_5_tree_TreeItem))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_1 = __pyx_v_value;
   __Pyx_INCREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
@@ -3653,7 +3667,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_6parent_4__del__(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":52
+/* "pyFAI/ext/_tree.pyx":54
  *     cdef public list children
  *     cdef public TreeItem parent
  *     cdef public str label             # <<<<<<<<<<<<<<
@@ -3711,7 +3725,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_5label_2__set__(struct __pyx_ob
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__set__", 0);
-  if (!(likely(PyString_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(PyString_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_1 = __pyx_v_value;
   __Pyx_INCREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
@@ -3761,7 +3775,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_5label_4__del__(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":53
+/* "pyFAI/ext/_tree.pyx":55
  *     cdef public TreeItem parent
  *     cdef public str label
  *     cdef public int order             # <<<<<<<<<<<<<<
@@ -3791,7 +3805,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_5order___get__(struct __p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_self->order); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_self->order); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3829,7 +3843,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_5order_2__set__(struct __pyx_ob
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__set__", 0);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_value); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_value); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->order = __pyx_t_1;
 
   /* function exit code */
@@ -3843,7 +3857,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_5order_2__set__(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":54
+/* "pyFAI/ext/_tree.pyx":56
  *     cdef public str label
  *     cdef public int order
  *     cdef public str type #can by "dir", "file", "group" or "dataset"             # <<<<<<<<<<<<<<
@@ -3901,7 +3915,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4type_2__set__(struct __pyx_obj
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__set__", 0);
-  if (!(likely(PyString_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(PyString_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 56; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_1 = __pyx_v_value;
   __Pyx_INCREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
@@ -3951,7 +3965,7 @@ static int __pyx_pf_5pyFAI_3ext_5_tree_8TreeItem_4type_4__del__(struct __pyx_obj
   return __pyx_r;
 }
 
-/* "pyFAI/ext/_tree.pyx":55
+/* "pyFAI/ext/_tree.pyx":57
  *     cdef public int order
  *     cdef public str type #can by "dir", "file", "group" or "dataset"
  *     cdef public object extra             # <<<<<<<<<<<<<<
@@ -4200,27 +4214,27 @@ static int __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_extra(PyObject *o, PyObjec
 }
 
 static PyMethodDef __pyx_methods_5pyFAI_3ext_5_tree_TreeItem[] = {
-  {"add_child", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_3add_child, METH_O, 0},
+  {"add_child", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_3add_child, METH_O, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_2add_child},
   {"update", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_5update, METH_O, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_4update},
-  {"has_child", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_7has_child, METH_O, 0},
-  {"get", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_9get, METH_O, 0},
-  {"sort", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_13sort, METH_NOARGS, 0},
-  {"next", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_15next, METH_NOARGS, 0},
-  {"previous", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_17previous, METH_NOARGS, 0},
-  {"first", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_19first, METH_NOARGS, 0},
-  {"last", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_21last, METH_NOARGS, 0},
+  {"has_child", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_7has_child, METH_O, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_6has_child},
+  {"get", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_9get, METH_O, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_8get},
+  {"sort", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_13sort, METH_NOARGS, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_12sort},
+  {"next", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_15next, METH_NOARGS, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_14next},
+  {"previous", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_17previous, METH_NOARGS, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_16previous},
+  {"first", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_19first, METH_NOARGS, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_18first},
+  {"last", (PyCFunction)__pyx_pw_5pyFAI_3ext_5_tree_8TreeItem_21last, METH_NOARGS, __pyx_doc_5pyFAI_3ext_5_tree_8TreeItem_20last},
   {0, 0, 0, 0}
 };
 
 static struct PyGetSetDef __pyx_getsets_5pyFAI_3ext_5_tree_TreeItem[] = {
   {(char *)"size", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_size, 0, 0, 0},
   {(char *)"name", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_name, 0, 0, 0},
-  {(char *)"children", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_children, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_children, 0, 0},
-  {(char *)"parent", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_parent, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_parent, 0, 0},
-  {(char *)"label", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_label, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_label, 0, 0},
-  {(char *)"order", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_order, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_order, 0, 0},
-  {(char *)"type", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_type, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_type, 0, 0},
-  {(char *)"extra", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_extra, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_extra, 0, 0},
+  {(char *)"children", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_children, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_children, __pyx_k_children_list, 0},
+  {(char *)"parent", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_parent, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_parent, __pyx_k_parent_pyFAI_ext__tree_TreeItem, 0},
+  {(char *)"label", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_label, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_label, __pyx_k_label_str, 0},
+  {(char *)"order", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_order, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_order, __pyx_k_order_int, 0},
+  {(char *)"type", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_type, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_type, __pyx_k_type_str, 0},
+  {(char *)"extra", __pyx_getprop_5pyFAI_3ext_5_tree_8TreeItem_extra, __pyx_setprop_5pyFAI_3ext_5_tree_8TreeItem_extra, __pyx_k_extra_object, 0},
   {0, 0, 0, 0, 0}
 };
 
@@ -4249,7 +4263,7 @@ static PyTypeObject __pyx_type_5pyFAI_3ext_5_tree_TreeItem = {
   0, /*tp_setattro*/
   0, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-  "\n    Node of a tree ...\n\n    Contains:\n    self.order: depth from root\n    add name: reconstitute the full name\n    add comment field for dirname and filenames\n    add reorder command which will sort all sub-trees\n    add size property which calculate the size of the subtree\n    add a next/previous method\n    ", /*tp_doc*/
+  "TreeItem(str label=None, TreeItem parent=None)\n\n    Node of a tree ...\n\n    Each node contains:\n\n     * children: list\n     * parent: TreeItem parent\n     * label: str\n     * order: int\n     * type: str can be \"dir\", \"file\", \"group\" or \"dataset\"\n     * extra: any object\n\n    ", /*tp_doc*/
   __pyx_tp_traverse_5pyFAI_3ext_5_tree_TreeItem, /*tp_traverse*/
   __pyx_tp_clear_5pyFAI_3ext_5_tree_TreeItem, /*tp_clear*/
   0, /*tp_richcompare*/
@@ -4305,8 +4319,8 @@ static struct PyModuleDef __pyx_moduledef = {
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_, __pyx_k_, sizeof(__pyx_k_), 0, 0, 1, 0},
+  {&__pyx_kp_s_01_12_2016, __pyx_k_01_12_2016, sizeof(__pyx_k_01_12_2016), 0, 0, 1, 0},
   {&__pyx_kp_s_2011_2015_ESRF, __pyx_k_2011_2015_ESRF, sizeof(__pyx_k_2011_2015_ESRF), 0, 0, 1, 0},
-  {&__pyx_kp_s_31_05_2016, __pyx_k_31_05_2016, sizeof(__pyx_k_31_05_2016), 0, 0, 1, 0},
   {&__pyx_n_s_IndexError, __pyx_k_IndexError, sizeof(__pyx_k_IndexError), 0, 0, 1, 1},
   {&__pyx_kp_s_Jerome_Kieffer, __pyx_k_Jerome_Kieffer, sizeof(__pyx_k_Jerome_Kieffer), 0, 0, 1, 0},
   {&__pyx_n_s_MIT, __pyx_k_MIT, sizeof(__pyx_k_MIT), 0, 0, 1, 1},
@@ -4352,7 +4366,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_IndexError = __Pyx_GetBuiltinName(__pyx_n_s_IndexError); if (!__pyx_builtin_IndexError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 105; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_IndexError = __Pyx_GetBuiltinName(__pyx_n_s_IndexError); if (!__pyx_builtin_IndexError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -4362,25 +4376,25 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "pyFAI/ext/_tree.pyx":105
+  /* "pyFAI/ext/_tree.pyx":107
  *         cdef int idx
  *         if self.parent is None:
  *             raise IndexError("Next does not exist")             # <<<<<<<<<<<<<<
  *         idx = self.parent.children.index(self)
  *         if idx < len(self.parent.children) - 1:
  */
-  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_Next_does_not_exist); if (unlikely(!__pyx_tuple__3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 105; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_Next_does_not_exist); if (unlikely(!__pyx_tuple__3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "pyFAI/ext/_tree.pyx":115
+  /* "pyFAI/ext/_tree.pyx":117
  *         cdef int idx
  *         if self.parent is None:
  *             raise IndexError("Previous does not exist")             # <<<<<<<<<<<<<<
  *         idx = self.parent.children.index(self)
  *         if idx > 0:
  */
-  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_kp_s_Previous_does_not_exist); if (unlikely(!__pyx_tuple__4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_kp_s_Previous_does_not_exist); if (unlikely(!__pyx_tuple__4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 117; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
   __Pyx_RefNannyFinishContext();
@@ -4502,7 +4516,7 @@ PyMODINIT_FUNC PyInit__tree(void)
  * 
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
- * __date__ = "31/05/2016"
+ * __date__ = "01/12/2016"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -4510,7 +4524,7 @@ PyMODINIT_FUNC PyInit__tree(void)
  * 
  * __author__ = "Jerome Kieffer"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
- * __date__ = "31/05/2016"
+ * __date__ = "01/12/2016"
  * __copyright__ = "2011-2015, ESRF"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -4518,15 +4532,15 @@ PyMODINIT_FUNC PyInit__tree(void)
   /* "pyFAI/ext/_tree.pyx":31
  * __author__ = "Jerome Kieffer"
  * __license__ = "MIT"
- * __date__ = "31/05/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "01/12/2016"             # <<<<<<<<<<<<<<
  * __copyright__ = "2011-2015, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_31_05_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_01_12_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/_tree.pyx":32
  * __license__ = "MIT"
- * __date__ = "31/05/2016"
+ * __date__ = "01/12/2016"
  * __copyright__ = "2011-2015, ESRF"             # <<<<<<<<<<<<<<
  * __contact__ = "jerome.kieffer@esrf.fr"
  * 
@@ -4534,7 +4548,7 @@ PyMODINIT_FUNC PyInit__tree(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_copyright, __pyx_kp_s_2011_2015_ESRF) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/_tree.pyx":33
- * __date__ = "31/05/2016"
+ * __date__ = "01/12/2016"
  * __copyright__ = "2011-2015, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
  * 

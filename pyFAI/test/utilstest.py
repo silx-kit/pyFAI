@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "28/11/2016"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -37,12 +37,9 @@ if __name__ == "__main__":
     __name__ = "pyFAI.test"
 
 import os
-import imp
 import sys
 import getpass
-import subprocess
 import threading
-import distutils.util
 import unittest
 import logging
 try:  # Python3
@@ -150,8 +147,8 @@ class UtilsTest(object):
         """
         Downloads the requested image from a file set available at http://www.silx.org/pub/pyFAI/testimages/
 
-        @param: relative name of the image.
-        @return: full path of the locally saved file.
+        :param: relative name of the image.
+        :return: full path of the locally saved file.
         """
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
@@ -211,7 +208,7 @@ class UtilsTest(object):
         """
         Download all images needed for the test/benchmarks
 
-        @param imgs: list of files to download
+        :param imgs: list of files to download
         """
         if not imgs:
             imgs = cls.ALL_DOWNLOADED_FILES
@@ -249,7 +246,7 @@ class UtilsTest(object):
         """
         small helper function that initialized the logger and returns it
         """
-        dirname, basename = os.path.split(os.path.abspath(filename))
+        _dirname, basename = os.path.split(os.path.abspath(filename))
         basename = os.path.splitext(basename)[0]
         level = logging.root.level
         mylogger = logging.getLogger(basename)
@@ -261,21 +258,35 @@ class UtilsTest(object):
     @classmethod
     def script_path(cls, script):
         """
-        Return the path of the executable and the associated environment
+        Returns the path of the executable and the associated environment
+
+        In Windows, it checks availability of script using .py .bat, and .exe
+        file extensions.
         """
-        if (sys.platform == "win32") and not script.endswith(".py"):
-                script += ".py"
+        if (sys.platform == "win32"):
+            available_extensions = [".py", ".bat", ".exe"]
+        else:
+            available_extensions = [""]
+
         env = dict((str(k), str(v)) for k, v in os.environ.items())
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
         paths = os.environ.get("PATH", "").split(os.pathsep)
         if cls.script_dir is not None:
             paths.insert(0, cls.script_dir)
-        for i in paths:
-            script_path = os.path.join(i, script)
-            if os.path.exists(script_path):
-                break
-        else:
-            logger.warning("No scipt %s found in path: %s", script, paths)
+
+        for base in paths:
+            # clean up extra quotes from paths
+            if base.startswith('"') and base.endswith('"'):
+                base = base[1:-1]
+            for file_extension in available_extensions:
+                script_path = os.path.join(base, script + file_extension)
+                print(script_path)
+                if os.path.exists(script_path):
+                    # script found
+                    return script_path, env
+        # script not found
+        logger.warning("Script '%s' not found in paths: %s", script, ":".join(paths))
+        script_path = script
         return script_path, env
 
 
@@ -287,11 +298,11 @@ def Rwp(obt, ref, comment="Rwp"):
 
     This is done for symmetry reason between obt and ref
 
-    @param obt: obtained data
-    @type obt: 2-list of array of the same size
-    @param obt: reference data
-    @type obt: 2-list of array of the same size
-    @return:  Rwp value, lineary interpolated
+    :param obt: obtained data
+    :type obt: 2-list of array of the same size
+    :param obt: reference data
+    :type obt: 2-list of array of the same size
+    :return:  Rwp value, lineary interpolated
     """
     ref0, ref1 = ref
     obt0, obt1 = obt
@@ -313,8 +324,8 @@ def recursive_delete(dirname):
     CAUTION:  This is dangerous!  For example, if top == '/', it
     could delete all your disk files.
 
-    @param dirname: top directory to delete
-    @type dirname: string
+    :param dirname: top directory to delete
+    :type dirname: string
     """
     if not os.path.isdir(dirname):
         return
@@ -335,19 +346,19 @@ def diff_img(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(2, 2, 1)
         ax2 = fig.add_subplot(2, 2, 2)
         ax3 = fig.add_subplot(2, 2, 3)
         im_ref = ax1.imshow(ref)
-        plt.colorbar(im_ref)
+        pyplot.colorbar(im_ref)
         ax1.set_title("%s ref" % comment)
         im_obt = ax2.imshow(obt)
-        plt.colorbar(im_obt)
+        pyplot.colorbar(im_obt)
         ax2.set_title("%s obt" % comment)
         im_delta = ax3.imshow(delta)
-        plt.colorbar(im_delta)
+        pyplot.colorbar(im_delta)
         ax3.set_title("delta")
         imax = delta.argmax()
         x = imax % ref.shape[-1]
@@ -364,13 +375,13 @@ def diff_crv(ref, obt, comment=""):
     assert ref.shape == obt.shape
     delta = abs(obt - ref)
     if delta.max() > 0:
-        from pyFAI.gui_utils import pyplot as plt
-        fig = plt.figure()
+        from ..gui.matplotlib import pyplot
+        fig = pyplot.figure()
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2)
-        im_ref = ax1.plot(ref, label="%s ref" % comment)
-        im_obt = ax1.plot(obt, label="%s obt" % comment)
-        im_delta = ax2.plot(delta, label="delta")
+        _im_ref = ax1.plot(ref, label="%s ref" % comment)
+        _im_obt = ax1.plot(obt, label="%s obt" % comment)
+        _im_delta = ax2.plot(delta, label="delta")
         fig.show()
         six.moves.input()
 

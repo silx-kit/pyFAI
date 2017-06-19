@@ -1651,7 +1651,7 @@ static char __pyx_k_histogram[] = "histogram";
 static char __pyx_k_out_count[] = "out_count";
 static char __pyx_k_out_merge[] = "out_merge";
 static char __pyx_k_tmp_count[] = "tmp_count";
-static char __pyx_k_13_05_2016[] = "13/05/2016";
+static char __pyx_k_02_02_2017[] = "02/02/2017";
 static char __pyx_k_31_05_2016[] = "31/05/2016";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
@@ -1708,7 +1708,7 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_13_05_2016;
+static PyObject *__pyx_kp_s_02_02_2017;
 static PyObject *__pyx_kp_s_2011_2016_ESRF;
 static PyObject *__pyx_kp_s_31_05_2016;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
@@ -1913,7 +1913,7 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_5pyFAI_3ext_9histogram_get_bin_n
   double __pyx_r;
 
   /* "pyFAI/ext/regrid_common.pxi":59
- *     @return: bin number as floating point.
+ *     :return: bin number as floating point.
  *     """
  *     return (x0 - pos0_min) / delta             # <<<<<<<<<<<<<<
  */
@@ -1935,7 +1935,7 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_5pyFAI_3ext_9histogram_get_bin_n
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_9histogram_histogram[] = "\n    Calculates histogram of pos weighted by weights\n\n    @param pos: 2Theta array\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED\n    @param nthread: OpenMP is disabled. unused\n    @param empty: value given to empty bins\n    @param normalization_factor: divide the result by this value\n\n    @return 2theta, I, weighted histogram, raw histogram\n    ";
+static char __pyx_doc_5pyFAI_3ext_9histogram_histogram[] = "histogram(ndarray pos, ndarray weights, int bins=100, bin_range=None, pixelSize_in_Pos=None, nthread=None, double empty=0.0, double normalization_factor=1.0)\n\n    Calculates histogram of pos weighted by weights\n\n    :param pos: 2Theta array\n    :param weights: array with intensities\n    :param bins: number of output bins\n    :param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED\n    :param nthread: OpenMP is disabled. unused\n    :param empty: value given to empty bins\n    :param normalization_factor: divide the result by this value\n\n    :return: 2theta, I, weighted histogram, raw histogram\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_9histogram_1histogram = {"histogram", (PyCFunction)__pyx_pw_5pyFAI_3ext_9histogram_1histogram, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_9histogram_histogram};
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
@@ -3009,15 +3009,15 @@ __pyx_t_19.strides[1] = __pyx_v_big_data.strides[1];
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_fbin) lastprivate(__pyx_v_a) lastprivate(__pyx_v_bin) lastprivate(__pyx_v_thread) lastprivate(__pyx_v_d) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i)
+                    #pragma omp for lastprivate(__pyx_v_fbin) lastprivate(__pyx_v_bin) lastprivate(__pyx_v_a) lastprivate(__pyx_v_thread) lastprivate(__pyx_v_d) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i)
                     #endif /* _OPENMP */
                     for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_21; __pyx_t_20++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_20;
                             /* Initialize private variables to invalid values */
                             __pyx_v_fbin = ((double)__PYX_NAN());
-                            __pyx_v_a = ((double)__PYX_NAN());
                             __pyx_v_bin = ((int)0xbad0bad0);
+                            __pyx_v_a = ((double)__PYX_NAN());
                             __pyx_v_thread = ((int)0xbad0bad0);
                             __pyx_v_d = ((double)__PYX_NAN());
 
@@ -3443,7 +3443,7 @@ __pyx_t_19.strides[1] = __pyx_v_big_data.strides[1];
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_9histogram_2histogram2d[] = "\n    Calculate 2D histogram of pos0,pos1 weighted by weights\n\n    @param pos0: 2Theta array\n    @param pos1: Chi array\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param split: pixel splitting is disabled in histogram\n    @param nthread: maximum number of thread to use. By default: maximum available.\n    @param empty: value given to empty bins\n    @param normalization_factor: divide the result by this value\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n\n    One can also limit this with OMP_NUM_THREADS environment variable\n    ";
+static char __pyx_doc_5pyFAI_3ext_9histogram_2histogram2d[] = "histogram2d(ndarray pos0, ndarray pos1, bins, ndarray weights, split=False, nthread=None, double empty=0.0, double normalization_factor=1.0)\n\n    Calculate 2D histogram of pos0,pos1 weighted by weights\n\n    :param pos0: 2Theta array\n    :param pos1: Chi array\n    :param weights: array with intensities\n    :param bins: number of output bins int or 2-tuple of int\n    :param split: pixel splitting is disabled in histogram\n    :param nthread: maximum number of thread to use. By default: maximum available.\n    :param empty: value given to empty bins\n    :param normalization_factor: divide the result by this value\n\n    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n\n    One can also limit this with OMP_NUM_THREADS environment variable\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_9histogram_3histogram2d = {"histogram2d", (PyCFunction)__pyx_pw_5pyFAI_3ext_9histogram_3histogram2d, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_9histogram_2histogram2d};
 static PyObject *__pyx_pw_5pyFAI_3ext_9histogram_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos0 = 0;
@@ -18249,7 +18249,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_13_05_2016, __pyx_k_13_05_2016, sizeof(__pyx_k_13_05_2016), 0, 0, 1, 0},
+  {&__pyx_kp_s_02_02_2017, __pyx_k_02_02_2017, sizeof(__pyx_k_02_02_2017), 0, 0, 1, 0},
   {&__pyx_kp_s_2011_2016_ESRF, __pyx_k_2011_2016_ESRF, sizeof(__pyx_k_2011_2016_ESRF), 0, 0, 1, 0},
   {&__pyx_kp_s_31_05_2016, __pyx_k_31_05_2016, sizeof(__pyx_k_31_05_2016), 0, 0, 1, 0},
   {&__pyx_kp_s_Buffer_view_does_not_expose_stri, __pyx_k_Buffer_view_does_not_expose_stri, sizeof(__pyx_k_Buffer_view_does_not_expose_stri), 0, 0, 1, 0},
@@ -18972,7 +18972,7 @@ PyMODINIT_FUNC PyInit_histogram(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -18980,7 +18980,7 @@ PyMODINIT_FUNC PyInit_histogram(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -18988,15 +18988,15 @@ PyMODINIT_FUNC PyInit_histogram(void)
   /* "pyFAI/ext/regrid_common.pxi":31
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2017"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_13_05_2016) < 0) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2017) < 0) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":32
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -19004,7 +19004,7 @@ PyMODINIT_FUNC PyInit_histogram(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":33
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
@@ -19146,7 +19146,7 @@ PyMODINIT_FUNC PyInit_histogram(void)
  * 
  * __doc__ = """Re-implementation of numpy histograms using OpenMP"""             # <<<<<<<<<<<<<<
  * __author__ = "Jerome Kieffer"
- * __date__ = "31/05/2016"
+ * __date__ = "02/02/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_doc, __pyx_kp_s_Re_implementation_of_numpy_histo) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -19154,7 +19154,7 @@ PyMODINIT_FUNC PyInit_histogram(void)
  * 
  * __doc__ = """Re-implementation of numpy histograms using OpenMP"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
- * __date__ = "31/05/2016"
+ * __date__ = "02/02/2017"
  * __license__ = "MIT"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -19162,15 +19162,15 @@ PyMODINIT_FUNC PyInit_histogram(void)
   /* "pyFAI/ext/histogram_omp.pxi":32
  * __doc__ = """Re-implementation of numpy histograms using OpenMP"""
  * __author__ = "Jerome Kieffer"
- * __date__ = "31/05/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2017"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * __copyright__ = "2011-2016, ESRF"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_31_05_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2017) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/histogram_omp.pxi":33
  * __author__ = "Jerome Kieffer"
- * __date__ = "31/05/2016"
+ * __date__ = "02/02/2017"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * __copyright__ = "2011-2016, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"
@@ -19178,7 +19178,7 @@ PyMODINIT_FUNC PyInit_histogram(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/histogram_omp.pxi":34
- * __date__ = "31/05/2016"
+ * __date__ = "02/02/2017"
  * __license__ = "MIT"
  * __copyright__ = "2011-2016, ESRF"             # <<<<<<<<<<<<<<
  * __contact__ = "jerome.kieffer@esrf.fr"

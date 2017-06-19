@@ -1,46 +1,48 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# ##########################################################################
+#
 # Written 2009-12-22 by Jérôme Kieffer
-# Copyright (C) 2009 European Synchrotron Radiation Facility
-#                       Grenoble, France
+# Copyright (C) 2009-2016  European Synchrotron Radiation Facility
+#                          Grenoble, France
 #
 #    Principal authors: Jérôme Kieffer  (jerome.kieffer@esrf.fr)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# #######################################################################################
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-
-from __future__ import print_function, division
-__doc__ = """
-This is piece of software aims at manipulating spline files
+"""This is piece of software aims at manipulating spline files
 describing for geometric corrections of the 2D detectors using cubic-spline.
 
 Mainly used at ESRF with FReLoN CCD camera.
 """
 
+from __future__ import print_function, division
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
-__license__ = "GPLv3+"
-__date__ = "17/10/2016"
+__license__ = "MIT"
+__date__ = "28/10/2016"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
 import time
 import sys
 import numpy
-import scipy
 import logging
 import scipy.optimize
 import scipy.interpolate
@@ -70,8 +72,8 @@ class Spline(object):
         """
         This is the constructor of the Spline class.
 
-        @param filename: name of the ascii file containing the spline
-        @type filename: str
+        :param filename: name of the ascii file containing the spline
+        :type filename: str
         """
         self.splineOrder = 3  # This is the default, so cubic splines
         self.lenStrFloat = 14  # by default one float is 14 char in ascii
@@ -109,7 +111,7 @@ class Spline(object):
         return os.linesep.join(lst)
 
     def __copy__(self):
-        """@return: Shallow copy of the spline"""
+        """:return: Shallow copy of the spline"""
         unmutable = "splineOrder", "lenStrFloat", "xmin", "ymin", "xmax", "ymax", "filename", "pixelSize", "grid"
         arrays = "xDispArray", "yDispArray"
         lists = "xSplineKnotsX", "xSplineKnotsY", "xSplineCoeff", "ySplineKnotsX", "ySplineKnotsY", "ySplineCoeff"
@@ -119,7 +121,7 @@ class Spline(object):
         return new
 
     def __deepcopy__(self, memo=None):
-        """@return: deep copy of the spline"""
+        """:return: deep copy of the spline"""
         unmutable = "splineOrder", "lenStrFloat", "xmin", "ymin", "xmax", "ymax", "filename", "pixelSize", "grid"
         arrays = "xDispArray", "yDispArray"
         lists = "xSplineKnotsX", "xSplineKnotsY", "xSplineCoeff", "ySplineKnotsX", "ySplineKnotsY", "ySplineCoeff"
@@ -154,16 +156,16 @@ class Spline(object):
         """
         Defines a spline file with no ( zero ) displacement.
 
-        @param xmin: minimum coordinate in x, usually zero
-        @type xmin: float
-        @param xmax: maximum coordinate in x (+1) usually 2048
-        @type xmax: float
-        @param ymin: minimum coordinate in y, usually zero
-        @type ymin: float
-        @param ymax: maximum coordinate y (+1) usually 2048
-        @type ymax: float
-        @param pixSize: size of the pixel
-        @type pixSize: float
+        :param xmin: minimum coordinate in x, usually zero
+        :type xmin: float
+        :param xmax: maximum coordinate in x (+1) usually 2048
+        :type xmax: float
+        :param ymin: minimum coordinate in y, usually zero
+        :type ymin: float
+        :param ymax: maximum coordinate y (+1) usually 2048
+        :type ymax: float
+        :param pixSize: size of the pixel
+        :type pixSize: float
         """
         self.xmin = xmin
         self.ymin = ymin
@@ -181,8 +183,8 @@ class Spline(object):
         Defines a spline file with no ( zero ) displacement with the
         same shape as the other one given.
 
-        @param other: another Spline instance
-        @type other: Spline instance
+        :param other: another Spline instance
+        :type other: Spline instance
         """
         self.zeros(self, other.xmin, other.ymin, other.xmax, other.ymax)
 
@@ -190,13 +192,14 @@ class Spline(object):
         """
         read an ascii spline file from file
 
-        @param filename: file containing the cubic spline distortion file
-        @type filename: str
+        :param filename: file containing the cubic spline distortion file
+        :type filename: str
         """
         if not os.path.isfile(filename):
             raise IOError("Spline File does not exist %s" % filename)
         self.filename = filename
-        stringSpline = [i.rstrip() for i in open(filename)]
+        with open(filename) as opened_file:
+            stringSpline = [i.rstrip() for i in opened_file]
         try:
             indexLine = 0
             for oneLine in stringSpline:
@@ -239,7 +242,7 @@ class Spline(object):
                             break
                     self.ySplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
                     self.ySplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
-                    self.ySplineCoeff = numpy.array(databloc[ splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
+                    self.ySplineCoeff = numpy.array(databloc[splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
     # Keep this at the end
                 indexLine += 1
         except:
@@ -250,13 +253,13 @@ class Spline(object):
         """
         Compares the current spline distortion with a reference
 
-        @param ref: another spline file
-        @type ref: Spline instance
-        @param verbose: print or not pylab plots
-        @type verbose: bool
+        :param ref: another spline file
+        :type ref: Spline instance
+        :param verbose: print or not pylab plots
+        :type verbose: bool
 
-        @return: True or False depending if the splines are the same or not
-        @rtype: bool
+        :return: True or False depending if the splines are the same or not
+        :rtype: bool
         """
         self.spline2array()
         ref.spline2array()
@@ -272,8 +275,8 @@ class Spline(object):
         maxErrY = abs(deltay).max()
         curvX = scipy.interpolate.interp1d(histXdr, histX[0] - histX[0].max() / 2.0)
         curvY = scipy.interpolate.interp1d(histYdr, histY[0] - histY[0].max() / 2.0)
-        fFWHM_X = scipy.optimize.bisect(curvX , histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX , histXdr[0], histXmax)
-        fFWHM_Y = scipy.optimize.bisect(curvY , histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY , histYdr[0], histYmax)
+        fFWHM_X = scipy.optimize.bisect(curvX, histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX, histXdr[0], histXmax)
+        fFWHM_Y = scipy.optimize.bisect(curvY, histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY, histYdr[0], histYmax)
         logger.info("Analysis of the difference between two splines")
         logger.info("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels.", maxErrX, maxErrY)
         logger.info("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels.", histXmax, histYmax)
@@ -294,11 +297,11 @@ class Spline(object):
         Calculates the displacement matrix using fitpack
         bisplev(x, y, tck, dx = 0, dy = 0)
 
-        @param timing: profile the calculation or not
-        @type timing: bool
+        :param timing: profile the calculation or not
+        :type timing: bool
 
-        @return: Nothing !
-        @rtype: float or ndarray
+        :return: Nothing !
+        :rtype: float or ndarray
 
         Evaluate a bivariate B-spline and its derivatives. Return a
         rank-2 array of spline function values (or spline derivative
@@ -336,13 +339,13 @@ class Spline(object):
         Calculates the displacement matrix using fitpack for the X
         direction on the given grid.
 
-        @param x: points of the grid in the x direction
-        @type x: ndarray
-        @param y: points of the grid  in the y direction
-        @type y: ndarray
-        @param list_of_points: if true, consider the zip(x,y) instead of the of the square array
-        @return: displacement matrix for the X direction
-        @rtype: ndarray
+        :param x: points of the grid in the x direction
+        :type x: ndarray
+        :param y: points of the grid  in the y direction
+        :type y: ndarray
+        :param list_of_points: if true, consider the zip(x,y) instead of the of the square array
+        :return: displacement matrix for the X direction
+        :rtype: ndarray
         """
         if x.ndim == 2:
             if abs(x[1:, :] - x[:-1, :] - numpy.zeros((x.shape[0] - 1, x.shape[1]))).max() < 1e-6:
@@ -366,7 +369,7 @@ class Spline(object):
                    self.xSplineKnotsY,
                    self.xSplineCoeff,
                    self.splineOrder,
-                   self.splineOrder ],
+                   self.splineOrder],
             dx=0, dy=0)
         if list_of_points and x.ndim == 1:
             return xDispArray[x_unordered, y_unordered]
@@ -378,13 +381,13 @@ class Spline(object):
         calculates the displacement matrix using fitpack for the Y
         direction
 
-        @param x: points in the x direction
-        @type x: ndarray
-        @param y: points in the y direction
-        @type y: ndarray
-        @param list_of_points: if true, consider the zip(x,y) instead of the of the square array
-        @return: displacement matrix for the Y direction
-        @rtype: ndarray
+        :param x: points in the x direction
+        :type x: ndarray
+        :param y: points in the y direction
+        :type y: ndarray
+        :param list_of_points: if true, consider the zip(x,y) instead of the of the square array
+        :return: displacement matrix for the Y direction
+        :rtype: ndarray
         """
         if x.ndim == 2:
             if abs(x[1:, :] - x[:-1, :] - numpy.zeros((x.shape[0] - 1, x.shape[1]))).max() < 1e-6:
@@ -410,7 +413,7 @@ class Spline(object):
                    self.ySplineKnotsY,
                    self.ySplineCoeff,
                    self.splineOrder,
-                   self.splineOrder ],
+                   self.splineOrder],
             dx=0, dy=0)
         if list_of_points and x.ndim == 1:
             return yDispArray[x_unordered, y_unordered]
@@ -422,10 +425,10 @@ class Spline(object):
         Calculates the spline coefficients from the displacements
         matrix using fitpack.
 
-        @param smoothing: the greater the smoothing, the fewer the number of knots remaining
-        @type smoothing: float
-        @param timing: print the profiling of the calculation
-        @type timing: bool
+        :param smoothing: the greater the smoothing, the fewer the number of knots remaining
+        :type smoothing: float
+        :param timing: print the profiling of the calculation
+        :type timing: bool
         """
         self.xmin = 0.0
         self.ymin = 0.0
@@ -478,8 +481,8 @@ class Spline(object):
         save the distortion matrices into a couple of files called
         basename-x.edf and basename-y.edf
 
-        @param basename: base of the name used to save the data
-        @type basename: str
+        :param basename: base of the name used to save the data
+        :type basename: str
         """
         try:
             from fabio.edfimage import edfimage
@@ -499,8 +502,8 @@ class Spline(object):
         save the cubic spline in an ascii file usable with Fit2D or
         SPD
 
-        @param filename: name of the file containing the cubic spline distortion file
-        @type filename: str
+        :param filename: name of the file containing the cubic spline distortion file
+        :type filename: str
         """
 
         lst = ["SPATIAL DISTORTION SPLINE INTERPOLATION COEFFICIENTS",
@@ -575,17 +578,17 @@ class Spline(object):
         The tilt method apply a virtual tilt on the detector, the
         point of tilt is given by the center
 
-        @param center: position of the point of tilt, this point will not be moved.
-        @type center: 2-tuple of floats
-        @param tiltAngle: the value of the tilt in degrees
-        @type tiltAngle: float in the range [-90:+90] degrees
-        @param tiltPlanRot: the rotation of the tilt plan with the Ox axis (0 deg for y axis invariant, 90 deg for x axis invariant)
-        @type tiltPlanRot: Float in the range [-180:180]
-        @param distanceSampleDetector: the distance from sample to detector in meter (along the beam, so distance from sample to center)
-        @type distanceSampleDetector: float
+        :param center: position of the point of tilt, this point will not be moved.
+        :type center: 2-tuple of floats
+        :param tiltAngle: the value of the tilt in degrees
+        :type tiltAngle: float in the range [-90:+90] degrees
+        :param tiltPlanRot: the rotation of the tilt plan with the Ox axis (0 deg for y axis invariant, 90 deg for x axis invariant)
+        :type tiltPlanRot: Float in the range [-180:180]
+        :param distanceSampleDetector: the distance from sample to detector in meter (along the beam, so distance from sample to center)
+        :type distanceSampleDetector: float
 
-        @return: tilted Spline instance
-        @rtype: Spline
+        :return: tilted Spline instance
+        :rtype: Spline
         """
         if self.xDispArray is None:
             if self.filename is None:
@@ -634,8 +637,8 @@ class Spline(object):
         Sets the size of the pixel from a 2-tuple of floats expressed
         in meters.
 
-        @param: pixel size in meter
-        @type pixelSize: 2-tuple of float
+        :param: pixel size in meter
+        :type pixelSize: 2-tuple of float
         """
         if len(pixelSize) == 2:
             self.pixelSize = (pixelSize[0] * 1.0e6, pixelSize[1] * 1.0e6)
@@ -645,8 +648,8 @@ class Spline(object):
         Return the size of the pixel from as a 2-tuple of floats expressed
         in meters.
 
-        @return: the size of the pixel from a 2D detector
-        @rtype: 2-tuple of floats expressed in meter.
+        :return: the size of the pixel from a 2D detector
+        :rtype: 2-tuple of floats expressed in meter.
 
         """
         return (self.pixelSize[0] * 1.0e-6, self.pixelSize[1] * 1.0e-6)
@@ -655,8 +658,8 @@ class Spline(object):
         """
         Performs the binning of a spline (same camera with different binning)
 
-        @param binning: binning factor as integer or 2-tuple of integers
-        @type: int or (int, int)
+        :param binning: binning factor as integer or 2-tuple of integers
+        :type: int or (int, int)
 
         """
         if "__len__" in dir(binning):
@@ -694,7 +697,7 @@ class Spline(object):
     def flipud(self):
         """
         Flip the spline up-down
-        @return: new spline object
+        :return: new spline object
         """
         self.spline2array()
         other = self.__class__()
@@ -711,8 +714,8 @@ class Spline(object):
 
     def fliplr(self):
         """
-        Flip the spline 
-        @return: new spline object
+        Flip the spline
+        :return: new spline object
         """
         self.spline2array()
         other = self.__class__()
@@ -730,7 +733,7 @@ class Spline(object):
     def fliplrud(self):
         """
         Flip the spline left-right and up-down
-        @return: new spline object
+        :return: new spline object
         """
         self.spline2array()
         other = self.__class__()

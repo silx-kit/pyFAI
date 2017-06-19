@@ -92,7 +92,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e-6 - I_ref).max())
-        self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
+        self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate1d_withpol(self):
         tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range,
@@ -103,7 +103,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e-6 - I_ref).max())
-        self.assert_(delta < 9e-5, "Intensity is the same delta=%s" % delta)
+        self.assertTrue(delta < 9e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
         ref = self.ai.integrate2d(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg", method="splitpixel")
@@ -124,9 +124,9 @@ class TestMultiGeometry(unittest.TestCase):
                            "of intensity: %s, count: %s cum: %s",
                            delta.max(), delta_cnt.max(), delta_sum.max())
 
-        self.assert_(delta_cnt.max() < 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
-        self.assert_(delta_sum.max() < 0.04, "pixel sum is the same delta=%s" % delta_sum.max())
-        self.assert_(delta.max() < 0.007, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
+        self.assertTrue(delta_cnt.max() < 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
+        self.assertTrue(delta_sum.max() < 0.04, "pixel sum is the same delta=%s" % delta_sum.max())
+        self.assertTrue(delta.max() < 0.007, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
 
 
 def suite():

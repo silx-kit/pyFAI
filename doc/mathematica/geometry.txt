@@ -1,0 +1,212 @@
+Axis 1 is allong first dimension of detector (when not tilted), this is the slow dimension of the image array in C or Y
+In[5]:= x1={1,0,0}
+Out[5]= {1,0,0}
+ Axis 2 is allong second dimension of detector (when not tilted), this is the fast dimension of the image in C or X
+In[6]:= x2={0,1,0}
+Out[6]= {0,1,0}
+Axis 3 is along the incident X-Ray beam
+In[7]:= x3={0,0,1}
+Out[7]= {0,0,1}
+In[9]:= id3={x1,x2,x3}
+Out[9]= {{1,0,0},{0,1,0},{0,0,1}}
+In[10]:= {{1,0,0},{0,1,0},{0,0,1}}
+Out[10]= {{1,0,0},{0,1,0},{0,0,1}}
+In[11]:= rotM1=RotationMatrix[rot1,x1]
+Out[11]= {{1,0,0},{0,Cos[rot1],-Sin[rot1]},{0,Sin[rot1],Cos[rot1]}}
+In[12]:= rotM2 =  RotationMatrix[rot2,x2]
+Out[12]= {{Cos[rot2],0,Sin[rot2]},{0,1,0},{-Sin[rot2],0,Cos[rot2]}}
+In[13]:= rotM3 =  RotationMatrix[rot3,x3]
+Out[13]= {{Cos[rot3],-Sin[rot3],0},{Sin[rot3],Cos[rot3],0},{0,0,1}}
+Rotations of the detector are applied first Rot around axis 1, then axis 2 and finally around axis 3
+In[14]:= R=rotM3.rotM2.rotM1
+Out[14]= {{Cos[rot2] Cos[rot3],Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3],Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]},{Cos[rot2] Sin[rot3],Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3],-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]},{-Sin[rot2],Cos[rot2] Sin[rot1],Cos[rot1] Cos[rot2]}}
+In[15]:= CForm[R.x1]
+
+Out[15]//CForm=
+List(Cos(rot2)*Cos(rot3),Cos(rot2)*Sin(rot3),-Sin(rot2))
+In[16]:= CForm[R.x2]
+
+Out[16]//CForm=
+List(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3),Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3),Cos(rot2)*Sin(rot1))
+In[17]:= CForm[R.x3]
+Out[17]//CForm=
+List(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3),-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3),Cos(rot1)*Cos(rot2))
+In[18]:= CForm[Det[R]]
+Out[18]//CForm=
+Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Cos(rot3),2) + Power(Cos(rot2),2)*Power(Cos(rot3),2)*Power(Sin(rot1),2) + Power(Cos(rot1),2)*Power(Cos(rot3),2)*Power(Sin(rot2),2) +
+   Power(Cos(rot3),2)*Power(Sin(rot1),2)*Power(Sin(rot2),2) + Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Sin(rot3),2) + Power(Cos(rot2),2)*Power(Sin(rot1),2)*Power(Sin(rot3),2) +
+   Power(Cos(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2) + Power(Sin(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2)
+In[13]:=
+Any pixel on detector plan at coordianate (d1, d2) in meters. Detector is at z=L
+
+In[22]:= P={d1,d2,L}
+CForm[R.P]
+
+Out[22]= {d1,d2,L}
+Out[23]//CForm=
+List(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))
+In[24]:= t1 = R.P.x1
+CForm[t1]
+Out[24]= d1 Cos[rot2] Cos[rot3]+d2 (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])+L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])
+Out[25]//CForm=
+d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))
+In[26]:= t2 = R.P.x2
+CForm[t2]
+Out[26]= d1 Cos[rot2] Sin[rot3]+L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+d2 (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])
+Out[27]//CForm=
+d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))
+In[28]:= t3=R.P.x3
+CForm[t3]
+Out[28]= L Cos[rot1] Cos[rot2]+d2 Cos[rot2] Sin[rot1]-d1 Sin[rot2]
+Out[29]//CForm=
+L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)
+Distance sample to detector point (d1,d2)
+(no Mathematica translations)
+GraphicsBox[
+TagBox[RasterBox[CompressedData["
+1:eJxtUstqU1EUDY2iUdSOnBcERwGHDgQf+YNGOrAQSEBBBwlWQfsDcVKsI4sf
+IAQnGSQtCQ4yyfvVvO69SW7J+9W8GtIkg8SwXfuQSpFu2Pdxzl5rr7XP2bDY
+Nt+saTSaDzfx2DR/er6zY941XsPPi92Pry1afNxdJS9ejuFwqJNl+XMsFstE
+o1HijEQio1Qq9bPZbD7SXBHtdnsjGAxK+Xyeut0uTadTms1mNBgMqFwuUyKR
++APOd5cxo9HoHjBqqVSis7Mzms/nlMlkyOfziX/GdzodSiaTpCjKqwscar6o
+qkq9Xo/Oz89pb2+PjEYj2Ww22t7epn6/L/DcF/wdt9u9Di4tPAxarZbgZKzd
+bmde4jCZTORyuUTPWq1G8Erwb0HdQ2gn+KZ6vU6np6eCm8PhcNDW1hZVKhWx
+xvusH/P6jronwVCIcpJE2VxOvLvQ5Q8EyGAwkMfjERilUBCYCGrj8fiv8Xj8
+IIAa1iVJMsnIIWZ4dHRE+1/3hW72pUgK5cALTzyfbzwX4Kt5WSb15IRU8M5w
+BgcHB2S1WqkL3TxntVgU3CH0g7+XjGs0Gm/D4bDgZS/QQH6/n5xOp+iH/X8z
+QY+0Xq9fZ9xyudRKknTIGpibZzOZTMQMcYeoWq1SNptlzMzr9T4G5PbFGS4W
+C12hUHDwbNlHEbr4TMEn7hvW69DwDKV3kGv/3zfUPU2n0z+g6Rj+j/H+jXxv
+Npvvr/por7qnq+C9G8hbq9Qhr18u+AttYAMa
+"], {{0, 14}, {14, 0}}, {0, 255},
+ColorFunction->RGBColor],
+BoxForm`ImageTag["Byte", ColorSpace -> "RGB", Interleaving -> True],
+Selectable->False],
+BaseStyle->"ImageGraphics",
+ImageSize->Magnification[1],
+ImageSizeRaw->{14, 14},
+PlotRange->{{0, 14}, {0, 14}}]
+
+
+In[30]:= dist = Norm[R.P]
+CForm[dist]
+Out[30]= √(Abs[L Cos[rot1] Cos[rot2]+d2 Cos[rot2] Sin[rot1]-d1 Sin[rot2]]^2+Abs[d1 Cos[rot2] Cos[rot3]+d2 (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])+L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[d1 Cos[rot2] Sin[rot3]+L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+d2 (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2)
+Out[31]//CForm=
+Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) + Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+       L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) + Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),
+     2))
+cos(2theta) can be defined as (R.P component along x3) over the distance |R.P|
+In[32]:= tthc = ArcCos [-(R.P).x3/Norm[R.P]]
+CForm[tthc]
+
+Out[32]= ArcCos[(-L Cos[rot1] Cos[rot2]-d2 Cos[rot2] Sin[rot1]+d1 Sin[rot2])/(√(Abs[L Cos[rot1] Cos[rot2]+d2 Cos[rot2] Sin[rot1]-d1 Sin[rot2]]^2+Abs[d1 Cos[rot2] Cos[rot3]+d2 (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])+L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[d1 Cos[rot2] Sin[rot3]+L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+d2 (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))]
+Out[33]//CForm=
+ArcCos((-(L*Cos(rot1)*Cos(rot2)) - d2*Cos(rot2)*Sin(rot1) + d1*Sin(rot2))/
+    Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) + Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+         L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) + Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
+         d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),2)))
+
+
+
+In[41]:= ttht = ArcTan[t3,Sqrt[t1^2 + t2^2]]
+
+CForm[ttht]
+
+
+Out[41]= ArcTan[L Cos[rot1] Cos[rot2]+d2 Cos[rot2] Sin[rot1]-d1 Sin[rot2],√((d1 Cos[rot2] Cos[rot3]+d2 (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])+L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]))^2+(d1 Cos[rot2] Sin[rot3]+L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+d2 (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3]))^2)]
+Out[42]//CForm=
+ArcTan(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+      2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+Tangeant of angle chi is defined as (R.P component along x1) over (R.P component along x2). Arctan2 should be used in actual calculation
+In[36]:= chi =ArcTan[t1  , t2]
+CForm[chi]
+Out[36]= ArcTan[d1 Cos[rot2] Cos[rot3]+d2 (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])+L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),d1 Cos[rot2] Sin[rot3]+L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+d2 (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]
+Out[37]//CForm=
+ArcTan(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))
+Coodinates of the Point of Normal Incidence
+
+In[38]:= PONI = R.{0,0,L}
+CForm[PONI]
+Out[38]= {L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]),L Cos[rot1] Cos[rot2]}
+Out[39]//CForm=
+List(L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)),L*Cos(rot1)*Cos(rot2))
+Derivatives of 2Theta
+In[43]:= CForm[D[ttht,d1]]
+Out[43]//CForm=
+((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*Cos(rot2)*Cos(rot3)*(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+           L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))) + 2*Cos(rot2)*Sin(rot3)*
+         (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     + (Sin(rot2)*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))
+In[44]:= CForm[D[ttht,d2]]
+
+Out[44]//CForm=
+((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))) +
+        2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))*(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - (Cos(rot2)*Sin(rot1)*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))
+In[47]:= CForm[D[ttht,L]]
+Out[47]//CForm=
+((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))) +
+        2*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))*(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - (Cos(rot1)*Cos(rot2)*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))
+In[48]:= CForm[D[ttht,rot1]]
+Out[48]//CForm=
+((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(L*(-(Cos(rot3)*Sin(rot1)*Sin(rot2)) + Cos(rot1)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))) +
+        2*(d2*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + L*(-(Cos(rot1)*Cos(rot3)) - Sin(rot1)*Sin(rot2)*Sin(rot3)))*
+         (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - ((d2*Cos(rot1)*Cos(rot2) - L*Cos(rot2)*Sin(rot1))*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))
+In[49]:= CForm[D[ttht,rot2]]
+Out[49]//CForm=
+((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(L*Cos(rot1)*Cos(rot2)*Cos(rot3) + d2*Cos(rot2)*Cos(rot3)*Sin(rot1) - d1*Cos(rot3)*Sin(rot2))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))) +
+        2*(L*Cos(rot1)*Cos(rot2)*Sin(rot3) + d2*Cos(rot2)*Sin(rot1)*Sin(rot3) - d1*Sin(rot2)*Sin(rot3))*
+         (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - ((-(d1*Cos(rot2)) - L*Cos(rot1)*Sin(rot2) - d2*Sin(rot1)*Sin(rot2))*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     /(Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+        L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))
+In[50]:= CForm[D[ttht,rot3]]
+Out[50]//CForm=
+((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))*
+        (-(d1*Cos(rot2)*Sin(rot3)) + L*(Cos(rot3)*Sin(rot1) - Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(-(Cos(rot1)*Cos(rot3)) - Sin(rot1)*Sin(rot2)*Sin(rot3))) +
+       2*(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))*
+        (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+   (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) +
+       Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+     (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+         L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))

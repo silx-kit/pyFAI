@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction to the tutorials &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Introduction to the tutorials &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="../../../index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="../../../index.html" />
     <link rel="up" title="Tutorials" href="../index.html" />
-    <link rel="next" title="Detector distortion corrections" href="../Distortion/Distortion.html" />
+    <link rel="next" title="Geometries in pyFAI" href="../Geometry/geometry.html" />
     <link rel="prev" title="Tutorials" href="../index.html" /> 
   </head>
   <body>
@@ -40,12 +40,12 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../Distortion/Distortion.html" title="Detector distortion corrections"
+          <a href="../Geometry/geometry.html" title="Geometries in pyFAI"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../index.html" title="Tutorials"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Tutorials</a> &raquo;</li> 
       </ul>
     </div>  
@@ -82,8 +82,8 @@ authenticate with your ESRF credentials.</p>
 <div class="section" id="outside-esrf-with-an-esrf-account">
 <h3>Outside ESRF with an ESRF account.<a class="headerlink" href="#outside-esrf-with-an-esrf-account" title="Permalink to this headline">¶</a></h3>
 <p>The JupyterHub server is not directly available on the internet, but you
-can
-<tt class="docutils literal"><span class="pre">login</span> <span class="pre">into</span> <span class="pre">the</span> <span class="pre">firewall&lt;http://www.esrf.eu/Infrastructure/Computing/Networks/InternetAndTheFirewall/UsersManual/SSH&gt;</span></tt>_
+can <a class="reference external" href="http://www.esrf.eu/Infrastructure/Computing/Networks/InternetAndTheFirewall/UsersManual/SSH">login into the
+firewall</a>
 to forward the web server:</p>
 <p>ssh -XC -p5022 -L8000:scisoft13:8000 user&#64;firewall.esrf.fr</p>
 <p>Once logged in ESRF, keep the terminal opened and browse on your local
@@ -177,7 +177,7 @@ read the content of the file:</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.image.AxesImage at 0x7fd7aaa975c0&gt;
 </pre></div>
 </div>
-<img alt="../../../_images/output_6_11.png" src="../../../_images/output_6_11.png" />
+<img alt="../../../_images/output_6_12.png" src="../../../_images/output_6_12.png" />
 <p>As you can see, the image looks like an archery target. The option
 <em>origin=&#8221;lower&#8221;</em> of <em>imshow</em> allows to display the image with the origin
 at the <strong>lower left</strong> of the image.</p>
@@ -236,17 +236,17 @@ setFit2D(directDist, centerX, centerY, tilt=0.0, tiltPlanRotation=0.0, pixelX=No
     By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
     To obtaine correct result you will have to flip images using numpy.flipud.
 
-    @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
-    @param tilt: tilt in degrees
-    @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
+    :param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
+    :param tilt: tilt in degrees
+    :param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
             * 0deg -&gt; Y does not move, +X goes to Z&lt;0
             * 90deg -&gt; X does not move, +Y goes to Z&lt;0
             * 180deg -&gt; Y does not move, +X goes to Z&gt;0
             * 270deg -&gt; X does not move, +Y goes to Z&gt;0
 
-    @param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
-    @param centerX, centerY: pixel position of the beam center
-    @param splineFile: name of the file containing the spline
+    :param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
+    :param centerX, centerY: pixel position of the beam center
+    :param splineFile: name of the file containing the spline
 </pre></div>
 </div>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">ai</span><span class="o">.</span><span class="n">setFit2D</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
@@ -338,7 +338,7 @@ do it by providing an output filename:</p>
 command from UNIX to print the content of the file. This &#8220;moke.dat&#8221; file
 contains in addition to the 2th/I value, a header commented with &#8220;#&#8221;
 with the geometry used to perform the calculation.</p>
-<p><a href="#id1"><span class="problematic" id="id2">**</span></a>Nota: ** The <em>ai</em> object has initialized the geometry on the first
+<p><strong>Nota:</strong> The <em>ai</em> object has initialized the geometry on the first
 call and re-uses it on subsequent calls. This is why it is important to
 re-use the geometry in performance critical applications.</p>
 </div>
@@ -474,8 +474,8 @@ be adapted to you specific needs.</p>
   <p class="topless"><a href="../index.html"
                         title="previous chapter">Tutorials</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../Distortion/Distortion.html"
-                        title="next chapter">Detector distortion corrections</a></p>
+  <p class="topless"><a href="../Geometry/geometry.html"
+                        title="next chapter">Geometries in pyFAI</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../../_sources/usage/tutorial/Introduction/introduction.txt"
@@ -508,12 +508,12 @@ be adapted to you specific needs.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../Distortion/Distortion.html" title="Detector distortion corrections"
+          <a href="../Geometry/geometry.html" title="Geometries in pyFAI"
              >next</a> |</li>
         <li class="right" >
           <a href="../index.html" title="Tutorials"
              >previous</a> |</li>
-        <li><a href="../../../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Tutorials</a> &raquo;</li> 
       </ul>
     </div>

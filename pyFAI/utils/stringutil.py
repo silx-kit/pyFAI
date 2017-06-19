@@ -1,9 +1,9 @@
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/08/2016"
+__date__ = "10/02/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module containing utilitary around string"""
@@ -57,11 +57,11 @@ def safe_format(format_string, arguments):
     """Like default str.format but unmatching patterns will be
     still present into the result string.
 
-    @param format_string str: Format string as defined in the default
+    :param format_string str: Format string as defined in the default
         formatter.
-    @param arguments dict or tuple: Arbitrary set of positional and keyword
+    :param arguments dict or tuple: Arbitrary set of positional and keyword
         arguments.
-    @rtype: str
+    :rtype: str
     """
     if isinstance(arguments, dict):
         args = []

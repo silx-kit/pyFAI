@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2016"
+__date__ = "09/03/2017"
 
 import sys
 import unittest
@@ -78,6 +78,9 @@ from . import test_utils_shell
 from . import test_utils_stringutil
 from . import test_preproc
 from . import test_bayes
+from . import test_scripts
+from . import test_goniometer
+from ..opencl import test as test_opencl
 
 
 def suite():
@@ -119,6 +122,9 @@ def suite():
     testsuite.addTest(test_utils_stringutil.suite())
     testsuite.addTest(test_preproc.suite())
     testsuite.addTest(test_bayes.suite())
+    testsuite.addTest(test_scripts.suite())
+    testsuite.addTest(test_goniometer.suite())
+    testsuite.addTest(test_opencl.suite())
     return testsuite
 
 

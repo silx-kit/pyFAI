@@ -1,7 +1,7 @@
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -25,18 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-
-from __future__ import absolute_import, print_function, division
-
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
-__status__ = "production"
-__docformat__ = 'restructuredtext'
-__doc__ = """Module for "high-performance" writing in either 1D with Ascii , 
+"""Module for "high-performance" writing in either 1D with Ascii ,
 or 2D with FabIO or even nD with n varying from  2 to 4 using HDF5
 
 Stand-alone module which tries to offer interface to HDF5 via H5Py and
@@ -45,8 +34,21 @@ capabilities to write EDF or other formats using fabio.
 Can be imported without h5py but then limited to fabio & ascii formats.
 
 TODO:
-* add monitor to HDF5
+
+- Add monitor to HDF5
 """
+
+
+from __future__ import absolute_import, print_function, division
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "12/05/2017"
+__status__ = "production"
+__docformat__ = 'restructuredtext'
+
 import fabio
 import json
 import logging
@@ -77,10 +79,10 @@ else:
 
 def get_isotime(forceTime=None):
     """
-    @param forceTime: enforce a given time (current by default)
-    @type forceTime: float
-    @return: the current time as an ISO8601 string
-    @rtype: string
+    :param forceTime: enforce a given time (current by default)
+    :type forceTime: float
+    :return: the current time as an ISO8601 string
+    :rtype: string
     """
     if forceTime is None:
         forceTime = time.time()
@@ -93,7 +95,7 @@ def get_isotime(forceTime=None):
 
 def from_isotime(text, use_tz=False):
     """
-    @param text: string representing the time is iso format
+    :param text: string representing the time is iso format
     """
     if len(text) == 1:
         # just in case someone sets as a list
@@ -107,7 +109,7 @@ def from_isotime(text, use_tz=False):
         return
     base = text[:19]
     if use_tz and len(text) == 25:
-        sgn = 1 if  text[:19] == "+" else -1
+        sgn = 1 if text[:19] == "+" else -1
         tz = 60 * (60 * int(text[20:22]) + int(text[23:25])) * sgn
     else:
         tz = 0
@@ -118,7 +120,7 @@ def is_hdf5(filename):
     """
     Check if a file is actually a HDF5 file
 
-    @param filename: this file has better to exist
+    :param filename: this file has better to exist
     """
     signature = [137, 72, 68, 70, 13, 10, 26, 10]
     if not os.path.exists(filename):
@@ -155,8 +157,8 @@ class Writer(object):
     def init(self, fai_cfg=None, lima_cfg=None):
         """
         Creates the directory that will host the output file(s)
-        @param fai_cfg: configuration for worker
-        @param lima_cfg: configuration for acquisition
+        :param fai_cfg: configuration for worker
+        :param lima_cfg: configuration for acquisition
         """
 
         with self._sem:
@@ -212,9 +214,9 @@ class HDF5Writer(Writer):
         """
         Constructor of an HDF5 writer:
 
-        @param filename: name of the file
-        @param hpath: name of the group: it will contain data (2-4D dataset), [tth|q|r] and pyFAI, group containing the configuration
-        @param fast_scan_width: set it to define the width of
+        :param filename: name of the file
+        :param hpath: name of the group: it will contain data (2-4D dataset), [tth|q|r] and pyFAI, group containing the configuration
+        :param fast_scan_width: set it to define the width of
         """
         Writer.__init__(self, filename)
         self.hpath = hpath
@@ -244,7 +246,7 @@ class HDF5Writer(Writer):
     def init(self, fai_cfg=None, lima_cfg=None):
         """
         Initializes the HDF5 file for writing
-        @param fai_cfg: the configuration of the worker as a dictionary
+        :param fai_cfg: the configuration of the worker as a dictionary
         """
         logger.debug("in init")
         Writer.init(self, fai_cfg, lima_cfg)
@@ -272,10 +274,10 @@ class HDF5Writer(Writer):
                     continue
                 try:
                     self.pyFAI_grp[key] = value
-                except:
-                    print("Unable to set %s: %s" % (key, value))
-                    self.close()
-                    sys.exit(1)
+                except Exception as e:
+                    logger.error("Unable to set %s: %s", key, value)
+                    logger.debug("Backtrace", exc_info=True)
+                    raise RuntimeError(e.args[0])
             rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
             self.radial_values = self.group.require_dataset(rad_name, (self.fai_cfg["nbpt_rad"],), numpy.float32)
             if self.fai_cfg.get("nbpt_azim", 0) > 1:
@@ -343,8 +345,8 @@ class HDF5Writer(Writer):
         """
         Update some data like axis units and so on.
 
-        @param radial: position in radial direction
-        @param  azimuthal: position in azimuthal direction
+        :param radial: position in radial direction
+        :param  azimuthal: position in azimuthal direction
         """
         with self._sem:
             if not self.hdf5:
@@ -372,7 +374,7 @@ class HDF5Writer(Writer):
     def write(self, data, index=0):
         """
         Minimalistic method to limit the overhead.
-        @param data: array with intensities or tuple (2th,I) or (I,2th,chi)
+        :param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
         logger.debug("In write, index %s", index)
         radial = None
@@ -438,17 +440,17 @@ class DefaultAiWriter(Writer):
     def make_headers(self, hdr="#", has_dark=False, has_flat=False,
                     polarization_factor=None, normalization_factor=None):
         """
-        @param hdr: string used as comment in the header
-        @type hdr: str
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float
+        :param hdr: string used as comment in the header
+        :type hdr: str
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
 
-        @return: the header
-        @rtype: str
+        :return: the header
+        :rtype: str
         """
         if self._header is None:
             ai = self._ai
@@ -486,35 +488,35 @@ class DefaultAiWriter(Writer):
                     headerLst.append("Flat field: %s" % ai.flatfiles)
                 else:
                     headerLst.append("Flat field: Done with unknown file")
-            if polarization_factor is None and ai._polarization is not None:
-                polarization_factor = ai._polarization_factor
+#             if polarization_factor is None and ai._polarization is not None:
+#                 polarization_factor = ai._polarization_factor
             headerLst.append("Polarization factor: %s" % polarization_factor)
             headerLst.append("Normalization factor: %s" % normalization_factor)
             self._header = "\n".join([hdr + " " + i for i in headerLst])
 
         return self._header
 
-    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+    def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg",
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
-        @param filename: the filename used to save the 1D integration
-        @type filename: str
-        @param dim1: the x coordinates of the integrated curve
-        @type dim1: numpy.ndarray
-        @param I: The integrated intensity
-        @type I: numpy.mdarray
-        @param error: the error bar for each intensity
-        @type error: numpy.ndarray or None
-        @param dim1_unit: the unit of the dim1 array
-        @type dim1_unit: pyFAI.units.Unit
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float, None
-        @param normalization_factor: the monitor value
-        @type normalization_factor: float, None
+        :param filename: the filename used to save the 1D integration
+        :type filename: str
+        :param dim1: the x coordinates of the integrated curve
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float, None
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float, None
 
         This method save the result of a 1D integration.
         """
@@ -528,37 +530,37 @@ class DefaultAiWriter(Writer):
             except UnicodeError:
                 f.write("\n# --> %s\n" % (filename.encode("utf8")))
             if error is None:
-                f.write("#%14s %14s\n" % (dim1_unit.REPR, "I "))
+                f.write("#%14s %14s\n" % (dim1_unit, "I "))
                 f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
             else:
                 f.write("#%14s  %14s  %14s\n" %
-                        (dim1_unit.REPR, "I ", "sigma "))
+                        (dim1_unit, "I ", "sigma "))
                 f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
             f.write("\n")
 
-    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """
-        @param filename: the filename used to save the 2D histogram
-        @type filename: str
-        @param dim1: the 1st coordinates of the histogram
-        @type dim1: numpy.ndarray
-        @param dim1: the 2nd coordinates of the histogram
-        @type dim1: numpy.ndarray
-        @param I: The integrated intensity
-        @type I: numpy.mdarray
-        @param error: the error bar for each intensity
-        @type error: numpy.ndarray or None
-        @param dim1_unit: the unit of the dim1 array
-        @type dim1_unit: pyFAI.units.Unit
-        @param has_dark: save the darks filenames (default: no)
-        @type has_dark: bool
-        @param has_flat: save the flat filenames (default: no)
-        @type has_flat: bool
-        @param polarization_factor: the polarization factor
-        @type polarization_factor: float, None
-        @param normalization_factor: the monitor value
-        @type normalization_factor: float, None
+        :param filename: the filename used to save the 2D histogram
+        :type filename: str
+        :param dim1: the 1st coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param dim1: the 2nd coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float, None
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float, None
 
         This method save the result of a 2D integration.
         """
@@ -580,8 +582,8 @@ class DefaultAiWriter(Writer):
         header["rot3"] = str(ai._rot3)
         header["chi_min"] = str(dim2.min())
         header["chi_max"] = str(dim2.max())
-        header[dim1_unit.REPR + "_min"] = str(dim1.min())
-        header[dim1_unit.REPR + "_max"] = str(dim1.max())
+        header[dim1_unit.name + "_min"] = str(dim1.min())
+        header[dim1_unit.name + "_max"] = str(dim1.max())
         header["pixelX"] = str(ai.pixel2)  # this is not a bug ... most people expect dim1 to be X
         header["pixelY"] = str(ai.pixel1)  # this is not a bug ... most people expect dim2 to be Y
         header["polarization_factor"] = str(polarization_factor)
@@ -617,8 +619,8 @@ class DefaultAiWriter(Writer):
         """
         Minimalistic method to limit the overhead.
 
-        @param data: array with intensities or tuple (2th,I) or (I,2th,chi)\
-        @type data: Integrate1dResult, Integrate2dResult
+        :param data: array with intensities or tuple (2th,I) or (I,2th,chi)\
+        :type data: Integrate1dResult, Integrate2dResult
         """
 
         if self._already_written:
@@ -658,6 +660,7 @@ class DefaultAiWriter(Writer):
 
     def close(self):
         pass
+
 
 class AsciiWriter(Writer):
     """
@@ -771,29 +774,24 @@ class FabioWriter(Writer):
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-#            dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
-            header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
-#                           "chi_min", "chi_max",
-#                           dim1_unit.REPR + "_min",
-#                           dim1_unit.REPR + "_max",
-#                           "pixelX", "pixelY",
-#                           "dark", "flat", "polarization_factor", "normalization_factor"
+            # dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
+            _header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
                             ]
-            header = {"dist": str(fai_cfg.get("dist")),
-                      "poni1": str(fai_cfg.get("poni1")),
-                      "poni2": str(fai_cfg.get("poni2")),
-                      "rot1": str(fai_cfg.get("rot1")),
-                      "rot2": str(fai_cfg.get("rot2")),
-                      "rot3": str(fai_cfg.get("rot3")),
-#                      "chi_min": str(fai_cfg.get("chi_min")),
-#                      "chi_max": str(fai_cfg.get("chi_max")),
-#                      dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
-#                      dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
-#                      "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
-#                      "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
-#                      "polarization_factor": str(fai_cfg.get("dist")),
-#                      "normalization_factor":str(fai_cfg.get("dist")),
-                      }
+            _header = {"dist": str(fai_cfg.get("dist")),
+                       "poni1": str(fai_cfg.get("poni1")),
+                       "poni2": str(fai_cfg.get("poni2")),
+                       "rot1": str(fai_cfg.get("rot1")),
+                       "rot2": str(fai_cfg.get("rot2")),
+                       "rot3": str(fai_cfg.get("rot3")),
+                       # "chi_min": str(fai_cfg.get("chi_min")),
+                       # "chi_max": str(fai_cfg.get("chi_max")),
+                       # dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
+                       # dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
+                       # "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
+                       # "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
+                       # "polarization_factor": str(fai_cfg.get("dist")),
+                       # "normalization_factor":str(fai_cfg.get("dist")),
+                       }
 
 #            if self.splineFile:
 #                header["spline"] = str(self.splineFile)
@@ -838,20 +836,24 @@ class FabioWriter(Writer):
 class Nexus(object):
     """
     Writer class to handle Nexus/HDF5 data
-    Manages:
-    entry
-        pyFAI-subentry
-            detector
 
-    #TODO: make it thread-safe !!!
+    Manages:
+
+    - entry
+
+        - pyFAI-subentry
+
+            - detector
+
+    TODO: make it thread-safe !!!
     """
 
     def __init__(self, filename, mode="r"):
         """
         Constructor
 
-        @param filename: name of the hdf5 file containing the nexus
-        @param mode: can be r or a
+        :param filename: name of the hdf5 file containing the nexus
+        :param mode: can be r or a
         """
         self.filename = os.path.abspath(filename)
         self.mode = mode
@@ -884,8 +886,8 @@ class Nexus(object):
         """
         Retrieves an entry from its name
 
-        @param name: name of the entry to retrieve
-        @return: HDF5 group of NXclass == NXentry
+        :param name: name of the entry to retrieve
+        :return: HDF5 group of NXclass == NXentry
         """
         for grp_name in self.h5:
             if grp_name == name:
@@ -899,7 +901,7 @@ class Nexus(object):
         """
         retrieves all entry sorted the latest first.
 
-        @return: list of HDF5 groups
+        :return: list of HDF5 groups
         """
         entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
                    for grp in self.h5
@@ -913,7 +915,7 @@ class Nexus(object):
         """
         Tries to find a detector within a NeXus file, takes the first compatible detector
 
-        @param all: return all detectors found as a list
+        :param all: return all detectors found as a list
         """
         result = []
         for entry in self.get_entries():
@@ -925,18 +927,24 @@ class Nexus(object):
                         return detector
         return result
 
-    def new_entry(self, entry="entry", program_name="pyFAI", title="description of experiment", force_time=None):
+    def new_entry(self, entry="entry", program_name="pyFAI",
+                  title="description of experiment",
+                  force_time=None, force_name=False):
         """
         Create a new entry
 
-        @param entry: name of the entry
-        @param program_name: value of the field as string
-        @param title: value of the field as string
-        @force_time: enforce the start_time (as string!)
-        @return: the corresponding HDF5 group
+        :param entry: name of the entry
+        :param program_name: value of the field as string
+        :param title: value of the field as string
+        :param force_time: enforce the start_time (as string!)
+        :param force_name: force the entry name as such, without numerical suffix.
+        :return: the corresponding HDF5 group
         """
-        nb_entries = len(self.get_entries())
-        entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
+
+        if not force_name:
+            nb_entries = len(self.get_entries())
+            entry = "%s_%04i" % (entry, nb_entries)
+        entry_grp = self.h5.require_group(entry)
         entry_grp.attrs["NX_class"] = numpy.string_("NXentry")
         entry_grp["title"] = numpy.string_(title)
         entry_grp["program_name"] = numpy.string_(program_name)
@@ -960,10 +968,10 @@ class Nexus(object):
     def new_class(self, grp, name, class_type="NXcollection"):
         """
         create a new sub-group with  type class_type
-        @param grp: parent group
-        @param name: name of the sub-group
-        @param class_type: NeXus class name
-        @return: subgroup created
+        :param grp: parent group
+        :param name: name of the sub-group
+        :param class_type: NeXus class name
+        :return: subgroup created
         """
         sub = grp.require_group(name)
         sub.attrs["NX_class"] = numpy.string_(class_type)
@@ -973,9 +981,9 @@ class Nexus(object):
         """
         Create a new entry/pyFAI/Detector
 
-        @param detector: name of the detector
-        @param entry: name of the entry
-        @param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
+        :param detector: name of the detector
+        :param entry: name of the entry
+        :param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
         """
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
@@ -988,8 +996,8 @@ class Nexus(object):
         """
         return all sub-groups of the given type within a group
 
-        @param grp: HDF5 group
-        @param class_type: name of the NeXus class
+        :param grp: HDF5 group
+        :param class_type: name of the NeXus class
         """
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Group) and
@@ -1000,8 +1008,8 @@ class Nexus(object):
         """
         return all dataset of the the NeXus class NXdata
 
-        @param grp: HDF5 group
-        @param class_type: name of the NeXus class
+        :param grp: HDF5 group
+        :param class_type: name of the NeXus class
         """
         coll = [grp[name] for name in grp
                 if isinstance(grp[name], h5py.Dataset) and
@@ -1012,11 +1020,11 @@ class Nexus(object):
         """
         perform a deep copy:
         create a "name" entry in self containing a copy of the object
-        
-        @param where: path to the toplevel object (i.e. root)
-        @param  toplevel: firectly the top level Group
-        @param excluded: list of keys to be excluded
-        @param overwrite: replace content if already existing
+
+        :param where: path to the toplevel object (i.e. root)
+        :param  toplevel: firectly the top level Group
+        :param excluded: list of keys to be excluded
+        :param overwrite: replace content if already existing
         """
         if (excluded is not None) and (name in excluded):
             return
@@ -1042,13 +1050,13 @@ class Nexus(object):
     @classmethod
     def get_attr(cls, dset, name, default=None):
         """Return the attribute of the dataset
-        
+
         Handles the ascii -> unicode issue in python3 #275
-        
-        @param dset: a HDF5 dataset (or a group)
-        @param name: name of the attribute
-        @param default: default value to be returned
-        @return: attribute value decoded in python3 or default 
+
+        :param dset: a HDF5 dataset (or a group)
+        :param name: name of the attribute
+        :param default: default value to be returned
+        :return: attribute value decoded in python3 or default
         """
         dec = default
         if name in dset.attrs:

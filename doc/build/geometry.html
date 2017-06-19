@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Image representation in Python &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Image representation in Python &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="index.html" />
     <link rel="up" title="General introduction to PyFAI" href="pyFAI.html" />
     <link rel="next" title="Pre-processing of images:" href="calibration.html" />
     <link rel="prev" title="Simple detector" href="detector.html" /> 
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="detector.html" title="Simple detector"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="pyFAI.html" accesskey="U">General introduction to PyFAI</a> &raquo;</li> 
       </ul>
     </div>  
@@ -94,7 +94,8 @@ refer to the slow and fast dimension of the image, so usually to the y and x axi
 <h1>Position of the observer<a class="headerlink" href="#position-of-the-observer" title="Permalink to this headline">¶</a></h1>
 <p>There are two (main) conventions when representing images:</p>
 <ul class="simple">
-<li>In imaging application, one can can replace the camera by the eye, the camera looks at the scene. In this convention, the origin is usually at the top of the image.</li>
+<li>In imaging application, one can can replace the camera by the eye, the camera
+looks at the scene. In this convention, the origin is usually at the top of the image.</li>
 <li>In diffraction application, the observer is situated at the sample position and looks
 at the detector, hence on the other side of the detector.</li>
 </ul>
@@ -104,16 +105,19 @@ Changing the point of view behind the detector changes the sign of the azimuthal
 </div>
 <div class="section" id="default-geometry-in-pyfai">
 <h1>Default geometry in pyFAI<a class="headerlink" href="#default-geometry-in-pyfai" title="Permalink to this headline">¶</a></h1>
-<p>In the (most common) case of <em>transmission diffraction setup</em> on synchrotrons (like ESRF, Soleil, Petra3, SLS...) this makes looks like:</p>
+<p>In the (most common) case of <em>transmission diffraction setup</em> on synchrotrons
+(like ESRF, Soleil, Petra3, SLS...) this makes looks like:</p>
 <ul class="simple">
 <li>Observer looking at the detector from the sample position:</li>
 <li>Origin at the lower left of the detector</li>
 <li>Axis 1 (i.e. <em>y</em>) being vertical, pointing upwards</li>
 <li>Axis 2 (i.e. <em>x</em>) being horizontal, pointing to the center of the storage ring</li>
-<li>Axis 3 (i.e. <em>z</em>) being horizontal, along the transmitted beam</li>
+<li>Axis 3 (i.e. <em>z</em>) being horizontal, along the incident beam</li>
 </ul>
-<p>Axis 3 is built in such a way to be orthogonal and (1,2,3) is a direct orientation.
-This makes the sample position negative (at z&lt;0).</p>
+<p>Axis 3 is built in such a way to be orthogonal to the plane  (1,2).
+Due to constraints on the origin and orientation of the azimuthal angle, chi,
+(1, 2, 3) is indirect orientation.
+This makes usually the PONI position with negative third coordiante (at z&lt;0).</p>
 </div>
 <div class="section" id="detector-position">
 <h1>Detector position<a class="headerlink" href="#detector-position" title="Permalink to this headline">¶</a></h1>
@@ -131,15 +135,20 @@ Like SPD, we use the orthogonal projection of origin on
 the detector surface called PONI (for Point Of Normal Incidence).
 For non planar detectors, the PONI is defined in the plan z=0 in detector&#8217;s
 coordinate system.</p>
-<p>Poni1 and Poni2 are distances in meter (along the <em>y</em> and <em>x</em> axis of the detector),
+<p><em>Poni1</em> and <em>Poni2</em> are distances in meter (along the <em>y</em> and <em>x</em> axis of the detector),
 like the sample-detector distance, letting the calibration parameters be
 independent of the pixel size hence stable regarding the binning factor of the detector.</p>
-<p>In the same idea rot1, rot2 and rot3 are rotation along axis 1, 2 and 3, always expressed in radians.
+<p>In the same idea <em>rot1</em>, <em>rot2</em> and <em>rot3</em> are rotation along axis 1, 2 and 3,
+always expressed in radians.
 Rotations applied in the same order: <em>rot1</em> then <em>rot2</em> and finally <em>rot3</em>.
-Due to the axial symmetry of the Debye-Scherrer cones, <em>rot3</em> cannot be optimized but can be adjusted manually in some cases like if
-the detector is not mounted horizontally and/or one cares about polarization correction.</p>
+Due to the axial symmetry of the Debye-Scherrer cones, <em>rot3</em> cannot be optimized
+but can be adjusted manually in some cases like if
+the detector is not mounted horizontally and/or one cares about polarization
+correction.</p>
 <p>When all rotations are zero, the detector is in transmission mode with the
 incident beam orthogonal to the detector&#8217;s surface.</p>
+<p>There is also a tutorial <a class="reference internal" href="usage/tutorial/index.html#tutorials"><em>Tutorials</em></a> on the geometry which explains in detail
+the orientations of the different rotations used by pyFAI.</p>
 </div>
 
 
@@ -199,7 +208,7 @@ incident beam orthogonal to the detector&#8217;s surface.</p>
         <li class="right" >
           <a href="detector.html" title="Simple detector"
              >previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="pyFAI.html" >General introduction to PyFAI</a> &raquo;</li> 
       </ul>
     </div>

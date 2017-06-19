@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Preprocessing tool: pyFAI-average &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Preprocessing tool: pyFAI-average &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="../index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="../index.html" />
     <link rel="up" title="pyFAI scripts manual" href="scripts.html" />
-    <link rel="next" title="Mask generation tool: drawMask_pymca" href="drawMask_pymca.html" />
+    <link rel="next" title="Mask generation tool: pyFAI-drawmask" href="pyFAI-drawmask.html" />
     <link rel="prev" title="pyFAI scripts manual" href="scripts.html" /> 
   </head>
   <body>
@@ -40,12 +40,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="drawMask_pymca.html" title="Mask generation tool: drawMask_pymca"
+          <a href="pyFAI-drawmask.html" title="Mask generation tool: pyFAI-drawmask"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="scripts.html" title="pyFAI scripts manual"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="scripts.html" accesskey="U">pyFAI scripts manual</a> &raquo;</li> 
       </ul>
     </div>  
@@ -135,8 +135,10 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         Output/ destination of average image
   -m METHOD, --method METHOD
-                        Method used for averaging, can be &#39;mean&#39;(default) or
-                        &#39;min&#39;, &#39;max&#39;, &#39;median&#39;, &#39;sum&#39;, &#39;quantiles&#39;
+                        Method used for averaging, can be &#39;mean&#39; (default) or
+                        &#39;min&#39;, &#39;max&#39;, &#39;median&#39;, &#39;sum&#39;, &#39;quantiles&#39; , &#39;cutoff&#39;,
+                        &#39;std&#39;. Multiple filters can be defined with &#39;,&#39;
+                        separator.
   -c CUTOFF, --cutoff CUTOFF
                         Take the mean of the average +/- cutoff * std_dev.
   -F FORMAT, --format FORMAT
@@ -146,6 +148,14 @@ optional arguments:
   -v, --verbose         switch to verbose/debug mode
   -q QUANTILES, --quantiles QUANTILES
                         average out between two quantiles -q 0.20-0.90
+  --monitor-name MONITOR_KEY
+                        Name of the monitor in the header of each input files.
+                        If defined the contribution of each input file is
+                        divided by the monitor. If the header does not contain
+                        or contains a wrong value, the contribution of the
+                        input file is ignored. On EDF files, values from
+                        &#39;counter_pos&#39; can accessed by using the expected
+                        mnemonic. For example &#39;counter/bmon&#39;.
   --quiet               Only error messages are printed out
 
 It can also be used to merge many images from the same sample when using a
@@ -175,8 +185,8 @@ small beam and reduce the spotty-ness of Debye-Sherrer rings. In this case the
   <p class="topless"><a href="scripts.html"
                         title="previous chapter">pyFAI scripts manual</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="drawMask_pymca.html"
-                        title="next chapter">Mask generation tool: drawMask_pymca</a></p>
+  <p class="topless"><a href="pyFAI-drawmask.html"
+                        title="next chapter">Mask generation tool: pyFAI-drawmask</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/man/pyFAI-average.txt"
@@ -209,12 +219,12 @@ small beam and reduce the spotty-ness of Debye-Sherrer rings. In this case the
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="drawMask_pymca.html" title="Mask generation tool: drawMask_pymca"
+          <a href="pyFAI-drawmask.html" title="Mask generation tool: pyFAI-drawmask"
              >next</a> |</li>
         <li class="right" >
           <a href="scripts.html" title="pyFAI scripts manual"
              >previous</a> |</li>
-        <li><a href="../index.html">pyFAI 0.12.0 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pyFAI 0.13.0 documentation</a> &raquo;</li>
           <li><a href="scripts.html" >pyFAI scripts manual</a> &raquo;</li> 
       </ul>
     </div>

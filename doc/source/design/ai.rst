@@ -11,12 +11,13 @@ Target: Developers interested in using the library
 
 Reference: API documentation
 
+
 Abstract
 --------
 
 The core part of pyFAI is the AzimuthalIntegator objects, named
 *ai* hereafter.
-This document describes the two importants methods of the class,
+This document describes the two important methods of the class,
 how it is related to Detector, Geometry, and integration engines.
 
 One of the core idea is to have a complete representation of the geometry
@@ -31,6 +32,8 @@ which take into account all effects like:
 This document focuses on the core of pyFAI while peripheral code
 dealing with graphical user interfaces, image analysis online data
 analysis integration are not covered.
+
+.. _AzimuthalIntegrator:
 
 AzimuthalIntegrator
 -------------------
@@ -103,7 +106,7 @@ handle pixel located in a 3D space.
 The *pyFAI.detectors* module contains the master *Detector* class
 which is capable of describing any detector.
 About 40 types of detectors, inheriting and specializing the *Detector*
-class are provided, offering convienient access to most commercial detectors.
+class are provided, offering convenient access to most commercial detectors.
 A factory is provided to easily instantiate a detector from its name.
 
 A detector class is responsible for two main tasks:
@@ -111,7 +114,7 @@ A detector class is responsible for two main tasks:
 - provide the coordinate in space of any pixel position (center, corner, ...)
 - Handle the mask: some detector feature automatic mask calculation (i.e. module based detectors).
 
-The disortion of the detector is handled here and could be GPU-ized in the future.
+The distortion of the detector is handled here and could be GPU-ized in the future.
 
 Rebinning engines
 -----------------
@@ -120,12 +123,14 @@ Once the geometry (radial and azimuthal coordinates) calculated for every pixel
 on the detector, the image from the detector is rebinned into the output space.
 Two types of rebinning engines exists:
 
-Histograms
-	They take each single pixel from the image and transfer it to the destination bin, like histograms do.
-	This family of algorithms is rather easy to implement and provides good single threaded performances,
-	but it is hard to parallelize (efficiently) due to the need of atomic operations.
+- Histograms
 
-Sparse matrix multiplication
+    They take each single pixel from the image and transfer it to the destination bin, like histograms do.
+    This family of algorithms is rather easy to implement and provides good single threaded performances,
+    but it is hard to parallelize (efficiently) due to the need of atomic operations.
+
+- Sparse matrix multiplication
+
     By recording where every single ends one can transform the previous histogram into a
     large sparse matrix multiplication which is either stored as a Look-Up Table (actually an array of struct, also called LIL)
     or more efficiently in the CSR_ format.
@@ -136,20 +141,23 @@ Pixel splitting
 
 Three levels of pixel splitting schemes are available within pyFAI:
 
-No splitting
-	The whole intensity is assigned to the center of the pixel and rebinned using a simple histogram
+- No splitting
 
-Bounding box pixel splitting
-	The pixel is abstracted by a box surrounding it with, making calculation easier but blurring a bit the image
+    The whole intensity is assigned to the center of the pixel and
+    rebinned using a simple histogram
 
-Tight pixel splitting
-	The pixel is represented by its actual corner position, offering a very precise positionning in space.
+- Bounding box pixel splitting
 
-The main issue with pixel splitting arose from 2D integration and the habdling of pixel laying on the chi-discontinuity.
+    The pixel is abstracted by a box surrounding it with, making calculation
+    easier but blurring a bit the image
 
-References:
------------
+- Tight pixel splitting
+
+    The pixel is represented by its actual corner position, offering a very
+    precise positioning in space.
+
+The main issue with pixel splitting arose from 2D integration and the handling
+of pixel laying on the chi-discontinuity.
 
 .. _integrate: http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d
-
 .. _CSR: http://en.wikipedia.org/wiki/Sparse_matrix

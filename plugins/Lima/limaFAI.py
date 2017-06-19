@@ -2,7 +2,7 @@
 # coding: utf-8
 from __future__ import with_statement, print_function
 """
-LImA ProcessLib example of pyFAI azimuthal integrator Link and Sink 
+LImA ProcessLib example of pyFAI azimuthal integrator Link and Sink
 
 """
 __author__ = "Jérôme Kieffer"
@@ -37,9 +37,9 @@ except ImportError:
 
 class StartAcqCallback(Core.SoftCallback):
     """
-    Class managing the connection from a 
+    Class managing the connection from a
     Lima.Core.CtControl.prepareAcq() to the configuration of the various tasks
-    
+
     Example of usage:
     cam = Basler.Camera(ip)
     iface = Basler.Interface(cam)
@@ -58,9 +58,9 @@ class StartAcqCallback(Core.SoftCallback):
     """
     def __init__(self, control, task=None):
         """
-        
-        @param control: Lima.Core.CtControl instance
-        @param task: The task one wants to parametrize at startup. Can be a  Core.Processlib.LinkTask or a Core.Processlib.SinkTask
+
+        :param control: Lima.Core.CtControl instance
+        :param task: The task one wants to parametrize at startup. Can be a  Core.Processlib.LinkTask or a Core.Processlib.SinkTask
         """
         Core.SoftCallback.__init__(self)
         self._control = control
@@ -83,7 +83,7 @@ class StartAcqCallback(Core.SoftCallback):
                     "dimY":y,
                     "binX":binX,
                     "binY":binY}
-        
+
         saving = self._control.saving()
         sav_parms = saving.getParameters()
         lima_cfg["directory"]=sav_parms.directory
@@ -119,16 +119,16 @@ class StartAcqCallback(Core.SoftCallback):
 
 class LinkPyFAI(Core.Processlib.LinkTask):
     """
-    This is a ProcessLib task which is a link: 
+    This is a ProcessLib task which is a link:
     it modifies the image for further processing.
-    
-    It processes every acquired frame with the pyFAI-worker and can optionally 
-    save data as HDF5 or EDF    
+
+    It processes every acquired frame with the pyFAI-worker and can optionally
+    save data as HDF5 or EDF
     """
     def __init__(self, worker=None, writer=None):
         """
-        @param worker: pyFAI.worker.Worker instance
-        @param writer: pyFAI.io.Writer instance
+        :param worker: pyFAI.worker.Worker instance
+        :param writer: pyFAI.io.Writer instance
         """
         Core.Processlib.LinkTask.__init__(self)
         self._worker = worker
@@ -137,7 +137,7 @@ class LinkPyFAI(Core.Processlib.LinkTask):
     def process(self, data) :
         """
         Callback function
-        
+
         Called for every frame in a different C++ thread.
         """
         rData = Core.Processlib.Data()
@@ -156,19 +156,19 @@ class LinkPyFAI(Core.Processlib.LinkTask):
 
 class SinkPyFAI(Core.Processlib.SinkTaskBase):
     """
-    This is a ProcessLib task which is a sink: 
+    This is a ProcessLib task which is a sink:
     it processes the image and saves it.
-    
+
     It processes every acquired frame with the pyFAI-worker.
-    If no writer is provided, processed data are lost.  
-        
+    If no writer is provided, processed data are lost.
+
     """
     def __init__(self, worker=None, writer=None):
         Core.Processlib.SinkTaskBase.__init__(self)
         self._worker = worker
         self._writer = writer
         if writer  is None:
-            logger.error("Without a writer, SinkPyFAI will just dump all data") 
+            logger.error("Without a writer, SinkPyFAI will just dump all data")
 
     def __repr__(self):
         """
@@ -208,7 +208,7 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
     def process(self, data) :
         """
         Callback function
-        
+
         Called for every frame in a different C++ thread.
         """
         rData = Core.Processlib.Data()

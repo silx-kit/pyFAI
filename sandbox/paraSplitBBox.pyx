@@ -23,7 +23,7 @@
 #
 __authors__ = ["Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/04/2015"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "GPLv3+"
 __status__ = "Broken: histogram don't work in parallel as easily !!!"
@@ -60,20 +60,20 @@ def histoBBox1d(numpy.ndarray weights not None,
 
     Splitting is done on the pixel's bounding box like fit2D
 
-    @param weights: array with intensities
-    @param pos0: 1D array with pos0: tth or q_vect
-    @param delta_pos0: 1D array with delta pos0: max center-corner distance
-    @param pos1: 1D array with pos1: chi
-    @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-    @param bins: number of output bins
-    @param pos0Range: minimum and maximum  of the 2th range
-    @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels & value of "no good" pixels
-    @param delta_dummy: precision of dummy value
-    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-    @param dark: array (of float32) with dark noise to be subtracted (or None)
-    @param flat: array (of float32) with flat image (including solid angle correctons or not...)
-    @return 2theta, I, weighted histogram, unweighted histogram
+    :param weights: array with intensities
+    :param pos0: 1D array with pos0: tth or q_vect
+    :param delta_pos0: 1D array with delta pos0: max center-corner distance
+    :param pos1: 1D array with pos1: chi
+    :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+    :param bins: number of output bins
+    :param pos0Range: minimum and maximum  of the 2th range
+    :param pos1Range: minimum and maximum  of the chi range
+    :param dummy: value for bins without pixels & value of "no good" pixels
+    :param delta_dummy: precision of dummy value
+    :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :param dark: array (of float32) with dark noise to be subtracted (or None)
+    :param flat: array (of float32) with flat image (including solid angle correctons or not...)
+    :return: 2theta, I, weighted histogram, unweighted histogram
     """
     cdef ssize_t  size = weights.size
     assert pos0.size == size
@@ -239,18 +239,18 @@ def histoBBox2d(numpy.ndarray weights not None,
     Splitting is done on the pixel's bounding box like fit2D
 
 
-    @param weights: array with intensities
-    @param pos0: 1D array with pos0: tth or q_vect
-    @param delta_pos0: 1D array with delta pos0: max center-corner distance
-    @param pos1: 1D array with pos1: chi
-    @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-    @param bins: number of output bins (tth=100, chi=36 by default)
-    @param pos0Range: minimum and maximum  of the 2th range
-    @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels & value of "no good" pixels
-    @param delta_dummy: precision of dummy value
-    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :param weights: array with intensities
+    :param pos0: 1D array with pos0: tth or q_vect
+    :param delta_pos0: 1D array with delta pos0: max center-corner distance
+    :param pos1: 1D array with pos1: chi
+    :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+    :param bins: number of output bins (tth=100, chi=36 by default)
+    :param pos0Range: minimum and maximum  of the 2th range
+    :param pos1Range: minimum and maximum  of the chi range
+    :param dummy: value for bins without pixels & value of "no good" pixels
+    :param delta_dummy: precision of dummy value
+    :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
     cdef long bins0, bins1, i, j, idx

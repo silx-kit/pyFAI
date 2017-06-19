@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2014-2016 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,7 +26,7 @@
 #  THE SOFTWARE.
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -59,7 +59,7 @@ cdef inline float area4(float a0, float a1, float b0, float b1, float c0, float 
     B(b0,b1)
     C(c0,c1)
     D(d0,d1)
-    @return: area, i.e. 1/2 * (AC ^ BD)
+    :return: area, i.e. 1/2 * (AC ^ BD)
     """
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
@@ -117,13 +117,13 @@ class HistoLUT1dFullSplit(object):
                  unit="undefined",
                  empty=None):
         """
-        @param pos: 3D or 4D array with the coordinates of each pixel point
-        @param bins: number of output bins, 100 by default
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param unit: can be 2th_deg or r_nm^-1 ...
+        :param pos: 3D or 4D array with the coordinates of each pixel point
+        :param bins: number of output bins, 100 by default
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param unit: can be 2th_deg or r_nm^-1 ...
         """
 
         if pos.ndim>3: #  create a view
@@ -481,22 +481,22 @@ class HistoLUT1dFullSplit(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef:
@@ -719,13 +719,13 @@ class HistoLUT2dFullSplit(object):
                  unit="undefined"):
 
         """
-        @param pos: 3D or 4D array with the coordinates of each pixel point
-        @param bins: number of output bins (tth=100, chi=36 by default)
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param unit: can be 2th_deg or r_nm^-1 ...
+        :param pos: 3D or 4D array with the coordinates of each pixel point
+        :param bins: number of output bins (tth=100, chi=36 by default)
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param unit: can be 2th_deg or r_nm^-1 ...
         """
 
         if pos.ndim>3: #create a view
@@ -1223,22 +1223,22 @@ class HistoLUT2dFullSplit(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins[0]*self.bins[1], size=self.size

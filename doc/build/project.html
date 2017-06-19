@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Project &mdash; pyFAI 0.12.0 documentation</title>
+    <title>Project &mdash; pyFAI 0.13.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12.0',
+        VERSION:     '0.13.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="pyFAI 0.12.0 documentation" href="index.html" />
+    <link rel="top" title="pyFAI 0.13.0 documentation" href="index.html" />
     <link rel="next" title="Test coverage report for pyFAI" href="coverage.html" />
     <link rel="prev" title="PyFAI Ecosystem" href="ecosystem.html" /> 
   </head>
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="ecosystem.html" title="PyFAI Ecosystem"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,10 +57,10 @@
 <h1>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h1>
 <p>PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.</p>
-<p>PyFAI is an open source project licensed under the GPL (+ MIT code) mainly
+<p>PyFAI is an open source project licensed under the GPL (switching to MIT) mainly
 written in Python (v2.7 or newer, 3.4 or newer) and heavily relying on the
 Python scientific ecosystem: numpy, scipy and matplotlib.
-It provides high performances image treatment thanks to cython and
+It provides high performances image treatment thanks to Cython and
 OpenCL... but only a C-compiler is needed to build it.</p>
 <div class="section" id="programming-language">
 <h2>Programming language<a class="headerlink" href="#programming-language" title="Permalink to this headline">¶</a></h2>
@@ -81,13 +81,13 @@ OpenCL... but only a C-compiler is needed to build it.</p>
 </ul>
 </div>
 <div class="section" id="repository">
-<h2>Repository:<a class="headerlink" href="#repository" title="Permalink to this headline">¶</a></h2>
+<h2>Repository<a class="headerlink" href="#repository" title="Permalink to this headline">¶</a></h2>
 <p>The project is hosted on GitHub:
-<a class="reference external" href="https://github.com/pyFAI/pyFAI">https://github.com/pyFAI/pyFAI</a></p>
-<p>Which provides the <a class="reference external" href="https://github.com/kif/pyFAI/issues">issue tracker</a> in
+<a class="reference external" href="https://github.com/silx-kit/pyFAI">https://github.com/silx-kit/pyFAI</a></p>
+<p>Which provides the <a class="reference external" href="https://github.com/silx-kit/pyFAI/issues">issue tracker</a> in
 addition to Git hosting.
 Collaboration is done via Pull-Requests in github&#8217;s web interface:</p>
-<p>Everybody is welcome to <a class="reference external" href="https://github.com/kif/pyFAI/fork">fork the project</a>
+<p>Everybody is welcome to <a class="reference external" href="https://github.com/silx-kit/pyFAI/fork">fork the project</a>
 and adapt it to his own needs:
 CEA-Saclay, Synchrotrons Soleil, Desy and APS have already done so.
 Collaboration is encouraged and new developments can be submitted and merged
@@ -109,7 +109,7 @@ too much spammed. As the mailing list is archived, and can be consulted at:
 <a class="reference external" href="http://www.edna-site.org/lurker/list/pyfai.en.html">http://www.edna-site.org/lurker</a>,
 you can also check the volume of the list.</p>
 <p>If you think you are facing a bug, the best is to
-<a class="reference external" href="https://github.com/kif/pyFAI/issues">create a new issue on the GitHub page</a>
+<a class="reference external" href="https://github.com/silx-kit/pyFAI/issues">create a new issue on the GitHub page</a>
 (you will need a GitHub account for that).</p>
 <p>Direct contact with authors is discouraged:
 pyFAI is open source software that we develop to aid the research
@@ -132,27 +132,22 @@ continue funding development.</p>
 <li>FabIO</li>
 <li>h5py</li>
 <li>pyopencl (optional)</li>
-<li>fftw (optional)</li>
-<li>pymca (optional)</li>
 <li>PyQt4 or PySide (for the graphical user interface)</li>
 </ul>
 </div>
 <div class="section" id="build-dependencies">
-<h2>Build dependencies:<a class="headerlink" href="#build-dependencies" title="Permalink to this headline">¶</a></h2>
+<h2>Build dependencies<a class="headerlink" href="#build-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the run dependencies, pyFAI needs a C compiler.</p>
-<p>There is an issue with MacOSX (v10.8 onwards) where the default compiler
-(Xcode5 or 6) switched from gcc 4.2 to clang which
-dropped the support for OpenMP (clang v3.5 supports OpenMP under linux but not
-directly under MacOSX).
-Multiple solution exist, pick any of those:</p>
-<ul class="simple">
-<li>Install a recent version of GCC (&gt;=4.2)</li>
-<li>Use Xcode without OpenMP, using the &#8211;no-openmp flag for setup.py.
-You will need to remove the <em>pyFAI/ext/histogram.c</em> file and regenerate it,
-cython needs to be installed.</li>
-</ul>
-<p>C files are generated from cython source and distributed. Cython is only needed
-for developing new binary modules.
+<p>There is an issue with MacOS (v10.8 onwards) where the default compiler
+(Xcode5 or newer) dropped the support for OpenMP.
+On this platform pyFAI will enforce the generation of C-files from Cython sources
+(making Cython a build-dependency on MacOS) without support of OpenMP
+(options: &#8211;no-openmp &#8211;force-cython).
+On OSX, an alternative is to install a recent version of GCC (&gt;=4.2) and to use
+it for compiling pyFAI.
+The options to be used then are * &#8211;force-cython &#8211;openmp*.</p>
+<p>Otherwise, C files are which are provided with pyFAI sources are directly useable
+and Cython is only needed for developing new binary modules.
 If you want to generate your own C files, make sure your local Cython version
 is recent enough (v0.21 and newer),
 unless your Cython files will not be translated to C, nor used.</p>
@@ -162,15 +157,16 @@ unless your Cython files will not be translated to C, nor used.</p>
 <div class="section" id="as-most-of-the-python-projects">
 <h3>As most of the Python projects:<a class="headerlink" href="#as-most-of-the-python-projects" title="Permalink to this headline">¶</a></h3>
 <div class="code highlight-python"><div class="highlight"><pre>python setup.py build bdist_wheel
-pip install dist/pyFAI-0.12.0*.whl --upgrade
+pip install dist/pyFAI-0.13.0*.whl --upgrade
 </pre></div>
 </div>
 <p>There are few specific options to setup.py:</p>
 <ul class="simple">
 <li>&#8211;no-cython: do not use cython (even if present) and use the C source code
 provided by the development team</li>
-<li>&#8211;no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOSX.
-Delete also <em>pyFAI/ext/histogram.c</em> and install cython to regenerate C-files.</li>
+<li>&#8211;force-cython: enforce the regeneration of all C-files from cython sources</li>
+<li>&#8211;no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOS.</li>
+<li>&#8211;openmp: enforce the use of OpenMP.</li>
 <li>&#8211;with-testimages: build the source distribution including all test images.
 Downloads 200MB of test images to create a self consistent tar-ball.</li>
 </ul>
@@ -187,7 +183,7 @@ Downloads 200MB of test images to create a self consistent tar-ball.</li>
 <span class="n">pyFAI</span><span class="o">.</span><span class="n">tests</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>It is normal to get few (&lt;20) <strong>Warning</strong> messages as the test procedure also
+<p>Some <strong>Warning</strong> messages are normal as the test procedure also
 tests corner cases.</p>
 <div class="section" id="to-run-the-test-an-internet-connection-is-needed-as-200mb-of-test-images-will-be-downloaded">
 <h3>To run the test an internet connection is needed as 200MB of test images will be downloaded.<a class="headerlink" href="#to-run-the-test-an-internet-connection-is-needed-as-200mb-of-test-images-will-be-downloaded" title="Permalink to this headline">¶</a></h3>
@@ -196,7 +192,7 @@ tests corner cases.</p>
 </pre></div>
 </div>
 <p>Especially at ESRF, the configuration of the network proxy can be obtained
-by phoning on the hotline: 24-24.</p>
+by asking at the helpdesk: <a class="reference external" href="mailto:helpdesk&#37;&#52;&#48;esrf&#46;fr">helpdesk<span>&#64;</span>esrf<span>&#46;</span>fr</a></p>
 <p>To test the development version (built but not yet installed):</p>
 <div class="code highlight-python"><div class="highlight"><pre>python setup.py build test
 </pre></div>
@@ -206,7 +202,7 @@ by phoning on the hotline: 24-24.</p>
 python run_test.py -i
 </pre></div>
 </div>
-<p>PyFAI comes with 34 test-suites (223 tests in total) representing a coverage of 60%.
+<p>PyFAI comes with 40 test-suites (338 tests in total) representing a coverage of 60%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.</p>
@@ -235,14 +231,15 @@ sudo apt-get install pyfai
 </div>
 <p>You have to accept non-signed packages because they are automatically built.</p>
 <p>In addition some &#8220;cloud-based&#8221; tools are used to ensure a larger coverage of operating systems/environment.
-They rely on a <a class="reference external" href="http://www.edna-site.org/pub/debian/wheelhouse/">&#8220;local wheelhouse&#8221;</a>.</p>
+They rely on a <a class="reference external" href="http://www.silx.org/pub/wheelhouse/">&#8220;local wheelhouse&#8221;</a>.</p>
 <p>Those wheels are optimized for Travis-CI, AppVeyor and ReadTheDocs, using them is not recommended as your Python configuration may differ
 (and those libraries could even crash your system).</p>
 </div>
 <div class="section" id="linux">
 <h3>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://travis-ci.org/kif/pyFAI">Travis provides continuous integration on Linux</a>, 64 bits computer with Python 2.7, 3.4 and 3.5.</p>
-<p>The builds cannot be retrieved with Travis-CO.</p>
+<p><a class="reference external" href="https://travis-ci.org/silx-kit/pyFAI">Travis provides continuous integration on Linux</a>,
+64 bits computer with Python 2.7, 3.4 and 3.5.</p>
+<p>The builds cannot yet be retrieved with Travis-CI, but manylinux-wheels are on the radar.</p>
 </div>
 <div class="section" id="appveyor">
 <h3>AppVeyor<a class="headerlink" href="#appveyor" title="Permalink to this headline">¶</a></h3>
@@ -312,10 +309,10 @@ Due to the limitation of AppVeyor&#8217;s build system, those installers have op
   <ul>
 <li><a class="reference internal" href="#">Project</a><ul>
 <li><a class="reference internal" href="#programming-language">Programming language</a></li>
-<li><a class="reference internal" href="#repository">Repository:</a></li>
+<li><a class="reference internal" href="#repository">Repository</a></li>
 <li><a class="reference internal" href="#getting-help">Getting help</a></li>
 <li><a class="reference internal" href="#run-dependencies">Run dependencies</a></li>
-<li><a class="reference internal" href="#build-dependencies">Build dependencies:</a></li>
+<li><a class="reference internal" href="#build-dependencies">Build dependencies</a></li>
 <li><a class="reference internal" href="#building-procedure">Building procedure</a><ul>
 <li><a class="reference internal" href="#as-most-of-the-python-projects">As most of the Python projects:</a></li>
 </ul>
@@ -380,7 +377,7 @@ Due to the limitation of AppVeyor&#8217;s build system, those installers have op
         <li class="right" >
           <a href="ecosystem.html" title="PyFAI Ecosystem"
              >previous</a> |</li>
-        <li><a href="index.html">pyFAI 0.12.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyFAI 0.13.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

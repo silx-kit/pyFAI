@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import time
 import signal
 import threading
@@ -51,9 +51,9 @@ ctrl.prepareAcq()
 ctrl.startAcq()
 
 while ctrl.getStatus().ImageCounters.LastImageReady < 1:
-    print ctrl.getStatus()
+    print(ctrl.getStatus())
     time.sleep(0.5)
-print ctrl.getStatus()
+print(ctrl.getStatus())
 
 raw_img = ctrl.ReadBaseImage().buffer
 fai_img = ctrl.ReadImage().buffer

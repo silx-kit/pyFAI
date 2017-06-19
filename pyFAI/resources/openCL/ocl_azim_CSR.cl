@@ -3,24 +3,29 @@
  *            Kernel with full pixel-split using a CSR sparse matrix
  *
  *
- *   Copyright (C) 2012-2014 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2017 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 10/10/2014
+ *   Last revision: 20/01/2017
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 /**
@@ -58,7 +63,7 @@ csr_integrate(	const 	__global	float	*weights,
                 const   __global    float   *coefs,
                 const   __global    int     *row_ind,
                 const   __global    int     *col_ptr,
-				const				int   	do_dummy,
+				const				char   	do_dummy,
 				const			 	float 	dummy,
 						__global 	float	*outData,
 						__global 	float	*outCount,
@@ -67,6 +72,7 @@ csr_integrate(	const 	__global	float	*weights,
 {
     int thread_id_loc = get_local_id(0);
     int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
+    int active_threads = get_local_size(0);
     int2 bin_bounds;
 //    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
     bin_bounds.x = col_ptr[bin_num];
@@ -117,7 +123,7 @@ csr_integrate(	const 	__global	float	*weights,
     __local float super_sum_count_correction[WORKGROUP_SIZE];
     
     float super_sum_temp = 0.0f;
-    int index, active_threads = WORKGROUP_SIZE;
+    int index;
     
     if (bin_size < WORKGROUP_SIZE)
     {
@@ -206,7 +212,7 @@ csr_integrate_padded(   const   __global    float   *weights,
                         const   __global    float   *coefs,
                         const   __global    int     *row_ind,
                         const   __global    int     *col_ptr,
-                        const               int      do_dummy,
+                        const               char     do_dummy,
                         const               float    dummy,
                                 __global    float   *outData,
                                 __global    float   *outCount,
@@ -214,7 +220,8 @@ csr_integrate_padded(   const   __global    float   *weights,
                     )
 {
     int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
+    int bin_num = get_group_id(0); // each workgroup of size=warp is assigned to 1 bin
+    int active_threads = get_local_size(0);
     int2 bin_bounds;
 //    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
     bin_bounds.x = col_ptr[bin_num];
@@ -228,7 +235,7 @@ csr_integrate_padded(   const   __global    float   *weights,
     float coef, data;
     int idx, k, j;
 
-    for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads)
     {
         k = j+thread_id_loc;
            coef = coefs[k];
@@ -266,7 +273,7 @@ csr_integrate_padded(   const   __global    float   *weights,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     float super_sum_temp = 0.0f;
-    int index, active_threads = WORKGROUP_SIZE;
+    int index;
     cd = 0;
     cc = 0;
     
@@ -327,7 +334,8 @@ csr_integrate_dis(  const   __global    float   *weights,
                  )
 {
     int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
+    int bin_num = get_group_id(0); // each workgroup of size=warp is assigned to 1 bin
+    int active_threads = get_local_size(0);
     int2 bin_bounds;
 //    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
     bin_bounds.x = col_ptr[bin_num];
@@ -339,7 +347,7 @@ csr_integrate_dis(  const   __global    float   *weights,
     float coef, data;
     int idx, k, j;
 
-    for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
+    for (j=bin_bounds.x; j<bin_bounds.y; j+=active_threads)
     {
         k = j+thread_id_loc;
         if (k < bin_bounds.y)     // I don't like conditionals!!
@@ -368,11 +376,11 @@ csr_integrate_dis(  const   __global    float   *weights,
     __local float super_sum_data[WORKGROUP_SIZE];
     __local float super_sum_data_correction[WORKGROUP_SIZE];
     float super_sum_temp = 0.0f;
-    int index, active_threads = WORKGROUP_SIZE;
+    int index;
     
     
     
-    if (bin_size < WORKGROUP_SIZE)
+    if (bin_size < active_threads)
     {
         if (thread_id_loc < bin_size)
         {

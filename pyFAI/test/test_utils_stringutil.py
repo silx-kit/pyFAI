@@ -1,7 +1,7 @@
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,13 +26,13 @@
 
 from __future__ import absolute_import, print_function, division
 
+__doc__ = """Test module for utils.string module"""
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2016"
+__date__ = "28/11/2016"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """Test module for utils.string module"""
 
 import unittest
 from .utilstest import UtilsTest, getLogger
@@ -49,7 +49,7 @@ class TestUtilsString(unittest.TestCase):
         self.assertEquals(stringutil.safe_format("aaaa{0}{1}", (10, "aaaa")), "aaaa10aaaa")
 
     def test_default_behaviour_dict(self):
-        self.assertEquals(stringutil.safe_format("aaaa{a}{b}", {"a":10, "b": "aaaa"}), "aaaa10aaaa")
+        self.assertEquals(stringutil.safe_format("aaaa{a}{b}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa")
 
     def test_default_behaviour_object(self):
         args = {"a": (10, 1), "b": TestUtilsString}
@@ -60,7 +60,7 @@ class TestUtilsString(unittest.TestCase):
         self.assertEquals(stringutil.safe_format("aaaa{0}{1}{2}", (10, "aaaa")), "aaaa10aaaa{2}")
 
     def test_missing_key(self):
-        self.assertEquals(stringutil.safe_format("aaaa{a}{b}{c}", {"a":10, "b": "aaaa"}), "aaaa10aaaa{c}")
+        self.assertEquals(stringutil.safe_format("aaaa{a}{b}{c}", {"a": 10, "b": "aaaa"}), "aaaa10aaaa{c}")
 
     def test_missing_object(self):
         expected = "aaaa{a[0]}{b.__name__}"

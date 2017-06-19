@@ -1684,7 +1684,6 @@ static char __pyx_k_A_lim[] = "A_lim";
 static char __pyx_k_B_lim[] = "B_lim";
 static char __pyx_k_C_lim[] = "C_lim";
 static char __pyx_k_D_lim[] = "D_lim";
-static char __pyx_k_GPLv3[] = "GPLv3+";
 static char __pyx_k_bins0[] = "bins0";
 static char __pyx_k_bins1[] = "bins1";
 static char __pyx_k_cdark[] = "cdark";
@@ -1766,8 +1765,8 @@ static char __pyx_k_is_inside[] = "is_inside";
 static char __pyx_k_mask_size[] = "mask size";
 static char __pyx_k_pos0Range[] = "pos0Range";
 static char __pyx_k_pos1Range[] = "pos1Range";
-static char __pyx_k_13_05_2016[] = "13/05/2016";
-static char __pyx_k_27_09_2016[] = "27/09/2016";
+static char __pyx_k_02_02_2017[] = "02/02/2017";
+static char __pyx_k_15_05_2017[] = "15/05/2017";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_areaPixel2[] = "areaPixel2";
@@ -1853,8 +1852,8 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_13_05_2016;
-static PyObject *__pyx_kp_s_27_09_2016;
+static PyObject *__pyx_kp_s_02_02_2017;
+static PyObject *__pyx_kp_s_15_05_2017;
 static PyObject *__pyx_n_s_A;
 static PyObject *__pyx_n_s_A0;
 static PyObject *__pyx_n_s_A1;
@@ -1884,7 +1883,6 @@ static PyObject *__pyx_n_s_Ellipsis;
 static PyObject *__pyx_kp_s_Empty_shape_tuple_for_cython_arr;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor_2;
-static PyObject *__pyx_kp_s_GPLv3;
 static PyObject *__pyx_kp_s_Giannis_Ashiotis;
 static PyObject *__pyx_n_s_IndexError;
 static PyObject *__pyx_kp_s_Indirect_dimensions_not_supporte;
@@ -2148,7 +2146,7 @@ static CYTHON_INLINE double __pyx_fuse_1__pyx_f_5pyFAI_3ext_14splitPixelFull_get
   double __pyx_r;
 
   /* "pyFAI/ext/regrid_common.pxi":59
- *     @return: bin number as floating point.
+ *     :return: bin number as floating point.
  *     """
  *     return (x0 - pos0_min) / delta             # <<<<<<<<<<<<<<
  */
@@ -2180,7 +2178,7 @@ static CYTHON_INLINE __pyx_t_5pyFAI_3ext_14splitPixelFull_position_t __pyx_f_5py
   __pyx_t_5pyFAI_3ext_14splitPixelFull_position_t __pyx_r;
 
   /* "pyFAI/ext/splitPixelFull.pyx":61
- *     @return: area, i.e. 1/2 * (AC ^ BD)
+ *     :return: area, i.e. 1/2 * (AC ^ BD)
  *     """
  *     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))             # <<<<<<<<<<<<<<
  * 
@@ -2215,7 +2213,7 @@ static CYTHON_INLINE __pyx_t_5pyFAI_3ext_14splitPixelFull_position_t __pyx_f_5py
   int __pyx_t_1;
 
   /* "pyFAI/ext/splitPixelFull.pyx":76
- *     param AB: struct with the slope and point of intersection of the line
+ *     :param AB: struct with the slope and point of intersection of the line
  *     """
  *     if A0 == B0:             # <<<<<<<<<<<<<<
  *         return 0.0
@@ -2273,7 +2271,7 @@ static CYTHON_INLINE __pyx_t_5pyFAI_3ext_14splitPixelFull_position_t __pyx_f_5py
   int __pyx_t_1;
 
   /* "pyFAI/ext/splitPixelFull.pyx":91
- *     @param on_boundary: splits over a discontinuity...
+ *     :param on_boundary: splits over a discontinuity...
  *     """
  *     if on_boundary:             # <<<<<<<<<<<<<<
  *         if x0 >= 0:
@@ -2860,7 +2858,7 @@ static double __pyx_f_5pyFAI_3ext_14splitPixelFull_area_n(struct __pyx_t_5pyFAI_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_14splitPixelFull_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_14splitPixelFull_fullSplit1D[] = "\n    Calculates histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D.\n    No compromise for speed has been made here.\n\n\n    @param pos: 3D or 4D array with the coordinates of each pixel point\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat image\n    @param solidangle: array (of float64) with flat image\n    @param polarization: array (of float64) with polarization correction\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return 2theta, I, weighted histogram, unweighted histogram\n    ";
+static char __pyx_doc_5pyFAI_3ext_14splitPixelFull_fullSplit1D[] = "fullSplit1D(ndarray pos, ndarray weights, size_t bins=100, pos0Range=None, pos1Range=None, dummy=None, delta_dummy=None, mask=None, dark=None, flat=None, solidangle=None, polarization=None, data_t empty=0.0, double normalization_factor=1.0)\n\n    Calculates histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D.\n    No compromise for speed has been made here.\n\n\n    :param pos: 3D or 4D array with the coordinates of each pixel point\n    :param weights: array with intensities\n    :param bins: number of output bins\n    :param pos0Range: minimum and maximum  of the 2th range\n    :param pos1Range: minimum and maximum  of the chi range\n    :param dummy: value for bins without pixels\n    :param delta_dummy: precision of dummy value\n    :param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    :param dark: array (of float64) with dark noise to be subtracted (or None)\n    :param flat: array (of float64) with flat image\n    :param solidangle: array (of float64) with flat image\n    :param polarization: array (of float64) with polarization correction\n    :param empty: value of output bins without any contribution when dummy is None\n    :param normalization_factor: divide the valid result by this value\n\n    :return: 2theta, I, weighted histogram, unweighted histogram\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_14splitPixelFull_1fullSplit1D = {"fullSplit1D", (PyCFunction)__pyx_pw_5pyFAI_3ext_14splitPixelFull_1fullSplit1D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_14splitPixelFull_fullSplit1D};
 static PyObject *__pyx_pw_5pyFAI_3ext_14splitPixelFull_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
@@ -3304,7 +3302,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_14splitPixelFull_fullSplit1D(CYTHON_UNUSED
   __pyx_pybuffernd_outMerge.rcbuffer = &__pyx_pybuffer_outMerge;
 
   /* "pyFAI/ext/splitPixelFull.pyx":204
- *     @return 2theta, I, weighted histogram, unweighted histogram
+ *     :return: 2theta, I, weighted histogram, unweighted histogram
  *     """
  *     cdef size_t  size = weights.size             # <<<<<<<<<<<<<<
  *     if pos.ndim > 3:
@@ -5888,7 +5886,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_14splitPixelFull_fullSplit1D(CYTHON_UNUSED
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_14splitPixelFull_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_14splitPixelFull_2fullSplit2D[] = "\n    Calculate 2D histogram of pos weighted by weights\n\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat-field image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64)with solid angle corrections\n    @param empty: value of output bins without any contribution when dummy is None\n    @param normalization_factor: divide the valid result by this value\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
+static char __pyx_doc_5pyFAI_3ext_14splitPixelFull_2fullSplit2D[] = "fullSplit2D(ndarray pos, ndarray weights, bins, pos0Range=None, pos1Range=None, dummy=None, delta_dummy=None, mask=None, dark=None, flat=None, solidangle=None, polarization=None, data_t empty=0.0, double normalization_factor=1.0)\n\n    Calculate 2D histogram of pos weighted by weights\n\n\n\n    :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    :param weights: array with intensities\n    :param bins: number of output bins int or 2-tuple of int\n    :param pos0Range: minimum and maximum  of the 2th range\n    :param pos1Range: minimum and maximum  of the chi range\n    :param dummy: value for bins without pixels\n    :param delta_dummy: precision of dummy value\n    :param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    :param dark: array (of float64) with dark noise to be subtracted (or None)\n    :param flat: array (of float64) with flat-field image\n    :param polarization: array (of float64) with polarization correction\n    :param solidangle: array (of float64)with solid angle corrections\n    :param empty: value of output bins without any contribution when dummy is None\n    :param normalization_factor: divide the valid result by this value\n\n    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_14splitPixelFull_3fullSplit2D = {"fullSplit2D", (PyCFunction)__pyx_pw_5pyFAI_3ext_14splitPixelFull_3fullSplit2D, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_14splitPixelFull_2fullSplit2D};
 static PyObject *__pyx_pw_5pyFAI_3ext_14splitPixelFull_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
@@ -6409,7 +6407,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_14splitPixelFull_2fullSplit2D(CYTHON_UNUSE
   __pyx_pybuffernd_edges1.rcbuffer = &__pyx_pybuffer_edges1;
 
   /* "pyFAI/ext/splitPixelFull.pyx":428
- *     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+ *     :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
  *     """
  *     cdef int all_bins0 = 0, all_bins1 = 0, size = weights.size             # <<<<<<<<<<<<<<
  *     if pos.ndim > 3:  # create a view
@@ -24038,8 +24036,8 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_13_05_2016, __pyx_k_13_05_2016, sizeof(__pyx_k_13_05_2016), 0, 0, 1, 0},
-  {&__pyx_kp_s_27_09_2016, __pyx_k_27_09_2016, sizeof(__pyx_k_27_09_2016), 0, 0, 1, 0},
+  {&__pyx_kp_s_02_02_2017, __pyx_k_02_02_2017, sizeof(__pyx_k_02_02_2017), 0, 0, 1, 0},
+  {&__pyx_kp_s_15_05_2017, __pyx_k_15_05_2017, sizeof(__pyx_k_15_05_2017), 0, 0, 1, 0},
   {&__pyx_n_s_A, __pyx_k_A, sizeof(__pyx_k_A), 0, 0, 1, 1},
   {&__pyx_n_s_A0, __pyx_k_A0, sizeof(__pyx_k_A0), 0, 0, 1, 1},
   {&__pyx_n_s_A1, __pyx_k_A1, sizeof(__pyx_k_A1), 0, 0, 1, 1},
@@ -24069,7 +24067,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_Empty_shape_tuple_for_cython_arr, __pyx_k_Empty_shape_tuple_for_cython_arr, sizeof(__pyx_k_Empty_shape_tuple_for_cython_arr), 0, 0, 1, 0},
   {&__pyx_kp_u_Format_string_allocated_too_shor, __pyx_k_Format_string_allocated_too_shor, sizeof(__pyx_k_Format_string_allocated_too_shor), 0, 1, 0, 0},
   {&__pyx_kp_u_Format_string_allocated_too_shor_2, __pyx_k_Format_string_allocated_too_shor_2, sizeof(__pyx_k_Format_string_allocated_too_shor_2), 0, 1, 0, 0},
-  {&__pyx_kp_s_GPLv3, __pyx_k_GPLv3, sizeof(__pyx_k_GPLv3), 0, 0, 1, 0},
   {&__pyx_kp_s_Giannis_Ashiotis, __pyx_k_Giannis_Ashiotis, sizeof(__pyx_k_Giannis_Ashiotis), 0, 0, 1, 0},
   {&__pyx_n_s_IndexError, __pyx_k_IndexError, sizeof(__pyx_k_IndexError), 0, 0, 1, 1},
   {&__pyx_kp_s_Indirect_dimensions_not_supporte, __pyx_k_Indirect_dimensions_not_supporte, sizeof(__pyx_k_Indirect_dimensions_not_supporte), 0, 0, 1, 0},
@@ -24877,7 +24874,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * """
  * __author__ = "Giannis Ashiotis"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Giannis_Ashiotis) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -24885,7 +24882,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * """
  * __author__ = "Giannis Ashiotis"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24893,29 +24890,29 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
   /* "pyFAI/ext/splitPixelFull.pyx":36
  * __author__ = "Giannis Ashiotis"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "15/05/2017"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
- * __license__ = "GPLv3+"
+ * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_27_09_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_15_05_2017) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFull.pyx":37
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
- * __license__ = "GPLv3+"
+ * __license__ = "MIT"
  * 
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFull.pyx":38
- * __date__ = "27/09/2016"
+ * __date__ = "15/05/2017"
  * __status__ = "stable"
- * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
+ * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
  * import cython
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/splitPixelFull.pyx":42
  * import cython
@@ -24943,7 +24940,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -24951,7 +24948,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
  * __doc__ = """Common cdef constants and functions for preprocessing"""
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24959,15 +24956,15 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
   /* "pyFAI/ext/regrid_common.pxi":31
  * __author__ = "Jerome Kieffer"
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2017"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_13_05_2016) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2017) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":32
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -24975,7 +24972,7 @@ PyMODINIT_FUNC PyInit_splitPixelFull(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/regrid_common.pxi":33
- * __date__ = "13/05/2016"
+ * __date__ = "02/02/2017"
  * __status__ = "stable"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 

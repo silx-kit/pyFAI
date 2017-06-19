@@ -36,7 +36,7 @@ Get the sources from Github:
 
 .. code::
 
-   wget https://github.com/pyFAI/pyFAI/archive/master.zip
+   wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
 

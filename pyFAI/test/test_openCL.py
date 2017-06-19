@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,13 +33,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/08/2016"
+__date__ = "02/02/2017"
 
 
 import unittest
 import os
 import time
-import sys
 import fabio
 import gc
 import numpy
@@ -50,18 +49,14 @@ try:
     import pyopencl
 except ImportError as error:
     logger.warning("OpenCL module (pyopencl) is not present, skip tests. %s.", error)
-    skip = True
-else:
-    skip = False
+    pyopencl = None
 
 from ..opencl import ocl
-if ocl is None:
-    skip = True
-else:
+if ocl is not None:
     from ..opencl import pyopencl
     import pyopencl.array
 from .. import load
-from ..utils import read_cl_file
+from ..opencl.utils import read_cl_file
 
 
 class TestMask(unittest.TestCase):
@@ -230,7 +225,7 @@ class TestSort(unittest.TestCase):
         logger.info("Reference sort time: %s ms, err=%s ", 1e-6 * (evt.profile.end - evt.profile.start), err)
         # this test works under linux:
         if platform.system() == "Linux":
-            self.assert_(err == 0.0)
+            self.assertTrue(err == 0.0)
         else:
             logger.warning("Measured error on %s is %s", platform.system(), err)
 
@@ -248,7 +243,7 @@ class TestSort(unittest.TestCase):
         logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
         logger.info("Reference sort time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
         # this test works anywhere !
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
     def test_sort_all(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
@@ -263,7 +258,7 @@ class TestSort(unittest.TestCase):
         logger.info("test_sort_all")
         logger.info("Numpy sort on %s element took %s ms", self.N, time_sort)
         logger.info("modified function execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
     def test_sort_horizontal(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -276,7 +271,7 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy horizontal sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
         logger.info("Horizontal execution time: %s ms, err=%s", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
     def test_sort_vertical(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -289,12 +284,12 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy vertical sort on %sx%s elements took %s ms", self.N, self.N, time_sort)
         logger.info("Vertical execution time: %s ms, err=%s ", 1e-6 * (evt.profile.end - evt.profile.start), err)
-        self.assert_(err == 0.0)
+        self.assertTrue(err == 0.0)
 
 
 def suite():
     testsuite = unittest.TestSuite()
-    if skip:
+    if pyopencl is None or ocl is None:
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip tests")
     else:
         testsuite.addTest(TestMask("test_OpenCL"))

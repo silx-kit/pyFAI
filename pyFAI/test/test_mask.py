@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
-#             https://github.com/pyFAI/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -33,15 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/07/2016"
+__date__ = "28/11/2016"
 
 
 import unittest
 import numpy
 import logging
-import sys
 import fabio
-import os
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 
@@ -277,45 +275,45 @@ class TestMaskBeamstop(unittest.TestCase):
         """
         With a mask with and without limits
         """
-        tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox")
+        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox")
         self.assertAlmostEqual(tth[0], 3.7, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="splitBBox", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     def test_mask_LUT(self):
         """
         With a mask with and without limits
         """
-        tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT")
+        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT")
         self.assertAlmostEqual(tth[0], 3.7, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     def test_mask_LUT_OCL(self):
         """
         With a mask with and without limits
         """
-        tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl")
-        self.assert_(tth[0] > 3.5, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, I = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl")
+        self.assertTrue(tth[0] > 3.5, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
+        tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     def test_nomask_LUT(self):
         """
         without mask, tth value should start at 0
         """
-        tth, I = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut")
+        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut")
         self.assertAlmostEqual(tth[0], 0.0, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, I = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
     def test_nomask_LUT_OCL(self):
         """
         without mask, tth value should start at 0
         """
-        tth, I = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut_ocl")
+        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut_ocl")
         self.assertAlmostEqual(tth[0], 0.0, 1, msg="tth range starts at 3.7 (got %.4f)" % tth[0])
-        tth, I = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
+        tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut_ocl", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
 
