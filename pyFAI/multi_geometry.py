@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/05/2017"
+__date__ = "19/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -116,6 +116,9 @@ class MultiGeometry(object):
         :return: 2th/I or a dict with everything depending on "all"
         :rtype: Integrate1dResult, dict
         """
+        if len(lst_data) == 0:
+            raise RuntimeError("List of images cannot be empty")
+
         if monitors is None:
             monitors = [1.0] * len(self.ais)
         if lst_variance is None:
@@ -197,6 +200,9 @@ class MultiGeometry(object):
         :return: I/2th/chi or a dict with everything depending on "all"
         :rtype: Integrate2dResult, dict
         """
+        if len(lst_data) == 0:
+            raise RuntimeError("List of images cannot be empty")
+
         if monitors is None:
             monitors = [1.0] * len(self.ais)
         if lst_variance is None:
