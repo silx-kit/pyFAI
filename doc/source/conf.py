@@ -85,10 +85,7 @@ if (not build_dir) or ("__init__.py" not in os.listdir(os.path.join(build_dir[0]
         os.chdir(curr_dir)
     build_dir = glob.glob('../../build/lib*')
 
-scripts_dir = os.path.abspath(glob.glob('../../build/scripts*')[0])
-
 sys.path.insert(1, build_dir[0])
-os.environ["PATH"] = scripts_dir + os.pathsep + os.environ.get("PATH", "")
 os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 # The version info for the project you're documenting, acts as replacement for
