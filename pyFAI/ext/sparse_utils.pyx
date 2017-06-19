@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2015-2016 European Synchrotron Radiation Facility, France
+#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -28,7 +28,7 @@
 """Common Look-Up table/CSR object creation tools and conversion"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/10/2016"
+__date__ = "19/06/2017"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -137,6 +137,7 @@ cdef class Vector:
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     cdef inline void _append(self, int idx, float coef):
         cdef:
             int pos, new_allocated 
@@ -167,23 +168,27 @@ cdef class ArrayBuilder:
 # --> see the associated PXD file
 #     cdef:
 #         int size 
-#         readonly list lines
+#         Vector[:] lines
         
     def __cinit__(self, int nlines, min_size=10):
         cdef int i
-        self.lines = [Vector(min_size=min_size) for i in range(nlines)]
         self.size = nlines
+        nullarray = numpy.array([None] * nlines)
+        self.lines = nullarray
+        for i in range(nlines):
+            self.lines[i] = Vector(min_size=min_size)
             
     def __dealloc__(self):
-        while self.lines.__len__():
-            self.lines.pop()
+        for i in range(self.size):
+            self.lines[i] = None
         self.lines = None
         
     def __len__(self):
-        return len(self.lines)
+        return self.size
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    @cython.initializedcheck(False)
     cdef inline void _append(self, int line, int col, float value):
         cdef: 
             Vector vector
