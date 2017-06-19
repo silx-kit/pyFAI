@@ -32,14 +32,14 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/02/2017"
+__date__ = "19/06/2017"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
 import os
 import sys
 import logging
-logger = logging.getLogger("pyFAI.splitBBoxCSR")
+logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
 from cython.parallel import prange
 import numpy
 cimport numpy
