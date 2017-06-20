@@ -1465,49 +1465,27 @@ class Geometry(object):
             res = self.getPyFAI()
         else:  # type_ == "list":
             f2d = self.getFit2D()
-            res = ["== pyFAI calibration ==", 
+            res = ["== pyFAI calibration ==",
                    str(self.detector),
                    "Distance Sample to Detector: %s m" % self.dist,
                    "PONI: %.3e, %.3e m" % (self.poni1, self.poni2),
                    "Rotations: %.6f %.6f %.6f rad" % (self.rot1, self.rot2, self.rot3),
-                   "", "== Fit2d calibration =="
-
-            
-            header_lst.append("Distance Sample-beamCenter: %.3f mm" %
-                              f2d["directDist"])
-            header_lst.append("Center: x=%.3f, y=%.3f pix" %
-                              (f2d["centerX"], f2d["centerY"]))
-            header_lst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" %
-                              (f2d["tilt"], f2d["tiltPlanRotation"]))
-            header_lst.append("")
-
-            if ai._wavelength is not None:
-                header_lst.append("Wavelength: %s" % ai.wavelength)
-            if ai.maskfile is not None:
-                header_lst.append("Mask File: %s" % ai.maskfile)
-            if has_dark or (ai.darkcurrent is not None):
-                if ai.darkfiles:
-                    header_lst.append("Dark current: %s" % ai.darkfiles)
-                else:
-                    header_lst.append("Dark current: Done with unknown file")
-            if has_flat or (ai.flatfield is not None):
-                if ai.flatfiles:
-                    header_lst.append("Flat field: %s" % ai.flatfiles)
-                else:
-                    header_lst.append("Flat field: Done with unknown file")
-#             if polarization_factor is None and ai._polarization is not None:
-#                 polarization_factor = ai._polarization_factor
-
-            if type_ == "str":
-                res = "\n".join([hdr + " " + i for i in header_lst])
-
+                   "",
+                   "== Fit2d calibration ==",
+                   "Distance Sample-beamCenter: %.3f mm" % f2d["directDist"],
+                   "Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]),
+                   "Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRotation"]),
+                   ""]
+            if self._wavelength is not None:
+                res.append("Wavelength: %s m" % self._wavelength)
+        return res
 
     def setChiDiscAtZero(self):
         """
         Set the position of the discontinuity of the chi axis between
         0 and 2pi.  By default it is between pi and -pi
         """
-        if self.chiDiscAtPi == False:
+        if self.chiDiscAtPi is False:
             return
         with self._sem:
             self.chiDiscAtPi = False
@@ -1521,7 +1499,7 @@ class Geometry(object):
         Set the position of the discontinuity of the chi axis between
         -pi and +pi.  This is the default behavour
         """
-        if self.chiDiscAtPi == True:
+        if self.chiDiscAtPi is True:
             return
         with self._sem:
             self.chiDiscAtPi = True
