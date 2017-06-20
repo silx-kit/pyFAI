@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>714</width>
+    <width>721</width>
     <height>621</height>
    </rect>
   </property>
@@ -76,12 +76,19 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_14">
+       <widget class="QGroupBox" name="_fitting">
         <property name="title">
-         <string>Action</string>
+         <string>Fitting</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout_10">
-         <item row="3" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_10" columnstretch="0,1">
+         <item row="1" column="0" colspan="2">
+          <widget class="QPushButton" name="_resetButton">
+           <property name="text">
+            <string>Reset</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0" colspan="2">
           <widget class="WaitingPushButton" name="_fitButton">
            <property name="minimumSize">
             <size>
@@ -94,10 +101,17 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QPushButton" name="_resetButton">
+         <item row="0" column="1">
+          <widget class="QLabel" name="_currentResidual">
            <property name="text">
-            <string>Reset</string>
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Residual:</string>
            </property>
           </widget>
          </item>

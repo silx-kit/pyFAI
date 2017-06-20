@@ -32,12 +32,13 @@ FIXME: Copy-paste from silx. It would be nice to add API to extend paths,
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "20/02/2017"
+__date__ = "12/06/2017"
 
 
 import logging
 import weakref
 from silx.gui import qt
+from silx.gui import icons as silx_icons
 from ..resources import resource_filename
 
 
@@ -111,4 +112,9 @@ def getQFile(name):
         qfile = qt.QFile(filename)
         if qfile.exists():
             return qfile
+
+    qfile = silx_icons.getQFile(name)
+    if qfile.exists():
+        return qfile
+
     raise ValueError('Not an icon name: %s' % name)
