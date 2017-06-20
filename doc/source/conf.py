@@ -67,18 +67,6 @@ import glob
 root_dir = os.path.abspath("../..")
 build_dir = glob.glob('../../build/lib*')
 
-# Build pyFAI if it is not yet built (especially for readthedocs)
-if (not build_dir) or ("__init__.py" not in os.listdir(os.path.join(build_dir[0], "pyFAI"))):
-    import subprocess
-    curr_dir = os.getcwd()
-    os.chdir(root_dir)
-    errno = subprocess.call([sys.executable, 'setup.py', 'build'])
-    if errno != 0:
-        raise SystemExit(errno)
-    else:
-        os.chdir(curr_dir)
-    build_dir = glob.glob('../../build/lib*')
-
 sys.path.insert(1, build_dir[0])
 os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
 
