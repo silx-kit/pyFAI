@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/06/2017"
+__date__ = "20/06/2017"
 __status__ = "stable"
 
 
@@ -356,10 +356,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
         :return: representation of the detector easy to serialize
         :rtype: dict
         """
-        dico = OrderedDict()
-        dico["detector"] = self.name
-        dico["pixel1"] = self._pixel1
-        dico["pixel2"] = self._pixel2
+        dico = OrderedDict((("detector", self.name),
+                            ("pixel1", self._pixel1),
+                            ("pixel2", self._pixel2)))
         if self._splineFile:
             dico["splineFile"] = self._splineFile
         return dico

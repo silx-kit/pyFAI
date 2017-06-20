@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/06/2017"
+__date__ = "20/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -49,7 +49,7 @@ import numpy
 import os
 import threading
 import time
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 from . import detectors
 from . import units
@@ -1424,18 +1424,18 @@ class Geometry(object):
             BSize_2: pixel binning factor along the slowst dimention
             WaveLength: wavelength used in meter
         """
-        res = {"PSize_1": self.detector.pixel2,
-               "PSize_2": self.detector.pixel1,
-               "BSize_1": self.detector.binning[1],
-               "BSize_2": self.detector.binning[0],
-               "splineFile": self.detector.splineFile,
-               "Rot_3": None,
-               "Rot_2": None,
-               "Rot_1": None,
-               "Center_2": self._poni1 / self.detector.pixel1,
-               "Center_1": self._poni2 / self.detector.pixel2,
-               "SampleDistance": self.dist
-               }
+
+        res = OrderedDict((("PSize_1", self.detector.pixel2),
+                           ("PSize_2", self.detector.pixel1),
+                           ("BSize_1", self.detector.binning[1]),
+                           ("BSize_2", self.detector.binning[0]),
+                           ("splineFile", self.detector.splineFile),
+                           ("Rot_3", None),
+                           ("Rot_2", None),
+                           ("Rot_1", None),
+                           ("Center_2", self._poni1 / self.detector.pixel1),
+                           ("Center_1", self._poni2 / self.detector.pixel2),
+                           ("SampleDistance", self.dist)))
         if self._wavelength:
             res["WaveLength"] = self._wavelength
         if abs(self.rot1) > 1e-6 or abs(self.rot2) > 1e-6 or abs(self.rot3) > 1e-6:
@@ -1453,6 +1453,54 @@ class Geometry(object):
         else:
             raise RuntimeError("Only 6 or 7-uplet are possible")
         self.reset()
+
+    def make_headers(self, type_="list"):
+        """Create a configuration for the
+        
+        :param type: can be "list" or "dict"
+        :return: the header with the proper format  
+        """
+        res = None
+        if type_ == "dict":
+            res = self.getPyFAI()
+        else:  # type_ == "list":
+            f2d = self.getFit2D()
+            res = ["== pyFAI calibration ==", 
+                   str(self.detector),
+                   "Distance Sample to Detector: %s m" % self.dist,
+                   "PONI: %.3e, %.3e m" % (self.poni1, self.poni2),
+                   "Rotations: %.6f %.6f %.6f rad" % (self.rot1, self.rot2, self.rot3),
+                   "", "== Fit2d calibration =="
+
+            
+            header_lst.append("Distance Sample-beamCenter: %.3f mm" %
+                              f2d["directDist"])
+            header_lst.append("Center: x=%.3f, y=%.3f pix" %
+                              (f2d["centerX"], f2d["centerY"]))
+            header_lst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" %
+                              (f2d["tilt"], f2d["tiltPlanRotation"]))
+            header_lst.append("")
+
+            if ai._wavelength is not None:
+                header_lst.append("Wavelength: %s" % ai.wavelength)
+            if ai.maskfile is not None:
+                header_lst.append("Mask File: %s" % ai.maskfile)
+            if has_dark or (ai.darkcurrent is not None):
+                if ai.darkfiles:
+                    header_lst.append("Dark current: %s" % ai.darkfiles)
+                else:
+                    header_lst.append("Dark current: Done with unknown file")
+            if has_flat or (ai.flatfield is not None):
+                if ai.flatfiles:
+                    header_lst.append("Flat field: %s" % ai.flatfiles)
+                else:
+                    header_lst.append("Flat field: Done with unknown file")
+#             if polarization_factor is None and ai._polarization is not None:
+#                 polarization_factor = ai._polarization_factor
+
+            if type_ == "str":
+                res = "\n".join([hdr + " " + i for i in header_lst])
+
 
     def setChiDiscAtZero(self):
         """

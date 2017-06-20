@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/06/2017"
+__date__ = "20/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -432,8 +432,10 @@ class HDF5Writer(Writer):
 class DefaultAiWriter(Writer):
 
     def __init__(self, filename, ai=None):
-        """
-        Constructor of the historical writer of azimuthalIntegrator.
+        """Constructor of the historical writer of azimuthalIntegrator.
+        
+        :param filename: name of the output file
+        :param ai: integrator, should provide make_headers method. 
         """
         self._filename = filename
         self._ai = ai
@@ -592,7 +594,7 @@ class DefaultAiWriter(Writer):
 
         header = OrderedDict()
         # Warning: risk of cyclic import, not using isinstance on purpose
-        fqn = fully_qualified_name(self.ai)
+        fqn = fully_qualified_name(ai)
         if fqn == "pyFAI.azimuthalIntegrator.AzimuthalIntegrator":
             ai = self._ai
             header["dist"] = str(ai._dist)
