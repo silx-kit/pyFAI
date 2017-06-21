@@ -478,7 +478,7 @@ class DefaultAiWriter(Writer):
         if metadata is not None:
             header_lst += ["", "Headers of the input frame:"]
             header_lst += [i.strip() for i in json.dumps(metadata, indent=2).split("\n")]
-        header = "\n".join([hdr + " " + i for i in header_lst])
+        header = "\n".join(["%s %s" % (hdr, i) for i in header_lst])
 
         return header
 

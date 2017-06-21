@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/06/2017"
+__date__ = "21/06/2017"
 __status__ = "stable"
 
 
@@ -680,6 +680,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
                         self._mask = numpy.ascontiguousarray(self._mask, numpy.int8)
                         self._mask_crc = crc32(self._mask)
         return self._mask
+
+    def get_mask_crc(self):
+        return self._mask_crc
 
     def set_mask(self, mask):
         with self._sem:

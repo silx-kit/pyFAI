@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/06/2017"
+__date__ = "21/06/2017"
 __status__ = "development"
 
 
@@ -45,6 +45,7 @@ class IntegrateResult(tuple):
         self._sum = None
         self._count = None
         self._unit = None
+        self._has_mask_applied = None
         self._has_dark_correction = None
         self._has_flat_correction = None
         self._normalization_factor = None
@@ -95,6 +96,21 @@ class IntegrateResult(tuple):
         :type unit: str
         """
         self._unit = unit
+
+    @property
+    def has_mask_applied(self):
+        """True if a mask was applied
+
+        :rtype: bool
+        """
+        return self._has_mask_applied
+
+    def _set_has_mask_applied(self, has_mask):
+        """Define if dark correction was applied
+
+        :type has_mask: bool (or string)
+        """
+        self._has_mask_applied = has_mask
 
     @property
     def has_dark_correction(self):

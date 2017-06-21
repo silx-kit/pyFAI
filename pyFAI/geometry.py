@@ -1475,9 +1475,9 @@ class Geometry(object):
                    "Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]),
                    "Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRotation"]),
                    "", str(self.detector),
-                   "   has a mask: %s " % self.detector.mask is not None,
-                   "   has a darkcurrent: %s " % self.detector.darkcurrent is not None,
-                   "   has a flatfield: %s " % self.detector.flatfield is not None,
+                   "   Detector has a mask: %s " % (self.detector.mask is not None),
+                   "   Detector has a dark current: %s " % (self.detector.darkcurrent is not None),
+                   "   detector has a flat field: %s " % (self.detector.flatfield is not None),
                    ""]
 
             if self._wavelength is not None:

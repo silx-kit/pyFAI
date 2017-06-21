@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2017"
+__date__ = "21/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2185,7 +2185,15 @@ class AzimuthalIntegrator(Geometry):
         unit = units.to_unit(unit)
 
         if mask is None:
+            has_mask = "from detector"
             mask = self.mask
+            mask_crc = self.detector.get_mask_crc
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "provided"
+            mask_crc = crc32(mask)
 
         shape = data.shape
         pos0_scale = unit.scale
@@ -2219,10 +2227,22 @@ class AzimuthalIntegrator(Geometry):
             polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
-            dark = self.darkcurrent
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
 
         if flat is None:
-            flat = self.flatfield
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
 
         I = None
         sigma = None
@@ -2235,17 +2255,7 @@ class AzimuthalIntegrator(Geometry):
                 reset = None
                 if self._lut_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._lut_integrator.unit != unit:
                         reset = "unit changed"
                     if self._lut_integrator.bins != npt:
@@ -2360,22 +2370,11 @@ class AzimuthalIntegrator(Geometry):
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("csr" in method):
-            mask_crc = None
             with self._csr_sem:
                 reset = None
                 if self._csr_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._csr_integrator.unit != unit:
                         reset = "unit changed"
                     if self._csr_integrator.bins != npt:
@@ -2662,8 +2661,9 @@ class AzimuthalIntegrator(Geometry):
         result._set_unit(unit)
         result._set_sum(sum_)
         result._set_count(count)
-        result._set_has_dark_correction(dark is not None)
-        result._set_has_flat_correction(flat is not None)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_metadata(metadata)
@@ -2674,7 +2674,7 @@ class AzimuthalIntegrator(Geometry):
 
         if all:
             logger.warning("integrate1d(all=True) is deprecated. "
-                    "Please refer to the documentation of Integrate2dResult")
+                           "Please refer to the documentation of Integrate1dResult")
 
             res = {"radial": result.radial,
                    "unit": result.unit,
@@ -2753,7 +2753,16 @@ class AzimuthalIntegrator(Geometry):
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
         if mask is None:
+            has_mask = "from detector"
             mask = self.mask
+            mask_crc = self.detector.get_mask_crc
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "provided"
+            mask_crc = crc32(mask)
+
         shape = data.shape
 
         if radial_range:
@@ -2782,10 +2791,22 @@ class AzimuthalIntegrator(Geometry):
             polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
-            dark = self.darkcurrent
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
 
         if flat is None:
-            flat = self.flatfield
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
 
         I = None
         sigma = None
@@ -2794,22 +2815,11 @@ class AzimuthalIntegrator(Geometry):
 
         if (I is None) and ("lut" in method):
             logger.debug("in lut")
-            mask_crc = None
             with self._lut_sem:
                 reset = None
                 if self._lut_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._lut_integrator.unit != unit:
                         reset = "unit changed"
                     if self._lut_integrator.bins != npt:
@@ -2894,22 +2904,11 @@ class AzimuthalIntegrator(Geometry):
 
         if (I is None) and ("csr" in method):
             logger.debug("in csr")
-            mask_crc = None
             with self._lut_sem:
                 reset = None
                 if self._csr_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._csr_integrator.unit != unit:
                         reset = "unit changed"
                     if self._csr_integrator.bins != npt:
@@ -3117,8 +3116,9 @@ class AzimuthalIntegrator(Geometry):
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
-        result._set_has_dark_correction(dark is not None)
-        result._set_has_flat_correction(flat is not None)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
         result._set_metadata(metadata)
