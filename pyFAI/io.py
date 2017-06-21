@@ -510,10 +510,11 @@ class DefaultAiWriter(Writer):
         """
         dim1_unit = units.to_unit(dim1_unit)
         with open(filename, "w") as f:
-            f.write(self.make_headers(has_mask=has_mask, has_dark=has_dark, has_flat=has_flat,
-                                     polarization_factor=polarization_factor,
-                                     normalization_factor=normalization_factor,
-                                     metadata=metadata))
+            f.write(self.make_headers(has_mask=has_mask, has_dark=has_dark,
+                                      has_flat=has_flat,
+                                      polarization_factor=polarization_factor,
+                                      normalization_factor=normalization_factor,
+                                      metadata=metadata))
             try:
                 f.write("\n# --> %s\n" % (filename))
             except UnicodeError:
