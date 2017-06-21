@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/06/2017"
+__date__ = "21/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1466,7 +1466,6 @@ class Geometry(object):
         else:  # type_ == "list":
             f2d = self.getFit2D()
             res = ["== pyFAI calibration ==",
-                   str(self.detector),
                    "Distance Sample to Detector: %s m" % self.dist,
                    "PONI: %.3e, %.3e m" % (self.poni1, self.poni2),
                    "Rotations: %.6f %.6f %.6f rad" % (self.rot1, self.rot2, self.rot3),
@@ -1475,7 +1474,12 @@ class Geometry(object):
                    "Distance Sample-beamCenter: %.3f mm" % f2d["directDist"],
                    "Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]),
                    "Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRotation"]),
+                   "", str(self.detector),
+                   "   has a mask: %s " % self.detector.mask is not None,
+                   "   has a darkcurrent: %s " % self.detector.darkcurrent is not None,
+                   "   has a flatfield: %s " % self.detector.flatfield is not None,
                    ""]
+
             if self._wavelength is not None:
                 res.append("Wavelength: %s m" % self._wavelength)
         return res

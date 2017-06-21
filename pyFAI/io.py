@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/06/2017"
+__date__ = "21/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -431,15 +431,14 @@ class HDF5Writer(Writer):
 
 class DefaultAiWriter(Writer):
 
-    def __init__(self, filename, ai=None):
+    def __init__(self, filename, engine=None):
         """Constructor of the historical writer of azimuthalIntegrator.
         
         :param filename: name of the output file
         :param ai: integrator, should provide make_headers method. 
         """
         self._filename = filename
-        self._ai = ai
-        self._header = None
+        self._engine = engine
         self._already_written = False
 
     def set_filename(self, filename):
@@ -449,7 +448,7 @@ class DefaultAiWriter(Writer):
         self._filename = filename
         self._already_written = False
 
-    def make_headers(self, hdr="#", has_dark=False, has_flat=False,
+    def make_headers(self, hdr="#", has_mask=None, has_dark=None, has_flat=None,
                      polarization_factor=None, normalization_factor=None,
                      metadata=None):
         """
@@ -465,56 +464,26 @@ class DefaultAiWriter(Writer):
         :return: the header
         :rtype: str
         """
-        if self._header is None:
-            ai = self._ai
-            header_lst = ["== pyFAI calibration =="]
-            header_lst.append("SplineFile: %s" % ai.splineFile)
-            header_lst.append("PixelSize: %.3e, %.3e m" %
-                              (ai.pixel1, ai.pixel2))
-            header_lst.append("PONI: %.3e, %.3e m" % (ai.poni1, ai.poni2))
-            header_lst.append("Distance Sample to Detector: %s m" %
-                              ai.dist)
-            header_lst.append("Rotations: %.6f %.6f %.6f rad" %
-                              (ai.rot1, ai.rot2, ai.rot3))
-            header_lst += ["", "== Fit2d calibration =="]
+        if "make_headers" in dir(self._engine):
+            header_lst = self._engine.make_headers()
+        else:
+            header_lst = [str(self._engine), ""]
 
-            f2d = ai.getFit2D()
-            header_lst.append("Distance Sample-beamCenter: %.3f mm" %
-                              f2d["directDist"])
-            header_lst.append("Center: x=%.3f, y=%.3f pix" %
-                              (f2d["centerX"], f2d["centerY"]))
-            header_lst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" %
-                              (f2d["tilt"], f2d["tiltPlanRotation"]))
-            header_lst.append("")
+        header_lst += ["Mask applied: %s" % has_mask,
+                       "Dark current applied: %s" % has_dark,
+                       "Flat field applied: %s" % has_flat,
+                       "Polarization factor: %s" % polarization_factor,
+                       "Normalization factor: %s" % normalization_factor]
 
-            if ai._wavelength is not None:
-                header_lst.append("Wavelength: %s" % ai.wavelength)
-            if ai.maskfile is not None:
-                header_lst.append("Mask File: %s" % ai.maskfile)
-            if has_dark or (ai.darkcurrent is not None):
-                if ai.darkfiles:
-                    header_lst.append("Dark current: %s" % ai.darkfiles)
-                else:
-                    header_lst.append("Dark current: Done with unknown file")
-            if has_flat or (ai.flatfield is not None):
-                if ai.flatfiles:
-                    header_lst.append("Flat field: %s" % ai.flatfiles)
-                else:
-                    header_lst.append("Flat field: Done with unknown file")
-#             if polarization_factor is None and ai._polarization is not None:
-#                 polarization_factor = ai._polarization_factor
-            header_lst.append("Polarization factor: %s" % polarization_factor)
-            header_lst.append("Normalization factor: %s" % normalization_factor)
+        if metadata is not None:
+            header_lst += ["", "Headers of the input frame:"]
+            header_lst += [i.strip() for i in json.dumps(metadata, indent=2).split("\n")]
+        header = "\n".join([hdr + " " + i for i in header_lst])
 
-            if metadata is not None:
-                header_lst += ["", "Headers of the input frame:"]
-                header_lst += [i.strip() for i in json.dumps(metadata, indent=2).split("\n")]
-            self._header = "\n".join([hdr + " " + i for i in header_lst])
-
-        return self._header
+        return header
 
     def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg",
-               has_dark=False, has_flat=False,
+               has_mask=None, has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None, metadata=None):
         """This method save the result of a 1D integration as ASCII file.
         
@@ -541,7 +510,7 @@ class DefaultAiWriter(Writer):
         """
         dim1_unit = units.to_unit(dim1_unit)
         with open(filename, "w") as f:
-            f.write(self.make_headers(has_dark=has_dark, has_flat=has_flat,
+            f.write(self.make_headers(has_mask=has_mask, has_dark=has_dark, has_flat=has_flat,
                                      polarization_factor=polarization_factor,
                                      normalization_factor=normalization_factor,
                                      metadata=metadata))
@@ -592,39 +561,11 @@ class DefaultAiWriter(Writer):
             raise RuntimeError("FabIO module is needed to save EDF images")
         dim1_unit = units.to_unit(dim1_unit)
 
-        header = OrderedDict()
-        # Warning: risk of cyclic import, not using isinstance on purpose
-        fqn = fully_qualified_name(ai)
-        if fqn == "pyFAI.azimuthalIntegrator.AzimuthalIntegrator":
-            ai = self._ai
-            header["dist"] = str(ai._dist)
-            header["poni1"] = str(ai._poni1)
-            header["poni2"] = str(ai._poni2)
-            header["rot1"] = str(ai._rot1)
-            header["rot2"] = str(ai._rot2)
-            header["rot3"] = str(ai._rot3)
-            header["pixelX"] = str(ai.pixel2)  # this is not a bug ... most people expect dim1 to be X
-            header["pixelY"] = str(ai.pixel1)  # this is not a bug ... most people expect dim2 to be Y
+        # Remove \n and \t)
+        header = OrderedDict((("Engine", " ".join(str(self._engine).split()))))
 
-            if ai.splineFile:
-                header["spline"] = str(ai.splineFile)
-
-            if has_dark:
-                if ai.darkfiles:
-                    header["dark"] = ai.darkfiles
-                else:
-                    header["dark"] = 'unknown dark applied'
-            if has_flat:
-                if ai.flatfiles:
-                    header["flat"] = ai.flatfiles
-                else:
-                    header["flat"] = 'unknown flat applied'
-            f2d = ai.getFit2D()
-            for key in f2d:
-                header["key"] = f2d[key]
-        # elif fqn == "pyFAI.multi_geometry.MultiGeometry":
-        else:
-            header["Engine"] = " ".join(str(self._ai).split())  # Remove \n
+        if "make_headers" in dir(self._engine):
+            header.update(self._engine.make_headers("dict"))
 
         header[dim1_unit.name + "_min"] = str(dim1.min())
         header[dim1_unit.name + "_max"] = str(dim1.max())

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/06/2017"
+__date__ = "16/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -46,20 +46,14 @@ import numpy
 from math import pi
 from numpy import rad2deg
 from .geometry import Geometry
-from . import average
 from . import units
-from . import utils
 from .utils import EPS32, deg2rad, crc32
 from .decorators import deprecated
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
 from .io import DefaultAiWriter
-try:
-    import fabio
-except ImportError:
-    logger.warning("FabIO package is missing")
-    fabio = None
 error = None
+
 
 try:
     from .ext import splitBBoxLUT
@@ -205,16 +199,8 @@ class AzimuthalIntegrator(Geometry):
                           pixel1, pixel2, splineFile, detector, wavelength)
         self._nbPixCache = {}  # key=shape, value: array
 
-        #
-        # mask and maskfile are properties pointing to self.detector
-
-        self._flatfield = None
-        self._darkcurrent = None
-        self._flatfield_crc = None
-        self._darkcurrent_crc = None
-        self._writer = None
-        self.flatfiles = None
-        self.darkfiles = None
+        # mask, maskfile, darkcurrent and flatfield are properties pointing to
+        # self.detector now (16/06/2017
 
         self._ocl_integrator = None
         self._ocl_lut_integr = None
@@ -319,11 +305,11 @@ class AzimuthalIntegrator(Geometry):
         :param dark: ndarray with dark noise or None
         :return: 2tuple: corrected_data, dark_actually used (or None)
         """
+        dark = dark if dark is not None else self.detector.darkcurrent
         if dark is not None:
             return data - dark, dark
-        elif self._darkcurrent is not None:
-            return data - self._darkcurrent, self._darkcurrent
-        return data, None
+        else:
+            return data, None
 
     def flat_correction(self, data, flat=None):
         """
@@ -331,13 +317,12 @@ class AzimuthalIntegrator(Geometry):
         If flat is not defined, correct for a flat set by "set_flatfiles"
 
         :param data: input ndarray with the image
-        :param dark: ndarray with dark noise or None
+        :param flat: ndarray with flatfield or None for no correction
         :return: 2tuple: corrected_data, flat_actually used (or None)
         """
+        flat = flat if flat is not None else self.detector.flatfield
         if flat is not None:
             return data / flat, flat
-        if self._flatfield is not None:
-            return data / self._flatfield, self._flatfield
         else:
             return data, None
 
@@ -3457,31 +3442,24 @@ class AzimuthalIntegrator(Geometry):
 ################################################################################
 
     def set_darkcurrent(self, dark):
-        self._darkcurrent = dark
-        if dark is not None:
-            self._darkcurrent_crc = crc32(dark)
-        else:
-            self._darkcurrent_crc = None
+        self.detector.set_darkcurrent(dark)
 
     def get_darkcurrent(self):
-        return self._darkcurrent
+        return self.detector.get_darkcurrent()
 
     darkcurrent = property(get_darkcurrent, set_darkcurrent)
 
     def set_flatfield(self, flat):
-        self._flatfield = flat
-        if flat is not None:
-            self._flatfield_crc = crc32(flat)
-        else:
-            self._flatfield_crc = None
+        self.detector.set_flatfield(flat)
 
     def get_flatfield(self):
-        return self._flatfield
+        return self.detector.get_flatfield()
 
     flatfield = property(get_flatfield, set_flatfield)
 
     def set_darkfiles(self, files=None, method="mean"):
-        """
+        """Moved to Detector
+        
         :param files: file(s) used to compute the dark.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
@@ -3490,24 +3468,16 @@ class AzimuthalIntegrator(Geometry):
         Set the dark current from one or mutliple files, avaraged
         according to the method provided
         """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_darkcurrent(None)
-        elif len(files) == 1:
-            if fabio is None:
-                raise RuntimeError("FabIO is missing")
-            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
-            self.darkfiles = files[0]
-        else:
-            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.darkfiles = "%s(%s)" % (method, ",".join(files))
+        self.detector.set_darkfiles(files, method)
+
+    @property
+    def darkfiles(self):
+        return self.detector.darkfiles
 
     def set_flatfiles(self, files, method="mean"):
-        """
-        :param files: file(s) used to compute the dark.
+        """Moved to Detector
+        
+        :param files: file(s) used to compute the flat-field.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
@@ -3515,20 +3485,11 @@ class AzimuthalIntegrator(Geometry):
         Set the flat field from one or mutliple files, averaged
         according to the method provided
         """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_flatfield(None)
-        elif len(files) == 1:
-            if fabio is None:
-                raise RuntimeError("FabIO is missing")
-            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
-            self.flatfiles = files[0]
-        else:
-            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.flatfiles = "%s(%s)" % (method, ",".join(files))
+        self.detector.set_flatfiles(files, method)
+
+    @property
+    def flatfiles(self):
+        return self.detector.flatfiles
 
     def get_empty(self):
         return self._empty
