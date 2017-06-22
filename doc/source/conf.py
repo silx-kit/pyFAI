@@ -60,12 +60,6 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# General information about the project.
-project = u'pyFAI'
-from pyFAI._version import strictversion, version, __date__ as pyfai_date
-year = pyfai_date.split("/")[-1]
-copyright = u'2012-%s, Jérôme Kieffer' % (year)
-
 # Configure the environment to be able to use sphinxcontrib.programoutput
 # NOTE: Must be done after pyFAI._version import which at the end of the end imports PyMCA
 # Importing PyMCA redefine and reorder PYTHONPATH
@@ -73,20 +67,15 @@ import glob
 root_dir = os.path.abspath("../..")
 build_dir = glob.glob('../../build/lib*')
 
-# Build pyFAI if it is not yet built (especially for readthedocs)
-if (not build_dir) or ("__init__.py" not in os.listdir(os.path.join(build_dir[0], "pyFAI"))):
-    import subprocess
-    curr_dir = os.getcwd()
-    os.chdir(root_dir)
-    errno = subprocess.call([sys.executable, 'setup.py', 'build'])
-    if errno != 0:
-        raise SystemExit(errno)
-    else:
-        os.chdir(curr_dir)
-    build_dir = glob.glob('../../build/lib*')
-
 sys.path.insert(1, build_dir[0])
 os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
+
+# General information about the project.
+project = u'pyFAI'
+from pyFAI._version import strictversion, version, __date__ as pyfai_date
+year = pyfai_date.split("/")[-1]
+copyright = u'2012-%s, Jérôme Kieffer' % (year)
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
