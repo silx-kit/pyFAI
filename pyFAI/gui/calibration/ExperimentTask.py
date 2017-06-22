@@ -27,10 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/05/2017"
+__date__ = "06/06/2017"
 
 import os
 import fabio
+import numpy
 import logging
 from contextlib import contextmanager
 from collections import OrderedDict
@@ -164,8 +165,14 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__dialogState = dialog.saveState()
         filename = dialog.selectedFiles()[0]
         try:
+            print("before opening image")
             with fabio.open(filename) as image:
-                yield image
+                print("image is loaded")
+
+                f = fabio.edfimage.EdfImage(data=numpy.random.random((10, 10)), header={})
+                f.filename = "/tmp/toto.edf"
+                yield f
+                # yield image
         except Exception as e:
             _logger.error(e.args[0])
             _logger.debug("Backtrace", exc_info=True)
@@ -195,9 +202,11 @@ class ExperimentTask(AbstractCalibrationTask):
     def loadImage(self):
         with self.getImageFromDialog("Load calibration image") as image:
             if image is not None:
+                print("in loadImage")
                 settings = self.model().experimentSettingsModel()
-                settings.imageFile().setValue(image.filename)
-                settings.image().setValue(image.data)
+                print(settings)
+                settings.imageFile().setValue(str(image.filename))
+                settings.image().setValue(image.data.copy())
 
     def loadMask(self):
         with self.getImageFromDialog("Load mask image", forMask=True) as image:

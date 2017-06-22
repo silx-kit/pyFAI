@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "21/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -46,14 +46,12 @@ import numpy
 from math import pi
 from numpy import rad2deg
 from .geometry import Geometry
-from . import average
 from . import units
-from . import utils
-from .utils import EPS32, deg2rad
+from .utils import EPS32, deg2rad, crc32
 from .decorators import deprecated
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult
-import fabio
+from .io import DefaultAiWriter
 error = None
 
 
@@ -64,11 +62,6 @@ except ImportError as error:
                    " Look-up table based azimuthal integration")
     logger.debug("Backtrace", exc_info=True)
     splitBBoxLUT = None
-
-try:
-    from .fastcrc import crc32
-except ImportError:
-    from zlib import crc32
 
 try:
     # Used for 1D integration
@@ -122,7 +115,7 @@ if ocl:
         from .opencl import azim_hist as ocl_azim  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.ocl_azim: %s",
-                       error)
+                     error)
         ocl_azim = None
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
@@ -140,7 +133,7 @@ if ocl:
         from .opencl import sort as ocl_sort
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.ocl_sort for: %s",
-                      error)
+                     error)
         ocl_sort = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
@@ -206,18 +199,8 @@ class AzimuthalIntegrator(Geometry):
                           pixel1, pixel2, splineFile, detector, wavelength)
         self._nbPixCache = {}  # key=shape, value: array
 
-        #
-        # mask and maskfile are properties pointing to self.detector
-
-        self._flatfield = None
-        self._darkcurrent = None
-        self._flatfield_crc = None
-        self._darkcurrent_crc = None
-        self._writer = None
-        self.flatfiles = None
-        self.darkfiles = None
-
-        self.header = None
+        # mask, maskfile, darkcurrent and flatfield are properties pointing to
+        # self.detector now (16/06/2017
 
         self._ocl_integrator = None
         self._ocl_lut_integr = None
@@ -322,11 +305,11 @@ class AzimuthalIntegrator(Geometry):
         :param dark: ndarray with dark noise or None
         :return: 2tuple: corrected_data, dark_actually used (or None)
         """
+        dark = dark if dark is not None else self.detector.darkcurrent
         if dark is not None:
             return data - dark, dark
-        elif self._darkcurrent is not None:
-            return data - self._darkcurrent, self._darkcurrent
-        return data, None
+        else:
+            return data, None
 
     def flat_correction(self, data, flat=None):
         """
@@ -334,13 +317,12 @@ class AzimuthalIntegrator(Geometry):
         If flat is not defined, correct for a flat set by "set_flatfiles"
 
         :param data: input ndarray with the image
-        :param dark: ndarray with dark noise or None
+        :param flat: ndarray with flatfield or None for no correction
         :return: 2tuple: corrected_data, flat_actually used (or None)
         """
+        flat = flat if flat is not None else self.detector.flatfield
         if flat is not None:
             return data / flat, flat
-        if self._flatfield is not None:
-            return data / self._flatfield, self._flatfield
         else:
             return data, None
 
@@ -2142,7 +2124,7 @@ class AzimuthalIntegrator(Geometry):
                     polarization_factor=None, dark=None, flat=None,
                     method="csr", unit=units.Q, safe=True,
                     normalization_factor=1.0,
-                    block_size=32, profile=False, all=False):
+                    block_size=32, profile=False, all=False, metadata=None):
         """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
@@ -2192,6 +2174,7 @@ class AzimuthalIntegrator(Geometry):
         :param profile: set to True to enable profiling in OpenCL
         :param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
         :type all: bool
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         :rtype: Integrate1dResult, dict
         """
@@ -2202,7 +2185,15 @@ class AzimuthalIntegrator(Geometry):
         unit = units.to_unit(unit)
 
         if mask is None:
+            has_mask = "from detector"
             mask = self.mask
+            mask_crc = self.detector.get_mask_crc
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "provided"
+            mask_crc = crc32(mask)
 
         shape = data.shape
         pos0_scale = unit.scale
@@ -2236,10 +2227,22 @@ class AzimuthalIntegrator(Geometry):
             polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
-            dark = self.darkcurrent
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
 
         if flat is None:
-            flat = self.flatfield
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
 
         I = None
         sigma = None
@@ -2252,17 +2255,7 @@ class AzimuthalIntegrator(Geometry):
                 reset = None
                 if self._lut_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._lut_integrator.unit != unit:
                         reset = "unit changed"
                     if self._lut_integrator.bins != npt:
@@ -2377,22 +2370,11 @@ class AzimuthalIntegrator(Geometry):
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("csr" in method):
-            mask_crc = None
             with self._csr_sem:
                 reset = None
                 if self._csr_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._csr_integrator.unit != unit:
                         reset = "unit changed"
                     if self._csr_integrator.bins != npt:
@@ -2675,22 +2657,24 @@ class AzimuthalIntegrator(Geometry):
             # not in place to make a copy
             qAxis = qAxis * pos0_scale
 
-        self.save1D(filename, qAxis, I, sigma, unit,
-                    dark is not None, flat is not None,
-                    polarization_factor, normalization_factor)
-
         result = Integrate1dResult(qAxis, I, sigma)
         result._set_unit(unit)
         result._set_sum(sum_)
         result._set_count(count)
-        result._set_has_dark_correction(dark is not None)
-        result._set_has_flat_correction(flat is not None)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_metadata(metadata)
+
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
 
         if all:
             logger.warning("integrate1d(all=True) is deprecated. "
-                    "Please refer to the documentation of Integrate2dResult")
+                           "Please refer to the documentation of Integrate1dResult")
 
             res = {"radial": result.radial,
                    "unit": result.unit,
@@ -2710,7 +2694,7 @@ class AzimuthalIntegrator(Geometry):
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     method="bbox", unit=units.Q, safe=True,
-                    normalization_factor=1.0, all=False):
+                    normalization_factor=1.0, all=False, metadata=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -2757,6 +2741,7 @@ class AzimuthalIntegrator(Geometry):
         :param normalization_factor: Value of a normalization monitor
         :type normalization_factor: float
         :param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :type all: bool
         :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         :rtype: Integrate2dResult, dict
@@ -2768,7 +2753,16 @@ class AzimuthalIntegrator(Geometry):
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
         if mask is None:
+            has_mask = "from detector"
             mask = self.mask
+            mask_crc = self.detector.get_mask_crc
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "provided"
+            mask_crc = crc32(mask)
+
         shape = data.shape
 
         if radial_range:
@@ -2797,10 +2791,22 @@ class AzimuthalIntegrator(Geometry):
             polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
-            dark = self.darkcurrent
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
 
         if flat is None:
-            flat = self.flatfield
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
 
         I = None
         sigma = None
@@ -2809,22 +2815,11 @@ class AzimuthalIntegrator(Geometry):
 
         if (I is None) and ("lut" in method):
             logger.debug("in lut")
-            mask_crc = None
             with self._lut_sem:
                 reset = None
                 if self._lut_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._lut_integrator.unit != unit:
                         reset = "unit changed"
                     if self._lut_integrator.bins != npt:
@@ -2909,22 +2904,11 @@ class AzimuthalIntegrator(Geometry):
 
         if (I is None) and ("csr" in method):
             logger.debug("in csr")
-            mask_crc = None
             with self._lut_sem:
                 reset = None
                 if self._csr_integrator is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                     if self._csr_integrator.unit != unit:
                         reset = "unit changed"
                     if self._csr_integrator.bins != npt:
@@ -3128,19 +3112,20 @@ class AzimuthalIntegrator(Geometry):
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
 
-        self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    has_dark=dark is not None, has_flat=flat is not None,
-                    polarization_factor=polarization_factor,
-                    normalization_factor=normalization_factor)
-
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
-        result._set_has_dark_correction(dark is not None)
-        result._set_has_flat_correction(flat is not None)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_metadata(metadata)
+
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
 
         if all:
             logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
@@ -3224,20 +3209,13 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def _create_default_writer(self):
-        """Default writer constructor"""
-        from .io import DefaultAiWriter
-        return DefaultAiWriter(None, self)
-
-    def __get_default_writer(self):
-        """Get the default writer. Used when a filename is defined."""
-        if self._writer is None:
-            self._writer = self._create_default_writer()
-        return self._writer
-
+    @deprecated
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
-        """
+        """This method save the result of a 1D integration.
+        
+        Deprecated on 13/06/2017
+        
         :param filename: the filename used to save the 1D integration
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
@@ -3257,18 +3235,22 @@ class AzimuthalIntegrator(Geometry):
         :param normalization_factor: the monitor value
         :type normalization_factor: float
 
-        This method save the result of a 1D integration.
+        
         """
         if not filename:
             return
-        writer = self.__get_default_writer()
+        writer = DefaultAiWriter(None, self)
         writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
+    @deprecated
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None):
-        """
+        """This method save the result of a 2D integration.
+        
+        Deprecated on 13/06/2017
+        
         :param filename: the filename used to save the 2D histogram
         :type filename: str
         :param dim1: the 1st coordinates of the histogram
@@ -3290,11 +3272,12 @@ class AzimuthalIntegrator(Geometry):
         :param normalization_factor: the monitor value
         :type normalization_factor: float
 
-        This method save the result of a 2D integration.
+        
         """
         if not filename:
             return
-        writer = self.__get_default_writer()
+        from .io import DefaultAiWriter
+        writer = DefaultAiWriter(None, self)
         writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
@@ -3459,31 +3442,24 @@ class AzimuthalIntegrator(Geometry):
 ################################################################################
 
     def set_darkcurrent(self, dark):
-        self._darkcurrent = dark
-        if dark is not None:
-            self._darkcurrent_crc = crc32(dark)
-        else:
-            self._darkcurrent_crc = None
+        self.detector.set_darkcurrent(dark)
 
     def get_darkcurrent(self):
-        return self._darkcurrent
+        return self.detector.get_darkcurrent()
 
     darkcurrent = property(get_darkcurrent, set_darkcurrent)
 
     def set_flatfield(self, flat):
-        self._flatfield = flat
-        if flat is not None:
-            self._flatfield_crc = crc32(flat)
-        else:
-            self._flatfield_crc = None
+        self.detector.set_flatfield(flat)
 
     def get_flatfield(self):
-        return self._flatfield
+        return self.detector.get_flatfield()
 
     flatfield = property(get_flatfield, set_flatfield)
 
     def set_darkfiles(self, files=None, method="mean"):
-        """
+        """Moved to Detector
+        
         :param files: file(s) used to compute the dark.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
@@ -3492,22 +3468,16 @@ class AzimuthalIntegrator(Geometry):
         Set the dark current from one or mutliple files, avaraged
         according to the method provided
         """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_darkcurrent(None)
-        elif len(files) == 1:
-            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
-            self.darkfiles = files[0]
-        else:
-            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.darkfiles = "%s(%s)" % (method, ",".join(files))
+        self.detector.set_darkfiles(files, method)
+
+    @property
+    def darkfiles(self):
+        return self.detector.darkfiles
 
     def set_flatfiles(self, files, method="mean"):
-        """
-        :param files: file(s) used to compute the dark.
+        """Moved to Detector
+        
+        :param files: file(s) used to compute the flat-field.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
@@ -3515,18 +3485,11 @@ class AzimuthalIntegrator(Geometry):
         Set the flat field from one or mutliple files, averaged
         according to the method provided
         """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_flatfield(None)
-        elif len(files) == 1:
-            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
-            self.flatfiles = files[0]
-        else:
-            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.flatfiles = "%s(%s)" % (method, ",".join(files))
+        self.detector.set_flatfiles(files, method)
+
+    @property
+    def flatfiles(self):
+        return self.detector.flatfiles
 
     def get_empty(self):
         return self._empty
