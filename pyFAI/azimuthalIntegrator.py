@@ -3353,11 +3353,12 @@ class AzimuthalIntegrator(Geometry):
 
         result = Integrate1dResult(radial, spectrum)
         result._set_unit(unit)
-        
-        result._set_has_mask(has_mask)
+
+        result._set_has_mask_applied(has_mask)
         result._set_metadata(metadata)
-        result._set_has_dark_correction(has_dark)
-        result._set_has_flat_correction(has_flat)
+        # TODO
+        # result._set_has_dark_correction(has_dark)
+        # result._set_has_flat_correction(has_flat)
         # result._set_polarization_factor(polarization_factor)
         # result._set_normalization_factor(normalization_factor)
         return result
