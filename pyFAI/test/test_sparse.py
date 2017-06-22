@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "22/06/2017"
 
 
 import unittest
@@ -124,11 +124,53 @@ class TestSparseUtils(unittest.TestCase):
         self.assertTrue(numpy.allclose(csr_out[0], csr_ref[0]), "coef are the same in CSR")
 
 
+class TestContainer(unittest.TestCase):
+    def test_vector(self):
+        nelem = 12
+        cont = sparse_utils.Vector()
+        self.assertEqual(cont.size, 0, "initialized vector is empty")
+        self.assertGreaterEqual(cont.allocated, 4, "Initialized vector has some space")
+        for i in range(nelem):
+            cont.append(i, 0.1 * i)
+        self.assertEqual(cont.size, nelem, "initialized vector is empty")
+        self.assertGreaterEqual(cont.allocated, nelem, "Initialized vector has some space")
+        i, f = cont.get_data()
+        d = abs(numpy.arange(nelem) - i).max()
+        self.assertEqual(d, 0, "result is OK")
+        self.assertLess(abs(f - i / 10.0).max(), 1e-6, "result is OK")
+        rep = str(cont)
+        size = cont.nbytes
+
+    def testcontainer(self):
+        nlines = 11
+        ncol = 12
+        nelem = nlines * ncol
+        cont = sparse_utils.ArrayBuilder(nlines)
+        for i in range(nelem):
+            cont.append(i % nlines, i, 0.1 * i)
+        rep = str(cont)
+        size = cont.nbytes
+        s = numpy.arange(nelem).reshape((ncol, nlines)).T.ravel()
+        a, b, c = cont.as_CSR()
+        err = abs(a - numpy.arange(0, nelem + 1, ncol)).max()
+        self.assertEqual(err, 0, "idxptr OK")
+        err = abs(s - b).max()
+        self.assertEqual(err, 0, "idx OK")
+        err = abs((s / 10.0) - c).max()
+        self.assertLessEqual(err, 1e-6, "value OK: %s" % err)
+        l = cont.as_LUT()
+        s = numpy.arange(nelem).reshape((ncol, nlines)).T
+        self.assertEqual(abs(l["idx"] - s).max(), 0, "LUT idx OK")
+        self.assertLessEqual(abs(l["coef"] - s / 10.0).max(), 1e-6, "LUT coef OK")
+
+
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestSparseBBox("test_LUT"))
     testsuite.addTest(TestSparseBBox("test_CSR"))
     testsuite.addTest(TestSparseUtils("test_conversion"))
+    testsuite.addTest(TestContainer("test_vector"))
+    testsuite.addTest(TestContainer("testcontainer"))
     return testsuite
 
 

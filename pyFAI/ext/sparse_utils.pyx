@@ -28,7 +28,7 @@
 """Common Look-Up table/CSR object creation tools and conversion"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/06/2017"
+__date__ = "22/06/2017"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -120,7 +120,7 @@ cdef class Vector:
 #         int[:] idx
 #         int size, allocated
 
-    def __cinit__(self, int min_size=10):
+    def __cinit__(self, int min_size=4):
         self.allocated = min_size
         self.coef = numpy.empty(self.allocated, dtype=numpy.float32)
         self.idx = numpy.empty(self.allocated, dtype=numpy.int32)
@@ -131,6 +131,14 @@ cdef class Vector:
 
     def __len__(self):
         return self.size
+
+    def __repr__(self):
+        return "Vector of size %i (%i elements allocated)" % (self.size, self.allocated)
+
+    @property
+    def nbytes(self):
+        "Calculate the actual size of the object (in bytes)"
+        return (self.allocated + 1) * 8
 
     def get_data(self):
         return numpy.asarray(self.idx[:self.size]), numpy.asarray(self.coef[:self.size])
@@ -143,7 +151,6 @@ cdef class Vector:
             int pos, new_allocated 
             int[:] newidx
             float[:] newcoef
-#         with gil:
         pos = self.size
         self.size = pos + 1
         if pos >= self.allocated - 1:
@@ -170,7 +177,7 @@ cdef class ArrayBuilder:
 #         int size 
 #         Vector[:] lines
         
-    def __cinit__(self, int nlines, min_size=10):
+    def __cinit__(self, int nlines, min_size=4):
         cdef int i
         self.size = nlines
         nullarray = numpy.array([None] * nlines)
@@ -186,6 +193,20 @@ cdef class ArrayBuilder:
     def __len__(self):
         return self.size
 
+    def __repr__(self):
+        cdef int i, max_line = 0
+        for i in range(self.size):
+            max_line = max(max_line, self.lines[i].size)
+        return "ArrayBuilder of %i lines, the longest is %i" % (self.size, max_line)
+
+    @property
+    def nbytes(self):
+        "Calculate the actual size of the object (in bytes)"
+        cdef int i, sum = 0
+        for i in range(self.size):
+            sum += self.lines[i].nbytes
+        return sum
+    
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.initializedcheck(False)

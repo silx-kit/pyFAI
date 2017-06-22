@@ -32,14 +32,14 @@ cdef class Vector:
     cdef:
         float[:] coef
         int[:] idx
-        int size, allocated
+        readonly int size, allocated
     #  Methods available at the C-level:
     cdef inline void _append(self, int idx, float coef) 
 
 
 cdef class ArrayBuilder:
     cdef:
-        int size 
+        readonly int size 
         Vector[:] lines
     #  Methods available at the C-level:    
     cdef inline void _append(self, int line, int col, float value) 
