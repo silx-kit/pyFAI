@@ -4,7 +4,7 @@
 
 wheel
 numpy
-#Cython
+#cython
 Pillow
 h5py
 fabio
