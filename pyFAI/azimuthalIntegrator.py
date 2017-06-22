@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "22/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -43,7 +43,7 @@ import tempfile
 import threading
 import gc
 import numpy
-from math import pi
+from math import pi, log, ceil
 from numpy import rad2deg
 from .geometry import Geometry
 from . import average
@@ -3298,12 +3298,11 @@ class AzimuthalIntegrator(Geometry):
         writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
-    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
-                 percentile=50, mask=None, restore_mask=True):
-        """
-        Separate bragg signal from powder/amorphous signal using azimuthal integration,
-        median filering and projected back before subtraction.
-
+    def medfilt1d(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
+                  percentile=50, mask=None, metadata=None):
+        """Perform the 2D integration and filter along each row using a median
+        filter
+        
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param npt_azim: number of azimuthal points
@@ -3311,16 +3310,24 @@ class AzimuthalIntegrator(Geometry):
         :param method: pathway for integration and sort
         :param percentile: which percentile use for cutting out
         :param mask: masked out pixels array
-        :param restore_mask: masked pixels have the same value as input data provided
-        :return: bragg, amorphous
+        :return: Integrate1D result like
         """
         if mask is None:
-            mask = self.mask
+            mask = self.detector.mask
+            if mask is None:
+                has_mask = False
+            else:
+                has_mask = "from detector"
+        else:
+            has_mask = "provided"
+
         dummy = numpy.float32(data.min() - 1234.5678)
-        if "ocl" in method and npt_azim & (npt_azim - 1):
+        if "ocl" in method and npt_azim and (npt_azim - 1):
             old = npt_azim
-            npt_azim = int(2 ** numpy.round(numpy.log2(npt_azim)))
-            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s", old, npt_azim)
+            npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
+            if npt_azim != old:
+                logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s",
+                               old, npt_azim)
             # self._ocl_sem.acquire()
         integ2d, radial, _ = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                               unit=unit, method=method,
@@ -3361,6 +3368,38 @@ class AzimuthalIntegrator(Geometry):
 
             spectrum = sorted_[(pos, numpy.arange(npt_rad))]
 
+        result = Integrate1dResult(radial, spectrum)
+        result._set_unit(unit)
+        # TODO
+        # result._set_has_mask(has_mask)
+        # result._set_metadata(metadata)
+        # Once metadata PR is merged
+        # result._set_has_dark_correction(dark is not None)
+        # result._set_has_flat_correction(flat is not None)
+        # result._set_polarization_factor(polarization_factor)
+        # result._set_normalization_factor(normalization_factor)
+        return result
+
+    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
+                 percentile=50, mask=None, restore_mask=True):
+        """
+        Separate bragg signal from powder/amorphous signal using azimuthal integration,
+        median filering and projected back before subtraction.
+
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param percentile: which percentile use for cutting out
+        :param mask: masked out pixels array
+        :param restore_mask: masked pixels have the same value as input data provided
+        :return: bragg, amorphous
+        """
+
+        radial, spectrum = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
+                                          unit=unit, method=method,
+                                          percentile=percentile, mask=mask)
         # This takes 100ms and is the next to be optimized.
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                                     dim1_unit=unit, correctSolidAngle=True)
