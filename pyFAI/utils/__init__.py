@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "15/06/2017"
 __status__ = "production"
 
 import logging
@@ -84,7 +84,7 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 StringTypes = (six.binary_type, six.text_type)
 
 try:
-    from ..fastcrc import crc32
+    from ..ext.fastcrc import crc32
 except:
     from zlib import crc32
 
@@ -938,3 +938,9 @@ def is_far_from_group(pt, lst_pts, d2):
         if dsq <= d2:
             return False
     return True
+
+
+def fully_qualified_name(obj):
+    "Return the fully qualified name of an object"
+    actual_class = obj.__class__.__mro__[0]
+    return actual_class.__module__ + "." + actual_class.__name__

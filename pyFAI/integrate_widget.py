@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "15/06/2017"
 __status__ = "development"
 
 import logging
@@ -358,6 +358,7 @@ class AIWidget(qt.QWidget):
                         fab_img = fabio.open(item)
                         multiframe = (fab_img.nframes > 1)
                         kwarg["data"] = fab_img.data
+                        kwarg["metadata"] = fab_img.header
                         if self.hdf5_path is None:
                             if self.output_path and op.isdir(self.output_path):
                                 outpath = op.join(self.output_path, op.splitext(op.basename(item))[0])
@@ -379,7 +380,9 @@ class AIWidget(qt.QWidget):
                         writer = HDF5Writer(outpath + "_pyFAI.h5")
                         writer.init(config)
                         for i in range(fab_img.nframes):
-                            kwarg["data"] = fab_img.getframe(i).data
+                            frame = fab_img.getframe(i)
+                            kwarg["data"] = frame.data
+                            kwarg["metadata"] = frame.header
                             if "npt_azim" in kwarg:
                                 res = ai.integrate2d(**kwarg)
                             else:

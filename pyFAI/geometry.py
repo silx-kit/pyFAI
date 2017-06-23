@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "21/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -49,11 +49,12 @@ import numpy
 import os
 import threading
 import time
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 from . import detectors
 from . import units
 from .decorators import deprecated
+from .utils import crc32
 from . import utils
 try:
     from .third_party import six
@@ -61,7 +62,6 @@ except ImportError:
     import six
 
 logger = logging.getLogger("pyFAI.geometry")
-
 
 try:
     from .ext import _geometry
@@ -72,11 +72,6 @@ try:
     from .ext import bilinear
 except ImportError:
     bilinear = None
-
-try:
-    from .ext.fastcrc import crc32
-except ImportError:
-    from zlib import crc32
 
 PolarizationArray = namedtuple("PolarizationArray", ["array", "checksum"])
 PolarizationDescription = namedtuple("PolarizationDescription",
@@ -1429,18 +1424,18 @@ class Geometry(object):
             BSize_2: pixel binning factor along the slowst dimention
             WaveLength: wavelength used in meter
         """
-        res = {"PSize_1": self.detector.pixel2,
-               "PSize_2": self.detector.pixel1,
-               "BSize_1": self.detector.binning[1],
-               "BSize_2": self.detector.binning[0],
-               "splineFile": self.detector.splineFile,
-               "Rot_3": None,
-               "Rot_2": None,
-               "Rot_1": None,
-               "Center_2": self._poni1 / self.detector.pixel1,
-               "Center_1": self._poni2 / self.detector.pixel2,
-               "SampleDistance": self.dist
-               }
+
+        res = OrderedDict((("PSize_1", self.detector.pixel2),
+                           ("PSize_2", self.detector.pixel1),
+                           ("BSize_1", self.detector.binning[1]),
+                           ("BSize_2", self.detector.binning[0]),
+                           ("splineFile", self.detector.splineFile),
+                           ("Rot_3", None),
+                           ("Rot_2", None),
+                           ("Rot_1", None),
+                           ("Center_2", self._poni1 / self.detector.pixel1),
+                           ("Center_1", self._poni2 / self.detector.pixel2),
+                           ("SampleDistance", self.dist)))
         if self._wavelength:
             res["WaveLength"] = self._wavelength
         if abs(self.rot1) > 1e-6 or abs(self.rot2) > 1e-6 or abs(self.rot3) > 1e-6:
@@ -1459,12 +1454,42 @@ class Geometry(object):
             raise RuntimeError("Only 6 or 7-uplet are possible")
         self.reset()
 
+    def make_headers(self, type_="list"):
+        """Create a configuration for the
+        
+        :param type: can be "list" or "dict"
+        :return: the header with the proper format  
+        """
+        res = None
+        if type_ == "dict":
+            res = self.getPyFAI()
+        else:  # type_ == "list":
+            f2d = self.getFit2D()
+            res = ["== pyFAI calibration ==",
+                   "Distance Sample to Detector: %s m" % self.dist,
+                   "PONI: %.3e, %.3e m" % (self.poni1, self.poni2),
+                   "Rotations: %.6f %.6f %.6f rad" % (self.rot1, self.rot2, self.rot3),
+                   "",
+                   "== Fit2d calibration ==",
+                   "Distance Sample-beamCenter: %.3f mm" % f2d["directDist"],
+                   "Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]),
+                   "Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRotation"]),
+                   "", str(self.detector),
+                   "   Detector has a mask: %s " % (self.detector.mask is not None),
+                   "   Detector has a dark current: %s " % (self.detector.darkcurrent is not None),
+                   "   detector has a flat field: %s " % (self.detector.flatfield is not None),
+                   ""]
+
+            if self._wavelength is not None:
+                res.append("Wavelength: %s m" % self._wavelength)
+        return res
+
     def setChiDiscAtZero(self):
         """
         Set the position of the discontinuity of the chi axis between
         0 and 2pi.  By default it is between pi and -pi
         """
-        if self.chiDiscAtPi == False:
+        if self.chiDiscAtPi is False:
             return
         with self._sem:
             self.chiDiscAtPi = False
@@ -1478,7 +1503,7 @@ class Geometry(object):
         Set the position of the discontinuity of the chi axis between
         -pi and +pi.  This is the default behavour
         """
-        if self.chiDiscAtPi == True:
+        if self.chiDiscAtPi is True:
             return
         with self._sem:
             self.chiDiscAtPi = True

@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2017"
+__date__ = "13/06/2017"
 __status__ = "production"
 
 import os
@@ -67,48 +67,48 @@ def main():
     parser.add_argument("args", metavar="FILE", type=str, nargs='+',
                         help="Image files to integrate")
     parser.add_argument("-p", dest="ponifile",
-                      type=str, default=None,
-                      help="PyFAI parameter file (.poni)")
+                        type=str, default=None,
+                        help="PyFAI parameter file (.poni)")
     parser.add_argument("-n", "--npt", dest="npt",
-                      type=int, default=None,
-                      help="Number of points in radial dimension")
+                        type=int, default=None,
+                        help="Number of points in radial dimension")
     parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                  help="wavelength of the X-Ray beam in Angstrom", default=None)
+                        help="wavelength of the X-Ray beam in Angstrom", default=None)
     parser.add_argument("-e", "--energy", dest="energy", type=float,
-                  help="energy of the X-Ray beam in keV (hc=%skeV.A)" %
-                  hc, default=None)
+                        help="energy of the X-Ray beam in keV (hc=%skeV.A)" %
+                        hc, default=None)
     parser.add_argument("-u", "--dummy", dest="dummy",
-                      type=float, default=None,
-                      help="dummy value for dead pixels")
+                        type=float, default=None,
+                        help="dummy value for dead pixels")
     parser.add_argument("-U", "--delta_dummy", dest="delta_dummy",
-                      type=float, default=None,
-                      help="delta dummy value")
+                        type=float, default=None,
+                        help="delta dummy value")
     parser.add_argument("-m", "--mask", dest="mask",
-                      type=str, default=None,
-                      help="name of the file containing the mask image")
+                        type=str, default=None,
+                        help="name of the file containing the mask image")
     parser.add_argument("-d", "--dark", dest="dark",
-                      type=str, default=None,
-                      help="name of the file containing the dark current")
+                        type=str, default=None,
+                        help="name of the file containing the dark current")
     parser.add_argument("-f", "--flat", dest="flat",
-                      type=str, default=None,
-                      help="name of the file containing the flat field")
+                        type=str, default=None,
+                        help="name of the file containing the flat field")
 #    parser.add_argument("-b", "--background", dest="background",
 #                      type="string", default=None,
 #                      help="name of the file containing the background")
     parser.add_argument("-P", "--polarization", dest="polarization_factor",
-                      type=float, default=None,
-                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), \
+                        type=float, default=None,
+                        help="Polarization factor, from -1 (vertical) to +1 (horizontal), \
                       default is None for no correction, synchrotrons are around 0.95")
     parser.add_argument("--error-model", dest="error_model",
-                      type=str, default=None,
-                      help="Error model to use. Currently on 'poisson' is implemented ")
+                        type=str, default=None,
+                        help="Error model to use. Currently on 'poisson' is implemented ")
     parser.add_argument("--unit", dest="unit",
-                      type=str, default="q_nm^-1",
-                      help="unit for the radial dimension: can be q_nm^-1, q_A^-1, 2th_deg, \
-                      2th_rad or r_mm")
+                        type=str, default="q_nm^-1",
+                        help="unit for the radial dimension: can be q_nm^-1, q_A^-1, 2th_deg, \
+                          2th_rad or r_mm")
     parser.add_argument("--ext", dest="ext",
-                      type=str, default=".dat",
-                      help="extension of the regrouped filename (.dat)")
+                        type=str, default=".dat",
+                        help="extension of the regrouped filename (.dat)")
     parser.add_argument("--method", dest="method",
                         type=str, default=None,
                         help="Integration method ")
@@ -145,34 +145,36 @@ def main():
             sys.stdout.write("Integrating %s --> " % afile)
             outfile = os.path.splitext(afile)[0] + options.ext
             t0 = time.time()
-            fabioFile = fabio.open(afile)
+            fimg = fabio.open(afile)
             t1 = time.time()
-            if fabioFile.nframes > 1:
-                integrator.integrate1d(data=fabioFile.data,
-                                npt=options.npt or min(fabioFile.data.shape),
+            if fimg.nframes > 1:
+                integrator.integrate1d(data=fimg.data,
+                                npt=options.npt or min(fimg.data.shape),
                                 dummy=options.dummy,
                                 delta_dummy=options.delta_dummy,
                                 filename=outfile,
-                                variance=fabioFile.next().data,
+                                variance=fimg.next().data,
                                 method=method,
                                 unit=options.unit,
                                 error_model=options.error_model,
-                                polarization_factor=options.polarization_factor
+                                polarization_factor=options.polarization_factor,
+                                metadata=fimg.header
                                 )
             else:
-                integrator.integrate1d(data=fabioFile.data,
-                                npt=options.npt or min(fabioFile.data.shape),
+                integrator.integrate1d(data=fimg.data,
+                                npt=options.npt or min(fimg.data.shape),
                                 dummy=options.dummy,
                                 delta_dummy=options.delta_dummy,
                                 filename=outfile,
                                 method=method,
                                 unit=options.unit,
                                 error_model=options.error_model,
-                                polarization_factor=options.polarization_factor)
+                                polarization_factor=options.polarization_factor,
+                                metadata=fimg.header)
             t2 = time.time()
 
             print("%s,\t reading: %.3fs\t 1D integration: %.3fs." %
-                      (outfile, t1 - t0, t2 - t1))
+                                (outfile, t1 - t0, t2 - t1))
 
 
 if __name__ == "__main__":

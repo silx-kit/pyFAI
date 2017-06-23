@@ -31,7 +31,7 @@ Sparse matrix represented using the CompressedSparseRow.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "02/02/2017"
+__date__ = "15/06/2017"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -47,10 +47,7 @@ from libc.stdio cimport printf, fflush, stdout
 
 include "regrid_common.pxi"
 
-try:
-    from fastcrc import crc32
-except:
-    from zlib import crc32
+from ..utils import crc32
 
 
 cdef struct Function:

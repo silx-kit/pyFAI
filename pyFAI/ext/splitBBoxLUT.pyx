@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/05/2017"
+__date__ = "15/06/2017"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -55,10 +55,7 @@ cdef struct lut_point:
 
 dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 
-try:
-    from fastcrc import crc32
-except:
-    from zlib import crc32
+from ..utils import crc32
 
 
 def int0(a):
