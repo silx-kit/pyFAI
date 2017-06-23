@@ -55,10 +55,7 @@ cdef struct lut_point:
 
 dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 
-try:
-    from fastcrc import crc32
-except:
-    from zlib import crc32
+from ..utils import crc32
 
 
 def int0(a):

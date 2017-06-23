@@ -25,7 +25,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-__doc__ = """Calculates histograms of pos0 (tth) weighted by Intensity
+"""Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
@@ -44,10 +44,7 @@ from cython.parallel import prange
 import numpy
 cimport numpy
 include "regrid_common.pxi"
-try:
-    from fastcrc import crc32
-except:
-    from zlib import crc32
+from ..utils import crc32
 
 
 class HistoBBox1d(object):
