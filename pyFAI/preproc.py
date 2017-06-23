@@ -187,7 +187,7 @@ def preproc(raw,
 
         mask |= numpy.logical_not(numpy.isfinite(numerator))
         mask |= numpy.logical_not(numpy.isfinite(denominator))
-        mask |= denominator == 0
+        mask |= (denominator == 0)
         if variance is not None:
             mask |= numpy.logical_not(numpy.isfinite(variance))
 
