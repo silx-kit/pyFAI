@@ -141,7 +141,7 @@ class TestContainer(unittest.TestCase):
         rep = str(cont)
         size = cont.nbytes
 
-    def testcontainer(self):
+    def test_container(self):
         nlines = 11
         ncol = 12
         nelem = nlines * ncol
@@ -170,7 +170,7 @@ def suite():
     testsuite.addTest(TestSparseBBox("test_CSR"))
     testsuite.addTest(TestSparseUtils("test_conversion"))
     testsuite.addTest(TestContainer("test_vector"))
-    testsuite.addTest(TestContainer("testcontainer"))
+    testsuite.addTest(TestContainer("test_container"))
     return testsuite
 
 
