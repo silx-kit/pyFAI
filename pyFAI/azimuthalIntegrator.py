@@ -3372,6 +3372,9 @@ class AzimuthalIntegrator(Geometry):
                 lower = (dummies + numpy.floor(min(percentile) * (npt_azim - dummies) / 100.)).astype(int)
                 upper = (dummies + numpy.ceil(max(percentile) * (npt_azim - dummies) / 100.)).astype(int)
                 bounds = numpy.zeros(sorted_.shape, dtype=int)
+                assert (lower >= 0).all()
+                assert (upper <= npt_azim).all()
+
                 rng = numpy.arange(npt_rad)
                 bounds[lower, rng] = 1
                 bounds[upper, rng] = 1
