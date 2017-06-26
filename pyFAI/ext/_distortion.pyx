@@ -46,7 +46,7 @@ import types
 import os
 import sys
 import time
-logger = logging.getLogger("pyFAI.ext._distortion")
+logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..utils import expand2d
 from ..decorators import timeit
