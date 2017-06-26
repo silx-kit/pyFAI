@@ -1698,7 +1698,7 @@ class Geometry(object):
                                            axis_offset=polarization_axis_offset,
                                            with_checksum=False)
         if flat is not None:
-            assert dark.shape == tuple(shape)
+            assert flat.shape == tuple(shape)
             calcimage *= flat
         if dark is not None:
             assert dark.shape == tuple(shape)
