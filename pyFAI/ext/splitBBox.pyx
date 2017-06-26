@@ -37,6 +37,11 @@ __license__ = "MIT"
 
 include "regrid_common.pxi"
 
+import logging
+logger = logging.getLogger("pyFAI.ext.splitBBox")
+
+from . import sparse_utils
+from .sparse_utils cimport ArrayBuilder
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
