@@ -128,6 +128,8 @@ if BACKEND == "SILX":
                     'name': "inferno",
                     'normalization': 'log',
                     'autoscale': True,
+                    'vmax': None,
+                    'vmin': None,
                 }
                 self.__plot2D.setDefaultColormap(colormap)
             except:
