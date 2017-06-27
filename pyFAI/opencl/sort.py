@@ -34,7 +34,7 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "26/06/2017"
+__date__ = "27/06/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,7 +44,7 @@ import threading
 import numpy
 import gc
 from .utils import concatenate_cl_kernel
-from .common import ocl, pyopencl, release_cl_buffers, mf
+from .common import ocl, pyopencl, release_cl_buffers, mf, kernel_workgroup_size
 if ocl:
     import pyopencl.array
 else:
@@ -77,6 +77,10 @@ class Separator(OpenclProcessing):
 
         self.allocate_buffers()
         self.compile_kernels()
+        if block_size is None:
+            self.block_size = kernel_workgroup_size(self.program, "filter_vertical")
+        else:
+            self.block_size = min(block_size, kernel_workgroup_size(self.program, "filter_vertical"))
         self.set_kernel_arguments()
 
     def __repr__(self):
@@ -160,7 +164,7 @@ class Separator(OpenclProcessing):
             if isinstance(data, pyopencl.array.Array):
                 wg = min(32, self.block_size)
                 size = ((self.npt_height * self.npt_width) + wg - 1) & ~(wg - 1)
-                evt = self._cl_program.copy_pad(self.queue, (size,), (wg,), data.data, self.cl_mem["input_data"].data, data.size, self.cl_mem["input_data"].size, dummy)
+                evt = self.program.copy_pad(self.queue, (size,), (wg,), data.data, self.cl_mem["input_data"].data, data.size, self.cl_mem["input_data"].size, dummy)
                 events.append(("copy_pad", evt))
             else:
                 data_big = numpy.zeros((self.npt_height, self.npt_width), dtype=numpy.float32) + dummy
@@ -180,11 +184,11 @@ class Separator(OpenclProcessing):
         if not local_mem or local_mem.size < ws * 32:
             local_mem = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
             self.cl_kernel_args["bsort_vertical"][-1] = local_mem
-        evt = self._cl_program.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *self.cl_kernel_args["bsort_vertical"])
+        evt = self.program.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *self.cl_kernel_args["bsort_vertical"])
         events.append(("bsort_vertical", evt))
 
         if self.profile:
-            with self._sem:
+            with self.sem:
                 self.events += events
         return self.cl_mem["input_data"]
 
@@ -228,11 +232,11 @@ class Separator(OpenclProcessing):
         if not local_mem or local_mem.size < ws * 32:
             local_mem = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
             self.cl_kernel_args["bsort_horizontal"][-1] = local_mem
-        evt = self._cl_program.bsort_horizontal(self.queue, (self.npt_height, ws), (1, ws), *self.cl_kernel_args["bsort_horizontal"])
+        evt = self.program.bsort_horizontal(self.queue, (self.npt_height, ws), (1, ws), *self.cl_kernel_args["bsort_horizontal"])
         events.append(("bsort_horizontal", evt))
 
         if self.profile:
-            with self._sem:
+            with self.sem:
                 self.events += events
         return self.cl_mem["input_data"]
 
@@ -252,11 +256,11 @@ class Separator(OpenclProcessing):
         _sorted = self.sort_vertical(data, dummy)
         wg = min(32, self.block_size)
         ws = (self.npt_width + wg - 1) & ~(wg - 1)
-        with self._sem:
+        with self.sem:
             args = self.cl_kernel_args["filter_vertical"]
             args[-2] = dummy
             args[-1] = numpy.float32(quantile)
-            evt = self._cl_program.filter_vertical(self.queue, (ws,), (wg,), *args)
+            evt = self.program.filter_vertical(self.queue, (ws,), (wg,), *args)
             self.events.append(("filter_vertical", evt))
         return self.cl_mem["vector_vertical"]
 
@@ -276,11 +280,11 @@ class Separator(OpenclProcessing):
         _sorted = self.sort_horizontal(data, dummy)
         wg = min(32, self.block_size)
         ws = (self.npt_height + wg - 1) & ~(wg - 1)
-        with self._sem:
+        with self.sem:
             args = self.cl_kernel_args["filter_horizontal"]
             args[-2] = dummy
             args[-1] = numpy.float32(quantile)
-            evt = self._cl_program.filter_horizontal(self.queue, (ws,), (wg,), *args)
+            evt = self.program.filter_horizontal(self.queue, (ws,), (wg,), *args)
             self.events.append(("filter_horizontal", evt))
         return self.cl_mem["vector_horizontal"]
 
@@ -301,11 +305,11 @@ class Separator(OpenclProcessing):
         _sorted = self.sort_vertical(data, dummy)
         wg = min(32, self.block_size)
         ws = (self.npt_width + wg - 1) & ~(wg - 1)
-        with self._sem:
+        with self.sem:
             args = self.cl_kernel_args["filter_vertical"]
             args[-2] = dummy
             args[-1] = numpy.float32(quantile)
-            evt = self._cl_program.filter_vertical(self.queue, (ws,), (wg,), *args)
+            evt = self.program.filter_vertical(self.queue, (ws,), (wg,), *args)
             self.events.append(("filter_vertical", evt))
         return self.cl_mem["vector_vertical"]
 
@@ -326,32 +330,10 @@ class Separator(OpenclProcessing):
         _sorted = self.sort_horizontal(data, dummy)
         wg = min(32, self.block_size)
         ws = (self.npt_height + wg - 1) & ~(wg - 1)
-        with self._sem:
+        with self.sem:
             args = self.cl_kernel_args["filter_horizontal"]
             args[-2] = dummy
             args[-1] = numpy.float32(quantile)
-            evt = self._cl_program.filter_horizontal(self.queue, (ws,), (wg,), *args)
+            evt = self.program.filter_horizontal(self.queue, (ws,), (wg,), *args)
             self.events.append(("filter_horizontal", evt))
         return self.cl_mem["vector_horizontal"]
-
-    def log_profile(self):
-        """
-        If we are in debugging mode, prints out all timing for every single OpenCL call
-        """
-        t = 0.0
-        if self.profile:
-            for e in self.events:
-                if "__len__" in dir(e) and len(e) >= 2:
-                    et = 1e-6 * (e[1].profile.end - e[1].profile.start)
-                    print("%50s:\t%.3fms" % (e[0], et))
-                    t += et
-
-        print("_" * 70)
-        print("%50s:\t%.3fms" % ("Total execution time", t))
-
-    def reset_timer(self):
-        """
-        Resets the profiling timers
-        """
-        with self._sem:
-            self.events = []
