@@ -3336,7 +3336,7 @@ class AzimuthalIntegrator(Geometry):
                                  polarization_factor=polarization_factor,
                                  normalization_factor=normalization_factor)
         integ2d = res2d.intensity
-        if "ocl" in method:
+        if ("ocl" in method) and (ocl is not None):
             if "csr" in method and self._ocl_csr_integr:
                 ctx = self._ocl_csr_integr.ctx
             elif "lut" in method and self._ocl_lut_integr:
