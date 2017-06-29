@@ -34,22 +34,19 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "27/06/2017"
+__date__ = "29/06/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
 import logging
-import threading
 import numpy
-import gc
-from .utils import concatenate_cl_kernel
-from .common import ocl, pyopencl, release_cl_buffers, mf, kernel_workgroup_size
+from .common import ocl, release_cl_buffers, kernel_workgroup_size, pyopencl
 if ocl:
     import pyopencl.array
 else:
     raise ImportError("pyopencl is not installed or no device is available")
-from .processing import EventDescription, OpenclProcessing, BufferDescription
+from .processing import OpenclProcessing
 logger = logging.getLogger("pyFAI.opencl.sort")
 
 
@@ -133,15 +130,30 @@ class Separator(OpenclProcessing):
         self.cl_kernel_args["bsort_horizontal"] = [self.cl_mem["input_data"].data, None]
 
         self.cl_kernel_args["filter_vertical"] = [self.cl_mem["input_data"].data,
-                                                   self.cl_mem["vector_vertical"].data,
-                                                   numpy.uint32(self.npt_width),
-                                                   numpy.uint32(self.npt_height),
-                                                   numpy.float32(0), numpy.float32(0.5), ]
+                                                  self.cl_mem["vector_vertical"].data,
+                                                  numpy.uint32(self.npt_width),
+                                                  numpy.uint32(self.npt_height),
+                                                  numpy.float32(0), numpy.float32(0.5), ]
         self.cl_kernel_args["filter_horizontal"] = [self.cl_mem["input_data"].data,
-                                                     self.cl_mem["vector_horizontal"].data,
-                                                     numpy.uint32(self.npt_width),
-                                                     numpy.uint32(self.npt_height),
-                                                     numpy.float32(0), numpy.float32(0.5), ]
+                                                    self.cl_mem["vector_horizontal"].data,
+                                                    numpy.uint32(self.npt_width),
+                                                    numpy.uint32(self.npt_height),
+                                                    numpy.float32(0), numpy.float32(0.5), ]
+        self.cl_kernel_args["trimmed_mean_vertical"] = [self.cl_mem["input_data"].data,
+                                                        self.cl_mem["vector_vertical"].data,
+                                                        numpy.uint32(self.npt_width),
+                                                        numpy.uint32(self.npt_height),
+                                                        numpy.float32(0),
+                                                        numpy.float32(0.5),
+                                                        numpy.float32(0.5)]
+        self.cl_kernel_args["trimmed_mean_horizontal"] = [self.cl_mem["input_data"].data,
+                                                          self.cl_mem["vector_horizontal"].data,
+                                                          numpy.uint32(self.npt_width),
+                                                          numpy.uint32(self.npt_height),
+                                                          numpy.float32(0),
+                                                          numpy.float32(0.5),
+                                                          numpy.float32(0.5)]
+
 
     def sort_vertical(self, data, dummy=None):
         """
@@ -306,14 +318,15 @@ class Separator(OpenclProcessing):
         wg = min(32, self.block_size)
         ws = (self.npt_width + wg - 1) & ~(wg - 1)
         with self.sem:
-            args = self.cl_kernel_args["filter_vertical"]
-            args[-2] = dummy
-            args[-1] = numpy.float32(quantile)
-            evt = self.program.filter_vertical(self.queue, (ws,), (wg,), *args)
-            self.events.append(("filter_vertical", evt))
+            args = self.cl_kernel_args["trimmed_mean_vertical"]
+            args[-3] = dummy
+            args[-2] = numpy.float32(min(quantiles))
+            args[-1] = numpy.float32(max(quantiles))
+            evt = self.program.trimmed_mean_vertical(self.queue, (ws,), (wg,), *args)
+            self.events.append(("trimmed_mean_vertical", evt))
         return self.cl_mem["vector_vertical"]
 
-    def trimmed_mean_horizontal(self, data, dummy=None, quantile=(0.5, 0.5)):
+    def trimmed_mean_horizontal(self, data, dummy=None, quantiles=(0.5, 0.5)):
         """
         Perform a trimmed mean (mean without the extremes) 
         After sorting the data along the vertical axis (azimuthal)
@@ -331,9 +344,10 @@ class Separator(OpenclProcessing):
         wg = min(32, self.block_size)
         ws = (self.npt_height + wg - 1) & ~(wg - 1)
         with self.sem:
-            args = self.cl_kernel_args["filter_horizontal"]
-            args[-2] = dummy
-            args[-1] = numpy.float32(quantile)
-            evt = self.program.filter_horizontal(self.queue, (ws,), (wg,), *args)
-            self.events.append(("filter_horizontal", evt))
+            args = self.cl_kernel_args["trimmed_mean_horizontal"]
+            args[-3] = dummy
+            args[-2] = numpy.float32(min(quantiles))
+            args[-1] = numpy.float32(max(quantiles))
+            evt = self.program.trimmed_mean_horizontal(self.queue, (ws,), (wg,), *args)
+            self.events.append(("trimmed_mean_horizontal", evt))
         return self.cl_mem["vector_horizontal"]

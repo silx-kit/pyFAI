@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2017"
+__date__ = "29/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3357,10 +3357,16 @@ class AzimuthalIntegrator(Geometry):
             if not self._ocl_sorter:
                 logger.info("reset opencl sorter")
                 self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
-            if horizontal:
-                spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+            if "__len__" in dir(percentile):
+                if horizontal:
+                    spectrum = self._ocl_sorter.trimmed_mean_horizontal(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+                else:
+                    spectrum = self._ocl_sorter.trimmed_mean_vertical(rdata, dummy, [(i / 100.0) for i in percentile]).get()
             else:
-                spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
+                if horizontal:
+                    spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+                else:
+                    spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
         else:
             dummies = (integ2d == dummy).sum(axis=0)
             # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
@@ -3369,8 +3375,8 @@ class AzimuthalIntegrator(Geometry):
 
             if "__len__" in dir(percentile):
                 # mean over the valid value
-                lower = (dummies + numpy.floor(min(percentile) * (npt_azim - dummies) / 100.)).astype(int)
-                upper = (dummies + numpy.ceil(max(percentile) * (npt_azim - dummies) / 100.)).astype(int)
+                lower = dummies + (numpy.floor(min(percentile) * (npt_azim - dummies) / 100.)).astype(int)
+                upper = dummies + (numpy.ceil(max(percentile) * (npt_azim - dummies) / 100.)).astype(int)
                 bounds = numpy.zeros(sorted_.shape, dtype=int)
                 assert (lower >= 0).all()
                 assert (upper <= npt_azim).all()
@@ -3385,7 +3391,7 @@ class AzimuthalIntegrator(Geometry):
             else:
                 # read only the valid value
                 dummies = (integ2d == dummy).sum(axis=0)
-                pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)  # .clip(0, npt_azim - 1)
+                pos = dummies + (numpy.round(percentile * (npt_azim - dummies) / 100.)).astype(int)
                 assert (pos >= 0).all()
                 assert (pos <= npt_azim).all()
                 spectrum = sorted_[(pos, numpy.arange(npt_rad))]
