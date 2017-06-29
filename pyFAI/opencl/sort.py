@@ -154,7 +154,6 @@ class Separator(OpenclProcessing):
                                                           numpy.float32(0.5),
                                                           numpy.float32(0.5)]
 
-
     def sort_vertical(self, data, dummy=None):
         """
         Sort the data along the vertical axis (azimuthal)

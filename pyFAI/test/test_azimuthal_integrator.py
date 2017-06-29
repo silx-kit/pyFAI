@@ -250,7 +250,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr", percentile=(20, 80))
         rwp = Rwp(ref, ocl)
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
-        self.assertLess(rwp, 1, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
+        self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
 
 
 class TestFlatimage(unittest.TestCase):
