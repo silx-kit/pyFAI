@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/06/2017"
+__date__ = "29/06/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -259,7 +259,7 @@ class Geometry(object):
             p3 = tmp[..., 0]
         else:
             p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
-        if use_cython and _geometry:
+        if use_cython and (_geometry is not None):
             t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3)
         else:
             p1 = p1 - poni1
@@ -297,7 +297,7 @@ class Geometry(object):
         :rtype: float or array of floats.
         """
 
-        if path == "cython" and _geometry:
+        if (path == "cython") and (_geometry is not None):
             if param is None:
                 dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
                                 self._poni2, self._rot1, self._rot2, self._rot3
@@ -337,7 +337,7 @@ class Geometry(object):
             raise RuntimeError(("Scattering vector q cannot be calculated"
                                 " without knowing wavelength !!!"))
 
-        if _geometry and path == "cython":
+        if (_geometry is not None) and (path == "cython"):
             if param is None:
                 dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
                                 self._poni2, self._rot1, self._rot2, self._rot3
@@ -373,7 +373,7 @@ class Geometry(object):
         :rtype: float or array of floats.
         """
 
-        if _geometry and path == "cython":
+        if (_geometry is not None) and (path == "cython"):
             if param is None:
                 dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
                                 self._poni2, self._rot1, self._rot2, self._rot3
@@ -520,7 +520,7 @@ class Geometry(object):
         """
         p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2)
 
-        if path == "cython" and _geometry:
+        if (path == "cython") and (_geometry is not None):
             tmp = _geometry.calc_chi(L=self._dist,
                                      rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
                                      pos1=p1, pos2=p2, pos3=p3)
@@ -888,7 +888,7 @@ class Geometry(object):
             corner = self.corner_array(shape, None)
             with self._sem:
                 if self._cached_array.get(key) is None:
-                    if use_cython:
+                    if use_cython and (_geometry is not None):
                         delta = _geometry.calc_delta_chi(center, corner)
                         self._cached_array[key] = delta
                     else:
@@ -1039,7 +1039,7 @@ class Geometry(object):
             orth /= length
             # calculate the cosine of the vector using the dot product
             return (t * orth).sum(axis=-1).reshape(d1.shape)
-        if path == "cython":
+        if (_geometry is not None) and (path == "cython"):
             cosa = _geometry.calc_cosa(self._dist, p1, p2)
         else:
             cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
