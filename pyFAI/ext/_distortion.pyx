@@ -46,7 +46,7 @@ import types
 import os
 import sys
 import time
-logger = logging.getLogger("pyFAI._distortion")
+logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..utils import expand2d
 from ..decorators import timeit
@@ -56,7 +56,12 @@ except ImportError:
     import six
 import fabio
 
-include "sparse_common.pxi"
+#include "sparse_common.pxi"
+from sparse_utils cimport ArrayBuilder, lut_point 
+from sparse_utils import ArrayBuilder, dtype_lut
+# cdef struct lut_point:
+#     int idx
+#     float coef
 
 cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
@@ -265,7 +270,7 @@ def calc_pos(floating[:, :, :, ::1] pixel_corners not None,
         float all_min0, all_max0, all_max1, all_min1
         float p0, p1
 
-    if (pixel1 == 0.0) or (pixel2 == 0):
+    if (pixel1 == 0.0) or (pixel2 == 0.0):
         raise RuntimeError("Pixel size cannot be null -> Zero division error")
 
     dim0 = pixel_corners.shape[0]
@@ -1325,6 +1330,7 @@ class Distortion(object):
                 lout[i] += lin[idx] * coef
         return out[:img_shape[0], :img_shape[1]]
 
+    @timeit
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
