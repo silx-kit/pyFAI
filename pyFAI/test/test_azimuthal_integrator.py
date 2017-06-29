@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/04/2017"
+__date__ = "29/06/2017"
 
 
 import unittest
@@ -141,7 +141,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             six.moves.input("Press enter to quit")
-        assert rwp < 11
+        self.assertLess(rwp, 11, "Rwp numpy/fit2d: %.3f" % rwp)
 
     def test_cython_vs_fit2d(self):
         """
@@ -150,8 +150,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
 #        logger.info(self.ai.__repr__())
         tth, I = self.ai.xrpd_cython(self.data,
                                      len(self.fit2d), self.tmpfiles["cython"], correctSolidAngle=False, pixelSize=None)
-#        logger.info(tth)
-#        logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -165,7 +163,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             six.moves.input("Press enter to quit")
-        assert rwp < 11
+        self.assertLess(rwp, 11, "Rwp cython/fit2d: %.3f" % rwp)
 
     def test_cythonSP_vs_fit2d(self):
         """
@@ -197,7 +195,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             six.moves.input("Press enter to quit")
-        assert rwp < 11
+        self.assertLess(rwp, 11, "Rwp cythonSP/fit2d: %.3f" % rwp)
 
     def test_cython_vs_numpy(self):
         """
@@ -232,7 +230,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.show()
             six.moves.input("Press enter to quit")
 
-        assert rwp < 3
+        self.assertLess(rwp, 3, "Rwp cython/numpy: %.3f" % rwp)
 
     def test_separate(self):
         "test separate with a mask. issue #209 regression test"
@@ -240,6 +238,19 @@ class TestAzimHalfFrelon(unittest.TestCase):
         bragg, amorphous = self.ai.separate(self.data, mask=msk)
         self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
         self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
+
+    def test_medfilt1d(self):
+        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr")
+        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr")
+        rwp = Rwp(ref, ocl)
+        logger.info("test_medfilt1d median Rwp = %.3f", rwp)
+        self.assertLess(rwp, 1, "Rwp medfilt1d Numpy/OpenCL: %.3f" % rwp)
+
+        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr", percentile=(20, 80))
+        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr", percentile=(20, 80))
+        rwp = Rwp(ref, ocl)
+        logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
+        self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
 
 
 class TestFlatimage(unittest.TestCase):
@@ -389,6 +400,7 @@ def suite():
     testsuite.addTest(TestAzimHalfFrelon("test_cythonSP_vs_fit2d"))
     testsuite.addTest(TestAzimHalfFrelon("test_cython_vs_numpy"))
     testsuite.addTest(TestAzimHalfFrelon("test_separate"))
+    testsuite.addTest(TestAzimHalfFrelon("test_medfilt1d"))
     testsuite.addTest(TestFlatimage("test_splitPixel"))
     testsuite.addTest(TestFlatimage("test_splitBBox"))
     testsuite.addTest(TestSetter("test_flat"))

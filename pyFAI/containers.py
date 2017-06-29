@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/06/2017"
+__date__ = "26/06/2017"
 __status__ = "development"
 
 
@@ -42,6 +42,8 @@ class IntegrateResult(tuple):
     """
 
     def __init__(self):
+        self._method_called = None
+        self._compute_engine = None
         self._sum = None
         self._count = None
         self._unit = None
@@ -51,6 +53,24 @@ class IntegrateResult(tuple):
         self._normalization_factor = None
         self._polarization_factor = None
         self._metadata = None
+        self._npt_azim = None
+        self._percentile = None
+
+    @property
+    def method_called(self):
+        "return the name of the method called"
+        return self._method_called
+
+    def _set_method_called(self, value):
+        self._method_called = value
+
+    @property
+    def compute_engine(self):
+        "return the name of the compute engine, like CSR"
+        return self._compute_engine
+
+    def _set_compute_engine(self, value):
+        self._compute_engine = value
 
     @property
     def sum(self):
@@ -186,6 +206,22 @@ class IntegrateResult(tuple):
         :type metadata: JSON serializable dict object
         """
         self._metadata = metadata
+
+    @property
+    def percentile(self):
+        "for median filter along the azimuth, position of the centile retrieved"
+        return self._percentile
+
+    def _set_percentile(self, value):
+        self._percentile = value
+
+    @property
+    def npt_azim(self):
+        "for median filter along the azimuth, number of azimuthal bin initially used"
+        return self._npt_azim
+
+    def _set_npt_azim(self, value):
+        self._npt_azim = value
 
 
 class Integrate1dResult(IntegrateResult):

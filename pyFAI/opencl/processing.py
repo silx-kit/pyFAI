@@ -36,22 +36,21 @@ Common OpenCL abstract base classes for different processing
 
 from __future__ import absolute_import, print_function, division
 
-
-
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "26/06/2017"
 __status__ = "stable"
 
 
 import logging
+import os
 import gc
 from collections import namedtuple
 import numpy
 import threading
-from .common import ocl, pyopencl
+from .common import ocl, pyopencl, release_cl_buffers
 from .utils import concatenate_cl_kernel
 
 
@@ -95,6 +94,7 @@ class OpenclProcessing(object):
         self.cl_mem = {}  # dict with all buffer allocated
         self.cl_program = None  # The actual OpenCL program
         self.cl_kernel_args = {}  # dict with all kernel arguments
+        self.queue = None
         if ctx:
             self.ctx = ctx
             device_name = self.ctx.devices[0].name.strip()
@@ -241,6 +241,13 @@ class OpenclProcessing(object):
         out.append("%50s:\t%.3fms" % ("Total execution time", t))
         logger.info(os.linesep.join(out))
         return out
+
+    def reset_profile(self):
+        """
+        Resets the profiling timers
+        """
+        with self.sem:
+            self.events = []
 
 # This should be implemented by concrete class
 #     def __copy__(self):

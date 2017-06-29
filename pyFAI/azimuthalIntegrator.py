@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/06/2017"
+__date__ = "29/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -43,14 +43,13 @@ import tempfile
 import threading
 import gc
 import numpy
-from math import pi
+from math import pi, log, ceil
 from numpy import rad2deg
 from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
 from .decorators import deprecated
-from .containers import Integrate1dResult
-from .containers import Integrate2dResult
+from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
 
@@ -2658,6 +2657,8 @@ class AzimuthalIntegrator(Geometry):
             qAxis = qAxis * pos0_scale
 
         result = Integrate1dResult(qAxis, I, sigma)
+        result._set_method_called("integrate1d")
+        result._set_compute_engine(method)
         result._set_unit(unit)
         result._set_sum(sum_)
         result._set_count(count)
@@ -2755,7 +2756,7 @@ class AzimuthalIntegrator(Geometry):
         if mask is None:
             has_mask = "from detector"
             mask = self.mask
-            mask_crc = self.detector.get_mask_crc
+            mask_crc = self.detector.get_mask_crc()
             if mask is None:
                 has_mask = False
                 mask_crc = None
@@ -3113,6 +3114,8 @@ class AzimuthalIntegrator(Geometry):
         bins_azim = bins_azim * 180.0 / pi
 
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result._set_method_called("integrate2d")
+        result._set_compute_engine(method)
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
@@ -3281,34 +3284,59 @@ class AzimuthalIntegrator(Geometry):
         writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
-    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
-                 percentile=50, mask=None, restore_mask=True):
-        """
-        Separate bragg signal from powder/amorphous signal using azimuthal integration,
-        median filering and projected back before subtraction.
-
+    def medfilt1d(self, data, npt_rad=1024, npt_azim=512,
+                  correctSolidAngle=True,
+                  polarization_factor=None, dark=None, flat=None,
+                  method="splitpixel", unit=units.Q,
+                  percentile=50, mask=None, normalization_factor=1.0, metadata=None):
+        """Perform the 2D integration and filter along each row using a median
+        filter
+        
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param npt_azim: number of azimuthal points
+        :param correctSolidAngle: correct for solid angle of each pixel if True
+        :type correctSolidAngle: bool    
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+               0 for circular polarization or random,
+               None for no correction,
+               True for using the former correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
         :param percentile: which percentile use for cutting out
+                           percentil can be a 2-tuple to specify a region to 
+                           average out
         :param mask: masked out pixels array
-        :param restore_mask: masked pixels have the same value as input data provided
-        :return: bragg, amorphous
+        :param normalization_factor: Value of a normalization monitor
+        :type normalization_factor: float
+        :param metadata: any other metadata, 
+        :type metadata: JSON serializable dict
+        :return: Integrate1D like result like
         """
-        if mask is None:
-            mask = self.mask
-        dummy = numpy.float32(data.min() - 1234.5678)
-        if "ocl" in method and npt_azim & (npt_azim - 1):
+
+        dummy = numpy.finfo(numpy.float32).min
+
+        if "ocl" in method and npt_azim and (npt_azim - 1):
             old = npt_azim
-            npt_azim = int(2 ** numpy.round(numpy.log2(npt_azim)))
-            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s", old, npt_azim)
+            npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
+            if npt_azim != old:
+                logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s",
+                               old, npt_azim)
             # self._ocl_sem.acquire()
-        integ2d, radial, _ = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
-                                              unit=unit, method=method,
-                                              dummy=dummy, correctSolidAngle=True)
-        if "ocl" in method:
+        res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
+                                 flat=flat, dark=dark,
+                                 unit=unit, method=method,
+                                 dummy=dummy,
+                                 correctSolidAngle=correctSolidAngle,
+                                 polarization_factor=polarization_factor,
+                                 normalization_factor=normalization_factor)
+        integ2d = res2d.intensity
+        if ("ocl" in method) and (ocl is not None):
             if "csr" in method and self._ocl_csr_integr:
                 ctx = self._ocl_csr_integr.ctx
             elif "lut" in method and self._ocl_lut_integr:
@@ -3329,21 +3357,79 @@ class AzimuthalIntegrator(Geometry):
             if not self._ocl_sorter:
                 logger.info("reset opencl sorter")
                 self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
-            if horizontal:
-                spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+            if "__len__" in dir(percentile):
+                if horizontal:
+                    spectrum = self._ocl_sorter.trimmed_mean_horizontal(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+                else:
+                    spectrum = self._ocl_sorter.trimmed_mean_vertical(rdata, dummy, [(i / 100.0) for i in percentile]).get()
             else:
-                spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
+                if horizontal:
+                    spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+                else:
+                    spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
         else:
             dummies = (integ2d == dummy).sum(axis=0)
             # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
             sorted_ = numpy.zeros((npt_azim + 1, npt_rad))
             sorted_[:npt_azim, :] = numpy.sort(integ2d, axis=0)
-            pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)  # .clip(0, npt_azim - 1)
-            assert (pos >= 0).all()
-            assert (pos <= npt_azim).all()
 
-            spectrum = sorted_[(pos, numpy.arange(npt_rad))]
+            if "__len__" in dir(percentile):
+                # mean over the valid value
+                lower = dummies + (numpy.floor(min(percentile) * (npt_azim - dummies) / 100.)).astype(int)
+                upper = dummies + (numpy.ceil(max(percentile) * (npt_azim - dummies) / 100.)).astype(int)
+                bounds = numpy.zeros(sorted_.shape, dtype=int)
+                assert (lower >= 0).all()
+                assert (upper <= npt_azim).all()
 
+                rng = numpy.arange(npt_rad)
+                bounds[lower, rng] = 1
+                bounds[upper, rng] = 1
+                valid = (numpy.cumsum(bounds, axis=0) % 2)
+                invalid = numpy.logical_not(valid)
+                sorted_[invalid] = numpy.nan
+                spectrum = numpy.nanmean(sorted_, axis=0)
+            else:
+                # read only the valid value
+                dummies = (integ2d == dummy).sum(axis=0)
+                pos = dummies + (numpy.round(percentile * (npt_azim - dummies) / 100.)).astype(int)
+                assert (pos >= 0).all()
+                assert (pos <= npt_azim).all()
+                spectrum = sorted_[(pos, numpy.arange(npt_rad))]
+
+        result = Integrate1dResult(res2d.radial, spectrum)
+        result._set_method_called("medfilt1d")
+        result._set_compute_engine(method)
+        result._set_percentile(percentile)
+        result._set_npt_azim(npt_azim)
+        result._set_unit(unit)
+        result._set_has_mask_applied(res2d.has_mask_applied)
+        result._set_metadata(metadata)
+        result._set_has_dark_correction(res2d.has_dark_correction)
+        result._set_has_flat_correction(res2d.has_flat_correction)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        return result
+
+    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
+                 percentile=50, mask=None, restore_mask=True):
+        """
+        Separate bragg signal from powder/amorphous signal using azimuthal integration,
+        median filering and projected back before subtraction.
+
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param percentile: which percentile use for cutting out
+        :param mask: masked out pixels array
+        :param restore_mask: masked pixels have the same value as input data provided
+        :return: bragg, amorphous
+        """
+
+        radial, spectrum = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
+                                          unit=unit, method=method,
+                                          percentile=percentile, mask=mask)
         # This takes 100ms and is the next to be optimized.
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                                     dim1_unit=unit, correctSolidAngle=True)

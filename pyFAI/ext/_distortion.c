@@ -2709,10 +2709,10 @@ static const char __pyx_k_A0_s_A1_s_B0_s_B1_s_C0_s_C1_s_D[] = " A0=%s; A1=%s; B0
 static const char __pyx_k_Patching_image_as_image_is_ix_i[] = "Patching image as image is %ix%i and expected input is %ix%i and output is %ix%i";
 static const char __pyx_k_The_look_up_table_has_dimension[] = "The look-up table has dimension 0 which is a non-sense.";
 static const char __pyx_k_This_class_applies_a_distortion[] = "\n\n    This class applies a distortion correction on an image.\n\n    It is also able to apply an inversion of the correction.\n\n    ";
+static const char __pyx_k_home_kieffer_workspace_pyFAI_py[] = "/home/kieffer/workspace/pyFAI/pyFAI/ext/_distortion.pyx";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_shape_out0_shape_out1_LUT_shape[] = "shape_out0 * shape_out1 == LUT.shape[0]";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
-static const char __pyx_k_users_kieffer_workspace_400_pyF[] = "/users/kieffer/workspace-400/pyFAI/pyFAI/ext/_distortion.pyx";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static const char __pyx_k_CSR_matrix_3f_MByte_Max_source_p[] = "CSR matrix: %.3f MByte; Max source pixel in target: %i, average splitting: %.2f";
 static const char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
@@ -2927,6 +2927,7 @@ static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_n_s_getLogger;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
+static PyObject *__pyx_kp_s_home_kieffer_workspace_pyFAI_py;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_i0;
 static PyObject *__pyx_n_s_i1;
@@ -3034,7 +3035,7 @@ static PyObject *__pyx_n_s_pos1min;
 static PyObject *__pyx_n_s_pos_corners;
 static PyObject *__pyx_n_s_prepare;
 static PyObject *__pyx_n_s_print;
-static PyObject *__pyx_kp_s_pyFAI_ext__distortion;
+static PyObject *__pyx_n_s_pyFAI_ext__distortion;
 static PyObject *__pyx_n_s_pyx_getbuffer;
 static PyObject *__pyx_n_s_pyx_vtable;
 static PyObject *__pyx_n_s_qualname;
@@ -3099,7 +3100,6 @@ static PyObject *__pyx_n_s_uncorrect_CSR;
 static PyObject *__pyx_n_s_uncorrect_LUT;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
-static PyObject *__pyx_kp_s_users_kieffer_workspace_400_pyF;
 static PyObject *__pyx_n_s_utils;
 static PyObject *__pyx_n_s_val;
 static PyObject *__pyx_n_s_value;
@@ -3321,44 +3321,43 @@ static PyObject *__pyx_tuple__130;
 static PyObject *__pyx_tuple__134;
 static PyObject *__pyx_tuple__135;
 static PyObject *__pyx_tuple__136;
-static PyObject *__pyx_tuple__137;
-static PyObject *__pyx_tuple__139;
-static PyObject *__pyx_tuple__141;
-static PyObject *__pyx_tuple__143;
-static PyObject *__pyx_tuple__145;
-static PyObject *__pyx_tuple__147;
-static PyObject *__pyx_tuple__149;
-static PyObject *__pyx_tuple__151;
-static PyObject *__pyx_tuple__153;
-static PyObject *__pyx_tuple__155;
+static PyObject *__pyx_tuple__138;
+static PyObject *__pyx_tuple__140;
+static PyObject *__pyx_tuple__142;
+static PyObject *__pyx_tuple__144;
+static PyObject *__pyx_tuple__146;
+static PyObject *__pyx_tuple__148;
+static PyObject *__pyx_tuple__150;
+static PyObject *__pyx_tuple__152;
+static PyObject *__pyx_tuple__154;
+static PyObject *__pyx_tuple__156;
 static PyObject *__pyx_tuple__157;
-static PyObject *__pyx_tuple__158;
-static PyObject *__pyx_tuple__160;
-static PyObject *__pyx_tuple__162;
-static PyObject *__pyx_tuple__164;
-static PyObject *__pyx_tuple__166;
-static PyObject *__pyx_tuple__168;
+static PyObject *__pyx_tuple__159;
+static PyObject *__pyx_tuple__161;
+static PyObject *__pyx_tuple__163;
+static PyObject *__pyx_tuple__165;
+static PyObject *__pyx_tuple__167;
+static PyObject *__pyx_tuple__169;
 static PyObject *__pyx_tuple__170;
 static PyObject *__pyx_tuple__171;
 static PyObject *__pyx_tuple__172;
 static PyObject *__pyx_tuple__173;
-static PyObject *__pyx_tuple__174;
-static PyObject *__pyx_codeobj__138;
-static PyObject *__pyx_codeobj__140;
-static PyObject *__pyx_codeobj__142;
-static PyObject *__pyx_codeobj__144;
-static PyObject *__pyx_codeobj__146;
-static PyObject *__pyx_codeobj__148;
-static PyObject *__pyx_codeobj__150;
-static PyObject *__pyx_codeobj__152;
-static PyObject *__pyx_codeobj__154;
-static PyObject *__pyx_codeobj__156;
-static PyObject *__pyx_codeobj__159;
-static PyObject *__pyx_codeobj__161;
-static PyObject *__pyx_codeobj__163;
-static PyObject *__pyx_codeobj__165;
-static PyObject *__pyx_codeobj__167;
-static PyObject *__pyx_codeobj__169;
+static PyObject *__pyx_codeobj__137;
+static PyObject *__pyx_codeobj__139;
+static PyObject *__pyx_codeobj__141;
+static PyObject *__pyx_codeobj__143;
+static PyObject *__pyx_codeobj__145;
+static PyObject *__pyx_codeobj__147;
+static PyObject *__pyx_codeobj__149;
+static PyObject *__pyx_codeobj__151;
+static PyObject *__pyx_codeobj__153;
+static PyObject *__pyx_codeobj__155;
+static PyObject *__pyx_codeobj__158;
+static PyObject *__pyx_codeobj__160;
+static PyObject *__pyx_codeobj__162;
+static PyObject *__pyx_codeobj__164;
+static PyObject *__pyx_codeobj__166;
+static PyObject *__pyx_codeobj__168;
 
 /* "pyFAI/ext/_distortion.pyx":69
  * 
@@ -19874,7 +19873,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_14correct_LUT(CYTHON_UNUSED 
                             goto __pyx_L39;
                             __pyx_L39:;
                             #ifdef _OPENMP
-                            #pragma omp critical(__pyx_parallel_lastprivates16)
+                            #pragma omp critical(__pyx_parallel_lastprivates0)
                             #endif /* _OPENMP */
                             {
                                 __pyx_parallel_temp0 = __pyx_v_coef;
@@ -21559,7 +21558,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_16correct_CSR(CYTHON_UNUSED 
                             goto __pyx_L41;
                             __pyx_L41:;
                             #ifdef _OPENMP
-                            #pragma omp critical(__pyx_parallel_lastprivates17)
+                            #pragma omp critical(__pyx_parallel_lastprivates1)
                             #endif /* _OPENMP */
                             {
                                 __pyx_parallel_temp0 = __pyx_v_coef;
@@ -28950,7 +28949,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_10Distortion_10correct(CYTHO
                             goto __pyx_L23;
                             __pyx_L23:;
                             #ifdef _OPENMP
-                            #pragma omp critical(__pyx_parallel_lastprivates18)
+                            #pragma omp critical(__pyx_parallel_lastprivates2)
                             #endif /* _OPENMP */
                             {
                                 __pyx_parallel_temp0 = __pyx_v_coef;
@@ -45006,6 +45005,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_n_s_getLogger, __pyx_k_getLogger, sizeof(__pyx_k_getLogger), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_k_home_kieffer_workspace_pyFAI_py, sizeof(__pyx_k_home_kieffer_workspace_pyFAI_py), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_i0, __pyx_k_i0, sizeof(__pyx_k_i0), 0, 0, 1, 1},
   {&__pyx_n_s_i1, __pyx_k_i1, sizeof(__pyx_k_i1), 0, 0, 1, 1},
@@ -45113,7 +45113,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_pos_corners, __pyx_k_pos_corners, sizeof(__pyx_k_pos_corners), 0, 0, 1, 1},
   {&__pyx_n_s_prepare, __pyx_k_prepare, sizeof(__pyx_k_prepare), 0, 0, 1, 1},
   {&__pyx_n_s_print, __pyx_k_print, sizeof(__pyx_k_print), 0, 0, 1, 1},
-  {&__pyx_kp_s_pyFAI_ext__distortion, __pyx_k_pyFAI_ext__distortion, sizeof(__pyx_k_pyFAI_ext__distortion), 0, 0, 1, 0},
+  {&__pyx_n_s_pyFAI_ext__distortion, __pyx_k_pyFAI_ext__distortion, sizeof(__pyx_k_pyFAI_ext__distortion), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_getbuffer, __pyx_k_pyx_getbuffer, sizeof(__pyx_k_pyx_getbuffer), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_vtable, __pyx_k_pyx_vtable, sizeof(__pyx_k_pyx_vtable), 0, 0, 1, 1},
   {&__pyx_n_s_qualname, __pyx_k_qualname, sizeof(__pyx_k_qualname), 0, 0, 1, 1},
@@ -45178,7 +45178,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_uncorrect_LUT, __pyx_k_uncorrect_LUT, sizeof(__pyx_k_uncorrect_LUT), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_unpack, __pyx_k_unpack, sizeof(__pyx_k_unpack), 0, 0, 1, 1},
-  {&__pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_k_users_kieffer_workspace_400_pyF, sizeof(__pyx_k_users_kieffer_workspace_400_pyF), 0, 0, 1, 0},
   {&__pyx_n_s_utils, __pyx_k_utils, sizeof(__pyx_k_utils), 0, 0, 1, 1},
   {&__pyx_n_s_val, __pyx_k_val, sizeof(__pyx_k_val), 0, 0, 1, 1},
   {&__pyx_n_s_value, __pyx_k_value, sizeof(__pyx_k_value), 0, 0, 1, 1},
@@ -46034,17 +46033,6 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__134);
   __Pyx_GIVEREF(__pyx_tuple__134);
 
-  /* "pyFAI/ext/_distortion.pyx":49
- * import sys
- * import time
- * logger = logging.getLogger("pyFAI.ext._distortion")             # <<<<<<<<<<<<<<
- * from ..detectors import detector_factory
- * from ..utils import expand2d
- */
-  __pyx_tuple__135 = PyTuple_Pack(1, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_tuple__135)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__135);
-  __Pyx_GIVEREF(__pyx_tuple__135);
-
   /* "pyFAI/ext/_distortion.pyx":66
  * #     float coef
  * 
@@ -46052,9 +46040,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__136 = PyTuple_Pack(2, __pyx_int_2, __pyx_int_7); if (unlikely(!__pyx_tuple__136)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__136);
-  __Pyx_GIVEREF(__pyx_tuple__136);
+  __pyx_tuple__135 = PyTuple_Pack(2, __pyx_int_2, __pyx_int_7); if (unlikely(!__pyx_tuple__135)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__135);
+  __Pyx_GIVEREF(__pyx_tuple__135);
 
   /* "pyFAI/ext/_distortion.pyx":255
  * @cython.wraparound(False)
@@ -46063,10 +46051,10 @@ static int __Pyx_InitCachedConstants(void) {
  *              float pixel1, float pixel2, shape_out=None):
  *     """Calculate the pixel boundary position on the regular grid
  */
-  __pyx_tuple__137 = PyTuple_Pack(26, __pyx_n_s_pixel_corners, __pyx_n_s_pixel1, __pyx_n_s_pixel2, __pyx_n_s_shape_out, __pyx_n_s_pos, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_dim0, __pyx_n_s_dim1, __pyx_n_s_nb_corners, __pyx_n_s_do_shape, __pyx_n_s_BIG, __pyx_n_s_min0, __pyx_n_s_min1, __pyx_n_s_max0, __pyx_n_s_max1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_all_min0, __pyx_n_s_all_max0, __pyx_n_s_all_max1, __pyx_n_s_all_min1, __pyx_n_s_p0, __pyx_n_s_p1, __pyx_n_s_res); if (unlikely(!__pyx_tuple__137)) __PYX_ERR(0, 255, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__137);
-  __Pyx_GIVEREF(__pyx_tuple__137);
-  __pyx_codeobj__138 = (PyObject*)__Pyx_PyCode_New(4, 0, 26, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__137, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_pos, 255, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__138)) __PYX_ERR(0, 255, __pyx_L1_error)
+  __pyx_tuple__136 = PyTuple_Pack(26, __pyx_n_s_pixel_corners, __pyx_n_s_pixel1, __pyx_n_s_pixel2, __pyx_n_s_shape_out, __pyx_n_s_pos, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_dim0, __pyx_n_s_dim1, __pyx_n_s_nb_corners, __pyx_n_s_do_shape, __pyx_n_s_BIG, __pyx_n_s_min0, __pyx_n_s_min1, __pyx_n_s_max0, __pyx_n_s_max1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_all_min0, __pyx_n_s_all_max0, __pyx_n_s_all_max1, __pyx_n_s_all_min1, __pyx_n_s_p0, __pyx_n_s_p1, __pyx_n_s_res); if (unlikely(!__pyx_tuple__136)) __PYX_ERR(0, 255, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__136);
+  __Pyx_GIVEREF(__pyx_tuple__136);
+  __pyx_codeobj__137 = (PyObject*)__Pyx_PyCode_New(4, 0, 26, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__136, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_pos, 255, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__137)) __PYX_ERR(0, 255, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":320
  * @cython.wraparound(False)
@@ -46075,10 +46063,10 @@ static int __Pyx_InitCachedConstants(void) {
  *               shape,
  *               numpy.int8_t[:, ::1] mask=None,
  */
-  __pyx_tuple__139 = PyTuple_Pack(30, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_mask, __pyx_n_s_offset, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_min0, __pyx_n_s_min1, __pyx_n_s_max0, __pyx_n_s_max1, __pyx_n_s_lut_size, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_do_mask, __pyx_n_s_cmask, __pyx_n_s_err); if (unlikely(!__pyx_tuple__139)) __PYX_ERR(0, 320, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__139);
-  __Pyx_GIVEREF(__pyx_tuple__139);
-  __pyx_codeobj__140 = (PyObject*)__Pyx_PyCode_New(4, 0, 30, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__139, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_size, 320, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__140)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __pyx_tuple__138 = PyTuple_Pack(30, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_mask, __pyx_n_s_offset, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_min0, __pyx_n_s_min1, __pyx_n_s_max0, __pyx_n_s_max1, __pyx_n_s_lut_size, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_do_mask, __pyx_n_s_cmask, __pyx_n_s_err); if (unlikely(!__pyx_tuple__138)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__138);
+  __Pyx_GIVEREF(__pyx_tuple__138);
+  __pyx_codeobj__139 = (PyObject*)__Pyx_PyCode_New(4, 0, 30, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__138, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_size, 320, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__139)) __PYX_ERR(0, 320, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":380
  * @cython.wraparound(False)
@@ -46087,10 +46075,10 @@ static int __Pyx_InitCachedConstants(void) {
  *              numpy.int8_t[:, :] mask=None):
  *     """
  */
-  __pyx_tuple__141 = PyTuple_Pack(50, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_bin_size, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_size, __pyx_n_s_k, __pyx_n_s_idx, __pyx_n_s_err_cnt, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_lut, __pyx_n_s_do_mask, __pyx_n_s_buffer, __pyx_n_s_outMax, __pyx_n_s_buffer_nbytes, __pyx_n_s_lut_total_size, __pyx_n_s_tmp_ary); if (unlikely(!__pyx_tuple__141)) __PYX_ERR(0, 380, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__141);
-  __Pyx_GIVEREF(__pyx_tuple__141);
-  __pyx_codeobj__142 = (PyObject*)__Pyx_PyCode_New(5, 0, 50, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__141, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_LUT, 380, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__142)) __PYX_ERR(0, 380, __pyx_L1_error)
+  __pyx_tuple__140 = PyTuple_Pack(50, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_bin_size, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_size, __pyx_n_s_k, __pyx_n_s_idx, __pyx_n_s_err_cnt, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_lut, __pyx_n_s_do_mask, __pyx_n_s_buffer, __pyx_n_s_outMax, __pyx_n_s_buffer_nbytes, __pyx_n_s_lut_total_size, __pyx_n_s_tmp_ary); if (unlikely(!__pyx_tuple__140)) __PYX_ERR(0, 380, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__140);
+  __Pyx_GIVEREF(__pyx_tuple__140);
+  __pyx_codeobj__141 = (PyObject*)__Pyx_PyCode_New(5, 0, 50, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__140, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_LUT, 380, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__141)) __PYX_ERR(0, 380, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":523
  * @cython.wraparound(False)
@@ -46099,10 +46087,10 @@ static int __Pyx_InitCachedConstants(void) {
  *              numpy.int8_t[:, :] mask=None):
  *     """Calculate the Look-up table as CSR format
  */
-  __pyx_tuple__143 = PyTuple_Pack(51, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_bin_size, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_bins, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_idx, __pyx_n_s_tmp_index, __pyx_n_s_err_cnt, __pyx_n_s_lut_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_indptr, __pyx_n_s_indices, __pyx_n_s_data, __pyx_n_s_outMax, __pyx_n_s_buffer, __pyx_n_s_do_mask); if (unlikely(!__pyx_tuple__143)) __PYX_ERR(0, 523, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__143);
-  __Pyx_GIVEREF(__pyx_tuple__143);
-  __pyx_codeobj__144 = (PyObject*)__Pyx_PyCode_New(5, 0, 51, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__143, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_CSR, 523, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__144)) __PYX_ERR(0, 523, __pyx_L1_error)
+  __pyx_tuple__142 = PyTuple_Pack(51, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_bin_size, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_bins, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_idx, __pyx_n_s_tmp_index, __pyx_n_s_err_cnt, __pyx_n_s_lut_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_indptr, __pyx_n_s_indices, __pyx_n_s_data, __pyx_n_s_outMax, __pyx_n_s_buffer, __pyx_n_s_do_mask); if (unlikely(!__pyx_tuple__142)) __PYX_ERR(0, 523, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__142);
+  __Pyx_GIVEREF(__pyx_tuple__142);
+  __pyx_codeobj__143 = (PyObject*)__Pyx_PyCode_New(5, 0, 51, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__142, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_CSR, 523, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__143)) __PYX_ERR(0, 523, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":661
  * @cython.boundscheck(False)
@@ -46111,10 +46099,10 @@ static int __Pyx_InitCachedConstants(void) {
  *                 shape,
  *                 max_pixel_size=(8, 8),
  */
-  __pyx_tuple__145 = PyTuple_Pack(64, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_format, __pyx_n_s_bins_per_pixel, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_size_in, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_bins, __pyx_n_s_large_size, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_lut_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_counter, __pyx_n_s_bin_number, __pyx_n_s_idx, __pyx_n_s_err_cnt, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_indptr, __pyx_n_s_indices, __pyx_n_s_idx_bin, __pyx_n_s_idx_pixel, __pyx_n_s_pixel_count, __pyx_n_s_data, __pyx_n_s_large_data, __pyx_n_s_buffer, __pyx_n_s_do_mask, __pyx_n_s_lut, __pyx_n_s_res); if (unlikely(!__pyx_tuple__145)) __PYX_ERR(0, 661, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__145);
-  __Pyx_GIVEREF(__pyx_tuple__145);
-  __pyx_codeobj__146 = (PyObject*)__Pyx_PyCode_New(6, 0, 64, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__145, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_openmp, 661, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__146)) __PYX_ERR(0, 661, __pyx_L1_error)
+  __pyx_tuple__144 = PyTuple_Pack(64, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_format, __pyx_n_s_bins_per_pixel, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_size_in, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_bins, __pyx_n_s_large_size, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_lut_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_counter, __pyx_n_s_bin_number, __pyx_n_s_idx, __pyx_n_s_err_cnt, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_indptr, __pyx_n_s_indices, __pyx_n_s_idx_bin, __pyx_n_s_idx_pixel, __pyx_n_s_pixel_count, __pyx_n_s_data, __pyx_n_s_large_data, __pyx_n_s_buffer, __pyx_n_s_do_mask, __pyx_n_s_lut, __pyx_n_s_res); if (unlikely(!__pyx_tuple__144)) __PYX_ERR(0, 661, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__144);
+  __Pyx_GIVEREF(__pyx_tuple__144);
+  __pyx_codeobj__145 = (PyObject*)__Pyx_PyCode_New(6, 0, 64, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__144, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_openmp, 661, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__145)) __PYX_ERR(0, 661, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":858
  * @cython.wraparound(False)
@@ -46123,10 +46111,10 @@ static int __Pyx_InitCachedConstants(void) {
  *     """Correct an image based on the look-up table calculated ...
  * 
  */
-  __pyx_tuple__147 = PyTuple_Pack(31, __pyx_n_s_image, __pyx_n_s_shape_in, __pyx_n_s_shape_out, __pyx_n_s_LUT, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_lshape0, __pyx_n_s_lshape1, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_shape_img0, __pyx_n_s_shape_img1, __pyx_n_s_coef, __pyx_n_s_sum, __pyx_n_s_error, __pyx_n_s_t, __pyx_n_s_y, __pyx_n_s_value, __pyx_n_s_cdummy, __pyx_n_s_cdelta_dummy, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_do_dummy, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__147)) __PYX_ERR(0, 858, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__147);
-  __Pyx_GIVEREF(__pyx_tuple__147);
-  __pyx_codeobj__148 = (PyObject*)__Pyx_PyCode_New(6, 0, 31, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__147, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_correct_LUT, 858, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__148)) __PYX_ERR(0, 858, __pyx_L1_error)
+  __pyx_tuple__146 = PyTuple_Pack(31, __pyx_n_s_image, __pyx_n_s_shape_in, __pyx_n_s_shape_out, __pyx_n_s_LUT, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_lshape0, __pyx_n_s_lshape1, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_shape_img0, __pyx_n_s_shape_img1, __pyx_n_s_coef, __pyx_n_s_sum, __pyx_n_s_error, __pyx_n_s_t, __pyx_n_s_y, __pyx_n_s_value, __pyx_n_s_cdummy, __pyx_n_s_cdelta_dummy, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_do_dummy, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__146)) __PYX_ERR(0, 858, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__146);
+  __Pyx_GIVEREF(__pyx_tuple__146);
+  __pyx_codeobj__147 = (PyObject*)__Pyx_PyCode_New(6, 0, 31, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__146, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_correct_LUT, 858, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__147)) __PYX_ERR(0, 858, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":935
  * @cython.wraparound(False)
@@ -46135,10 +46123,10 @@ static int __Pyx_InitCachedConstants(void) {
  *     """
  *     Correct an image based on the look-up table calculated ...
  */
-  __pyx_tuple__149 = PyTuple_Pack(34, __pyx_n_s_image, __pyx_n_s_shape_in, __pyx_n_s_shape_out, __pyx_n_s_LUT, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_bins, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_shape_img0, __pyx_n_s_shape_img1, __pyx_n_s_coef, __pyx_n_s_tmp, __pyx_n_s_error, __pyx_n_s_sum, __pyx_n_s_y, __pyx_n_s_t, __pyx_n_s_value, __pyx_n_s_cdummy, __pyx_n_s_cdelta_dummy, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_data, __pyx_n_s_indices, __pyx_n_s_indptr, __pyx_n_s_do_dummy, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__149)) __PYX_ERR(0, 935, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__149);
-  __Pyx_GIVEREF(__pyx_tuple__149);
-  __pyx_codeobj__150 = (PyObject*)__Pyx_PyCode_New(6, 0, 34, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__149, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_correct_CSR, 935, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__150)) __PYX_ERR(0, 935, __pyx_L1_error)
+  __pyx_tuple__148 = PyTuple_Pack(34, __pyx_n_s_image, __pyx_n_s_shape_in, __pyx_n_s_shape_out, __pyx_n_s_LUT, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_bins, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_shape_img0, __pyx_n_s_shape_img1, __pyx_n_s_coef, __pyx_n_s_tmp, __pyx_n_s_error, __pyx_n_s_sum, __pyx_n_s_y, __pyx_n_s_t, __pyx_n_s_value, __pyx_n_s_cdummy, __pyx_n_s_cdelta_dummy, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_data, __pyx_n_s_indices, __pyx_n_s_indptr, __pyx_n_s_do_dummy, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__148)) __PYX_ERR(0, 935, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__148);
+  __Pyx_GIVEREF(__pyx_tuple__148);
+  __pyx_codeobj__149 = (PyObject*)__Pyx_PyCode_New(6, 0, 34, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__148, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_correct_CSR, 935, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__149)) __PYX_ERR(0, 935, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1016
  * @cython.wraparound(False)
@@ -46147,10 +46135,10 @@ static int __Pyx_InitCachedConstants(void) {
  *     """
  *     Take an image which has been corrected and transform it into it's raw (with loss of information)
  */
-  __pyx_tuple__151 = PyTuple_Pack(13, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_idx, __pyx_n_s_j, __pyx_n_s_total, __pyx_n_s_coef, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_val); if (unlikely(!__pyx_tuple__151)) __PYX_ERR(0, 1016, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__151);
-  __Pyx_GIVEREF(__pyx_tuple__151);
-  __pyx_codeobj__152 = (PyObject*)__Pyx_PyCode_New(3, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__151, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_uncorrect_LUT, 1016, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__152)) __PYX_ERR(0, 1016, __pyx_L1_error)
+  __pyx_tuple__150 = PyTuple_Pack(13, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_idx, __pyx_n_s_j, __pyx_n_s_total, __pyx_n_s_coef, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_val); if (unlikely(!__pyx_tuple__150)) __PYX_ERR(0, 1016, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__150);
+  __Pyx_GIVEREF(__pyx_tuple__150);
+  __pyx_codeobj__151 = (PyObject*)__Pyx_PyCode_New(3, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__150, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_uncorrect_LUT, 1016, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__151)) __PYX_ERR(0, 1016, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1054
  * @cython.wraparound(False)
@@ -46159,10 +46147,10 @@ static int __Pyx_InitCachedConstants(void) {
  *     """Take an image which has been corrected and transform it into it's raw (with loss of information)
  * 
  */
-  __pyx_tuple__153 = PyTuple_Pack(17, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_idx, __pyx_n_s_j, __pyx_n_s_nbins, __pyx_n_s_total, __pyx_n_s_coef, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_data, __pyx_n_s_indices, __pyx_n_s_indptr, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_val); if (unlikely(!__pyx_tuple__153)) __PYX_ERR(0, 1054, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__153);
-  __Pyx_GIVEREF(__pyx_tuple__153);
-  __pyx_codeobj__154 = (PyObject*)__Pyx_PyCode_New(3, 0, 17, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__153, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_uncorrect_CSR, 1054, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__154)) __PYX_ERR(0, 1054, __pyx_L1_error)
+  __pyx_tuple__152 = PyTuple_Pack(17, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_idx, __pyx_n_s_j, __pyx_n_s_nbins, __pyx_n_s_total, __pyx_n_s_coef, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_data, __pyx_n_s_indices, __pyx_n_s_indptr, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_val); if (unlikely(!__pyx_tuple__152)) __PYX_ERR(0, 1054, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__152);
+  __Pyx_GIVEREF(__pyx_tuple__152);
+  __pyx_codeobj__153 = (PyObject*)__Pyx_PyCode_New(3, 0, 17, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__152, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_uncorrect_CSR, 1054, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__153)) __PYX_ERR(0, 1054, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1105
  * 
@@ -46171,13 +46159,13 @@ static int __Pyx_InitCachedConstants(void) {
  *         """
  *         :param detector: detector instance or detector name
  */
-  __pyx_tuple__155 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_detector, __pyx_n_s_shape, __pyx_n_s_i); if (unlikely(!__pyx_tuple__155)) __PYX_ERR(0, 1105, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__155);
-  __Pyx_GIVEREF(__pyx_tuple__155);
-  __pyx_codeobj__156 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__155, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init, 1105, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__156)) __PYX_ERR(0, 1105, __pyx_L1_error)
-  __pyx_tuple__157 = PyTuple_Pack(2, ((PyObject*)__pyx_n_s_detector), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__157)) __PYX_ERR(0, 1105, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__157);
-  __Pyx_GIVEREF(__pyx_tuple__157);
+  __pyx_tuple__154 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_detector, __pyx_n_s_shape, __pyx_n_s_i); if (unlikely(!__pyx_tuple__154)) __PYX_ERR(0, 1105, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__154);
+  __Pyx_GIVEREF(__pyx_tuple__154);
+  __pyx_codeobj__155 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__154, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init, 1105, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__155)) __PYX_ERR(0, 1105, __pyx_L1_error)
+  __pyx_tuple__156 = PyTuple_Pack(2, ((PyObject*)__pyx_n_s_detector), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__156)) __PYX_ERR(0, 1105, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__156);
+  __Pyx_GIVEREF(__pyx_tuple__156);
 
   /* "pyFAI/ext/_distortion.pyx":1124
  *         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
@@ -46186,10 +46174,10 @@ static int __Pyx_InitCachedConstants(void) {
  *         return os.linesep.join(["Distortion correction for detector:",
  *                                 self.detector.__repr__()])
  */
-  __pyx_tuple__158 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__158)) __PYX_ERR(0, 1124, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__158);
-  __Pyx_GIVEREF(__pyx_tuple__158);
-  __pyx_codeobj__159 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__158, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_repr, 1124, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__159)) __PYX_ERR(0, 1124, __pyx_L1_error)
+  __pyx_tuple__157 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__157)) __PYX_ERR(0, 1124, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__157);
+  __Pyx_GIVEREF(__pyx_tuple__157);
+  __pyx_codeobj__158 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__157, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_repr, 1124, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__158)) __PYX_ERR(0, 1124, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1128
  *                                 self.detector.__repr__()])
@@ -46198,10 +46186,10 @@ static int __Pyx_InitCachedConstants(void) {
  *         if self.pos is None:
  *             with self._sem:
  */
-  __pyx_tuple__160 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_pos_corners, __pyx_n_s_d1, __pyx_n_s_d2, __pyx_n_s_p, __pyx_n_s_pos); if (unlikely(!__pyx_tuple__160)) __PYX_ERR(0, 1128, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__160);
-  __Pyx_GIVEREF(__pyx_tuple__160);
-  __pyx_codeobj__161 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__160, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_pos, 1128, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__161)) __PYX_ERR(0, 1128, __pyx_L1_error)
+  __pyx_tuple__159 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_pos_corners, __pyx_n_s_d1, __pyx_n_s_d2, __pyx_n_s_p, __pyx_n_s_pos); if (unlikely(!__pyx_tuple__159)) __PYX_ERR(0, 1128, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__159);
+  __Pyx_GIVEREF(__pyx_tuple__159);
+  __pyx_codeobj__160 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__159, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_pos, 1128, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__160)) __PYX_ERR(0, 1128, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1154
  *     @cython.wraparound(False)
@@ -46210,10 +46198,10 @@ static int __Pyx_InitCachedConstants(void) {
  *         """
  *         Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
  */
-  __pyx_tuple__162 = PyTuple_Pack(13, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_pos, __pyx_n_s_pos0min, __pyx_n_s_pos1min, __pyx_n_s_pos0max, __pyx_n_s_pos1max, __pyx_n_s_lut_size); if (unlikely(!__pyx_tuple__162)) __PYX_ERR(0, 1154, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__162);
-  __Pyx_GIVEREF(__pyx_tuple__162);
-  __pyx_codeobj__163 = (PyObject*)__Pyx_PyCode_New(1, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__162, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_LUT_size, 1154, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__163)) __PYX_ERR(0, 1154, __pyx_L1_error)
+  __pyx_tuple__161 = PyTuple_Pack(13, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_pos, __pyx_n_s_pos0min, __pyx_n_s_pos1min, __pyx_n_s_pos0max, __pyx_n_s_pos1max, __pyx_n_s_lut_size); if (unlikely(!__pyx_tuple__161)) __PYX_ERR(0, 1154, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__161);
+  __Pyx_GIVEREF(__pyx_tuple__161);
+  __pyx_codeobj__162 = (PyObject*)__Pyx_PyCode_New(1, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__161, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_LUT_size, 1154, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__162)) __PYX_ERR(0, 1154, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1193
  *     @cython.boundscheck(False)
@@ -46222,10 +46210,10 @@ static int __Pyx_InitCachedConstants(void) {
  *         cdef:
  *             int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
  */
-  __pyx_tuple__164 = PyTuple_Pack(43, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_buffer_size, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_k, __pyx_n_s_idx, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_pos, __pyx_n_s_lut, __pyx_n_s_outMax, __pyx_n_s_buffer); if (unlikely(!__pyx_tuple__164)) __PYX_ERR(0, 1193, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__164);
-  __Pyx_GIVEREF(__pyx_tuple__164);
-  __pyx_codeobj__165 = (PyObject*)__Pyx_PyCode_New(1, 0, 43, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__164, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_LUT, 1193, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__165)) __PYX_ERR(0, 1193, __pyx_L1_error)
+  __pyx_tuple__163 = PyTuple_Pack(43, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_buffer_size, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_k, __pyx_n_s_idx, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_pos, __pyx_n_s_lut, __pyx_n_s_outMax, __pyx_n_s_buffer); if (unlikely(!__pyx_tuple__163)) __PYX_ERR(0, 1193, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__163);
+  __Pyx_GIVEREF(__pyx_tuple__163);
+  __pyx_codeobj__164 = (PyObject*)__Pyx_PyCode_New(1, 0, 43, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__163, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_calc_LUT, 1193, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__164)) __PYX_ERR(0, 1193, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1292
  *     @cython.wraparound(False)
@@ -46234,10 +46222,10 @@ static int __Pyx_InitCachedConstants(void) {
  *         """
  *         Correct an image based on the look-up table calculated ...
  */
-  __pyx_tuple__166 = PyTuple_Pack(15, __pyx_n_s_self, __pyx_n_s_image, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_lshape0, __pyx_n_s_lshape1, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_coef, __pyx_n_s_LUT, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_img_shape, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__166)) __PYX_ERR(0, 1292, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__166);
-  __Pyx_GIVEREF(__pyx_tuple__166);
-  __pyx_codeobj__167 = (PyObject*)__Pyx_PyCode_New(2, 0, 15, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__166, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_correct, 1292, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__167)) __PYX_ERR(0, 1292, __pyx_L1_error)
+  __pyx_tuple__165 = PyTuple_Pack(15, __pyx_n_s_self, __pyx_n_s_image, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_lshape0, __pyx_n_s_lshape1, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_coef, __pyx_n_s_LUT, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_img_shape, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__165)) __PYX_ERR(0, 1292, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__165);
+  __Pyx_GIVEREF(__pyx_tuple__165);
+  __pyx_codeobj__166 = (PyObject*)__Pyx_PyCode_New(2, 0, 15, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__165, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_correct, 1292, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__166)) __PYX_ERR(0, 1292, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":1334
  * 
@@ -46246,10 +46234,10 @@ static int __Pyx_InitCachedConstants(void) {
  *         """
  *         Take an image which has been corrected and transform it into it's raw (with loss of information)
  */
-  __pyx_tuple__168 = PyTuple_Pack(11, __pyx_n_s_self, __pyx_n_s_image, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_tot, __pyx_n_s_idx, __pyx_n_s_t, __pyx_n_s_val); if (unlikely(!__pyx_tuple__168)) __PYX_ERR(0, 1334, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__168);
-  __Pyx_GIVEREF(__pyx_tuple__168);
-  __pyx_codeobj__169 = (PyObject*)__Pyx_PyCode_New(2, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__168, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_uncorrect, 1334, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__169)) __PYX_ERR(0, 1334, __pyx_L1_error)
+  __pyx_tuple__167 = PyTuple_Pack(11, __pyx_n_s_self, __pyx_n_s_image, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_tot, __pyx_n_s_idx, __pyx_n_s_t, __pyx_n_s_val); if (unlikely(!__pyx_tuple__167)) __PYX_ERR(0, 1334, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__167);
+  __Pyx_GIVEREF(__pyx_tuple__167);
+  __pyx_codeobj__168 = (PyObject*)__Pyx_PyCode_New(2, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__167, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_uncorrect, 1334, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__168)) __PYX_ERR(0, 1334, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -46258,9 +46246,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_tuple__170 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__170)) __PYX_ERR(2, 282, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__170);
-  __Pyx_GIVEREF(__pyx_tuple__170);
+  __pyx_tuple__169 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__169)) __PYX_ERR(2, 282, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__169);
+  __Pyx_GIVEREF(__pyx_tuple__169);
 
   /* "View.MemoryView":283
  * 
@@ -46269,9 +46257,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_tuple__171 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__171)) __PYX_ERR(2, 283, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__171);
-  __Pyx_GIVEREF(__pyx_tuple__171);
+  __pyx_tuple__170 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__170)) __PYX_ERR(2, 283, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__170);
+  __Pyx_GIVEREF(__pyx_tuple__170);
 
   /* "View.MemoryView":284
  * cdef generic = Enum("<strided and direct or indirect>")
@@ -46280,9 +46268,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__172 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__172)) __PYX_ERR(2, 284, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__172);
-  __Pyx_GIVEREF(__pyx_tuple__172);
+  __pyx_tuple__171 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__171)) __PYX_ERR(2, 284, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__171);
+  __Pyx_GIVEREF(__pyx_tuple__171);
 
   /* "View.MemoryView":287
  * 
@@ -46291,9 +46279,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_tuple__173 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__173)) __PYX_ERR(2, 287, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__173);
-  __Pyx_GIVEREF(__pyx_tuple__173);
+  __pyx_tuple__172 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__172)) __PYX_ERR(2, 287, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__172);
+  __Pyx_GIVEREF(__pyx_tuple__172);
 
   /* "View.MemoryView":288
  * 
@@ -46302,9 +46290,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__174 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__174)) __PYX_ERR(2, 288, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__174);
-  __Pyx_GIVEREF(__pyx_tuple__174);
+  __pyx_tuple__173 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__173)) __PYX_ERR(2, 288, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__173);
+  __Pyx_GIVEREF(__pyx_tuple__173);
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -46352,12 +46340,12 @@ PyMODINIT_FUNC PyInit__distortion(void)
   PyObject *__pyx_t_3 = NULL;
   PyObject *__pyx_t_4 = NULL;
   PyObject *__pyx_t_5 = NULL;
-  int __pyx_t_6;
+  PyObject *__pyx_t_6 = NULL;
   PyObject *__pyx_t_7 = NULL;
   PyObject *__pyx_t_8 = NULL;
   int __pyx_t_9;
   int __pyx_t_10;
-  PyObject *__pyx_t_11 = NULL;
+  int __pyx_t_11;
   PyObject *__pyx_t_12 = NULL;
   __Pyx_memviewslice __pyx_t_13 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_t_14 = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -46614,7 +46602,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * import os
  * import sys             # <<<<<<<<<<<<<<
  * import time
- * logger = logging.getLogger("pyFAI.ext._distortion")
+ * logger = logging.getLogger(__name__)
  */
   __pyx_t_1 = __Pyx_Import(__pyx_n_s_sys, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -46625,7 +46613,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * import os
  * import sys
  * import time             # <<<<<<<<<<<<<<
- * logger = logging.getLogger("pyFAI.ext._distortion")
+ * logger = logging.getLogger(__name__)
  * from ..detectors import detector_factory
  */
   __pyx_t_1 = __Pyx_Import(__pyx_n_s_time, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
@@ -46636,24 +46624,69 @@ PyMODINIT_FUNC PyInit__distortion(void)
   /* "pyFAI/ext/_distortion.pyx":49
  * import sys
  * import time
- * logger = logging.getLogger("pyFAI.ext._distortion")             # <<<<<<<<<<<<<<
+ * logger = logging.getLogger(__name__)             # <<<<<<<<<<<<<<
  * from ..detectors import detector_factory
  * from ..utils import expand2d
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_logging); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_getLogger); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_logging); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__135, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_getLogger); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_name_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_4 = NULL;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_4)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_4);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+    }
+  }
+  if (!__pyx_t_4) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_2};
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[2] = {__pyx_t_4, __pyx_t_2};
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    } else
+    #endif
+    {
+      __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 49, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
+      __Pyx_GIVEREF(__pyx_t_2);
+      PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_2);
+      __pyx_t_2 = 0;
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    }
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logger, __pyx_t_1) < 0) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":50
  * import time
- * logger = logging.getLogger("pyFAI.ext._distortion")
+ * logger = logging.getLogger(__name__)
  * from ..detectors import detector_factory             # <<<<<<<<<<<<<<
  * from ..utils import expand2d
  * from ..decorators import timeit
@@ -46663,34 +46696,34 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_INCREF(__pyx_n_s_detector_factory);
   __Pyx_GIVEREF(__pyx_n_s_detector_factory);
   PyList_SET_ITEM(__pyx_t_1, 0, __pyx_n_s_detector_factory);
-  __pyx_t_2 = __Pyx_Import(__pyx_n_s_detectors, __pyx_t_1, 2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 50, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_Import(__pyx_n_s_detectors, __pyx_t_1, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_detector_factory); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_3, __pyx_n_s_detector_factory); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_detector_factory, __pyx_t_1) < 0) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":51
- * logger = logging.getLogger("pyFAI.ext._distortion")
+ * logger = logging.getLogger(__name__)
  * from ..detectors import detector_factory
  * from ..utils import expand2d             # <<<<<<<<<<<<<<
  * from ..decorators import timeit
  * try:
  */
-  __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 51, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = PyList_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 51, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_n_s_expand2d);
   __Pyx_GIVEREF(__pyx_n_s_expand2d);
-  PyList_SET_ITEM(__pyx_t_2, 0, __pyx_n_s_expand2d);
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_utils, __pyx_t_2, 2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 51, __pyx_L1_error)
+  PyList_SET_ITEM(__pyx_t_3, 0, __pyx_n_s_expand2d);
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_utils, __pyx_t_3, 2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_ImportFrom(__pyx_t_1, __pyx_n_s_expand2d); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 51, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_expand2d, __pyx_t_2) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_ImportFrom(__pyx_t_1, __pyx_n_s_expand2d); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 51, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_expand2d, __pyx_t_3) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":52
@@ -46705,14 +46738,14 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_INCREF(__pyx_n_s_timeit);
   __Pyx_GIVEREF(__pyx_n_s_timeit);
   PyList_SET_ITEM(__pyx_t_1, 0, __pyx_n_s_timeit);
-  __pyx_t_2 = __Pyx_Import(__pyx_n_s_decorators, __pyx_t_1, 2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 52, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_Import(__pyx_n_s_decorators, __pyx_t_1, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_timeit); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_3, __pyx_n_s_timeit); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_timeit, __pyx_t_1) < 0) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":53
  * from ..utils import expand2d
@@ -46724,10 +46757,10 @@ PyMODINIT_FUNC PyInit__distortion(void)
   {
     __Pyx_PyThreadState_declare
     __Pyx_PyThreadState_assign
-    __Pyx_ExceptionSave(&__pyx_t_3, &__pyx_t_4, &__pyx_t_5);
-    __Pyx_XGOTREF(__pyx_t_3);
-    __Pyx_XGOTREF(__pyx_t_4);
-    __Pyx_XGOTREF(__pyx_t_5);
+    __Pyx_ExceptionSave(&__pyx_t_6, &__pyx_t_7, &__pyx_t_8);
+    __Pyx_XGOTREF(__pyx_t_6);
+    __Pyx_XGOTREF(__pyx_t_7);
+    __Pyx_XGOTREF(__pyx_t_8);
     /*try:*/ {
 
       /* "pyFAI/ext/_distortion.pyx":54
@@ -46737,18 +46770,18 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * except ImportError:
  *     import six
  */
-      __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 54, __pyx_L2_error)
-      __Pyx_GOTREF(__pyx_t_2);
+      __pyx_t_3 = PyList_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 54, __pyx_L2_error)
+      __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_n_s_six);
       __Pyx_GIVEREF(__pyx_n_s_six);
-      PyList_SET_ITEM(__pyx_t_2, 0, __pyx_n_s_six);
-      __pyx_t_1 = __Pyx_Import(__pyx_n_s_third_party, __pyx_t_2, 2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 54, __pyx_L2_error)
+      PyList_SET_ITEM(__pyx_t_3, 0, __pyx_n_s_six);
+      __pyx_t_1 = __Pyx_Import(__pyx_n_s_third_party, __pyx_t_3, 2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 54, __pyx_L2_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_ImportFrom(__pyx_t_1, __pyx_n_s_six); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 54, __pyx_L2_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      if (PyDict_SetItem(__pyx_d, __pyx_n_s_six, __pyx_t_2) < 0) __PYX_ERR(0, 54, __pyx_L2_error)
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_ImportFrom(__pyx_t_1, __pyx_n_s_six); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 54, __pyx_L2_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      if (PyDict_SetItem(__pyx_d, __pyx_n_s_six, __pyx_t_3) < 0) __PYX_ERR(0, 54, __pyx_L2_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
       /* "pyFAI/ext/_distortion.pyx":53
@@ -46759,13 +46792,16 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * except ImportError:
  */
     }
-    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
     goto __pyx_L9_try_end;
     __pyx_L2_error:;
     __Pyx_PyThreadState_assign
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
 
     /* "pyFAI/ext/_distortion.pyx":55
@@ -46775,13 +46811,13 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *     import six
  * import fabio
  */
-    __pyx_t_6 = __Pyx_PyErr_ExceptionMatches(__pyx_builtin_ImportError);
-    if (__pyx_t_6) {
+    __pyx_t_9 = __Pyx_PyErr_ExceptionMatches(__pyx_builtin_ImportError);
+    if (__pyx_t_9) {
       __Pyx_AddTraceback("pyFAI.ext._distortion", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_7) < 0) __PYX_ERR(0, 55, __pyx_L4_except_error)
+      if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_3, &__pyx_t_5) < 0) __PYX_ERR(0, 55, __pyx_L4_except_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_GOTREF(__pyx_t_5);
 
       /* "pyFAI/ext/_distortion.pyx":56
  *     from ..third_party import six
@@ -46790,13 +46826,13 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * import fabio
  * 
  */
-      __pyx_t_8 = __Pyx_Import(__pyx_n_s_six, 0, -1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 56, __pyx_L4_except_error)
-      __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_d, __pyx_n_s_six, __pyx_t_8) < 0) __PYX_ERR(0, 56, __pyx_L4_except_error)
-      __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __pyx_t_2 = __Pyx_Import(__pyx_n_s_six, 0, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 56, __pyx_L4_except_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      if (PyDict_SetItem(__pyx_d, __pyx_n_s_six, __pyx_t_2) < 0) __PYX_ERR(0, 56, __pyx_L4_except_error)
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       goto __pyx_L3_exception_handled;
     }
     goto __pyx_L4_except_error;
@@ -46810,17 +46846,17 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * except ImportError:
  */
     __Pyx_PyThreadState_assign
-    __Pyx_XGIVEREF(__pyx_t_3);
-    __Pyx_XGIVEREF(__pyx_t_4);
-    __Pyx_XGIVEREF(__pyx_t_5);
-    __Pyx_ExceptionReset(__pyx_t_3, __pyx_t_4, __pyx_t_5);
+    __Pyx_XGIVEREF(__pyx_t_6);
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_ExceptionReset(__pyx_t_6, __pyx_t_7, __pyx_t_8);
     goto __pyx_L1_error;
     __pyx_L3_exception_handled:;
     __Pyx_PyThreadState_assign
-    __Pyx_XGIVEREF(__pyx_t_3);
-    __Pyx_XGIVEREF(__pyx_t_4);
-    __Pyx_XGIVEREF(__pyx_t_5);
-    __Pyx_ExceptionReset(__pyx_t_3, __pyx_t_4, __pyx_t_5);
+    __Pyx_XGIVEREF(__pyx_t_6);
+    __Pyx_XGIVEREF(__pyx_t_7);
+    __Pyx_XGIVEREF(__pyx_t_8);
+    __Pyx_ExceptionReset(__pyx_t_6, __pyx_t_7, __pyx_t_8);
     __pyx_L9_try_end:;
   }
 
@@ -46831,10 +46867,10 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * 
  * #include "sparse_common.pxi"
  */
-  __pyx_t_7 = __Pyx_Import(__pyx_n_s_fabio, 0, -1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 57, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_fabio, __pyx_t_7) < 0) __PYX_ERR(0, 57, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_5 = __Pyx_Import(__pyx_n_s_fabio, 0, -1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_fabio, __pyx_t_5) < 0) __PYX_ERR(0, 57, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":61
  * #include "sparse_common.pxi"
@@ -46843,22 +46879,22 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * # cdef struct lut_point:
  * #     int idx
  */
-  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 61, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 61, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(__pyx_n_s_ArrayBuilder);
   __Pyx_GIVEREF(__pyx_n_s_ArrayBuilder);
-  PyList_SET_ITEM(__pyx_t_7, 0, __pyx_n_s_ArrayBuilder);
+  PyList_SET_ITEM(__pyx_t_5, 0, __pyx_n_s_ArrayBuilder);
   __Pyx_INCREF(__pyx_n_s_dtype_lut);
   __Pyx_GIVEREF(__pyx_n_s_dtype_lut);
-  PyList_SET_ITEM(__pyx_t_7, 1, __pyx_n_s_dtype_lut);
-  __pyx_t_2 = __Pyx_Import(__pyx_n_s_sparse_utils, __pyx_t_7, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 61, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_dtype_lut); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 61, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_dtype_lut, __pyx_t_7) < 0) __PYX_ERR(0, 61, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  PyList_SET_ITEM(__pyx_t_5, 1, __pyx_n_s_dtype_lut);
+  __pyx_t_3 = __Pyx_Import(__pyx_n_s_sparse_utils, __pyx_t_5, -1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 61, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = __Pyx_ImportFrom(__pyx_t_3, __pyx_n_s_dtype_lut); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 61, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_dtype_lut, __pyx_t_5) < 0) __PYX_ERR(0, 61, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":66
  * #     float coef
@@ -46867,35 +46903,35 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * 
  * 
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_sys); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_version_info); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyObject_RichCompare(__pyx_t_7, __pyx_tuple__136, Py_LT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_10 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_10 < 0)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (__pyx_t_10) {
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_sys); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_version_info); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyObject_RichCompare(__pyx_t_5, __pyx_tuple__135, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_11 < 0)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (__pyx_t_11) {
   } else {
-    __pyx_t_9 = __pyx_t_10;
+    __pyx_t_10 = __pyx_t_11;
     goto __pyx_L12_bool_binop_done;
   }
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_version); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_version); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = PyObject_RichCompare(__pyx_t_2, __pyx_kp_s_1_5, Py_LT); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_10 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_10 < 0)) __PYX_ERR(0, 66, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_9 = __pyx_t_10;
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_version); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_version); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyObject_RichCompare(__pyx_t_3, __pyx_kp_s_1_5, Py_LT); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_11 < 0)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_10 = __pyx_t_11;
   __pyx_L12_bool_binop_done:;
-  __pyx_v_5pyFAI_3ext_11_distortion_NEED_DECREF = __pyx_t_9;
+  __pyx_v_5pyFAI_3ext_11_distortion_NEED_DECREF = __pyx_t_10;
 
   /* "pyFAI/ext/_distortion.pyx":255
  * @cython.wraparound(False)
@@ -46904,45 +46940,45 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *              float pixel1, float pixel2, shape_out=None):
  *     """Calculate the pixel boundary position on the regular grid
  */
-  __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 255, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 255, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, Py_None);
+  PyTuple_SET_ITEM(__pyx_t_5, 0, Py_None);
   __Pyx_INCREF(Py_None);
   __pyx_k_ = Py_None;
   __Pyx_GIVEREF(Py_None);
-  __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 255, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_5pyFAI_3ext_11_distortion_23calc_pos, 0, __pyx_n_s_calc_pos, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__138)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 255, __pyx_L1_error)
+  __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 255, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_1 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_5pyFAI_3ext_11_distortion_23calc_pos, 0, __pyx_n_s_calc_pos, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__137)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_1, sizeof(__pyx_defaults2), 1)) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_INCREF(Py_None);
   __Pyx_CyFunction_Defaults(__pyx_defaults2, __pyx_t_1)->__pyx_arg_shape_out = Py_None;
   __Pyx_GIVEREF(Py_None);
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_1, __pyx_t_7);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_1, __pyx_t_5);
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_1, __pyx_pf_5pyFAI_3ext_11_distortion_38__defaults__);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_float, __pyx_t_1) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_float, __pyx_t_1) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_5pyFAI_3ext_11_distortion_25calc_pos, 0, __pyx_n_s_calc_pos, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__138)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 255, __pyx_L1_error)
+  __pyx_t_1 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_5pyFAI_3ext_11_distortion_25calc_pos, 0, __pyx_n_s_calc_pos, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__137)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_1, sizeof(__pyx_defaults3), 1)) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_INCREF(Py_None);
   __Pyx_CyFunction_Defaults(__pyx_defaults3, __pyx_t_1)->__pyx_arg_shape_out = Py_None;
   __Pyx_GIVEREF(Py_None);
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_1, __pyx_t_7);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_1, __pyx_t_5);
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_1, __pyx_pf_5pyFAI_3ext_11_distortion_40__defaults__);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_double, __pyx_t_1) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_double, __pyx_t_1) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __pyx_FusedFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_5calc_pos, 0, __pyx_n_s_calc_pos, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__138)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 255, __pyx_L1_error)
+  __pyx_t_1 = __pyx_FusedFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_5calc_pos, 0, __pyx_n_s_calc_pos, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__137)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_1, __pyx_t_7);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_1, __pyx_t_5);
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_1, __pyx_pf_5pyFAI_3ext_11_distortion_38__defaults__);
-  ((__pyx_FusedFunctionObject *) __pyx_t_1)->__signatures__ = __pyx_t_2;
-  __Pyx_GIVEREF(__pyx_t_2);
+  ((__pyx_FusedFunctionObject *) __pyx_t_1)->__signatures__ = __pyx_t_3;
+  __Pyx_GIVEREF(__pyx_t_3);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_pos, __pyx_t_1) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":320
  * @cython.wraparound(False)
@@ -46951,23 +46987,23 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *               shape,
  *               numpy.int8_t[:, ::1] mask=None,
  */
-  __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 320, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  PyTuple_SET_ITEM(__pyx_t_8, 0, Py_None);
+  PyTuple_SET_ITEM(__pyx_t_2, 0, Py_None);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  PyTuple_SET_ITEM(__pyx_t_8, 1, Py_None);
+  PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None);
   __Pyx_INCREF(Py_None);
   __pyx_k__12 = Py_None;
   __Pyx_GIVEREF(Py_None);
   __Pyx_INCREF(Py_None);
   __pyx_k__13 = Py_None;
   __Pyx_GIVEREF(Py_None);
-  __pyx_t_11 = PyDict_New(); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 320, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_11);
-  __pyx_t_12 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_5pyFAI_3ext_11_distortion_29calc_size, 0, __pyx_n_s_calc_size, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__140)); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_12 = __pyx_FusedFunction_NewEx(&__pyx_fuse_0__pyx_mdef_5pyFAI_3ext_11_distortion_29calc_size, 0, __pyx_n_s_calc_size, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__139)); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_12, sizeof(__pyx_defaults6), 1)) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_INCREF(Py_None);
@@ -46986,9 +47022,9 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_CyFunction_Defaults(__pyx_defaults6, __pyx_t_12)->__pyx_arg_mask = __pyx_t_13;
   __pyx_t_13.memview = NULL;
   __pyx_t_13.data = NULL;
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_12, __pyx_t_8);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_12, __pyx_t_2);
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_12, __pyx_pf_5pyFAI_3ext_11_distortion_46__defaults__);
-  if (PyDict_SetItem(__pyx_t_11, __pyx_n_s_float, __pyx_t_12) < 0) __PYX_ERR(0, 320, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_float, __pyx_t_12) < 0) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":320
@@ -46998,7 +47034,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *               shape,
  *               numpy.int8_t[:, ::1] mask=None,
  */
-  __pyx_t_12 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_5pyFAI_3ext_11_distortion_31calc_size, 0, __pyx_n_s_calc_size, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__140)); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __pyx_t_12 = __pyx_FusedFunction_NewEx(&__pyx_fuse_1__pyx_mdef_5pyFAI_3ext_11_distortion_31calc_size, 0, __pyx_n_s_calc_size, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__139)); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
   if (!__Pyx_CyFunction_InitDefaults(__pyx_t_12, sizeof(__pyx_defaults7), 1)) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_INCREF(Py_None);
@@ -47017,9 +47053,9 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_CyFunction_Defaults(__pyx_defaults7, __pyx_t_12)->__pyx_arg_mask = __pyx_t_13;
   __pyx_t_13.memview = NULL;
   __pyx_t_13.data = NULL;
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_12, __pyx_t_8);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_12, __pyx_t_2);
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_12, __pyx_pf_5pyFAI_3ext_11_distortion_48__defaults__);
-  if (PyDict_SetItem(__pyx_t_11, __pyx_n_s_double, __pyx_t_12) < 0) __PYX_ERR(0, 320, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_double, __pyx_t_12) < 0) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":320
@@ -47029,15 +47065,15 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *               shape,
  *               numpy.int8_t[:, ::1] mask=None,
  */
-  __pyx_t_12 = __pyx_FusedFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_7calc_size, 0, __pyx_n_s_calc_size, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__140)); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 320, __pyx_L1_error)
+  __pyx_t_12 = __pyx_FusedFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_7calc_size, 0, __pyx_n_s_calc_size, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__139)); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_12, __pyx_t_8);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_12, __pyx_t_2);
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_12, __pyx_pf_5pyFAI_3ext_11_distortion_46__defaults__);
-  ((__pyx_FusedFunctionObject *) __pyx_t_12)->__signatures__ = __pyx_t_11;
-  __Pyx_GIVEREF(__pyx_t_11);
+  ((__pyx_FusedFunctionObject *) __pyx_t_12)->__signatures__ = __pyx_t_4;
+  __Pyx_GIVEREF(__pyx_t_4);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_size, __pyx_t_12) < 0) __PYX_ERR(0, 320, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":381
  * @cython.initializedcheck(False)
@@ -47059,7 +47095,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *              numpy.int8_t[:, :] mask=None):
  *     """
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_9calc_LUT, NULL, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 380, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_9calc_LUT, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_LUT, __pyx_t_15) < 0) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
@@ -47084,7 +47120,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *              numpy.int8_t[:, :] mask=None):
  *     """Calculate the Look-up table as CSR format
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_11calc_CSR, NULL, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 523, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_11calc_CSR, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 523, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_CSR, __pyx_t_15) < 0) __PYX_ERR(0, 523, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
@@ -47109,7 +47145,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *                 shape,
  *                 max_pixel_size=(8, 8),
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_13calc_openmp, NULL, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 661, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_13calc_openmp, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 661, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_openmp, __pyx_t_15) < 0) __PYX_ERR(0, 661, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
@@ -47121,7 +47157,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *     """Correct an image based on the look-up table calculated ...
  * 
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_15correct_LUT, NULL, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 858, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_15correct_LUT, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 858, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_correct_LUT, __pyx_t_15) < 0) __PYX_ERR(0, 858, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
@@ -47133,7 +47169,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *     """
  *     Correct an image based on the look-up table calculated ...
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_17correct_CSR, NULL, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 935, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_17correct_CSR, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 935, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_correct_CSR, __pyx_t_15) < 0) __PYX_ERR(0, 935, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
@@ -47145,7 +47181,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *     """
  *     Take an image which has been corrected and transform it into it's raw (with loss of information)
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_19uncorrect_LUT, NULL, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 1016, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_19uncorrect_LUT, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 1016, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_uncorrect_LUT, __pyx_t_15) < 0) __PYX_ERR(0, 1016, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
@@ -47157,7 +47193,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *     """Take an image which has been corrected and transform it into it's raw (with loss of information)
  * 
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_21uncorrect_CSR, NULL, __pyx_kp_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 1054, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_21uncorrect_CSR, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 1054, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_uncorrect_CSR, __pyx_t_15) < 0) __PYX_ERR(0, 1054, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
@@ -47176,7 +47212,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   PyTuple_SET_ITEM(__pyx_t_15, 0, __pyx_builtin_object);
   __pyx_t_16 = __Pyx_CalculateMetaclass(NULL, __pyx_t_15); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 1097, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_16);
-  __pyx_t_17 = __Pyx_Py3MetaclassPrepare(__pyx_t_16, __pyx_t_15, __pyx_n_s_Distortion, __pyx_n_s_Distortion, (PyObject *) NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_kp_s_This_class_applies_a_distortion); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 1097, __pyx_L1_error)
+  __pyx_t_17 = __Pyx_Py3MetaclassPrepare(__pyx_t_16, __pyx_t_15, __pyx_n_s_Distortion, __pyx_n_s_Distortion, (PyObject *) NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_kp_s_This_class_applies_a_distortion); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 1097, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_17);
 
   /* "pyFAI/ext/_distortion.pyx":1105
@@ -47186,9 +47222,9 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *         """
  *         :param detector: detector instance or detector name
  */
-  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_1__init__, 0, __pyx_n_s_Distortion___init, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__156)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1105, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_1__init__, 0, __pyx_n_s_Distortion___init, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__155)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1105, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_18, __pyx_tuple__157);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_18, __pyx_tuple__156);
   if (PyObject_SetItem(__pyx_t_17, __pyx_n_s_init, __pyx_t_18) < 0) __PYX_ERR(0, 1105, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
 
@@ -47199,7 +47235,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *         return os.linesep.join(["Distortion correction for detector:",
  *                                 self.detector.__repr__()])
  */
-  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_3__repr__, 0, __pyx_n_s_Distortion___repr, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__159)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1124, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_3__repr__, 0, __pyx_n_s_Distortion___repr, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__158)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1124, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
   if (PyObject_SetItem(__pyx_t_17, __pyx_n_s_repr, __pyx_t_18) < 0) __PYX_ERR(0, 1124, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -47211,7 +47247,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *         if self.pos is None:
  *             with self._sem:
  */
-  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_5calc_pos, 0, __pyx_n_s_Distortion_calc_pos, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__161)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1128, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_5calc_pos, 0, __pyx_n_s_Distortion_calc_pos, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__160)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1128, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
   if (PyObject_SetItem(__pyx_t_17, __pyx_n_s_calc_pos, __pyx_t_18) < 0) __PYX_ERR(0, 1128, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -47223,7 +47259,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *         """
  *         Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
  */
-  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_7calc_LUT_size, 0, __pyx_n_s_Distortion_calc_LUT_size, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__163)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1154, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_7calc_LUT_size, 0, __pyx_n_s_Distortion_calc_LUT_size, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__162)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1154, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
   if (PyObject_SetItem(__pyx_t_17, __pyx_n_s_calc_LUT_size, __pyx_t_18) < 0) __PYX_ERR(0, 1154, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -47235,7 +47271,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *         cdef:
  *             int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
  */
-  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_9calc_LUT, 0, __pyx_n_s_Distortion_calc_LUT, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__165)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1193, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_9calc_LUT, 0, __pyx_n_s_Distortion_calc_LUT, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__164)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
   if (PyObject_SetItem(__pyx_t_17, __pyx_n_s_calc_LUT, __pyx_t_18) < 0) __PYX_ERR(0, 1193, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -47247,7 +47283,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *         """
  *         Correct an image based on the look-up table calculated ...
  */
-  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_11correct, 0, __pyx_n_s_Distortion_correct, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__167)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1292, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_11correct, 0, __pyx_n_s_Distortion_correct, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__166)); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 1292, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
   if (PyObject_SetItem(__pyx_t_17, __pyx_n_s_correct, __pyx_t_18) < 0) __PYX_ERR(0, 1292, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -47269,7 +47305,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  *         """
  *         Take an image which has been corrected and transform it into it's raw (with loss of information)
  */
-  __pyx_t_20 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_13uncorrect, 0, __pyx_n_s_Distortion_uncorrect, NULL, __pyx_kp_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__169)); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 1334, __pyx_L1_error)
+  __pyx_t_20 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_10Distortion_13uncorrect, 0, __pyx_n_s_Distortion_uncorrect, NULL, __pyx_n_s_pyFAI_ext__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__168)); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 1334, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_20);
   __pyx_t_21 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_19))) {
@@ -47365,7 +47401,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__170, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 282, __pyx_L1_error)
+  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__169, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 282, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_XGOTREF(generic);
   __Pyx_DECREF_SET(generic, __pyx_t_15);
@@ -47379,7 +47415,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__171, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 283, __pyx_L1_error)
+  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__170, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 283, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_XGOTREF(strided);
   __Pyx_DECREF_SET(strided, __pyx_t_15);
@@ -47393,7 +47429,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * 
  * 
  */
-  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__172, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 284, __pyx_L1_error)
+  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__171, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 284, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_XGOTREF(indirect);
   __Pyx_DECREF_SET(indirect, __pyx_t_15);
@@ -47407,7 +47443,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__173, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 287, __pyx_L1_error)
+  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__172, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 287, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_XGOTREF(contiguous);
   __Pyx_DECREF_SET(contiguous, __pyx_t_15);
@@ -47421,7 +47457,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * 
  * 
  */
-  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__174, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 288, __pyx_L1_error)
+  __pyx_t_15 = __Pyx_PyObject_Call(((PyObject *)__pyx_MemviewEnum_type), __pyx_tuple__173, NULL); if (unlikely(!__pyx_t_15)) __PYX_ERR(2, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_XGOTREF(indirect_contiguous);
   __Pyx_DECREF_SET(indirect_contiguous, __pyx_t_15);
@@ -47494,9 +47530,9 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_XDECREF(__pyx_t_11);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_12);
   __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_14, 1);
