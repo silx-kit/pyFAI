@@ -32,13 +32,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2017"
+__date__ = "03/07/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
 logger = logging.getLogger(__name__)
+import warnings
 import tempfile
 import threading
 import gc
@@ -3279,7 +3280,6 @@ class AzimuthalIntegrator(Geometry):
         """
         if not filename:
             return
-        from .io import DefaultAiWriter
         writer = DefaultAiWriter(None, self)
         writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
@@ -3400,6 +3400,131 @@ class AzimuthalIntegrator(Geometry):
         result._set_method_called("medfilt1d")
         result._set_compute_engine(method)
         result._set_percentile(percentile)
+        result._set_npt_azim(npt_azim)
+        result._set_unit(unit)
+        result._set_has_mask_applied(res2d.has_mask_applied)
+        result._set_metadata(metadata)
+        result._set_has_dark_correction(res2d.has_dark_correction)
+        result._set_has_flat_correction(res2d.has_flat_correction)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        return result
+
+    def sigma_clip(self, data, npt_rad=1024, npt_azim=512,
+                   correctSolidAngle=True,
+                   polarization_factor=None, dark=None, flat=None,
+                   method="splitpixel", unit=units.Q,
+                   thres=3, max_iter=5,
+                   mask=None, normalization_factor=1.0, metadata=None):
+        """Perform the 2D integration and perform a sigm-clipping iterative filter 
+        along each row. see the doc of scipy.stats.sigmaclip for the options.
+        
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param correctSolidAngle: correct for solid angle of each pixel if True
+        :type correctSolidAngle: bool    
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+               0 for circular polarization or random,
+               None for no correction,
+               True for using the former correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres. 
+                The threshold can be a 2-tuple with sigma_low and sigma_high.
+        :param max_iter: maximum number of iterations        :param mask: masked out pixels array
+        :param normalization_factor: Value of a normalization monitor
+        :type normalization_factor: float
+        :param metadata: any other metadata, 
+        :type metadata: JSON serializable dict
+        :return: Integrate1D like result like
+        """
+        # We use NaN as dummies
+        dummy = numpy.NaN
+
+        if "__len__" in dir(thres) and len(thres) > 0:
+            sigma_lo = thres[0]
+            sigma_hi = thres[-1]
+        else:
+            sigma_lo = sigma_hi = thres
+
+        if "ocl" in method and npt_azim and (npt_azim - 1):
+            old = npt_azim
+            npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
+            if npt_azim != old:
+                logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s",
+                               old, npt_azim)
+
+        res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
+                                 flat=flat, dark=dark,
+                                 unit=unit, method=method,
+                                 dummy=dummy,
+                                 correctSolidAngle=correctSolidAngle,
+                                 polarization_factor=polarization_factor,
+                                 normalization_factor=normalization_factor)
+        image = res2d.intensity
+        if ("ocl" in method) and (ocl is not None):
+            if "csr" in method and self._ocl_csr_integr:
+                ctx = self._ocl_csr_integr.ctx
+            elif "lut" in method and self._ocl_lut_integr:
+                ctx = self._ocl_lut_integr.ctx
+            else:
+                ctx = None
+
+            if numpy.isfortran(image) and image.dtype == numpy.float32:
+                rdata = image.T
+                horizontal = True
+            else:
+                rdata = numpy.ascontiguousarray(image, dtype=numpy.float32)
+                horizontal = False
+
+            if self._ocl_sorter:
+                if self._ocl_sorter.npt_width != rdata.shape[1] or self._ocl_sorter.npt_height != rdata.shape[0]:
+                    self._ocl_sorter = None
+            if not self._ocl_sorter:
+                logger.info("reset opencl sorter")
+                self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+            if "__len__" in dir(percentile):
+                if horizontal:
+                    spectrum = self._ocl_sorter.trimmed_mean_horizontal(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+                else:
+                    spectrum = self._ocl_sorter.trimmed_mean_vertical(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+            else:
+                if horizontal:
+                    spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+                else:
+                    spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
+        else:
+            as_strided = numpy.lib.stride_tricks.as_strided
+            mask = numpy.logical_not(numpy.isfinite(image))
+            dummies = mask.sum()
+            image[mask] = numpy.NaN
+            mean = numpy.nanmean(image, axis=0)
+            std = numpy.nanstd(image, axis=0)
+            for i in range(max_iter):
+                mean2d = as_strided(mean, image.shape, (0, mean.strides[0]))
+                std2d = as_strided(std, image.shape, (0, std.strides[0]))
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    delta = (image - mean2d) / std2d
+                    mask = numpy.logical_or(delta > sigma_hi,
+                                            delta < -sigma_lo)
+                dummies = mask.sum()
+                if dummies == 0:
+                    break
+                image[mask] = numpy.NaN
+                mean = numpy.nanmean(image, axis=0)
+                std = numpy.nanstd(image, axis=0)
+
+        result = Integrate1dResult(res2d.radial, mean, std)
+        result._set_method_called("sigma_clip")
+        result._set_compute_engine(method)
+        result._set_percentile(thres)
         result._set_npt_azim(npt_azim)
         result._set_unit(unit)
         result._set_has_mask_applied(res2d.has_mask_applied)
