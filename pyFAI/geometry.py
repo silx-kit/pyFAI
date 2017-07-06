@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2017"
+__date__ = "06/07/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1666,8 +1666,8 @@ class Geometry(object):
         """
         Computes a 2D image from a 1D integrated profile
 
-        :param tth: 1D array with radial unit
-        :param I: scattering intensity
+        :param tth: 1D array with radial unit, this array needs to be ordered 
+        :param I: scattering intensity, corresponding intensity
         :param shape: shape of the image (if not defined by the detector)
         :param dim1_unit: unit for the "tth" array
         :param correctSolidAngle:
