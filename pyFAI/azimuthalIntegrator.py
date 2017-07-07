@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2017"
+__date__ = "07/07/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3489,16 +3489,18 @@ class AzimuthalIntegrator(Geometry):
             if not self._ocl_sorter:
                 logger.info("reset opencl sorter")
                 self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
-            if "__len__" in dir(percentile):
-                if horizontal:
-                    spectrum = self._ocl_sorter.trimmed_mean_horizontal(rdata, dummy, [(i / 100.0) for i in percentile]).get()
-                else:
-                    spectrum = self._ocl_sorter.trimmed_mean_vertical(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+            if horizontal:
+                res = self._ocl_sorter.sigma_clip_horizontal(rdata, dummy=dummy,
+                                                             sigma_lo=sigma_lo,
+                                                             sigma_hi=sigma_hi,
+                                                             max_iter=max_iter)
             else:
-                if horizontal:
-                    spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
-                else:
-                    spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
+                res = self._ocl_sorter.sigma_clip_vertical(rdata, dummy=dummy,
+                                                           sigma_lo=sigma_lo,
+                                                           sigma_hi=sigma_hi,
+                                                           max_iter=max_iter)
+            mean = res[0].get()
+            std = res[1].get()
         else:
             as_strided = numpy.lib.stride_tricks.as_strided
             mask = numpy.logical_not(numpy.isfinite(image))
