@@ -94,7 +94,7 @@ static float8 sum_vector(float8 data)
     tmp = is_valid(data.s0, 0.0f);
     value = tmp.s0;
     sum1 = (float2)(value, 0.0f);
-    sum2 = (float2)(data.s0 * data.s0, 0.0f);
+    sum2 = (float2)(value * value, 0.0f);
 
     tmp = is_valid(data.s1, tmp.s1);
     value = tmp.s0;
@@ -185,6 +185,8 @@ static float2 mean_and_deviation(uint local_id,
     float std, mean, n;
     n = l_data[4];
 //    if (local_id==0)  printf("%.1f %.1f %.1f %.1f %.1f\n",l_data[0], l_data[1],l_data[2],l_data[3],l_data[4]);
+//    if (local_id==0)  printf("(%d, %d) %.1f %.1f %.1f %.1f %.1f\n",get_global_id(0), get_global_id(1), l_data[0], l_data[1], l_data[2], l_data[3], l_data[4]);
+
     if (fabs(n) < 0.5f)
     {
         mean = NAN;
@@ -340,12 +342,11 @@ kernel void mean_std_horizontal(global float *src,
     float8 input;
     float2 result;
     float value;
-    uint id, global_start, offset;
+    uint global_start, offset;
 
     // Find global address
-    offset = get_global_size(1)*get_global_id(0)*8;
-    id = get_local_id(1) * 8;
-    global_start = offset + get_group_id(1) * get_local_size(1) * 8 + id;
+    offset = get_global_size(1) * get_global_id(0) * 8;
+    global_start = offset + get_group_id(1) * get_local_size(1) * 8 + get_local_id(1) * 8;
 
     value = src[global_start];
     input.s0 = (value==dummy)?NAN:value;
@@ -407,8 +408,9 @@ kernel void sigma_clip_vertical(global float *src,
     // we need to read 8 float position along the vertical axis
     float8 input;
     float2 result;
-    uint id, global_start, padding;
+    uint id, global_start, padding, i;
     float value;
+    local int discarded[1];
 
     // Find global address
     padding = get_global_size(1);
@@ -434,9 +436,9 @@ kernel void sigma_clip_vertical(global float *src,
 
     result = mean_and_deviation(get_local_id(0), get_local_size(0),
                                 input, l_data);
-    for (int i=0; i<max_iter; i++)
+    for (i=0; i<max_iter; i++)
     {
-        local int discarded[1];
+
         if (get_local_id(0) == 0)
         {
             discarded[0] = 0;
@@ -456,6 +458,7 @@ kernel void sigma_clip_vertical(global float *src,
     }
     if (get_local_id(0) == 0)
     {
+        //printf("Discarded %d %d %d\n", get_global_id(1), i,  discarded[0]);
         mean[get_global_id(1)] = result.s0;
         std[get_global_id(1)] = result.s1;
     }
@@ -497,13 +500,12 @@ kernel void sigma_clip_horizontal(global float *src,
     float8 input;
     float2 result;
     float value;
-    uint id, global_start, offset;
-
+    uint id, global_start, offset, i;
+    local int discarded[1];
 
     // Find global address
-    offset = get_global_size(1)*get_global_id(0)*8;
-    id = get_local_id(1) * 8;
-    global_start = offset + get_group_id(1) * get_local_size(1) * 8 + id;
+    offset = get_global_size(1) * get_global_id(0) * 8;
+    global_start = offset + get_group_id(1) * get_local_size(1) * 8 + get_local_id(1) * 8;
 
     value = src[global_start];
     input.s0 = (value==dummy)?NAN:value;
@@ -522,11 +524,11 @@ kernel void sigma_clip_horizontal(global float *src,
     value = src[global_start + 7];
     input.s7 = (value==dummy)?NAN:value;
 
-    result = mean_and_deviation(get_local_id(0), get_local_size(0),
+    result = mean_and_deviation(get_local_id(1), get_local_size(1),
                                 input, l_data);
-    for (int i=0; i<max_iter; i++)
+    for (i=0; i<max_iter; i++)
     {
-        local int discarded[1];
+
         if (get_local_id(1) == 0)
         {
             discarded[0] = 0;
@@ -546,6 +548,7 @@ kernel void sigma_clip_horizontal(global float *src,
     }
     if (get_local_id(1) == 0)
     {
+//        printf("Discarded (%d,%d) %d %d\n", get_global_id(0), get_global_id(1), i,  discarded[0]);
         mean[get_global_id(0)] = result.s0;
         std[get_global_id(0)] = result.s1;
     }
