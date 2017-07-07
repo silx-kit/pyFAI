@@ -155,7 +155,7 @@ class Separator(OpenclProcessing):
                                                                 ("quantile", numpy.float32(0.5))])
 
         self.cl_kernel_args["trimmed_mean_vertical"] = OrderedDict([("src", self.cl_mem["input_data"].data),
-                                                                    ("dst", self.cl_mem["vector_horizontal"].data),
+                                                                    ("dst", self.cl_mem["vector_vertical"].data),
                                                                     ("width", numpy.uint32(self.npt_width)),
                                                                     ("height", numpy.uint32(self.npt_height)),
                                                                     ("dummy", numpy.float32(0)),
@@ -163,7 +163,7 @@ class Separator(OpenclProcessing):
                                                                     ("upper_quantile", numpy.float32(0.5))])
 
         self.cl_kernel_args["trimmed_mean_horizontal"] = OrderedDict([("src", self.cl_mem["input_data"].data),
-                                                                      ("dst", self.cl_mem["vector_vertical"].data),
+                                                                      ("dst", self.cl_mem["vector_horizontal"].data),
                                                                       ("width", numpy.uint32(self.npt_width)),
                                                                       ("height", numpy.uint32(self.npt_height)),
                                                                       ("dummy", numpy.float32(0)),

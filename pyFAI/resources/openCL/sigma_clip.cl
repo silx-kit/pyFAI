@@ -63,7 +63,6 @@ static inline float2 kahan_sum(float2 acc, float value)
 // calculate a + b with error compensation
 static inline float2 compensated_sum(float2 a, float2 b)
 {
-    float2 result;
     float sum, err = a.s1 + b.s1;
 
     if (fabs(a.s0) > fabs(b.s0))
@@ -87,7 +86,6 @@ static float8 sum_vector(float8 data)
 {
     //implements Kahan summation:
     // see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-    float8 result;
     float2 tmp, sum1, sum2;
     float value;
 
@@ -500,7 +498,7 @@ kernel void sigma_clip_horizontal(global float *src,
     float8 input;
     float2 result;
     float value;
-    uint id, global_start, offset, i;
+    uint global_start, offset, i;
     local int discarded[1];
 
     // Find global address
