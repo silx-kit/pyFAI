@@ -34,11 +34,11 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "07/07/2017"
+__date__ = "10/07/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os, sys
+import os
 import logging
 from collections import OrderedDict
 import numpy
