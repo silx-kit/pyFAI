@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "17/07/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -239,6 +239,9 @@ ANGLE_UNITS = {"deg": Unit("deg", scale=180.0 / pi, label=r"angle $\alpha$ ($^{o
                "rad": Unit("rad", scale=1.0, label=r"angle $\alpha$ ($rad$)"),
                }
 
+AZIMUTHAL_UNITS = {"chi_rad": Unit("chi_rad", scale=1.0, label=r"Azimuthal angle $\chi$ ($rad$)"),
+                   "chi_deg": Unit("chi_deg", scale=180 / pi, label=r"Azimuthal angle $\chi$ ($^{o}$)")}
+
 
 def to_unit(obj, type_=None):
     if type_ is None:
@@ -263,3 +266,5 @@ R_M = RADIAL_UNITS["r_m"]
 RecD2_NM = RADIAL_UNITS["d*2_nm^-2"]
 l_m = LENGTH_UNITS["m"]
 A_rad = ANGLE_UNITS["rad"]
+CHI_DEG = AZIMUTHAL_UNITS["chi_deg"]
+CHI_RAD = AZIMUTHAL_UNITS["chi_rad"]
