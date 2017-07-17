@@ -3,6 +3,11 @@
 :Keywords: generic description of the calibration procedure
 :Target: General audience
 
+.. _calibration:
+
+Calibration
+===========
+
 The determination of the geometry of the experimental setup for the diffraction pattern
 of a reference sample is called calibration in pyFAI.
 A geometry setup is composed of a detector, the six refined parameters like the distance

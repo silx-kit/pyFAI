@@ -33,9 +33,9 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "15/05/2017"
 __status__ = "stable"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 
 import cython
 cimport numpy
@@ -56,7 +56,7 @@ cdef inline position_t area4(position_t a0, position_t a1, position_t b0, positi
     B(b0,b1)
     C(c0,c1)
     D(d0,d1)
-    @return: area, i.e. 1/2 * (AC ^ BD)
+    :return: area, i.e. 1/2 * (AC ^ BD)
     """
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
@@ -69,9 +69,9 @@ cdef struct Function:
 cdef inline position_t integrate(position_t A0, position_t B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
-    param A0: first limit
-    param B0: second limit
-    param AB: struct with the slope and point of intersection of the line
+    :param A0: first limit
+    :param B0: second limit
+    :param AB: struct with the slope and point of intersection of the line
     """
     if A0 == B0:
         return 0.0
@@ -83,10 +83,10 @@ cdef inline position_t integrate(position_t A0, position_t B0, Function AB) nogi
 cdef inline position_t getBin1Nr(position_t x0, position_t pos0_min, position_t delta, int on_boundary) nogil:
     """
     calculate the bin number for any point
-    @param x0: current position
-    @param pos0_min: position minimum
-    @param delta: bin width
-    @param on_boundary: splits over a discontinuity...
+    :param x0: current position
+    :param pos0_min: position minimum
+    :param delta: bin width
+    :param on_boundary: splits over a discontinuity...
     """
     if on_boundary:
         if x0 >= 0:
@@ -184,22 +184,22 @@ def fullSplit1D(numpy.ndarray pos not None,
     No compromise for speed has been made here.
 
 
-    @param pos: 3D or 4D array with the coordinates of each pixel point
-    @param weights: array with intensities
-    @param bins: number of output bins
-    @param pos0Range: minimum and maximum  of the 2th range
-    @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels
-    @param delta_dummy: precision of dummy value
-    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-    @param dark: array (of float64) with dark noise to be subtracted (or None)
-    @param flat: array (of float64) with flat image
-    @param solidangle: array (of float64) with flat image
-    @param polarization: array (of float64) with polarization correction
-    @param empty: value of output bins without any contribution when dummy is None
-    @param normalization_factor: divide the valid result by this value
+    :param pos: 3D or 4D array with the coordinates of each pixel point
+    :param weights: array with intensities
+    :param bins: number of output bins
+    :param pos0Range: minimum and maximum  of the 2th range
+    :param pos1Range: minimum and maximum  of the chi range
+    :param dummy: value for bins without pixels
+    :param delta_dummy: precision of dummy value
+    :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :param dark: array (of float64) with dark noise to be subtracted (or None)
+    :param flat: array (of float64) with flat image
+    :param solidangle: array (of float64) with flat image
+    :param polarization: array (of float64) with polarization correction
+    :param empty: value of output bins without any contribution when dummy is None
+    :param normalization_factor: divide the valid result by this value
 
-    @return 2theta, I, weighted histogram, unweighted histogram
+    :return: 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
     if pos.ndim > 3:
@@ -408,22 +408,22 @@ def fullSplit2D(numpy.ndarray pos not None,
 
 
 
-    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
-    @param weights: array with intensities
-    @param bins: number of output bins int or 2-tuple of int
-    @param pos0Range: minimum and maximum  of the 2th range
-    @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels
-    @param delta_dummy: precision of dummy value
-    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-    @param dark: array (of float64) with dark noise to be subtracted (or None)
-    @param flat: array (of float64) with flat-field image
-    @param polarization: array (of float64) with polarization correction
-    @param solidangle: array (of float64)with solid angle corrections
-    @param empty: value of output bins without any contribution when dummy is None
-    @param normalization_factor: divide the valid result by this value
+    :param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
+    :param weights: array with intensities
+    :param bins: number of output bins int or 2-tuple of int
+    :param pos0Range: minimum and maximum  of the 2th range
+    :param pos1Range: minimum and maximum  of the chi range
+    :param dummy: value for bins without pixels
+    :param delta_dummy: precision of dummy value
+    :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    :param dark: array (of float64) with dark noise to be subtracted (or None)
+    :param flat: array (of float64) with flat-field image
+    :param polarization: array (of float64) with polarization correction
+    :param solidangle: array (of float64)with solid angle corrections
+    :param empty: value of output bins without any contribution when dummy is None
+    :param normalization_factor: divide the valid result by this value
 
-    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
     cdef int all_bins0 = 0, all_bins1 = 0, size = weights.size
     if pos.ndim > 3:  # create a view

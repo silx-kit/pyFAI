@@ -225,6 +225,16 @@ register_radial_unit("log(1+q.A)_None",
                      label=r"log(1+$q$.A)",
                      equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength) * 10.0))
 
+register_radial_unit("arcsinh(q.nm)_None",
+                     scale=1.0,
+                     label=r"arcsinh($q$.nm)",
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength)))
+
+register_radial_unit("arcsinh(q.A)_None",
+                     scale=1.0,
+                     label=r"arcsinh($q$.A)",
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength) * 10.0))
+
 
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
                 "mm": Unit("mm", scale=1e3, label=r"length $l$ ($mm$)"),

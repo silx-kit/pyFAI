@@ -8,19 +8,24 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+
 
 """
 
@@ -30,9 +35,9 @@ Utilities, mainly for image treatment
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "15/06/2017"
 __status__ = "production"
 
 import logging
@@ -79,7 +84,7 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 StringTypes = (six.binary_type, six.text_type)
 
 try:
-    from ..fastcrc import crc32
+    from ..ext.fastcrc import crc32
 except:
     from zlib import crc32
 
@@ -452,7 +457,7 @@ def unBinning(binnedArray, binsize, norm=True):
 
 def shiftFFT(input_img, shift_val, method="fft"):
     """Do shift using FFTs
-    
+
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
     :param input_img: 2d numpy array
     :param shift_val: 2-tuple of float
@@ -632,6 +637,8 @@ def get_cl_file(filename):
 
     :return: the full path of the openCL source file
     """
+    if not filename.endswith(".cl"):
+        filename += ".cl"
     return _get_data_path(os.path.join("openCL", filename))
 
 
@@ -641,31 +648,6 @@ def get_ui_file(filename):
     :return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
-
-
-def read_cl_file(filename):
-    """
-    :param filename: read an OpenCL file and apply a preprocessor
-    :return: preprocessed source code
-    """
-    with open(get_cl_file(filename), "r") as f:
-        # Dummy preprocessor which removes the #include
-        lines = [i for i in f.readlines() if not i.startswith("#include ")]
-    return "".join(lines)
-
-
-def concatenate_cl_kernel(filenames):
-    """
-    :param filenames: filenames containing the kernels
-    :type filenames: list of str which can be filename of kernel as a string.
-
-    this method concatenates all the kernel from the list
-    """
-    kernel = ""
-    for filename in filenames:
-            kernel += read_cl_file(filename)
-            kernel += os.linesep
-    return kernel
 
 
 def deg2rad(dd):
@@ -956,3 +938,9 @@ def is_far_from_group(pt, lst_pts, d2):
         if dsq <= d2:
             return False
     return True
+
+
+def fully_qualified_name(obj):
+    "Return the fully qualified name of an object"
+    actual_class = obj.__class__.__mro__[0]
+    return actual_class.__module__ + "." + actual_class.__name__

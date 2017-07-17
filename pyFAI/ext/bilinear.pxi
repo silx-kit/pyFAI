@@ -7,26 +7,32 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
 from libc.math cimport floor, ceil
+import logging
+logger = logging.getLogger("bilinear")
 
 cdef class Bilinear:
     """Bilinear interpolator for finding max.
-    
-    Instance attribute defined in pxd file 
+
+    Instance attribute defined in pxd file
     """
     cdef:
         readonly float[:, ::1] data
@@ -43,72 +49,101 @@ cdef class Bilinear:
         self.maxi = data.max()
         self.mini = data.min()
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-    
+
     def __dealloc__(self):
         self.data = None
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def f_cy(self, x):
         """
-        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
-        @param x: 2-tuple of float
-        @return: Interpolated signal from the image (negative for minimizer)
+        Function -f((y,x)) where f is a continuous function 
+        (y,x) are pixel coordinates
+        pixels outside the image are given an arbitrary high value to help the minimizer  
 
+        :param x: 2-tuple of float
+        :return: Interpolated negative signal from the image 
+        (negative for using minimizer to search for peaks)
         """
         cdef:
             float d0 = x[0]
             float d1 = x[1]
+        if d0 < 0:
+            res = self.mini + d0
+        elif d1 < 0:
+            res = self.mini + d1
+        elif d0 > (self.height - 1):
+            res = self.mini - d0 + self.height - 1
+        elif d1 > self.width - 1:
+            res = self.mini - d1 + self.width - 1
+        else:
+            res = self._f_cy(d0, d1)
+        return -res 
+    
+    def __call__(self, x):
+        "Function f((y,x)) where f is a continuous function "
+        cdef:
+            float d0 = x[0]
+            float d1 = x[1]
+        return self._f_cy(d0, d1)
+        
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:
+        """
+        Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
+
+        :param x: 2-tuple of float
+        :return: Interpolated signal from the image
+        """
+
+        cdef:
             int i0, i1, j0, j1
             float x0, x1, y0, y1, res
-        with nogil:
-            x0 = floor(d0)
-            x1 = ceil(d0)
-            y0 = floor(d1)
-            y1 = ceil(d1)
-            i0 = < int > x0
-            i1 = < int > x1
-            j0 = < int > y0
-            j1 = < int > y1
-            if d0 < 0:
-                res = self.mini + d0
-            elif d1 < 0:
-                res = self.mini + d1
-            elif d0 > (self.height - 1):
-                res = self.mini - d0 + self.height - 1
-            elif d1 > self.width - 1:
-                res = self.mini - d1 + self.width - 1
-            elif (i0 == i1) and (j0 == j1):
-                res = self.data[i0, j0]
-            elif i0 == i1:
-                res = (self.data[i0, j0] * (y1 - d1)) + (self.data[i0, j1] * (d1 - y0))
-            elif j0 == j1:
-                res = (self.data[i0, j0] * (x1 - d0)) + (self.data[i1, j0] * (d0 - x0))
-            else:
-                res = (self.data[i0, j0] * (x1 - d0) * (y1 - d1))  \
-                    + (self.data[i1, j0] * (d0 - x0) * (y1 - d1))  \
-                    + (self.data[i0, j1] * (x1 - d0) * (d1 - y0))  \
-                    + (self.data[i1, j1] * (d0 - x0) * (d1 - y0))
-        return - res
+        if d0 < 0:
+            d0 = 0
+        elif d1 < 0:
+            d1 = 0
+        elif d0 > (self.height - 1):
+            d0 = self.height - 1
+        elif d1 > self.width - 1:
+            d1 = self.width - 1
+        x0 = floor(d0)
+        x1 = ceil(d0)
+        y0 = floor(d1)
+        y1 = ceil(d1)
+        i0 = < int > x0
+        i1 = < int > x1
+        j0 = < int > y0
+        j1 = < int > y1
+        if (i0 == i1) and (j0 == j1):
+            res = self.data[i0, j0]
+        elif i0 == i1:
+            res = (self.data[i0, j0] * (y1 - d1)) + (self.data[i0, j1] * (d1 - y0))
+        elif j0 == j1:
+            res = (self.data[i0, j0] * (x1 - d0)) + (self.data[i1, j0] * (d0 - x0))
+        else:
+            res = (self.data[i0, j0] * (x1 - d0) * (y1 - d1))  \
+                + (self.data[i1, j0] * (d0 - x0) * (y1 - d1))  \
+                + (self.data[i0, j1] * (x1 - d0) * (d1 - y0))  \
+                + (self.data[i1, j1] * (d0 - x0) * (d1 - y0))
+        return res
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
     def local_maxi(self, x):
         """
-        Return the local maximum ... with sub-pixel refinement
-
-        @param x: 2-tuple of integers
-        @param w: half with of the window: 1 or 2 are advised
-        @return: 2-tuple of float with the nearest local maximum
-
+        Return the local maximum with sub-pixel refinement.
 
         Sub-pixel refinement:
         Second order Taylor expansion of the function; first derivative is null
-        delta = x-i = -Inverse[Hessian].gradient
 
-        if Hessian is singular or |delta|>1: use a center of mass.
+        .. math:: delta = x-i = -Inverse[Hessian].gradient
 
+        If Hessian is singular or :math:`|delta|>1`: use a center of mass.
+
+        :param x: 2-tuple of integers
+        :param w: half with of the window: 1 or 2 are advised
+        :return: 2-tuple of float with the nearest local maximum
         """
         cdef:
             int res, current0, current1
@@ -116,7 +151,7 @@ cdef class Bilinear:
             float tmp, sum0 = 0, sum1 = 0, sum = 0
             float a00, a01, a02, a10, a11, a12, a20, a21, a22
             float d00, d11, d01, denom, delta0, delta1
-            
+
         res = self.c_local_maxi(round(x[0]) * self.width + round(x[1]))
 
         current0 = res // self.width
@@ -155,7 +190,7 @@ cdef class Bilinear:
                     sum += tmp
             if sum > 0:
                 return (sum0 / sum, sum1 / sum)
-                
+
         return (float(current0), float(current1))
 
     cpdef size_t cp_local_maxi(self, size_t x):
@@ -168,10 +203,9 @@ cdef class Bilinear:
         """
         Return the local maximum ... without sub-pixel refinement
 
-        @param x: start index
-        @param w: half with of the window: 1 or 2 are advised
-        @return: local maximum index
-
+        :param x: start index
+        :param w: half with of the window: 1 or 2 are advised
+        :return: local maximum index
         """
         cdef:
             int current0 = x // self.width

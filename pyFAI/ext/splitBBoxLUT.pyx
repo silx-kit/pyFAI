@@ -7,35 +7,39 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
-__doc__ = """Calculates histograms of pos0 (tth) weighted by Intensity
+"""Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/09/2016"
+__date__ = "19/06/2017"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
 import os
 import sys
 import logging
-logger = logging.getLogger("pyFAI.splitBBoxLUT")
+logger = logging.getLogger("pyFAI.ext.splitBBoxLUT")
 from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
 from libc.string cimport memset, memcpy
@@ -51,10 +55,7 @@ cdef struct lut_point:
 
 dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 
-try:
-    from fastcrc import crc32
-except:
-    from zlib import crc32
+from ..utils import crc32
 
 
 def int0(a):
@@ -90,17 +91,17 @@ class HistoBBox1d(object):
                  unit="undefined",
                  empty=0.0):
         """
-        @param pos0: 1D array with pos0: tth or q_vect or r ...
-        @param delta_pos0: 1D array with delta pos0: max center-corner distance
-        @param pos1: 1D array with pos1: chi
-        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-        @param bins: number of output bins, 100 by default
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param unit: can be 2th_deg or r_nm^-1 ...
-        @param empty: value for bins without contributing pixels
+        :param pos0: 1D array with pos0: tth or q_vect or r ...
+        :param delta_pos0: 1D array with delta pos0: max center-corner distance
+        :param pos1: 1D array with pos1: chi
+        :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        :param bins: number of output bins, 100 by default
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param unit: can be 2th_deg or r_nm^-1 ...
+        :param empty: value for bins without contributing pixels
         """
 
         self.size = pos0.size
@@ -389,24 +390,24 @@ class HistoBBox1d(object):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef:
@@ -544,24 +545,24 @@ class HistoBBox1d(object):
         Actually perform the integration which in this case looks more like a matrix-vector product
         Single precision implementation using Kahan summation
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return : positions, pattern, weighted_histogram and unweighted_histogram
-        @rtype: 4-tuple of ndarrays
+        :return: positions, pattern, weighted_histogram and unweighted_histogram
+        :rtype: 4-tuple of ndarrays
 
         """
         cdef:
@@ -735,17 +736,17 @@ class HistoBBox2d(object):
                  chiDiscAtPi=True
                  ):
         """
-        @param pos0: 1D array with pos0: tth or q_vect
-        @param delta_pos0: 1D array with delta pos0: max center-corner distance
-        @param pos1: 1D array with pos1: chi
-        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
-        @param bins: number of output bins (tth=100, chi=36 by default)
-        @param pos0Range: minimum and maximum  of the 2th range
-        @param pos1Range: minimum and maximum  of the chi range
-        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible
-        @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
-        @param unit: can be 2th_deg or r_nm^-1 ...
+        :param pos0: 1D array with pos0: tth or q_vect
+        :param delta_pos0: 1D array with delta pos0: max center-corner distance
+        :param pos1: 1D array with pos1: chi
+        :param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        :param bins: number of output bins (tth=100, chi=36 by default)
+        :param pos0Range: minimum and maximum  of the 2th range
+        :param pos1Range: minimum and maximum  of the chi range
+        :param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        :param allow_pos0_neg: enforce the q<0 is usually not possible
+        :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        :param unit: can be 2th_deg or r_nm^-1 ...
         """
         cdef numpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
@@ -1152,24 +1153,24 @@ class HistoBBox2d(object):
         """
         Actually perform the 2D integration which in this case looks more like a matrix-vector product
 
-        @param weights: input image
-        @type weights: ndarray
-        @param dummy: value for dead pixels (optional)
-        @type dummy: float
-        @param delta_dummy: precision for dead-pixel value in dynamic masking
-        @type delta_dummy: float
-        @param dark: array with the dark-current value to be subtracted (if any)
-        @type dark: ndarray
-        @param flat: array with the dark-current value to be divided by (if any)
-        @type flat: ndarray
-        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
-        @type solidAngle: ndarray
-        @param polarization: array with the polarization correction values to be divided by (if any)
-        @type polarization: ndarray
-        @param normalization_factor: divide the valid result by this value
+        :param weights: input image
+        :type weights: ndarray
+        :param dummy: value for dead pixels (optional)
+        :type dummy: float
+        :param delta_dummy: precision for dead-pixel value in dynamic masking
+        :type delta_dummy: float
+        :param dark: array with the dark-current value to be subtracted (if any)
+        :type dark: ndarray
+        :param flat: array with the dark-current value to be divided by (if any)
+        :type flat: ndarray
+        :param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        :type solidAngle: ndarray
+        :param polarization: array with the polarization correction values to be divided by (if any)
+        :type polarization: ndarray
+        :param normalization_factor: divide the valid result by this value
 
-        @return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
-        @rtype: 5-tuple of ndarrays
+        :return:  I(2d), edges0(1d), edges1(1d), weighted histogram(2d), unweighted histogram (2d)
+        :rtype: 5-tuple of ndarrays
 
         """
         cdef:

@@ -2,7 +2,7 @@
  * Project: Azimuthal integration
  *       https://github.com/silx-kit/pyFAI
  *
- * Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+ * Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
  *
  * Principal author:       Jerome Kieffer (Jerome.Kieffer@ESRF.eu)
  *
@@ -52,17 +52,18 @@ __kernel void copy_pad(__global float *src,
 
   }
 }
+
 /*
 
 filter_vertical filters out a sorted array, counts the number of non dummy values and
 copies the according value at the position depending on the quantile.
 
-@param src: 2D array of floats of size width*height
-@param dst: 1D array of floats of size width
-@param width:
-@param height:
-@param dummy: value of the invalid data
-@param quantile: between 0 and 1
+:param src: 2D array of floats of size width*height
+:param dst: 1D array of floats of size width
+:param width:
+:param height:
+:param dummy: value of the invalid data
+:param quantile: between 0 and 1
 
 Each thread works on a complete column, counting the elements and copying the right one
 */
@@ -97,12 +98,12 @@ __kernel void filter_vertical(__global float *src,
 filter_horizontal filters out a sorted array, counts the number of non dummy values and
 copies the according value at the position depending on the quantile.
 
-@param src: 2D array of floats of size width*height
-@param dst: 1D array of floats of size width
-@param width:
-@param height:
-@param dummy: value of the invalid data
-@param quantile: between 0 and 1
+:param src: 2D array of floats of size width*height
+:param dst: 1D array of floats of size width
+:param width:
+:param height:
+:param dummy: value of the invalid data
+:param quantile: between 0 and 1
 
 Each thread works on a complete column, counting the elements and copying the right one
 */
@@ -131,5 +132,138 @@ __kernel void filter_horizontal(__global float *src,
 	  }else{
 		  dst[gid] = dummy;
 	  }
+  }
+}
+
+/*
+
+trimmed_mean_vertical filters out a sorted array, counts the number of non dummy values and
+calculates the mean, excluding outlier values.
+
+:param src: 2D array of floats of size width*height
+:param dst: 1D array of floats of size width
+:param width:
+:param height:
+:param dummy: value of the invalid data
+:param lower_quantile: between 0 and 1
+:param upper_quantile: between 0 and 1 and > lower_quantile
+
+Each thread works on a complete column.
+Data are likely to be read twice which could be enhanced.
+*/
+kernel void trimmed_mean_vertical(global float *src,
+                                  global float *dst,
+                                  uint width,
+                                  uint height,
+                                  float dummy,
+                                  float lower_quantile,
+                                  float upper_quantile)
+{
+  uint gid = get_global_id(0);
+  //Global memory guard for padding
+  int cnt = 0, pos=0;
+  int lower, upper;
+  float data, sum=0.0f, error=0.0f;
+  if(gid < width)
+  {
+      for (pos=0; pos<height*width; pos+=width){
+        data = src[gid+pos];
+        if (data!=dummy)
+        {
+            cnt++;
+        }
+      }
+      if (cnt)
+      {
+          lower = min((int)floor(lower_quantile * cnt) + height - cnt, height - 1);
+          upper = min((int)ceil(upper_quantile * cnt) + height - cnt, height - 1);
+          if (upper > lower)
+          {
+              for (pos=lower*width; pos<upper*width; pos+=width)
+              {
+                  data = src[gid+pos];
+                  //Sum performed using Kahan summation
+                  float y = data - error;
+                  float t = sum + y;
+                  error = (t - sum) - y;
+                  sum = t;
+              }
+              dst[gid] = sum / (float)(upper - lower);
+          }
+          else
+          {
+              dst[gid] = dummy;
+          }
+      }
+      else
+      {
+          dst[gid] = dummy;
+      }
+  }
+}
+/*
+
+trimmed_mean_horizontal filters out a sorted array, counts the number of non dummy values and
+calculates the mean of the value rejecting outliers, which position depend on the quantile provided.
+
+:param src: 2D array of floats of size width*height
+:param dst: 1D array of floats of size width
+:param width:
+:param height:
+:param dummy: value of the invalid data
+:param lower_quantile: between 0 and 1
+:param upper_quantile: between 0 and 1 and greater the lower_quantile
+
+Each thread works on a complete line.
+Data are likely to be read twice which could be enhanced.
+*/
+kernel void trimmed_mean_horizontal(global float *src,
+                                    global float *dst,
+                                    uint width,
+                                    uint height,
+                                    float dummy,
+                                    float lower_quantile,
+                                    float upper_quantile)
+{
+  uint gid = get_global_id(0);
+  //Global memory guard for padding
+  uint cnt = 0, pos=0, offset=gid*width;
+  float data, sum=0.0f, error=0.0f;
+  int lower, upper;
+  if(gid < height)
+  {
+      for (pos=0; pos<width; pos++)
+      {
+        data = src[offset + pos];
+        if (data!=dummy){
+            cnt++;
+        }
+      }
+      if (cnt)
+      {
+          lower = min((int)floor(lower_quantile * cnt) + width - cnt, width - 1);
+          upper = min((int)ceil(upper_quantile * cnt) + width - cnt, width - 1);
+          if (upper > lower)
+          {
+              for (pos=lower; pos<upper; pos++)
+              {
+                  data = src[offset + pos];
+                  //Sum performed using Kahan summation
+                  float y = data - error;
+                  float t = sum + y;
+                  error = (t - sum) - y;
+                  sum = t;
+              }
+              dst[gid] = sum / (float)(upper - lower);
+          }
+          else
+          {
+              dst[gid] = dummy;
+          }
+      }
+      else
+      {
+          dst[gid] = dummy;
+      }
   }
 }

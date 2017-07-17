@@ -239,6 +239,7 @@ void __Pyx_call_destructor(T* x) {
 #include "numpy/arrayobject.h"
 #include "numpy/ufuncobject.h"
 #include "math.h"
+#include "src/isnan.h"
 #include "pythread.h"
 #include "pystate.h"
 #ifdef _OPENMP
@@ -791,31 +792,79 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
-struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
-struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc;
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc;
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc;
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc;
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc;
 
-/* "pyFAI/ext/preproc.pyx":66
+/* "pyFAI/ext/preproc.pyx":58
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
  */
-struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -828,7 +877,7 @@ struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -841,7 +890,7 @@ struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -854,7 +903,7 @@ struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -867,7 +916,7 @@ struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -880,7 +929,7 @@ struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -893,7 +942,7 @@ struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -906,7 +955,7 @@ struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -919,7 +968,7 @@ struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   float normalization_factor;
 };
-struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -932,7 +981,7 @@ struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   double normalization_factor;
 };
-struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -945,7 +994,7 @@ struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   double normalization_factor;
 };
-struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -958,7 +1007,7 @@ struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   double normalization_factor;
 };
-struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -971,7 +1020,7 @@ struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   double normalization_factor;
 };
-struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -984,7 +1033,7 @@ struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   double normalization_factor;
 };
-struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -997,7 +1046,7 @@ struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   double normalization_factor;
 };
-struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -1010,7 +1059,7 @@ struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   int check_dummy;
   double normalization_factor;
 };
-struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc {
   int __pyx_n;
   __Pyx_memviewslice dark;
   __Pyx_memviewslice flat;
@@ -1022,6 +1071,686 @@ struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc {
   double delta_dummy;
   int check_dummy;
   double normalization_factor;
+};
+
+/* "pyFAI/ext/preproc.pyx":148
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+
+/* "pyFAI/ext/preproc.pyx":242
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+};
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+};
+
+/* "pyFAI/ext/preproc.pyx":341
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+struct __pyx_fuse_0_0__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_0_1__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_0_2__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_0_3__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_0_5__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_0_6__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_0_7__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  float dummy;
+  float delta_dummy;
+  int check_dummy;
+  float normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_0__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_1__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_2__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_3__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_4__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_5__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_6__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
+};
+struct __pyx_fuse_1_7__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc {
+  int __pyx_n;
+  __Pyx_memviewslice dark;
+  __Pyx_memviewslice flat;
+  __Pyx_memviewslice solidangle;
+  __Pyx_memviewslice polarization;
+  __Pyx_memviewslice absorption;
+  __Pyx_memviewslice mask;
+  double dummy;
+  double delta_dummy;
+  int check_dummy;
+  double normalization_factor;
+  __Pyx_memviewslice variance;
+  __Pyx_memviewslice dark_variance;
 };
 
 /* "View.MemoryView":99
@@ -1284,6 +2013,23 @@ static double __Pyx__PyObject_AsDouble(PyObject* obj);
 #define __Pyx_PyObject_AsDouble(obj) \
 ((likely(PyFloat_CheckExact(obj))) ? \
  PyFloat_AS_DOUBLE(obj) : __Pyx__PyObject_AsDouble(obj))
+#endif
+
+#if CYTHON_COMPILING_IN_CPYTHON
+#define __Pyx_PyObject_DelAttrStr(o,n) __Pyx_PyObject_SetAttrStr(o,n,NULL)
+static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr_name, PyObject* value) {
+    PyTypeObject* tp = Py_TYPE(obj);
+    if (likely(tp->tp_setattro))
+        return tp->tp_setattro(obj, attr_name, value);
+#if PY_MAJOR_VERSION < 3
+    if (likely(tp->tp_setattr))
+        return tp->tp_setattr(obj, PyString_AS_STRING(attr_name), value);
+#endif
+    return PyObject_SetAttr(obj, attr_name, value);
+}
+#else
+#define __Pyx_PyObject_DelAttrStr(o,n)   PyObject_DelAttr(o,n)
+#define __Pyx_PyObject_SetAttrStr(o,n,v) PyObject_SetAttr(o,n,v)
 #endif
 
 static CYTHON_INLINE void __Pyx_ErrRestore(PyObject *type, PyObject *value, PyObject *tb);
@@ -1607,6 +2353,8 @@ static int __Pyx_ValidateAndInit_memviewslice(
 
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dc_float(PyObject *);
 
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_d_dc_float(PyObject *);
+
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(PyObject *);
 
 static int __Pyx_check_binary_version(void);
@@ -1684,6 +2432,8 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libc.math' */
 
+/* Module declarations from 'pyFAI.ext.isnan' */
+
 /* Module declarations from 'pyFAI.ext.preproc' */
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
@@ -1694,7 +2444,10 @@ static PyObject *strided = 0;
 static PyObject *indirect = 0;
 static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
-static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(__Pyx_memviewslice, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc *__pyx_optional_args); /*proto*/
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(__Pyx_memviewslice, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc *__pyx_optional_args); /*proto*/
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(__Pyx_memviewslice, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc *__pyx_optional_args); /*proto*/
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(__Pyx_memviewslice, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc *__pyx_optional_args); /*proto*/
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(__Pyx_memviewslice, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc *__pyx_optional_args); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1751,7 +2504,7 @@ static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_xrange;
 static PyObject *__pyx_builtin_id;
 static PyObject *__pyx_builtin_IndexError;
-static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_data, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, PyObject *__pyx_v_absorption, PyObject *__pyx_v_mask, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, float __pyx_v_normalization_factor, PyObject *__pyx_v_empty); /* proto */
+static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_raw, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, PyObject *__pyx_v_absorption, PyObject *__pyx_v_mask, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, float __pyx_v_normalization_factor, PyObject *__pyx_v_empty, int __pyx_v_split_result, PyObject *__pyx_v_variance, PyObject *__pyx_v_dark_variance, int __pyx_v_poissonian); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1811,9 +2564,10 @@ static char __pyx_k_Zg[] = "Zg";
 static char __pyx_k_id[] = "id";
 static char __pyx_k_MIT[] = "MIT";
 static char __pyx_k_obj[] = "obj";
+static char __pyx_k_raw[] = "raw";
+static char __pyx_k_res[] = "res";
 static char __pyx_k_base[] = "base";
 static char __pyx_k_dark[] = "dark";
-static char __pyx_k_data[] = "data";
 static char __pyx_k_date[] = "__date__";
 static char __pyx_k_flat[] = "flat";
 static char __pyx_k_int8[] = "int8";
@@ -1823,6 +2577,8 @@ static char __pyx_k_mode[] = "mode";
 static char __pyx_k_name[] = "name";
 static char __pyx_k_ndim[] = "ndim";
 static char __pyx_k_pack[] = "pack";
+static char __pyx_k_res1[] = "res1";
+static char __pyx_k_res2[] = "res2";
 static char __pyx_k_size[] = "size";
 static char __pyx_k_step[] = "step";
 static char __pyx_k_stop[] = "stop";
@@ -1842,13 +2598,13 @@ static char __pyx_k_range[] = "range";
 static char __pyx_k_ravel[] = "ravel";
 static char __pyx_k_shape[] = "shape";
 static char __pyx_k_start[] = "start";
+static char __pyx_k_zeros[] = "zeros";
 static char __pyx_k_author[] = "__author__";
 static char __pyx_k_cdummy[] = "cdummy";
 static char __pyx_k_ddummy[] = "ddummy";
 static char __pyx_k_format[] = "format";
 static char __pyx_k_import[] = "__import__";
 static char __pyx_k_name_2[] = "__name__";
-static char __pyx_k_result[] = "result";
 static char __pyx_k_struct[] = "struct";
 static char __pyx_k_unpack[] = "unpack";
 static char __pyx_k_xrange[] = "xrange";
@@ -1859,17 +2615,21 @@ static char __pyx_k_fortran[] = "fortran";
 static char __pyx_k_license[] = "__license__";
 static char __pyx_k_memview[] = "memview";
 static char __pyx_k_preproc[] = "preproc";
-static char __pyx_k_reshape[] = "reshape";
 static char __pyx_k_Ellipsis[] = "Ellipsis";
 static char __pyx_k_cabsorpt[] = "cabsorpt";
 static char __pyx_k_itemsize[] = "itemsize";
+static char __pyx_k_variance[] = "variance";
 static char __pyx_k_TypeError[] = "TypeError";
 static char __pyx_k_copyright[] = "__copyright__";
+static char __pyx_k_cvariance[] = "cvariance";
+static char __pyx_k_dvariance[] = "dvariance";
 static char __pyx_k_enumerate[] = "enumerate";
-static char __pyx_k_01_12_2016[] = "01/12/2016";
+static char __pyx_k_out_shape[] = "out_shape";
+static char __pyx_k_25_04_2017[] = "25/04/2017";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_absorption[] = "absorption";
+static char __pyx_k_poissonian[] = "poissonian";
 static char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
 static char __pyx_k_solidangle[] = "solidangle";
 static char __pyx_k_zeros_like[] = "zeros_like";
@@ -1879,9 +2639,11 @@ static char __pyx_k_csolidangle[] = "csolidangle";
 static char __pyx_k_delta_dummy[] = "delta_dummy";
 static char __pyx_k_RuntimeError[] = "RuntimeError";
 static char __pyx_k_polarization[] = "polarization";
+static char __pyx_k_split_result[] = "split_result";
 static char __pyx_k_cpolarization[] = "cpolarization";
+static char __pyx_k_dark_variance[] = "dark_variance";
 static char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
-static char __pyx_k_2011_2015_ESRF[] = "2011-2015, ESRF";
+static char __pyx_k_2011_2017_ESRF[] = "2011-2017, ESRF";
 static char __pyx_k_Jerome_Kieffer[] = "Jerome Kieffer";
 static char __pyx_k_allocate_buffer[] = "allocate_buffer";
 static char __pyx_k_dtype_is_object[] = "dtype_is_object";
@@ -1907,6 +2669,7 @@ static char __pyx_k_Step_may_not_be_zero_axis_d[] = "Step may not be zero (axis 
 static char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cython.array";
 static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
+static char __pyx_k_Variance_array_size_is_correct[] = "Variance array size is correct";
 static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_users_kieffer_workspace_400_pyF[] = "/users/kieffer/workspace-400/pyFAI/pyFAI/ext/preproc.pyx";
@@ -1915,6 +2678,7 @@ static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions precedi
 static char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
 static char __pyx_k_Cannot_transpose_memoryview_with[] = "Cannot transpose memoryview with indirect dimensions";
+static char __pyx_k_Dark_variance_array_size_is_corr[] = "Dark_variance array size is correct";
 static char __pyx_k_Empty_shape_tuple_for_cython_arr[] = "Empty shape tuple for cython.array";
 static char __pyx_k_Format_string_allocated_too_shor[] = "Format string allocated too short, see comment in numpy.pxd";
 static char __pyx_k_Indirect_dimensions_not_supporte[] = "Indirect dimensions not supported";
@@ -1928,13 +2692,14 @@ static char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents 
 static char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_01_12_2016;
-static PyObject *__pyx_kp_s_2011_2015_ESRF;
+static PyObject *__pyx_kp_s_2011_2017_ESRF;
+static PyObject *__pyx_kp_s_25_04_2017;
 static PyObject *__pyx_kp_s_Absorption_array_size_is_correct;
 static PyObject *__pyx_kp_s_Buffer_view_does_not_expose_stri;
 static PyObject *__pyx_kp_s_Can_only_create_a_buffer_that_is;
 static PyObject *__pyx_kp_s_Cannot_index_with_type_s;
 static PyObject *__pyx_kp_s_Dark_array_size_is_correct;
+static PyObject *__pyx_kp_s_Dark_variance_array_size_is_corr;
 static PyObject *__pyx_n_s_Ellipsis;
 static PyObject *__pyx_kp_s_Empty_shape_tuple_for_cython_arr;
 static PyObject *__pyx_kp_s_Flat_array_size_is_correct;
@@ -1959,6 +2724,7 @@ static PyObject *__pyx_kp_s_Solid_angle_array_size_is_correc;
 static PyObject *__pyx_n_s_TypeError;
 static PyObject *__pyx_kp_s_Unable_to_convert_item_to_object;
 static PyObject *__pyx_n_s_ValueError;
+static PyObject *__pyx_kp_s_Variance_array_size_is_correct;
 static PyObject *__pyx_n_s_absorption;
 static PyObject *__pyx_n_s_allocate_buffer;
 static PyObject *__pyx_n_s_asarray;
@@ -1981,14 +2747,16 @@ static PyObject *__pyx_kp_s_contiguous_and_indirect;
 static PyObject *__pyx_n_s_copyright;
 static PyObject *__pyx_n_s_cpolarization;
 static PyObject *__pyx_n_s_csolidangle;
+static PyObject *__pyx_n_s_cvariance;
 static PyObject *__pyx_n_s_dark;
-static PyObject *__pyx_n_s_data;
+static PyObject *__pyx_n_s_dark_variance;
 static PyObject *__pyx_n_s_date;
 static PyObject *__pyx_n_s_ddummy;
 static PyObject *__pyx_n_s_delta_dummy;
 static PyObject *__pyx_n_s_dtype;
 static PyObject *__pyx_n_s_dtype_is_object;
 static PyObject *__pyx_n_s_dummy;
+static PyObject *__pyx_n_s_dvariance;
 static PyObject *__pyx_n_s_empty;
 static PyObject *__pyx_n_s_enumerate;
 static PyObject *__pyx_n_s_error;
@@ -2018,7 +2786,9 @@ static PyObject *__pyx_n_s_ndim;
 static PyObject *__pyx_n_s_normalization_factor;
 static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_n_s_obj;
+static PyObject *__pyx_n_s_out_shape;
 static PyObject *__pyx_n_s_pack;
+static PyObject *__pyx_n_s_poissonian;
 static PyObject *__pyx_n_s_polarization;
 static PyObject *__pyx_n_s_preproc;
 static PyObject *__pyx_n_s_pyFAI_ext_preproc;
@@ -2026,11 +2796,14 @@ static PyObject *__pyx_n_s_pyx_getbuffer;
 static PyObject *__pyx_n_s_pyx_vtable;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_ravel;
-static PyObject *__pyx_n_s_reshape;
-static PyObject *__pyx_n_s_result;
+static PyObject *__pyx_n_s_raw;
+static PyObject *__pyx_n_s_res;
+static PyObject *__pyx_n_s_res1;
+static PyObject *__pyx_n_s_res2;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_solidangle;
+static PyObject *__pyx_n_s_split_result;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_step;
 static PyObject *__pyx_n_s_stop;
@@ -2044,10 +2817,14 @@ static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_kp_s_users_kieffer_workspace_400_pyF;
+static PyObject *__pyx_n_s_variance;
 static PyObject *__pyx_n_s_xrange;
+static PyObject *__pyx_n_s_zeros;
 static PyObject *__pyx_n_s_zeros_like;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
+static PyObject *__pyx_int_2;
+static PyObject *__pyx_int_3;
 static PyObject *__pyx_int_neg_1;
 static __Pyx_memviewslice __pyx_k_;
 static __Pyx_memviewslice __pyx_k__2;
@@ -2059,190 +2836,702 @@ static float __pyx_k__7;
 static float __pyx_k__8;
 static int __pyx_k__9;
 static float __pyx_k__10;
-static __Pyx_memviewslice __pyx_k__28;
-static __Pyx_memviewslice __pyx_k__29;
-static __Pyx_memviewslice __pyx_k__30;
+static __Pyx_memviewslice __pyx_k__11;
+static __Pyx_memviewslice __pyx_k__12;
+static __Pyx_memviewslice __pyx_k__13;
+static __Pyx_memviewslice __pyx_k__14;
+static __Pyx_memviewslice __pyx_k__15;
+static __Pyx_memviewslice __pyx_k__16;
+static float __pyx_k__17;
+static float __pyx_k__18;
+static int __pyx_k__19;
+static float __pyx_k__20;
+static __Pyx_memviewslice __pyx_k__21;
+static __Pyx_memviewslice __pyx_k__22;
+static __Pyx_memviewslice __pyx_k__23;
+static __Pyx_memviewslice __pyx_k__24;
+static __Pyx_memviewslice __pyx_k__25;
+static __Pyx_memviewslice __pyx_k__26;
+static float __pyx_k__27;
+static float __pyx_k__28;
+static int __pyx_k__29;
+static float __pyx_k__30;
 static __Pyx_memviewslice __pyx_k__31;
 static __Pyx_memviewslice __pyx_k__32;
 static __Pyx_memviewslice __pyx_k__33;
-static float __pyx_k__34;
-static float __pyx_k__35;
-static int __pyx_k__36;
+static __Pyx_memviewslice __pyx_k__34;
+static __Pyx_memviewslice __pyx_k__35;
+static __Pyx_memviewslice __pyx_k__36;
 static float __pyx_k__37;
-static __Pyx_memviewslice __pyx_k__38;
-static __Pyx_memviewslice __pyx_k__39;
-static __Pyx_memviewslice __pyx_k__40;
+static float __pyx_k__38;
+static int __pyx_k__39;
+static float __pyx_k__40;
 static __Pyx_memviewslice __pyx_k__41;
 static __Pyx_memviewslice __pyx_k__42;
-static __Pyx_memviewslice __pyx_k__43;
-static float __pyx_k__44;
-static float __pyx_k__45;
-static int __pyx_k__46;
-static float __pyx_k__47;
-static __Pyx_memviewslice __pyx_k__48;
-static __Pyx_memviewslice __pyx_k__49;
-static __Pyx_memviewslice __pyx_k__50;
-static __Pyx_memviewslice __pyx_k__51;
-static __Pyx_memviewslice __pyx_k__52;
-static __Pyx_memviewslice __pyx_k__53;
-static float __pyx_k__54;
-static float __pyx_k__55;
-static int __pyx_k__56;
-static float __pyx_k__57;
-static __Pyx_memviewslice __pyx_k__58;
-static __Pyx_memviewslice __pyx_k__59;
 static __Pyx_memviewslice __pyx_k__60;
 static __Pyx_memviewslice __pyx_k__61;
 static __Pyx_memviewslice __pyx_k__62;
 static __Pyx_memviewslice __pyx_k__63;
-static float __pyx_k__64;
-static float __pyx_k__65;
-static int __pyx_k__66;
+static __Pyx_memviewslice __pyx_k__64;
+static __Pyx_memviewslice __pyx_k__65;
+static float __pyx_k__66;
 static float __pyx_k__67;
-static __Pyx_memviewslice __pyx_k__68;
-static __Pyx_memviewslice __pyx_k__69;
+static int __pyx_k__68;
+static float __pyx_k__69;
 static __Pyx_memviewslice __pyx_k__70;
 static __Pyx_memviewslice __pyx_k__71;
 static __Pyx_memviewslice __pyx_k__72;
 static __Pyx_memviewslice __pyx_k__73;
-static float __pyx_k__74;
-static float __pyx_k__75;
-static int __pyx_k__76;
+static __Pyx_memviewslice __pyx_k__74;
+static __Pyx_memviewslice __pyx_k__75;
+static float __pyx_k__76;
 static float __pyx_k__77;
-static __Pyx_memviewslice __pyx_k__78;
-static __Pyx_memviewslice __pyx_k__79;
+static int __pyx_k__78;
+static float __pyx_k__79;
 static __Pyx_memviewslice __pyx_k__80;
 static __Pyx_memviewslice __pyx_k__81;
 static __Pyx_memviewslice __pyx_k__82;
 static __Pyx_memviewslice __pyx_k__83;
-static float __pyx_k__84;
-static float __pyx_k__85;
-static int __pyx_k__86;
+static __Pyx_memviewslice __pyx_k__84;
+static __Pyx_memviewslice __pyx_k__85;
+static float __pyx_k__86;
 static float __pyx_k__87;
-static __Pyx_memviewslice __pyx_k__88;
-static __Pyx_memviewslice __pyx_k__89;
+static int __pyx_k__88;
+static float __pyx_k__89;
 static __Pyx_memviewslice __pyx_k__90;
 static __Pyx_memviewslice __pyx_k__91;
 static __Pyx_memviewslice __pyx_k__92;
 static __Pyx_memviewslice __pyx_k__93;
-static float __pyx_k__94;
-static float __pyx_k__95;
-static int __pyx_k__96;
+static __Pyx_memviewslice __pyx_k__94;
+static __Pyx_memviewslice __pyx_k__95;
+static float __pyx_k__96;
 static float __pyx_k__97;
-static __Pyx_memviewslice __pyx_k__98;
-static __Pyx_memviewslice __pyx_k__99;
+static int __pyx_k__98;
+static float __pyx_k__99;
 static __Pyx_memviewslice __pyx_k__100;
 static __Pyx_memviewslice __pyx_k__101;
 static __Pyx_memviewslice __pyx_k__102;
 static __Pyx_memviewslice __pyx_k__103;
-static double __pyx_k__104;
-static double __pyx_k__105;
-static int __pyx_k__106;
-static double __pyx_k__107;
-static __Pyx_memviewslice __pyx_k__108;
-static __Pyx_memviewslice __pyx_k__109;
+static __Pyx_memviewslice __pyx_k__104;
+static __Pyx_memviewslice __pyx_k__105;
+static float __pyx_k__106;
+static float __pyx_k__107;
+static int __pyx_k__108;
+static float __pyx_k__109;
 static __Pyx_memviewslice __pyx_k__110;
 static __Pyx_memviewslice __pyx_k__111;
 static __Pyx_memviewslice __pyx_k__112;
 static __Pyx_memviewslice __pyx_k__113;
-static double __pyx_k__114;
-static double __pyx_k__115;
-static int __pyx_k__116;
-static double __pyx_k__117;
-static __Pyx_memviewslice __pyx_k__118;
-static __Pyx_memviewslice __pyx_k__119;
+static __Pyx_memviewslice __pyx_k__114;
+static __Pyx_memviewslice __pyx_k__115;
+static float __pyx_k__116;
+static float __pyx_k__117;
+static int __pyx_k__118;
+static float __pyx_k__119;
 static __Pyx_memviewslice __pyx_k__120;
 static __Pyx_memviewslice __pyx_k__121;
 static __Pyx_memviewslice __pyx_k__122;
 static __Pyx_memviewslice __pyx_k__123;
-static double __pyx_k__124;
-static double __pyx_k__125;
-static int __pyx_k__126;
-static double __pyx_k__127;
-static __Pyx_memviewslice __pyx_k__128;
-static __Pyx_memviewslice __pyx_k__129;
+static __Pyx_memviewslice __pyx_k__124;
+static __Pyx_memviewslice __pyx_k__125;
+static float __pyx_k__126;
+static float __pyx_k__127;
+static int __pyx_k__128;
+static float __pyx_k__129;
 static __Pyx_memviewslice __pyx_k__130;
 static __Pyx_memviewslice __pyx_k__131;
 static __Pyx_memviewslice __pyx_k__132;
 static __Pyx_memviewslice __pyx_k__133;
-static double __pyx_k__134;
-static double __pyx_k__135;
-static int __pyx_k__136;
+static __Pyx_memviewslice __pyx_k__134;
+static __Pyx_memviewslice __pyx_k__135;
+static double __pyx_k__136;
 static double __pyx_k__137;
-static __Pyx_memviewslice __pyx_k__138;
-static __Pyx_memviewslice __pyx_k__139;
+static int __pyx_k__138;
+static double __pyx_k__139;
 static __Pyx_memviewslice __pyx_k__140;
 static __Pyx_memviewslice __pyx_k__141;
 static __Pyx_memviewslice __pyx_k__142;
 static __Pyx_memviewslice __pyx_k__143;
-static double __pyx_k__144;
-static double __pyx_k__145;
-static int __pyx_k__146;
+static __Pyx_memviewslice __pyx_k__144;
+static __Pyx_memviewslice __pyx_k__145;
+static double __pyx_k__146;
 static double __pyx_k__147;
-static __Pyx_memviewslice __pyx_k__148;
-static __Pyx_memviewslice __pyx_k__149;
+static int __pyx_k__148;
+static double __pyx_k__149;
 static __Pyx_memviewslice __pyx_k__150;
 static __Pyx_memviewslice __pyx_k__151;
 static __Pyx_memviewslice __pyx_k__152;
 static __Pyx_memviewslice __pyx_k__153;
-static double __pyx_k__154;
-static double __pyx_k__155;
-static int __pyx_k__156;
+static __Pyx_memviewslice __pyx_k__154;
+static __Pyx_memviewslice __pyx_k__155;
+static double __pyx_k__156;
 static double __pyx_k__157;
-static __Pyx_memviewslice __pyx_k__158;
-static __Pyx_memviewslice __pyx_k__159;
+static int __pyx_k__158;
+static double __pyx_k__159;
 static __Pyx_memviewslice __pyx_k__160;
 static __Pyx_memviewslice __pyx_k__161;
 static __Pyx_memviewslice __pyx_k__162;
 static __Pyx_memviewslice __pyx_k__163;
-static double __pyx_k__164;
-static double __pyx_k__165;
-static int __pyx_k__166;
+static __Pyx_memviewslice __pyx_k__164;
+static __Pyx_memviewslice __pyx_k__165;
+static double __pyx_k__166;
 static double __pyx_k__167;
-static __Pyx_memviewslice __pyx_k__168;
-static __Pyx_memviewslice __pyx_k__169;
+static int __pyx_k__168;
+static double __pyx_k__169;
 static __Pyx_memviewslice __pyx_k__170;
 static __Pyx_memviewslice __pyx_k__171;
 static __Pyx_memviewslice __pyx_k__172;
 static __Pyx_memviewslice __pyx_k__173;
-static double __pyx_k__174;
-static double __pyx_k__175;
-static int __pyx_k__176;
+static __Pyx_memviewslice __pyx_k__174;
+static __Pyx_memviewslice __pyx_k__175;
+static double __pyx_k__176;
 static double __pyx_k__177;
-static PyObject *__pyx_slice__24;
-static PyObject *__pyx_slice__25;
-static PyObject *__pyx_slice__26;
-static PyObject *__pyx_tuple__11;
-static PyObject *__pyx_tuple__12;
-static PyObject *__pyx_tuple__13;
-static PyObject *__pyx_tuple__14;
-static PyObject *__pyx_tuple__15;
-static PyObject *__pyx_tuple__16;
-static PyObject *__pyx_tuple__17;
-static PyObject *__pyx_tuple__18;
-static PyObject *__pyx_tuple__19;
-static PyObject *__pyx_tuple__20;
-static PyObject *__pyx_tuple__21;
-static PyObject *__pyx_tuple__22;
-static PyObject *__pyx_tuple__23;
-static PyObject *__pyx_tuple__27;
-static PyObject *__pyx_tuple__178;
-static PyObject *__pyx_tuple__180;
-static PyObject *__pyx_tuple__181;
-static PyObject *__pyx_tuple__182;
-static PyObject *__pyx_tuple__183;
-static PyObject *__pyx_tuple__184;
-static PyObject *__pyx_codeobj__179;
+static int __pyx_k__178;
+static double __pyx_k__179;
+static __Pyx_memviewslice __pyx_k__180;
+static __Pyx_memviewslice __pyx_k__181;
+static __Pyx_memviewslice __pyx_k__182;
+static __Pyx_memviewslice __pyx_k__183;
+static __Pyx_memviewslice __pyx_k__184;
+static __Pyx_memviewslice __pyx_k__185;
+static double __pyx_k__186;
+static double __pyx_k__187;
+static int __pyx_k__188;
+static double __pyx_k__189;
+static __Pyx_memviewslice __pyx_k__190;
+static __Pyx_memviewslice __pyx_k__191;
+static __Pyx_memviewslice __pyx_k__192;
+static __Pyx_memviewslice __pyx_k__193;
+static __Pyx_memviewslice __pyx_k__194;
+static __Pyx_memviewslice __pyx_k__195;
+static double __pyx_k__196;
+static double __pyx_k__197;
+static int __pyx_k__198;
+static double __pyx_k__199;
+static __Pyx_memviewslice __pyx_k__200;
+static __Pyx_memviewslice __pyx_k__201;
+static __Pyx_memviewslice __pyx_k__202;
+static __Pyx_memviewslice __pyx_k__203;
+static __Pyx_memviewslice __pyx_k__204;
+static __Pyx_memviewslice __pyx_k__205;
+static double __pyx_k__206;
+static double __pyx_k__207;
+static int __pyx_k__208;
+static double __pyx_k__209;
+static __Pyx_memviewslice __pyx_k__210;
+static __Pyx_memviewslice __pyx_k__211;
+static __Pyx_memviewslice __pyx_k__212;
+static __Pyx_memviewslice __pyx_k__213;
+static __Pyx_memviewslice __pyx_k__214;
+static __Pyx_memviewslice __pyx_k__215;
+static float __pyx_k__216;
+static float __pyx_k__217;
+static int __pyx_k__218;
+static float __pyx_k__219;
+static __Pyx_memviewslice __pyx_k__220;
+static __Pyx_memviewslice __pyx_k__221;
+static __Pyx_memviewslice __pyx_k__222;
+static __Pyx_memviewslice __pyx_k__223;
+static __Pyx_memviewslice __pyx_k__224;
+static __Pyx_memviewslice __pyx_k__225;
+static float __pyx_k__226;
+static float __pyx_k__227;
+static int __pyx_k__228;
+static float __pyx_k__229;
+static __Pyx_memviewslice __pyx_k__230;
+static __Pyx_memviewslice __pyx_k__231;
+static __Pyx_memviewslice __pyx_k__232;
+static __Pyx_memviewslice __pyx_k__233;
+static __Pyx_memviewslice __pyx_k__234;
+static __Pyx_memviewslice __pyx_k__235;
+static float __pyx_k__236;
+static float __pyx_k__237;
+static int __pyx_k__238;
+static float __pyx_k__239;
+static __Pyx_memviewslice __pyx_k__240;
+static __Pyx_memviewslice __pyx_k__241;
+static __Pyx_memviewslice __pyx_k__242;
+static __Pyx_memviewslice __pyx_k__243;
+static __Pyx_memviewslice __pyx_k__244;
+static __Pyx_memviewslice __pyx_k__245;
+static float __pyx_k__246;
+static float __pyx_k__247;
+static int __pyx_k__248;
+static float __pyx_k__249;
+static __Pyx_memviewslice __pyx_k__250;
+static __Pyx_memviewslice __pyx_k__251;
+static __Pyx_memviewslice __pyx_k__252;
+static __Pyx_memviewslice __pyx_k__253;
+static __Pyx_memviewslice __pyx_k__254;
+static __Pyx_memviewslice __pyx_k__255;
+static float __pyx_k__256;
+static float __pyx_k__257;
+static int __pyx_k__258;
+static float __pyx_k__259;
+static __Pyx_memviewslice __pyx_k__260;
+static __Pyx_memviewslice __pyx_k__261;
+static __Pyx_memviewslice __pyx_k__262;
+static __Pyx_memviewslice __pyx_k__263;
+static __Pyx_memviewslice __pyx_k__264;
+static __Pyx_memviewslice __pyx_k__265;
+static float __pyx_k__266;
+static float __pyx_k__267;
+static int __pyx_k__268;
+static float __pyx_k__269;
+static __Pyx_memviewslice __pyx_k__270;
+static __Pyx_memviewslice __pyx_k__271;
+static __Pyx_memviewslice __pyx_k__272;
+static __Pyx_memviewslice __pyx_k__273;
+static __Pyx_memviewslice __pyx_k__274;
+static __Pyx_memviewslice __pyx_k__275;
+static float __pyx_k__276;
+static float __pyx_k__277;
+static int __pyx_k__278;
+static float __pyx_k__279;
+static __Pyx_memviewslice __pyx_k__280;
+static __Pyx_memviewslice __pyx_k__281;
+static __Pyx_memviewslice __pyx_k__282;
+static __Pyx_memviewslice __pyx_k__283;
+static __Pyx_memviewslice __pyx_k__284;
+static __Pyx_memviewslice __pyx_k__285;
+static double __pyx_k__286;
+static double __pyx_k__287;
+static int __pyx_k__288;
+static double __pyx_k__289;
+static __Pyx_memviewslice __pyx_k__290;
+static __Pyx_memviewslice __pyx_k__291;
+static __Pyx_memviewslice __pyx_k__292;
+static __Pyx_memviewslice __pyx_k__293;
+static __Pyx_memviewslice __pyx_k__294;
+static __Pyx_memviewslice __pyx_k__295;
+static double __pyx_k__296;
+static double __pyx_k__297;
+static int __pyx_k__298;
+static double __pyx_k__299;
+static __Pyx_memviewslice __pyx_k__300;
+static __Pyx_memviewslice __pyx_k__301;
+static __Pyx_memviewslice __pyx_k__302;
+static __Pyx_memviewslice __pyx_k__303;
+static __Pyx_memviewslice __pyx_k__304;
+static __Pyx_memviewslice __pyx_k__305;
+static double __pyx_k__306;
+static double __pyx_k__307;
+static int __pyx_k__308;
+static double __pyx_k__309;
+static __Pyx_memviewslice __pyx_k__310;
+static __Pyx_memviewslice __pyx_k__311;
+static __Pyx_memviewslice __pyx_k__312;
+static __Pyx_memviewslice __pyx_k__313;
+static __Pyx_memviewslice __pyx_k__314;
+static __Pyx_memviewslice __pyx_k__315;
+static double __pyx_k__316;
+static double __pyx_k__317;
+static int __pyx_k__318;
+static double __pyx_k__319;
+static __Pyx_memviewslice __pyx_k__320;
+static __Pyx_memviewslice __pyx_k__321;
+static __Pyx_memviewslice __pyx_k__322;
+static __Pyx_memviewslice __pyx_k__323;
+static __Pyx_memviewslice __pyx_k__324;
+static __Pyx_memviewslice __pyx_k__325;
+static double __pyx_k__326;
+static double __pyx_k__327;
+static int __pyx_k__328;
+static double __pyx_k__329;
+static __Pyx_memviewslice __pyx_k__330;
+static __Pyx_memviewslice __pyx_k__331;
+static __Pyx_memviewslice __pyx_k__332;
+static __Pyx_memviewslice __pyx_k__333;
+static __Pyx_memviewslice __pyx_k__334;
+static __Pyx_memviewslice __pyx_k__335;
+static double __pyx_k__336;
+static double __pyx_k__337;
+static int __pyx_k__338;
+static double __pyx_k__339;
+static __Pyx_memviewslice __pyx_k__340;
+static __Pyx_memviewslice __pyx_k__341;
+static __Pyx_memviewslice __pyx_k__342;
+static __Pyx_memviewslice __pyx_k__343;
+static __Pyx_memviewslice __pyx_k__344;
+static __Pyx_memviewslice __pyx_k__345;
+static double __pyx_k__346;
+static double __pyx_k__347;
+static int __pyx_k__348;
+static double __pyx_k__349;
+static __Pyx_memviewslice __pyx_k__350;
+static __Pyx_memviewslice __pyx_k__351;
+static __Pyx_memviewslice __pyx_k__352;
+static __Pyx_memviewslice __pyx_k__353;
+static __Pyx_memviewslice __pyx_k__354;
+static __Pyx_memviewslice __pyx_k__355;
+static double __pyx_k__356;
+static double __pyx_k__357;
+static int __pyx_k__358;
+static double __pyx_k__359;
+static __Pyx_memviewslice __pyx_k__360;
+static __Pyx_memviewslice __pyx_k__361;
+static __Pyx_memviewslice __pyx_k__362;
+static __Pyx_memviewslice __pyx_k__363;
+static __Pyx_memviewslice __pyx_k__364;
+static __Pyx_memviewslice __pyx_k__365;
+static float __pyx_k__366;
+static float __pyx_k__367;
+static int __pyx_k__368;
+static float __pyx_k__369;
+static __Pyx_memviewslice __pyx_k__370;
+static __Pyx_memviewslice __pyx_k__371;
+static __Pyx_memviewslice __pyx_k__372;
+static __Pyx_memviewslice __pyx_k__373;
+static __Pyx_memviewslice __pyx_k__374;
+static __Pyx_memviewslice __pyx_k__375;
+static float __pyx_k__376;
+static float __pyx_k__377;
+static int __pyx_k__378;
+static float __pyx_k__379;
+static __Pyx_memviewslice __pyx_k__380;
+static __Pyx_memviewslice __pyx_k__381;
+static __Pyx_memviewslice __pyx_k__382;
+static __Pyx_memviewslice __pyx_k__383;
+static __Pyx_memviewslice __pyx_k__384;
+static __Pyx_memviewslice __pyx_k__385;
+static float __pyx_k__386;
+static float __pyx_k__387;
+static int __pyx_k__388;
+static float __pyx_k__389;
+static __Pyx_memviewslice __pyx_k__390;
+static __Pyx_memviewslice __pyx_k__391;
+static __Pyx_memviewslice __pyx_k__392;
+static __Pyx_memviewslice __pyx_k__393;
+static __Pyx_memviewslice __pyx_k__394;
+static __Pyx_memviewslice __pyx_k__395;
+static float __pyx_k__396;
+static float __pyx_k__397;
+static int __pyx_k__398;
+static float __pyx_k__399;
+static __Pyx_memviewslice __pyx_k__400;
+static __Pyx_memviewslice __pyx_k__401;
+static __Pyx_memviewslice __pyx_k__402;
+static __Pyx_memviewslice __pyx_k__403;
+static __Pyx_memviewslice __pyx_k__404;
+static __Pyx_memviewslice __pyx_k__405;
+static float __pyx_k__406;
+static float __pyx_k__407;
+static int __pyx_k__408;
+static float __pyx_k__409;
+static __Pyx_memviewslice __pyx_k__410;
+static __Pyx_memviewslice __pyx_k__411;
+static __Pyx_memviewslice __pyx_k__412;
+static __Pyx_memviewslice __pyx_k__413;
+static __Pyx_memviewslice __pyx_k__414;
+static __Pyx_memviewslice __pyx_k__415;
+static float __pyx_k__416;
+static float __pyx_k__417;
+static int __pyx_k__418;
+static float __pyx_k__419;
+static __Pyx_memviewslice __pyx_k__420;
+static __Pyx_memviewslice __pyx_k__421;
+static __Pyx_memviewslice __pyx_k__422;
+static __Pyx_memviewslice __pyx_k__423;
+static __Pyx_memviewslice __pyx_k__424;
+static __Pyx_memviewslice __pyx_k__425;
+static float __pyx_k__426;
+static float __pyx_k__427;
+static int __pyx_k__428;
+static float __pyx_k__429;
+static __Pyx_memviewslice __pyx_k__430;
+static __Pyx_memviewslice __pyx_k__431;
+static __Pyx_memviewslice __pyx_k__432;
+static __Pyx_memviewslice __pyx_k__433;
+static __Pyx_memviewslice __pyx_k__434;
+static __Pyx_memviewslice __pyx_k__435;
+static double __pyx_k__436;
+static double __pyx_k__437;
+static int __pyx_k__438;
+static double __pyx_k__439;
+static __Pyx_memviewslice __pyx_k__440;
+static __Pyx_memviewslice __pyx_k__441;
+static __Pyx_memviewslice __pyx_k__442;
+static __Pyx_memviewslice __pyx_k__443;
+static __Pyx_memviewslice __pyx_k__444;
+static __Pyx_memviewslice __pyx_k__445;
+static double __pyx_k__446;
+static double __pyx_k__447;
+static int __pyx_k__448;
+static double __pyx_k__449;
+static __Pyx_memviewslice __pyx_k__450;
+static __Pyx_memviewslice __pyx_k__451;
+static __Pyx_memviewslice __pyx_k__452;
+static __Pyx_memviewslice __pyx_k__453;
+static __Pyx_memviewslice __pyx_k__454;
+static __Pyx_memviewslice __pyx_k__455;
+static double __pyx_k__456;
+static double __pyx_k__457;
+static int __pyx_k__458;
+static double __pyx_k__459;
+static __Pyx_memviewslice __pyx_k__460;
+static __Pyx_memviewslice __pyx_k__461;
+static __Pyx_memviewslice __pyx_k__462;
+static __Pyx_memviewslice __pyx_k__463;
+static __Pyx_memviewslice __pyx_k__464;
+static __Pyx_memviewslice __pyx_k__465;
+static double __pyx_k__466;
+static double __pyx_k__467;
+static int __pyx_k__468;
+static double __pyx_k__469;
+static __Pyx_memviewslice __pyx_k__470;
+static __Pyx_memviewslice __pyx_k__471;
+static __Pyx_memviewslice __pyx_k__472;
+static __Pyx_memviewslice __pyx_k__473;
+static __Pyx_memviewslice __pyx_k__474;
+static __Pyx_memviewslice __pyx_k__475;
+static double __pyx_k__476;
+static double __pyx_k__477;
+static int __pyx_k__478;
+static double __pyx_k__479;
+static __Pyx_memviewslice __pyx_k__480;
+static __Pyx_memviewslice __pyx_k__481;
+static __Pyx_memviewslice __pyx_k__482;
+static __Pyx_memviewslice __pyx_k__483;
+static __Pyx_memviewslice __pyx_k__484;
+static __Pyx_memviewslice __pyx_k__485;
+static double __pyx_k__486;
+static double __pyx_k__487;
+static int __pyx_k__488;
+static double __pyx_k__489;
+static __Pyx_memviewslice __pyx_k__490;
+static __Pyx_memviewslice __pyx_k__491;
+static __Pyx_memviewslice __pyx_k__492;
+static __Pyx_memviewslice __pyx_k__493;
+static __Pyx_memviewslice __pyx_k__494;
+static __Pyx_memviewslice __pyx_k__495;
+static double __pyx_k__496;
+static double __pyx_k__497;
+static int __pyx_k__498;
+static double __pyx_k__499;
+static __Pyx_memviewslice __pyx_k__500;
+static __Pyx_memviewslice __pyx_k__501;
+static __Pyx_memviewslice __pyx_k__502;
+static __Pyx_memviewslice __pyx_k__503;
+static __Pyx_memviewslice __pyx_k__504;
+static __Pyx_memviewslice __pyx_k__505;
+static double __pyx_k__506;
+static double __pyx_k__507;
+static int __pyx_k__508;
+static double __pyx_k__509;
+static __Pyx_memviewslice __pyx_k__510;
+static __Pyx_memviewslice __pyx_k__511;
+static __Pyx_memviewslice __pyx_k__512;
+static __Pyx_memviewslice __pyx_k__513;
+static __Pyx_memviewslice __pyx_k__514;
+static __Pyx_memviewslice __pyx_k__515;
+static float __pyx_k__516;
+static float __pyx_k__517;
+static int __pyx_k__518;
+static float __pyx_k__519;
+static __Pyx_memviewslice __pyx_k__520;
+static __Pyx_memviewslice __pyx_k__521;
+static __Pyx_memviewslice __pyx_k__522;
+static __Pyx_memviewslice __pyx_k__523;
+static __Pyx_memviewslice __pyx_k__524;
+static __Pyx_memviewslice __pyx_k__525;
+static __Pyx_memviewslice __pyx_k__526;
+static __Pyx_memviewslice __pyx_k__527;
+static float __pyx_k__528;
+static float __pyx_k__529;
+static int __pyx_k__530;
+static float __pyx_k__531;
+static __Pyx_memviewslice __pyx_k__532;
+static __Pyx_memviewslice __pyx_k__533;
+static __Pyx_memviewslice __pyx_k__534;
+static __Pyx_memviewslice __pyx_k__535;
+static __Pyx_memviewslice __pyx_k__536;
+static __Pyx_memviewslice __pyx_k__537;
+static __Pyx_memviewslice __pyx_k__538;
+static __Pyx_memviewslice __pyx_k__539;
+static float __pyx_k__540;
+static float __pyx_k__541;
+static int __pyx_k__542;
+static float __pyx_k__543;
+static __Pyx_memviewslice __pyx_k__544;
+static __Pyx_memviewslice __pyx_k__545;
+static __Pyx_memviewslice __pyx_k__546;
+static __Pyx_memviewslice __pyx_k__547;
+static __Pyx_memviewslice __pyx_k__548;
+static __Pyx_memviewslice __pyx_k__549;
+static __Pyx_memviewslice __pyx_k__550;
+static __Pyx_memviewslice __pyx_k__551;
+static float __pyx_k__552;
+static float __pyx_k__553;
+static int __pyx_k__554;
+static float __pyx_k__555;
+static __Pyx_memviewslice __pyx_k__556;
+static __Pyx_memviewslice __pyx_k__557;
+static __Pyx_memviewslice __pyx_k__558;
+static __Pyx_memviewslice __pyx_k__559;
+static __Pyx_memviewslice __pyx_k__560;
+static __Pyx_memviewslice __pyx_k__561;
+static __Pyx_memviewslice __pyx_k__562;
+static __Pyx_memviewslice __pyx_k__563;
+static float __pyx_k__564;
+static float __pyx_k__565;
+static int __pyx_k__566;
+static float __pyx_k__567;
+static __Pyx_memviewslice __pyx_k__568;
+static __Pyx_memviewslice __pyx_k__569;
+static __Pyx_memviewslice __pyx_k__570;
+static __Pyx_memviewslice __pyx_k__571;
+static __Pyx_memviewslice __pyx_k__572;
+static __Pyx_memviewslice __pyx_k__573;
+static __Pyx_memviewslice __pyx_k__574;
+static __Pyx_memviewslice __pyx_k__575;
+static float __pyx_k__576;
+static float __pyx_k__577;
+static int __pyx_k__578;
+static float __pyx_k__579;
+static __Pyx_memviewslice __pyx_k__580;
+static __Pyx_memviewslice __pyx_k__581;
+static __Pyx_memviewslice __pyx_k__582;
+static __Pyx_memviewslice __pyx_k__583;
+static __Pyx_memviewslice __pyx_k__584;
+static __Pyx_memviewslice __pyx_k__585;
+static __Pyx_memviewslice __pyx_k__586;
+static __Pyx_memviewslice __pyx_k__587;
+static float __pyx_k__588;
+static float __pyx_k__589;
+static int __pyx_k__590;
+static float __pyx_k__591;
+static __Pyx_memviewslice __pyx_k__592;
+static __Pyx_memviewslice __pyx_k__593;
+static __Pyx_memviewslice __pyx_k__594;
+static __Pyx_memviewslice __pyx_k__595;
+static __Pyx_memviewslice __pyx_k__596;
+static __Pyx_memviewslice __pyx_k__597;
+static __Pyx_memviewslice __pyx_k__598;
+static __Pyx_memviewslice __pyx_k__599;
+static double __pyx_k__600;
+static double __pyx_k__601;
+static int __pyx_k__602;
+static double __pyx_k__603;
+static __Pyx_memviewslice __pyx_k__604;
+static __Pyx_memviewslice __pyx_k__605;
+static __Pyx_memviewslice __pyx_k__606;
+static __Pyx_memviewslice __pyx_k__607;
+static __Pyx_memviewslice __pyx_k__608;
+static __Pyx_memviewslice __pyx_k__609;
+static __Pyx_memviewslice __pyx_k__610;
+static __Pyx_memviewslice __pyx_k__611;
+static double __pyx_k__612;
+static double __pyx_k__613;
+static int __pyx_k__614;
+static double __pyx_k__615;
+static __Pyx_memviewslice __pyx_k__616;
+static __Pyx_memviewslice __pyx_k__617;
+static __Pyx_memviewslice __pyx_k__618;
+static __Pyx_memviewslice __pyx_k__619;
+static __Pyx_memviewslice __pyx_k__620;
+static __Pyx_memviewslice __pyx_k__621;
+static __Pyx_memviewslice __pyx_k__622;
+static __Pyx_memviewslice __pyx_k__623;
+static double __pyx_k__624;
+static double __pyx_k__625;
+static int __pyx_k__626;
+static double __pyx_k__627;
+static __Pyx_memviewslice __pyx_k__628;
+static __Pyx_memviewslice __pyx_k__629;
+static __Pyx_memviewslice __pyx_k__630;
+static __Pyx_memviewslice __pyx_k__631;
+static __Pyx_memviewslice __pyx_k__632;
+static __Pyx_memviewslice __pyx_k__633;
+static __Pyx_memviewslice __pyx_k__634;
+static __Pyx_memviewslice __pyx_k__635;
+static double __pyx_k__636;
+static double __pyx_k__637;
+static int __pyx_k__638;
+static double __pyx_k__639;
+static __Pyx_memviewslice __pyx_k__640;
+static __Pyx_memviewslice __pyx_k__641;
+static __Pyx_memviewslice __pyx_k__642;
+static __Pyx_memviewslice __pyx_k__643;
+static __Pyx_memviewslice __pyx_k__644;
+static __Pyx_memviewslice __pyx_k__645;
+static __Pyx_memviewslice __pyx_k__646;
+static __Pyx_memviewslice __pyx_k__647;
+static double __pyx_k__648;
+static double __pyx_k__649;
+static int __pyx_k__650;
+static double __pyx_k__651;
+static __Pyx_memviewslice __pyx_k__652;
+static __Pyx_memviewslice __pyx_k__653;
+static __Pyx_memviewslice __pyx_k__654;
+static __Pyx_memviewslice __pyx_k__655;
+static __Pyx_memviewslice __pyx_k__656;
+static __Pyx_memviewslice __pyx_k__657;
+static __Pyx_memviewslice __pyx_k__658;
+static __Pyx_memviewslice __pyx_k__659;
+static double __pyx_k__660;
+static double __pyx_k__661;
+static int __pyx_k__662;
+static double __pyx_k__663;
+static __Pyx_memviewslice __pyx_k__664;
+static __Pyx_memviewslice __pyx_k__665;
+static __Pyx_memviewslice __pyx_k__666;
+static __Pyx_memviewslice __pyx_k__667;
+static __Pyx_memviewslice __pyx_k__668;
+static __Pyx_memviewslice __pyx_k__669;
+static __Pyx_memviewslice __pyx_k__670;
+static __Pyx_memviewslice __pyx_k__671;
+static double __pyx_k__672;
+static double __pyx_k__673;
+static int __pyx_k__674;
+static double __pyx_k__675;
+static __Pyx_memviewslice __pyx_k__676;
+static __Pyx_memviewslice __pyx_k__677;
+static __Pyx_memviewslice __pyx_k__678;
+static __Pyx_memviewslice __pyx_k__679;
+static __Pyx_memviewslice __pyx_k__680;
+static __Pyx_memviewslice __pyx_k__681;
+static __Pyx_memviewslice __pyx_k__682;
+static __Pyx_memviewslice __pyx_k__683;
+static double __pyx_k__684;
+static double __pyx_k__685;
+static int __pyx_k__686;
+static double __pyx_k__687;
+static __Pyx_memviewslice __pyx_k__688;
+static __Pyx_memviewslice __pyx_k__689;
+static PyObject *__pyx_slice__56;
+static PyObject *__pyx_slice__57;
+static PyObject *__pyx_slice__58;
+static PyObject *__pyx_tuple__43;
+static PyObject *__pyx_tuple__44;
+static PyObject *__pyx_tuple__45;
+static PyObject *__pyx_tuple__46;
+static PyObject *__pyx_tuple__47;
+static PyObject *__pyx_tuple__48;
+static PyObject *__pyx_tuple__49;
+static PyObject *__pyx_tuple__50;
+static PyObject *__pyx_tuple__51;
+static PyObject *__pyx_tuple__52;
+static PyObject *__pyx_tuple__53;
+static PyObject *__pyx_tuple__54;
+static PyObject *__pyx_tuple__55;
+static PyObject *__pyx_tuple__59;
+static PyObject *__pyx_tuple__690;
+static PyObject *__pyx_tuple__692;
+static PyObject *__pyx_tuple__693;
+static PyObject *__pyx_tuple__694;
+static PyObject *__pyx_tuple__695;
+static PyObject *__pyx_tuple__696;
+static PyObject *__pyx_codeobj__691;
 
-/* "pyFAI/ext/preproc.pyx":66
+/* "pyFAI/ext/preproc.pyx":58
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
  */
 
-static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(__Pyx_memviewslice __pyx_v_data, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc *__pyx_optional_args) {
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(__Pyx_memviewslice __pyx_v_data, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc *__pyx_optional_args) {
   __Pyx_memviewslice __pyx_v_dark = __pyx_k_;
   __Pyx_memviewslice __pyx_v_flat = __pyx_k__2;
   __Pyx_memviewslice __pyx_v_solidangle = __pyx_k__3;
@@ -2263,8 +3552,8 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
   int __pyx_v_do_polarization;
   int __pyx_v_is_valid;
   __Pyx_memviewslice __pyx_v_result = { 0, 0, { 0 }, { 0 }, { 0 } };
-  float __pyx_v_one_value;
-  float __pyx_v_one_result;
+  float __pyx_v_one_num;
+  float __pyx_v_one_den;
   float __pyx_v_one_flat;
   __Pyx_memviewslice __pyx_r = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_RefNannyDeclarations
@@ -2288,13 +3577,15 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
   int __pyx_t_18;
   int __pyx_t_19;
   int __pyx_t_20;
+  int __pyx_t_21;
+  int __pyx_t_22;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   #ifdef WITH_THREAD
   PyGILState_STATE __pyx_gilstate_save;
   #endif
-  __Pyx_RefNannySetupContext("__pyx_fuse_0_4c_preproc", 1);
+  __Pyx_RefNannySetupContext("__pyx_fuse_0_4c1_preproc", 1);
   if (__pyx_optional_args) {
     if (__pyx_optional_args->__pyx_n > 0) {
       __pyx_v_dark = __pyx_optional_args->dark;
@@ -2329,8 +3620,8 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
   }
   /*try:*/ {
 
-    /* "pyFAI/ext/preproc.pyx":103
- *         floating one_value, one_result, one_flat
+    /* "pyFAI/ext/preproc.pyx":94
+ *         floating one_value, one_num, one_den, one_flat
  * 
  *     with gil:             # <<<<<<<<<<<<<<
  *         size = data.size
@@ -2342,23 +3633,23 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
         #endif
         /*try:*/ {
 
-          /* "pyFAI/ext/preproc.pyx":104
+          /* "pyFAI/ext/preproc.pyx":95
  * 
  *     with gil:
  *         size = data.size             # <<<<<<<<<<<<<<
  *         do_dark = dark is not None
  *         do_flat = flat is not None
  */
-          __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_GOTREF(__pyx_t_1);
-          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-          __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 104; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           __pyx_v_size = __pyx_t_3;
 
-          /* "pyFAI/ext/preproc.pyx":105
+          /* "pyFAI/ext/preproc.pyx":96
  *     with gil:
  *         size = data.size
  *         do_dark = dark is not None             # <<<<<<<<<<<<<<
@@ -2367,7 +3658,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
  */
           __pyx_v_do_dark = (((PyObject *) __pyx_v_dark.memview) != Py_None);
 
-          /* "pyFAI/ext/preproc.pyx":106
+          /* "pyFAI/ext/preproc.pyx":97
  *         size = data.size
  *         do_dark = dark is not None
  *         do_flat = flat is not None             # <<<<<<<<<<<<<<
@@ -2376,7 +3667,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
  */
           __pyx_v_do_flat = (((PyObject *) __pyx_v_flat.memview) != Py_None);
 
-          /* "pyFAI/ext/preproc.pyx":107
+          /* "pyFAI/ext/preproc.pyx":98
  *         do_dark = dark is not None
  *         do_flat = flat is not None
  *         do_solidangle = solidangle is not None             # <<<<<<<<<<<<<<
@@ -2385,7 +3676,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
  */
           __pyx_v_do_solidangle = (((PyObject *) __pyx_v_solidangle.memview) != Py_None);
 
-          /* "pyFAI/ext/preproc.pyx":108
+          /* "pyFAI/ext/preproc.pyx":99
  *         do_flat = flat is not None
  *         do_solidangle = solidangle is not None
  *         do_absorption = absorption is not None             # <<<<<<<<<<<<<<
@@ -2394,7 +3685,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
  */
           __pyx_v_do_absorption = (((PyObject *) __pyx_v_absorption.memview) != Py_None);
 
-          /* "pyFAI/ext/preproc.pyx":109
+          /* "pyFAI/ext/preproc.pyx":100
  *         do_solidangle = solidangle is not None
  *         do_absorption = absorption is not None
  *         do_polarization = polarization is not None             # <<<<<<<<<<<<<<
@@ -2403,7 +3694,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
  */
           __pyx_v_do_polarization = (((PyObject *) __pyx_v_polarization.memview) != Py_None);
 
-          /* "pyFAI/ext/preproc.pyx":110
+          /* "pyFAI/ext/preproc.pyx":101
  *         do_absorption = absorption is not None
  *         do_polarization = polarization is not None
  *         check_mask = mask is not None             # <<<<<<<<<<<<<<
@@ -2412,19 +3703,19 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
  */
           __pyx_v_check_mask = (((PyObject *) __pyx_v_mask.memview) != Py_None);
 
-          /* "pyFAI/ext/preproc.pyx":111
+          /* "pyFAI/ext/preproc.pyx":102
  *         do_polarization = polarization is not None
  *         check_mask = mask is not None
  *         result = numpy.zeros_like(data)             # <<<<<<<<<<<<<<
  * 
  *     for i in prange(size, nogil=True, schedule="static"):
  */
-          __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_GOTREF(__pyx_t_1);
-          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros_like); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros_like); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_GOTREF(__pyx_t_4);
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-          __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_GOTREF(__pyx_t_1);
           __pyx_t_5 = NULL;
           if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
@@ -2437,31 +3728,31 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
             }
           }
           if (!__pyx_t_5) {
-            __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+            __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
             __Pyx_GOTREF(__pyx_t_2);
           } else {
-            __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+            __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
             __Pyx_GOTREF(__pyx_t_6);
             PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __Pyx_GIVEREF(__pyx_t_5); __pyx_t_5 = NULL;
             PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_1);
             __Pyx_GIVEREF(__pyx_t_1);
             __pyx_t_1 = 0;
-            __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+            __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
             __Pyx_GOTREF(__pyx_t_2);
             __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           }
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
           __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_2);
-          if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           __pyx_v_result = __pyx_t_7;
           __pyx_t_7.memview = NULL;
           __pyx_t_7.data = NULL;
         }
 
-        /* "pyFAI/ext/preproc.pyx":103
- *         floating one_value, one_result, one_flat
+        /* "pyFAI/ext/preproc.pyx":94
+ *         floating one_value, one_num, one_den, one_flat
  * 
  *     with gil:             # <<<<<<<<<<<<<<
  *         size = data.size
@@ -2484,12 +3775,12 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
         }
     }
 
-    /* "pyFAI/ext/preproc.pyx":113
+    /* "pyFAI/ext/preproc.pyx":104
  *         result = numpy.zeros_like(data)
  * 
  *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
- *         one_value = data[i]
- * 
+ *         one_num = data[i]
+ *         one_den = normalization_factor
  */
     {
         #ifdef WITH_THREAD
@@ -2510,43 +3801,52 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
               if (__pyx_t_9 > 0)
               {
                   #ifdef _OPENMP
-                  #pragma omp parallel private(__pyx_t_17, __pyx_t_20, __pyx_t_16, __pyx_t_14, __pyx_t_19, __pyx_t_10, __pyx_t_15, __pyx_t_12, __pyx_t_13, __pyx_t_18, __pyx_t_11)
+                  #pragma omp parallel private(__pyx_t_13, __pyx_t_10, __pyx_t_14, __pyx_t_20, __pyx_t_22, __pyx_t_21, __pyx_t_11, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18)
                   #endif /* _OPENMP */
                   {
                       #ifdef _OPENMP
-                      #pragma omp for lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_value) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_result) schedule(static)
+                      #pragma omp for lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_one_den) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                       #endif /* _OPENMP */
                       for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
                           {
                               __pyx_v_i = 0 + 1 * __pyx_t_8;
                               /* Initialize private variables to invalid values */
-                              __pyx_v_one_flat = ((float)__PYX_NAN());
                               __pyx_v_is_valid = ((int)0xbad0bad0);
-                              __pyx_v_one_value = ((float)__PYX_NAN());
-                              __pyx_v_one_result = ((float)__PYX_NAN());
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_num = ((float)__PYX_NAN());
+                              __pyx_v_one_den = ((float)__PYX_NAN());
 
-                              /* "pyFAI/ext/preproc.pyx":114
+                              /* "pyFAI/ext/preproc.pyx":105
  * 
  *     for i in prange(size, nogil=True, schedule="static"):
- *         one_value = data[i]             # <<<<<<<<<<<<<<
- * 
- *         is_valid = not isnan(one_value)
+ *         one_num = data[i]             # <<<<<<<<<<<<<<
+ *         one_den = normalization_factor
+ *         is_valid = not isnan(one_num)
  */
                               __pyx_t_10 = __pyx_v_i;
-                              __pyx_v_one_value = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_data.data) + __pyx_t_10)) )));
+                              __pyx_v_one_num = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_data.data) + __pyx_t_10)) )));
 
-                              /* "pyFAI/ext/preproc.pyx":116
- *         one_value = data[i]
- * 
- *         is_valid = not isnan(one_value)             # <<<<<<<<<<<<<<
+                              /* "pyFAI/ext/preproc.pyx":106
+ *     for i in prange(size, nogil=True, schedule="static"):
+ *         one_num = data[i]
+ *         one_den = normalization_factor             # <<<<<<<<<<<<<<
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:
+ */
+                              __pyx_v_one_den = __pyx_v_normalization_factor;
+
+                              /* "pyFAI/ext/preproc.pyx":107
+ *         one_num = data[i]
+ *         one_den = normalization_factor
+ *         is_valid = not isnan(one_num)             # <<<<<<<<<<<<<<
  *         if is_valid and check_mask:
  *             is_valid = (mask[i] == 0)
  */
-                              __pyx_v_is_valid = (!(isnan(__pyx_v_one_value) != 0));
+                              __pyx_v_is_valid = (!(isnan(__pyx_v_one_num) != 0));
 
-                              /* "pyFAI/ext/preproc.pyx":117
- * 
- *         is_valid = not isnan(one_value)
+                              /* "pyFAI/ext/preproc.pyx":108
+ *         one_den = normalization_factor
+ *         is_valid = not isnan(one_num)
  *         if is_valid and check_mask:             # <<<<<<<<<<<<<<
  *             is_valid = (mask[i] == 0)
  *         if is_valid and check_dummy:
@@ -2562,8 +3862,8 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                               __pyx_L17_bool_binop_done:;
                               if (__pyx_t_11) {
 
-                                /* "pyFAI/ext/preproc.pyx":118
- *         is_valid = not isnan(one_value)
+                                /* "pyFAI/ext/preproc.pyx":109
+ *         is_valid = not isnan(one_num)
  *         if is_valid and check_mask:
  *             is_valid = (mask[i] == 0)             # <<<<<<<<<<<<<<
  *         if is_valid and check_dummy:
@@ -2575,12 +3875,12 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                               }
                               __pyx_L16:;
 
-                              /* "pyFAI/ext/preproc.pyx":119
+                              /* "pyFAI/ext/preproc.pyx":110
  *         if is_valid and check_mask:
  *             is_valid = (mask[i] == 0)
  *         if is_valid and check_dummy:             # <<<<<<<<<<<<<<
  *             if delta_dummy == 0:
- *                 is_valid = (one_value != dummy)
+ *                 is_valid = (one_num != dummy)
  */
                               __pyx_t_12 = (__pyx_v_is_valid != 0);
                               if (__pyx_t_12) {
@@ -2593,44 +3893,44 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                               __pyx_L20_bool_binop_done:;
                               if (__pyx_t_11) {
 
-                                /* "pyFAI/ext/preproc.pyx":120
+                                /* "pyFAI/ext/preproc.pyx":111
  *             is_valid = (mask[i] == 0)
  *         if is_valid and check_dummy:
  *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
- *                 is_valid = (one_value != dummy)
+ *                 is_valid = (one_num != dummy)
  *             else:
  */
                                 __pyx_t_11 = ((__pyx_v_delta_dummy == 0.0) != 0);
                                 if (__pyx_t_11) {
 
-                                  /* "pyFAI/ext/preproc.pyx":121
+                                  /* "pyFAI/ext/preproc.pyx":112
  *         if is_valid and check_dummy:
  *             if delta_dummy == 0:
- *                 is_valid = (one_value != dummy)             # <<<<<<<<<<<<<<
+ *                 is_valid = (one_num != dummy)             # <<<<<<<<<<<<<<
  *             else:
- *                 is_valid = fabs(one_value - dummy) > delta_dummy
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
  */
-                                  __pyx_v_is_valid = (__pyx_v_one_value != __pyx_v_dummy);
+                                  __pyx_v_is_valid = (__pyx_v_one_num != __pyx_v_dummy);
                                   goto __pyx_L22;
                                 }
                                 /*else*/ {
 
-                                  /* "pyFAI/ext/preproc.pyx":123
- *                 is_valid = (one_value != dummy)
+                                  /* "pyFAI/ext/preproc.pyx":114
+ *                 is_valid = (one_num != dummy)
  *             else:
- *                 is_valid = fabs(one_value - dummy) > delta_dummy             # <<<<<<<<<<<<<<
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy             # <<<<<<<<<<<<<<
  * 
  *         if is_valid and do_flat:
  */
-                                  __pyx_v_is_valid = (fabs((__pyx_v_one_value - __pyx_v_dummy)) > __pyx_v_delta_dummy);
+                                  __pyx_v_is_valid = (fabs((__pyx_v_one_num - __pyx_v_dummy)) > __pyx_v_delta_dummy);
                                 }
                                 __pyx_L22:;
                                 goto __pyx_L19;
                               }
                               __pyx_L19:;
 
-                              /* "pyFAI/ext/preproc.pyx":125
- *                 is_valid = fabs(one_value - dummy) > delta_dummy
+                              /* "pyFAI/ext/preproc.pyx":116
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
  * 
  *         if is_valid and do_flat:             # <<<<<<<<<<<<<<
  *             one_flat = flat[i]
@@ -2647,7 +3947,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                               __pyx_L24_bool_binop_done:;
                               if (__pyx_t_11) {
 
-                                /* "pyFAI/ext/preproc.pyx":126
+                                /* "pyFAI/ext/preproc.pyx":117
  * 
  *         if is_valid and do_flat:
  *             one_flat = flat[i]             # <<<<<<<<<<<<<<
@@ -2657,7 +3957,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                                 __pyx_t_14 = __pyx_v_i;
                                 __pyx_v_one_flat = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_14)) )));
 
-                                /* "pyFAI/ext/preproc.pyx":127
+                                /* "pyFAI/ext/preproc.pyx":118
  *         if is_valid and do_flat:
  *             one_flat = flat[i]
  *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
@@ -2667,7 +3967,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                                 __pyx_t_11 = ((__pyx_v_delta_dummy == 0.0) != 0);
                                 if (__pyx_t_11) {
 
-                                  /* "pyFAI/ext/preproc.pyx":128
+                                  /* "pyFAI/ext/preproc.pyx":119
  *             one_flat = flat[i]
  *             if delta_dummy == 0:
  *                 is_valid = (one_flat != dummy)             # <<<<<<<<<<<<<<
@@ -2679,7 +3979,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                                 }
                                 /*else*/ {
 
-                                  /* "pyFAI/ext/preproc.pyx":130
+                                  /* "pyFAI/ext/preproc.pyx":121
  *                 is_valid = (one_flat != dummy)
  *             else:
  *                 is_valid = fabs(one_flat - dummy) > delta_dummy             # <<<<<<<<<<<<<<
@@ -2693,7 +3993,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                               }
                               __pyx_L23:;
 
-                              /* "pyFAI/ext/preproc.pyx":132
+                              /* "pyFAI/ext/preproc.pyx":123
  *                 is_valid = fabs(one_flat - dummy) > delta_dummy
  * 
  *         if is_valid:             # <<<<<<<<<<<<<<
@@ -2703,153 +4003,184 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
                               __pyx_t_11 = (__pyx_v_is_valid != 0);
                               if (__pyx_t_11) {
 
-                                /* "pyFAI/ext/preproc.pyx":134
+                                /* "pyFAI/ext/preproc.pyx":125
  *         if is_valid:
  *             # Do not use "/=" as they mean reduction for cython
  *             if do_dark:             # <<<<<<<<<<<<<<
- *                 one_value = one_value - dark[i]
+ *                 one_num = one_num - dark[i]
  *             if do_flat:
  */
                                 __pyx_t_11 = (__pyx_v_do_dark != 0);
                                 if (__pyx_t_11) {
 
-                                  /* "pyFAI/ext/preproc.pyx":135
+                                  /* "pyFAI/ext/preproc.pyx":126
  *             # Do not use "/=" as they mean reduction for cython
  *             if do_dark:
- *                 one_value = one_value - dark[i]             # <<<<<<<<<<<<<<
+ *                 one_num = one_num - dark[i]             # <<<<<<<<<<<<<<
  *             if do_flat:
- *                 one_value = one_value / flat[i]
+ *                 one_den = one_den * flat[i]
  */
                                   __pyx_t_15 = __pyx_v_i;
-                                  __pyx_v_one_value = (__pyx_v_one_value - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_dark.data) + __pyx_t_15)) ))));
+                                  __pyx_v_one_num = (__pyx_v_one_num - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_dark.data) + __pyx_t_15)) ))));
                                   goto __pyx_L28;
                                 }
                                 __pyx_L28:;
 
-                                /* "pyFAI/ext/preproc.pyx":136
+                                /* "pyFAI/ext/preproc.pyx":127
  *             if do_dark:
- *                 one_value = one_value - dark[i]
+ *                 one_num = one_num - dark[i]
  *             if do_flat:             # <<<<<<<<<<<<<<
- *                 one_value = one_value / flat[i]
+ *                 one_den = one_den * flat[i]
  *             if do_polarization:
  */
                                 __pyx_t_11 = (__pyx_v_do_flat != 0);
                                 if (__pyx_t_11) {
 
-                                  /* "pyFAI/ext/preproc.pyx":137
- *                 one_value = one_value - dark[i]
+                                  /* "pyFAI/ext/preproc.pyx":128
+ *                 one_num = one_num - dark[i]
  *             if do_flat:
- *                 one_value = one_value / flat[i]             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * flat[i]             # <<<<<<<<<<<<<<
  *             if do_polarization:
- *                 one_value = one_value / polarization[i]
+ *                 one_den = one_den * polarization[i]
  */
                                   __pyx_t_16 = __pyx_v_i;
-                                  __pyx_v_one_value = (__pyx_v_one_value / (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_16)) ))));
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_16)) ))));
                                   goto __pyx_L29;
                                 }
                                 __pyx_L29:;
 
-                                /* "pyFAI/ext/preproc.pyx":138
+                                /* "pyFAI/ext/preproc.pyx":129
  *             if do_flat:
- *                 one_value = one_value / flat[i]
+ *                 one_den = one_den * flat[i]
  *             if do_polarization:             # <<<<<<<<<<<<<<
- *                 one_value = one_value / polarization[i]
+ *                 one_den = one_den * polarization[i]
  *             if do_solidangle:
  */
                                 __pyx_t_11 = (__pyx_v_do_polarization != 0);
                                 if (__pyx_t_11) {
 
-                                  /* "pyFAI/ext/preproc.pyx":139
- *                 one_value = one_value / flat[i]
+                                  /* "pyFAI/ext/preproc.pyx":130
+ *                 one_den = one_den * flat[i]
  *             if do_polarization:
- *                 one_value = one_value / polarization[i]             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * polarization[i]             # <<<<<<<<<<<<<<
  *             if do_solidangle:
- *                 one_value = one_value / solidangle[i]
+ *                 one_den = one_den * solidangle[i]
  */
                                   __pyx_t_17 = __pyx_v_i;
-                                  __pyx_v_one_value = (__pyx_v_one_value / (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_polarization.data) + __pyx_t_17)) ))));
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_polarization.data) + __pyx_t_17)) ))));
                                   goto __pyx_L30;
                                 }
                                 __pyx_L30:;
 
-                                /* "pyFAI/ext/preproc.pyx":140
+                                /* "pyFAI/ext/preproc.pyx":131
  *             if do_polarization:
- *                 one_value = one_value / polarization[i]
+ *                 one_den = one_den * polarization[i]
  *             if do_solidangle:             # <<<<<<<<<<<<<<
- *                 one_value = one_value / solidangle[i]
+ *                 one_den = one_den * solidangle[i]
  *             if do_absorption:
  */
                                 __pyx_t_11 = (__pyx_v_do_solidangle != 0);
                                 if (__pyx_t_11) {
 
-                                  /* "pyFAI/ext/preproc.pyx":141
- *                 one_value = one_value / polarization[i]
+                                  /* "pyFAI/ext/preproc.pyx":132
+ *                 one_den = one_den * polarization[i]
  *             if do_solidangle:
- *                 one_value = one_value / solidangle[i]             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * solidangle[i]             # <<<<<<<<<<<<<<
  *             if do_absorption:
- *                 one_value = one_value / absorption[i]
+ *                 one_den = one_den * absorption[i]
  */
                                   __pyx_t_18 = __pyx_v_i;
-                                  __pyx_v_one_value = (__pyx_v_one_value / (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_solidangle.data) + __pyx_t_18)) ))));
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_solidangle.data) + __pyx_t_18)) ))));
                                   goto __pyx_L31;
                                 }
                                 __pyx_L31:;
 
-                                /* "pyFAI/ext/preproc.pyx":142
+                                /* "pyFAI/ext/preproc.pyx":133
  *             if do_solidangle:
- *                 one_value = one_value / solidangle[i]
+ *                 one_den = one_den * solidangle[i]
  *             if do_absorption:             # <<<<<<<<<<<<<<
- *                 one_value = one_value / absorption[i]
- *             one_result = one_value / normalization_factor
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
  */
                                 __pyx_t_11 = (__pyx_v_do_absorption != 0);
                                 if (__pyx_t_11) {
 
-                                  /* "pyFAI/ext/preproc.pyx":143
- *                 one_value = one_value / solidangle[i]
+                                  /* "pyFAI/ext/preproc.pyx":134
+ *                 one_den = one_den * solidangle[i]
  *             if do_absorption:
- *                 one_value = one_value / absorption[i]             # <<<<<<<<<<<<<<
- *             one_result = one_value / normalization_factor
- *         else:
+ *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
+ *                 result[i] += dummy
  */
                                   __pyx_t_19 = __pyx_v_i;
-                                  __pyx_v_one_value = (__pyx_v_one_value / (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_absorption.data) + __pyx_t_19)) ))));
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_absorption.data) + __pyx_t_19)) ))));
                                   goto __pyx_L32;
                                 }
                                 __pyx_L32:;
 
-                                /* "pyFAI/ext/preproc.pyx":144
+                                /* "pyFAI/ext/preproc.pyx":135
  *             if do_absorption:
- *                 one_value = one_value / absorption[i]
- *             one_result = one_value / normalization_factor             # <<<<<<<<<<<<<<
- *         else:
- *             one_result = dummy
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):             # <<<<<<<<<<<<<<
+ *                 result[i] += dummy
+ *             else:
  */
-                                __pyx_v_one_result = (__pyx_v_one_value / __pyx_v_normalization_factor);
+                                __pyx_t_12 = (isnan(__pyx_v_one_num) != 0);
+                                if (!__pyx_t_12) {
+                                } else {
+                                  __pyx_t_11 = __pyx_t_12;
+                                  goto __pyx_L34_bool_binop_done;
+                                }
+                                __pyx_t_12 = (isnan(__pyx_v_one_den) != 0);
+                                if (!__pyx_t_12) {
+                                } else {
+                                  __pyx_t_11 = __pyx_t_12;
+                                  goto __pyx_L34_bool_binop_done;
+                                }
+                                __pyx_t_12 = ((__pyx_v_one_den == 0.0) != 0);
+                                __pyx_t_11 = __pyx_t_12;
+                                __pyx_L34_bool_binop_done:;
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":136
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
+ *                 result[i] += dummy             # <<<<<<<<<<<<<<
+ *             else:
+ *                 result[i] += one_num / one_den
+ */
+                                  __pyx_t_20 = __pyx_v_i;
+                                  *((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_result.data) + __pyx_t_20)) )) += __pyx_v_dummy;
+                                  goto __pyx_L33;
+                                }
+                                /*else*/ {
+
+                                  /* "pyFAI/ext/preproc.pyx":138
+ *                 result[i] += dummy
+ *             else:
+ *                 result[i] += one_num / one_den             # <<<<<<<<<<<<<<
+ *         else:
+ *             result[i] += dummy
+ */
+                                  __pyx_t_21 = __pyx_v_i;
+                                  *((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_result.data) + __pyx_t_21)) )) += (__pyx_v_one_num / __pyx_v_one_den);
+                                }
+                                __pyx_L33:;
                                 goto __pyx_L27;
                               }
                               /*else*/ {
 
-                                /* "pyFAI/ext/preproc.pyx":146
- *             one_result = one_value / normalization_factor
+                                /* "pyFAI/ext/preproc.pyx":140
+ *                 result[i] += one_num / one_den
  *         else:
- *             one_result = dummy             # <<<<<<<<<<<<<<
- * 
- *         result[i] += one_result
- */
-                                __pyx_v_one_result = __pyx_v_dummy;
-                              }
-                              __pyx_L27:;
-
-                              /* "pyFAI/ext/preproc.pyx":148
- *             one_result = dummy
- * 
- *         result[i] += one_result             # <<<<<<<<<<<<<<
+ *             result[i] += dummy             # <<<<<<<<<<<<<<
  *     return result
  * 
  */
-                              __pyx_t_20 = __pyx_v_i;
-                              *((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_result.data) + __pyx_t_20)) )) += __pyx_v_one_result;
+                                __pyx_t_22 = __pyx_v_i;
+                                *((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_result.data) + __pyx_t_22)) )) += __pyx_v_dummy;
+                              }
+                              __pyx_L27:;
                           }
                       }
                   }
@@ -2863,12 +4194,12 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
           #endif
         }
 
-        /* "pyFAI/ext/preproc.pyx":113
+        /* "pyFAI/ext/preproc.pyx":104
  *         result = numpy.zeros_like(data)
  * 
  *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
- *         one_value = data[i]
- * 
+ *         one_num = data[i]
+ *         one_den = normalization_factor
  */
         /*finally:*/ {
           /*normal exit:*/{
@@ -2881,9 +4212,9 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
         }
     }
 
-    /* "pyFAI/ext/preproc.pyx":149
- * 
- *         result[i] += one_result
+    /* "pyFAI/ext/preproc.pyx":141
+ *         else:
+ *             result[i] += dummy
  *     return result             # <<<<<<<<<<<<<<
  * 
  * 
@@ -2893,9 +4224,9 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
     goto __pyx_L3_return;
   }
 
-  /* "pyFAI/ext/preproc.pyx":79
- * 
- *                             ) nogil:
+  /* "pyFAI/ext/preproc.pyx":70
+ *                              floating normalization_factor=1.0,
+ *                              ) nogil:
  *     """Common preprocessing step for all routines: C-implementation             # <<<<<<<<<<<<<<
  * 
  *     :param data: raw value, as a numpy array, 1D or 2D
@@ -2915,12 +4246,12 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
     }
   }
 
-  /* "pyFAI/ext/preproc.pyx":66
+  /* "pyFAI/ext/preproc.pyx":58
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
  */
 
   /* function exit code */
@@ -2934,7 +4265,7 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
   __PYX_XDEC_MEMVIEW(&__pyx_t_7, 0);
   __pyx_r.data = NULL;
   __pyx_r.memview = NULL;
-  __Pyx_AddTraceback("pyFAI.ext.preproc.c_preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyFAI.ext.preproc.c1_preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
 
   goto __pyx_L2;
   __pyx_L0:;
@@ -2949,20 +4280,2554 @@ static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(_
   return __pyx_r;
 }
 
-/* "pyFAI/ext/preproc.pyx":156
+/* "pyFAI/ext/preproc.pyx":148
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * def preproc(data,             # <<<<<<<<<<<<<<
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(__Pyx_memviewslice __pyx_v_data, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc *__pyx_optional_args) {
+  __Pyx_memviewslice __pyx_v_dark = __pyx_k__11;
+  __Pyx_memviewslice __pyx_v_flat = __pyx_k__12;
+  __Pyx_memviewslice __pyx_v_solidangle = __pyx_k__13;
+  __Pyx_memviewslice __pyx_v_polarization = __pyx_k__14;
+  __Pyx_memviewslice __pyx_v_absorption = __pyx_k__15;
+  __Pyx_memviewslice __pyx_v_mask = __pyx_k__16;
+  float __pyx_v_dummy = __pyx_k__17;
+  float __pyx_v_delta_dummy = __pyx_k__18;
+  int __pyx_v_check_dummy = __pyx_k__19;
+  float __pyx_v_normalization_factor = __pyx_k__20;
+  int __pyx_v_size;
+  int __pyx_v_i;
+  int __pyx_v_check_mask;
+  int __pyx_v_do_dark;
+  int __pyx_v_do_flat;
+  int __pyx_v_do_solidangle;
+  int __pyx_v_do_absorption;
+  int __pyx_v_do_polarization;
+  int __pyx_v_is_valid;
+  __Pyx_memviewslice __pyx_v_result = { 0, 0, { 0 }, { 0 }, { 0 } };
+  float __pyx_v_one_num;
+  float __pyx_v_one_flat;
+  float __pyx_v_one_den;
+  __Pyx_memviewslice __pyx_r = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  int __pyx_t_3;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  __Pyx_memviewslice __pyx_t_7 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_t_8;
+  int __pyx_t_9;
+  int __pyx_t_10;
+  int __pyx_t_11;
+  int __pyx_t_12;
+  int __pyx_t_13;
+  int __pyx_t_14;
+  int __pyx_t_15;
+  int __pyx_t_16;
+  int __pyx_t_17;
+  int __pyx_t_18;
+  int __pyx_t_19;
+  int __pyx_t_20;
+  Py_ssize_t __pyx_t_21;
+  int __pyx_t_22;
+  Py_ssize_t __pyx_t_23;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  #ifdef WITH_THREAD
+  PyGILState_STATE __pyx_gilstate_save;
+  #endif
+  __Pyx_RefNannySetupContext("__pyx_fuse_0_4c2_preproc", 1);
+  if (__pyx_optional_args) {
+    if (__pyx_optional_args->__pyx_n > 0) {
+      __pyx_v_dark = __pyx_optional_args->dark;
+      if (__pyx_optional_args->__pyx_n > 1) {
+        __pyx_v_flat = __pyx_optional_args->flat;
+        if (__pyx_optional_args->__pyx_n > 2) {
+          __pyx_v_solidangle = __pyx_optional_args->solidangle;
+          if (__pyx_optional_args->__pyx_n > 3) {
+            __pyx_v_polarization = __pyx_optional_args->polarization;
+            if (__pyx_optional_args->__pyx_n > 4) {
+              __pyx_v_absorption = __pyx_optional_args->absorption;
+              if (__pyx_optional_args->__pyx_n > 5) {
+                __pyx_v_mask = __pyx_optional_args->mask;
+                if (__pyx_optional_args->__pyx_n > 6) {
+                  __pyx_v_dummy = __pyx_optional_args->dummy;
+                  if (__pyx_optional_args->__pyx_n > 7) {
+                    __pyx_v_delta_dummy = __pyx_optional_args->delta_dummy;
+                    if (__pyx_optional_args->__pyx_n > 8) {
+                      __pyx_v_check_dummy = __pyx_optional_args->check_dummy;
+                      if (__pyx_optional_args->__pyx_n > 9) {
+                        __pyx_v_normalization_factor = __pyx_optional_args->normalization_factor;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  /*try:*/ {
+
+    /* "pyFAI/ext/preproc.pyx":185
+ *         floating one_num, one_result, one_flat, one_den
+ * 
+ *     with gil:             # <<<<<<<<<<<<<<
+ *         size = data.size
+ *         do_dark = dark is not None
+ */
+    {
+        #ifdef WITH_THREAD
+        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+        #endif
+        /*try:*/ {
+
+          /* "pyFAI/ext/preproc.pyx":186
+ * 
+ *     with gil:
+ *         size = data.size             # <<<<<<<<<<<<<<
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None
+ */
+          __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_1);
+          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __pyx_v_size = __pyx_t_3;
+
+          /* "pyFAI/ext/preproc.pyx":187
+ *     with gil:
+ *         size = data.size
+ *         do_dark = dark is not None             # <<<<<<<<<<<<<<
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None
+ */
+          __pyx_v_do_dark = (((PyObject *) __pyx_v_dark.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":188
+ *         size = data.size
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None             # <<<<<<<<<<<<<<
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None
+ */
+          __pyx_v_do_flat = (((PyObject *) __pyx_v_flat.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":189
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None             # <<<<<<<<<<<<<<
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None
+ */
+          __pyx_v_do_solidangle = (((PyObject *) __pyx_v_solidangle.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":190
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None             # <<<<<<<<<<<<<<
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None
+ */
+          __pyx_v_do_absorption = (((PyObject *) __pyx_v_absorption.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":191
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None             # <<<<<<<<<<<<<<
+ *         check_mask = mask is not None
+ *         result = numpy.zeros((size, 2), dtype=data.dtype)
+ */
+          __pyx_v_do_polarization = (((PyObject *) __pyx_v_polarization.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":192
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None             # <<<<<<<<<<<<<<
+ *         result = numpy.zeros((size, 2), dtype=data.dtype)
+ * 
+ */
+          __pyx_v_check_mask = (((PyObject *) __pyx_v_mask.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":193
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None
+ *         result = numpy.zeros((size, 2), dtype=data.dtype)             # <<<<<<<<<<<<<<
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):
+ */
+          __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_1);
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_4);
+          PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
+          __Pyx_GIVEREF(__pyx_t_2);
+          __Pyx_INCREF(__pyx_int_2);
+          PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_2);
+          __Pyx_GIVEREF(__pyx_int_2);
+          __pyx_t_2 = 0;
+          __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_4);
+          __Pyx_GIVEREF(__pyx_t_4);
+          __pyx_t_4 = 0;
+          __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_4);
+          __pyx_t_5 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_5);
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_dtype); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+          if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_d_dc_float(__pyx_t_6);
+          if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_v_result = __pyx_t_7;
+          __pyx_t_7.memview = NULL;
+          __pyx_t_7.data = NULL;
+        }
+
+        /* "pyFAI/ext/preproc.pyx":185
+ *         floating one_num, one_result, one_flat, one_den
+ * 
+ *     with gil:             # <<<<<<<<<<<<<<
+ *         size = data.size
+ *         do_dark = dark is not None
+ */
+        /*finally:*/ {
+          /*normal exit:*/{
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            goto __pyx_L8;
+          }
+          __pyx_L7_error: {
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            goto __pyx_L4_error;
+          }
+          __pyx_L8:;
+        }
+    }
+
+    /* "pyFAI/ext/preproc.pyx":195
+ *         result = numpy.zeros((size, 2), dtype=data.dtype)
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *         one_num = data[i]
+ *         one_den = normalization_factor
+ */
+    {
+        #ifdef WITH_THREAD
+        PyThreadState *_save;
+        Py_UNBLOCK_THREADS
+        #endif
+        /*try:*/ {
+          __pyx_t_3 = __pyx_v_size;
+          if (1 == 0) abort();
+          {
+              #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                  #undef likely
+                  #undef unlikely
+                  #define likely(x)   (x)
+                  #define unlikely(x) (x)
+              #endif
+              __pyx_t_9 = (__pyx_t_3 - 0) / 1;
+              if (__pyx_t_9 > 0)
+              {
+                  #ifdef _OPENMP
+                  #pragma omp parallel private(__pyx_t_13, __pyx_t_10, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_11, __pyx_t_21, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18)
+                  #endif /* _OPENMP */
+                  {
+                      #ifdef _OPENMP
+                      #pragma omp for lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_flat) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_den) schedule(static)
+                      #endif /* _OPENMP */
+                      for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
+                          {
+                              __pyx_v_i = 0 + 1 * __pyx_t_8;
+                              /* Initialize private variables to invalid values */
+                              __pyx_v_one_num = ((float)__PYX_NAN());
+                              __pyx_v_is_valid = ((int)0xbad0bad0);
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_den = ((float)__PYX_NAN());
+
+                              /* "pyFAI/ext/preproc.pyx":196
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):
+ *         one_num = data[i]             # <<<<<<<<<<<<<<
+ *         one_den = normalization_factor
+ *         is_valid = not isnan(one_num)
+ */
+                              __pyx_t_10 = __pyx_v_i;
+                              __pyx_v_one_num = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_data.data) + __pyx_t_10)) )));
+
+                              /* "pyFAI/ext/preproc.pyx":197
+ *     for i in prange(size, nogil=True, schedule="static"):
+ *         one_num = data[i]
+ *         one_den = normalization_factor             # <<<<<<<<<<<<<<
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:
+ */
+                              __pyx_v_one_den = __pyx_v_normalization_factor;
+
+                              /* "pyFAI/ext/preproc.pyx":198
+ *         one_num = data[i]
+ *         one_den = normalization_factor
+ *         is_valid = not isnan(one_num)             # <<<<<<<<<<<<<<
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)
+ */
+                              __pyx_v_is_valid = (!(isnan(__pyx_v_one_num) != 0));
+
+                              /* "pyFAI/ext/preproc.pyx":199
+ *         one_den = normalization_factor
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:             # <<<<<<<<<<<<<<
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:
+ */
+                              __pyx_t_12 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_12) {
+                              } else {
+                                __pyx_t_11 = __pyx_t_12;
+                                goto __pyx_L17_bool_binop_done;
+                              }
+                              __pyx_t_12 = (__pyx_v_check_mask != 0);
+                              __pyx_t_11 = __pyx_t_12;
+                              __pyx_L17_bool_binop_done:;
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":200
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)             # <<<<<<<<<<<<<<
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:
+ */
+                                __pyx_t_13 = __pyx_v_i;
+                                __pyx_v_is_valid = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ ((char *) (((__pyx_t_5numpy_int8_t *) __pyx_v_mask.data) + __pyx_t_13)) ))) == 0);
+                                goto __pyx_L16;
+                              }
+                              __pyx_L16:;
+
+                              /* "pyFAI/ext/preproc.pyx":201
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:             # <<<<<<<<<<<<<<
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_num != dummy)
+ */
+                              __pyx_t_12 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_12) {
+                              } else {
+                                __pyx_t_11 = __pyx_t_12;
+                                goto __pyx_L20_bool_binop_done;
+                              }
+                              __pyx_t_12 = (__pyx_v_check_dummy != 0);
+                              __pyx_t_11 = __pyx_t_12;
+                              __pyx_L20_bool_binop_done:;
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":202
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
+ *                 is_valid = (one_num != dummy)
+ *             else:
+ */
+                                __pyx_t_11 = ((__pyx_v_delta_dummy == 0.0) != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":203
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_num != dummy)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
+ */
+                                  __pyx_v_is_valid = (__pyx_v_one_num != __pyx_v_dummy);
+                                  goto __pyx_L22;
+                                }
+                                /*else*/ {
+
+                                  /* "pyFAI/ext/preproc.pyx":205
+ *                 is_valid = (one_num != dummy)
+ *             else:
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy             # <<<<<<<<<<<<<<
+ * 
+ *         if is_valid and do_flat:
+ */
+                                  __pyx_v_is_valid = (fabs((__pyx_v_one_num - __pyx_v_dummy)) > __pyx_v_delta_dummy);
+                                }
+                                __pyx_L22:;
+                                goto __pyx_L19;
+                              }
+                              __pyx_L19:;
+
+                              /* "pyFAI/ext/preproc.pyx":207
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
+ * 
+ *         if is_valid and do_flat:             # <<<<<<<<<<<<<<
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:
+ */
+                              __pyx_t_12 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_12) {
+                              } else {
+                                __pyx_t_11 = __pyx_t_12;
+                                goto __pyx_L24_bool_binop_done;
+                              }
+                              __pyx_t_12 = (__pyx_v_do_flat != 0);
+                              __pyx_t_11 = __pyx_t_12;
+                              __pyx_L24_bool_binop_done:;
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":208
+ * 
+ *         if is_valid and do_flat:
+ *             one_flat = flat[i]             # <<<<<<<<<<<<<<
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_flat != dummy)
+ */
+                                __pyx_t_14 = __pyx_v_i;
+                                __pyx_v_one_flat = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_14)) )));
+
+                                /* "pyFAI/ext/preproc.pyx":209
+ *         if is_valid and do_flat:
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
+ *                 is_valid = (one_flat != dummy)
+ *             else:
+ */
+                                __pyx_t_11 = ((__pyx_v_delta_dummy == 0.0) != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":210
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_flat != dummy)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy
+ */
+                                  __pyx_v_is_valid = (__pyx_v_one_flat != __pyx_v_dummy);
+                                  goto __pyx_L26;
+                                }
+                                /*else*/ {
+
+                                  /* "pyFAI/ext/preproc.pyx":212
+ *                 is_valid = (one_flat != dummy)
+ *             else:
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy             # <<<<<<<<<<<<<<
+ * 
+ *         if is_valid:
+ */
+                                  __pyx_v_is_valid = (fabs((__pyx_v_one_flat - __pyx_v_dummy)) > __pyx_v_delta_dummy);
+                                }
+                                __pyx_L26:;
+                                goto __pyx_L23;
+                              }
+                              __pyx_L23:;
+
+                              /* "pyFAI/ext/preproc.pyx":214
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy
+ * 
+ *         if is_valid:             # <<<<<<<<<<<<<<
+ *             # Do not use "/=" as they mean reduction for cython
+ *             if do_dark:
+ */
+                              __pyx_t_11 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":216
+ *         if is_valid:
+ *             # Do not use "/=" as they mean reduction for cython
+ *             if do_dark:             # <<<<<<<<<<<<<<
+ *                 one_num = one_num - dark[i]
+ *             if do_flat:
+ */
+                                __pyx_t_11 = (__pyx_v_do_dark != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":217
+ *             # Do not use "/=" as they mean reduction for cython
+ *             if do_dark:
+ *                 one_num = one_num - dark[i]             # <<<<<<<<<<<<<<
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]
+ */
+                                  __pyx_t_15 = __pyx_v_i;
+                                  __pyx_v_one_num = (__pyx_v_one_num - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_dark.data) + __pyx_t_15)) ))));
+                                  goto __pyx_L28;
+                                }
+                                __pyx_L28:;
+
+                                /* "pyFAI/ext/preproc.pyx":218
+ *             if do_dark:
+ *                 one_num = one_num - dark[i]
+ *             if do_flat:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:
+ */
+                                __pyx_t_11 = (__pyx_v_do_flat != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":219
+ *                 one_num = one_num - dark[i]
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]             # <<<<<<<<<<<<<<
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]
+ */
+                                  __pyx_t_16 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_16)) ))));
+                                  goto __pyx_L29;
+                                }
+                                __pyx_L29:;
+
+                                /* "pyFAI/ext/preproc.pyx":220
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:
+ */
+                                __pyx_t_11 = (__pyx_v_do_polarization != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":221
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]             # <<<<<<<<<<<<<<
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]
+ */
+                                  __pyx_t_17 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_polarization.data) + __pyx_t_17)) ))));
+                                  goto __pyx_L30;
+                                }
+                                __pyx_L30:;
+
+                                /* "pyFAI/ext/preproc.pyx":222
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:
+ */
+                                __pyx_t_11 = (__pyx_v_do_solidangle != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":223
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]             # <<<<<<<<<<<<<<
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]
+ */
+                                  __pyx_t_18 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_solidangle.data) + __pyx_t_18)) ))));
+                                  goto __pyx_L31;
+                                }
+                                __pyx_L31:;
+
+                                /* "pyFAI/ext/preproc.pyx":224
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
+ */
+                                __pyx_t_11 = (__pyx_v_do_absorption != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":225
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
+ *                 one_num = 0.0
+ */
+                                  __pyx_t_19 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_absorption.data) + __pyx_t_19)) ))));
+                                  goto __pyx_L32;
+                                }
+                                __pyx_L32:;
+
+                                /* "pyFAI/ext/preproc.pyx":226
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):             # <<<<<<<<<<<<<<
+ *                 one_num = 0.0
+ *                 one_den = 0.0
+ */
+                                __pyx_t_12 = (isnan(__pyx_v_one_num) != 0);
+                                if (!__pyx_t_12) {
+                                } else {
+                                  __pyx_t_11 = __pyx_t_12;
+                                  goto __pyx_L34_bool_binop_done;
+                                }
+                                __pyx_t_12 = (isnan(__pyx_v_one_den) != 0);
+                                if (!__pyx_t_12) {
+                                } else {
+                                  __pyx_t_11 = __pyx_t_12;
+                                  goto __pyx_L34_bool_binop_done;
+                                }
+                                __pyx_t_12 = ((__pyx_v_one_den == 0.0) != 0);
+                                __pyx_t_11 = __pyx_t_12;
+                                __pyx_L34_bool_binop_done:;
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":227
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
+ *                 one_num = 0.0             # <<<<<<<<<<<<<<
+ *                 one_den = 0.0
+ *         else:
+ */
+                                  __pyx_v_one_num = 0.0;
+
+                                  /* "pyFAI/ext/preproc.pyx":228
+ *             if (isnan(one_num) or isnan(one_den) or (one_den == 0)):
+ *                 one_num = 0.0
+ *                 one_den = 0.0             # <<<<<<<<<<<<<<
+ *         else:
+ *             one_num = 0.0
+ */
+                                  __pyx_v_one_den = 0.0;
+                                  goto __pyx_L33;
+                                }
+                                __pyx_L33:;
+                                goto __pyx_L27;
+                              }
+                              /*else*/ {
+
+                                /* "pyFAI/ext/preproc.pyx":230
+ *                 one_den = 0.0
+ *         else:
+ *             one_num = 0.0             # <<<<<<<<<<<<<<
+ *             one_den = 0.0
+ * 
+ */
+                                __pyx_v_one_num = 0.0;
+
+                                /* "pyFAI/ext/preproc.pyx":231
+ *         else:
+ *             one_num = 0.0
+ *             one_den = 0.0             # <<<<<<<<<<<<<<
+ * 
+ *         result[i, 0] += one_num
+ */
+                                __pyx_v_one_den = 0.0;
+                              }
+                              __pyx_L27:;
+
+                              /* "pyFAI/ext/preproc.pyx":233
+ *             one_den = 0.0
+ * 
+ *         result[i, 0] += one_num             # <<<<<<<<<<<<<<
+ *         result[i, 1] += one_den
+ *     return result
+ */
+                              __pyx_t_20 = __pyx_v_i;
+                              __pyx_t_21 = 0;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_20 * __pyx_v_result.strides[0]) )) + __pyx_t_21)) )) += __pyx_v_one_num;
+
+                              /* "pyFAI/ext/preproc.pyx":234
+ * 
+ *         result[i, 0] += one_num
+ *         result[i, 1] += one_den             # <<<<<<<<<<<<<<
+ *     return result
+ * 
+ */
+                              __pyx_t_22 = __pyx_v_i;
+                              __pyx_t_23 = 1;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_22 * __pyx_v_result.strides[0]) )) + __pyx_t_23)) )) += __pyx_v_one_den;
+                          }
+                      }
+                  }
+              }
+          }
+          #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+              #undef likely
+              #undef unlikely
+              #define likely(x)   __builtin_expect(!!(x), 1)
+              #define unlikely(x) __builtin_expect(!!(x), 0)
+          #endif
+        }
+
+        /* "pyFAI/ext/preproc.pyx":195
+ *         result = numpy.zeros((size, 2), dtype=data.dtype)
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *         one_num = data[i]
+ *         one_den = normalization_factor
+ */
+        /*finally:*/ {
+          /*normal exit:*/{
+            #ifdef WITH_THREAD
+            Py_BLOCK_THREADS
+            #endif
+            goto __pyx_L11;
+          }
+          __pyx_L11:;
+        }
+    }
+
+    /* "pyFAI/ext/preproc.pyx":235
+ *         result[i, 0] += one_num
+ *         result[i, 1] += one_den
+ *     return result             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+    __PYX_INC_MEMVIEW(&__pyx_v_result, 1);
+    __pyx_r = __pyx_v_result;
+    goto __pyx_L3_return;
+  }
+
+  /* "pyFAI/ext/preproc.pyx":160
+ *                                 floating normalization_factor=1.0,
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation             # <<<<<<<<<<<<<<
+ *     with split_result without variance
+ * 
+ */
+  /*finally:*/ {
+    __pyx_L3_return: {
+      #ifdef WITH_THREAD
+      __pyx_gilstate_save = PyGILState_Ensure();
+      #endif
+      goto __pyx_L0;
+    }
+    __pyx_L4_error: {
+      #ifdef WITH_THREAD
+      __pyx_gilstate_save = PyGILState_Ensure();
+      #endif
+      goto __pyx_L1_error;
+    }
+  }
+
+  /* "pyFAI/ext/preproc.pyx":148
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_7, 0);
+  __pyx_r.data = NULL;
+  __pyx_r.memview = NULL;
+  __Pyx_AddTraceback("pyFAI.ext.preproc.c2_preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+
+  goto __pyx_L2;
+  __pyx_L0:;
+  if (unlikely(!__pyx_r.memview)) {
+    PyErr_SetString(PyExc_TypeError,"Memoryview return value is not initialized");
+  }
+  __pyx_L2:;
+  __PYX_XDEC_MEMVIEW(&__pyx_v_result, 0);
+  #ifdef WITH_THREAD
+  PyGILState_Release(__pyx_gilstate_save);
+  #endif
+  return __pyx_r;
+}
+
+/* "pyFAI/ext/preproc.pyx":242
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(__Pyx_memviewslice __pyx_v_data, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc *__pyx_optional_args) {
+  __Pyx_memviewslice __pyx_v_dark = __pyx_k__21;
+  __Pyx_memviewslice __pyx_v_flat = __pyx_k__22;
+  __Pyx_memviewslice __pyx_v_solidangle = __pyx_k__23;
+  __Pyx_memviewslice __pyx_v_polarization = __pyx_k__24;
+  __Pyx_memviewslice __pyx_v_absorption = __pyx_k__25;
+  __Pyx_memviewslice __pyx_v_mask = __pyx_k__26;
+  float __pyx_v_dummy = __pyx_k__27;
+  float __pyx_v_delta_dummy = __pyx_k__28;
+  int __pyx_v_check_dummy = __pyx_k__29;
+  float __pyx_v_normalization_factor = __pyx_k__30;
+  int __pyx_v_size;
+  int __pyx_v_i;
+  int __pyx_v_check_mask;
+  int __pyx_v_do_dark;
+  int __pyx_v_do_flat;
+  int __pyx_v_do_solidangle;
+  int __pyx_v_do_absorption;
+  int __pyx_v_do_polarization;
+  int __pyx_v_is_valid;
+  __Pyx_memviewslice __pyx_v_result = { 0, 0, { 0 }, { 0 }, { 0 } };
+  float __pyx_v_one_num;
+  float __pyx_v_one_flat;
+  float __pyx_v_one_den;
+  float __pyx_v_one_var;
+  __Pyx_memviewslice __pyx_r = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  int __pyx_t_3;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  __Pyx_memviewslice __pyx_t_7 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_t_8;
+  int __pyx_t_9;
+  int __pyx_t_10;
+  float __pyx_t_11;
+  int __pyx_t_12;
+  int __pyx_t_13;
+  int __pyx_t_14;
+  int __pyx_t_15;
+  int __pyx_t_16;
+  int __pyx_t_17;
+  int __pyx_t_18;
+  int __pyx_t_19;
+  int __pyx_t_20;
+  int __pyx_t_21;
+  int __pyx_t_22;
+  Py_ssize_t __pyx_t_23;
+  int __pyx_t_24;
+  Py_ssize_t __pyx_t_25;
+  int __pyx_t_26;
+  Py_ssize_t __pyx_t_27;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  #ifdef WITH_THREAD
+  PyGILState_STATE __pyx_gilstate_save;
+  #endif
+  __Pyx_RefNannySetupContext("__pyx_fuse_0_4cp_preproc", 1);
+  if (__pyx_optional_args) {
+    if (__pyx_optional_args->__pyx_n > 0) {
+      __pyx_v_dark = __pyx_optional_args->dark;
+      if (__pyx_optional_args->__pyx_n > 1) {
+        __pyx_v_flat = __pyx_optional_args->flat;
+        if (__pyx_optional_args->__pyx_n > 2) {
+          __pyx_v_solidangle = __pyx_optional_args->solidangle;
+          if (__pyx_optional_args->__pyx_n > 3) {
+            __pyx_v_polarization = __pyx_optional_args->polarization;
+            if (__pyx_optional_args->__pyx_n > 4) {
+              __pyx_v_absorption = __pyx_optional_args->absorption;
+              if (__pyx_optional_args->__pyx_n > 5) {
+                __pyx_v_mask = __pyx_optional_args->mask;
+                if (__pyx_optional_args->__pyx_n > 6) {
+                  __pyx_v_dummy = __pyx_optional_args->dummy;
+                  if (__pyx_optional_args->__pyx_n > 7) {
+                    __pyx_v_delta_dummy = __pyx_optional_args->delta_dummy;
+                    if (__pyx_optional_args->__pyx_n > 8) {
+                      __pyx_v_check_dummy = __pyx_optional_args->check_dummy;
+                      if (__pyx_optional_args->__pyx_n > 9) {
+                        __pyx_v_normalization_factor = __pyx_optional_args->normalization_factor;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  /*try:*/ {
+
+    /* "pyFAI/ext/preproc.pyx":279
+ *         floating one_num, one_result, one_flat, one_den, one_var
+ * 
+ *     with gil:             # <<<<<<<<<<<<<<
+ *         size = data.size
+ *         do_dark = dark is not None
+ */
+    {
+        #ifdef WITH_THREAD
+        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+        #endif
+        /*try:*/ {
+
+          /* "pyFAI/ext/preproc.pyx":280
+ * 
+ *     with gil:
+ *         size = data.size             # <<<<<<<<<<<<<<
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None
+ */
+          __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_1);
+          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __pyx_v_size = __pyx_t_3;
+
+          /* "pyFAI/ext/preproc.pyx":281
+ *     with gil:
+ *         size = data.size
+ *         do_dark = dark is not None             # <<<<<<<<<<<<<<
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None
+ */
+          __pyx_v_do_dark = (((PyObject *) __pyx_v_dark.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":282
+ *         size = data.size
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None             # <<<<<<<<<<<<<<
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None
+ */
+          __pyx_v_do_flat = (((PyObject *) __pyx_v_flat.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":283
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None             # <<<<<<<<<<<<<<
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None
+ */
+          __pyx_v_do_solidangle = (((PyObject *) __pyx_v_solidangle.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":284
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None             # <<<<<<<<<<<<<<
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None
+ */
+          __pyx_v_do_absorption = (((PyObject *) __pyx_v_absorption.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":285
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None             # <<<<<<<<<<<<<<
+ *         check_mask = mask is not None
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ */
+          __pyx_v_do_polarization = (((PyObject *) __pyx_v_polarization.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":286
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None             # <<<<<<<<<<<<<<
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ * 
+ */
+          __pyx_v_check_mask = (((PyObject *) __pyx_v_mask.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":287
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)             # <<<<<<<<<<<<<<
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):
+ */
+          __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_1);
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_4);
+          PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
+          __Pyx_GIVEREF(__pyx_t_2);
+          __Pyx_INCREF(__pyx_int_3);
+          PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_3);
+          __Pyx_GIVEREF(__pyx_int_3);
+          __pyx_t_2 = 0;
+          __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_4);
+          __Pyx_GIVEREF(__pyx_t_4);
+          __pyx_t_4 = 0;
+          __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_4);
+          __pyx_t_5 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_5);
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_dtype); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+          if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_d_dc_float(__pyx_t_6);
+          if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_v_result = __pyx_t_7;
+          __pyx_t_7.memview = NULL;
+          __pyx_t_7.data = NULL;
+        }
+
+        /* "pyFAI/ext/preproc.pyx":279
+ *         floating one_num, one_result, one_flat, one_den, one_var
+ * 
+ *     with gil:             # <<<<<<<<<<<<<<
+ *         size = data.size
+ *         do_dark = dark is not None
+ */
+        /*finally:*/ {
+          /*normal exit:*/{
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            goto __pyx_L8;
+          }
+          __pyx_L7_error: {
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            goto __pyx_L4_error;
+          }
+          __pyx_L8:;
+        }
+    }
+
+    /* "pyFAI/ext/preproc.pyx":289
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *         one_num = one_var = data[i]
+ *         one_den = normalization_factor
+ */
+    {
+        #ifdef WITH_THREAD
+        PyThreadState *_save;
+        Py_UNBLOCK_THREADS
+        #endif
+        /*try:*/ {
+          __pyx_t_3 = __pyx_v_size;
+          if (1 == 0) abort();
+          {
+              #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                  #undef likely
+                  #undef unlikely
+                  #define likely(x)   (x)
+                  #define unlikely(x) (x)
+              #endif
+              __pyx_t_9 = (__pyx_t_3 - 0) / 1;
+              if (__pyx_t_9 > 0)
+              {
+                  #ifdef _OPENMP
+                  #pragma omp parallel private(__pyx_t_10, __pyx_t_27, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_21, __pyx_t_13, __pyx_t_26, __pyx_t_12, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_18, __pyx_t_24, __pyx_t_25, __pyx_t_11)
+                  #endif /* _OPENMP */
+                  {
+                      #ifdef _OPENMP
+                      #pragma omp for lastprivate(__pyx_v_one_var) lastprivate(__pyx_v_one_flat) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_one_den) lastprivate(__pyx_v_is_valid) schedule(static)
+                      #endif /* _OPENMP */
+                      for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
+                          {
+                              __pyx_v_i = 0 + 1 * __pyx_t_8;
+                              /* Initialize private variables to invalid values */
+                              __pyx_v_one_var = ((float)__PYX_NAN());
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_num = ((float)__PYX_NAN());
+                              __pyx_v_one_den = ((float)__PYX_NAN());
+                              __pyx_v_is_valid = ((int)0xbad0bad0);
+
+                              /* "pyFAI/ext/preproc.pyx":290
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):
+ *         one_num = one_var = data[i]             # <<<<<<<<<<<<<<
+ *         one_den = normalization_factor
+ * 
+ */
+                              __pyx_t_10 = __pyx_v_i;
+                              __pyx_t_11 = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_data.data) + __pyx_t_10)) )));
+                              __pyx_v_one_num = __pyx_t_11;
+                              __pyx_v_one_var = __pyx_t_11;
+
+                              /* "pyFAI/ext/preproc.pyx":291
+ *     for i in prange(size, nogil=True, schedule="static"):
+ *         one_num = one_var = data[i]
+ *         one_den = normalization_factor             # <<<<<<<<<<<<<<
+ * 
+ *         is_valid = not isnan(one_num)
+ */
+                              __pyx_v_one_den = __pyx_v_normalization_factor;
+
+                              /* "pyFAI/ext/preproc.pyx":293
+ *         one_den = normalization_factor
+ * 
+ *         is_valid = not isnan(one_num)             # <<<<<<<<<<<<<<
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)
+ */
+                              __pyx_v_is_valid = (!(isnan(__pyx_v_one_num) != 0));
+
+                              /* "pyFAI/ext/preproc.pyx":294
+ * 
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:             # <<<<<<<<<<<<<<
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:
+ */
+                              __pyx_t_13 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_13) {
+                              } else {
+                                __pyx_t_12 = __pyx_t_13;
+                                goto __pyx_L17_bool_binop_done;
+                              }
+                              __pyx_t_13 = (__pyx_v_check_mask != 0);
+                              __pyx_t_12 = __pyx_t_13;
+                              __pyx_L17_bool_binop_done:;
+                              if (__pyx_t_12) {
+
+                                /* "pyFAI/ext/preproc.pyx":295
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)             # <<<<<<<<<<<<<<
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:
+ */
+                                __pyx_t_14 = __pyx_v_i;
+                                __pyx_v_is_valid = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ ((char *) (((__pyx_t_5numpy_int8_t *) __pyx_v_mask.data) + __pyx_t_14)) ))) == 0);
+                                goto __pyx_L16;
+                              }
+                              __pyx_L16:;
+
+                              /* "pyFAI/ext/preproc.pyx":296
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:             # <<<<<<<<<<<<<<
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_num != dummy)
+ */
+                              __pyx_t_13 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_13) {
+                              } else {
+                                __pyx_t_12 = __pyx_t_13;
+                                goto __pyx_L20_bool_binop_done;
+                              }
+                              __pyx_t_13 = (__pyx_v_check_dummy != 0);
+                              __pyx_t_12 = __pyx_t_13;
+                              __pyx_L20_bool_binop_done:;
+                              if (__pyx_t_12) {
+
+                                /* "pyFAI/ext/preproc.pyx":297
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
+ *                 is_valid = (one_num != dummy)
+ *             else:
+ */
+                                __pyx_t_12 = ((__pyx_v_delta_dummy == 0.0) != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":298
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_num != dummy)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
+ */
+                                  __pyx_v_is_valid = (__pyx_v_one_num != __pyx_v_dummy);
+                                  goto __pyx_L22;
+                                }
+                                /*else*/ {
+
+                                  /* "pyFAI/ext/preproc.pyx":300
+ *                 is_valid = (one_num != dummy)
+ *             else:
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy             # <<<<<<<<<<<<<<
+ * 
+ *         if is_valid and do_flat:
+ */
+                                  __pyx_v_is_valid = (fabs((__pyx_v_one_num - __pyx_v_dummy)) > __pyx_v_delta_dummy);
+                                }
+                                __pyx_L22:;
+                                goto __pyx_L19;
+                              }
+                              __pyx_L19:;
+
+                              /* "pyFAI/ext/preproc.pyx":302
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
+ * 
+ *         if is_valid and do_flat:             # <<<<<<<<<<<<<<
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:
+ */
+                              __pyx_t_13 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_13) {
+                              } else {
+                                __pyx_t_12 = __pyx_t_13;
+                                goto __pyx_L24_bool_binop_done;
+                              }
+                              __pyx_t_13 = (__pyx_v_do_flat != 0);
+                              __pyx_t_12 = __pyx_t_13;
+                              __pyx_L24_bool_binop_done:;
+                              if (__pyx_t_12) {
+
+                                /* "pyFAI/ext/preproc.pyx":303
+ * 
+ *         if is_valid and do_flat:
+ *             one_flat = flat[i]             # <<<<<<<<<<<<<<
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_flat != dummy)
+ */
+                                __pyx_t_15 = __pyx_v_i;
+                                __pyx_v_one_flat = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_15)) )));
+
+                                /* "pyFAI/ext/preproc.pyx":304
+ *         if is_valid and do_flat:
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
+ *                 is_valid = (one_flat != dummy)
+ *             else:
+ */
+                                __pyx_t_12 = ((__pyx_v_delta_dummy == 0.0) != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":305
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_flat != dummy)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy
+ */
+                                  __pyx_v_is_valid = (__pyx_v_one_flat != __pyx_v_dummy);
+                                  goto __pyx_L26;
+                                }
+                                /*else*/ {
+
+                                  /* "pyFAI/ext/preproc.pyx":307
+ *                 is_valid = (one_flat != dummy)
+ *             else:
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy             # <<<<<<<<<<<<<<
+ * 
+ *         if is_valid:
+ */
+                                  __pyx_v_is_valid = (fabs((__pyx_v_one_flat - __pyx_v_dummy)) > __pyx_v_delta_dummy);
+                                }
+                                __pyx_L26:;
+                                goto __pyx_L23;
+                              }
+                              __pyx_L23:;
+
+                              /* "pyFAI/ext/preproc.pyx":309
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy
+ * 
+ *         if is_valid:             # <<<<<<<<<<<<<<
+ *             # Do not use "+=" as they mean reduction for cython
+ *             if do_dark:
+ */
+                              __pyx_t_12 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_12) {
+
+                                /* "pyFAI/ext/preproc.pyx":311
+ *         if is_valid:
+ *             # Do not use "+=" as they mean reduction for cython
+ *             if do_dark:             # <<<<<<<<<<<<<<
+ *                 one_num = one_num - dark[i]
+ *                 one_var = one_var + dark[i]
+ */
+                                __pyx_t_12 = (__pyx_v_do_dark != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":312
+ *             # Do not use "+=" as they mean reduction for cython
+ *             if do_dark:
+ *                 one_num = one_num - dark[i]             # <<<<<<<<<<<<<<
+ *                 one_var = one_var + dark[i]
+ *             if do_flat:
+ */
+                                  __pyx_t_16 = __pyx_v_i;
+                                  __pyx_v_one_num = (__pyx_v_one_num - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_dark.data) + __pyx_t_16)) ))));
+
+                                  /* "pyFAI/ext/preproc.pyx":313
+ *             if do_dark:
+ *                 one_num = one_num - dark[i]
+ *                 one_var = one_var + dark[i]             # <<<<<<<<<<<<<<
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]
+ */
+                                  __pyx_t_17 = __pyx_v_i;
+                                  __pyx_v_one_var = (__pyx_v_one_var + (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_dark.data) + __pyx_t_17)) ))));
+                                  goto __pyx_L28;
+                                }
+                                __pyx_L28:;
+
+                                /* "pyFAI/ext/preproc.pyx":314
+ *                 one_num = one_num - dark[i]
+ *                 one_var = one_var + dark[i]
+ *             if do_flat:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:
+ */
+                                __pyx_t_12 = (__pyx_v_do_flat != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":315
+ *                 one_var = one_var + dark[i]
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]             # <<<<<<<<<<<<<<
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]
+ */
+                                  __pyx_t_18 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_18)) ))));
+                                  goto __pyx_L29;
+                                }
+                                __pyx_L29:;
+
+                                /* "pyFAI/ext/preproc.pyx":316
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:
+ */
+                                __pyx_t_12 = (__pyx_v_do_polarization != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":317
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]             # <<<<<<<<<<<<<<
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]
+ */
+                                  __pyx_t_19 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_polarization.data) + __pyx_t_19)) ))));
+                                  goto __pyx_L30;
+                                }
+                                __pyx_L30:;
+
+                                /* "pyFAI/ext/preproc.pyx":318
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:
+ */
+                                __pyx_t_12 = (__pyx_v_do_solidangle != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":319
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]             # <<<<<<<<<<<<<<
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]
+ */
+                                  __pyx_t_20 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_solidangle.data) + __pyx_t_20)) ))));
+                                  goto __pyx_L31;
+                                }
+                                __pyx_L31:;
+
+                                /* "pyFAI/ext/preproc.pyx":320
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ */
+                                __pyx_t_12 = (__pyx_v_do_absorption != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":321
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ *                 one_num = 0.0
+ */
+                                  __pyx_t_21 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_absorption.data) + __pyx_t_21)) ))));
+                                  goto __pyx_L32;
+                                }
+                                __pyx_L32:;
+
+                                /* "pyFAI/ext/preproc.pyx":322
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):             # <<<<<<<<<<<<<<
+ *                 one_num = 0.0
+ *                 one_var = 0.0
+ */
+                                __pyx_t_13 = (isnan(__pyx_v_one_num) != 0);
+                                if (!__pyx_t_13) {
+                                } else {
+                                  __pyx_t_12 = __pyx_t_13;
+                                  goto __pyx_L34_bool_binop_done;
+                                }
+                                __pyx_t_13 = (isnan(__pyx_v_one_den) != 0);
+                                if (!__pyx_t_13) {
+                                } else {
+                                  __pyx_t_12 = __pyx_t_13;
+                                  goto __pyx_L34_bool_binop_done;
+                                }
+                                __pyx_t_13 = (isnan(__pyx_v_one_var) != 0);
+                                if (!__pyx_t_13) {
+                                } else {
+                                  __pyx_t_12 = __pyx_t_13;
+                                  goto __pyx_L34_bool_binop_done;
+                                }
+                                __pyx_t_13 = ((__pyx_v_one_den == 0.0) != 0);
+                                __pyx_t_12 = __pyx_t_13;
+                                __pyx_L34_bool_binop_done:;
+                                if (__pyx_t_12) {
+
+                                  /* "pyFAI/ext/preproc.pyx":323
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ *                 one_num = 0.0             # <<<<<<<<<<<<<<
+ *                 one_var = 0.0
+ *                 one_den = 0.0
+ */
+                                  __pyx_v_one_num = 0.0;
+
+                                  /* "pyFAI/ext/preproc.pyx":324
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ *                 one_num = 0.0
+ *                 one_var = 0.0             # <<<<<<<<<<<<<<
+ *                 one_den = 0.0
+ *         else:
+ */
+                                  __pyx_v_one_var = 0.0;
+
+                                  /* "pyFAI/ext/preproc.pyx":325
+ *                 one_num = 0.0
+ *                 one_var = 0.0
+ *                 one_den = 0.0             # <<<<<<<<<<<<<<
+ *         else:
+ *             one_num = 0.0
+ */
+                                  __pyx_v_one_den = 0.0;
+                                  goto __pyx_L33;
+                                }
+                                __pyx_L33:;
+                                goto __pyx_L27;
+                              }
+                              /*else*/ {
+
+                                /* "pyFAI/ext/preproc.pyx":327
+ *                 one_den = 0.0
+ *         else:
+ *             one_num = 0.0             # <<<<<<<<<<<<<<
+ *             one_var = 0.0
+ *             one_den = 0.0
+ */
+                                __pyx_v_one_num = 0.0;
+
+                                /* "pyFAI/ext/preproc.pyx":328
+ *         else:
+ *             one_num = 0.0
+ *             one_var = 0.0             # <<<<<<<<<<<<<<
+ *             one_den = 0.0
+ * 
+ */
+                                __pyx_v_one_var = 0.0;
+
+                                /* "pyFAI/ext/preproc.pyx":329
+ *             one_num = 0.0
+ *             one_var = 0.0
+ *             one_den = 0.0             # <<<<<<<<<<<<<<
+ * 
+ *         result[i, 0] += one_num
+ */
+                                __pyx_v_one_den = 0.0;
+                              }
+                              __pyx_L27:;
+
+                              /* "pyFAI/ext/preproc.pyx":331
+ *             one_den = 0.0
+ * 
+ *         result[i, 0] += one_num             # <<<<<<<<<<<<<<
+ *         result[i, 1] += one_var
+ *         result[i, 2] += one_den
+ */
+                              __pyx_t_22 = __pyx_v_i;
+                              __pyx_t_23 = 0;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_22 * __pyx_v_result.strides[0]) )) + __pyx_t_23)) )) += __pyx_v_one_num;
+
+                              /* "pyFAI/ext/preproc.pyx":332
+ * 
+ *         result[i, 0] += one_num
+ *         result[i, 1] += one_var             # <<<<<<<<<<<<<<
+ *         result[i, 2] += one_den
+ *     return result
+ */
+                              __pyx_t_24 = __pyx_v_i;
+                              __pyx_t_25 = 1;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_24 * __pyx_v_result.strides[0]) )) + __pyx_t_25)) )) += __pyx_v_one_var;
+
+                              /* "pyFAI/ext/preproc.pyx":333
+ *         result[i, 0] += one_num
+ *         result[i, 1] += one_var
+ *         result[i, 2] += one_den             # <<<<<<<<<<<<<<
+ *     return result
+ * 
+ */
+                              __pyx_t_26 = __pyx_v_i;
+                              __pyx_t_27 = 2;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_26 * __pyx_v_result.strides[0]) )) + __pyx_t_27)) )) += __pyx_v_one_den;
+                          }
+                      }
+                  }
+              }
+          }
+          #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+              #undef likely
+              #undef unlikely
+              #define likely(x)   __builtin_expect(!!(x), 1)
+              #define unlikely(x) __builtin_expect(!!(x), 0)
+          #endif
+        }
+
+        /* "pyFAI/ext/preproc.pyx":289
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *         one_num = one_var = data[i]
+ *         one_den = normalization_factor
+ */
+        /*finally:*/ {
+          /*normal exit:*/{
+            #ifdef WITH_THREAD
+            Py_BLOCK_THREADS
+            #endif
+            goto __pyx_L11;
+          }
+          __pyx_L11:;
+        }
+    }
+
+    /* "pyFAI/ext/preproc.pyx":334
+ *         result[i, 1] += one_var
+ *         result[i, 2] += one_den
+ *     return result             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+    __PYX_INC_MEMVIEW(&__pyx_v_result, 1);
+    __pyx_r = __pyx_v_result;
+    goto __pyx_L3_return;
+  }
+
+  /* "pyFAI/ext/preproc.pyx":254
+ *                                 floating normalization_factor=1.0,
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation             # <<<<<<<<<<<<<<
+ *     with split_result assuming a poissonian distribution
+ * 
+ */
+  /*finally:*/ {
+    __pyx_L3_return: {
+      #ifdef WITH_THREAD
+      __pyx_gilstate_save = PyGILState_Ensure();
+      #endif
+      goto __pyx_L0;
+    }
+    __pyx_L4_error: {
+      #ifdef WITH_THREAD
+      __pyx_gilstate_save = PyGILState_Ensure();
+      #endif
+      goto __pyx_L1_error;
+    }
+  }
+
+  /* "pyFAI/ext/preproc.pyx":242
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_7, 0);
+  __pyx_r.data = NULL;
+  __pyx_r.memview = NULL;
+  __Pyx_AddTraceback("pyFAI.ext.preproc.cp_preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+
+  goto __pyx_L2;
+  __pyx_L0:;
+  if (unlikely(!__pyx_r.memview)) {
+    PyErr_SetString(PyExc_TypeError,"Memoryview return value is not initialized");
+  }
+  __pyx_L2:;
+  __PYX_XDEC_MEMVIEW(&__pyx_v_result, 0);
+  #ifdef WITH_THREAD
+  PyGILState_Release(__pyx_gilstate_save);
+  #endif
+  return __pyx_r;
+}
+
+/* "pyFAI/ext/preproc.pyx":341
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+
+static __Pyx_memviewslice __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(__Pyx_memviewslice __pyx_v_data, struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc *__pyx_optional_args) {
+  __Pyx_memviewslice __pyx_v_dark = __pyx_k__31;
+  __Pyx_memviewslice __pyx_v_flat = __pyx_k__32;
+  __Pyx_memviewslice __pyx_v_solidangle = __pyx_k__33;
+  __Pyx_memviewslice __pyx_v_polarization = __pyx_k__34;
+  __Pyx_memviewslice __pyx_v_absorption = __pyx_k__35;
+  __Pyx_memviewslice __pyx_v_mask = __pyx_k__36;
+  float __pyx_v_dummy = __pyx_k__37;
+  float __pyx_v_delta_dummy = __pyx_k__38;
+  int __pyx_v_check_dummy = __pyx_k__39;
+  float __pyx_v_normalization_factor = __pyx_k__40;
+  __Pyx_memviewslice __pyx_v_variance = __pyx_k__41;
+  __Pyx_memviewslice __pyx_v_dark_variance = __pyx_k__42;
+  int __pyx_v_size;
+  int __pyx_v_i;
+  int __pyx_v_check_mask;
+  int __pyx_v_do_dark;
+  int __pyx_v_do_flat;
+  int __pyx_v_do_solidangle;
+  int __pyx_v_do_absorption;
+  int __pyx_v_is_valid;
+  int __pyx_v_do_polarization;
+  int __pyx_v_do_variance;
+  int __pyx_v_do_dark_variance;
+  __Pyx_memviewslice __pyx_v_result = { 0, 0, { 0 }, { 0 }, { 0 } };
+  float __pyx_v_one_num;
+  float __pyx_v_one_flat;
+  float __pyx_v_one_den;
+  float __pyx_v_one_var;
+  __Pyx_memviewslice __pyx_r = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  int __pyx_t_3;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  __Pyx_memviewslice __pyx_t_7 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_t_8;
+  int __pyx_t_9;
+  int __pyx_t_10;
+  int __pyx_t_11;
+  int __pyx_t_12;
+  int __pyx_t_13;
+  int __pyx_t_14;
+  int __pyx_t_15;
+  int __pyx_t_16;
+  int __pyx_t_17;
+  int __pyx_t_18;
+  int __pyx_t_19;
+  int __pyx_t_20;
+  int __pyx_t_21;
+  int __pyx_t_22;
+  Py_ssize_t __pyx_t_23;
+  int __pyx_t_24;
+  Py_ssize_t __pyx_t_25;
+  int __pyx_t_26;
+  Py_ssize_t __pyx_t_27;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  #ifdef WITH_THREAD
+  PyGILState_STATE __pyx_gilstate_save;
+  #endif
+  __Pyx_RefNannySetupContext("__pyx_fuse_0_4c3_preproc", 1);
+  if (__pyx_optional_args) {
+    if (__pyx_optional_args->__pyx_n > 0) {
+      __pyx_v_dark = __pyx_optional_args->dark;
+      if (__pyx_optional_args->__pyx_n > 1) {
+        __pyx_v_flat = __pyx_optional_args->flat;
+        if (__pyx_optional_args->__pyx_n > 2) {
+          __pyx_v_solidangle = __pyx_optional_args->solidangle;
+          if (__pyx_optional_args->__pyx_n > 3) {
+            __pyx_v_polarization = __pyx_optional_args->polarization;
+            if (__pyx_optional_args->__pyx_n > 4) {
+              __pyx_v_absorption = __pyx_optional_args->absorption;
+              if (__pyx_optional_args->__pyx_n > 5) {
+                __pyx_v_mask = __pyx_optional_args->mask;
+                if (__pyx_optional_args->__pyx_n > 6) {
+                  __pyx_v_dummy = __pyx_optional_args->dummy;
+                  if (__pyx_optional_args->__pyx_n > 7) {
+                    __pyx_v_delta_dummy = __pyx_optional_args->delta_dummy;
+                    if (__pyx_optional_args->__pyx_n > 8) {
+                      __pyx_v_check_dummy = __pyx_optional_args->check_dummy;
+                      if (__pyx_optional_args->__pyx_n > 9) {
+                        __pyx_v_normalization_factor = __pyx_optional_args->normalization_factor;
+                        if (__pyx_optional_args->__pyx_n > 10) {
+                          __pyx_v_variance = __pyx_optional_args->variance;
+                          if (__pyx_optional_args->__pyx_n > 11) {
+                            __pyx_v_dark_variance = __pyx_optional_args->dark_variance;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  /*try:*/ {
+
+    /* "pyFAI/ext/preproc.pyx":381
+ *         floating one_num, one_result, one_flat, one_den, one_var
+ * 
+ *     with gil:             # <<<<<<<<<<<<<<
+ *         size = data.size
+ *         do_dark = dark is not None
+ */
+    {
+        #ifdef WITH_THREAD
+        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+        #endif
+        /*try:*/ {
+
+          /* "pyFAI/ext/preproc.pyx":382
+ * 
+ *     with gil:
+ *         size = data.size             # <<<<<<<<<<<<<<
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None
+ */
+          __pyx_t_1 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_1);
+          __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __pyx_v_size = __pyx_t_3;
+
+          /* "pyFAI/ext/preproc.pyx":383
+ *     with gil:
+ *         size = data.size
+ *         do_dark = dark is not None             # <<<<<<<<<<<<<<
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None
+ */
+          __pyx_v_do_dark = (((PyObject *) __pyx_v_dark.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":384
+ *         size = data.size
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None             # <<<<<<<<<<<<<<
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None
+ */
+          __pyx_v_do_flat = (((PyObject *) __pyx_v_flat.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":385
+ *         do_dark = dark is not None
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None             # <<<<<<<<<<<<<<
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None
+ */
+          __pyx_v_do_solidangle = (((PyObject *) __pyx_v_solidangle.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":386
+ *         do_flat = flat is not None
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None             # <<<<<<<<<<<<<<
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None
+ */
+          __pyx_v_do_absorption = (((PyObject *) __pyx_v_absorption.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":387
+ *         do_solidangle = solidangle is not None
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None             # <<<<<<<<<<<<<<
+ *         check_mask = mask is not None
+ *         do_variance = variance is not None
+ */
+          __pyx_v_do_polarization = (((PyObject *) __pyx_v_polarization.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":388
+ *         do_absorption = absorption is not None
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None             # <<<<<<<<<<<<<<
+ *         do_variance = variance is not None
+ *         do_dark_variance = dark_variance is not None
+ */
+          __pyx_v_check_mask = (((PyObject *) __pyx_v_mask.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":389
+ *         do_polarization = polarization is not None
+ *         check_mask = mask is not None
+ *         do_variance = variance is not None             # <<<<<<<<<<<<<<
+ *         do_dark_variance = dark_variance is not None
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ */
+          __pyx_v_do_variance = (((PyObject *) __pyx_v_variance.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":390
+ *         check_mask = mask is not None
+ *         do_variance = variance is not None
+ *         do_dark_variance = dark_variance is not None             # <<<<<<<<<<<<<<
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ * 
+ */
+          __pyx_v_do_dark_variance = (((PyObject *) __pyx_v_dark_variance.memview) != Py_None);
+
+          /* "pyFAI/ext/preproc.pyx":391
+ *         do_variance = variance is not None
+ *         do_dark_variance = dark_variance is not None
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)             # <<<<<<<<<<<<<<
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):
+ */
+          __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_1);
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_4);
+          PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
+          __Pyx_GIVEREF(__pyx_t_2);
+          __Pyx_INCREF(__pyx_int_3);
+          PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_3);
+          __Pyx_GIVEREF(__pyx_int_3);
+          __pyx_t_2 = 0;
+          __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_2);
+          PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_4);
+          __Pyx_GIVEREF(__pyx_t_4);
+          __pyx_t_4 = 0;
+          __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_4);
+          __pyx_t_5 = __pyx_memoryview_fromslice(__pyx_v_data, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_5);
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_dtype); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+          if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_GOTREF(__pyx_t_6);
+          __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+          __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+          __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_d_dc_float(__pyx_t_6);
+          if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L7_error;}
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_v_result = __pyx_t_7;
+          __pyx_t_7.memview = NULL;
+          __pyx_t_7.data = NULL;
+        }
+
+        /* "pyFAI/ext/preproc.pyx":381
+ *         floating one_num, one_result, one_flat, one_den, one_var
+ * 
+ *     with gil:             # <<<<<<<<<<<<<<
+ *         size = data.size
+ *         do_dark = dark is not None
+ */
+        /*finally:*/ {
+          /*normal exit:*/{
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            goto __pyx_L8;
+          }
+          __pyx_L7_error: {
+            #ifdef WITH_THREAD
+            PyGILState_Release(__pyx_gilstate_save);
+            #endif
+            goto __pyx_L4_error;
+          }
+          __pyx_L8:;
+        }
+    }
+
+    /* "pyFAI/ext/preproc.pyx":393
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *         one_num = data[i]
+ *         one_den = normalization_factor
+ */
+    {
+        #ifdef WITH_THREAD
+        PyThreadState *_save;
+        Py_UNBLOCK_THREADS
+        #endif
+        /*try:*/ {
+          __pyx_t_3 = __pyx_v_size;
+          if (1 == 0) abort();
+          {
+              #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                  #undef likely
+                  #undef unlikely
+                  #define likely(x)   (x)
+                  #define unlikely(x) (x)
+              #endif
+              __pyx_t_9 = (__pyx_t_3 - 0) / 1;
+              if (__pyx_t_9 > 0)
+              {
+                  #ifdef _OPENMP
+                  #pragma omp parallel private(__pyx_t_10, __pyx_t_12, __pyx_t_14, __pyx_t_20, __pyx_t_23, __pyx_t_22, __pyx_t_21, __pyx_t_11, __pyx_t_13, __pyx_t_26, __pyx_t_15, __pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_27, __pyx_t_18, __pyx_t_24, __pyx_t_25)
+                  #endif /* _OPENMP */
+                  {
+                      #ifdef _OPENMP
+                      #pragma omp for lastprivate(__pyx_v_one_num) lastprivate(__pyx_v_is_valid) lastprivate(__pyx_v_one_var) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_one_flat) lastprivate(__pyx_v_one_den) schedule(static)
+                      #endif /* _OPENMP */
+                      for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8++){
+                          {
+                              __pyx_v_i = 0 + 1 * __pyx_t_8;
+                              /* Initialize private variables to invalid values */
+                              __pyx_v_one_num = ((float)__PYX_NAN());
+                              __pyx_v_is_valid = ((int)0xbad0bad0);
+                              __pyx_v_one_var = ((float)__PYX_NAN());
+                              __pyx_v_one_flat = ((float)__PYX_NAN());
+                              __pyx_v_one_den = ((float)__PYX_NAN());
+
+                              /* "pyFAI/ext/preproc.pyx":394
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):
+ *         one_num = data[i]             # <<<<<<<<<<<<<<
+ *         one_den = normalization_factor
+ *         if do_variance:
+ */
+                              __pyx_t_10 = __pyx_v_i;
+                              __pyx_v_one_num = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_data.data) + __pyx_t_10)) )));
+
+                              /* "pyFAI/ext/preproc.pyx":395
+ *     for i in prange(size, nogil=True, schedule="static"):
+ *         one_num = data[i]
+ *         one_den = normalization_factor             # <<<<<<<<<<<<<<
+ *         if do_variance:
+ *             one_var = variance[i]
+ */
+                              __pyx_v_one_den = __pyx_v_normalization_factor;
+
+                              /* "pyFAI/ext/preproc.pyx":396
+ *         one_num = data[i]
+ *         one_den = normalization_factor
+ *         if do_variance:             # <<<<<<<<<<<<<<
+ *             one_var = variance[i]
+ *         else:
+ */
+                              __pyx_t_11 = (__pyx_v_do_variance != 0);
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":397
+ *         one_den = normalization_factor
+ *         if do_variance:
+ *             one_var = variance[i]             # <<<<<<<<<<<<<<
+ *         else:
+ *             one_var = 0.0
+ */
+                                __pyx_t_12 = __pyx_v_i;
+                                __pyx_v_one_var = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_variance.data) + __pyx_t_12)) )));
+                                goto __pyx_L16;
+                              }
+                              /*else*/ {
+
+                                /* "pyFAI/ext/preproc.pyx":399
+ *             one_var = variance[i]
+ *         else:
+ *             one_var = 0.0             # <<<<<<<<<<<<<<
+ * 
+ *         is_valid = not isnan(one_num)
+ */
+                                __pyx_v_one_var = 0.0;
+                              }
+                              __pyx_L16:;
+
+                              /* "pyFAI/ext/preproc.pyx":401
+ *             one_var = 0.0
+ * 
+ *         is_valid = not isnan(one_num)             # <<<<<<<<<<<<<<
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)
+ */
+                              __pyx_v_is_valid = (!(isnan(__pyx_v_one_num) != 0));
+
+                              /* "pyFAI/ext/preproc.pyx":402
+ * 
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:             # <<<<<<<<<<<<<<
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:
+ */
+                              __pyx_t_13 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_13) {
+                              } else {
+                                __pyx_t_11 = __pyx_t_13;
+                                goto __pyx_L18_bool_binop_done;
+                              }
+                              __pyx_t_13 = (__pyx_v_check_mask != 0);
+                              __pyx_t_11 = __pyx_t_13;
+                              __pyx_L18_bool_binop_done:;
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":403
+ *         is_valid = not isnan(one_num)
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)             # <<<<<<<<<<<<<<
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:
+ */
+                                __pyx_t_14 = __pyx_v_i;
+                                __pyx_v_is_valid = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ ((char *) (((__pyx_t_5numpy_int8_t *) __pyx_v_mask.data) + __pyx_t_14)) ))) == 0);
+                                goto __pyx_L17;
+                              }
+                              __pyx_L17:;
+
+                              /* "pyFAI/ext/preproc.pyx":404
+ *         if is_valid and check_mask:
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:             # <<<<<<<<<<<<<<
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_num != dummy)
+ */
+                              __pyx_t_13 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_13) {
+                              } else {
+                                __pyx_t_11 = __pyx_t_13;
+                                goto __pyx_L21_bool_binop_done;
+                              }
+                              __pyx_t_13 = (__pyx_v_check_dummy != 0);
+                              __pyx_t_11 = __pyx_t_13;
+                              __pyx_L21_bool_binop_done:;
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":405
+ *             is_valid = (mask[i] == 0)
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
+ *                 is_valid = (one_num != dummy)
+ *             else:
+ */
+                                __pyx_t_11 = ((__pyx_v_delta_dummy == 0.0) != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":406
+ *         if is_valid and check_dummy:
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_num != dummy)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
+ */
+                                  __pyx_v_is_valid = (__pyx_v_one_num != __pyx_v_dummy);
+                                  goto __pyx_L23;
+                                }
+                                /*else*/ {
+
+                                  /* "pyFAI/ext/preproc.pyx":408
+ *                 is_valid = (one_num != dummy)
+ *             else:
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy             # <<<<<<<<<<<<<<
+ * 
+ *         if is_valid and do_flat:
+ */
+                                  __pyx_v_is_valid = (fabs((__pyx_v_one_num - __pyx_v_dummy)) > __pyx_v_delta_dummy);
+                                }
+                                __pyx_L23:;
+                                goto __pyx_L20;
+                              }
+                              __pyx_L20:;
+
+                              /* "pyFAI/ext/preproc.pyx":410
+ *                 is_valid = fabs(one_num - dummy) > delta_dummy
+ * 
+ *         if is_valid and do_flat:             # <<<<<<<<<<<<<<
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:
+ */
+                              __pyx_t_13 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_13) {
+                              } else {
+                                __pyx_t_11 = __pyx_t_13;
+                                goto __pyx_L25_bool_binop_done;
+                              }
+                              __pyx_t_13 = (__pyx_v_do_flat != 0);
+                              __pyx_t_11 = __pyx_t_13;
+                              __pyx_L25_bool_binop_done:;
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":411
+ * 
+ *         if is_valid and do_flat:
+ *             one_flat = flat[i]             # <<<<<<<<<<<<<<
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_flat != dummy)
+ */
+                                __pyx_t_15 = __pyx_v_i;
+                                __pyx_v_one_flat = (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_15)) )));
+
+                                /* "pyFAI/ext/preproc.pyx":412
+ *         if is_valid and do_flat:
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:             # <<<<<<<<<<<<<<
+ *                 is_valid = (one_flat != dummy)
+ *             else:
+ */
+                                __pyx_t_11 = ((__pyx_v_delta_dummy == 0.0) != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":413
+ *             one_flat = flat[i]
+ *             if delta_dummy == 0:
+ *                 is_valid = (one_flat != dummy)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy
+ */
+                                  __pyx_v_is_valid = (__pyx_v_one_flat != __pyx_v_dummy);
+                                  goto __pyx_L27;
+                                }
+                                /*else*/ {
+
+                                  /* "pyFAI/ext/preproc.pyx":415
+ *                 is_valid = (one_flat != dummy)
+ *             else:
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy             # <<<<<<<<<<<<<<
+ * 
+ *         if is_valid:
+ */
+                                  __pyx_v_is_valid = (fabs((__pyx_v_one_flat - __pyx_v_dummy)) > __pyx_v_delta_dummy);
+                                }
+                                __pyx_L27:;
+                                goto __pyx_L24;
+                              }
+                              __pyx_L24:;
+
+                              /* "pyFAI/ext/preproc.pyx":417
+ *                 is_valid = fabs(one_flat - dummy) > delta_dummy
+ * 
+ *         if is_valid:             # <<<<<<<<<<<<<<
+ *             # Do not use "/=" as they mean reduction for cython
+ *             if do_dark:
+ */
+                              __pyx_t_11 = (__pyx_v_is_valid != 0);
+                              if (__pyx_t_11) {
+
+                                /* "pyFAI/ext/preproc.pyx":419
+ *         if is_valid:
+ *             # Do not use "/=" as they mean reduction for cython
+ *             if do_dark:             # <<<<<<<<<<<<<<
+ *                 one_num = one_num - dark[i]
+ *                 if do_dark_variance:
+ */
+                                __pyx_t_11 = (__pyx_v_do_dark != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":420
+ *             # Do not use "/=" as they mean reduction for cython
+ *             if do_dark:
+ *                 one_num = one_num - dark[i]             # <<<<<<<<<<<<<<
+ *                 if do_dark_variance:
+ *                     one_var = one_var + dark_variance[i]
+ */
+                                  __pyx_t_16 = __pyx_v_i;
+                                  __pyx_v_one_num = (__pyx_v_one_num - (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_dark.data) + __pyx_t_16)) ))));
+
+                                  /* "pyFAI/ext/preproc.pyx":421
+ *             if do_dark:
+ *                 one_num = one_num - dark[i]
+ *                 if do_dark_variance:             # <<<<<<<<<<<<<<
+ *                     one_var = one_var + dark_variance[i]
+ *             if do_flat:
+ */
+                                  __pyx_t_11 = (__pyx_v_do_dark_variance != 0);
+                                  if (__pyx_t_11) {
+
+                                    /* "pyFAI/ext/preproc.pyx":422
+ *                 one_num = one_num - dark[i]
+ *                 if do_dark_variance:
+ *                     one_var = one_var + dark_variance[i]             # <<<<<<<<<<<<<<
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]
+ */
+                                    __pyx_t_17 = __pyx_v_i;
+                                    __pyx_v_one_var = (__pyx_v_one_var + (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_dark_variance.data) + __pyx_t_17)) ))));
+                                    goto __pyx_L30;
+                                  }
+                                  __pyx_L30:;
+                                  goto __pyx_L29;
+                                }
+                                __pyx_L29:;
+
+                                /* "pyFAI/ext/preproc.pyx":423
+ *                 if do_dark_variance:
+ *                     one_var = one_var + dark_variance[i]
+ *             if do_flat:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:
+ */
+                                __pyx_t_11 = (__pyx_v_do_flat != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":424
+ *                     one_var = one_var + dark_variance[i]
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]             # <<<<<<<<<<<<<<
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]
+ */
+                                  __pyx_t_18 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_flat.data) + __pyx_t_18)) ))));
+                                  goto __pyx_L31;
+                                }
+                                __pyx_L31:;
+
+                                /* "pyFAI/ext/preproc.pyx":425
+ *             if do_flat:
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:
+ */
+                                __pyx_t_11 = (__pyx_v_do_polarization != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":426
+ *                 one_den = one_den * flat[i]
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]             # <<<<<<<<<<<<<<
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]
+ */
+                                  __pyx_t_19 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_polarization.data) + __pyx_t_19)) ))));
+                                  goto __pyx_L32;
+                                }
+                                __pyx_L32:;
+
+                                /* "pyFAI/ext/preproc.pyx":427
+ *             if do_polarization:
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:
+ */
+                                __pyx_t_11 = (__pyx_v_do_solidangle != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":428
+ *                 one_den = one_den * polarization[i]
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]             # <<<<<<<<<<<<<<
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]
+ */
+                                  __pyx_t_20 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_solidangle.data) + __pyx_t_20)) ))));
+                                  goto __pyx_L33;
+                                }
+                                __pyx_L33:;
+
+                                /* "pyFAI/ext/preproc.pyx":429
+ *             if do_solidangle:
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:             # <<<<<<<<<<<<<<
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ */
+                                __pyx_t_11 = (__pyx_v_do_absorption != 0);
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":430
+ *                 one_den = one_den * solidangle[i]
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]             # <<<<<<<<<<<<<<
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ *                 one_num = 0.0
+ */
+                                  __pyx_t_21 = __pyx_v_i;
+                                  __pyx_v_one_den = (__pyx_v_one_den * (*((float *) ( /* dim=0 */ ((char *) (((float *) __pyx_v_absorption.data) + __pyx_t_21)) ))));
+                                  goto __pyx_L34;
+                                }
+                                __pyx_L34:;
+
+                                /* "pyFAI/ext/preproc.pyx":431
+ *             if do_absorption:
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):             # <<<<<<<<<<<<<<
+ *                 one_num = 0.0
+ *                 one_var = 0.0
+ */
+                                __pyx_t_13 = (isnan(__pyx_v_one_num) != 0);
+                                if (!__pyx_t_13) {
+                                } else {
+                                  __pyx_t_11 = __pyx_t_13;
+                                  goto __pyx_L36_bool_binop_done;
+                                }
+                                __pyx_t_13 = (isnan(__pyx_v_one_den) != 0);
+                                if (!__pyx_t_13) {
+                                } else {
+                                  __pyx_t_11 = __pyx_t_13;
+                                  goto __pyx_L36_bool_binop_done;
+                                }
+                                __pyx_t_13 = (isnan(__pyx_v_one_var) != 0);
+                                if (!__pyx_t_13) {
+                                } else {
+                                  __pyx_t_11 = __pyx_t_13;
+                                  goto __pyx_L36_bool_binop_done;
+                                }
+                                __pyx_t_13 = ((__pyx_v_one_den == 0.0) != 0);
+                                __pyx_t_11 = __pyx_t_13;
+                                __pyx_L36_bool_binop_done:;
+                                if (__pyx_t_11) {
+
+                                  /* "pyFAI/ext/preproc.pyx":432
+ *                 one_den = one_den * absorption[i]
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ *                 one_num = 0.0             # <<<<<<<<<<<<<<
+ *                 one_var = 0.0
+ *                 one_den = 0.0
+ */
+                                  __pyx_v_one_num = 0.0;
+
+                                  /* "pyFAI/ext/preproc.pyx":433
+ *             if (isnan(one_num) or isnan(one_den) or isnan(one_var) or (one_den == 0)):
+ *                 one_num = 0.0
+ *                 one_var = 0.0             # <<<<<<<<<<<<<<
+ *                 one_den = 0.0
+ *         else:
+ */
+                                  __pyx_v_one_var = 0.0;
+
+                                  /* "pyFAI/ext/preproc.pyx":434
+ *                 one_num = 0.0
+ *                 one_var = 0.0
+ *                 one_den = 0.0             # <<<<<<<<<<<<<<
+ *         else:
+ *             one_num = 0.0
+ */
+                                  __pyx_v_one_den = 0.0;
+                                  goto __pyx_L35;
+                                }
+                                __pyx_L35:;
+                                goto __pyx_L28;
+                              }
+                              /*else*/ {
+
+                                /* "pyFAI/ext/preproc.pyx":436
+ *                 one_den = 0.0
+ *         else:
+ *             one_num = 0.0             # <<<<<<<<<<<<<<
+ *             one_num = 0.0
+ *             one_den = 0.0
+ */
+                                __pyx_v_one_num = 0.0;
+
+                                /* "pyFAI/ext/preproc.pyx":437
+ *         else:
+ *             one_num = 0.0
+ *             one_num = 0.0             # <<<<<<<<<<<<<<
+ *             one_den = 0.0
+ * 
+ */
+                                __pyx_v_one_num = 0.0;
+
+                                /* "pyFAI/ext/preproc.pyx":438
+ *             one_num = 0.0
+ *             one_num = 0.0
+ *             one_den = 0.0             # <<<<<<<<<<<<<<
+ * 
+ *         result[i, 0] += one_num
+ */
+                                __pyx_v_one_den = 0.0;
+                              }
+                              __pyx_L28:;
+
+                              /* "pyFAI/ext/preproc.pyx":440
+ *             one_den = 0.0
+ * 
+ *         result[i, 0] += one_num             # <<<<<<<<<<<<<<
+ *         result[i, 1] += one_var
+ *         result[i, 2] += one_den
+ */
+                              __pyx_t_22 = __pyx_v_i;
+                              __pyx_t_23 = 0;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_22 * __pyx_v_result.strides[0]) )) + __pyx_t_23)) )) += __pyx_v_one_num;
+
+                              /* "pyFAI/ext/preproc.pyx":441
+ * 
+ *         result[i, 0] += one_num
+ *         result[i, 1] += one_var             # <<<<<<<<<<<<<<
+ *         result[i, 2] += one_den
+ *     return result
+ */
+                              __pyx_t_24 = __pyx_v_i;
+                              __pyx_t_25 = 1;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_24 * __pyx_v_result.strides[0]) )) + __pyx_t_25)) )) += __pyx_v_one_var;
+
+                              /* "pyFAI/ext/preproc.pyx":442
+ *         result[i, 0] += one_num
+ *         result[i, 1] += one_var
+ *         result[i, 2] += one_den             # <<<<<<<<<<<<<<
+ *     return result
+ * 
+ */
+                              __pyx_t_26 = __pyx_v_i;
+                              __pyx_t_27 = 2;
+                              *((float *) ( /* dim=1 */ ((char *) (((float *) ( /* dim=0 */ (__pyx_v_result.data + __pyx_t_26 * __pyx_v_result.strides[0]) )) + __pyx_t_27)) )) += __pyx_v_one_den;
+                          }
+                      }
+                  }
+              }
+          }
+          #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+              #undef likely
+              #undef unlikely
+              #define likely(x)   __builtin_expect(!!(x), 1)
+              #define unlikely(x) __builtin_expect(!!(x), 0)
+          #endif
+        }
+
+        /* "pyFAI/ext/preproc.pyx":393
+ *         result = numpy.zeros((size, 3), dtype=data.dtype)
+ * 
+ *     for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *         one_num = data[i]
+ *         one_den = normalization_factor
+ */
+        /*finally:*/ {
+          /*normal exit:*/{
+            #ifdef WITH_THREAD
+            Py_BLOCK_THREADS
+            #endif
+            goto __pyx_L11;
+          }
+          __pyx_L11:;
+        }
+    }
+
+    /* "pyFAI/ext/preproc.pyx":443
+ *         result[i, 1] += one_var
+ *         result[i, 2] += one_den
+ *     return result             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+    __PYX_INC_MEMVIEW(&__pyx_v_result, 1);
+    __pyx_r = __pyx_v_result;
+    goto __pyx_L3_return;
+  }
+
+  /* "pyFAI/ext/preproc.pyx":355
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation             # <<<<<<<<<<<<<<
+ *     with split_result with variance in second position: (signal, variance, normalization)
+ * 
+ */
+  /*finally:*/ {
+    __pyx_L3_return: {
+      #ifdef WITH_THREAD
+      __pyx_gilstate_save = PyGILState_Ensure();
+      #endif
+      goto __pyx_L0;
+    }
+    __pyx_L4_error: {
+      #ifdef WITH_THREAD
+      __pyx_gilstate_save = PyGILState_Ensure();
+      #endif
+      goto __pyx_L1_error;
+    }
+  }
+
+  /* "pyFAI/ext/preproc.pyx":341
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ */
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_7, 0);
+  __pyx_r.data = NULL;
+  __pyx_r.memview = NULL;
+  __Pyx_AddTraceback("pyFAI.ext.preproc.c3_preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+
+  goto __pyx_L2;
+  __pyx_L0:;
+  if (unlikely(!__pyx_r.memview)) {
+    PyErr_SetString(PyExc_TypeError,"Memoryview return value is not initialized");
+  }
+  __pyx_L2:;
+  __PYX_XDEC_MEMVIEW(&__pyx_v_result, 0);
+  #ifdef WITH_THREAD
+  PyGILState_Release(__pyx_gilstate_save);
+  #endif
+  return __pyx_r;
+}
+
+/* "pyFAI/ext/preproc.pyx":450
+ * @cython.wraparound(False)
+ * @cython.initializedcheck(False)
+ * def preproc(raw,             # <<<<<<<<<<<<<<
  *             dark=None,
  *             flat=None,
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_7preproc_preproc[] = "preproc(data, dark=None, flat=None, solidangle=None, polarization=None, absorption=None, mask=None, dummy=None, delta_dummy=None, float normalization_factor=1.0, empty=None)\nCommon preprocessing step for all \n    \n    :param data: raw value, as a numpy array, 1D or 2D\n    :param mask: array non null  where data should be ignored\n    :param dummy: value of invalid data\n    :param delta_dummy: precision for invalid data\n    :param dark: array containing the value of the dark noise, to be subtracted\n    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.\n    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility\n    :param polarization: Correction for polarization of the incident beam\n    :param absorption: Correction for absorption in the sensor volume\n    :param normalization_factor: final value is divided by this\n    :param empty: value to be given for empty bins\n    \n    All calculation are performed in single precision floating point.\n    \n    NaN are always considered as invalid\n    \n    if neither empty nor dummy is provided, empty pixels are 0  \n    ";
+static char __pyx_doc_5pyFAI_3ext_7preproc_preproc[] = "preproc(raw, dark=None, flat=None, solidangle=None, polarization=None, absorption=None, mask=None, dummy=None, delta_dummy=None, float normalization_factor=1.0, empty=None, bool split_result=False, variance=None, dark_variance=None, bool poissonian=False)\nCommon preprocessing step for all\n\n    :param raw: raw value, as a numpy array, 1D or 2D\n    :param mask: array non null  where data should be ignored\n    :param dummy: value of invalid data\n    :param delta_dummy: precision for invalid data\n    :param dark: array containing the value of the dark noise, to be subtracted\n    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.\n    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility\n    :param polarization: Correction for polarization of the incident beam\n    :param absorption: Correction for absorption in the sensor volume\n    :param normalization_factor: final value is divided by this\n    :param empty: value to be given for empty bins\n    :param variance: variance of the data\n    :param dark_variance: variance of the dark\n\n    All calculation are performed in single precision floating point.\n\n    NaN are always considered as invalid\n\n    if neither empty nor dummy is provided, empty pixels are 0\n    ";
 static PyMethodDef __pyx_mdef_5pyFAI_3ext_7preproc_1preproc = {"preproc", (PyCFunction)__pyx_pw_5pyFAI_3ext_7preproc_1preproc, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_7preproc_preproc};
 static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  PyObject *__pyx_v_data = 0;
+  PyObject *__pyx_v_raw = 0;
   PyObject *__pyx_v_dark = 0;
   PyObject *__pyx_v_flat = 0;
   PyObject *__pyx_v_solidangle = 0;
@@ -2973,6 +6838,10 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
   PyObject *__pyx_v_delta_dummy = 0;
   float __pyx_v_normalization_factor;
   PyObject *__pyx_v_empty = 0;
+  int __pyx_v_split_result;
+  PyObject *__pyx_v_variance = 0;
+  PyObject *__pyx_v_dark_variance = 0;
+  int __pyx_v_poissonian;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -2980,20 +6849,20 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("preproc (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_data,&__pyx_n_s_dark,&__pyx_n_s_flat,&__pyx_n_s_solidangle,&__pyx_n_s_polarization,&__pyx_n_s_absorption,&__pyx_n_s_mask,&__pyx_n_s_dummy,&__pyx_n_s_delta_dummy,&__pyx_n_s_normalization_factor,&__pyx_n_s_empty,0};
-    PyObject* values[11] = {0,0,0,0,0,0,0,0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_raw,&__pyx_n_s_dark,&__pyx_n_s_flat,&__pyx_n_s_solidangle,&__pyx_n_s_polarization,&__pyx_n_s_absorption,&__pyx_n_s_mask,&__pyx_n_s_dummy,&__pyx_n_s_delta_dummy,&__pyx_n_s_normalization_factor,&__pyx_n_s_empty,&__pyx_n_s_split_result,&__pyx_n_s_variance,&__pyx_n_s_dark_variance,&__pyx_n_s_poissonian,0};
+    PyObject* values[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    /* "pyFAI/ext/preproc.pyx":157
+    /* "pyFAI/ext/preproc.pyx":451
  * @cython.initializedcheck(False)
- * def preproc(data,
+ * def preproc(raw,
  *             dark=None,             # <<<<<<<<<<<<<<
  *             flat=None,
  *             solidangle=None,
  */
     values[1] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":158
- * def preproc(data,
+    /* "pyFAI/ext/preproc.pyx":452
+ * def preproc(raw,
  *             dark=None,
  *             flat=None,             # <<<<<<<<<<<<<<
  *             solidangle=None,
@@ -3001,7 +6870,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
  */
     values[2] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":159
+    /* "pyFAI/ext/preproc.pyx":453
  *             dark=None,
  *             flat=None,
  *             solidangle=None,             # <<<<<<<<<<<<<<
@@ -3010,7 +6879,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
  */
     values[3] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":160
+    /* "pyFAI/ext/preproc.pyx":454
  *             flat=None,
  *             solidangle=None,
  *             polarization=None,             # <<<<<<<<<<<<<<
@@ -3019,7 +6888,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
  */
     values[4] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":161
+    /* "pyFAI/ext/preproc.pyx":455
  *             solidangle=None,
  *             polarization=None,
  *             absorption=None,             # <<<<<<<<<<<<<<
@@ -3028,7 +6897,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
  */
     values[5] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":162
+    /* "pyFAI/ext/preproc.pyx":456
  *             polarization=None,
  *             absorption=None,
  *             mask=None,             # <<<<<<<<<<<<<<
@@ -3037,7 +6906,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
  */
     values[6] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":163
+    /* "pyFAI/ext/preproc.pyx":457
  *             absorption=None,
  *             mask=None,
  *             dummy=None,             # <<<<<<<<<<<<<<
@@ -3046,27 +6915,49 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
  */
     values[7] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":164
+    /* "pyFAI/ext/preproc.pyx":458
  *             mask=None,
  *             dummy=None,
  *             delta_dummy=None,             # <<<<<<<<<<<<<<
  *             float normalization_factor=1.0,
- *             empty=None
+ *             empty=None,
  */
     values[8] = ((PyObject *)Py_None);
 
-    /* "pyFAI/ext/preproc.pyx":166
+    /* "pyFAI/ext/preproc.pyx":460
  *             delta_dummy=None,
  *             float normalization_factor=1.0,
- *             empty=None             # <<<<<<<<<<<<<<
- *             ):
- *     """Common preprocessing step for all
+ *             empty=None,             # <<<<<<<<<<<<<<
+ *             bint split_result=False,
+ *             variance=None,
  */
     values[10] = ((PyObject *)Py_None);
+
+    /* "pyFAI/ext/preproc.pyx":462
+ *             empty=None,
+ *             bint split_result=False,
+ *             variance=None,             # <<<<<<<<<<<<<<
+ *             dark_variance=None,
+ *             bint poissonian=False,
+ */
+    values[12] = ((PyObject *)Py_None);
+
+    /* "pyFAI/ext/preproc.pyx":463
+ *             bint split_result=False,
+ *             variance=None,
+ *             dark_variance=None,             # <<<<<<<<<<<<<<
+ *             bint poissonian=False,
+ *             ):
+ */
+    values[13] = ((PyObject *)Py_None);
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case 15: values[14] = PyTuple_GET_ITEM(__pyx_args, 14);
+        case 14: values[13] = PyTuple_GET_ITEM(__pyx_args, 13);
+        case 13: values[12] = PyTuple_GET_ITEM(__pyx_args, 12);
+        case 12: values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
         case 11: values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
         case 10: values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
         case  9: values[8] = PyTuple_GET_ITEM(__pyx_args, 8);
@@ -3084,7 +6975,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
       kw_args = PyDict_Size(__pyx_kwds);
       switch (pos_args) {
         case  0:
-        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_data)) != 0)) kw_args--;
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_raw)) != 0)) kw_args--;
         else goto __pyx_L5_argtuple_error;
         case  1:
         if (kw_args > 0) {
@@ -3136,12 +7027,36 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
           PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_empty);
           if (value) { values[10] = value; kw_args--; }
         }
+        case 11:
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_split_result);
+          if (value) { values[11] = value; kw_args--; }
+        }
+        case 12:
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_variance);
+          if (value) { values[12] = value; kw_args--; }
+        }
+        case 13:
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dark_variance);
+          if (value) { values[13] = value; kw_args--; }
+        }
+        case 14:
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_poissonian);
+          if (value) { values[14] = value; kw_args--; }
+        }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "preproc") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "preproc") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case 15: values[14] = PyTuple_GET_ITEM(__pyx_args, 14);
+        case 14: values[13] = PyTuple_GET_ITEM(__pyx_args, 13);
+        case 13: values[12] = PyTuple_GET_ITEM(__pyx_args, 12);
+        case 12: values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
         case 11: values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
         case 10: values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
         case  9: values[8] = PyTuple_GET_ITEM(__pyx_args, 8);
@@ -3157,7 +7072,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_data = values[0];
+    __pyx_v_raw = values[0];
     __pyx_v_dark = values[1];
     __pyx_v_flat = values[2];
     __pyx_v_solidangle = values[3];
@@ -3167,26 +7082,54 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
     __pyx_v_dummy = values[7];
     __pyx_v_delta_dummy = values[8];
     if (values[9]) {
-      __pyx_v_normalization_factor = __pyx_PyFloat_AsFloat(values[9]); if (unlikely((__pyx_v_normalization_factor == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_v_normalization_factor = __pyx_PyFloat_AsFloat(values[9]); if (unlikely((__pyx_v_normalization_factor == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     } else {
       __pyx_v_normalization_factor = ((float)1.0);
     }
     __pyx_v_empty = values[10];
+    if (values[11]) {
+      __pyx_v_split_result = __Pyx_PyObject_IsTrue(values[11]); if (unlikely((__pyx_v_split_result == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 461; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    } else {
+
+      /* "pyFAI/ext/preproc.pyx":461
+ *             float normalization_factor=1.0,
+ *             empty=None,
+ *             bint split_result=False,             # <<<<<<<<<<<<<<
+ *             variance=None,
+ *             dark_variance=None,
+ */
+      __pyx_v_split_result = ((int)0);
+    }
+    __pyx_v_variance = values[12];
+    __pyx_v_dark_variance = values[13];
+    if (values[14]) {
+      __pyx_v_poissonian = __Pyx_PyObject_IsTrue(values[14]); if (unlikely((__pyx_v_poissonian == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 464; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    } else {
+
+      /* "pyFAI/ext/preproc.pyx":464
+ *             variance=None,
+ *             dark_variance=None,
+ *             bint poissonian=False,             # <<<<<<<<<<<<<<
+ *             ):
+ *     """Common preprocessing step for all
+ */
+      __pyx_v_poissonian = ((int)0);
+    }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("preproc", 0, 1, 11, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("preproc", 0, 1, 15, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyFAI.ext.preproc.preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5pyFAI_3ext_7preproc_preproc(__pyx_self, __pyx_v_data, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization, __pyx_v_absorption, __pyx_v_mask, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_normalization_factor, __pyx_v_empty);
+  __pyx_r = __pyx_pf_5pyFAI_3ext_7preproc_preproc(__pyx_self, __pyx_v_raw, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization, __pyx_v_absorption, __pyx_v_mask, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_normalization_factor, __pyx_v_empty, __pyx_v_split_result, __pyx_v_variance, __pyx_v_dark_variance, __pyx_v_poissonian);
 
-  /* "pyFAI/ext/preproc.pyx":156
+  /* "pyFAI/ext/preproc.pyx":450
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * def preproc(data,             # <<<<<<<<<<<<<<
+ * def preproc(raw,             # <<<<<<<<<<<<<<
  *             dark=None,
  *             flat=None,
  */
@@ -3196,7 +7139,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_7preproc_1preproc(PyObject *__pyx_self, Py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_data, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, PyObject *__pyx_v_absorption, PyObject *__pyx_v_mask, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, float __pyx_v_normalization_factor, PyObject *__pyx_v_empty) {
+static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_raw, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization, PyObject *__pyx_v_absorption, PyObject *__pyx_v_mask, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, float __pyx_v_normalization_factor, PyObject *__pyx_v_empty, int __pyx_v_split_result, PyObject *__pyx_v_variance, PyObject *__pyx_v_dark_variance, int __pyx_v_poissonian) {
   int __pyx_v_size;
   int __pyx_v_check_dummy;
   __Pyx_memviewslice __pyx_v_cmask = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -3206,9 +7149,15 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __Pyx_memviewslice __pyx_v_csolidangle = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_cpolarization = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_cabsorpt = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_result = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_cvariance = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_dvariance = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_res1 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_res2 = { 0, 0, { 0 }, { 0 }, { 0 } };
   float __pyx_v_cdummy;
   float __pyx_v_ddummy;
+  PyObject *__pyx_v_shape = NULL;
+  PyObject *__pyx_v_out_shape = NULL;
+  PyObject *__pyx_v_res = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -3226,39 +7175,44 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   float __pyx_t_13;
   float __pyx_t_14;
   __Pyx_memviewslice __pyx_t_15 = { 0, 0, { 0 }, { 0 }, { 0 } };
-  struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c_preproc __pyx_t_16;
-  PyObject *__pyx_t_17 = NULL;
+  struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c3_preproc __pyx_t_16;
+  __Pyx_memviewslice __pyx_t_17 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_cp_preproc __pyx_t_18;
+  __Pyx_memviewslice __pyx_t_19 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c2_preproc __pyx_t_20;
+  __Pyx_memviewslice __pyx_t_21 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  struct __pyx_fuse_0_4__pyx_opt_args_5pyFAI_3ext_7preproc_c1_preproc __pyx_t_22;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("preproc", 0);
 
-  /* "pyFAI/ext/preproc.pyx":196
+  /* "pyFAI/ext/preproc.pyx":497
  * 
  *     # initialization of values:
- *     size = data.size             # <<<<<<<<<<<<<<
- *     cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
+ *     size = raw.size             # <<<<<<<<<<<<<<
+ *     cdata = numpy.ascontiguousarray(raw.ravel(), dtype=numpy.float32)
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_data, __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 196; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_raw, __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 497; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 196; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 497; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_size = __pyx_t_2;
 
-  /* "pyFAI/ext/preproc.pyx":197
+  /* "pyFAI/ext/preproc.pyx":498
  *     # initialization of values:
- *     size = data.size
- *     cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
+ *     size = raw.size
+ *     cdata = numpy.ascontiguousarray(raw.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
  * 
  *     if (mask is None) or (mask is False):
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_data, __pyx_n_s_ravel); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_raw, __pyx_n_s_ravel); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_5 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_4))) {
@@ -3271,41 +7225,41 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
     }
   }
   if (__pyx_t_5) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   } else {
-    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_float32); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_float32); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_6);
-  if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_v_cdata = __pyx_t_7;
   __pyx_t_7.memview = NULL;
   __pyx_t_7.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":199
- *     cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
+  /* "pyFAI/ext/preproc.pyx":500
+ *     cdata = numpy.ascontiguousarray(raw.ravel(), dtype=numpy.float32)
  * 
  *     if (mask is None) or (mask is False):             # <<<<<<<<<<<<<<
  *         cmask = None
@@ -3324,7 +7278,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_8) {
 
-    /* "pyFAI/ext/preproc.pyx":200
+    /* "pyFAI/ext/preproc.pyx":501
  * 
  *     if (mask is None) or (mask is False):
  *         cmask = None             # <<<<<<<<<<<<<<
@@ -3332,7 +7286,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  *         assert mask.size == size, "Mask array size is correct"
  */
     __pyx_t_11 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
-    if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 200; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 501; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cmask = __pyx_t_11;
     __pyx_t_11.memview = NULL;
     __pyx_t_11.data = NULL;
@@ -3340,7 +7294,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   /*else*/ {
 
-    /* "pyFAI/ext/preproc.pyx":202
+    /* "pyFAI/ext/preproc.pyx":503
  *         cmask = None
  *     else:
  *         assert mask.size == size, "Mask array size is correct"             # <<<<<<<<<<<<<<
@@ -3349,35 +7303,35 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
     if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (unlikely(!__pyx_t_8)) {
         PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Mask_array_size_is_correct);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
     }
     #endif
 
-    /* "pyFAI/ext/preproc.pyx":203
+    /* "pyFAI/ext/preproc.pyx":504
  *     else:
  *         assert mask.size == size, "Mask array size is correct"
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)             # <<<<<<<<<<<<<<
  * 
  *     if (dummy is not None) and (delta_dummy is not None):
  */
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_ravel); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_ravel); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_3 = NULL;
     if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_6))) {
@@ -3390,34 +7344,34 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
       }
     }
     if (__pyx_t_3) {
-      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else {
-      __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_6); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_6); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4);
     __Pyx_GIVEREF(__pyx_t_4);
     __pyx_t_4 = 0;
-    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_int8); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_int8); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_6, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_6, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_11 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(__pyx_t_5);
-    if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_v_cmask = __pyx_t_11;
     __pyx_t_11.memview = NULL;
@@ -3425,7 +7379,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   __pyx_L3:;
 
-  /* "pyFAI/ext/preproc.pyx":205
+  /* "pyFAI/ext/preproc.pyx":506
  *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
  * 
  *     if (dummy is not None) and (delta_dummy is not None):             # <<<<<<<<<<<<<<
@@ -3445,7 +7399,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_L7_bool_binop_done:;
   if (__pyx_t_8) {
 
-    /* "pyFAI/ext/preproc.pyx":206
+    /* "pyFAI/ext/preproc.pyx":507
  * 
  *     if (dummy is not None) and (delta_dummy is not None):
  *         check_dummy = True             # <<<<<<<<<<<<<<
@@ -3454,29 +7408,29 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     __pyx_v_check_dummy = 1;
 
-    /* "pyFAI/ext/preproc.pyx":207
+    /* "pyFAI/ext/preproc.pyx":508
  *     if (dummy is not None) and (delta_dummy is not None):
  *         check_dummy = True
  *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
  *         ddummy = float(delta_dummy)
  *     elif (dummy is not None):
  */
-    __pyx_t_12 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_12 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_12 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_12 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 508; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_12;
 
-    /* "pyFAI/ext/preproc.pyx":208
+    /* "pyFAI/ext/preproc.pyx":509
  *         check_dummy = True
  *         cdummy = float(dummy)
  *         ddummy = float(delta_dummy)             # <<<<<<<<<<<<<<
  *     elif (dummy is not None):
  *         check_dummy = True
  */
-    __pyx_t_12 = __Pyx_PyObject_AsDouble(__pyx_v_delta_dummy); if (unlikely(__pyx_t_12 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_12 = __Pyx_PyObject_AsDouble(__pyx_v_delta_dummy); if (unlikely(__pyx_t_12 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 509; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_ddummy = __pyx_t_12;
     goto __pyx_L6;
   }
 
-  /* "pyFAI/ext/preproc.pyx":209
+  /* "pyFAI/ext/preproc.pyx":510
  *         cdummy = float(dummy)
  *         ddummy = float(delta_dummy)
  *     elif (dummy is not None):             # <<<<<<<<<<<<<<
@@ -3487,7 +7441,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_t_9 = (__pyx_t_8 != 0);
   if (__pyx_t_9) {
 
-    /* "pyFAI/ext/preproc.pyx":210
+    /* "pyFAI/ext/preproc.pyx":511
  *         ddummy = float(delta_dummy)
  *     elif (dummy is not None):
  *         check_dummy = True             # <<<<<<<<<<<<<<
@@ -3496,17 +7450,17 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     __pyx_v_check_dummy = 1;
 
-    /* "pyFAI/ext/preproc.pyx":211
+    /* "pyFAI/ext/preproc.pyx":512
  *     elif (dummy is not None):
  *         check_dummy = True
  *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
  *         ddummy = 0.0
  *     else:
  */
-    __pyx_t_12 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_12 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_12 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_12 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 512; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_12;
 
-    /* "pyFAI/ext/preproc.pyx":212
+    /* "pyFAI/ext/preproc.pyx":513
  *         check_dummy = True
  *         cdummy = float(dummy)
  *         ddummy = 0.0             # <<<<<<<<<<<<<<
@@ -3518,7 +7472,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   /*else*/ {
 
-    /* "pyFAI/ext/preproc.pyx":214
+    /* "pyFAI/ext/preproc.pyx":515
  *         ddummy = 0.0
  *     else:
  *         check_dummy = False             # <<<<<<<<<<<<<<
@@ -3527,17 +7481,17 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     __pyx_v_check_dummy = 0;
 
-    /* "pyFAI/ext/preproc.pyx":215
+    /* "pyFAI/ext/preproc.pyx":516
  *     else:
  *         check_dummy = False
  *         cdummy = empty or 0.0             # <<<<<<<<<<<<<<
  *         ddummy = 0.0
  * 
  */
-    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_v_empty); if (unlikely(__pyx_t_9 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_v_empty); if (unlikely(__pyx_t_9 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 516; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     if (!__pyx_t_9) {
     } else {
-      __pyx_t_14 = __pyx_PyFloat_AsFloat(__pyx_v_empty); if (unlikely((__pyx_t_14 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_14 = __pyx_PyFloat_AsFloat(__pyx_v_empty); if (unlikely((__pyx_t_14 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 516; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_t_13 = __pyx_t_14;
       goto __pyx_L9_bool_binop_done;
     }
@@ -3545,7 +7499,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
     __pyx_L9_bool_binop_done:;
     __pyx_v_cdummy = __pyx_t_13;
 
-    /* "pyFAI/ext/preproc.pyx":216
+    /* "pyFAI/ext/preproc.pyx":517
  *         check_dummy = False
  *         cdummy = empty or 0.0
  *         ddummy = 0.0             # <<<<<<<<<<<<<<
@@ -3556,7 +7510,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   __pyx_L6:;
 
-  /* "pyFAI/ext/preproc.pyx":218
+  /* "pyFAI/ext/preproc.pyx":519
  *         ddummy = 0.0
  * 
  *     if dark is not None:             # <<<<<<<<<<<<<<
@@ -3567,7 +7521,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_t_8 = (__pyx_t_9 != 0);
   if (__pyx_t_8) {
 
-    /* "pyFAI/ext/preproc.pyx":219
+    /* "pyFAI/ext/preproc.pyx":520
  * 
  *     if dark is not None:
  *         assert dark.size == size, "Dark array size is correct"             # <<<<<<<<<<<<<<
@@ -3576,35 +7530,35 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
     if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 520; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 520; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_6 = PyObject_RichCompare(__pyx_t_5, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = PyObject_RichCompare(__pyx_t_5, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 520; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 520; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       if (unlikely(!__pyx_t_8)) {
         PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Dark_array_size_is_correct);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 520; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
     }
     #endif
 
-    /* "pyFAI/ext/preproc.pyx":220
+    /* "pyFAI/ext/preproc.pyx":521
  *     if dark is not None:
  *         assert dark.size == size, "Dark array size is correct"
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
  *     else:
  *         cdark = None
  */
-    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s_ravel); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s_ravel); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __pyx_t_1 = NULL;
     if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_5))) {
@@ -3617,34 +7571,34 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
       }
     }
     if (__pyx_t_1) {
-      __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     } else {
-      __pyx_t_6 = __Pyx_PyObject_CallNoArg(__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyObject_CallNoArg(__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_6);
     __Pyx_GIVEREF(__pyx_t_6);
     __pyx_t_6 = 0;
-    __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_float32); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_float32); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_dtype, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_dtype, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_5, __pyx_t_6); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_5, __pyx_t_6); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_3);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_cdark = __pyx_t_7;
     __pyx_t_7.memview = NULL;
@@ -3653,7 +7607,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   /*else*/ {
 
-    /* "pyFAI/ext/preproc.pyx":222
+    /* "pyFAI/ext/preproc.pyx":523
  *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
  *     else:
  *         cdark = None             # <<<<<<<<<<<<<<
@@ -3661,14 +7615,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  *     if flat is not None:
  */
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 523; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdark = __pyx_t_7;
     __pyx_t_7.memview = NULL;
     __pyx_t_7.data = NULL;
   }
   __pyx_L11:;
 
-  /* "pyFAI/ext/preproc.pyx":224
+  /* "pyFAI/ext/preproc.pyx":525
  *         cdark = None
  * 
  *     if flat is not None:             # <<<<<<<<<<<<<<
@@ -3679,7 +7633,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_t_9 = (__pyx_t_8 != 0);
   if (__pyx_t_9) {
 
-    /* "pyFAI/ext/preproc.pyx":225
+    /* "pyFAI/ext/preproc.pyx":526
  * 
  *     if flat is not None:
  *         assert flat.size == size, "Flat array size is correct"             # <<<<<<<<<<<<<<
@@ -3688,35 +7642,35 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
     if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s_size); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s_size); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 526; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_6 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 526; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_5 = PyObject_RichCompare(__pyx_t_3, __pyx_t_6, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = PyObject_RichCompare(__pyx_t_3, __pyx_t_6, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 526; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_9 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_9 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 526; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       if (unlikely(!__pyx_t_9)) {
         PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Flat_array_size_is_correct);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 526; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
     }
     #endif
 
-    /* "pyFAI/ext/preproc.pyx":226
+    /* "pyFAI/ext/preproc.pyx":527
  *     if flat is not None:
  *         assert flat.size == size, "Flat array size is correct"
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
  *     else:
  *         cflat = None
  */
-    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s_ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s_ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_4 = NULL;
     if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_3))) {
@@ -3729,34 +7683,34 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
       }
     }
     if (__pyx_t_4) {
-      __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     } else {
-      __pyx_t_5 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5);
     __Pyx_GIVEREF(__pyx_t_5);
     __pyx_t_5 = 0;
-    __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_float32); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_float32); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_dtype, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_dtype, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_1);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_cflat = __pyx_t_7;
     __pyx_t_7.memview = NULL;
@@ -3765,7 +7719,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   /*else*/ {
 
-    /* "pyFAI/ext/preproc.pyx":228
+    /* "pyFAI/ext/preproc.pyx":529
  *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
  *     else:
  *         cflat = None             # <<<<<<<<<<<<<<
@@ -3773,14 +7727,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  *     if polarization is not None:
  */
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 529; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cflat = __pyx_t_7;
     __pyx_t_7.memview = NULL;
     __pyx_t_7.data = NULL;
   }
   __pyx_L12:;
 
-  /* "pyFAI/ext/preproc.pyx":230
+  /* "pyFAI/ext/preproc.pyx":531
  *         cflat = None
  * 
  *     if polarization is not None:             # <<<<<<<<<<<<<<
@@ -3791,7 +7745,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_t_8 = (__pyx_t_9 != 0);
   if (__pyx_t_8) {
 
-    /* "pyFAI/ext/preproc.pyx":231
+    /* "pyFAI/ext/preproc.pyx":532
  * 
  *     if polarization is not None:
  *         assert polarization.size == size, "Polarization array size is correct"             # <<<<<<<<<<<<<<
@@ -3800,35 +7754,35 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
     if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 532; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 532; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_3 = PyObject_RichCompare(__pyx_t_1, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = PyObject_RichCompare(__pyx_t_1, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 532; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 532; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (unlikely(!__pyx_t_8)) {
         PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Polarization_array_size_is_corre);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 532; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
     }
     #endif
 
-    /* "pyFAI/ext/preproc.pyx":232
+    /* "pyFAI/ext/preproc.pyx":533
  *     if polarization is not None:
  *         assert polarization.size == size, "Polarization array size is correct"
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
  *     else:
  *         cpolarization = None
  */
-    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s_ravel); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s_ravel); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_6 = NULL;
     if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_1))) {
@@ -3841,34 +7795,34 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
       }
     }
     if (__pyx_t_6) {
-      __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_6); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_6); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     } else {
-      __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
     __Pyx_GIVEREF(__pyx_t_3);
     __pyx_t_3 = 0;
-    __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_float32); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_float32); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_1, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_4);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_cpolarization = __pyx_t_7;
     __pyx_t_7.memview = NULL;
@@ -3877,7 +7831,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   /*else*/ {
 
-    /* "pyFAI/ext/preproc.pyx":234
+    /* "pyFAI/ext/preproc.pyx":535
  *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
  *     else:
  *         cpolarization = None             # <<<<<<<<<<<<<<
@@ -3885,14 +7839,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  *     if solidangle is not None:
  */
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 535; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cpolarization = __pyx_t_7;
     __pyx_t_7.memview = NULL;
     __pyx_t_7.data = NULL;
   }
   __pyx_L13:;
 
-  /* "pyFAI/ext/preproc.pyx":236
+  /* "pyFAI/ext/preproc.pyx":537
  *         cpolarization = None
  * 
  *     if solidangle is not None:             # <<<<<<<<<<<<<<
@@ -3903,7 +7857,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_t_9 = (__pyx_t_8 != 0);
   if (__pyx_t_9) {
 
-    /* "pyFAI/ext/preproc.pyx":237
+    /* "pyFAI/ext/preproc.pyx":538
  * 
  *     if solidangle is not None:
  *         assert solidangle.size == size, "Solid angle array size is correct"             # <<<<<<<<<<<<<<
@@ -3912,35 +7866,35 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
     if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_1 = PyObject_RichCompare(__pyx_t_4, __pyx_t_3, Py_EQ); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = PyObject_RichCompare(__pyx_t_4, __pyx_t_3, Py_EQ); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_9 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_9 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       if (unlikely(!__pyx_t_9)) {
         PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Solid_angle_array_size_is_correc);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
     }
     #endif
 
-    /* "pyFAI/ext/preproc.pyx":238
+    /* "pyFAI/ext/preproc.pyx":539
  *     if solidangle is not None:
  *         assert solidangle.size == size, "Solid angle array size is correct"
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
  *     else:
  *         csolidangle = None
  */
-    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s_ravel); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s_ravel); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = NULL;
     if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_4))) {
@@ -3953,34 +7907,34 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
       }
     }
     if (__pyx_t_5) {
-      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     } else {
-      __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1);
     __Pyx_GIVEREF(__pyx_t_1);
     __pyx_t_1 = 0;
-    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_float32); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_float32); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_6);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_v_csolidangle = __pyx_t_7;
     __pyx_t_7.memview = NULL;
@@ -3989,7 +7943,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   /*else*/ {
 
-    /* "pyFAI/ext/preproc.pyx":240
+    /* "pyFAI/ext/preproc.pyx":541
  *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
  *     else:
  *         csolidangle = None             # <<<<<<<<<<<<<<
@@ -3997,14 +7951,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  *     if absorption is not None:
  */
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 541; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_csolidangle = __pyx_t_7;
     __pyx_t_7.memview = NULL;
     __pyx_t_7.data = NULL;
   }
   __pyx_L14:;
 
-  /* "pyFAI/ext/preproc.pyx":242
+  /* "pyFAI/ext/preproc.pyx":543
  *         csolidangle = None
  * 
  *     if absorption is not None:             # <<<<<<<<<<<<<<
@@ -4015,7 +7969,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __pyx_t_8 = (__pyx_t_9 != 0);
   if (__pyx_t_8) {
 
-    /* "pyFAI/ext/preproc.pyx":243
+    /* "pyFAI/ext/preproc.pyx":544
  * 
  *     if absorption is not None:
  *         assert absorption.size == size, "Absorption array size is correct"             # <<<<<<<<<<<<<<
@@ -4024,35 +7978,35 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
     if (unlikely(!Py_OptimizeFlag)) {
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_absorption, __pyx_n_s_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_absorption, __pyx_n_s_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 544; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 544; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 544; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 544; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (unlikely(!__pyx_t_8)) {
         PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Absorption_array_size_is_correct);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 544; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
     }
     #endif
 
-    /* "pyFAI/ext/preproc.pyx":244
+    /* "pyFAI/ext/preproc.pyx":545
  *     if absorption is not None:
  *         assert absorption.size == size, "Absorption array size is correct"
  *         cabsorpt = numpy.ascontiguousarray(absorption.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
  *     else:
  *         cabsorpt = None
  */
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_absorption, __pyx_n_s_ravel); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_absorption, __pyx_n_s_ravel); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_3 = NULL;
     if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_6))) {
@@ -4065,34 +8019,34 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
       }
     }
     if (__pyx_t_3) {
-      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     } else {
-      __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_6); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_6); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4);
     __Pyx_GIVEREF(__pyx_t_4);
     __pyx_t_4 = 0;
-    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_float32); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_float32); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_dtype, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_6, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_6, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_5);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_v_cabsorpt = __pyx_t_7;
     __pyx_t_7.memview = NULL;
@@ -4101,122 +8055,607 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   }
   /*else*/ {
 
-    /* "pyFAI/ext/preproc.pyx":246
+    /* "pyFAI/ext/preproc.pyx":547
  *         cabsorpt = numpy.ascontiguousarray(absorption.ravel(), dtype=numpy.float32)
  *     else:
  *         cabsorpt = None             # <<<<<<<<<<<<<<
  * 
- *     result = c_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ *     if variance is not None:
  */
     __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 547; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cabsorpt = __pyx_t_7;
     __pyx_t_7.memview = NULL;
     __pyx_t_7.data = NULL;
   }
   __pyx_L15:;
 
-  /* "pyFAI/ext/preproc.pyx":248
+  /* "pyFAI/ext/preproc.pyx":549
  *         cabsorpt = None
  * 
- *     result = c_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,             # <<<<<<<<<<<<<<
- *                        cmask, cdummy, ddummy, check_dummy, normalization_factor)
- * 
+ *     if variance is not None:             # <<<<<<<<<<<<<<
+ *         assert variance.size == size, "Variance array size is correct"
+ *         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=numpy.float32)
  */
-  __pyx_t_16.__pyx_n = 10;
-  __pyx_t_16.dark = __pyx_v_cdark;
-  __pyx_t_16.flat = __pyx_v_cflat;
-  __pyx_t_16.solidangle = __pyx_v_csolidangle;
-  __pyx_t_16.polarization = __pyx_v_cpolarization;
-  __pyx_t_16.absorption = __pyx_v_cabsorpt;
-  __pyx_t_16.mask = __pyx_v_cmask;
-  __pyx_t_16.dummy = __pyx_v_cdummy;
-  __pyx_t_16.delta_dummy = __pyx_v_ddummy;
-  __pyx_t_16.check_dummy = __pyx_v_check_dummy;
-  __pyx_t_16.normalization_factor = __pyx_v_normalization_factor;
-  __pyx_t_15 = __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c_preproc(__pyx_v_cdata, &__pyx_t_16); if (unlikely(!__pyx_t_15.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_v_result = __pyx_t_15;
-  __pyx_t_15.memview = NULL;
-  __pyx_t_15.data = NULL;
+  __pyx_t_8 = (__pyx_v_variance != Py_None);
+  __pyx_t_9 = (__pyx_t_8 != 0);
+  if (__pyx_t_9) {
 
-  /* "pyFAI/ext/preproc.pyx":251
- *                        cmask, cdummy, ddummy, check_dummy, normalization_factor)
+    /* "pyFAI/ext/preproc.pyx":550
  * 
- *     return numpy.asarray(result).reshape(data.shape)             # <<<<<<<<<<<<<<
+ *     if variance is not None:
+ *         assert variance.size == size, "Variance array size is correct"             # <<<<<<<<<<<<<<
+ *         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=numpy.float32)
+ *     else:
  */
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_asarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __pyx_memoryview_fromslice(__pyx_v_result, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_3 = NULL;
-  if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_1))) {
-    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_1);
-    if (likely(__pyx_t_3)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
-      __Pyx_INCREF(__pyx_t_3);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_1, function);
+    #ifndef CYTHON_WITHOUT_ASSERTIONS
+    if (unlikely(!Py_OptimizeFlag)) {
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_variance, __pyx_n_s_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 550; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 550; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_6 = PyObject_RichCompare(__pyx_t_5, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 550; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_9 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 550; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      if (unlikely(!__pyx_t_9)) {
+        PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Variance_array_size_is_correct);
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 550; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
     }
-  }
-  if (!__pyx_t_3) {
-    __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_6); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    #endif
+
+    /* "pyFAI/ext/preproc.pyx":551
+ *     if variance is not None:
+ *         assert variance.size == size, "Variance array size is correct"
+ *         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
+ *     else:
+ *         cvariance = None
+ */
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-  } else {
-    __pyx_t_17 = PyTuple_New(1+1); if (unlikely(!__pyx_t_17)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_17);
-    PyTuple_SET_ITEM(__pyx_t_17, 0, __pyx_t_3); __Pyx_GIVEREF(__pyx_t_3); __pyx_t_3 = NULL;
-    PyTuple_SET_ITEM(__pyx_t_17, 0+1, __pyx_t_6);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_variance, __pyx_n_s_ravel); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_1 = NULL;
+    if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_5))) {
+      __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_5);
+      if (likely(__pyx_t_1)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
+        __Pyx_INCREF(__pyx_t_1);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_5, function);
+      }
+    }
+    if (__pyx_t_1) {
+      __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    } else {
+      __pyx_t_6 = __Pyx_PyObject_CallNoArg(__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    }
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_6);
     __Pyx_GIVEREF(__pyx_t_6);
     __pyx_t_6 = 0;
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_17, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
-  }
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_reshape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_data, __pyx_n_s_shape); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_17 = NULL;
-  if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_1))) {
-    __pyx_t_17 = PyMethod_GET_SELF(__pyx_t_1);
-    if (likely(__pyx_t_17)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
-      __Pyx_INCREF(__pyx_t_17);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_1, function);
-    }
-  }
-  if (!__pyx_t_17) {
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_GOTREF(__pyx_t_5);
-  } else {
-    __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
-    PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_17); __Pyx_GIVEREF(__pyx_t_17); __pyx_t_17 = NULL;
-    PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_4);
-    __Pyx_GIVEREF(__pyx_t_4);
-    __pyx_t_4 = 0;
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_6, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_float32); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    if (PyDict_SetItem(__pyx_t_6, __pyx_n_s_dtype, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_5, __pyx_t_6); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_3);
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_v_cvariance = __pyx_t_7;
+    __pyx_t_7.memview = NULL;
+    __pyx_t_7.data = NULL;
+    goto __pyx_L16;
   }
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_r = __pyx_t_5;
-  __pyx_t_5 = 0;
+  /*else*/ {
+
+    /* "pyFAI/ext/preproc.pyx":553
+ *         cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=numpy.float32)
+ *     else:
+ *         cvariance = None             # <<<<<<<<<<<<<<
+ *     if dark_variance is not None:
+ *         assert dark_variance.size == size, "Dark_variance array size is correct"
+ */
+    __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 553; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_v_cvariance = __pyx_t_7;
+    __pyx_t_7.memview = NULL;
+    __pyx_t_7.data = NULL;
+  }
+  __pyx_L16:;
+
+  /* "pyFAI/ext/preproc.pyx":554
+ *     else:
+ *         cvariance = None
+ *     if dark_variance is not None:             # <<<<<<<<<<<<<<
+ *         assert dark_variance.size == size, "Dark_variance array size is correct"
+ *         dvariance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=numpy.float32)
+ */
+  __pyx_t_9 = (__pyx_v_dark_variance != Py_None);
+  __pyx_t_8 = (__pyx_t_9 != 0);
+  if (__pyx_t_8) {
+
+    /* "pyFAI/ext/preproc.pyx":555
+ *         cvariance = None
+ *     if dark_variance is not None:
+ *         assert dark_variance.size == size, "Dark_variance array size is correct"             # <<<<<<<<<<<<<<
+ *         dvariance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=numpy.float32)
+ *     else:
+ */
+    #ifndef CYTHON_WITHOUT_ASSERTIONS
+    if (unlikely(!Py_OptimizeFlag)) {
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark_variance, __pyx_n_s_size); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 555; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_6 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 555; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_5 = PyObject_RichCompare(__pyx_t_3, __pyx_t_6, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 555; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 555; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      if (unlikely(!__pyx_t_8)) {
+        PyErr_SetObject(PyExc_AssertionError, __pyx_kp_s_Dark_variance_array_size_is_corr);
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 555; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
+    }
+    #endif
+
+    /* "pyFAI/ext/preproc.pyx":556
+ *     if dark_variance is not None:
+ *         assert dark_variance.size == size, "Dark_variance array size is correct"
+ *         dvariance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
+ *     else:
+ *         dvariance = None
+ */
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark_variance, __pyx_n_s_ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_4 = NULL;
+    if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_3))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_4);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_3, function);
+      }
+    }
+    if (__pyx_t_4) {
+      __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    } else {
+      __pyx_t_5 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    }
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5);
+    __Pyx_GIVEREF(__pyx_t_5);
+    __pyx_t_5 = 0;
+    __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_float32); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_dtype, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(__pyx_t_1);
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_v_dvariance = __pyx_t_7;
+    __pyx_t_7.memview = NULL;
+    __pyx_t_7.data = NULL;
+    goto __pyx_L17;
+  }
+  /*else*/ {
+
+    /* "pyFAI/ext/preproc.pyx":558
+ *         dvariance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=numpy.float32)
+ *     else:
+ *         dvariance = None             # <<<<<<<<<<<<<<
+ * 
+ *     shape = raw.shape
+ */
+    __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+    if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 558; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_v_dvariance = __pyx_t_7;
+    __pyx_t_7.memview = NULL;
+    __pyx_t_7.data = NULL;
+  }
+  __pyx_L17:;
+
+  /* "pyFAI/ext/preproc.pyx":560
+ *         dvariance = None
+ * 
+ *     shape = raw.shape             # <<<<<<<<<<<<<<
+ *     if split_result or (variance is not None) or poissonian:
+ *         out_shape = list(shape)
+ */
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_raw, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 560; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_v_shape = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "pyFAI/ext/preproc.pyx":561
+ * 
+ *     shape = raw.shape
+ *     if split_result or (variance is not None) or poissonian:             # <<<<<<<<<<<<<<
+ *         out_shape = list(shape)
+ *         split_result = True
+ */
+  __pyx_t_9 = (__pyx_v_split_result != 0);
+  if (!__pyx_t_9) {
+  } else {
+    __pyx_t_8 = __pyx_t_9;
+    goto __pyx_L19_bool_binop_done;
+  }
+  __pyx_t_9 = (__pyx_v_variance != Py_None);
+  __pyx_t_10 = (__pyx_t_9 != 0);
+  if (!__pyx_t_10) {
+  } else {
+    __pyx_t_8 = __pyx_t_10;
+    goto __pyx_L19_bool_binop_done;
+  }
+  __pyx_t_10 = (__pyx_v_poissonian != 0);
+  __pyx_t_8 = __pyx_t_10;
+  __pyx_L19_bool_binop_done:;
+  if (__pyx_t_8) {
+
+    /* "pyFAI/ext/preproc.pyx":562
+ *     shape = raw.shape
+ *     if split_result or (variance is not None) or poissonian:
+ *         out_shape = list(shape)             # <<<<<<<<<<<<<<
+ *         split_result = True
+ *         if (variance is not None):
+ */
+    __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_INCREF(__pyx_v_shape);
+    PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_v_shape);
+    __Pyx_GIVEREF(__pyx_v_shape);
+    __pyx_t_5 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)(&PyList_Type))), __pyx_t_1, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_v_out_shape = ((PyObject*)__pyx_t_5);
+    __pyx_t_5 = 0;
+
+    /* "pyFAI/ext/preproc.pyx":563
+ *     if split_result or (variance is not None) or poissonian:
+ *         out_shape = list(shape)
+ *         split_result = True             # <<<<<<<<<<<<<<
+ *         if (variance is not None):
+ *             out_shape += [3]
+ */
+    __pyx_v_split_result = 1;
+
+    /* "pyFAI/ext/preproc.pyx":564
+ *         out_shape = list(shape)
+ *         split_result = True
+ *         if (variance is not None):             # <<<<<<<<<<<<<<
+ *             out_shape += [3]
+ *             res2 = c3_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ */
+    __pyx_t_8 = (__pyx_v_variance != Py_None);
+    __pyx_t_10 = (__pyx_t_8 != 0);
+    if (__pyx_t_10) {
+
+      /* "pyFAI/ext/preproc.pyx":565
+ *         split_result = True
+ *         if (variance is not None):
+ *             out_shape += [3]             # <<<<<<<<<<<<<<
+ *             res2 = c3_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor, cvariance, dvariance)
+ */
+      __pyx_t_5 = PyList_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 565; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_INCREF(__pyx_int_3);
+      PyList_SET_ITEM(__pyx_t_5, 0, __pyx_int_3);
+      __Pyx_GIVEREF(__pyx_int_3);
+      __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_out_shape, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 565; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF_SET(__pyx_v_out_shape, ((PyObject*)__pyx_t_1));
+      __pyx_t_1 = 0;
+
+      /* "pyFAI/ext/preproc.pyx":566
+ *         if (variance is not None):
+ *             out_shape += [3]
+ *             res2 = c3_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,             # <<<<<<<<<<<<<<
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor, cvariance, dvariance)
+ *         elif poissonian:
+ */
+      __pyx_t_16.__pyx_n = 12;
+      __pyx_t_16.dark = __pyx_v_cdark;
+      __pyx_t_16.flat = __pyx_v_cflat;
+      __pyx_t_16.solidangle = __pyx_v_csolidangle;
+      __pyx_t_16.polarization = __pyx_v_cpolarization;
+      __pyx_t_16.absorption = __pyx_v_cabsorpt;
+      __pyx_t_16.mask = __pyx_v_cmask;
+      __pyx_t_16.dummy = __pyx_v_cdummy;
+      __pyx_t_16.delta_dummy = __pyx_v_ddummy;
+      __pyx_t_16.check_dummy = __pyx_v_check_dummy;
+      __pyx_t_16.normalization_factor = __pyx_v_normalization_factor;
+      __pyx_t_16.variance = __pyx_v_cvariance;
+      __pyx_t_16.dark_variance = __pyx_v_dvariance;
+      __pyx_t_15 = __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c3_preproc(__pyx_v_cdata, &__pyx_t_16); if (unlikely(!__pyx_t_15.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 566; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_v_res2 = __pyx_t_15;
+      __pyx_t_15.memview = NULL;
+      __pyx_t_15.data = NULL;
+      goto __pyx_L22;
+    }
+
+    /* "pyFAI/ext/preproc.pyx":568
+ *             res2 = c3_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor, cvariance, dvariance)
+ *         elif poissonian:             # <<<<<<<<<<<<<<
+ *             out_shape += [3]
+ *             res2 = cp_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ */
+    __pyx_t_10 = (__pyx_v_poissonian != 0);
+    if (__pyx_t_10) {
+
+      /* "pyFAI/ext/preproc.pyx":569
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor, cvariance, dvariance)
+ *         elif poissonian:
+ *             out_shape += [3]             # <<<<<<<<<<<<<<
+ *             res2 = cp_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ */
+      __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 569; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_INCREF(__pyx_int_3);
+      PyList_SET_ITEM(__pyx_t_1, 0, __pyx_int_3);
+      __Pyx_GIVEREF(__pyx_int_3);
+      __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_v_out_shape, __pyx_t_1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 569; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_DECREF_SET(__pyx_v_out_shape, ((PyObject*)__pyx_t_5));
+      __pyx_t_5 = 0;
+
+      /* "pyFAI/ext/preproc.pyx":570
+ *         elif poissonian:
+ *             out_shape += [3]
+ *             res2 = cp_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,             # <<<<<<<<<<<<<<
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         else:
+ */
+      __pyx_t_18.__pyx_n = 10;
+      __pyx_t_18.dark = __pyx_v_cdark;
+      __pyx_t_18.flat = __pyx_v_cflat;
+      __pyx_t_18.solidangle = __pyx_v_csolidangle;
+      __pyx_t_18.polarization = __pyx_v_cpolarization;
+      __pyx_t_18.absorption = __pyx_v_cabsorpt;
+      __pyx_t_18.mask = __pyx_v_cmask;
+      __pyx_t_18.dummy = __pyx_v_cdummy;
+      __pyx_t_18.delta_dummy = __pyx_v_ddummy;
+      __pyx_t_18.check_dummy = __pyx_v_check_dummy;
+      __pyx_t_18.normalization_factor = __pyx_v_normalization_factor;
+      __pyx_t_17 = __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_cp_preproc(__pyx_v_cdata, &__pyx_t_18); if (unlikely(!__pyx_t_17.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 570; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_v_res2 = __pyx_t_17;
+      __pyx_t_17.memview = NULL;
+      __pyx_t_17.data = NULL;
+      goto __pyx_L22;
+    }
+    /*else*/ {
+
+      /* "pyFAI/ext/preproc.pyx":573
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         else:
+ *             out_shape += [2]             # <<<<<<<<<<<<<<
+ *             res2 = c2_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ */
+      __pyx_t_5 = PyList_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 573; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_INCREF(__pyx_int_2);
+      PyList_SET_ITEM(__pyx_t_5, 0, __pyx_int_2);
+      __Pyx_GIVEREF(__pyx_int_2);
+      __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_out_shape, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 573; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF_SET(__pyx_v_out_shape, ((PyObject*)__pyx_t_1));
+      __pyx_t_1 = 0;
+
+      /* "pyFAI/ext/preproc.pyx":574
+ *         else:
+ *             out_shape += [2]
+ *             res2 = c2_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,             # <<<<<<<<<<<<<<
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         res = numpy.asarray(res2)
+ */
+      __pyx_t_20.__pyx_n = 10;
+      __pyx_t_20.dark = __pyx_v_cdark;
+      __pyx_t_20.flat = __pyx_v_cflat;
+      __pyx_t_20.solidangle = __pyx_v_csolidangle;
+      __pyx_t_20.polarization = __pyx_v_cpolarization;
+      __pyx_t_20.absorption = __pyx_v_cabsorpt;
+      __pyx_t_20.mask = __pyx_v_cmask;
+      __pyx_t_20.dummy = __pyx_v_cdummy;
+      __pyx_t_20.delta_dummy = __pyx_v_ddummy;
+      __pyx_t_20.check_dummy = __pyx_v_check_dummy;
+      __pyx_t_20.normalization_factor = __pyx_v_normalization_factor;
+      __pyx_t_19 = __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c2_preproc(__pyx_v_cdata, &__pyx_t_20); if (unlikely(!__pyx_t_19.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 574; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_v_res2 = __pyx_t_19;
+      __pyx_t_19.memview = NULL;
+      __pyx_t_19.data = NULL;
+    }
+    __pyx_L22:;
+
+    /* "pyFAI/ext/preproc.pyx":576
+ *             res2 = c2_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         res = numpy.asarray(res2)             # <<<<<<<<<<<<<<
+ *         res.shape = out_shape
+ *     else:
+ */
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 576; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_asarray); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 576; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __pyx_memoryview_fromslice(__pyx_v_res2, 2, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 576; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = NULL;
+    if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
+      __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_3);
+      if (likely(__pyx_t_6)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_6);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_3, function);
+      }
+    }
+    if (!__pyx_t_6) {
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 576; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else {
+      __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 576; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_4);
+      PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_6); __Pyx_GIVEREF(__pyx_t_6); __pyx_t_6 = NULL;
+      PyTuple_SET_ITEM(__pyx_t_4, 0+1, __pyx_t_5);
+      __Pyx_GIVEREF(__pyx_t_5);
+      __pyx_t_5 = 0;
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 576; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_v_res = __pyx_t_1;
+    __pyx_t_1 = 0;
+
+    /* "pyFAI/ext/preproc.pyx":577
+ *                               cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         res = numpy.asarray(res2)
+ *         res.shape = out_shape             # <<<<<<<<<<<<<<
+ *     else:
+ *         res1 = c1_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ */
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_res, __pyx_n_s_shape, __pyx_v_out_shape) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 577; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    goto __pyx_L18;
+  }
+  /*else*/ {
+
+    /* "pyFAI/ext/preproc.pyx":579
+ *         res.shape = out_shape
+ *     else:
+ *         res1 = c1_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,             # <<<<<<<<<<<<<<
+ *                           cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         res = numpy.asarray(res1)
+ */
+    __pyx_t_22.__pyx_n = 10;
+    __pyx_t_22.dark = __pyx_v_cdark;
+    __pyx_t_22.flat = __pyx_v_cflat;
+    __pyx_t_22.solidangle = __pyx_v_csolidangle;
+    __pyx_t_22.polarization = __pyx_v_cpolarization;
+    __pyx_t_22.absorption = __pyx_v_cabsorpt;
+    __pyx_t_22.mask = __pyx_v_cmask;
+    __pyx_t_22.dummy = __pyx_v_cdummy;
+    __pyx_t_22.delta_dummy = __pyx_v_ddummy;
+    __pyx_t_22.check_dummy = __pyx_v_check_dummy;
+    __pyx_t_22.normalization_factor = __pyx_v_normalization_factor;
+    __pyx_t_21 = __pyx_fuse_0_4__pyx_f_5pyFAI_3ext_7preproc_c1_preproc(__pyx_v_cdata, &__pyx_t_22); if (unlikely(!__pyx_t_21.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 579; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_v_res1 = __pyx_t_21;
+    __pyx_t_21.memview = NULL;
+    __pyx_t_21.data = NULL;
+
+    /* "pyFAI/ext/preproc.pyx":581
+ *         res1 = c1_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
+ *                           cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         res = numpy.asarray(res1)             # <<<<<<<<<<<<<<
+ *         res.shape = shape
+ *     return res
+ */
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 581; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_asarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 581; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_res1, 1, (PyObject *(*)(char *)) __pyx_memview_get_float, (int (*)(char *, PyObject *)) __pyx_memview_set_float, 0);; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 581; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = NULL;
+    if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
+      __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+      if (likely(__pyx_t_5)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+        __Pyx_INCREF(__pyx_t_5);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_4, function);
+      }
+    }
+    if (!__pyx_t_5) {
+      __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 581; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_GOTREF(__pyx_t_1);
+    } else {
+      __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 581; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __Pyx_GIVEREF(__pyx_t_5); __pyx_t_5 = NULL;
+      PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
+      __Pyx_GIVEREF(__pyx_t_3);
+      __pyx_t_3 = 0;
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 581; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_v_res = __pyx_t_1;
+    __pyx_t_1 = 0;
+
+    /* "pyFAI/ext/preproc.pyx":582
+ *                           cmask, cdummy, ddummy, check_dummy, normalization_factor)
+ *         res = numpy.asarray(res1)
+ *         res.shape = shape             # <<<<<<<<<<<<<<
+ *     return res
+ */
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_res, __pyx_n_s_shape, __pyx_v_shape) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 582; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_L18:;
+
+  /* "pyFAI/ext/preproc.pyx":583
+ *         res = numpy.asarray(res1)
+ *         res.shape = shape
+ *     return res             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(__pyx_v_res);
+  __pyx_r = __pyx_v_res;
   goto __pyx_L0;
 
-  /* "pyFAI/ext/preproc.pyx":156
+  /* "pyFAI/ext/preproc.pyx":450
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * def preproc(data,             # <<<<<<<<<<<<<<
+ * def preproc(raw,             # <<<<<<<<<<<<<<
  *             dark=None,
  *             flat=None,
  */
@@ -4231,7 +8670,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __PYX_XDEC_MEMVIEW(&__pyx_t_7, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_11, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_15, 1);
-  __Pyx_XDECREF(__pyx_t_17);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_17, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_19, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_21, 1);
   __Pyx_AddTraceback("pyFAI.ext.preproc.preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
@@ -4242,7 +8683,13 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7preproc_preproc(CYTHON_UNUSED PyObject *_
   __PYX_XDEC_MEMVIEW(&__pyx_v_csolidangle, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_v_cpolarization, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_v_cabsorpt, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_result, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_cvariance, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_dvariance, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_res1, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_res2, 1);
+  __Pyx_XDECREF(__pyx_v_shape);
+  __Pyx_XDECREF(__pyx_v_out_shape);
+  __Pyx_XDECREF(__pyx_v_res);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -4404,7 +8851,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  */
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__11, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__43, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -4444,7 +8891,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  * 
  *             info.buf = PyArray_DATA(self)
  */
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__12, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__44, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -4721,7 +9168,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  */
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__45, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_Raise(__pyx_t_3, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -5529,7 +9976,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  */
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_RuntimeError, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_RuntimeError, __pyx_tuple__46, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_Raise(__pyx_t_3, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -5581,7 +10028,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  *             # One could encode it in the format string and have Cython
  *             # complain instead, BUT: < and > in format strings also imply
  */
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__15, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__47, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_Raise(__pyx_t_3, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -5682,7 +10129,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  */
-        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_RuntimeError, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_RuntimeError, __pyx_tuple__48, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_Raise(__pyx_t_4, 0, 0, 0);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -6437,7 +10884,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  *         if itemsize <= 0:
  */
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__17, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__49, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -6461,7 +10908,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  *         if isinstance(format, unicode):
  */
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__18, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__50, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -6559,7 +11006,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  * 
  */
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_MemoryError, __pyx_tuple__19, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_MemoryError, __pyx_tuple__51, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -6810,7 +11257,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  *             if self.dtype_is_object:
  */
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_MemoryError, __pyx_tuple__20, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_MemoryError, __pyx_tuple__52, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_Raise(__pyx_t_3, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -7028,7 +11475,7 @@ static int __pyx_array_getbuffer_MemoryView_5array_2__getbuffer__(struct __pyx_a
  *         info.buf = self.data
  *         info.len = self.len
  */
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__21, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__53, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -9621,7 +14068,7 @@ static PyObject *__pyx_memoryview_convert_item_to_object(struct __pyx_memoryview
  *         else:
  *             if len(self.view.format) == 1:
  */
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__22, NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 445; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__54, NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 445; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_Raise(__pyx_t_6, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -10400,7 +14847,7 @@ static PyObject *__pyx_memoryview_get_strides_MemoryView_10memoryview_7strides__
  * 
  *             return tuple([self.view.strides[i] for i in xrange(self.view.ndim)])
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__23, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__55, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -11863,9 +16310,9 @@ static PyObject *_unellipsify(PyObject *__pyx_v_index, int __pyx_v_ndim) {
         __Pyx_GOTREF(__pyx_t_7);
         { Py_ssize_t __pyx_temp;
           for (__pyx_temp=0; __pyx_temp < ((__pyx_v_ndim - __pyx_t_8) + 1); __pyx_temp++) {
-            __Pyx_INCREF(__pyx_slice__24);
-            PyList_SET_ITEM(__pyx_t_7, __pyx_temp, __pyx_slice__24);
-            __Pyx_GIVEREF(__pyx_slice__24);
+            __Pyx_INCREF(__pyx_slice__56);
+            PyList_SET_ITEM(__pyx_t_7, __pyx_temp, __pyx_slice__56);
+            __Pyx_GIVEREF(__pyx_slice__56);
           }
         }
         __pyx_t_9 = __Pyx_PyList_Extend(__pyx_v_result, __pyx_t_7); if (unlikely(__pyx_t_9 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 638; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -11890,7 +16337,7 @@ static PyObject *_unellipsify(PyObject *__pyx_v_index, int __pyx_v_ndim) {
  *             have_slices = True
  *         else:
  */
-        __pyx_t_9 = __Pyx_PyList_Append(__pyx_v_result, __pyx_slice__25); if (unlikely(__pyx_t_9 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 641; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_9 = __Pyx_PyList_Append(__pyx_v_result, __pyx_slice__57); if (unlikely(__pyx_t_9 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 641; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __pyx_L7:;
 
@@ -12019,9 +16466,9 @@ static PyObject *_unellipsify(PyObject *__pyx_v_index, int __pyx_v_ndim) {
     __Pyx_GOTREF(__pyx_t_3);
     { Py_ssize_t __pyx_temp;
       for (__pyx_temp=0; __pyx_temp < __pyx_v_nslices; __pyx_temp++) {
-        __Pyx_INCREF(__pyx_slice__26);
-        PyList_SET_ITEM(__pyx_t_3, __pyx_temp, __pyx_slice__26);
-        __Pyx_GIVEREF(__pyx_slice__26);
+        __Pyx_INCREF(__pyx_slice__58);
+        PyList_SET_ITEM(__pyx_t_3, __pyx_temp, __pyx_slice__58);
+        __Pyx_GIVEREF(__pyx_slice__58);
       }
     }
     __pyx_t_9 = __Pyx_PyList_Extend(__pyx_v_result, __pyx_t_3); if (unlikely(__pyx_t_9 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 652; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -12140,7 +16587,7 @@ static PyObject *assert_direct_dimensions(Py_ssize_t *__pyx_v_suboffsets, int __
  * 
  * 
  */
-      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__27, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 660; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__59, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 660; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_Raise(__pyx_t_4, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -17558,13 +22005,14 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_01_12_2016, __pyx_k_01_12_2016, sizeof(__pyx_k_01_12_2016), 0, 0, 1, 0},
-  {&__pyx_kp_s_2011_2015_ESRF, __pyx_k_2011_2015_ESRF, sizeof(__pyx_k_2011_2015_ESRF), 0, 0, 1, 0},
+  {&__pyx_kp_s_2011_2017_ESRF, __pyx_k_2011_2017_ESRF, sizeof(__pyx_k_2011_2017_ESRF), 0, 0, 1, 0},
+  {&__pyx_kp_s_25_04_2017, __pyx_k_25_04_2017, sizeof(__pyx_k_25_04_2017), 0, 0, 1, 0},
   {&__pyx_kp_s_Absorption_array_size_is_correct, __pyx_k_Absorption_array_size_is_correct, sizeof(__pyx_k_Absorption_array_size_is_correct), 0, 0, 1, 0},
   {&__pyx_kp_s_Buffer_view_does_not_expose_stri, __pyx_k_Buffer_view_does_not_expose_stri, sizeof(__pyx_k_Buffer_view_does_not_expose_stri), 0, 0, 1, 0},
   {&__pyx_kp_s_Can_only_create_a_buffer_that_is, __pyx_k_Can_only_create_a_buffer_that_is, sizeof(__pyx_k_Can_only_create_a_buffer_that_is), 0, 0, 1, 0},
   {&__pyx_kp_s_Cannot_index_with_type_s, __pyx_k_Cannot_index_with_type_s, sizeof(__pyx_k_Cannot_index_with_type_s), 0, 0, 1, 0},
   {&__pyx_kp_s_Dark_array_size_is_correct, __pyx_k_Dark_array_size_is_correct, sizeof(__pyx_k_Dark_array_size_is_correct), 0, 0, 1, 0},
+  {&__pyx_kp_s_Dark_variance_array_size_is_corr, __pyx_k_Dark_variance_array_size_is_corr, sizeof(__pyx_k_Dark_variance_array_size_is_corr), 0, 0, 1, 0},
   {&__pyx_n_s_Ellipsis, __pyx_k_Ellipsis, sizeof(__pyx_k_Ellipsis), 0, 0, 1, 1},
   {&__pyx_kp_s_Empty_shape_tuple_for_cython_arr, __pyx_k_Empty_shape_tuple_for_cython_arr, sizeof(__pyx_k_Empty_shape_tuple_for_cython_arr), 0, 0, 1, 0},
   {&__pyx_kp_s_Flat_array_size_is_correct, __pyx_k_Flat_array_size_is_correct, sizeof(__pyx_k_Flat_array_size_is_correct), 0, 0, 1, 0},
@@ -17589,6 +22037,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_TypeError, __pyx_k_TypeError, sizeof(__pyx_k_TypeError), 0, 0, 1, 1},
   {&__pyx_kp_s_Unable_to_convert_item_to_object, __pyx_k_Unable_to_convert_item_to_object, sizeof(__pyx_k_Unable_to_convert_item_to_object), 0, 0, 1, 0},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
+  {&__pyx_kp_s_Variance_array_size_is_correct, __pyx_k_Variance_array_size_is_correct, sizeof(__pyx_k_Variance_array_size_is_correct), 0, 0, 1, 0},
   {&__pyx_n_s_absorption, __pyx_k_absorption, sizeof(__pyx_k_absorption), 0, 0, 1, 1},
   {&__pyx_n_s_allocate_buffer, __pyx_k_allocate_buffer, sizeof(__pyx_k_allocate_buffer), 0, 0, 1, 1},
   {&__pyx_n_s_asarray, __pyx_k_asarray, sizeof(__pyx_k_asarray), 0, 0, 1, 1},
@@ -17611,14 +22060,16 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_copyright, __pyx_k_copyright, sizeof(__pyx_k_copyright), 0, 0, 1, 1},
   {&__pyx_n_s_cpolarization, __pyx_k_cpolarization, sizeof(__pyx_k_cpolarization), 0, 0, 1, 1},
   {&__pyx_n_s_csolidangle, __pyx_k_csolidangle, sizeof(__pyx_k_csolidangle), 0, 0, 1, 1},
+  {&__pyx_n_s_cvariance, __pyx_k_cvariance, sizeof(__pyx_k_cvariance), 0, 0, 1, 1},
   {&__pyx_n_s_dark, __pyx_k_dark, sizeof(__pyx_k_dark), 0, 0, 1, 1},
-  {&__pyx_n_s_data, __pyx_k_data, sizeof(__pyx_k_data), 0, 0, 1, 1},
+  {&__pyx_n_s_dark_variance, __pyx_k_dark_variance, sizeof(__pyx_k_dark_variance), 0, 0, 1, 1},
   {&__pyx_n_s_date, __pyx_k_date, sizeof(__pyx_k_date), 0, 0, 1, 1},
   {&__pyx_n_s_ddummy, __pyx_k_ddummy, sizeof(__pyx_k_ddummy), 0, 0, 1, 1},
   {&__pyx_n_s_delta_dummy, __pyx_k_delta_dummy, sizeof(__pyx_k_delta_dummy), 0, 0, 1, 1},
   {&__pyx_n_s_dtype, __pyx_k_dtype, sizeof(__pyx_k_dtype), 0, 0, 1, 1},
   {&__pyx_n_s_dtype_is_object, __pyx_k_dtype_is_object, sizeof(__pyx_k_dtype_is_object), 0, 0, 1, 1},
   {&__pyx_n_s_dummy, __pyx_k_dummy, sizeof(__pyx_k_dummy), 0, 0, 1, 1},
+  {&__pyx_n_s_dvariance, __pyx_k_dvariance, sizeof(__pyx_k_dvariance), 0, 0, 1, 1},
   {&__pyx_n_s_empty, __pyx_k_empty, sizeof(__pyx_k_empty), 0, 0, 1, 1},
   {&__pyx_n_s_enumerate, __pyx_k_enumerate, sizeof(__pyx_k_enumerate), 0, 0, 1, 1},
   {&__pyx_n_s_error, __pyx_k_error, sizeof(__pyx_k_error), 0, 0, 1, 1},
@@ -17648,7 +22099,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_normalization_factor, __pyx_k_normalization_factor, sizeof(__pyx_k_normalization_factor), 0, 0, 1, 1},
   {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
   {&__pyx_n_s_obj, __pyx_k_obj, sizeof(__pyx_k_obj), 0, 0, 1, 1},
+  {&__pyx_n_s_out_shape, __pyx_k_out_shape, sizeof(__pyx_k_out_shape), 0, 0, 1, 1},
   {&__pyx_n_s_pack, __pyx_k_pack, sizeof(__pyx_k_pack), 0, 0, 1, 1},
+  {&__pyx_n_s_poissonian, __pyx_k_poissonian, sizeof(__pyx_k_poissonian), 0, 0, 1, 1},
   {&__pyx_n_s_polarization, __pyx_k_polarization, sizeof(__pyx_k_polarization), 0, 0, 1, 1},
   {&__pyx_n_s_preproc, __pyx_k_preproc, sizeof(__pyx_k_preproc), 0, 0, 1, 1},
   {&__pyx_n_s_pyFAI_ext_preproc, __pyx_k_pyFAI_ext_preproc, sizeof(__pyx_k_pyFAI_ext_preproc), 0, 0, 1, 1},
@@ -17656,11 +22109,14 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_pyx_vtable, __pyx_k_pyx_vtable, sizeof(__pyx_k_pyx_vtable), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_ravel, __pyx_k_ravel, sizeof(__pyx_k_ravel), 0, 0, 1, 1},
-  {&__pyx_n_s_reshape, __pyx_k_reshape, sizeof(__pyx_k_reshape), 0, 0, 1, 1},
-  {&__pyx_n_s_result, __pyx_k_result, sizeof(__pyx_k_result), 0, 0, 1, 1},
+  {&__pyx_n_s_raw, __pyx_k_raw, sizeof(__pyx_k_raw), 0, 0, 1, 1},
+  {&__pyx_n_s_res, __pyx_k_res, sizeof(__pyx_k_res), 0, 0, 1, 1},
+  {&__pyx_n_s_res1, __pyx_k_res1, sizeof(__pyx_k_res1), 0, 0, 1, 1},
+  {&__pyx_n_s_res2, __pyx_k_res2, sizeof(__pyx_k_res2), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_solidangle, __pyx_k_solidangle, sizeof(__pyx_k_solidangle), 0, 0, 1, 1},
+  {&__pyx_n_s_split_result, __pyx_k_split_result, sizeof(__pyx_k_split_result), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
   {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -17674,7 +22130,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_unpack, __pyx_k_unpack, sizeof(__pyx_k_unpack), 0, 0, 1, 1},
   {&__pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_k_users_kieffer_workspace_400_pyF, sizeof(__pyx_k_users_kieffer_workspace_400_pyF), 0, 0, 1, 0},
+  {&__pyx_n_s_variance, __pyx_k_variance, sizeof(__pyx_k_variance), 0, 0, 1, 1},
   {&__pyx_n_s_xrange, __pyx_k_xrange, sizeof(__pyx_k_xrange), 0, 0, 1, 1},
+  {&__pyx_n_s_zeros, __pyx_k_zeros, sizeof(__pyx_k_zeros), 0, 0, 1, 1},
   {&__pyx_n_s_zeros_like, __pyx_k_zeros_like, sizeof(__pyx_k_zeros_like), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
@@ -17709,9 +22167,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  */
-  __pyx_tuple__11 = PyTuple_Pack(1, __pyx_kp_u_ndarray_is_not_C_contiguous); if (unlikely(!__pyx_tuple__11)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__11);
-  __Pyx_GIVEREF(__pyx_tuple__11);
+  __pyx_tuple__43 = PyTuple_Pack(1, __pyx_kp_u_ndarray_is_not_C_contiguous); if (unlikely(!__pyx_tuple__43)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__43);
+  __Pyx_GIVEREF(__pyx_tuple__43);
 
   /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
@@ -17720,9 +22178,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             info.buf = PyArray_DATA(self)
  */
-  __pyx_tuple__12 = PyTuple_Pack(1, __pyx_kp_u_ndarray_is_not_Fortran_contiguou); if (unlikely(!__pyx_tuple__12)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__12);
-  __Pyx_GIVEREF(__pyx_tuple__12);
+  __pyx_tuple__44 = PyTuple_Pack(1, __pyx_kp_u_ndarray_is_not_Fortran_contiguou); if (unlikely(!__pyx_tuple__44)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__44);
+  __Pyx_GIVEREF(__pyx_tuple__44);
 
   /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
@@ -17731,9 +22189,9 @@ static int __Pyx_InitCachedConstants(void) {
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  */
-  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_kp_u_Non_native_byte_order_not_suppor); if (unlikely(!__pyx_tuple__13)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__13);
-  __Pyx_GIVEREF(__pyx_tuple__13);
+  __pyx_tuple__45 = PyTuple_Pack(1, __pyx_kp_u_Non_native_byte_order_not_suppor); if (unlikely(!__pyx_tuple__45)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__45);
+  __Pyx_GIVEREF(__pyx_tuple__45);
 
   /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
@@ -17742,9 +22200,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  */
-  __pyx_tuple__14 = PyTuple_Pack(1, __pyx_kp_u_Format_string_allocated_too_shor); if (unlikely(!__pyx_tuple__14)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__14);
-  __Pyx_GIVEREF(__pyx_tuple__14);
+  __pyx_tuple__46 = PyTuple_Pack(1, __pyx_kp_u_Format_string_allocated_too_shor); if (unlikely(!__pyx_tuple__46)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__46);
+  __Pyx_GIVEREF(__pyx_tuple__46);
 
   /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
@@ -17753,9 +22211,9 @@ static int __Pyx_InitCachedConstants(void) {
  *             # One could encode it in the format string and have Cython
  *             # complain instead, BUT: < and > in format strings also imply
  */
-  __pyx_tuple__15 = PyTuple_Pack(1, __pyx_kp_u_Non_native_byte_order_not_suppor); if (unlikely(!__pyx_tuple__15)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__15);
-  __Pyx_GIVEREF(__pyx_tuple__15);
+  __pyx_tuple__47 = PyTuple_Pack(1, __pyx_kp_u_Non_native_byte_order_not_suppor); if (unlikely(!__pyx_tuple__47)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__47);
+  __Pyx_GIVEREF(__pyx_tuple__47);
 
   /* "../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
@@ -17764,9 +22222,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  */
-  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_kp_u_Format_string_allocated_too_shor_2); if (unlikely(!__pyx_tuple__16)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__16);
-  __Pyx_GIVEREF(__pyx_tuple__16);
+  __pyx_tuple__48 = PyTuple_Pack(1, __pyx_kp_u_Format_string_allocated_too_shor_2); if (unlikely(!__pyx_tuple__48)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__48);
+  __Pyx_GIVEREF(__pyx_tuple__48);
 
   /* "View.MemoryView":127
  * 
@@ -17775,9 +22233,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *         if itemsize <= 0:
  */
-  __pyx_tuple__17 = PyTuple_Pack(1, __pyx_kp_s_Empty_shape_tuple_for_cython_arr); if (unlikely(!__pyx_tuple__17)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__17);
-  __Pyx_GIVEREF(__pyx_tuple__17);
+  __pyx_tuple__49 = PyTuple_Pack(1, __pyx_kp_s_Empty_shape_tuple_for_cython_arr); if (unlikely(!__pyx_tuple__49)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__49);
+  __Pyx_GIVEREF(__pyx_tuple__49);
 
   /* "View.MemoryView":130
  * 
@@ -17786,9 +22244,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *         if isinstance(format, unicode):
  */
-  __pyx_tuple__18 = PyTuple_Pack(1, __pyx_kp_s_itemsize_0_for_cython_array); if (unlikely(!__pyx_tuple__18)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__18);
-  __Pyx_GIVEREF(__pyx_tuple__18);
+  __pyx_tuple__50 = PyTuple_Pack(1, __pyx_kp_s_itemsize_0_for_cython_array); if (unlikely(!__pyx_tuple__50)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__50);
+  __Pyx_GIVEREF(__pyx_tuple__50);
 
   /* "View.MemoryView":142
  * 
@@ -17797,9 +22255,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__19 = PyTuple_Pack(1, __pyx_kp_s_unable_to_allocate_shape_and_str); if (unlikely(!__pyx_tuple__19)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__19);
-  __Pyx_GIVEREF(__pyx_tuple__19);
+  __pyx_tuple__51 = PyTuple_Pack(1, __pyx_kp_s_unable_to_allocate_shape_and_str); if (unlikely(!__pyx_tuple__51)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__51);
+  __Pyx_GIVEREF(__pyx_tuple__51);
 
   /* "View.MemoryView":170
  *             self.data = <char *>malloc(self.len)
@@ -17808,9 +22266,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             if self.dtype_is_object:
  */
-  __pyx_tuple__20 = PyTuple_Pack(1, __pyx_kp_s_unable_to_allocate_array_data); if (unlikely(!__pyx_tuple__20)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__20);
-  __Pyx_GIVEREF(__pyx_tuple__20);
+  __pyx_tuple__52 = PyTuple_Pack(1, __pyx_kp_s_unable_to_allocate_array_data); if (unlikely(!__pyx_tuple__52)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__52);
+  __Pyx_GIVEREF(__pyx_tuple__52);
 
   /* "View.MemoryView":186
  *             bufmode = PyBUF_F_CONTIGUOUS | PyBUF_ANY_CONTIGUOUS
@@ -17819,9 +22277,9 @@ static int __Pyx_InitCachedConstants(void) {
  *         info.buf = self.data
  *         info.len = self.len
  */
-  __pyx_tuple__21 = PyTuple_Pack(1, __pyx_kp_s_Can_only_create_a_buffer_that_is); if (unlikely(!__pyx_tuple__21)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__21);
-  __Pyx_GIVEREF(__pyx_tuple__21);
+  __pyx_tuple__53 = PyTuple_Pack(1, __pyx_kp_s_Can_only_create_a_buffer_that_is); if (unlikely(!__pyx_tuple__53)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__53);
+  __Pyx_GIVEREF(__pyx_tuple__53);
 
   /* "View.MemoryView":445
  *             result = struct.unpack(self.view.format, bytesitem)
@@ -17830,9 +22288,9 @@ static int __Pyx_InitCachedConstants(void) {
  *         else:
  *             if len(self.view.format) == 1:
  */
-  __pyx_tuple__22 = PyTuple_Pack(1, __pyx_kp_s_Unable_to_convert_item_to_object); if (unlikely(!__pyx_tuple__22)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 445; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__22);
-  __Pyx_GIVEREF(__pyx_tuple__22);
+  __pyx_tuple__54 = PyTuple_Pack(1, __pyx_kp_s_Unable_to_convert_item_to_object); if (unlikely(!__pyx_tuple__54)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 445; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__54);
+  __Pyx_GIVEREF(__pyx_tuple__54);
 
   /* "View.MemoryView":521
  *             if self.view.strides == NULL:
@@ -17841,9 +22299,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             return tuple([self.view.strides[i] for i in xrange(self.view.ndim)])
  */
-  __pyx_tuple__23 = PyTuple_Pack(1, __pyx_kp_s_Buffer_view_does_not_expose_stri); if (unlikely(!__pyx_tuple__23)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__23);
-  __Pyx_GIVEREF(__pyx_tuple__23);
+  __pyx_tuple__55 = PyTuple_Pack(1, __pyx_kp_s_Buffer_view_does_not_expose_stri); if (unlikely(!__pyx_tuple__55)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__55);
+  __Pyx_GIVEREF(__pyx_tuple__55);
 
   /* "View.MemoryView":638
  *         if item is Ellipsis:
@@ -17852,9 +22310,9 @@ static int __Pyx_InitCachedConstants(void) {
  *                 seen_ellipsis = True
  *             else:
  */
-  __pyx_slice__24 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__24)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 638; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_slice__24);
-  __Pyx_GIVEREF(__pyx_slice__24);
+  __pyx_slice__56 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__56)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 638; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_slice__56);
+  __Pyx_GIVEREF(__pyx_slice__56);
 
   /* "View.MemoryView":641
  *                 seen_ellipsis = True
@@ -17863,9 +22321,9 @@ static int __Pyx_InitCachedConstants(void) {
  *             have_slices = True
  *         else:
  */
-  __pyx_slice__25 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__25)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 641; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_slice__25);
-  __Pyx_GIVEREF(__pyx_slice__25);
+  __pyx_slice__57 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__57)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 641; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_slice__57);
+  __Pyx_GIVEREF(__pyx_slice__57);
 
   /* "View.MemoryView":652
  *     nslices = ndim - len(result)
@@ -17874,9 +22332,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *     return have_slices or nslices, tuple(result)
  */
-  __pyx_slice__26 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__26)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 652; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_slice__26);
-  __Pyx_GIVEREF(__pyx_slice__26);
+  __pyx_slice__58 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__58)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 652; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_slice__58);
+  __Pyx_GIVEREF(__pyx_slice__58);
 
   /* "View.MemoryView":660
  *     for i in range(ndim):
@@ -17885,21 +22343,21 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__27 = PyTuple_Pack(1, __pyx_kp_s_Indirect_dimensions_not_supporte); if (unlikely(!__pyx_tuple__27)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 660; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__27);
-  __Pyx_GIVEREF(__pyx_tuple__27);
+  __pyx_tuple__59 = PyTuple_Pack(1, __pyx_kp_s_Indirect_dimensions_not_supporte); if (unlikely(!__pyx_tuple__59)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 660; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__59);
+  __Pyx_GIVEREF(__pyx_tuple__59);
 
-  /* "pyFAI/ext/preproc.pyx":156
+  /* "pyFAI/ext/preproc.pyx":450
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * def preproc(data,             # <<<<<<<<<<<<<<
+ * def preproc(raw,             # <<<<<<<<<<<<<<
  *             dark=None,
  *             flat=None,
  */
-  __pyx_tuple__178 = PyTuple_Pack(23, __pyx_n_s_data, __pyx_n_s_dark, __pyx_n_s_flat, __pyx_n_s_solidangle, __pyx_n_s_polarization, __pyx_n_s_absorption, __pyx_n_s_mask, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_normalization_factor, __pyx_n_s_empty, __pyx_n_s_size, __pyx_n_s_check_dummy, __pyx_n_s_cmask, __pyx_n_s_cdata, __pyx_n_s_cdark, __pyx_n_s_cflat, __pyx_n_s_csolidangle, __pyx_n_s_cpolarization, __pyx_n_s_cabsorpt, __pyx_n_s_result, __pyx_n_s_cdummy, __pyx_n_s_ddummy); if (unlikely(!__pyx_tuple__178)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__178);
-  __Pyx_GIVEREF(__pyx_tuple__178);
-  __pyx_codeobj__179 = (PyObject*)__Pyx_PyCode_New(11, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__178, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_preproc, 156, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__179)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__690 = PyTuple_Pack(33, __pyx_n_s_raw, __pyx_n_s_dark, __pyx_n_s_flat, __pyx_n_s_solidangle, __pyx_n_s_polarization, __pyx_n_s_absorption, __pyx_n_s_mask, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_normalization_factor, __pyx_n_s_empty, __pyx_n_s_split_result, __pyx_n_s_variance, __pyx_n_s_dark_variance, __pyx_n_s_poissonian, __pyx_n_s_size, __pyx_n_s_check_dummy, __pyx_n_s_cmask, __pyx_n_s_cdata, __pyx_n_s_cdark, __pyx_n_s_cflat, __pyx_n_s_csolidangle, __pyx_n_s_cpolarization, __pyx_n_s_cabsorpt, __pyx_n_s_cvariance, __pyx_n_s_dvariance, __pyx_n_s_res1, __pyx_n_s_res2, __pyx_n_s_cdummy, __pyx_n_s_ddummy, __pyx_n_s_shape, __pyx_n_s_out_shape, __pyx_n_s_res); if (unlikely(!__pyx_tuple__690)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__690);
+  __Pyx_GIVEREF(__pyx_tuple__690);
+  __pyx_codeobj__691 = (PyObject*)__Pyx_PyCode_New(15, 0, 33, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__690, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_preproc, 450, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__691)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":276
  *         return self.name
@@ -17908,9 +22366,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_tuple__180 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__180)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__180);
-  __Pyx_GIVEREF(__pyx_tuple__180);
+  __pyx_tuple__692 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct_or_indirect); if (unlikely(!__pyx_tuple__692)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__692);
+  __Pyx_GIVEREF(__pyx_tuple__692);
 
   /* "View.MemoryView":277
  * 
@@ -17919,9 +22377,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_tuple__181 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__181)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__181);
-  __Pyx_GIVEREF(__pyx_tuple__181);
+  __pyx_tuple__693 = PyTuple_Pack(1, __pyx_kp_s_strided_and_direct); if (unlikely(!__pyx_tuple__693)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__693);
+  __Pyx_GIVEREF(__pyx_tuple__693);
 
   /* "View.MemoryView":278
  * cdef generic = Enum("<strided and direct or indirect>")
@@ -17930,9 +22388,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__182 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__182)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__182);
-  __Pyx_GIVEREF(__pyx_tuple__182);
+  __pyx_tuple__694 = PyTuple_Pack(1, __pyx_kp_s_strided_and_indirect); if (unlikely(!__pyx_tuple__694)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__694);
+  __Pyx_GIVEREF(__pyx_tuple__694);
 
   /* "View.MemoryView":281
  * 
@@ -17941,9 +22399,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_tuple__183 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__183)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 281; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__183);
-  __Pyx_GIVEREF(__pyx_tuple__183);
+  __pyx_tuple__695 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_direct); if (unlikely(!__pyx_tuple__695)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 281; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__695);
+  __Pyx_GIVEREF(__pyx_tuple__695);
 
   /* "View.MemoryView":282
  * 
@@ -17952,9 +22410,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_tuple__184 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__184)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_tuple__184);
-  __Pyx_GIVEREF(__pyx_tuple__184);
+  __pyx_tuple__696 = PyTuple_Pack(1, __pyx_kp_s_contiguous_and_indirect); if (unlikely(!__pyx_tuple__696)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__696);
+  __Pyx_GIVEREF(__pyx_tuple__696);
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -17973,6 +22431,8 @@ if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; 
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_int_2 = PyInt_FromLong(2); if (unlikely(!__pyx_int_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_int_3 = PyInt_FromLong(3); if (unlikely(!__pyx_int_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_neg_1 = PyInt_FromLong(-1); if (unlikely(!__pyx_int_neg_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   return 0;
   __pyx_L1_error:;
@@ -18084,6 +22544,326 @@ PyMODINIT_FUNC PyInit_preproc(void)
   __Pyx_memviewslice __pyx_t_95 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_t_96 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_t_97 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_98 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_99 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_100 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_101 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_102 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_103 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_104 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_105 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_106 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_107 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_108 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_109 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_110 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_111 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_112 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_113 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_114 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_115 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_116 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_117 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_118 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_119 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_120 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_121 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_122 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_123 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_124 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_125 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_126 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_127 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_128 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_129 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_130 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_131 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_132 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_133 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_134 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_135 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_136 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_137 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_138 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_139 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_140 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_141 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_142 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_143 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_144 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_145 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_146 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_147 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_148 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_149 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_150 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_151 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_152 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_153 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_154 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_155 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_156 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_157 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_158 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_159 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_160 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_161 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_162 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_163 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_164 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_165 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_166 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_167 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_168 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_169 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_170 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_171 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_172 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_173 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_174 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_175 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_176 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_177 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_178 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_179 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_180 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_181 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_182 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_183 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_184 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_185 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_186 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_187 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_188 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_189 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_190 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_191 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_192 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_193 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_194 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_195 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_196 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_197 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_198 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_199 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_200 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_201 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_202 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_203 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_204 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_205 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_206 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_207 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_208 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_209 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_210 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_211 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_212 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_213 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_214 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_215 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_216 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_217 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_218 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_219 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_220 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_221 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_222 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_223 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_224 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_225 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_226 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_227 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_228 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_229 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_230 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_231 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_232 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_233 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_234 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_235 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_236 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_237 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_238 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_239 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_240 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_241 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_242 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_243 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_244 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_245 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_246 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_247 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_248 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_249 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_250 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_251 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_252 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_253 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_254 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_255 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_256 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_257 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_258 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_259 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_260 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_261 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_262 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_263 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_264 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_265 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_266 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_267 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_268 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_269 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_270 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_271 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_272 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_273 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_274 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_275 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_276 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_277 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_278 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_279 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_280 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_281 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_282 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_283 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_284 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_285 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_286 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_287 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_288 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_289 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_290 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_291 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_292 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_293 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_294 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_295 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_296 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_297 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_298 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_299 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_300 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_301 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_302 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_303 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_304 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_305 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_306 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_307 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_308 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_309 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_310 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_311 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_312 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_313 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_314 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_315 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_316 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_317 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_318 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_319 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_320 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_321 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_322 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_323 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_324 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_325 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_326 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_327 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_328 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_329 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_330 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_331 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_332 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_333 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_334 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_335 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_336 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_337 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_338 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_339 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_340 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_341 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_342 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_343 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_344 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_345 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_346 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_347 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_348 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_349 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_350 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_351 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_352 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_353 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_354 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_355 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_356 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_357 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_358 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_359 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_360 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_361 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_362 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_363 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_364 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_365 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_366 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_367 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_368 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_369 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_370 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_371 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_372 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_373 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_374 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_375 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_376 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_377 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_378 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_379 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_380 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_381 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_382 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_383 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_384 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_385 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_386 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_387 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_388 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_389 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_390 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_391 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_392 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_393 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_394 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_395 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_396 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_397 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_398 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_399 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_400 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_401 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_402 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_403 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_404 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_405 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_406 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_407 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_408 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_409 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_410 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_411 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_412 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_413 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_414 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_415 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_416 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_417 = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -18209,7 +22989,7 @@ PyMODINIT_FUNC PyInit_preproc(void)
  * 
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
- * __date__ = "01/12/2016"
+ * __date__ = "25/04/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -18217,32 +22997,32 @@ PyMODINIT_FUNC PyInit_preproc(void)
  * 
  * __author__ = "Jerome Kieffer"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
- * __date__ = "01/12/2016"
- * __copyright__ = "2011-2015, ESRF"
+ * __date__ = "25/04/2017"
+ * __copyright__ = "2011-2017, ESRF"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/preproc.pyx":31
  * __author__ = "Jerome Kieffer"
  * __license__ = "MIT"
- * __date__ = "01/12/2016"             # <<<<<<<<<<<<<<
- * __copyright__ = "2011-2015, ESRF"
+ * __date__ = "25/04/2017"             # <<<<<<<<<<<<<<
+ * __copyright__ = "2011-2017, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_01_12_2016) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_25_04_2017) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/preproc.pyx":32
  * __license__ = "MIT"
- * __date__ = "01/12/2016"
- * __copyright__ = "2011-2015, ESRF"             # <<<<<<<<<<<<<<
+ * __date__ = "25/04/2017"
+ * __copyright__ = "2011-2017, ESRF"             # <<<<<<<<<<<<<<
  * __contact__ = "jerome.kieffer@esrf.fr"
  * 
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_copyright, __pyx_kp_s_2011_2015_ESRF) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_copyright, __pyx_kp_s_2011_2017_ESRF) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyFAI/ext/preproc.pyx":33
- * __date__ = "01/12/2016"
- * __copyright__ = "2011-2015, ESRF"
+ * __date__ = "25/04/2017"
+ * __copyright__ = "2011-2017, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
  * 
  * import cython
@@ -18261,408 +23041,408 @@ PyMODINIT_FUNC PyInit_preproc(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_2 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_2.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__28 = __pyx_t_2;
+  if (unlikely(!__pyx_t_2.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__60 = __pyx_t_2;
   __pyx_t_2.memview = NULL;
   __pyx_t_2.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_3 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_3.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__29 = __pyx_t_3;
+  if (unlikely(!__pyx_t_3.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__61 = __pyx_t_3;
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_4 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_4.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__30 = __pyx_t_4;
+  if (unlikely(!__pyx_t_4.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__62 = __pyx_t_4;
   __pyx_t_4.memview = NULL;
   __pyx_t_4.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_5 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_5.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__31 = __pyx_t_5;
+  if (unlikely(!__pyx_t_5.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__63 = __pyx_t_5;
   __pyx_t_5.memview = NULL;
   __pyx_t_5.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_6.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__32 = __pyx_t_6;
+  if (unlikely(!__pyx_t_6.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__64 = __pyx_t_6;
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
-  if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__33 = __pyx_t_7;
+  if (unlikely(!__pyx_t_7.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__65 = __pyx_t_7;
   __pyx_t_7.memview = NULL;
   __pyx_t_7.data = NULL;
-  __pyx_k__34 = 0;
-  __pyx_k__35 = 0;
-  __pyx_k__36 = 0;
-  __pyx_k__37 = 1.0;
+  __pyx_k__66 = 0;
+  __pyx_k__67 = 0;
+  __pyx_k__68 = 0;
+  __pyx_k__69 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_8 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_8.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__38 = __pyx_t_8;
+  if (unlikely(!__pyx_t_8.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__70 = __pyx_t_8;
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_9 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_9.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__39 = __pyx_t_9;
+  if (unlikely(!__pyx_t_9.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__71 = __pyx_t_9;
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__40 = __pyx_t_10;
+  if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__72 = __pyx_t_10;
   __pyx_t_10.memview = NULL;
   __pyx_t_10.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_11 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__41 = __pyx_t_11;
+  if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__73 = __pyx_t_11;
   __pyx_t_11.memview = NULL;
   __pyx_t_11.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_12 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_12.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__42 = __pyx_t_12;
+  if (unlikely(!__pyx_t_12.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__74 = __pyx_t_12;
   __pyx_t_12.memview = NULL;
   __pyx_t_12.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
-  if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__43 = __pyx_t_13;
+  if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__75 = __pyx_t_13;
   __pyx_t_13.memview = NULL;
   __pyx_t_13.data = NULL;
-  __pyx_k__44 = 0;
-  __pyx_k__45 = 0;
-  __pyx_k__46 = 0;
-  __pyx_k__47 = 1.0;
+  __pyx_k__76 = 0;
+  __pyx_k__77 = 0;
+  __pyx_k__78 = 0;
+  __pyx_k__79 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_14 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_14.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__48 = __pyx_t_14;
+  if (unlikely(!__pyx_t_14.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__80 = __pyx_t_14;
   __pyx_t_14.memview = NULL;
   __pyx_t_14.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_15 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_15.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__49 = __pyx_t_15;
+  if (unlikely(!__pyx_t_15.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__81 = __pyx_t_15;
   __pyx_t_15.memview = NULL;
   __pyx_t_15.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_16.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__50 = __pyx_t_16;
+  if (unlikely(!__pyx_t_16.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__82 = __pyx_t_16;
   __pyx_t_16.memview = NULL;
   __pyx_t_16.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_17 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_17.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__51 = __pyx_t_17;
+  if (unlikely(!__pyx_t_17.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__83 = __pyx_t_17;
   __pyx_t_17.memview = NULL;
   __pyx_t_17.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_18 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_18.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__52 = __pyx_t_18;
+  if (unlikely(!__pyx_t_18.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__84 = __pyx_t_18;
   __pyx_t_18.memview = NULL;
   __pyx_t_18.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_19 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
-  if (unlikely(!__pyx_t_19.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__53 = __pyx_t_19;
+  if (unlikely(!__pyx_t_19.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__85 = __pyx_t_19;
   __pyx_t_19.memview = NULL;
   __pyx_t_19.data = NULL;
-  __pyx_k__54 = 0;
-  __pyx_k__55 = 0;
-  __pyx_k__56 = 0;
-  __pyx_k__57 = 1.0;
+  __pyx_k__86 = 0;
+  __pyx_k__87 = 0;
+  __pyx_k__88 = 0;
+  __pyx_k__89 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_20 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_20.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__58 = __pyx_t_20;
+  if (unlikely(!__pyx_t_20.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__90 = __pyx_t_20;
   __pyx_t_20.memview = NULL;
   __pyx_t_20.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_21 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_21.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__59 = __pyx_t_21;
+  if (unlikely(!__pyx_t_21.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__91 = __pyx_t_21;
   __pyx_t_21.memview = NULL;
   __pyx_t_21.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_22 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_22.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__60 = __pyx_t_22;
+  if (unlikely(!__pyx_t_22.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__92 = __pyx_t_22;
   __pyx_t_22.memview = NULL;
   __pyx_t_22.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_23 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_23.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__61 = __pyx_t_23;
+  if (unlikely(!__pyx_t_23.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__93 = __pyx_t_23;
   __pyx_t_23.memview = NULL;
   __pyx_t_23.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_24 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_24.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__62 = __pyx_t_24;
+  if (unlikely(!__pyx_t_24.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__94 = __pyx_t_24;
   __pyx_t_24.memview = NULL;
   __pyx_t_24.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_25 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
-  if (unlikely(!__pyx_t_25.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__63 = __pyx_t_25;
+  if (unlikely(!__pyx_t_25.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__95 = __pyx_t_25;
   __pyx_t_25.memview = NULL;
   __pyx_t_25.data = NULL;
-  __pyx_k__64 = 0;
-  __pyx_k__65 = 0;
-  __pyx_k__66 = 0;
-  __pyx_k__67 = 1.0;
+  __pyx_k__96 = 0;
+  __pyx_k__97 = 0;
+  __pyx_k__98 = 0;
+  __pyx_k__99 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_26 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_26.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_t_26.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_k_ = __pyx_t_26;
   __pyx_t_26.memview = NULL;
   __pyx_t_26.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_27 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_27.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_t_27.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_k__2 = __pyx_t_27;
   __pyx_t_27.memview = NULL;
   __pyx_t_27.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_28 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_28.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_t_28.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_k__3 = __pyx_t_28;
   __pyx_t_28.memview = NULL;
   __pyx_t_28.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_29 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_29.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_t_29.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_k__4 = __pyx_t_29;
   __pyx_t_29.memview = NULL;
   __pyx_t_29.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_30 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_30.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_t_30.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_k__5 = __pyx_t_30;
   __pyx_t_30.memview = NULL;
   __pyx_t_30.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_31 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
-  if (unlikely(!__pyx_t_31.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_t_31.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_k__6 = __pyx_t_31;
   __pyx_t_31.memview = NULL;
   __pyx_t_31.data = NULL;
@@ -18671,918 +23451,5270 @@ PyMODINIT_FUNC PyInit_preproc(void)
   __pyx_k__9 = 0;
   __pyx_k__10 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_32 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_32.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__68 = __pyx_t_32;
+  if (unlikely(!__pyx_t_32.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__100 = __pyx_t_32;
   __pyx_t_32.memview = NULL;
   __pyx_t_32.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_33 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_33.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__69 = __pyx_t_33;
+  if (unlikely(!__pyx_t_33.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__101 = __pyx_t_33;
   __pyx_t_33.memview = NULL;
   __pyx_t_33.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_34 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_34.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__70 = __pyx_t_34;
+  if (unlikely(!__pyx_t_34.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__102 = __pyx_t_34;
   __pyx_t_34.memview = NULL;
   __pyx_t_34.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_35 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_35.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__71 = __pyx_t_35;
+  if (unlikely(!__pyx_t_35.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__103 = __pyx_t_35;
   __pyx_t_35.memview = NULL;
   __pyx_t_35.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_36 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_36.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__72 = __pyx_t_36;
+  if (unlikely(!__pyx_t_36.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__104 = __pyx_t_36;
   __pyx_t_36.memview = NULL;
   __pyx_t_36.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_37 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
-  if (unlikely(!__pyx_t_37.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__73 = __pyx_t_37;
+  if (unlikely(!__pyx_t_37.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__105 = __pyx_t_37;
   __pyx_t_37.memview = NULL;
   __pyx_t_37.data = NULL;
-  __pyx_k__74 = 0;
-  __pyx_k__75 = 0;
-  __pyx_k__76 = 0;
-  __pyx_k__77 = 1.0;
+  __pyx_k__106 = 0;
+  __pyx_k__107 = 0;
+  __pyx_k__108 = 0;
+  __pyx_k__109 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_38 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_38.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__78 = __pyx_t_38;
+  if (unlikely(!__pyx_t_38.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__110 = __pyx_t_38;
   __pyx_t_38.memview = NULL;
   __pyx_t_38.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_39 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_39.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__79 = __pyx_t_39;
+  if (unlikely(!__pyx_t_39.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__111 = __pyx_t_39;
   __pyx_t_39.memview = NULL;
   __pyx_t_39.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_40 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_40.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__80 = __pyx_t_40;
+  if (unlikely(!__pyx_t_40.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__112 = __pyx_t_40;
   __pyx_t_40.memview = NULL;
   __pyx_t_40.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_41 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_41.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__81 = __pyx_t_41;
+  if (unlikely(!__pyx_t_41.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__113 = __pyx_t_41;
   __pyx_t_41.memview = NULL;
   __pyx_t_41.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_42 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_42.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__82 = __pyx_t_42;
+  if (unlikely(!__pyx_t_42.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__114 = __pyx_t_42;
   __pyx_t_42.memview = NULL;
   __pyx_t_42.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_43 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
-  if (unlikely(!__pyx_t_43.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__83 = __pyx_t_43;
+  if (unlikely(!__pyx_t_43.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__115 = __pyx_t_43;
   __pyx_t_43.memview = NULL;
   __pyx_t_43.data = NULL;
-  __pyx_k__84 = 0;
-  __pyx_k__85 = 0;
-  __pyx_k__86 = 0;
-  __pyx_k__87 = 1.0;
+  __pyx_k__116 = 0;
+  __pyx_k__117 = 0;
+  __pyx_k__118 = 0;
+  __pyx_k__119 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_44 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_44.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__88 = __pyx_t_44;
+  if (unlikely(!__pyx_t_44.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__120 = __pyx_t_44;
   __pyx_t_44.memview = NULL;
   __pyx_t_44.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_45 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_45.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__89 = __pyx_t_45;
+  if (unlikely(!__pyx_t_45.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__121 = __pyx_t_45;
   __pyx_t_45.memview = NULL;
   __pyx_t_45.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_46 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_46.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__90 = __pyx_t_46;
+  if (unlikely(!__pyx_t_46.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__122 = __pyx_t_46;
   __pyx_t_46.memview = NULL;
   __pyx_t_46.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_47 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_47.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__91 = __pyx_t_47;
+  if (unlikely(!__pyx_t_47.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__123 = __pyx_t_47;
   __pyx_t_47.memview = NULL;
   __pyx_t_47.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_48 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
-  if (unlikely(!__pyx_t_48.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__92 = __pyx_t_48;
+  if (unlikely(!__pyx_t_48.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__124 = __pyx_t_48;
   __pyx_t_48.memview = NULL;
   __pyx_t_48.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_49 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
-  if (unlikely(!__pyx_t_49.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__93 = __pyx_t_49;
+  if (unlikely(!__pyx_t_49.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__125 = __pyx_t_49;
   __pyx_t_49.memview = NULL;
   __pyx_t_49.data = NULL;
-  __pyx_k__94 = 0;
-  __pyx_k__95 = 0;
-  __pyx_k__96 = 0;
-  __pyx_k__97 = 1.0;
+  __pyx_k__126 = 0;
+  __pyx_k__127 = 0;
+  __pyx_k__128 = 0;
+  __pyx_k__129 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_50 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_50.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__98 = __pyx_t_50;
+  if (unlikely(!__pyx_t_50.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__130 = __pyx_t_50;
   __pyx_t_50.memview = NULL;
   __pyx_t_50.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_51 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_51.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__99 = __pyx_t_51;
+  if (unlikely(!__pyx_t_51.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__131 = __pyx_t_51;
   __pyx_t_51.memview = NULL;
   __pyx_t_51.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_52 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_52.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__100 = __pyx_t_52;
+  if (unlikely(!__pyx_t_52.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__132 = __pyx_t_52;
   __pyx_t_52.memview = NULL;
   __pyx_t_52.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_53 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_53.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__101 = __pyx_t_53;
+  if (unlikely(!__pyx_t_53.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__133 = __pyx_t_53;
   __pyx_t_53.memview = NULL;
   __pyx_t_53.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_54 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_54.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__102 = __pyx_t_54;
+  if (unlikely(!__pyx_t_54.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__134 = __pyx_t_54;
   __pyx_t_54.memview = NULL;
   __pyx_t_54.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_55 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
-  if (unlikely(!__pyx_t_55.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__103 = __pyx_t_55;
+  if (unlikely(!__pyx_t_55.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__135 = __pyx_t_55;
   __pyx_t_55.memview = NULL;
   __pyx_t_55.data = NULL;
-  __pyx_k__104 = 0;
-  __pyx_k__105 = 0;
-  __pyx_k__106 = 0;
-  __pyx_k__107 = 1.0;
+  __pyx_k__136 = 0;
+  __pyx_k__137 = 0;
+  __pyx_k__138 = 0;
+  __pyx_k__139 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_56 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_56.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__108 = __pyx_t_56;
+  if (unlikely(!__pyx_t_56.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__140 = __pyx_t_56;
   __pyx_t_56.memview = NULL;
   __pyx_t_56.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_57 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_57.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__109 = __pyx_t_57;
+  if (unlikely(!__pyx_t_57.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__141 = __pyx_t_57;
   __pyx_t_57.memview = NULL;
   __pyx_t_57.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_58 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_58.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__110 = __pyx_t_58;
+  if (unlikely(!__pyx_t_58.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__142 = __pyx_t_58;
   __pyx_t_58.memview = NULL;
   __pyx_t_58.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_59 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_59.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__111 = __pyx_t_59;
+  if (unlikely(!__pyx_t_59.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__143 = __pyx_t_59;
   __pyx_t_59.memview = NULL;
   __pyx_t_59.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_60 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_60.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__112 = __pyx_t_60;
+  if (unlikely(!__pyx_t_60.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__144 = __pyx_t_60;
   __pyx_t_60.memview = NULL;
   __pyx_t_60.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_61 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
-  if (unlikely(!__pyx_t_61.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__113 = __pyx_t_61;
+  if (unlikely(!__pyx_t_61.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__145 = __pyx_t_61;
   __pyx_t_61.memview = NULL;
   __pyx_t_61.data = NULL;
-  __pyx_k__114 = 0;
-  __pyx_k__115 = 0;
-  __pyx_k__116 = 0;
-  __pyx_k__117 = 1.0;
+  __pyx_k__146 = 0;
+  __pyx_k__147 = 0;
+  __pyx_k__148 = 0;
+  __pyx_k__149 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_62 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_62.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__118 = __pyx_t_62;
+  if (unlikely(!__pyx_t_62.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__150 = __pyx_t_62;
   __pyx_t_62.memview = NULL;
   __pyx_t_62.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_63 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_63.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__119 = __pyx_t_63;
+  if (unlikely(!__pyx_t_63.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__151 = __pyx_t_63;
   __pyx_t_63.memview = NULL;
   __pyx_t_63.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_64 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_64.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__120 = __pyx_t_64;
+  if (unlikely(!__pyx_t_64.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__152 = __pyx_t_64;
   __pyx_t_64.memview = NULL;
   __pyx_t_64.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_65 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_65.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__121 = __pyx_t_65;
+  if (unlikely(!__pyx_t_65.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__153 = __pyx_t_65;
   __pyx_t_65.memview = NULL;
   __pyx_t_65.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_66 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_66.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__122 = __pyx_t_66;
+  if (unlikely(!__pyx_t_66.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__154 = __pyx_t_66;
   __pyx_t_66.memview = NULL;
   __pyx_t_66.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_67 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
-  if (unlikely(!__pyx_t_67.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__123 = __pyx_t_67;
+  if (unlikely(!__pyx_t_67.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__155 = __pyx_t_67;
   __pyx_t_67.memview = NULL;
   __pyx_t_67.data = NULL;
-  __pyx_k__124 = 0;
-  __pyx_k__125 = 0;
-  __pyx_k__126 = 0;
-  __pyx_k__127 = 1.0;
+  __pyx_k__156 = 0;
+  __pyx_k__157 = 0;
+  __pyx_k__158 = 0;
+  __pyx_k__159 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_68 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_68.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__128 = __pyx_t_68;
+  if (unlikely(!__pyx_t_68.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__160 = __pyx_t_68;
   __pyx_t_68.memview = NULL;
   __pyx_t_68.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_69 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_69.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__129 = __pyx_t_69;
+  if (unlikely(!__pyx_t_69.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__161 = __pyx_t_69;
   __pyx_t_69.memview = NULL;
   __pyx_t_69.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_70 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_70.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__130 = __pyx_t_70;
+  if (unlikely(!__pyx_t_70.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__162 = __pyx_t_70;
   __pyx_t_70.memview = NULL;
   __pyx_t_70.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_71 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_71.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__131 = __pyx_t_71;
+  if (unlikely(!__pyx_t_71.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__163 = __pyx_t_71;
   __pyx_t_71.memview = NULL;
   __pyx_t_71.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_72 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_72.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__132 = __pyx_t_72;
+  if (unlikely(!__pyx_t_72.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__164 = __pyx_t_72;
   __pyx_t_72.memview = NULL;
   __pyx_t_72.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_73 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
-  if (unlikely(!__pyx_t_73.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__133 = __pyx_t_73;
+  if (unlikely(!__pyx_t_73.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__165 = __pyx_t_73;
   __pyx_t_73.memview = NULL;
   __pyx_t_73.data = NULL;
-  __pyx_k__134 = 0;
-  __pyx_k__135 = 0;
-  __pyx_k__136 = 0;
-  __pyx_k__137 = 1.0;
+  __pyx_k__166 = 0;
+  __pyx_k__167 = 0;
+  __pyx_k__168 = 0;
+  __pyx_k__169 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_74 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_74.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__138 = __pyx_t_74;
+  if (unlikely(!__pyx_t_74.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__170 = __pyx_t_74;
   __pyx_t_74.memview = NULL;
   __pyx_t_74.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_75 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_75.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__139 = __pyx_t_75;
+  if (unlikely(!__pyx_t_75.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__171 = __pyx_t_75;
   __pyx_t_75.memview = NULL;
   __pyx_t_75.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_76 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_76.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__140 = __pyx_t_76;
+  if (unlikely(!__pyx_t_76.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__172 = __pyx_t_76;
   __pyx_t_76.memview = NULL;
   __pyx_t_76.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_77 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_77.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__141 = __pyx_t_77;
+  if (unlikely(!__pyx_t_77.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__173 = __pyx_t_77;
   __pyx_t_77.memview = NULL;
   __pyx_t_77.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_78 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_78.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__142 = __pyx_t_78;
+  if (unlikely(!__pyx_t_78.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__174 = __pyx_t_78;
   __pyx_t_78.memview = NULL;
   __pyx_t_78.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_79 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
-  if (unlikely(!__pyx_t_79.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__143 = __pyx_t_79;
+  if (unlikely(!__pyx_t_79.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__175 = __pyx_t_79;
   __pyx_t_79.memview = NULL;
   __pyx_t_79.data = NULL;
-  __pyx_k__144 = 0;
-  __pyx_k__145 = 0;
-  __pyx_k__146 = 0;
-  __pyx_k__147 = 1.0;
+  __pyx_k__176 = 0;
+  __pyx_k__177 = 0;
+  __pyx_k__178 = 0;
+  __pyx_k__179 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_80 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_80.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__148 = __pyx_t_80;
+  if (unlikely(!__pyx_t_80.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__180 = __pyx_t_80;
   __pyx_t_80.memview = NULL;
   __pyx_t_80.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_81 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_81.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__149 = __pyx_t_81;
+  if (unlikely(!__pyx_t_81.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__181 = __pyx_t_81;
   __pyx_t_81.memview = NULL;
   __pyx_t_81.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_82 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_82.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__150 = __pyx_t_82;
+  if (unlikely(!__pyx_t_82.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__182 = __pyx_t_82;
   __pyx_t_82.memview = NULL;
   __pyx_t_82.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_83 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_83.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__151 = __pyx_t_83;
+  if (unlikely(!__pyx_t_83.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__183 = __pyx_t_83;
   __pyx_t_83.memview = NULL;
   __pyx_t_83.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_84 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_84.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__152 = __pyx_t_84;
+  if (unlikely(!__pyx_t_84.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__184 = __pyx_t_84;
   __pyx_t_84.memview = NULL;
   __pyx_t_84.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_85 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
-  if (unlikely(!__pyx_t_85.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__153 = __pyx_t_85;
+  if (unlikely(!__pyx_t_85.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__185 = __pyx_t_85;
   __pyx_t_85.memview = NULL;
   __pyx_t_85.data = NULL;
-  __pyx_k__154 = 0;
-  __pyx_k__155 = 0;
-  __pyx_k__156 = 0;
-  __pyx_k__157 = 1.0;
+  __pyx_k__186 = 0;
+  __pyx_k__187 = 0;
+  __pyx_k__188 = 0;
+  __pyx_k__189 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_86 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_86.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__158 = __pyx_t_86;
+  if (unlikely(!__pyx_t_86.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__190 = __pyx_t_86;
   __pyx_t_86.memview = NULL;
   __pyx_t_86.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_87 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_87.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__159 = __pyx_t_87;
+  if (unlikely(!__pyx_t_87.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__191 = __pyx_t_87;
   __pyx_t_87.memview = NULL;
   __pyx_t_87.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_88 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_88.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__160 = __pyx_t_88;
+  if (unlikely(!__pyx_t_88.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__192 = __pyx_t_88;
   __pyx_t_88.memview = NULL;
   __pyx_t_88.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_89 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_89.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__161 = __pyx_t_89;
+  if (unlikely(!__pyx_t_89.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__193 = __pyx_t_89;
   __pyx_t_89.memview = NULL;
   __pyx_t_89.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_90 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_90.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__162 = __pyx_t_90;
+  if (unlikely(!__pyx_t_90.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__194 = __pyx_t_90;
   __pyx_t_90.memview = NULL;
   __pyx_t_90.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_91 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
-  if (unlikely(!__pyx_t_91.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__163 = __pyx_t_91;
+  if (unlikely(!__pyx_t_91.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__195 = __pyx_t_91;
   __pyx_t_91.memview = NULL;
   __pyx_t_91.data = NULL;
-  __pyx_k__164 = 0;
-  __pyx_k__165 = 0;
-  __pyx_k__166 = 0;
-  __pyx_k__167 = 1.0;
+  __pyx_k__196 = 0;
+  __pyx_k__197 = 0;
+  __pyx_k__198 = 0;
+  __pyx_k__199 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":67
+  /* "pyFAI/ext/preproc.pyx":59
  * @cython.initializedcheck(False)
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
  */
   __pyx_t_92 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_92.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__168 = __pyx_t_92;
+  if (unlikely(!__pyx_t_92.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__200 = __pyx_t_92;
   __pyx_t_92.memview = NULL;
   __pyx_t_92.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":68
- * cdef floating[::1]c_preproc(floating[::1] data,
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
+  /* "pyFAI/ext/preproc.pyx":60
+ * cdef floating[::1]c1_preproc(floating[::1] data,
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
  */
   __pyx_t_93 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_93.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__169 = __pyx_t_93;
+  if (unlikely(!__pyx_t_93.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__201 = __pyx_t_93;
   __pyx_t_93.memview = NULL;
   __pyx_t_93.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":69
- *                             floating[::1] dark=None,
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
+  /* "pyFAI/ext/preproc.pyx":61
+ *                              floating[::1] dark=None,
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
  */
   __pyx_t_94 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_94.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__170 = __pyx_t_94;
+  if (unlikely(!__pyx_t_94.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__202 = __pyx_t_94;
   __pyx_t_94.memview = NULL;
   __pyx_t_94.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":70
- *                             floating[::1] flat=None,
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,             # <<<<<<<<<<<<<<
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,
+  /* "pyFAI/ext/preproc.pyx":62
+ *                              floating[::1] flat=None,
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,
  */
   __pyx_t_95 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_95.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__171 = __pyx_t_95;
+  if (unlikely(!__pyx_t_95.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__203 = __pyx_t_95;
   __pyx_t_95.memview = NULL;
   __pyx_t_95.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":71
- *                             floating[::1] solidangle=None,
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,             # <<<<<<<<<<<<<<
- *                             any_int_t[::1] mask=None,
- *                             floating dummy=0,
+  /* "pyFAI/ext/preproc.pyx":63
+ *                              floating[::1] solidangle=None,
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                              any_int_t[::1] mask=None,
+ *                              floating dummy=0,
  */
   __pyx_t_96 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
-  if (unlikely(!__pyx_t_96.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__172 = __pyx_t_96;
+  if (unlikely(!__pyx_t_96.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__204 = __pyx_t_96;
   __pyx_t_96.memview = NULL;
   __pyx_t_96.data = NULL;
 
-  /* "pyFAI/ext/preproc.pyx":72
- *                             floating[::1] polarization=None,
- *                             floating[::1] absorption=None,
- *                             any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
- *                             floating dummy=0,
- *                             floating delta_dummy=0,
+  /* "pyFAI/ext/preproc.pyx":64
+ *                              floating[::1] polarization=None,
+ *                              floating[::1] absorption=None,
+ *                              any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                              floating dummy=0,
+ *                              floating delta_dummy=0,
  */
   __pyx_t_97 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
-  if (unlikely(!__pyx_t_97.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_k__173 = __pyx_t_97;
+  if (unlikely(!__pyx_t_97.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__205 = __pyx_t_97;
   __pyx_t_97.memview = NULL;
   __pyx_t_97.data = NULL;
-  __pyx_k__174 = 0;
-  __pyx_k__175 = 0;
-  __pyx_k__176 = 0;
-  __pyx_k__177 = 1.0;
+  __pyx_k__206 = 0;
+  __pyx_k__207 = 0;
+  __pyx_k__208 = 0;
+  __pyx_k__209 = 1.0;
 
-  /* "pyFAI/ext/preproc.pyx":156
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_98 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_98.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__210 = __pyx_t_98;
+  __pyx_t_98.memview = NULL;
+  __pyx_t_98.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_99 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_99.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__211 = __pyx_t_99;
+  __pyx_t_99.memview = NULL;
+  __pyx_t_99.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_100 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_100.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__212 = __pyx_t_100;
+  __pyx_t_100.memview = NULL;
+  __pyx_t_100.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_101 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_101.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__213 = __pyx_t_101;
+  __pyx_t_101.memview = NULL;
+  __pyx_t_101.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_102 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_102.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__214 = __pyx_t_102;
+  __pyx_t_102.memview = NULL;
+  __pyx_t_102.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_103 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
+  if (unlikely(!__pyx_t_103.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__215 = __pyx_t_103;
+  __pyx_t_103.memview = NULL;
+  __pyx_t_103.data = NULL;
+  __pyx_k__216 = 0;
+  __pyx_k__217 = 0;
+  __pyx_k__218 = 0;
+  __pyx_k__219 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_104 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_104.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__220 = __pyx_t_104;
+  __pyx_t_104.memview = NULL;
+  __pyx_t_104.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_105 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_105.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__221 = __pyx_t_105;
+  __pyx_t_105.memview = NULL;
+  __pyx_t_105.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_106 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_106.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__222 = __pyx_t_106;
+  __pyx_t_106.memview = NULL;
+  __pyx_t_106.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_107 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_107.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__223 = __pyx_t_107;
+  __pyx_t_107.memview = NULL;
+  __pyx_t_107.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_108 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_108.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__224 = __pyx_t_108;
+  __pyx_t_108.memview = NULL;
+  __pyx_t_108.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_109 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
+  if (unlikely(!__pyx_t_109.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__225 = __pyx_t_109;
+  __pyx_t_109.memview = NULL;
+  __pyx_t_109.data = NULL;
+  __pyx_k__226 = 0;
+  __pyx_k__227 = 0;
+  __pyx_k__228 = 0;
+  __pyx_k__229 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_110 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_110.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__230 = __pyx_t_110;
+  __pyx_t_110.memview = NULL;
+  __pyx_t_110.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_111 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_111.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__231 = __pyx_t_111;
+  __pyx_t_111.memview = NULL;
+  __pyx_t_111.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_112 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_112.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__232 = __pyx_t_112;
+  __pyx_t_112.memview = NULL;
+  __pyx_t_112.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_113 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_113.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__233 = __pyx_t_113;
+  __pyx_t_113.memview = NULL;
+  __pyx_t_113.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_114 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_114.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__234 = __pyx_t_114;
+  __pyx_t_114.memview = NULL;
+  __pyx_t_114.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_115 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
+  if (unlikely(!__pyx_t_115.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__235 = __pyx_t_115;
+  __pyx_t_115.memview = NULL;
+  __pyx_t_115.data = NULL;
+  __pyx_k__236 = 0;
+  __pyx_k__237 = 0;
+  __pyx_k__238 = 0;
+  __pyx_k__239 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_116 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_116.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__240 = __pyx_t_116;
+  __pyx_t_116.memview = NULL;
+  __pyx_t_116.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_117 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_117.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__241 = __pyx_t_117;
+  __pyx_t_117.memview = NULL;
+  __pyx_t_117.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_118 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_118.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__242 = __pyx_t_118;
+  __pyx_t_118.memview = NULL;
+  __pyx_t_118.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_119 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_119.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__243 = __pyx_t_119;
+  __pyx_t_119.memview = NULL;
+  __pyx_t_119.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_120 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_120.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__244 = __pyx_t_120;
+  __pyx_t_120.memview = NULL;
+  __pyx_t_120.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_121 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
+  if (unlikely(!__pyx_t_121.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__245 = __pyx_t_121;
+  __pyx_t_121.memview = NULL;
+  __pyx_t_121.data = NULL;
+  __pyx_k__246 = 0;
+  __pyx_k__247 = 0;
+  __pyx_k__248 = 0;
+  __pyx_k__249 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_122 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_122.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__11 = __pyx_t_122;
+  __pyx_t_122.memview = NULL;
+  __pyx_t_122.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_123 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_123.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__12 = __pyx_t_123;
+  __pyx_t_123.memview = NULL;
+  __pyx_t_123.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_124 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_124.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__13 = __pyx_t_124;
+  __pyx_t_124.memview = NULL;
+  __pyx_t_124.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_125 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_125.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__14 = __pyx_t_125;
+  __pyx_t_125.memview = NULL;
+  __pyx_t_125.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_126 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_126.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__15 = __pyx_t_126;
+  __pyx_t_126.memview = NULL;
+  __pyx_t_126.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_127 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_127.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__16 = __pyx_t_127;
+  __pyx_t_127.memview = NULL;
+  __pyx_t_127.data = NULL;
+  __pyx_k__17 = 0;
+  __pyx_k__18 = 0;
+  __pyx_k__19 = 0;
+  __pyx_k__20 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_128 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_128.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__250 = __pyx_t_128;
+  __pyx_t_128.memview = NULL;
+  __pyx_t_128.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_129 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_129.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__251 = __pyx_t_129;
+  __pyx_t_129.memview = NULL;
+  __pyx_t_129.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_130 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_130.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__252 = __pyx_t_130;
+  __pyx_t_130.memview = NULL;
+  __pyx_t_130.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_131 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_131.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__253 = __pyx_t_131;
+  __pyx_t_131.memview = NULL;
+  __pyx_t_131.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_132 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_132.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__254 = __pyx_t_132;
+  __pyx_t_132.memview = NULL;
+  __pyx_t_132.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_133 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
+  if (unlikely(!__pyx_t_133.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__255 = __pyx_t_133;
+  __pyx_t_133.memview = NULL;
+  __pyx_t_133.data = NULL;
+  __pyx_k__256 = 0;
+  __pyx_k__257 = 0;
+  __pyx_k__258 = 0;
+  __pyx_k__259 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_134 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_134.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__260 = __pyx_t_134;
+  __pyx_t_134.memview = NULL;
+  __pyx_t_134.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_135 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_135.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__261 = __pyx_t_135;
+  __pyx_t_135.memview = NULL;
+  __pyx_t_135.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_136 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_136.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__262 = __pyx_t_136;
+  __pyx_t_136.memview = NULL;
+  __pyx_t_136.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_137 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_137.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__263 = __pyx_t_137;
+  __pyx_t_137.memview = NULL;
+  __pyx_t_137.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_138 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_138.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__264 = __pyx_t_138;
+  __pyx_t_138.memview = NULL;
+  __pyx_t_138.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_139 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
+  if (unlikely(!__pyx_t_139.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__265 = __pyx_t_139;
+  __pyx_t_139.memview = NULL;
+  __pyx_t_139.data = NULL;
+  __pyx_k__266 = 0;
+  __pyx_k__267 = 0;
+  __pyx_k__268 = 0;
+  __pyx_k__269 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_140 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_140.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__270 = __pyx_t_140;
+  __pyx_t_140.memview = NULL;
+  __pyx_t_140.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_141 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_141.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__271 = __pyx_t_141;
+  __pyx_t_141.memview = NULL;
+  __pyx_t_141.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_142 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_142.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__272 = __pyx_t_142;
+  __pyx_t_142.memview = NULL;
+  __pyx_t_142.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_143 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_143.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__273 = __pyx_t_143;
+  __pyx_t_143.memview = NULL;
+  __pyx_t_143.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_144 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_144.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__274 = __pyx_t_144;
+  __pyx_t_144.memview = NULL;
+  __pyx_t_144.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_145 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
+  if (unlikely(!__pyx_t_145.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__275 = __pyx_t_145;
+  __pyx_t_145.memview = NULL;
+  __pyx_t_145.data = NULL;
+  __pyx_k__276 = 0;
+  __pyx_k__277 = 0;
+  __pyx_k__278 = 0;
+  __pyx_k__279 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_146 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_146.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__280 = __pyx_t_146;
+  __pyx_t_146.memview = NULL;
+  __pyx_t_146.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_147 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_147.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__281 = __pyx_t_147;
+  __pyx_t_147.memview = NULL;
+  __pyx_t_147.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_148 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_148.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__282 = __pyx_t_148;
+  __pyx_t_148.memview = NULL;
+  __pyx_t_148.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_149 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_149.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__283 = __pyx_t_149;
+  __pyx_t_149.memview = NULL;
+  __pyx_t_149.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_150 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_150.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__284 = __pyx_t_150;
+  __pyx_t_150.memview = NULL;
+  __pyx_t_150.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_151 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
+  if (unlikely(!__pyx_t_151.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__285 = __pyx_t_151;
+  __pyx_t_151.memview = NULL;
+  __pyx_t_151.data = NULL;
+  __pyx_k__286 = 0;
+  __pyx_k__287 = 0;
+  __pyx_k__288 = 0;
+  __pyx_k__289 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_152 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_152.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__290 = __pyx_t_152;
+  __pyx_t_152.memview = NULL;
+  __pyx_t_152.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_153 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_153.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__291 = __pyx_t_153;
+  __pyx_t_153.memview = NULL;
+  __pyx_t_153.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_154 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_154.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__292 = __pyx_t_154;
+  __pyx_t_154.memview = NULL;
+  __pyx_t_154.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_155 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_155.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__293 = __pyx_t_155;
+  __pyx_t_155.memview = NULL;
+  __pyx_t_155.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_156 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_156.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__294 = __pyx_t_156;
+  __pyx_t_156.memview = NULL;
+  __pyx_t_156.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_157 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
+  if (unlikely(!__pyx_t_157.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__295 = __pyx_t_157;
+  __pyx_t_157.memview = NULL;
+  __pyx_t_157.data = NULL;
+  __pyx_k__296 = 0;
+  __pyx_k__297 = 0;
+  __pyx_k__298 = 0;
+  __pyx_k__299 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_158 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_158.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__300 = __pyx_t_158;
+  __pyx_t_158.memview = NULL;
+  __pyx_t_158.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_159 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_159.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__301 = __pyx_t_159;
+  __pyx_t_159.memview = NULL;
+  __pyx_t_159.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_160 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_160.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__302 = __pyx_t_160;
+  __pyx_t_160.memview = NULL;
+  __pyx_t_160.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_161 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_161.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__303 = __pyx_t_161;
+  __pyx_t_161.memview = NULL;
+  __pyx_t_161.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_162 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_162.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__304 = __pyx_t_162;
+  __pyx_t_162.memview = NULL;
+  __pyx_t_162.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_163 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
+  if (unlikely(!__pyx_t_163.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__305 = __pyx_t_163;
+  __pyx_t_163.memview = NULL;
+  __pyx_t_163.data = NULL;
+  __pyx_k__306 = 0;
+  __pyx_k__307 = 0;
+  __pyx_k__308 = 0;
+  __pyx_k__309 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_164 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_164.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__310 = __pyx_t_164;
+  __pyx_t_164.memview = NULL;
+  __pyx_t_164.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_165 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_165.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__311 = __pyx_t_165;
+  __pyx_t_165.memview = NULL;
+  __pyx_t_165.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_166 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_166.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__312 = __pyx_t_166;
+  __pyx_t_166.memview = NULL;
+  __pyx_t_166.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_167 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_167.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__313 = __pyx_t_167;
+  __pyx_t_167.memview = NULL;
+  __pyx_t_167.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_168 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_168.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__314 = __pyx_t_168;
+  __pyx_t_168.memview = NULL;
+  __pyx_t_168.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_169 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
+  if (unlikely(!__pyx_t_169.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__315 = __pyx_t_169;
+  __pyx_t_169.memview = NULL;
+  __pyx_t_169.data = NULL;
+  __pyx_k__316 = 0;
+  __pyx_k__317 = 0;
+  __pyx_k__318 = 0;
+  __pyx_k__319 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_170 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_170.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__320 = __pyx_t_170;
+  __pyx_t_170.memview = NULL;
+  __pyx_t_170.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_171 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_171.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__321 = __pyx_t_171;
+  __pyx_t_171.memview = NULL;
+  __pyx_t_171.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_172 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_172.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__322 = __pyx_t_172;
+  __pyx_t_172.memview = NULL;
+  __pyx_t_172.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_173 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_173.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__323 = __pyx_t_173;
+  __pyx_t_173.memview = NULL;
+  __pyx_t_173.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_174 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_174.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__324 = __pyx_t_174;
+  __pyx_t_174.memview = NULL;
+  __pyx_t_174.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_175 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_175.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__325 = __pyx_t_175;
+  __pyx_t_175.memview = NULL;
+  __pyx_t_175.data = NULL;
+  __pyx_k__326 = 0;
+  __pyx_k__327 = 0;
+  __pyx_k__328 = 0;
+  __pyx_k__329 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_176 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_176.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__330 = __pyx_t_176;
+  __pyx_t_176.memview = NULL;
+  __pyx_t_176.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_177 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_177.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__331 = __pyx_t_177;
+  __pyx_t_177.memview = NULL;
+  __pyx_t_177.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_178 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_178.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__332 = __pyx_t_178;
+  __pyx_t_178.memview = NULL;
+  __pyx_t_178.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_179 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_179.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__333 = __pyx_t_179;
+  __pyx_t_179.memview = NULL;
+  __pyx_t_179.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_180 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_180.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__334 = __pyx_t_180;
+  __pyx_t_180.memview = NULL;
+  __pyx_t_180.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_181 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
+  if (unlikely(!__pyx_t_181.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__335 = __pyx_t_181;
+  __pyx_t_181.memview = NULL;
+  __pyx_t_181.data = NULL;
+  __pyx_k__336 = 0;
+  __pyx_k__337 = 0;
+  __pyx_k__338 = 0;
+  __pyx_k__339 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_182 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_182.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__340 = __pyx_t_182;
+  __pyx_t_182.memview = NULL;
+  __pyx_t_182.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_183 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_183.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__341 = __pyx_t_183;
+  __pyx_t_183.memview = NULL;
+  __pyx_t_183.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_184 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_184.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__342 = __pyx_t_184;
+  __pyx_t_184.memview = NULL;
+  __pyx_t_184.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_185 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_185.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__343 = __pyx_t_185;
+  __pyx_t_185.memview = NULL;
+  __pyx_t_185.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_186 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_186.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__344 = __pyx_t_186;
+  __pyx_t_186.memview = NULL;
+  __pyx_t_186.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_187 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
+  if (unlikely(!__pyx_t_187.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__345 = __pyx_t_187;
+  __pyx_t_187.memview = NULL;
+  __pyx_t_187.data = NULL;
+  __pyx_k__346 = 0;
+  __pyx_k__347 = 0;
+  __pyx_k__348 = 0;
+  __pyx_k__349 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":149
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_188 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_188.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 149; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__350 = __pyx_t_188;
+  __pyx_t_188.memview = NULL;
+  __pyx_t_188.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":150
+ * cdef floating[:, ::1]c2_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_189 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_189.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__351 = __pyx_t_189;
+  __pyx_t_189.memview = NULL;
+  __pyx_t_189.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":151
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_190 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_190.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__352 = __pyx_t_190;
+  __pyx_t_190.memview = NULL;
+  __pyx_t_190.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":152
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_191 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_191.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__353 = __pyx_t_191;
+  __pyx_t_191.memview = NULL;
+  __pyx_t_191.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":153
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_192 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_192.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__354 = __pyx_t_192;
+  __pyx_t_192.memview = NULL;
+  __pyx_t_192.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":154
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_193 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
+  if (unlikely(!__pyx_t_193.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__355 = __pyx_t_193;
+  __pyx_t_193.memview = NULL;
+  __pyx_t_193.data = NULL;
+  __pyx_k__356 = 0;
+  __pyx_k__357 = 0;
+  __pyx_k__358 = 0;
+  __pyx_k__359 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_194 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_194.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__360 = __pyx_t_194;
+  __pyx_t_194.memview = NULL;
+  __pyx_t_194.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_195 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_195.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__361 = __pyx_t_195;
+  __pyx_t_195.memview = NULL;
+  __pyx_t_195.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_196 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_196.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__362 = __pyx_t_196;
+  __pyx_t_196.memview = NULL;
+  __pyx_t_196.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_197 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_197.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__363 = __pyx_t_197;
+  __pyx_t_197.memview = NULL;
+  __pyx_t_197.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_198 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_198.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__364 = __pyx_t_198;
+  __pyx_t_198.memview = NULL;
+  __pyx_t_198.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_199 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
+  if (unlikely(!__pyx_t_199.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__365 = __pyx_t_199;
+  __pyx_t_199.memview = NULL;
+  __pyx_t_199.data = NULL;
+  __pyx_k__366 = 0;
+  __pyx_k__367 = 0;
+  __pyx_k__368 = 0;
+  __pyx_k__369 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_200 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_200.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__370 = __pyx_t_200;
+  __pyx_t_200.memview = NULL;
+  __pyx_t_200.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_201 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_201.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__371 = __pyx_t_201;
+  __pyx_t_201.memview = NULL;
+  __pyx_t_201.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_202 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_202.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__372 = __pyx_t_202;
+  __pyx_t_202.memview = NULL;
+  __pyx_t_202.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_203 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_203.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__373 = __pyx_t_203;
+  __pyx_t_203.memview = NULL;
+  __pyx_t_203.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_204 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_204.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__374 = __pyx_t_204;
+  __pyx_t_204.memview = NULL;
+  __pyx_t_204.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_205 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
+  if (unlikely(!__pyx_t_205.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__375 = __pyx_t_205;
+  __pyx_t_205.memview = NULL;
+  __pyx_t_205.data = NULL;
+  __pyx_k__376 = 0;
+  __pyx_k__377 = 0;
+  __pyx_k__378 = 0;
+  __pyx_k__379 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_206 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_206.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__380 = __pyx_t_206;
+  __pyx_t_206.memview = NULL;
+  __pyx_t_206.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_207 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_207.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__381 = __pyx_t_207;
+  __pyx_t_207.memview = NULL;
+  __pyx_t_207.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_208 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_208.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__382 = __pyx_t_208;
+  __pyx_t_208.memview = NULL;
+  __pyx_t_208.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_209 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_209.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__383 = __pyx_t_209;
+  __pyx_t_209.memview = NULL;
+  __pyx_t_209.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_210 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_210.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__384 = __pyx_t_210;
+  __pyx_t_210.memview = NULL;
+  __pyx_t_210.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_211 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
+  if (unlikely(!__pyx_t_211.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__385 = __pyx_t_211;
+  __pyx_t_211.memview = NULL;
+  __pyx_t_211.data = NULL;
+  __pyx_k__386 = 0;
+  __pyx_k__387 = 0;
+  __pyx_k__388 = 0;
+  __pyx_k__389 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_212 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_212.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__390 = __pyx_t_212;
+  __pyx_t_212.memview = NULL;
+  __pyx_t_212.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_213 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_213.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__391 = __pyx_t_213;
+  __pyx_t_213.memview = NULL;
+  __pyx_t_213.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_214 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_214.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__392 = __pyx_t_214;
+  __pyx_t_214.memview = NULL;
+  __pyx_t_214.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_215 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_215.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__393 = __pyx_t_215;
+  __pyx_t_215.memview = NULL;
+  __pyx_t_215.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_216 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_216.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__394 = __pyx_t_216;
+  __pyx_t_216.memview = NULL;
+  __pyx_t_216.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_217 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
+  if (unlikely(!__pyx_t_217.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__395 = __pyx_t_217;
+  __pyx_t_217.memview = NULL;
+  __pyx_t_217.data = NULL;
+  __pyx_k__396 = 0;
+  __pyx_k__397 = 0;
+  __pyx_k__398 = 0;
+  __pyx_k__399 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_218 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_218.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__21 = __pyx_t_218;
+  __pyx_t_218.memview = NULL;
+  __pyx_t_218.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_219 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_219.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__22 = __pyx_t_219;
+  __pyx_t_219.memview = NULL;
+  __pyx_t_219.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_220 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_220.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__23 = __pyx_t_220;
+  __pyx_t_220.memview = NULL;
+  __pyx_t_220.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_221 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_221.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__24 = __pyx_t_221;
+  __pyx_t_221.memview = NULL;
+  __pyx_t_221.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_222 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_222.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__25 = __pyx_t_222;
+  __pyx_t_222.memview = NULL;
+  __pyx_t_222.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_223 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_223.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__26 = __pyx_t_223;
+  __pyx_t_223.memview = NULL;
+  __pyx_t_223.data = NULL;
+  __pyx_k__27 = 0;
+  __pyx_k__28 = 0;
+  __pyx_k__29 = 0;
+  __pyx_k__30 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_224 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_224.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__400 = __pyx_t_224;
+  __pyx_t_224.memview = NULL;
+  __pyx_t_224.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_225 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_225.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__401 = __pyx_t_225;
+  __pyx_t_225.memview = NULL;
+  __pyx_t_225.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_226 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_226.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__402 = __pyx_t_226;
+  __pyx_t_226.memview = NULL;
+  __pyx_t_226.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_227 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_227.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__403 = __pyx_t_227;
+  __pyx_t_227.memview = NULL;
+  __pyx_t_227.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_228 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_228.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__404 = __pyx_t_228;
+  __pyx_t_228.memview = NULL;
+  __pyx_t_228.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_229 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
+  if (unlikely(!__pyx_t_229.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__405 = __pyx_t_229;
+  __pyx_t_229.memview = NULL;
+  __pyx_t_229.data = NULL;
+  __pyx_k__406 = 0;
+  __pyx_k__407 = 0;
+  __pyx_k__408 = 0;
+  __pyx_k__409 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_230 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_230.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__410 = __pyx_t_230;
+  __pyx_t_230.memview = NULL;
+  __pyx_t_230.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_231 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_231.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__411 = __pyx_t_231;
+  __pyx_t_231.memview = NULL;
+  __pyx_t_231.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_232 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_232.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__412 = __pyx_t_232;
+  __pyx_t_232.memview = NULL;
+  __pyx_t_232.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_233 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_233.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__413 = __pyx_t_233;
+  __pyx_t_233.memview = NULL;
+  __pyx_t_233.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_234 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_234.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__414 = __pyx_t_234;
+  __pyx_t_234.memview = NULL;
+  __pyx_t_234.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_235 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
+  if (unlikely(!__pyx_t_235.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__415 = __pyx_t_235;
+  __pyx_t_235.memview = NULL;
+  __pyx_t_235.data = NULL;
+  __pyx_k__416 = 0;
+  __pyx_k__417 = 0;
+  __pyx_k__418 = 0;
+  __pyx_k__419 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_236 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_236.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__420 = __pyx_t_236;
+  __pyx_t_236.memview = NULL;
+  __pyx_t_236.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_237 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_237.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__421 = __pyx_t_237;
+  __pyx_t_237.memview = NULL;
+  __pyx_t_237.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_238 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_238.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__422 = __pyx_t_238;
+  __pyx_t_238.memview = NULL;
+  __pyx_t_238.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_239 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_239.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__423 = __pyx_t_239;
+  __pyx_t_239.memview = NULL;
+  __pyx_t_239.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_240 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_240.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__424 = __pyx_t_240;
+  __pyx_t_240.memview = NULL;
+  __pyx_t_240.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_241 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
+  if (unlikely(!__pyx_t_241.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__425 = __pyx_t_241;
+  __pyx_t_241.memview = NULL;
+  __pyx_t_241.data = NULL;
+  __pyx_k__426 = 0;
+  __pyx_k__427 = 0;
+  __pyx_k__428 = 0;
+  __pyx_k__429 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_242 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_242.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__430 = __pyx_t_242;
+  __pyx_t_242.memview = NULL;
+  __pyx_t_242.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_243 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_243.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__431 = __pyx_t_243;
+  __pyx_t_243.memview = NULL;
+  __pyx_t_243.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_244 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_244.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__432 = __pyx_t_244;
+  __pyx_t_244.memview = NULL;
+  __pyx_t_244.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_245 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_245.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__433 = __pyx_t_245;
+  __pyx_t_245.memview = NULL;
+  __pyx_t_245.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_246 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_246.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__434 = __pyx_t_246;
+  __pyx_t_246.memview = NULL;
+  __pyx_t_246.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_247 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
+  if (unlikely(!__pyx_t_247.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__435 = __pyx_t_247;
+  __pyx_t_247.memview = NULL;
+  __pyx_t_247.data = NULL;
+  __pyx_k__436 = 0;
+  __pyx_k__437 = 0;
+  __pyx_k__438 = 0;
+  __pyx_k__439 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_248 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_248.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__440 = __pyx_t_248;
+  __pyx_t_248.memview = NULL;
+  __pyx_t_248.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_249 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_249.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__441 = __pyx_t_249;
+  __pyx_t_249.memview = NULL;
+  __pyx_t_249.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_250 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_250.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__442 = __pyx_t_250;
+  __pyx_t_250.memview = NULL;
+  __pyx_t_250.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_251 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_251.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__443 = __pyx_t_251;
+  __pyx_t_251.memview = NULL;
+  __pyx_t_251.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_252 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_252.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__444 = __pyx_t_252;
+  __pyx_t_252.memview = NULL;
+  __pyx_t_252.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_253 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
+  if (unlikely(!__pyx_t_253.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__445 = __pyx_t_253;
+  __pyx_t_253.memview = NULL;
+  __pyx_t_253.data = NULL;
+  __pyx_k__446 = 0;
+  __pyx_k__447 = 0;
+  __pyx_k__448 = 0;
+  __pyx_k__449 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_254 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_254.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__450 = __pyx_t_254;
+  __pyx_t_254.memview = NULL;
+  __pyx_t_254.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_255 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_255.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__451 = __pyx_t_255;
+  __pyx_t_255.memview = NULL;
+  __pyx_t_255.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_256 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_256.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__452 = __pyx_t_256;
+  __pyx_t_256.memview = NULL;
+  __pyx_t_256.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_257 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_257.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__453 = __pyx_t_257;
+  __pyx_t_257.memview = NULL;
+  __pyx_t_257.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_258 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_258.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__454 = __pyx_t_258;
+  __pyx_t_258.memview = NULL;
+  __pyx_t_258.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_259 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
+  if (unlikely(!__pyx_t_259.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__455 = __pyx_t_259;
+  __pyx_t_259.memview = NULL;
+  __pyx_t_259.data = NULL;
+  __pyx_k__456 = 0;
+  __pyx_k__457 = 0;
+  __pyx_k__458 = 0;
+  __pyx_k__459 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_260 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_260.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__460 = __pyx_t_260;
+  __pyx_t_260.memview = NULL;
+  __pyx_t_260.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_261 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_261.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__461 = __pyx_t_261;
+  __pyx_t_261.memview = NULL;
+  __pyx_t_261.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_262 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_262.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__462 = __pyx_t_262;
+  __pyx_t_262.memview = NULL;
+  __pyx_t_262.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_263 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_263.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__463 = __pyx_t_263;
+  __pyx_t_263.memview = NULL;
+  __pyx_t_263.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_264 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_264.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__464 = __pyx_t_264;
+  __pyx_t_264.memview = NULL;
+  __pyx_t_264.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_265 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
+  if (unlikely(!__pyx_t_265.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__465 = __pyx_t_265;
+  __pyx_t_265.memview = NULL;
+  __pyx_t_265.data = NULL;
+  __pyx_k__466 = 0;
+  __pyx_k__467 = 0;
+  __pyx_k__468 = 0;
+  __pyx_k__469 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_266 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_266.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__470 = __pyx_t_266;
+  __pyx_t_266.memview = NULL;
+  __pyx_t_266.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_267 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_267.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__471 = __pyx_t_267;
+  __pyx_t_267.memview = NULL;
+  __pyx_t_267.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_268 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_268.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__472 = __pyx_t_268;
+  __pyx_t_268.memview = NULL;
+  __pyx_t_268.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_269 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_269.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__473 = __pyx_t_269;
+  __pyx_t_269.memview = NULL;
+  __pyx_t_269.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_270 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_270.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__474 = __pyx_t_270;
+  __pyx_t_270.memview = NULL;
+  __pyx_t_270.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_271 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_271.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__475 = __pyx_t_271;
+  __pyx_t_271.memview = NULL;
+  __pyx_t_271.data = NULL;
+  __pyx_k__476 = 0;
+  __pyx_k__477 = 0;
+  __pyx_k__478 = 0;
+  __pyx_k__479 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_272 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_272.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__480 = __pyx_t_272;
+  __pyx_t_272.memview = NULL;
+  __pyx_t_272.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_273 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_273.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__481 = __pyx_t_273;
+  __pyx_t_273.memview = NULL;
+  __pyx_t_273.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_274 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_274.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__482 = __pyx_t_274;
+  __pyx_t_274.memview = NULL;
+  __pyx_t_274.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_275 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_275.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__483 = __pyx_t_275;
+  __pyx_t_275.memview = NULL;
+  __pyx_t_275.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_276 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_276.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__484 = __pyx_t_276;
+  __pyx_t_276.memview = NULL;
+  __pyx_t_276.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_277 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
+  if (unlikely(!__pyx_t_277.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__485 = __pyx_t_277;
+  __pyx_t_277.memview = NULL;
+  __pyx_t_277.data = NULL;
+  __pyx_k__486 = 0;
+  __pyx_k__487 = 0;
+  __pyx_k__488 = 0;
+  __pyx_k__489 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_278 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_278.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__490 = __pyx_t_278;
+  __pyx_t_278.memview = NULL;
+  __pyx_t_278.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_279 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_279.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__491 = __pyx_t_279;
+  __pyx_t_279.memview = NULL;
+  __pyx_t_279.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_280 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_280.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__492 = __pyx_t_280;
+  __pyx_t_280.memview = NULL;
+  __pyx_t_280.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_281 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_281.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__493 = __pyx_t_281;
+  __pyx_t_281.memview = NULL;
+  __pyx_t_281.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_282 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_282.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__494 = __pyx_t_282;
+  __pyx_t_282.memview = NULL;
+  __pyx_t_282.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_283 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
+  if (unlikely(!__pyx_t_283.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__495 = __pyx_t_283;
+  __pyx_t_283.memview = NULL;
+  __pyx_t_283.data = NULL;
+  __pyx_k__496 = 0;
+  __pyx_k__497 = 0;
+  __pyx_k__498 = 0;
+  __pyx_k__499 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":243
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_284 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_284.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__500 = __pyx_t_284;
+  __pyx_t_284.memview = NULL;
+  __pyx_t_284.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":244
+ * cdef floating[:, ::1]cp_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_285 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_285.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__501 = __pyx_t_285;
+  __pyx_t_285.memview = NULL;
+  __pyx_t_285.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":245
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_286 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_286.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__502 = __pyx_t_286;
+  __pyx_t_286.memview = NULL;
+  __pyx_t_286.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":246
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_287 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_287.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__503 = __pyx_t_287;
+  __pyx_t_287.memview = NULL;
+  __pyx_t_287.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":247
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0,
+ */
+  __pyx_t_288 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_288.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__504 = __pyx_t_288;
+  __pyx_t_288.memview = NULL;
+  __pyx_t_288.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":248
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0,
+ *                                 floating delta_dummy=0,
+ */
+  __pyx_t_289 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
+  if (unlikely(!__pyx_t_289.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__505 = __pyx_t_289;
+  __pyx_t_289.memview = NULL;
+  __pyx_t_289.data = NULL;
+  __pyx_k__506 = 0;
+  __pyx_k__507 = 0;
+  __pyx_k__508 = 0;
+  __pyx_k__509 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_290 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_290.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__510 = __pyx_t_290;
+  __pyx_t_290.memview = NULL;
+  __pyx_t_290.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_291 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_291.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__511 = __pyx_t_291;
+  __pyx_t_291.memview = NULL;
+  __pyx_t_291.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_292 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_292.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__512 = __pyx_t_292;
+  __pyx_t_292.memview = NULL;
+  __pyx_t_292.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_293 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_293.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__513 = __pyx_t_293;
+  __pyx_t_293.memview = NULL;
+  __pyx_t_293.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_294 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_294.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__514 = __pyx_t_294;
+  __pyx_t_294.memview = NULL;
+  __pyx_t_294.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_295 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
+  if (unlikely(!__pyx_t_295.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__515 = __pyx_t_295;
+  __pyx_t_295.memview = NULL;
+  __pyx_t_295.data = NULL;
+  __pyx_k__516 = 0.0;
+  __pyx_k__517 = 0.0;
+  __pyx_k__518 = 0;
+  __pyx_k__519 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_296 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_296.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__520 = __pyx_t_296;
+  __pyx_t_296.memview = NULL;
+  __pyx_t_296.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_297 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_297.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__521 = __pyx_t_297;
+  __pyx_t_297.memview = NULL;
+  __pyx_t_297.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_298 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_298.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__522 = __pyx_t_298;
+  __pyx_t_298.memview = NULL;
+  __pyx_t_298.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_299 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_299.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__523 = __pyx_t_299;
+  __pyx_t_299.memview = NULL;
+  __pyx_t_299.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_300 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_300.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__524 = __pyx_t_300;
+  __pyx_t_300.memview = NULL;
+  __pyx_t_300.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_301 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_301.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__525 = __pyx_t_301;
+  __pyx_t_301.memview = NULL;
+  __pyx_t_301.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_302 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_302.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__526 = __pyx_t_302;
+  __pyx_t_302.memview = NULL;
+  __pyx_t_302.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_303 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
+  if (unlikely(!__pyx_t_303.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__527 = __pyx_t_303;
+  __pyx_t_303.memview = NULL;
+  __pyx_t_303.data = NULL;
+  __pyx_k__528 = 0.0;
+  __pyx_k__529 = 0.0;
+  __pyx_k__530 = 0;
+  __pyx_k__531 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_304 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_304.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__532 = __pyx_t_304;
+  __pyx_t_304.memview = NULL;
+  __pyx_t_304.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_305 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_305.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__533 = __pyx_t_305;
+  __pyx_t_305.memview = NULL;
+  __pyx_t_305.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_306 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_306.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__534 = __pyx_t_306;
+  __pyx_t_306.memview = NULL;
+  __pyx_t_306.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_307 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_307.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__535 = __pyx_t_307;
+  __pyx_t_307.memview = NULL;
+  __pyx_t_307.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_308 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_308.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__536 = __pyx_t_308;
+  __pyx_t_308.memview = NULL;
+  __pyx_t_308.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_309 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_309.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__537 = __pyx_t_309;
+  __pyx_t_309.memview = NULL;
+  __pyx_t_309.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_310 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_310.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__538 = __pyx_t_310;
+  __pyx_t_310.memview = NULL;
+  __pyx_t_310.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_311 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
+  if (unlikely(!__pyx_t_311.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__539 = __pyx_t_311;
+  __pyx_t_311.memview = NULL;
+  __pyx_t_311.data = NULL;
+  __pyx_k__540 = 0.0;
+  __pyx_k__541 = 0.0;
+  __pyx_k__542 = 0;
+  __pyx_k__543 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_312 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_312.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__544 = __pyx_t_312;
+  __pyx_t_312.memview = NULL;
+  __pyx_t_312.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_313 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_313.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__545 = __pyx_t_313;
+  __pyx_t_313.memview = NULL;
+  __pyx_t_313.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_314 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_314.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__546 = __pyx_t_314;
+  __pyx_t_314.memview = NULL;
+  __pyx_t_314.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_315 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_315.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__547 = __pyx_t_315;
+  __pyx_t_315.memview = NULL;
+  __pyx_t_315.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_316 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_316.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__548 = __pyx_t_316;
+  __pyx_t_316.memview = NULL;
+  __pyx_t_316.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_317 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_317.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__549 = __pyx_t_317;
+  __pyx_t_317.memview = NULL;
+  __pyx_t_317.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_318 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_318.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__550 = __pyx_t_318;
+  __pyx_t_318.memview = NULL;
+  __pyx_t_318.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_319 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
+  if (unlikely(!__pyx_t_319.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__551 = __pyx_t_319;
+  __pyx_t_319.memview = NULL;
+  __pyx_t_319.data = NULL;
+  __pyx_k__552 = 0.0;
+  __pyx_k__553 = 0.0;
+  __pyx_k__554 = 0;
+  __pyx_k__555 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_320 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_320.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__556 = __pyx_t_320;
+  __pyx_t_320.memview = NULL;
+  __pyx_t_320.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_321 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_321.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__557 = __pyx_t_321;
+  __pyx_t_321.memview = NULL;
+  __pyx_t_321.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_322 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_322.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__31 = __pyx_t_322;
+  __pyx_t_322.memview = NULL;
+  __pyx_t_322.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_323 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_323.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__32 = __pyx_t_323;
+  __pyx_t_323.memview = NULL;
+  __pyx_t_323.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_324 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_324.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__33 = __pyx_t_324;
+  __pyx_t_324.memview = NULL;
+  __pyx_t_324.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_325 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_325.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__34 = __pyx_t_325;
+  __pyx_t_325.memview = NULL;
+  __pyx_t_325.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_326 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_326.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__35 = __pyx_t_326;
+  __pyx_t_326.memview = NULL;
+  __pyx_t_326.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_327 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_327.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__36 = __pyx_t_327;
+  __pyx_t_327.memview = NULL;
+  __pyx_t_327.data = NULL;
+  __pyx_k__37 = 0.0;
+  __pyx_k__38 = 0.0;
+  __pyx_k__39 = 0;
+  __pyx_k__40 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_328 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_328.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__41 = __pyx_t_328;
+  __pyx_t_328.memview = NULL;
+  __pyx_t_328.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_329 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_329.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__42 = __pyx_t_329;
+  __pyx_t_329.memview = NULL;
+  __pyx_t_329.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_330 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_330.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__558 = __pyx_t_330;
+  __pyx_t_330.memview = NULL;
+  __pyx_t_330.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_331 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_331.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__559 = __pyx_t_331;
+  __pyx_t_331.memview = NULL;
+  __pyx_t_331.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_332 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_332.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__560 = __pyx_t_332;
+  __pyx_t_332.memview = NULL;
+  __pyx_t_332.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_333 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_333.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__561 = __pyx_t_333;
+  __pyx_t_333.memview = NULL;
+  __pyx_t_333.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_334 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_334.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__562 = __pyx_t_334;
+  __pyx_t_334.memview = NULL;
+  __pyx_t_334.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_335 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
+  if (unlikely(!__pyx_t_335.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__563 = __pyx_t_335;
+  __pyx_t_335.memview = NULL;
+  __pyx_t_335.data = NULL;
+  __pyx_k__564 = 0.0;
+  __pyx_k__565 = 0.0;
+  __pyx_k__566 = 0;
+  __pyx_k__567 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_336 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_336.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__568 = __pyx_t_336;
+  __pyx_t_336.memview = NULL;
+  __pyx_t_336.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_337 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_337.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__569 = __pyx_t_337;
+  __pyx_t_337.memview = NULL;
+  __pyx_t_337.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_338 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_338.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__570 = __pyx_t_338;
+  __pyx_t_338.memview = NULL;
+  __pyx_t_338.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_339 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_339.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__571 = __pyx_t_339;
+  __pyx_t_339.memview = NULL;
+  __pyx_t_339.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_340 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_340.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__572 = __pyx_t_340;
+  __pyx_t_340.memview = NULL;
+  __pyx_t_340.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_341 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_341.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__573 = __pyx_t_341;
+  __pyx_t_341.memview = NULL;
+  __pyx_t_341.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_342 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_342.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__574 = __pyx_t_342;
+  __pyx_t_342.memview = NULL;
+  __pyx_t_342.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_343 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
+  if (unlikely(!__pyx_t_343.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__575 = __pyx_t_343;
+  __pyx_t_343.memview = NULL;
+  __pyx_t_343.data = NULL;
+  __pyx_k__576 = 0.0;
+  __pyx_k__577 = 0.0;
+  __pyx_k__578 = 0;
+  __pyx_k__579 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_344 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_344.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__580 = __pyx_t_344;
+  __pyx_t_344.memview = NULL;
+  __pyx_t_344.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_345 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_345.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__581 = __pyx_t_345;
+  __pyx_t_345.memview = NULL;
+  __pyx_t_345.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_346 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_346.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__582 = __pyx_t_346;
+  __pyx_t_346.memview = NULL;
+  __pyx_t_346.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_347 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_347.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__583 = __pyx_t_347;
+  __pyx_t_347.memview = NULL;
+  __pyx_t_347.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_348 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_348.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__584 = __pyx_t_348;
+  __pyx_t_348.memview = NULL;
+  __pyx_t_348.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_349 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_349.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__585 = __pyx_t_349;
+  __pyx_t_349.memview = NULL;
+  __pyx_t_349.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_350 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_350.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__586 = __pyx_t_350;
+  __pyx_t_350.memview = NULL;
+  __pyx_t_350.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_351 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
+  if (unlikely(!__pyx_t_351.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__587 = __pyx_t_351;
+  __pyx_t_351.memview = NULL;
+  __pyx_t_351.data = NULL;
+  __pyx_k__588 = 0.0;
+  __pyx_k__589 = 0.0;
+  __pyx_k__590 = 0;
+  __pyx_k__591 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_352 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_352.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__592 = __pyx_t_352;
+  __pyx_t_352.memview = NULL;
+  __pyx_t_352.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_353 = __Pyx_PyObject_to_MemoryviewSlice_dc_float(Py_None);
+  if (unlikely(!__pyx_t_353.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__593 = __pyx_t_353;
+  __pyx_t_353.memview = NULL;
+  __pyx_t_353.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_354 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_354.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__594 = __pyx_t_354;
+  __pyx_t_354.memview = NULL;
+  __pyx_t_354.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_355 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_355.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__595 = __pyx_t_355;
+  __pyx_t_355.memview = NULL;
+  __pyx_t_355.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_356 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_356.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__596 = __pyx_t_356;
+  __pyx_t_356.memview = NULL;
+  __pyx_t_356.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_357 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_357.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__597 = __pyx_t_357;
+  __pyx_t_357.memview = NULL;
+  __pyx_t_357.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_358 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_358.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__598 = __pyx_t_358;
+  __pyx_t_358.memview = NULL;
+  __pyx_t_358.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_359 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint8_t(Py_None);
+  if (unlikely(!__pyx_t_359.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__599 = __pyx_t_359;
+  __pyx_t_359.memview = NULL;
+  __pyx_t_359.data = NULL;
+  __pyx_k__600 = 0.0;
+  __pyx_k__601 = 0.0;
+  __pyx_k__602 = 0;
+  __pyx_k__603 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_360 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_360.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__604 = __pyx_t_360;
+  __pyx_t_360.memview = NULL;
+  __pyx_t_360.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_361 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_361.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__605 = __pyx_t_361;
+  __pyx_t_361.memview = NULL;
+  __pyx_t_361.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_362 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_362.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__606 = __pyx_t_362;
+  __pyx_t_362.memview = NULL;
+  __pyx_t_362.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_363 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_363.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__607 = __pyx_t_363;
+  __pyx_t_363.memview = NULL;
+  __pyx_t_363.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_364 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_364.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__608 = __pyx_t_364;
+  __pyx_t_364.memview = NULL;
+  __pyx_t_364.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_365 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_365.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__609 = __pyx_t_365;
+  __pyx_t_365.memview = NULL;
+  __pyx_t_365.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_366 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_366.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__610 = __pyx_t_366;
+  __pyx_t_366.memview = NULL;
+  __pyx_t_366.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_367 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint16_t(Py_None);
+  if (unlikely(!__pyx_t_367.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__611 = __pyx_t_367;
+  __pyx_t_367.memview = NULL;
+  __pyx_t_367.data = NULL;
+  __pyx_k__612 = 0.0;
+  __pyx_k__613 = 0.0;
+  __pyx_k__614 = 0;
+  __pyx_k__615 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_368 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_368.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__616 = __pyx_t_368;
+  __pyx_t_368.memview = NULL;
+  __pyx_t_368.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_369 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_369.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__617 = __pyx_t_369;
+  __pyx_t_369.memview = NULL;
+  __pyx_t_369.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_370 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_370.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__618 = __pyx_t_370;
+  __pyx_t_370.memview = NULL;
+  __pyx_t_370.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_371 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_371.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__619 = __pyx_t_371;
+  __pyx_t_371.memview = NULL;
+  __pyx_t_371.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_372 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_372.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__620 = __pyx_t_372;
+  __pyx_t_372.memview = NULL;
+  __pyx_t_372.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_373 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_373.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__621 = __pyx_t_373;
+  __pyx_t_373.memview = NULL;
+  __pyx_t_373.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_374 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_374.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__622 = __pyx_t_374;
+  __pyx_t_374.memview = NULL;
+  __pyx_t_374.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_375 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint32_t(Py_None);
+  if (unlikely(!__pyx_t_375.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__623 = __pyx_t_375;
+  __pyx_t_375.memview = NULL;
+  __pyx_t_375.data = NULL;
+  __pyx_k__624 = 0.0;
+  __pyx_k__625 = 0.0;
+  __pyx_k__626 = 0;
+  __pyx_k__627 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_376 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_376.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__628 = __pyx_t_376;
+  __pyx_t_376.memview = NULL;
+  __pyx_t_376.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_377 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_377.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__629 = __pyx_t_377;
+  __pyx_t_377.memview = NULL;
+  __pyx_t_377.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_378 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_378.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__630 = __pyx_t_378;
+  __pyx_t_378.memview = NULL;
+  __pyx_t_378.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_379 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_379.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__631 = __pyx_t_379;
+  __pyx_t_379.memview = NULL;
+  __pyx_t_379.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_380 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_380.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__632 = __pyx_t_380;
+  __pyx_t_380.memview = NULL;
+  __pyx_t_380.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_381 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_381.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__633 = __pyx_t_381;
+  __pyx_t_381.memview = NULL;
+  __pyx_t_381.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_382 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_382.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__634 = __pyx_t_382;
+  __pyx_t_382.memview = NULL;
+  __pyx_t_382.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_383 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_uint64_t(Py_None);
+  if (unlikely(!__pyx_t_383.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__635 = __pyx_t_383;
+  __pyx_t_383.memview = NULL;
+  __pyx_t_383.data = NULL;
+  __pyx_k__636 = 0.0;
+  __pyx_k__637 = 0.0;
+  __pyx_k__638 = 0;
+  __pyx_k__639 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_384 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_384.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__640 = __pyx_t_384;
+  __pyx_t_384.memview = NULL;
+  __pyx_t_384.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_385 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_385.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__641 = __pyx_t_385;
+  __pyx_t_385.memview = NULL;
+  __pyx_t_385.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_386 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_386.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__642 = __pyx_t_386;
+  __pyx_t_386.memview = NULL;
+  __pyx_t_386.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_387 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_387.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__643 = __pyx_t_387;
+  __pyx_t_387.memview = NULL;
+  __pyx_t_387.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_388 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_388.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__644 = __pyx_t_388;
+  __pyx_t_388.memview = NULL;
+  __pyx_t_388.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_389 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_389.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__645 = __pyx_t_389;
+  __pyx_t_389.memview = NULL;
+  __pyx_t_389.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_390 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_390.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__646 = __pyx_t_390;
+  __pyx_t_390.memview = NULL;
+  __pyx_t_390.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_391 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_391.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__647 = __pyx_t_391;
+  __pyx_t_391.memview = NULL;
+  __pyx_t_391.data = NULL;
+  __pyx_k__648 = 0.0;
+  __pyx_k__649 = 0.0;
+  __pyx_k__650 = 0;
+  __pyx_k__651 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_392 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_392.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__652 = __pyx_t_392;
+  __pyx_t_392.memview = NULL;
+  __pyx_t_392.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_393 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_393.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__653 = __pyx_t_393;
+  __pyx_t_393.memview = NULL;
+  __pyx_t_393.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_394 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_394.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__654 = __pyx_t_394;
+  __pyx_t_394.memview = NULL;
+  __pyx_t_394.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_395 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_395.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__655 = __pyx_t_395;
+  __pyx_t_395.memview = NULL;
+  __pyx_t_395.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_396 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_396.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__656 = __pyx_t_396;
+  __pyx_t_396.memview = NULL;
+  __pyx_t_396.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_397 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_397.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__657 = __pyx_t_397;
+  __pyx_t_397.memview = NULL;
+  __pyx_t_397.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_398 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_398.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__658 = __pyx_t_398;
+  __pyx_t_398.memview = NULL;
+  __pyx_t_398.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_399 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int16_t(Py_None);
+  if (unlikely(!__pyx_t_399.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__659 = __pyx_t_399;
+  __pyx_t_399.memview = NULL;
+  __pyx_t_399.data = NULL;
+  __pyx_k__660 = 0.0;
+  __pyx_k__661 = 0.0;
+  __pyx_k__662 = 0;
+  __pyx_k__663 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_400 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_400.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__664 = __pyx_t_400;
+  __pyx_t_400.memview = NULL;
+  __pyx_t_400.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_401 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_401.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__665 = __pyx_t_401;
+  __pyx_t_401.memview = NULL;
+  __pyx_t_401.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_402 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_402.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__666 = __pyx_t_402;
+  __pyx_t_402.memview = NULL;
+  __pyx_t_402.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_403 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_403.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__667 = __pyx_t_403;
+  __pyx_t_403.memview = NULL;
+  __pyx_t_403.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_404 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_404.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__668 = __pyx_t_404;
+  __pyx_t_404.memview = NULL;
+  __pyx_t_404.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_405 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_405.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__669 = __pyx_t_405;
+  __pyx_t_405.memview = NULL;
+  __pyx_t_405.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_406 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_406.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__670 = __pyx_t_406;
+  __pyx_t_406.memview = NULL;
+  __pyx_t_406.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_407 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int32_t(Py_None);
+  if (unlikely(!__pyx_t_407.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__671 = __pyx_t_407;
+  __pyx_t_407.memview = NULL;
+  __pyx_t_407.data = NULL;
+  __pyx_k__672 = 0.0;
+  __pyx_k__673 = 0.0;
+  __pyx_k__674 = 0;
+  __pyx_k__675 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_408 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_408.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__676 = __pyx_t_408;
+  __pyx_t_408.memview = NULL;
+  __pyx_t_408.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_409 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_409.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__677 = __pyx_t_409;
+  __pyx_t_409.memview = NULL;
+  __pyx_t_409.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":342
+ * @cython.initializedcheck(False)
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ */
+  __pyx_t_410 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_410.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__678 = __pyx_t_410;
+  __pyx_t_410.memview = NULL;
+  __pyx_t_410.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":343
+ * cdef floating[:, ::1]c3_preproc(floating[::1] data,
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ */
+  __pyx_t_411 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_411.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__679 = __pyx_t_411;
+  __pyx_t_411.memview = NULL;
+  __pyx_t_411.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":344
+ *                                 floating[::1] dark=None,
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ */
+  __pyx_t_412 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_412.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__680 = __pyx_t_412;
+  __pyx_t_412.memview = NULL;
+  __pyx_t_412.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":345
+ *                                 floating[::1] flat=None,
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,
+ */
+  __pyx_t_413 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_413.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__681 = __pyx_t_413;
+  __pyx_t_413.memview = NULL;
+  __pyx_t_413.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":346
+ *                                 floating[::1] solidangle=None,
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,             # <<<<<<<<<<<<<<
+ *                                 any_int_t[::1] mask=None,
+ *                                 floating dummy=0.0,
+ */
+  __pyx_t_414 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_414.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__682 = __pyx_t_414;
+  __pyx_t_414.memview = NULL;
+  __pyx_t_414.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":347
+ *                                 floating[::1] polarization=None,
+ *                                 floating[::1] absorption=None,
+ *                                 any_int_t[::1] mask=None,             # <<<<<<<<<<<<<<
+ *                                 floating dummy=0.0,
+ *                                 floating delta_dummy=0.0,
+ */
+  __pyx_t_415 = __Pyx_PyObject_to_MemoryviewSlice_dc_nn___pyx_t_5numpy_int64_t(Py_None);
+  if (unlikely(!__pyx_t_415.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__683 = __pyx_t_415;
+  __pyx_t_415.memview = NULL;
+  __pyx_t_415.data = NULL;
+  __pyx_k__684 = 0.0;
+  __pyx_k__685 = 0.0;
+  __pyx_k__686 = 0;
+  __pyx_k__687 = 1.0;
+
+  /* "pyFAI/ext/preproc.pyx":352
+ *                                 bint check_dummy=False,
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,             # <<<<<<<<<<<<<<
+ *                                 floating[::1] dark_variance=None,
+ *                                 ) nogil:
+ */
+  __pyx_t_416 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_416.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 352; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__688 = __pyx_t_416;
+  __pyx_t_416.memview = NULL;
+  __pyx_t_416.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":353
+ *                                 floating normalization_factor=1.0,
+ *                                 floating[::1] variance=None,
+ *                                 floating[::1] dark_variance=None,             # <<<<<<<<<<<<<<
+ *                                 ) nogil:
+ *     """Common preprocessing step for all routines: C-implementation
+ */
+  __pyx_t_417 = __Pyx_PyObject_to_MemoryviewSlice_dc_double(Py_None);
+  if (unlikely(!__pyx_t_417.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k__689 = __pyx_t_417;
+  __pyx_t_417.memview = NULL;
+  __pyx_t_417.data = NULL;
+
+  /* "pyFAI/ext/preproc.pyx":450
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
- * def preproc(data,             # <<<<<<<<<<<<<<
+ * def preproc(raw,             # <<<<<<<<<<<<<<
  *             dark=None,
  *             flat=None,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_7preproc_1preproc, NULL, __pyx_n_s_pyFAI_ext_preproc); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_7preproc_1preproc, NULL, __pyx_n_s_pyFAI_ext_preproc); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_preproc, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 156; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_preproc, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyFAI/ext/preproc.pyx":1
@@ -19615,7 +28747,7 @@ PyMODINIT_FUNC PyInit_preproc(void)
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__180, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__692, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_XGOTREF(generic);
   __Pyx_DECREF_SET(generic, __pyx_t_1);
@@ -19629,7 +28761,7 @@ PyMODINIT_FUNC PyInit_preproc(void)
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__181, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__693, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_XGOTREF(strided);
   __Pyx_DECREF_SET(strided, __pyx_t_1);
@@ -19643,7 +28775,7 @@ PyMODINIT_FUNC PyInit_preproc(void)
  * 
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__182, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__694, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_XGOTREF(indirect);
   __Pyx_DECREF_SET(indirect, __pyx_t_1);
@@ -19657,7 +28789,7 @@ PyMODINIT_FUNC PyInit_preproc(void)
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__183, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 281; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__695, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 281; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_XGOTREF(contiguous);
   __Pyx_DECREF_SET(contiguous, __pyx_t_1);
@@ -19671,7 +28803,7 @@ PyMODINIT_FUNC PyInit_preproc(void)
  * 
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__184, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), __pyx_tuple__696, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_XGOTREF(indirect_contiguous);
   __Pyx_DECREF_SET(indirect_contiguous, __pyx_t_1);
@@ -19813,6 +28945,326 @@ PyMODINIT_FUNC PyInit_preproc(void)
   __PYX_XDEC_MEMVIEW(&__pyx_t_95, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_96, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_97, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_98, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_99, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_100, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_101, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_102, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_103, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_104, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_105, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_106, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_107, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_108, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_109, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_110, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_111, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_112, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_113, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_114, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_115, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_116, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_117, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_118, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_119, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_120, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_121, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_122, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_123, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_124, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_125, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_126, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_127, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_128, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_129, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_130, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_131, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_132, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_133, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_134, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_135, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_136, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_137, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_138, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_139, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_140, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_141, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_142, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_143, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_144, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_145, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_146, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_147, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_148, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_149, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_150, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_151, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_152, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_153, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_154, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_155, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_156, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_157, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_158, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_159, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_160, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_161, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_162, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_163, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_164, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_165, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_166, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_167, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_168, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_169, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_170, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_171, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_172, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_173, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_174, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_175, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_176, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_177, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_178, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_179, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_180, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_181, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_182, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_183, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_184, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_185, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_186, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_187, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_188, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_189, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_190, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_191, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_192, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_193, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_194, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_195, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_196, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_197, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_198, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_199, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_200, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_201, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_202, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_203, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_204, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_205, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_206, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_207, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_208, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_209, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_210, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_211, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_212, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_213, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_214, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_215, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_216, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_217, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_218, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_219, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_220, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_221, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_222, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_223, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_224, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_225, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_226, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_227, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_228, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_229, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_230, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_231, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_232, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_233, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_234, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_235, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_236, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_237, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_238, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_239, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_240, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_241, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_242, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_243, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_244, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_245, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_246, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_247, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_248, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_249, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_250, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_251, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_252, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_253, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_254, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_255, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_256, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_257, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_258, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_259, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_260, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_261, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_262, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_263, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_264, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_265, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_266, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_267, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_268, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_269, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_270, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_271, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_272, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_273, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_274, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_275, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_276, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_277, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_278, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_279, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_280, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_281, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_282, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_283, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_284, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_285, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_286, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_287, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_288, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_289, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_290, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_291, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_292, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_293, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_294, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_295, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_296, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_297, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_298, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_299, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_300, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_301, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_302, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_303, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_304, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_305, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_306, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_307, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_308, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_309, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_310, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_311, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_312, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_313, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_314, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_315, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_316, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_317, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_318, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_319, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_320, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_321, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_322, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_323, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_324, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_325, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_326, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_327, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_328, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_329, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_330, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_331, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_332, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_333, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_334, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_335, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_336, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_337, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_338, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_339, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_340, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_341, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_342, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_343, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_344, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_345, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_346, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_347, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_348, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_349, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_350, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_351, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_352, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_353, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_354, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_355, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_356, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_357, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_358, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_359, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_360, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_361, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_362, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_363, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_364, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_365, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_366, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_367, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_368, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_369, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_370, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_371, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_372, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_373, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_374, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_375, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_376, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_377, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_378, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_379, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_380, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_381, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_382, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_383, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_384, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_385, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_386, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_387, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_388, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_389, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_390, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_391, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_392, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_393, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_394, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_395, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_396, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_397, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_398, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_399, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_400, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_401, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_402, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_403, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_404, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_405, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_406, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_407, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_408, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_409, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_410, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_411, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_412, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_413, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_414, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_415, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_416, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_417, 1);
   if (__pyx_m) {
     if (__pyx_d) {
       __Pyx_AddTraceback("init pyFAI.ext.preproc", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -22710,6 +32162,28 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dc_flo
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, __Pyx_IS_C_CONTIG,
                                                  (PyBUF_C_CONTIGUOUS | PyBUF_FORMAT | PyBUF_WRITABLE), 1,
+                                                 &__Pyx_TypeInfo_float, stack,
+                                                 &result, obj);
+    if (unlikely(retcode == -1))
+        goto __pyx_fail;
+    return result;
+__pyx_fail:
+    result.memview = NULL;
+    result.data = NULL;
+    return result;
+}
+
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_d_dc_float(PyObject *obj) {
+    __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
+    __Pyx_BufFmt_StackElem stack[1];
+    int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_FOLLOW), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_CONTIG) };
+    int retcode;
+    if (obj == Py_None) {
+        result.memview = (struct __pyx_memoryview_obj *) Py_None;
+        return result;
+    }
+    retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, __Pyx_IS_C_CONTIG,
+                                                 (PyBUF_C_CONTIGUOUS | PyBUF_FORMAT | PyBUF_WRITABLE), 2,
                                                  &__Pyx_TypeInfo_float, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))

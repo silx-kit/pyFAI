@@ -21,8 +21,9 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Introduction/introduction
    Geometry/geometry
    Distortion/Distortion
-   Calibrant/index
+   Calibrant/Calibrant
    multi-geometry
    MakeCalibrant/make_calibrant
    CCD_Calibration/CCD_calibration
-
+   Goniometer/index
+   Inpainting/Inpainting

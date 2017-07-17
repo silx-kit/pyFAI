@@ -4,13 +4,9 @@ os:
 
 language: python
 python:
-#  - "2.6"
   - "2.7"
-#  - "3.2"
-#  - "3.3" #fails misteriously
   - "3.4"
   - "3.5"
-#  - "nightly" 
 #virtualenv:
 #    system_site_packages: NO !!!
 # the system python and the one from travis have been compiled with different options
@@ -26,7 +22,6 @@ addons:
       - libqtcore4
 #For OpenCL:
       - libboost1.48-dev
-      - libboost-python-dev
       - libboost-python1.48
       - opencl-headers
       - python-pyopencl

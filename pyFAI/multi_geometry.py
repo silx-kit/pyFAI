@@ -33,10 +33,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2016"
+__date__ = "19/06/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
+import collections
 import logging
 logger = logging.getLogger("pyFAI.multi_geometry")
 from .azimuthalIntegrator import AzimuthalIntegrator
@@ -50,10 +51,8 @@ error = None
 
 
 class MultiGeometry(object):
-    """
-    This is an Azimuthal integrator containing multiple geometries (when
-    the detector is on a goniometer arm)
-
+    """This is an Azimuthal integrator containing multiple geometries,
+    for example when the detector is on a goniometer arm
     """
 
     def __init__(self, ais, unit="2th_deg",
@@ -97,7 +96,7 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    monitors=None, all=False,
+                    normalization_factor=None, all=False,
                     lst_mask=None, lst_flat=None):
         """Perform 1D azimuthal integration
 
@@ -109,15 +108,19 @@ class MultiGeometry(object):
         :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
         :type error_model: str
         :param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
-        :param monitors: normalization monitors value (list of floats)
+        :param normalization_factor: normalization monitors value (list of floats)
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate1dResult).
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :return: 2th/I or a dict with everything depending on "all"
         :rtype: Integrate1dResult, dict
         """
-        if monitors is None:
-            monitors = [1.0] * len(self.ais)
+        if len(lst_data) == 0:
+            raise RuntimeError("List of images cannot be empty")
+        if normalization_factor is None:
+            normalization_factor = [1.0] * len(self.ais)
+        elif not isinstance(normalization_factor, collections.Iterable):
+            normalization_factor = [normalization_factor] * len(self.ais)
         if lst_variance is None:
             lst_variance = [None] * len(self.ais)
         if lst_mask is None:
@@ -131,7 +134,7 @@ class MultiGeometry(object):
         sum_ = numpy.zeros(npt, dtype=numpy.float64)
         count = numpy.zeros(npt, dtype=numpy.float64)
         sigma2 = None
-        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, monitors, lst_variance, lst_mask, lst_flat):
+        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
             res = ai.integrate1d(data, npt=npt,
                                  correctSolidAngle=correctSolidAngle,
                                  variance=variance, error_model=error_model,
@@ -179,7 +182,7 @@ class MultiGeometry(object):
                     correctSolidAngle=True,
                     lst_variance=None, error_model=None,
                     polarization_factor=None,
-                    monitors=None, all=False, lst_mask=None, lst_flat=None):
+                    normalization_factor=None, all=False, lst_mask=None, lst_flat=None):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
         :param lst_data: list of numpy array
@@ -190,15 +193,19 @@ class MultiGeometry(object):
         :param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
         :type error_model: str
         :param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
-        :param monitors: normalization monitors value (list of floats)
+        :param normalization_factor: normalization monitors value (list of floats)
         :param all: return a dict with all information in it (deprecated, please refer to the documentation of Integrate2dResult).
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :return: I/2th/chi or a dict with everything depending on "all"
         :rtype: Integrate2dResult, dict
         """
-        if monitors is None:
-            monitors = [1.0] * len(self.ais)
+        if len(lst_data) == 0:
+            raise RuntimeError("List of images cannot be empty")
+        if normalization_factor is None:
+            normalization_factor = [1.0] * len(self.ais)
+        elif not isinstance(normalization_factor, collections.Iterable):
+            normalization_factor = [normalization_factor] * len(self.ais)
         if lst_variance is None:
             lst_variance = [None] * len(self.ais)
         if lst_mask is None:
@@ -212,7 +219,7 @@ class MultiGeometry(object):
         sum_ = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
         count = numpy.zeros_like(sum_)
         sigma2 = None
-        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, monitors, lst_variance, lst_mask, lst_flat):
+        for ai, data, monitor, variance, mask, flat in zip(self.ais, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat):
             res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
                                  correctSolidAngle=correctSolidAngle,
                                  variance=variance, error_model=error_model,
@@ -242,6 +249,7 @@ class MultiGeometry(object):
             result = Integrate2dResult(I, res.radial, res.azimuthal)
         result._set_sum(sum_)
         result._set_count(count)
+        result._set_unit(self.unit)
 
         if all:
             logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
@@ -249,7 +257,8 @@ class MultiGeometry(object):
                    "radial": res.radial,
                    "azimuthal": res.azimuthal,
                    "count": count,
-                   "sum": sum_}
+                   "sum": sum_,
+                   "unit": self.unit}
             return out
 
         return result

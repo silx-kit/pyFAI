@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 01/12/2016
+:Date: 09/05/2017
 :Keywords: Project management description
 :Target: developers
 
@@ -9,8 +9,9 @@ Project
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
-PyFAI is an open source project licensed under the GPL (switching to MIT) mainly
-written in Python (v2.7 or newer, 3.4 or newer) and heavily relying on the
+PyFAI is an open source project licensed under the MIT license (previously
+under GPL) mainly written in Python (v2.7, 3.4 or newer).
+It is managed by the Silx team and is heavily relying on the
 Python scientific ecosystem: numpy, scipy and matplotlib.
 It provides high performances image treatment thanks to Cython and
 OpenCL... but only a C-compiler is needed to build it.
@@ -52,10 +53,11 @@ into the main branch via pull-requests.
 Getting help
 ------------
 
-A mailing list: pyfai@esrf.fr is publicly available, it is the best place to ask
-your questions: the author and many advanced users are there and willing to help you.
+A mailing list, pyfai@esrf.fr, is publicly available.
+I t is the best place to ask your questions: the author and many advanced users
+are there and willing to help you.
 To subscribe to this mailing list, send an email to
-`sympa@esrf.fr with "subscribe pyfai" as subject <mailto:sympa@esrf.fr?Subject=subscribe%20pyfai>`_.
+`pyfai-subscribe@esrf.fr <mailto:pyfai-subscribe@esrf.fr>`_.
 
 On this mailing list, you will have information about release of the software,
 new features available and meet experts to help you solve issues related to
@@ -86,7 +88,7 @@ continue funding development.
 Run dependencies
 ----------------
 
-* Python version 2.7, 3.4, 3.5
+* Python version 2.7, 3.4, 3.5, 3.6
 * NumPy
 * SciPy
 * Matplotlib
@@ -94,6 +96,7 @@ Run dependencies
 * h5py
 * pyopencl (optional)
 * PyQt4 or PySide (for the graphical user interface)
+* Silx
 
 Build dependencies
 ------------------
@@ -149,7 +152,7 @@ To test the installed version of pyFAI:
 
 or from python:
 
-.. code-block:: python 
+.. code-block:: python
 
     import pyFAI
     pyFAI.tests()
@@ -212,8 +215,8 @@ Continuous integration is made by a home-made scripts which checks out the lates
 `Nightly builds <http://www.silx.org/pub/debian/binary/>`_ are available for debian8-64 bits. To install them:
 
 .. code::
-    
-    
+
+
 	sudo apt-get update
 	sudo apt-get install pyfai
 

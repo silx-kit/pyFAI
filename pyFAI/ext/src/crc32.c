@@ -19,6 +19,7 @@ THE SOFTWARE.
 */
 
 #include <stdint.h>
+
 //#include <smmintrin.h>
 //#include <cpuid.h>
 #define bit_SSE4_2 (1<<20)
@@ -94,7 +95,7 @@ void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *e
 int is_initialized=0;
 uint32_t slowcrc_table[1<<8];
 
-void slowcrc_init() {
+void slowcrc_init(void) {
 	uint32_t i, j, a;
 
 	for (i=0;i<(1<<8);i++) {

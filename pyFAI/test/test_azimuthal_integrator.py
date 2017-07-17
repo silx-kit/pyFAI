@@ -141,7 +141,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             six.moves.input("Press enter to quit")
-        assert rwp < 11
+        self.assertLess(rwp, 11, "Rwp numpy/fit2d: %.3f" % rwp)
 
     def test_cython_vs_fit2d(self):
         """
@@ -165,7 +165,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             six.moves.input("Press enter to quit")
-        assert rwp < 11
+        self.assertLess(rwp, 11, "Rwp cython/fit2d: %.3f" % rwp)
 
     def test_cythonSP_vs_fit2d(self):
         """
@@ -197,7 +197,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.legend(handles, labels)
             fig.show()
             six.moves.input("Press enter to quit")
-        assert rwp < 11
+        self.assertLess(rwp, 11, "Rwp cythonSP/fit2d: %.3f" % rwp)
 
     def test_cython_vs_numpy(self):
         """
@@ -232,7 +232,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             fig.show()
             six.moves.input("Press enter to quit")
 
-        assert rwp < 3
+        self.assertLess(rwp, 3, "Rwp cython/numpy: %.3f" % rwp)
 
     def test_separate(self):
         "test separate with a mask. issue #209 regression test"
@@ -240,6 +240,19 @@ class TestAzimHalfFrelon(unittest.TestCase):
         bragg, amorphous = self.ai.separate(self.data, mask=msk)
         self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
         self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
+
+    def test_medfilt1d(self):
+        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr")
+        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr")
+        rwp = Rwp(ref, ocl)
+        logger.info("test_medfilt1d median Rwp = %.3f", rwp)
+        self.assertLess(rwp, 1, "Rwp medfilt1d Numpy/OpenCL: %.3f" % rwp)
+
+        ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr", percentile=(20, 80))
+        ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr", percentile=(20, 80))
+        rwp = Rwp(ref, ocl)
+        logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
+        self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
 
     def test_radial(self):
 
@@ -261,11 +274,11 @@ class TestFlatimage(unittest.TestCase):
     epsilon = 1e-4
 
     def test_splitPixel(self):
-        shape = (2000, 2001)
+        shape = (200, 201)
         data = numpy.ones(shape, dtype="float64")
-        det = Detector(1e-5, 1e-5, max_shape=(2000, 2001))
+        det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-        I = ai.xrpd2_splitPixel(data, 2048, 2048, correctSolidAngle=False, dummy=-1.0)[0]
+        I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
 #        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -281,10 +294,11 @@ class TestFlatimage(unittest.TestCase):
         assert abs(I.max() - 1.0) < self.epsilon
 
     def test_splitBBox(self):
-        data = numpy.ones((2000, 2000), dtype="float64")
-        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, pixel1=1e-5, pixel2=1e-5)
-        I = ai.xrpd2_splitBBox(data, 2048, 2048, correctSolidAngle=False, dummy=-1.0)[0]
-#        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
+        shape = (200, 201)
+        data = numpy.ones(shape, dtype="float64")
+        det = Detector(1e-4, 1e-4, max_shape=shape)
+        ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
+        I = ai.xrpd2_splitBBox(data, 256, 256, correctSolidAngle=False, dummy=-1.0)[0]
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
@@ -326,6 +340,7 @@ class TestSaxs(unittest.TestCase):
 #         self.assertTrue(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
 
     def test_normalization_factor(self):
+
         ai = AzimuthalIntegrator(detector="Pilatus100k")
         ai.wavelength = 1e-10
         methods = ["cython", "numpy", "lut", "csr", "ocl_lut", "ocl_csr", "splitpixel"]
@@ -334,6 +349,7 @@ class TestSaxs(unittest.TestCase):
 
         data = fabio.open(self.edfPilatus).data[:ai.detector.shape[0], :ai.detector.shape[1]]
         for method in methods:
+            logger.debug("TestSaxs.test_normalization_factor method= " + method)
             ref1d[method + "_1"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, error_model="poisson")
             ref1d[method + "_10"] = ai.integrate1d(copy.deepcopy(data), 100, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref1d[method + "_1"].intensity.mean() / ref1d[method + "_10"].intensity.mean()
@@ -349,6 +365,18 @@ class TestSaxs(unittest.TestCase):
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
 #             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
             # ai.reset()
+
+    def test_inpainting(self):
+        logger.debug("TestSaxs.test_inpainting")
+        img = fabio.open(self.edfPilatus).data
+        ai = AzimuthalIntegrator(detector="Pilatus1M")
+        ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
+        mask = img < 0
+        inp = ai.inpainting(img, mask)
+        neg = (inp < 0).sum()
+        logger.debug("neg=%s" % neg)
+        self.assertTrue(neg == 0, "all negative pixels got inpainted actually all but %s" % neg)
+        self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
 
 
 class TestSetter(unittest.TestCase):
@@ -388,6 +416,7 @@ def suite():
     testsuite.addTest(TestAzimHalfFrelon("test_cythonSP_vs_fit2d"))
     testsuite.addTest(TestAzimHalfFrelon("test_cython_vs_numpy"))
     testsuite.addTest(TestAzimHalfFrelon("test_separate"))
+    testsuite.addTest(TestAzimHalfFrelon("test_medfilt1d"))
     testsuite.addTest(TestAzimHalfFrelon("test_radial"))
     testsuite.addTest(TestFlatimage("test_splitPixel"))
     testsuite.addTest(TestFlatimage("test_splitBBox"))
@@ -396,6 +425,8 @@ def suite():
     testsuite.addTest(TestAzimPilatus("test_separate"))
     testsuite.addTest(TestSaxs("test_mask"))
     testsuite.addTest(TestSaxs("test_normalization_factor"))
+    testsuite.addTest(TestSaxs("test_inpainting"))
+
     return testsuite
 
 if __name__ == '__main__':

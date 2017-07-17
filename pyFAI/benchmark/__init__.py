@@ -28,11 +28,12 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "28/11/2016"
+__date__ = "26/04/2017"
 __license__ = "MIT"
-__copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
 
+from collections import OrderedDict
 import json
 import sys
 import time
@@ -212,7 +213,7 @@ class Bench(object):
         self.LIMIT = 8
         self.repeat = repeat
         self.nbr = nbr
-        self.results = {}
+        self.results = OrderedDict()
         self.meth = []
         self._cpu = None
         self.fig = None
@@ -334,7 +335,7 @@ class Bench(object):
             print("Working on processor: %s" % self.get_cpu())
             label = "1D_" + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
-        results = {}
+        results = OrderedDict()
         first = True
         for param in ds_list:
             self.update_mp()
@@ -434,7 +435,7 @@ class Bench(object):
             label = "2D_" + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
 
-        results = {}
+        results = OrderedDict()
         first = True
         for param in ds_list:
             self.update_mp()
@@ -485,7 +486,7 @@ class Bench(object):
         if ocl is None or not ocl.select_device(devicetype):
             print("No pyopencl or no such device: skipping benchmark")
             return
-        results = {}
+        results = OrderedDict()
         label = "Forward_OpenCL_%s_%s_bits" % (devicetype, ("64" if useFp64 else"32"))
         first = True
         for param in ds_list:
@@ -654,14 +655,14 @@ class Bench(object):
 def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
                   do_1d=True, do_2d=False, devices="all"):
     """Run the integrated benchmark using the most common algorithms (method parameter)
-    
+
     :param number: Measure timimg over number of executions
     :param repeat: number of measurement, takes the best of them
     :param memprof: set to True to enable memory profiling to hunt memory leaks
     :param max_size: maximum image size in megapixel, set it to 2 to speed-up the tests.
     :param do_1d: perfrom benchmarking using integrate1d
-    :param do_2d: perfrom benchmarking using integrate2d  
-    :devices: "all", "cpu", "gpu" or "acc" or a list of devices [(proc_id, dev_id)] 
+    :param do_2d: perfrom benchmarking using integrate2d
+    :devices: "all", "cpu", "gpu" or "acc" or a list of devices [(proc_id, dev_id)]
     """
     print("Averaging over %i repetitions (best of %s)." % (number, repeat))
     bench = Bench(number, repeat, memprof, max_size=max_size)

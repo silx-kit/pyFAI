@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "02/02/2017"
 __status__ = "development"
 
 import threading
@@ -217,12 +217,12 @@ class Worker(object):
         self.needs_reset = True
         self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
-        self.method = "lut"
+        self.method = "csr"
         self.radial = None
         self.azimuthal = None
         self.radial_range = None
         self.azimuth_range = None
-        self.is_safe = True
+        self.safe = True
 
     def __repr__(self):
         """
@@ -287,9 +287,10 @@ class Worker(object):
                  "method": self.method,
                  "polarization_factor": self.polarization_factor,
                  # "filename": None,
-                 "safe": self.is_safe,
+                 "safe": self.safe,
                  "data": data,
                  "correctSolidAngle": self.correct_solid_angle,
+                 "safe": self.safe
                  }
 
         if monitor is not None:
@@ -447,6 +448,12 @@ class Worker(object):
             self.polarization_factor = config.get("polarization_factor")
         else:
             self.polarization_factor = None
+
+        if config.get("do_OpenCL"):
+            self.method = "csr_ocl"
+        else:
+            self.method = "csr"
+
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
@@ -561,8 +568,8 @@ class PixelwiseWorker(object):
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """Constructor of the worker
-        
-        :param dark: array 
+
+        :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
@@ -603,7 +610,7 @@ class PixelwiseWorker(object):
         Process the data and apply a normalization factor
         :param data: input data
         :param normalization: normalization factor
-        :return processed data
+        :return: processed data
         """
         if preproc is not None:
             proc_data = preproc(data,
@@ -651,12 +658,12 @@ class DistortionWorker(object):
     def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """Constructor of the worker
-        :param dark: array 
+        :param dark: array
         :param flat: array
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
-        
+
         """
 
         self.ctx = None
@@ -700,7 +707,7 @@ class DistortionWorker(object):
         Process the data and apply a normalization factor
         :param data: input data
         :param normalization: normalization factor
-        :return processed data
+        :return: processed data
         """
         if preproc is not None:
             proc_data = preproc(data,

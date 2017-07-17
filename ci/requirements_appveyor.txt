@@ -4,7 +4,7 @@
 
 wheel
 numpy
-#Cython
+#cython
 Pillow
 h5py
 fabio
@@ -12,3 +12,4 @@ scipy
 matplotlib
 #mako
 #pyopencl
+numexpr

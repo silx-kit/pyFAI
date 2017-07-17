@@ -8,24 +8,28 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
-__doc__ = """A module to relabel regions"""
+"""A module to relabel regions"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "01/12/2016"
+__date__ = "15/05/2017"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -37,18 +41,20 @@ cimport numpy
 @cython.cdivision(True)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def countThem(numpy.ndarray label not None, \
-              numpy.ndarray data not None, \
+def countThem(numpy.ndarray label not None,
+              numpy.ndarray data not None,
               numpy.ndarray blured not None):
-    """Count 
+    """Count
+
     :param label: 2D array containing labeled zones
     :param data: 2D array containing the raw data
     :param blured: 2D array containing the blured data
     :return: 2D arrays containing:
-        * count pixels in labelled zone: label == index).sum()
+
+        * count pixels in labeled zone: label == index).sum()
         * max of data in that zone:      data[label == index].max()
-        * max of blured in that zone:    blured[label == index].max()
-        * data-blured where data is max.
+        * max of blurred in that zone:    blured[label == index].max()
+        * data-blurred where data is max.
     """
     cdef:
         numpy.uint32_t[::1] clabel = numpy.ascontiguousarray(label.ravel(), dtype=numpy.uint32)

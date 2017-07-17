@@ -27,6 +27,7 @@ import os
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 
+import sphinx
 try:
     import sphinx.ext.mathjax
 except:
@@ -44,7 +45,6 @@ extensions = [
     'sphinx.ext.mathjax'
 ]
 
-import sphinx
 if sphinx.__version__ < "1.4":
     extensions.append('sphinx.ext.pngmath')
 
@@ -60,21 +60,22 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# General information about the project.
-project = u'pyFAI'
-from pyFAI._version import strictversion, version, __date__ as pyfai_date
-year = pyfai_date.split("/")[-1]
-copyright = u'2012-%s, Jerome Kieffer' % (year)
-
 # Configure the environment to be able to use sphinxcontrib.programoutput
 # NOTE: Must be done after pyFAI._version import which at the end of the end imports PyMCA
 # Importing PyMCA redefine and reorder PYTHONPATH
 import glob
 root_dir = os.path.abspath("../..")
 build_dir = glob.glob('../../build/lib*')
-os.environ["PATH"] = os.path.abspath(os.path.join(root_dir, "scripts")) + os.pathsep + os.environ.get("PATH", "")
-if build_dir:
-    os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
+
+sys.path.insert(1, build_dir[0])
+os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
+
+# General information about the project.
+project = u'pyFAI'
+from pyFAI._version import strictversion, version, __date__ as pyfai_date
+year = pyfai_date.split("/")[-1]
+copyright = u'2012-%s, Jérôme Kieffer' % (year)
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -203,14 +204,8 @@ htmlhelp_basename = 'pyFAIdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
                   'papersize': 'a4paper',
-
-# The font size ('10pt', '11pt' or '12pt').
                    'pointsize': '10pt',
-
-# Additional stuff for the LaTeX preamble.
-# 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -260,9 +255,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'pyFAI', u'pyFAI Documentation',
-   u'Jérôme Kieffer', 'pyFAI', 'Python Azimuthal Integration library.',
-   'Miscellaneous'),
+                     ('index', 'pyFAI', u'pyFAI Documentation',
+                      u'Jérôme Kieffer', 'pyFAI', 'Python Azimuthal Integration library.',
+                      'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -274,10 +269,12 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
 
+
 def skip(app, what, name, obj, skip, options):
     if name == "__init__":
         return False
     return skip
+
 
 def setup(app):
     app.connect("autodoc-skip-member", skip)

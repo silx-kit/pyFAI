@@ -40,10 +40,10 @@ cdef class TreeItem(object):
     Node of a tree ...
 
     Each node contains:
-    
-     * children: list 
+
+     * children: list
      * parent: TreeItem parent
-     * label: str 
+     * label: str
      * order: int
      * type: str can be "dir", "file", "group" or "dataset"
      * extra: any object

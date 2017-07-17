@@ -539,7 +539,7 @@ class Distortion(object):
     """
     def __init__(self, detector="detector", shape=None):
         """
-        @param detector: detector instance or detector name
+        :param detector: detector instance or detector name
         """
         if isinstance(detector, six.string_types):
             self.detector = detector_factory(detector)
@@ -728,8 +728,8 @@ class Distortion(object):
         """
         Correct an image based on the look-up table calculated ...
 
-        @param image: 2D-array with the image
-        @return: corrected 2D image
+        :param image: 2D-array with the image
+        :return: corrected 2D image
         """
         cdef:
             int i, j, lshape0, lshape1, idx, size
@@ -770,8 +770,8 @@ class Distortion(object):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
 
-        @param image: 2D-array with the image
-        @return: uncorrected 2D image and a mask (pixels in raw image
+        :param image: 2D-array with the image
+        :return: uncorrected 2D image and a mask (pixels in raw image
         """
         if self.LUT is None:
             self.calc_LUT()
@@ -801,9 +801,9 @@ def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=Non
     """
     Calculate the number of items per output pixel
 
-    @param pos: 4D array with position in space
-    @param shape: shape of the output array
-    @return: number of input element per output elements
+    :param pos: 4D array with position in space
+    :param shape: shape of the output array
+    :return: number of input element per output elements
     """
     cdef:
         int i, j, k, l, shape0, shape1, min0, min1, max0, max1
@@ -845,12 +845,12 @@ def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=Non
 def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """
-    @param pos: 4D position array
-    @param shape: output shape
-    @param bin_size: number of input element per output element (numpy array)
-    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    @param mask: arry with bad pixels marked as True
-    @return: look-up table
+    :param pos: 4D position array
+    :param shape: output shape
+    :param bin_size: number of input element per output element (numpy array)
+    :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    :param mask: arry with bad pixels marked as True
+    :return: look-up table
     """
     cdef:
         int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
@@ -962,11 +962,11 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
 def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
              numpy.int8_t[:, :] mask=None):
     """
-    @param pos: 4D position array
-    @param shape: output shape
-    @param bin_size: number of input element per output element (as numpy array)
-    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    @return: look-up table in CSR format: 3-tuple of array"""
+    :param pos: 4D position array
+    :param shape: output shape
+    :param bin_size: number of input element per output element (as numpy array)
+    :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    :return: look-up table in CSR format: 3-tuple of array"""
     cdef int i, j, k, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
@@ -1082,12 +1082,12 @@ def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_du
     """
     Correct an image based on the look-up table calculated ...
 
-    @param image: 2D-array with the image
-    @param shape: shape of output image
-    @param LUT: Look up table, here a 2D-array of struct
-    @param dummy: value for invalid pixels
-    @param delta_dummy: precision for invalid pixels
-    @return: corrected 2D image
+    :param image: 2D-array with the image
+    :param shape: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :return: corrected 2D image
     """
     cdef:
         int i, j, lshape0, lshape1, idx, size, shape0, shape1
@@ -1143,12 +1143,12 @@ def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
 
-    @param image: 2D-array with the image
-    @param shape: shape of output image
-    @param LUT: Look up table, here a 3-tuple array of ndarray
-    @param dummy: value for invalid pixels
-    @param delta_dummy: precision for invalid pixels
-    @return: corrected 2D image
+    :param image: 2D-array with the image
+    :param shape: shape of output image
+    :param LUT: Look up table, here a 3-tuple array of ndarray
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :return: corrected 2D image
     """
     cdef:
         int i, j, idx, size, bins
@@ -1205,10 +1205,10 @@ def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):
 def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
-    @param image: 2D-array with the image
-    @param shape: shape of output image
-    @param LUT: Look up table, here a 2D-array of struct
-    @return: uncorrected 2D image and a mask (pixels in raw image not existing)
+    :param image: 2D-array with the image
+    :param shape: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :return: uncorrected 2D image and a mask (pixels in raw image not existing)
     """
     cdef int idx, j
     cdef float total, coef
@@ -1238,10 +1238,10 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
 def uncorrect_CSR(image, shape, LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
-    @param image: 2D-array with the image
-    @param shape: shape of output image
-    @param LUT: Look up table, here a 3-tuple of ndarray
-    @return: uncorrected 2D image and a mask (pixels in raw image not existing)
+    :param image: 2D-array with the image
+    :param shape: shape of output image
+    :param LUT: Look up table, here a 3-tuple of ndarray
+    :return: uncorrected 2D image and a mask (pixels in raw image not existing)
     """
     cdef:
         int idx, j, nbins

@@ -41,7 +41,7 @@ cimport numpy
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def binary_dilation(numpy.int8_t[:, ::1] image, 
+def binary_dilation(numpy.int8_t[:, ::1] image,
                     float radius=1.0):
     """
     Return fast binary morphological dilation of an image.
@@ -53,8 +53,8 @@ def binary_dilation(numpy.int8_t[:, ::1] image,
     :param radius: float
     :return: ndiamge
     """
-    cdef: 
-        int x, y, i, j, size_x, size_y, px, py, 
+    cdef:
+        int x, y, i, j, size_x, size_y, px, py,
         int r_int = int(radius), r2_int = int(radius * radius)
     size_y = image.shape[0]
     size_x = image.shape[1]
@@ -67,11 +67,11 @@ def binary_dilation(numpy.int8_t[:, ::1] image,
             val = image[y, x]
             for j in range(-r_int, r_int + 1):
                 py = y + j
-                if py < 0 or py >= size_y: 
+                if py < 0 or py >= size_y:
                     continue
                 for i in range(-r_int, r_int + 1):
                     px = x + i
-                    if (px < 0) or (px >= size_x): 
+                    if (px < 0) or (px >= size_x):
                         continue
                     if i * i + j * j <= r2_int:
                         curr = image[py, px]
@@ -83,11 +83,11 @@ def binary_dilation(numpy.int8_t[:, ::1] image,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
-def binary_erosion(numpy.int8_t[:, ::1] image, 
+def binary_erosion(numpy.int8_t[:, ::1] image,
                    float radius=1.0):
     """Return fast binary morphological erosion of an image.
 
-    Morphological erosion sets a pixel at (i,j) to the minimum over all pixels 
+    Morphological erosion sets a pixel at (i,j) to the minimum over all pixels
     in the neighborhood centered at (i,j).
     Erosion shrinks bright regions and enlarges dark regions.
 
@@ -95,8 +95,8 @@ def binary_erosion(numpy.int8_t[:, ::1] image,
     :param radius: float
     :return: ndiamge
     """
-    cdef: 
-        int x, y, i, j, size_x, size_y, px, py, 
+    cdef:
+        int x, y, i, j, size_x, size_y, px, py,
         int r_int = int(radius), r2_int = int(radius * radius)
     size_y = image.shape[0]
     size_x = image.shape[1]
@@ -109,11 +109,11 @@ def binary_erosion(numpy.int8_t[:, ::1] image,
             val = image[y, x]
             for j in range(-r_int, r_int + 1):
                 py = y + j
-                if (py < 0) or (py >= size_y): 
+                if (py < 0) or (py >= size_y):
                     continue
                 for i in range(-r_int, r_int + 1):
                     px = x + i
-                    if (px < 0) or (px >= size_x): 
+                    if (px < 0) or (px >= size_x):
                         continue
                     if i * i + j * j <= r2_int:
                         curr = image[py, px]
