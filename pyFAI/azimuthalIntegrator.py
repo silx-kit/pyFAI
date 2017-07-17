@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "17/07/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1018,7 +1018,7 @@ class AzimuthalIntegrator(Geometry):
         :param mask_checksum: checksum of the mask buffer
         :type mask_checksum: int (or anything else ...)
         :param unit: use to propagate the LUT object for further checkings
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
@@ -1112,7 +1112,7 @@ class AzimuthalIntegrator(Geometry):
         :param mask_checksum: checksum of the mask buffer
         :type mask_checksum: int (or anything else ...)
         :param unit: use to propagate the LUT object for further checkings
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
 
         This method is called when a look-up table needs to be set-up.
@@ -2176,7 +2176,7 @@ class AzimuthalIntegrator(Geometry):
         :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         :type method: str
         :param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
         :param safe: Do some extra checks to ensure LUT/CSR is still valid. False is faster.
         :type safe: bool
         :param normalization_factor: Value of a normalization monitor
@@ -2717,6 +2717,83 @@ class AzimuthalIntegrator(Geometry):
 
         return result
 
+    def integrate_radial(self, data, npt, npt_rad=100,
+                         # filename=None,
+                         correctSolidAngle=True,
+                         radial_range=None, azimuth_range=None,
+                         mask=None, dummy=None, delta_dummy=None,
+                         polarization_factor=None, dark=None, flat=None,
+                         method="csr", unit=units.CHI_DEG, radial_unit=units.Q,
+                         normalization_factor=1.0,):
+        """Calculate the radial integrated profile curve as I = f(chi) 
+
+        :param data: 2D array from the Detector/CCD camera
+        :type data: ndarray
+        :param npt: number of points in the output pattern
+        :type npt: int
+        :param npt_rad: number of points in the radial space. Too few points may lead to huge rounding errors.
+        :rtype npt_rad: int  
+        :param filename: output filename in 2/3 column ascii format
+        :type filename: str
+        :param correctSolidAngle: correct for solid angle of each pixel if True
+        :type correctSolidAngle: bool
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type radial_range: (float, float), optional
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
+        :type azimuth_range: (float, float), optional
+        :param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :type mask: ndarray
+        :param dummy: value for dead/masked pixels
+        :type dummy: float
+        :param delta_dummy: precision for dummy value
+        :type delta_dummy: float
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 
+               0 for circular polarization or random, 
+               None for no correction, 
+               True for using the former correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
+        :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        :type method: str
+        :param unit: Output units, can be "chi_deg" or "chi_rad"
+        :type unit: pyFAI.units.Unit
+        :param radial_unit: unit used for radial representation, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
+        :type unit: pyFAI.units.Unit
+        :param normalization_factor: Value of a normalization monitor
+        :type normalization_factor: float
+        :return: chi bins center positions and regrouped intensity
+        :rtype: Integrate1dResult, dict
+        """
+        unit = units.to_unit(unit, type_=units.AZIMUTHAL_UNITS)
+        res = self.integrate2d(data, npt_rad, npt,
+                               correctSolidAngle=correctSolidAngle,
+                               mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                               polarization_factor=polarization_factor,
+                               dark=dark, flat=flat, method=method,
+                               normalization_factor=normalization_factor,
+                               radial_range=radial_range,
+                               azimuth_range=azimuth_range,
+                               unit=radial_unit)
+
+        azim_scale = unit.scale / units.CHI_DEG.scale
+        sum_ = res.sum.sum(axis=-1)
+        count = res.count.sum(axis=-1)
+        intensity = sum_ / count
+        empty = dummy if dummy is not None else self.empty
+        intensity[count == 0] = empty
+        result = Integrate1dResult(res.azimuthal * azim_scale, intensity, None)
+        result._set_unit(unit)
+        result._set_sum(sum_)
+        result._set_count(count)
+        result._set_has_dark_correction(dark is not None)
+        result._set_has_flat_correction(flat is not None)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        return result
+
     def integrate2d(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
@@ -2762,7 +2839,7 @@ class AzimuthalIntegrator(Geometry):
         :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         :type method: str
         :param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
         :param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         :type safe: bool
         :param normalization_factor: Value of a normalization monitor

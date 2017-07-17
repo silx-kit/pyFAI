@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "17/07/2017"
 
 
 import unittest
@@ -241,6 +241,20 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
         self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
 
+    def test_radial(self):
+
+        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
+                                       radial_range=(3.6, 3.9), radial_unit="2th_deg")
+        self.assertLess(res[0].min(), -179, "chi min at -180")
+        self.assertGreater(res[0].max(), 179, "chi max at +180")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+
+        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
+                                       radial_range=(3.6, 3.9), radial_unit="2th_deg", unit="chi_rad")
+        self.assertLess(res[0].min(), -3, "chi min at -3rad")
+        self.assertGreater(res[0].max(), 0, "chi max at +3rad")
+
 
 class TestFlatimage(unittest.TestCase):
     """test the caking of a flat image"""
@@ -327,14 +341,15 @@ class TestSaxs(unittest.TestCase):
 
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 1d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 1d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
-            #ai.reset()
+            # ai.reset()
             ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, error_model="poisson")
             ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref2d[method + "_1"].intensity.mean() / ref2d[method + "_10"].intensity.mean()
 #             ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
 #             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
-            #ai.reset()
+            # ai.reset()
+
 
 class TestSetter(unittest.TestCase):
     def setUp(self):
@@ -373,6 +388,7 @@ def suite():
     testsuite.addTest(TestAzimHalfFrelon("test_cythonSP_vs_fit2d"))
     testsuite.addTest(TestAzimHalfFrelon("test_cython_vs_numpy"))
     testsuite.addTest(TestAzimHalfFrelon("test_separate"))
+    testsuite.addTest(TestAzimHalfFrelon("test_radial"))
     testsuite.addTest(TestFlatimage("test_splitPixel"))
     testsuite.addTest(TestFlatimage("test_splitBBox"))
     testsuite.addTest(TestSetter("test_flat"))
