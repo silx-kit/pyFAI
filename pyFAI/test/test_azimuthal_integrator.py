@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2017"
+__date__ = "17/07/2017"
 
 
 import unittest
@@ -150,6 +150,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
 #        logger.info(self.ai.__repr__())
         tth, I = self.ai.xrpd_cython(self.data,
                                      len(self.fit2d), self.tmpfiles["cython"], correctSolidAngle=False, pixelSize=None)
+#        logger.info(tth)
+#        logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -251,6 +253,20 @@ class TestAzimHalfFrelon(unittest.TestCase):
         rwp = Rwp(ref, ocl)
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
+
+    def test_radial(self):
+
+        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
+                                       radial_range=(3.6, 3.9), radial_unit="2th_deg")
+        self.assertLess(res[0].min(), -179, "chi min at -180")
+        self.assertGreater(res[0].max(), 179, "chi max at +180")
+        self.assertGreater(res[1].min(), 120, "intensity min in ok")
+        self.assertLess(res[1].max(), 10000, "intensity max in ok")
+
+        res = self.ai.integrate_radial(self.data, npt=360, npt_rad=10,
+                                       radial_range=(3.6, 3.9), radial_unit="2th_deg", unit="chi_rad")
+        self.assertLess(res[0].min(), -3, "chi min at -3rad")
+        self.assertGreater(res[0].max(), 0, "chi max at +3rad")
 
 
 class TestFlatimage(unittest.TestCase):
@@ -401,6 +417,7 @@ def suite():
     testsuite.addTest(TestAzimHalfFrelon("test_cython_vs_numpy"))
     testsuite.addTest(TestAzimHalfFrelon("test_separate"))
     testsuite.addTest(TestAzimHalfFrelon("test_medfilt1d"))
+    testsuite.addTest(TestAzimHalfFrelon("test_radial"))
     testsuite.addTest(TestFlatimage("test_splitPixel"))
     testsuite.addTest(TestFlatimage("test_splitBBox"))
     testsuite.addTest(TestSetter("test_flat"))
