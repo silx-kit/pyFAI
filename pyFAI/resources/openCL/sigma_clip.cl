@@ -216,9 +216,10 @@ static inline float8 clip8(float8 input, float2 mean_std,
 {
     union
     {
-      float  array[8];
-      float8 vector;
-     } elements;
+        float  array[8];
+        float8 vector;
+    } elements;
+
     elements.vector = input;
     for (int i=0; i<8; i++)
     {
@@ -245,6 +246,7 @@ static inline float8 clip8(float8 input, float2 mean_std,
     }
     return elements.vector;
 }
+
 /*
 
 mean_std_vertical calculate the mean and the standard deviation along a column,
@@ -264,8 +266,6 @@ dim0 = y: wg=number_of_element/8
 dim1 = x: wg=1
 Shared memory: requires 5 floats (20 bytes) of shared memory per work-item
 */
-
-
 kernel void mean_std_vertical(global float *src,
                               global float *mean,
                               global float *std,
