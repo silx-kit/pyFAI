@@ -561,7 +561,9 @@ class DefaultAiWriter(Writer):
         dim1_unit = units.to_unit(dim1_unit)
 
         # Remove \n and \t)
-        header = OrderedDict((("Engine", " ".join(str(self._engine).split()))))
+        engine_info = " ".join(str(self._engine).split())
+        header = OrderedDict()
+        header["Engine"] = engine_info
 
         if "make_headers" in dir(self._engine):
             header.update(self._engine.make_headers("dict"))
