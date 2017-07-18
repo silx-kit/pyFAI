@@ -34,12 +34,13 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "29/06/2017"
+__date__ = "10/07/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
 import logging
+from collections import OrderedDict
 import numpy
 from .common import ocl, release_cl_buffers, kernel_workgroup_size, pyopencl
 if ocl:
@@ -55,7 +56,7 @@ class Separator(OpenclProcessing):
     Implementation of sort, median filter and trimmed-mean in  pyopencl
     """
     DUMMY = numpy.finfo(numpy.float32).min
-    kernel_files = ["bitonic.cl", "separate.cl"]
+    kernel_files = ["bitonic.cl", "separate.cl", "sigma_clip.cl"]
 
     def __init__(self, npt_height=512, npt_width=1024, ctx=None, devicetype="all",
                  platformid=None, deviceid=None,
@@ -100,8 +101,10 @@ class Separator(OpenclProcessing):
         buffers = [
             ("input_data", numpy.float32, (self.npt_height, self.npt_width)),
             ("vector_vertical", numpy.float32, (self.npt_width,)),
-            ("vector_horizontal", numpy.float32, (self.npt_height,))
-        ]
+            ("vector_vertical_2", numpy.float32, (self.npt_width,)),
+            ("vector_horizontal", numpy.float32, (self.npt_height,)),
+            ("vector_horizontal_2", numpy.float32, (self.npt_height,))
+                ]
         mem = {}
         with self.sem:
             try:
@@ -126,33 +129,76 @@ class Separator(OpenclProcessing):
         tthRange low and upper bounds. When unsetRange is called, the
         argument slot is reset to tth_min_max.
         """
-        self.cl_kernel_args["bsort_vertical"] = [self.cl_mem["input_data"].data, None]
-        self.cl_kernel_args["bsort_horizontal"] = [self.cl_mem["input_data"].data, None]
+        self.cl_kernel_args["copy_pad"] = OrderedDict([("src", None),
+                                                       ("dst", self.cl_mem["input_data"].data),
+                                                       ("src_size", None),
+                                                       ("dst_size", numpy.int32(self.cl_mem["input_data"].size)),
+                                                       ("dummy", numpy.float32(0.0))])
+        self.cl_kernel_args["bsort_vertical"] = OrderedDict([("g_data", self.cl_mem["input_data"].data),
+                                                             ("l_data", None)])
 
-        self.cl_kernel_args["filter_vertical"] = [self.cl_mem["input_data"].data,
-                                                  self.cl_mem["vector_vertical"].data,
-                                                  numpy.uint32(self.npt_width),
-                                                  numpy.uint32(self.npt_height),
-                                                  numpy.float32(0), numpy.float32(0.5), ]
-        self.cl_kernel_args["filter_horizontal"] = [self.cl_mem["input_data"].data,
-                                                    self.cl_mem["vector_horizontal"].data,
-                                                    numpy.uint32(self.npt_width),
-                                                    numpy.uint32(self.npt_height),
-                                                    numpy.float32(0), numpy.float32(0.5), ]
-        self.cl_kernel_args["trimmed_mean_vertical"] = [self.cl_mem["input_data"].data,
-                                                        self.cl_mem["vector_vertical"].data,
-                                                        numpy.uint32(self.npt_width),
-                                                        numpy.uint32(self.npt_height),
-                                                        numpy.float32(0),
-                                                        numpy.float32(0.5),
-                                                        numpy.float32(0.5)]
-        self.cl_kernel_args["trimmed_mean_horizontal"] = [self.cl_mem["input_data"].data,
-                                                          self.cl_mem["vector_horizontal"].data,
-                                                          numpy.uint32(self.npt_width),
-                                                          numpy.uint32(self.npt_height),
-                                                          numpy.float32(0),
-                                                          numpy.float32(0.5),
-                                                          numpy.float32(0.5)]
+        self.cl_kernel_args["bsort_horizontal"] = OrderedDict([("g_data", self.cl_mem["input_data"].data),
+                                                               ("l_data", None)])
+
+        self.cl_kernel_args["filter_vertical"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                              ("dst", self.cl_mem["vector_vertical"].data),
+                                                              ("width", numpy.uint32(self.npt_width)),
+                                                              ("height", numpy.uint32(self.npt_height)),
+                                                              ("dummy", numpy.float32(0)),
+                                                              ("quantile", numpy.float32(0.5))])
+
+        self.cl_kernel_args["filter_horizontal"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                                ("dst", self.cl_mem["vector_horizontal"].data),
+                                                                ("width", numpy.uint32(self.npt_width)),
+                                                                ("height", numpy.uint32(self.npt_height)),
+                                                                ("dummy", numpy.float32(0)),
+                                                                ("quantile", numpy.float32(0.5))])
+
+        self.cl_kernel_args["trimmed_mean_vertical"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                                    ("dst", self.cl_mem["vector_vertical"].data),
+                                                                    ("width", numpy.uint32(self.npt_width)),
+                                                                    ("height", numpy.uint32(self.npt_height)),
+                                                                    ("dummy", numpy.float32(0)),
+                                                                    ("lower_quantile", numpy.float32(0.5)),
+                                                                    ("upper_quantile", numpy.float32(0.5))])
+
+        self.cl_kernel_args["trimmed_mean_horizontal"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                                      ("dst", self.cl_mem["vector_horizontal"].data),
+                                                                      ("width", numpy.uint32(self.npt_width)),
+                                                                      ("height", numpy.uint32(self.npt_height)),
+                                                                      ("dummy", numpy.float32(0)),
+                                                                      ("lower_quantile", numpy.float32(0.5)),
+                                                                      ("upper_quantile", numpy.float32(0.5))])
+
+        self.cl_kernel_args["mean_std_vertical"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                                ("mean", self.cl_mem["vector_vertical"].data),
+                                                                ("std", self.cl_mem["vector_vertical_2"].data),
+                                                                ("dummy", numpy.float32(0)),
+                                                                ("l_data", None)])
+
+        self.cl_kernel_args["mean_std_horizontal"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                                  ("mean", self.cl_mem["vector_horizontal"].data),
+                                                                  ("std", self.cl_mem["vector_horizontal_2"].data),
+                                                                  ("dummy", numpy.float32(0)),
+                                                                  ("l_data", None)])
+
+        self.cl_kernel_args["sigma_clip_vertical"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                                  ("mean", self.cl_mem["vector_vertical"].data),
+                                                                  ("std", self.cl_mem["vector_vertical_2"].data),
+                                                                  ("dummy", numpy.float32(0)),
+                                                                  ("sigma_lo", numpy.float32(3.0)),
+                                                                  ("sigma_hi", numpy.float32(3.0)),
+                                                                  ("max_iter", numpy.int32(5)),
+                                                                  ("l_data", None)])
+
+        self.cl_kernel_args["sigma_clip_horizontal"] = OrderedDict([("src", self.cl_mem["input_data"].data),
+                                                                    ("mean", self.cl_mem["vector_horizontal"].data),
+                                                                    ("std", self.cl_mem["vector_horizontal_2"].data),
+                                                                    ("dummy", numpy.float32(0)),
+                                                                    ("sigma_lo", numpy.float32(3.0)),
+                                                                    ("sigma_hi", numpy.float32(3.0)),
+                                                                    ("max_iter", numpy.int32(5)),
+                                                                    ("l_data", None)])
 
     def sort_vertical(self, data, dummy=None):
         """
@@ -173,9 +219,14 @@ class Separator(OpenclProcessing):
             dummy = numpy.float32(dummy)
         if data.shape[0] < self.npt_height:
             if isinstance(data, pyopencl.array.Array):
+
+                kargs = self.cl_kernel_args["copy_pad"]
+                kargs["src"] = data.data
+                kargs["dummy"] = dummy
+                kargs["src_size"] = numpy.int32(data.size),
                 wg = min(32, self.block_size)
                 size = ((self.npt_height * self.npt_width) + wg - 1) & ~(wg - 1)
-                evt = self.program.copy_pad(self.queue, (size,), (wg,), data.data, self.cl_mem["input_data"].data, data.size, self.cl_mem["input_data"].size, dummy)
+                evt = self.program.copy_pad(self.queue, (size,), (wg,), *kargs.values())
                 events.append(("copy_pad", evt))
             else:
                 data_big = numpy.zeros((self.npt_height, self.npt_width), dtype=numpy.float32) + dummy
@@ -191,11 +242,11 @@ class Separator(OpenclProcessing):
         if self.block_size < ws:
             raise RuntimeError("Requested a workgoup size of %s, maximum is %s" % (ws, self.block_size))
 
-        local_mem = self.cl_kernel_args["bsort_vertical"][-1]
+        kargs = self.cl_kernel_args["bsort_vertical"]
+        local_mem = kargs["l_data"]
         if not local_mem or local_mem.size < ws * 32:
-            local_mem = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
-            self.cl_kernel_args["bsort_vertical"][-1] = local_mem
-        evt = self.program.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *self.cl_kernel_args["bsort_vertical"])
+            kargs["l_data"] = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
+        evt = self.program.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *kargs.values())
         events.append(("bsort_vertical", evt))
 
         if self.profile:
@@ -239,11 +290,11 @@ class Separator(OpenclProcessing):
         ws = self.npt_width // 8
         if self.block_size < ws:
             raise RuntimeError("Requested a workgoup size of %s, maximum is %s" % (ws, self.block_size))
-        local_mem = self.cl_kernel_args["bsort_horizontal"][-1]
+        kargs = self.cl_kernel_args["bsort_horizontal"]
+        local_mem = kargs["l_data"]
         if not local_mem or local_mem.size < ws * 32:
-            local_mem = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
-            self.cl_kernel_args["bsort_horizontal"][-1] = local_mem
-        evt = self.program.bsort_horizontal(self.queue, (self.npt_height, ws), (1, ws), *self.cl_kernel_args["bsort_horizontal"])
+            kargs["l_data"] = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
+        evt = self.program.bsort_horizontal(self.queue, (self.npt_height, ws), (1, ws), *kargs.values())
         events.append(("bsort_horizontal", evt))
 
         if self.profile:
@@ -268,10 +319,10 @@ class Separator(OpenclProcessing):
         wg = min(32, self.block_size)
         ws = (self.npt_width + wg - 1) & ~(wg - 1)
         with self.sem:
-            args = self.cl_kernel_args["filter_vertical"]
-            args[-2] = dummy
-            args[-1] = numpy.float32(quantile)
-            evt = self.program.filter_vertical(self.queue, (ws,), (wg,), *args)
+            kargs = self.cl_kernel_args["filter_vertical"]
+            kargs["dummy"] = dummy
+            kargs['quantile'] = numpy.float32(quantile)
+            evt = self.program.filter_vertical(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("filter_vertical", evt))
         return self.cl_mem["vector_vertical"]
 
@@ -292,10 +343,10 @@ class Separator(OpenclProcessing):
         wg = min(32, self.block_size)
         ws = (self.npt_height + wg - 1) & ~(wg - 1)
         with self.sem:
-            args = self.cl_kernel_args["filter_horizontal"]
-            args[-2] = dummy
-            args[-1] = numpy.float32(quantile)
-            evt = self.program.filter_horizontal(self.queue, (ws,), (wg,), *args)
+            kargs = self.cl_kernel_args["filter_horizontal"]
+            kargs["dummy"] = dummy
+            kargs["quantile"] = numpy.float32(quantile)
+            evt = self.program.filter_horizontal(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("filter_horizontal", evt))
         return self.cl_mem["vector_horizontal"]
 
@@ -317,11 +368,11 @@ class Separator(OpenclProcessing):
         wg = min(32, self.block_size)
         ws = (self.npt_width + wg - 1) & ~(wg - 1)
         with self.sem:
-            args = self.cl_kernel_args["trimmed_mean_vertical"]
-            args[-3] = dummy
-            args[-2] = numpy.float32(min(quantiles))
-            args[-1] = numpy.float32(max(quantiles))
-            evt = self.program.trimmed_mean_vertical(self.queue, (ws,), (wg,), *args)
+            kargs = self.cl_kernel_args["trimmed_mean_vertical"]
+            kargs["dummy"] = dummy
+            kargs["lower_quantile"] = numpy.float32(min(quantiles))
+            kargs["upper_quantile"] = numpy.float32(max(quantiles))
+            evt = self.program.trimmed_mean_vertical(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("trimmed_mean_vertical", evt))
         return self.cl_mem["vector_vertical"]
 
@@ -343,10 +394,105 @@ class Separator(OpenclProcessing):
         wg = min(32, self.block_size)
         ws = (self.npt_height + wg - 1) & ~(wg - 1)
         with self.sem:
-            args = self.cl_kernel_args["trimmed_mean_horizontal"]
-            args[-3] = dummy
-            args[-2] = numpy.float32(min(quantiles))
-            args[-1] = numpy.float32(max(quantiles))
-            evt = self.program.trimmed_mean_horizontal(self.queue, (ws,), (wg,), *args)
+            kargs = self.cl_kernel_args["trimmed_mean_horizontal"]
+            kargs["dummy"] = dummy
+            kargs["lower_quantile"] = numpy.float32(min(quantiles))
+            kargs["upper_quantile"] = numpy.float32(max(quantiles))
+            evt = self.program.trimmed_mean_horizontal(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("trimmed_mean_horizontal", evt))
         return self.cl_mem["vector_horizontal"]
+
+    def mean_std_vertical(self, data, dummy=None):
+        """calculates the mean and std along a column, 
+        column size has to be multiple of 8 and <8192"""
+        if dummy is None:
+            dummy = self.DUMMY
+        else:
+            dummy = numpy.float32(dummy)
+        assert data.shape[0] == self.npt_height
+        assert data.shape[1] == self.npt_width
+        wg = self.npt_height // 8
+        ws = (wg, self.npt_width)
+        with self.sem:
+            self.cl_mem["input_data"].set(data)
+            kargs = self.cl_kernel_args["mean_std_vertical"]
+            kargs["dummy"] = dummy
+            local_mem = kargs["l_data"]
+            if not local_mem or local_mem.size < wg * 20:
+                kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
+            evt = self.program.mean_std_vertical(self.queue, ws, (wg, 1), *kargs.values())
+            self.events.append(("mean_std_vertical", evt))
+        return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
+
+    def mean_std_horizontal(self, data, dummy=None):
+        "calculates the mean and std along a row"
+        if dummy is None:
+            dummy = self.DUMMY
+        else:
+            dummy = numpy.float32(dummy)
+        assert data.shape[0] == self.npt_height
+        assert data.shape[1] == self.npt_width
+        wg = self.npt_width // 8
+        ws = (self.npt_height, wg)
+        with self.sem:
+            self.cl_mem["input_data"].set(data)
+            kargs = self.cl_kernel_args["mean_std_horizontal"]
+            kargs["dummy"] = dummy
+            local_mem = kargs["l_data"]
+            if not local_mem or local_mem.size < wg * 20:
+                kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
+            evt = self.program.mean_std_horizontal(self.queue, ws, (1, wg), *kargs.values())
+            self.events.append(("mean_std_horizontal", evt))
+        return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]
+
+    def sigma_clip_vertical(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
+        """calculates iterative sigma-clipped mean and std per column. 
+        column size has to be multiple of 8 and <8192"""
+        if dummy is None:
+            dummy = self.DUMMY
+        else:
+            dummy = numpy.float32(dummy)
+        if sigma_hi is None:
+            sigma_hi = sigma_lo
+        assert data.shape[0] == self.npt_height
+        assert data.shape[1] == self.npt_width
+        wg = self.npt_height // 8
+        ws = (wg, self.npt_width)
+        with self.sem:
+            self.cl_mem["input_data"].set(data)
+            kargs = self.cl_kernel_args["sigma_clip_vertical"]
+            kargs["dummy"] = dummy
+            kargs["sigma_lo"] = numpy.float32(sigma_lo)
+            kargs["sigma_hi"] = numpy.float32(sigma_hi)
+            kargs["max_iter"] = numpy.int32(max_iter)
+            local_mem = kargs["l_data"]
+            if not local_mem or local_mem.size < wg * 20:
+                kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
+            evt = self.program.sigma_clip_vertical(self.queue, ws, (wg, 1), *kargs.values())
+            self.events.append(("sigma_clip_vertical", evt))
+        return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
+
+    def sigma_clip_horizontal(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
+        """calculates iterative sigma-clipped mean and std per row. 
+        column size has to be multiple of 8 and <8192"""
+        if dummy is None:
+            dummy = self.DUMMY
+        else:
+            dummy = numpy.float32(dummy)
+        assert data.shape[0] == self.npt_height
+        assert data.shape[1] == self.npt_width
+        wg = self.npt_width // 8
+        ws = (self.npt_height, wg)
+        with self.sem:
+            self.cl_mem["input_data"].set(data)
+            kargs = self.cl_kernel_args["sigma_clip_horizontal"]
+            kargs["dummy"] = dummy
+            kargs["sigma_lo"] = numpy.float32(sigma_lo)
+            kargs["sigma_hi"] = numpy.float32(sigma_hi)
+            kargs["max_iter"] = numpy.int32(max_iter)
+            local_mem = kargs["l_data"]
+            if not local_mem or local_mem.size < wg * 20:
+                kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
+            evt = self.program.sigma_clip_horizontal(self.queue, ws, (1, wg), *kargs.values())
+            self.events.append(("sigma_clip_horizontal", evt))
+        return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]

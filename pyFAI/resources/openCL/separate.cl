@@ -30,16 +30,15 @@
  * Copy the content of a src array into a dst array,
  * padding if needed with the dummy value
 */
-__kernel void copy_pad(__global float *src,
-                       __global float *dst,
+kernel void copy_pad(global float *src,
+                       global float *dst,
                        uint src_size,
                        uint dst_size,
                        float dummy)
 {
   uint gid = get_global_id(0);
   //Global memory guard for padding
-  if(gid < dst_size)
-  {
+  if(gid < dst_size) {
     if (gid < src_size)
     {
       dst[gid] = src[gid];
@@ -48,8 +47,6 @@ __kernel void copy_pad(__global float *src,
     {
       dst[gid] = dummy;
     }
-
-
   }
 }
 
@@ -67,30 +64,35 @@ copies the according value at the position depending on the quantile.
 
 Each thread works on a complete column, counting the elements and copying the right one
 */
-__kernel void filter_vertical(__global float *src,
-                              __global float *dst,
-                              uint width,
-                              uint height,
-                              float dummy,
-                              float quantile){
+kernel void filter_vertical(global float *src,
+                            global float *dst,
+                            uint width,
+                            uint height,
+                            float dummy,
+                            float quantile)
+{
   uint gid = get_global_id(0);
   //Global memory guard for padding
   uint cnt = 0, pos=0;
   float data;
   if(gid < width){
-	  for (pos=0; pos<height*width; pos+=width){
+    for (pos=0; pos<height*width; pos+=width)
+    {
         data = src[gid+pos];
         if (data!=dummy){
-        	cnt++;
+          cnt++;
         }
-	  }
-	  if (cnt){
-		  pos = round(quantile*cnt);
-		  pos = min(pos+height-cnt, height-1);
-		  dst[gid] = src[gid + width * pos];
-	  }else{
-		  dst[gid] = dummy;
-	  }
+    }
+    if (cnt)
+    {
+      pos = round(quantile*cnt);
+      pos = min(pos+height-cnt, height-1);
+      dst[gid] = src[gid + width * pos];
+    }
+    else
+    {
+      dst[gid] = dummy;
+    }
   }
 }
 /*
@@ -107,31 +109,38 @@ copies the according value at the position depending on the quantile.
 
 Each thread works on a complete column, counting the elements and copying the right one
 */
-__kernel void filter_horizontal(__global float *src,
-                                __global float *dst,
+kernel void filter_horizontal(global float *src,
+                                global float *dst,
                                 uint width,
                                 uint height,
                                 float dummy,
-                                float quantile){
+                                float quantile)
+{
   uint gid = get_global_id(0);
   //Global memory guard for padding
   uint cnt = 0, pos=0, offset=gid*width;
   float data;
 
-  if(gid < height){
-	  for (pos=0; pos<width; pos++){
-        data = src[offset+pos];
-        if (data!=dummy){
-        	cnt++;
-        }
-	  }
-	  if (cnt){
-		  pos = round(quantile*cnt);
-		  pos = min(pos+width-cnt, width-1);
-		  dst[gid] = src[offset+pos];
-	  }else{
-		  dst[gid] = dummy;
-	  }
+  if(gid < height)
+  {
+    for (pos=0; pos<width; pos++)
+    {
+      data = src[offset+pos];
+      if (data!=dummy)
+      {
+        cnt++;
+      }
+    }
+    if (cnt)
+    {
+      pos = round(quantile*cnt);
+      pos = min(pos+width-cnt, width-1);
+      dst[gid] = src[offset+pos];
+    }
+    else
+    {
+      dst[gid] = dummy;
+    }
   }
 }
 
@@ -166,12 +175,13 @@ kernel void trimmed_mean_vertical(global float *src,
   float data, sum=0.0f, error=0.0f;
   if(gid < width)
   {
-      for (pos=0; pos<height*width; pos+=width){
-        data = src[gid+pos];
-        if (data!=dummy)
-        {
-            cnt++;
-        }
+      for (pos=0; pos<height*width; pos+=width)
+      {
+          data = src[gid+pos];
+          if (data!=dummy)
+          {
+              cnt++;
+          }
       }
       if (cnt)
       {
@@ -234,10 +244,10 @@ kernel void trimmed_mean_horizontal(global float *src,
   {
       for (pos=0; pos<width; pos++)
       {
-        data = src[offset + pos];
-        if (data!=dummy){
-            cnt++;
-        }
+          data = src[offset + pos];
+          if (data!=dummy){
+              cnt++;
+          }
       }
       if (cnt)
       {
