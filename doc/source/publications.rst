@@ -23,7 +23,7 @@ List of publication about pyFAI
   **Journal of Applied Crystallography** (2015) 48 (2), 510-519
 
 The later publication provides a nice overview of the features introduced in version
-0.11 and further developed in v0.12 and v0.13 and should be the one cited in
+0.11 and further developed in v0.12, v0.13 & v0.14 and should be the one cited in
 publications using pyFAI (or one of the graphical application on top of it).
-There are already 72 publication referring to pyFAI, some of them in the most
+There are already 93 publication referring to pyFAI, some of them in the most
 prestigious scientific journals (Nature, PNAS, ...).

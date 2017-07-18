@@ -1,9 +1,25 @@
 :Author: Jérôme Kieffer
-:Date: 06/06/2016
+:Date: 18/07/2017
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.14.0: 20/07/2017
+------------------
+* This release correspond to 428 commits
+* Change of license: now all pyFAI is MIT license.
+* Graphical user interface for calibration (pyFAI-calib2)
+* Goniometer calibration tools and multi-geometry enhancements
+* Propagate metadata information as part of the integrated data
+* Common pre-processing factorization on Python, Cython and OpenCL
+* Test clean up and acceleration (avoid tests on too large images)
+* Many new tutorials http://pyfai.readthedocs.io/en/latest/usage/tutorial/index.html
+* New averaging / integration methods:
+  - Azimuthal median filtering
+  - Azimuthal trimmed mean
+  - sigma-clipping on azimuthal angle
+  - Radial averaging
 
 0.13.0: 01/12/2016
 ------------------
