@@ -124,13 +124,26 @@ def integrate_shell(options, args):
         img = fabio.open(item)
         multiframe = img.nframes > 1
 
-        if options.output and os.path.isdir(options.output):
-            outpath = os.path.join(options.output, os.path.splitext(os.path.basename(item))[0])
+        custom_ext = True
+        if options.output:
+            if os.path.isdir(options.output):
+                outpath = os.path.join(options.output, os.path.splitext(os.path.basename(item))[0])
+            else:
+                outpath = os.path.abspath(options.output)
+                custom_ext = False
         else:
             outpath = os.path.splitext(item)[0]
 
+        if custom_ext:
+            if multiframe:
+                outpath = outpath + "_pyFAI.h5"
+            else:
+                if worker.do_2D():
+                    outpath = outpath + ".azim"
+                else:
+                    outpath = outpath + ".dat"
         if multiframe:
-            writer = HDF5Writer(outpath + "_pyFAI.h5")
+            writer = HDF5Writer(outpath)
             writer.init(config)
 
             for i in range(img.nframes):
@@ -144,12 +157,8 @@ def integrate_shell(options, args):
                 writer.write(res, index=i)
             writer.close()
         else:
-            if worker.do_2D():
-                filename = outpath + ".azim"
-            else:
-                filename = outpath + ".dat"
             data = img.data
-            writer = DefaultAiWriter(filename, worker.ai)
+            writer = DefaultAiWriter(outpath, worker.ai)
             worker.process(data, writer=writer)
             writer.close()
 
