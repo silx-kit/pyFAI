@@ -32,13 +32,13 @@
 static inline float2 is_valid(float value, float count)
 {
     if (isfinite(value))
-        {
-            count += 1.0f;
-        }
-        else
-        {
-            value = 0.0f;
-        }
+    {
+        count += 1.0f;
+    }
+    else
+    {
+        value = 0.0f;
+    }
     return (float2)(value, count);
 }
 
@@ -84,7 +84,7 @@ static inline float2 compensated_sum(float2 a, float2 b)
 // sum_vector return sum(x_i), err(sum(x_i)), sum(x_i^2 ), err(sum(x_i^2 ))
 static float8 sum_vector(float8 data)
 {
-    //implements Kahan summation:
+    // implements Kahan summation:
     // see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
     float2 tmp, sum1, sum2;
     float value;
@@ -179,11 +179,11 @@ static float2 mean_and_deviation(uint local_id,
         stride_size /=2;
     }
 
-    //Here we perform the Kahan summation for the variance
+    // Here we perform the Kahan summation for the variance
     float std, mean, n;
     n = l_data[4];
-//    if (local_id==0)  printf("%.1f %.1f %.1f %.1f %.1f\n",l_data[0], l_data[1],l_data[2],l_data[3],l_data[4]);
-//    if (local_id==0)  printf("(%d, %d) %.1f %.1f %.1f %.1f %.1f\n",get_global_id(0), get_global_id(1), l_data[0], l_data[1], l_data[2], l_data[3], l_data[4]);
+    // if (local_id==0)  printf("%.1f %.1f %.1f %.1f %.1f\n",l_data[0], l_data[1],l_data[2],l_data[3],l_data[4]);
+    // if (local_id==0)  printf("(%d, %d) %.1f %.1f %.1f %.1f %.1f\n",get_global_id(0), get_global_id(1), l_data[0], l_data[1], l_data[2], l_data[3], l_data[4]);
 
     if (fabs(n) < 0.5f)
     {
@@ -192,7 +192,6 @@ static float2 mean_and_deviation(uint local_id,
     }
     else
     {
-
         mean = l_data[0] / n;
 
         float2 sum1, sum2, sum;
@@ -207,7 +206,6 @@ static float2 mean_and_deviation(uint local_id,
         sum = kahan_sum(sum, -sum1.s1*sum1.s1/n);
 
         std = sqrt(sum.s0/n);
-
     }
     return (float2) (mean, std);
 }
@@ -546,7 +544,7 @@ kernel void sigma_clip_horizontal(global float *src,
     }
     if (get_local_id(1) == 0)
     {
-//        printf("Discarded (%d,%d) %d %d\n", get_global_id(0), get_global_id(1), i,  discarded[0]);
+        // printf("Discarded (%d,%d) %d %d\n", get_global_id(0), get_global_id(1), i,  discarded[0]);
         mean[get_global_id(0)] = result.s0;
         std[get_global_id(0)] = result.s1;
     }
