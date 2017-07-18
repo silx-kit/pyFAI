@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/07/2017"
+__date__ = "18/07/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1456,9 +1456,9 @@ class Geometry(object):
 
     def make_headers(self, type_="list"):
         """Create a configuration for the
-        
+
         :param type: can be "list" or "dict"
-        :return: the header with the proper format  
+        :return: the header with the proper format
         """
         res = None
         if type_ == "dict":
