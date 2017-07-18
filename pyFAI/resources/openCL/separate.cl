@@ -38,8 +38,7 @@ kernel void copy_pad(global float *src,
 {
   uint gid = get_global_id(0);
   //Global memory guard for padding
-  if(gid < dst_size)
-  {
+  if(gid < dst_size) {
     if (gid < src_size)
     {
       dst[gid] = src[gid];
@@ -48,8 +47,6 @@ kernel void copy_pad(global float *src,
     {
       dst[gid] = dummy;
     }
-
-
   }
 }
 
@@ -79,23 +76,23 @@ kernel void filter_vertical(global float *src,
   uint cnt = 0, pos=0;
   float data;
   if(gid < width){
-	  for (pos=0; pos<height*width; pos+=width)
-	  {
+    for (pos=0; pos<height*width; pos+=width)
+    {
         data = src[gid+pos];
         if (data!=dummy){
-        	cnt++;
+          cnt++;
         }
-	  }
-	  if (cnt)
-	  {
-		  pos = round(quantile*cnt);
-		  pos = min(pos+height-cnt, height-1);
-		  dst[gid] = src[gid + width * pos];
-	  }
-	  else
-	  {
-		  dst[gid] = dummy;
-	  }
+    }
+    if (cnt)
+    {
+      pos = round(quantile*cnt);
+      pos = min(pos+height-cnt, height-1);
+      dst[gid] = src[gid + width * pos];
+    }
+    else
+    {
+      dst[gid] = dummy;
+    }
   }
 }
 /*
@@ -126,20 +123,24 @@ kernel void filter_horizontal(global float *src,
 
   if(gid < height)
   {
-	  for (pos=0; pos<width; pos++)
-	  {
-        data = src[offset+pos];
-        if (data!=dummy){
-        	cnt++;
-        }
-	  }
-	  if (cnt){
-		  pos = round(quantile*cnt);
-		  pos = min(pos+width-cnt, width-1);
-		  dst[gid] = src[offset+pos];
-	  }else{
-		  dst[gid] = dummy;
-	  }
+    for (pos=0; pos<width; pos++)
+    {
+      data = src[offset+pos];
+      if (data!=dummy)
+      {
+        cnt++;
+      }
+    }
+    if (cnt)
+    {
+      pos = round(quantile*cnt);
+      pos = min(pos+width-cnt, width-1);
+      dst[gid] = src[offset+pos];
+    }
+    else
+    {
+      dst[gid] = dummy;
+    }
   }
 }
 
@@ -176,11 +177,11 @@ kernel void trimmed_mean_vertical(global float *src,
   {
       for (pos=0; pos<height*width; pos+=width)
       {
-        data = src[gid+pos];
-        if (data!=dummy)
-        {
-            cnt++;
-        }
+          data = src[gid+pos];
+          if (data!=dummy)
+          {
+              cnt++;
+          }
       }
       if (cnt)
       {
@@ -243,10 +244,10 @@ kernel void trimmed_mean_horizontal(global float *src,
   {
       for (pos=0; pos<width; pos++)
       {
-        data = src[offset + pos];
-        if (data!=dummy){
-            cnt++;
-        }
+          data = src[offset + pos];
+          if (data!=dummy){
+              cnt++;
+          }
       }
       if (cnt)
       {
