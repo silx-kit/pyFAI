@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/06/2017"
+__date__ = "18/07/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -433,9 +433,9 @@ class DefaultAiWriter(Writer):
 
     def __init__(self, filename, engine=None):
         """Constructor of the historical writer of azimuthalIntegrator.
-        
+
         :param filename: name of the output file
-        :param ai: integrator, should provide make_headers method. 
+        :param ai: integrator, should provide make_headers method.
         """
         self._filename = filename
         self._engine = engine
@@ -486,7 +486,7 @@ class DefaultAiWriter(Writer):
                has_mask=None, has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None, metadata=None):
         """This method save the result of a 1D integration as ASCII file.
-        
+
         :param filename: the filename used to save the 1D integration
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
@@ -533,7 +533,7 @@ class DefaultAiWriter(Writer):
                polarization_factor=None, normalization_factor=None,
                metadata=None):
         """This method save the result of a 2D integration.
-        
+
         :param filename: the filename used to save the 2D histogram
         :type filename: str
         :param dim1: the 1st coordinates of the histogram
@@ -555,8 +555,6 @@ class DefaultAiWriter(Writer):
         :param normalization_factor: the monitor value
         :type normalization_factor: float, None
         :param metadata: JSON serializable dictionary containing the metadata
-        
-        
         """
         if fabio is None:
             raise RuntimeError("FabIO module is needed to save EDF images")
