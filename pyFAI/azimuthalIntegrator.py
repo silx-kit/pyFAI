@@ -2690,7 +2690,6 @@ class AzimuthalIntegrator(Geometry):
         return result
     
     def integrate_radial(self, data, npt, npt_rad=100,
-                         # filename=None,
                          correctSolidAngle=True,
                          radial_range=None, azimuth_range=None,
                          mask=None, dummy=None, delta_dummy=None,
