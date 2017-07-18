@@ -2697,47 +2697,32 @@ class AzimuthalIntegrator(Geometry):
                          polarization_factor=None, dark=None, flat=None,
                          method="csr", unit=units.CHI_DEG, radial_unit=units.Q,
                          normalization_factor=1.0,):
-        """Calculate the radial integrated profile curve as I = f(chi) 
+        """Calculate the radial integrated profile curve as I = f(chi)
 
-        :param data: 2D array from the Detector/CCD camera
-        :type data: ndarray
-        :param npt: number of points in the output pattern
-        :type npt: int
-        :param npt_rad: number of points in the radial space. Too few points may lead to huge rounding errors.
-        :rtype npt_rad: int  
-        :param filename: output filename in 2/3 column ascii format
-        :type filename: str
-        :param correctSolidAngle: correct for solid angle of each pixel if True
-        :type correctSolidAngle: bool
-        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        :type radial_range: (float, float), optional
-        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored.
-        :type azimuth_range: (float, float), optional
-        :param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        :type mask: ndarray
-        :param dummy: value for dead/masked pixels
-        :type dummy: float
-        :param delta_dummy: precision for dummy value
-        :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 
-               0 for circular polarization or random, 
-               None for no correction, 
-               True for using the former correction
-        :type polarization_factor: float
-        :param dark: dark noise image
-        :type dark: ndarray
-        :param flat: flat field image
-        :type flat: ndarray
-        :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
-        :type method: str
-        :param unit: Output units, can be "chi_deg" or "chi_rad"
-        :type unit: pyFAI.units.Unit
-        :param radial_unit: unit used for radial representation, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        :type unit: pyFAI.units.Unit
-        :param normalization_factor: Value of a normalization monitor
-        :type normalization_factor: float
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt: number of points in the output pattern
+        :param int npt_rad: number of points in the radial space. Too few points may lead to huge rounding errors.
+        :param str filename: output filename in 2/3 column ascii format
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :type radial_range: Tuple(float, float)
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :type azimuth_range: Tuple(float, float)
+        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param str method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        :param pyFAI.units.Unit unit: Output units, can be "chi_deg" or "chi_rad"
+        :param pyFAI.units.Unit radial_unit: unit used for radial representation, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
+        :param float normalization_factor: Value of a normalization monitor
         :return: chi bins center positions and regrouped intensity
-        :rtype: Integrate1dResult, dict
+        :rtype: Integrate1dResult
         """
         unit = units.to_unit(unit, type_=units.AZIMUTHAL_UNITS)
         res = self.integrate2d(data, npt_rad, npt,
@@ -2757,6 +2742,7 @@ class AzimuthalIntegrator(Geometry):
         empty = dummy if dummy is not None else self.empty
         intensity[count == 0] = empty
         result = Integrate1dResult(res.azimuthal * azim_scale, intensity, None)
+        result._set_method_called("integrate_radial")
         result._set_unit(unit)
         result._set_sum(sum_)
         result._set_count(count)
