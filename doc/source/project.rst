@@ -127,7 +127,7 @@ As most of the Python projects:
 .. code::
 
     python setup.py build bdist_wheel
-    pip install dist/pyFAI-0.13.0*.whl --upgrade
+    pip install dist/pyFAI-0.14.0*.whl --upgrade
 
 
 There are few specific options to setup.py:
@@ -251,23 +251,25 @@ List of contributors in code
 
     $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 06/2016:
+As of 07/2017:
  * Jérôme Kieffer (ESRF)
+ * Valentin Valls (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
  * Aurore Deschildre (ESRF)
  * Giannis Ashiotis (ESRF)
  * Dimitrios Karkoulis (ESRF)
- * Valentin Valls (ESRF)
  * Jon Wright (ESRF)
  * Zubair Nawaz (Sesame)
- * Amund Hov (ESRF)
  * Dodogerstlin @github
+ * Vadim Dyadkin (ESRF/SNBL)
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
- * Vadim Dyadkin (ESRF)
+ * Christopher J. Wright (Columbia University)
  * Sigmund Neher (GWDG)
+ * Wout De Nolf (ESRF)
+ * Bertrand Faure (Xenocs)
  * Thomas Vincent (ESRF)
-
+ * Amund Hov (ESRF)
 
 List of other contributors (ideas or code)
 ------------------------------------------
@@ -285,6 +287,6 @@ List of supporters
 * ESRF ID13: Provided manpower in 2012, 2013, 2014, 2015, 2016 and beamtime
 * ESRF ID29: provided manpower in 2013 (MX-calibrate)
 * ESRF ID02: provided manpower 2014, 2016
-* ESRF ID15: provide manpower 2015, 2016
+* ESRF ID15: provide manpower 2015, 2016, 2017
 * ESRF ID21: provide manpower 2015, 2016
-* ESRF ID31: provide manpower 2016
+* ESRF ID31: provide manpower 2016, 2017

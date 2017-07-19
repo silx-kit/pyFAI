@@ -6368,8 +6368,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox1d_4calc_lut(CYT
       goto __pyx_L36_try_end;
       __pyx_L29_error:;
       __Pyx_PyThreadState_assign
-      __PYX_XDEC_MEMVIEW(&__pyx_t_9, 1);
       __PYX_XDEC_MEMVIEW(&__pyx_t_11, 1);
+      __PYX_XDEC_MEMVIEW(&__pyx_t_9, 1);
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -9490,7 +9490,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox1d_10integrate(C
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates2)
+                                #pragma omp critical(__pyx_parallel_lastprivates0)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -9798,7 +9798,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox1d_10integrate(C
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates3)
+                                #pragma omp critical(__pyx_parallel_lastprivates1)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -12309,7 +12309,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox1d_12integrate_k
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates4)
+                                #pragma omp critical(__pyx_parallel_lastprivates2)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -12617,7 +12617,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox1d_12integrate_k
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates5)
+                                #pragma omp critical(__pyx_parallel_lastprivates3)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -17540,8 +17540,8 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox2d_4calc_lut(CYT
       goto __pyx_L36_try_end;
       __pyx_L29_error:;
       __Pyx_PyThreadState_assign
-      __PYX_XDEC_MEMVIEW(&__pyx_t_5, 1);
       __PYX_XDEC_MEMVIEW(&__pyx_t_11, 1);
+      __PYX_XDEC_MEMVIEW(&__pyx_t_5, 1);
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -21420,7 +21420,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox2d_10integrate(C
                                 goto __pyx_L29;
                                 __pyx_L29:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates6)
+                                #pragma omp critical(__pyx_parallel_lastprivates4)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -21728,7 +21728,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_12splitBBoxLUT_11HistoBBox2d_10integrate(C
                                 goto __pyx_L42;
                                 __pyx_L42:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates7)
+                                #pragma omp critical(__pyx_parallel_lastprivates5)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;

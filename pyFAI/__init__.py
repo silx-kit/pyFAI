@@ -32,11 +32,12 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "15/05/2017"
+__date__ = "18/07/2017"
 
 import sys
 import logging
-logging.basicConfig()
+if "ps1" in dir(sys):
+    logging.basicConfig()
 
 import os
 project = os.path.basename(os.path.dirname(os.path.abspath(__file__)))

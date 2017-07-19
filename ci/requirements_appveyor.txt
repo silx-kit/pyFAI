@@ -13,3 +13,4 @@ matplotlib
 #mako
 #pyopencl
 numexpr
+silx

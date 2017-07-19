@@ -22,13 +22,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+"bunch of utility function/static classes to handle testing environment"
 from __future__ import print_function, division, absolute_import, with_statement
-__doc__ = "bunch of utility function/static classes to handle testing environment"
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "18/07/2017"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -38,25 +39,16 @@ if __name__ == "__main__":
 
 import os
 import sys
-import getpass
 import threading
 import unittest
 import logging
-try:  # Python3
-    from urllib.request import urlopen, ProxyHandler, build_opener, URLError
-except ImportError:  # Python2
-    from urllib2 import urlopen, ProxyHandler, build_opener, URLError
-# import urllib2
 import numpy
 import shutil
-import json
-import tempfile
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from argparse import ArgumentParser
+from ..utils import six
+from silx.resources import ExternalResources
 
-logger = logging.getLogger("%s.utilstest" % PACKAGE)
+logger = logging.getLogger(__name__)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
 
@@ -77,37 +69,18 @@ class UtilsTest(object):
     timeout = 60  # timeout in seconds for downloading images
     # url_base = "http://forge.epn-campus.eu/attachments/download"
     url_base = "http://ftp.edna-site.org/pyFAI/testimages"
+    resources = ExternalResources(PACKAGE, timeout=timeout, env_key=DATA_KEY,
+                                  url_base=url_base)
     sem = threading.Semaphore()
     recompiled = False
     reloaded = False
     name = PACKAGE
     script_dir = None
-    try:
-        pyFAI = __import__("%s.directories" % name)
-    except Exception as error:
-        logger.warning("Unable to loading %s %s", name, error)
-        image_home = None
-    else:
-        image_home = pyFAI.directories.testimages
-        pyFAI.depreclog.setLevel(logging.ERROR)
 
-    if image_home is None:
-        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, getpass.getuser()))
-        if not os.path.exists(image_home):
-            os.makedirs(image_home)
-
-    testimages = os.path.join(image_home, "all_testimages.json")
-    if os.path.exists(testimages):
-        with open(testimages) as f:
-            ALL_DOWNLOADED_FILES = set(json.load(f))
-    else:
-        ALL_DOWNLOADED_FILES = set()
-
-    tempdir = tempfile.mkdtemp("_" + getpass.getuser(), name + "_")
-
-    @classmethod
-    def clean_up(cls):
-        recursive_delete(cls.tempdir)
+    tempdir = resources.tempdir
+    download_images = resources.download_all
+    clean_up = resources.clean_up
+    getimage = resources.getfile
 
     @classmethod
     def deep_reload(cls):
@@ -129,104 +102,11 @@ class UtilsTest(object):
         return
 
     @classmethod
-    def timeoutDuringDownload(cls, imagename=None):
-            """
-            Function called after a timeout in the download part ...
-            just raise an Exception.
-            """
-            if imagename is None:
-                imagename = "testimages.tar.bz2 unzip it "
-            raise RuntimeError("Could not automatically \
-                download test images!\n \ If you are behind a firewall, \
-                please set both environment variable http_proxy and https_proxy.\
-                This even works under windows ! \n \
-                Otherwise please try to download the images manually from \n %s/%s and put it in in test/testimages." % (cls.url_base, imagename))
-
-    @classmethod
-    def getimage(cls, imagename):
-        """
-        Downloads the requested image from a file set available at http://www.silx.org/pub/pyFAI/testimages/
-
-        :param: relative name of the image.
-        :return: full path of the locally saved file.
-        """
-        if imagename not in cls.ALL_DOWNLOADED_FILES:
-            cls.ALL_DOWNLOADED_FILES.add(imagename)
-            image_list = list(cls.ALL_DOWNLOADED_FILES)
-            image_list.sort()
-            try:
-                with open(cls.testimages, "w") as fp:
-                    json.dump(image_list, fp, indent=4)
-            except IOError:
-                logger.debug("Unable to save JSON list")
-        logger.info("UtilsTest.getimage('%s')", imagename)
-        if not os.path.exists(cls.image_home):
-            os.makedirs(cls.image_home)
-
-        fullimagename = os.path.abspath(os.path.join(cls.image_home, imagename))
-        if not os.path.isfile(fullimagename):
-            logger.info("Trying to download image %s, timeout set to %ss",
-                        imagename, cls.timeout)
-            dictProxies = {}
-            if "http_proxy" in os.environ:
-                dictProxies['http'] = os.environ["http_proxy"]
-                dictProxies['https'] = os.environ["http_proxy"]
-            if "https_proxy" in os.environ:
-                dictProxies['https'] = os.environ["https_proxy"]
-            if dictProxies:
-                proxy_handler = ProxyHandler(dictProxies)
-                opener = build_opener(proxy_handler).open
-            else:
-                opener = urlopen
-
-            logger.info("wget %s/%s", cls.url_base, imagename)
-            try:
-                data = opener("%s/%s" % (cls.url_base, imagename),
-                              data=None, timeout=cls.timeout).read()
-                logger.info("Image %s successfully downloaded.", imagename)
-            except URLError:
-                raise unittest.SkipTest("network unreachable.")
-
-            try:
-                with open(fullimagename, "wb") as outfile:
-                    outfile.write(data)
-            except IOError:
-                raise IOError("unable to write downloaded \
-                    data to disk at %s" % cls.image_home)
-
-            if not os.path.isfile(fullimagename):
-                raise RuntimeError("Could not automatically \
-                download test images %s!\n \ If you are behind a firewall, \
-                please set both environment variable http_proxy and https_proxy.\
-                This even works under windows ! \n \
-                Otherwise please try to download the images manually from \n%s/%s" % (imagename, cls.url_base, imagename))
-
-        return fullimagename
-
-    @classmethod
-    def download_images(cls, imgs=None):
-        """
-        Download all images needed for the test/benchmarks
-
-        :param imgs: list of files to download
-        """
-        if not imgs:
-            imgs = cls.ALL_DOWNLOADED_FILES
-        for fn in imgs:
-            print("Downloading from internet: %s" % fn)
-            cls.getimage(fn)
-
-    @classmethod
     def get_options(cls):
         """
         Parse the command line to analyse options ... returns options
         """
         if cls.options is None:
-            try:
-                from argparse import ArgumentParser
-            except:
-                from pyFAI.third_party.argparse import ArgumentParser
-
             parser = ArgumentParser(usage="Tests for %s" % cls.name)
             parser.add_argument("-d", "--debug", dest="debug", help="run in debugging mode",
                                 default=False, action="store_true")
