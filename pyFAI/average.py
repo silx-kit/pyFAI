@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/11/2016"
+__date__ = "18/07/2017"
 __status__ = "production"
 
 import logging
@@ -520,7 +520,7 @@ def _get_monitor_value_from_edf(image, monitor_key):
     return monitor
 
 
-def _get_monitor_value(image, monitor_key):
+def get_monitor_value(image, monitor_key):
     """Return the monitor value from an image using an header key.
 
     :param fabio.fabioimage.FabioImage image: Image containing the header
@@ -873,7 +873,7 @@ class Average(object):
             corrected_image /= self._flat
         if self._monitor_key is not None:
             try:
-                monitor = _get_monitor_value(fabio_image, self._monitor_key)
+                monitor = get_monitor_value(fabio_image, self._monitor_key)
                 corrected_image /= monitor
             except MonitorNotFound as e:
                 logger.warning("Monitor not found in filename '%s', data skipped. Cause: %s", fabio_image.filename, str(e))

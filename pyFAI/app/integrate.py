@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/06/2017"
+__date__ = "18/07/2017"
 __satus__ = "production"
 import sys
 import logging
@@ -54,6 +54,8 @@ import pyFAI.worker
 from pyFAI.io import DefaultAiWriter
 from pyFAI.io import HDF5Writer
 from pyFAI.utils.shell import ProgressBar
+from pyFAI import average
+
 
 try:
     from argparse import ArgumentParser
@@ -87,6 +89,27 @@ def integrate_gui(options, args):
     window.set_input_data(args)
     window.show()
     return app.exec_()
+
+
+def get_monitor_value(image, monitor_key):
+    """Return the monitor value from an image using an header key.
+
+    :param fabio.fabioimage.FabioImage image: Image containing the header
+    :param str monitor_key: Key containing the monitor
+    :return: returns the monitor else returns 1.0
+    :rtype: float
+    """
+    if monitor_key is None or monitor_key == "":
+        return 1.0
+    try:
+        monitor = average.get_monitor_value(image, monitor_key)
+        return monitor
+    except average.MonitorNotFound:
+        logger.warning("Monitor %s not found. No normalization applied." % monitor_key)
+        return 1.0
+    except Exception as e:
+        logger.warning("Fail to load monitor. No normalization applied. %s" % str(e))
+        return 1.0
 
 
 def integrate_shell(options, args):
@@ -124,33 +147,46 @@ def integrate_shell(options, args):
         img = fabio.open(item)
         multiframe = img.nframes > 1
 
-        if options.output and os.path.isdir(options.output):
-            outpath = os.path.join(options.output, os.path.splitext(os.path.basename(item))[0])
+        custom_ext = True
+        if options.output:
+            if os.path.isdir(options.output):
+                outpath = os.path.join(options.output, os.path.splitext(os.path.basename(item))[0])
+            else:
+                outpath = os.path.abspath(options.output)
+                custom_ext = False
         else:
             outpath = os.path.splitext(item)[0]
 
+        if custom_ext:
+            if multiframe:
+                outpath = outpath + "_pyFAI.h5"
+            else:
+                if worker.do_2D():
+                    outpath = outpath + ".azim"
+                else:
+                    outpath = outpath + ".dat"
         if multiframe:
-            writer = HDF5Writer(outpath + "_pyFAI.h5")
+            writer = HDF5Writer(outpath)
             writer.init(config)
 
             for i in range(img.nframes):
                 fimg = img.getframe(i)
-                data = fimg.data
-                if worker.do_2D():
-                    res = worker.process(data, metadata=fimg.header)
-                else:
-                    res = worker.process(data, metadata=fimg.header)
+                normalization_factor = get_monitor_value(fimg, options.monitor_key)
+                data = img.data
+                res = worker.process(data=data,
+                                     metadata=fimg.header,
+                                     normalization_factor=normalization_factor)
+                if not worker.do_2D():
                     res = res.T[1]
                 writer.write(res, index=i)
             writer.close()
         else:
-            if worker.do_2D():
-                filename = outpath + ".azim"
-            else:
-                filename = outpath + ".dat"
+            normalization_factor = get_monitor_value(img, options.monitor_key)
             data = img.data
-            writer = DefaultAiWriter(filename, worker.ai)
-            worker.process(data, writer=writer)
+            writer = DefaultAiWriter(outpath, worker.ai)
+            worker.process(data,
+                           normalization_factor=normalization_factor,
+                           writer=writer)
             writer.close()
 
     progress_bar.clear()
@@ -195,6 +231,15 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         help="Configuration file containing the processing to be done")
     parser.add_argument("args", metavar='FILE', type=str, nargs='*',
                         help="Files to be integrated")
+    parser.add_argument("--monitor-name", dest="monitor_key", default=None,
+                        help="Name of the monitor in the header of each input \
+                        files. If defined the contribution of each input file \
+                        is divided by the monitor. If the header does not \
+                        contain or contains a wrong value, the contribution \
+                        of the input file is ignored.\
+                        On EDF files, values from 'counter_pos' can accessed \
+                        by using the expected mnemonic. \
+                        For example 'counter/bmon'.")
     options = parser.parse_args()
 
     # Analysis arguments and options
