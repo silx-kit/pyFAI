@@ -56,7 +56,7 @@ class Separator(OpenclProcessing):
     Implementation of sort, median filter and trimmed-mean in  pyopencl
     """
     DUMMY = numpy.finfo(numpy.float32).min
-    kernel_files = ["bitonic.cl", "separate.cl", "kahan.cl", "sigma_clip.cl"]
+    kernel_files = ["kahan.cl", "bitonic.cl", "separate.cl", "sigma_clip.cl"]
 
     def __init__(self, npt_height=512, npt_width=1024, ctx=None, devicetype="all",
                  platformid=None, deviceid=None,

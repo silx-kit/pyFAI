@@ -170,35 +170,31 @@ kernel void trimmed_mean_vertical(global float *src,
 {
   uint gid = get_global_id(0);
   //Global memory guard for padding
-  int cnt = 0, pos=0;
-  int lower, upper;
-  float data, sum=0.0f, error=0.0f;
+  uint cnt = 0, pos=0;
+  float2 sum = (float2)(0.0f, 0.0f);
+
   if(gid < width)
   {
       for (pos=0; pos<height*width; pos+=width)
       {
-          data = src[gid+pos];
-          if (data!=dummy)
+          if (src[gid+pos] != dummy)
           {
               cnt++;
           }
       }
       if (cnt)
       {
+          int lower, upper;
           lower = min((int)floor(lower_quantile * cnt) + height - cnt, height - 1);
           upper = min((int)ceil(upper_quantile * cnt) + height - cnt, height - 1);
           if (upper > lower)
           {
               for (pos=lower*width; pos<upper*width; pos+=width)
               {
-                  data = src[gid+pos];
                   //Sum performed using Kahan summation
-                  float y = data - error;
-                  float t = sum + y;
-                  error = (t - sum) - y;
-                  sum = t;
+                  sum = kahan_sum(sum, src[gid+pos]);
               }
-              dst[gid] = sum / (float)(upper - lower);
+              dst[gid] = sum.s0 / (float)(upper - lower);
           }
           else
           {
@@ -238,33 +234,29 @@ kernel void trimmed_mean_horizontal(global float *src,
   uint gid = get_global_id(0);
   //Global memory guard for padding
   uint cnt = 0, pos=0, offset=gid*width;
-  float data, sum=0.0f, error=0.0f;
-  int lower, upper;
+  float2 sum = (float2)(0.0f, 0.0f);
+
   if(gid < height)
   {
       for (pos=0; pos<width; pos++)
       {
-          data = src[offset + pos];
-          if (data!=dummy){
+          if (src[offset + pos] != dummy){
               cnt++;
           }
       }
       if (cnt)
       {
+          uint lower, upper;
           lower = min((int)floor(lower_quantile * cnt) + width - cnt, width - 1);
           upper = min((int)ceil(upper_quantile * cnt) + width - cnt, width - 1);
           if (upper > lower)
           {
               for (pos=lower; pos<upper; pos++)
               {
-                  data = src[offset + pos];
                   //Sum performed using Kahan summation
-                  float y = data - error;
-                  float t = sum + y;
-                  error = (t - sum) - y;
-                  sum = t;
+                  sum = kahan_sum(sum, src[offset + pos]);
               }
-              dst[gid] = sum / (float)(upper - lower);
+              dst[gid] = sum.s0 / (float)(upper - lower);
           }
           else
           {
