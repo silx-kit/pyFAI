@@ -382,11 +382,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.events += events
                 ev.wait()
                 return image
-            print(self.workgroup_size)
-            wg = self.workgroup_size["csr_integrate"]
-            wdim_bins = (self.bins * wg[0]),
-            integrate = self.program.csr_integrate(self.queue, wdim_bins, wg, *list(kw2.values()))
-            events.append(EventDescription("integrate", integrate))
+            wg = self.workgroup_size["csr_integrate"][0]
+
+            wdim_bins = (self.bins * wg),
+            if wg == 1:
+                integrate = self.program.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw2.values())
+                events.append(EventDescription("integrate_single", integrate))
+            else:
+                integrate = self.program.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
+                events.append(EventDescription("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
             outCount = numpy.empty(self.bins, dtype=numpy.float32)

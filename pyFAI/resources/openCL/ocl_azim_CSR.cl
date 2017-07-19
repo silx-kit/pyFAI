@@ -78,11 +78,8 @@ csr_integrate(  const   global  float   *weights,
     bin_bounds.x = col_ptr[bin_num];
     bin_bounds.y = col_ptr[bin_num+1];
     int bin_size = bin_bounds.y-bin_bounds.x;
-    float sum_data = 0.0f;
-    float sum_count = 0.0f;
-    float cd = 0.0f;
-    float cc = 0.0f;
-    float t, y;
+    float2 sum_data = (float2)(0.0f, 0.0f);
+    float2 sum_count = (float2)(0.0f, 0.0f);
     const float epsilon = 1e-10f;
     float coef, data;
     int idx, k, j;
@@ -95,20 +92,18 @@ csr_integrate(  const   global  float   *weights,
                coef = coefs[k];
                idx = row_ind[k];
                data = weights[idx];
+               if  (! isfinite(data))
+                   continue;
+
                if( (!do_dummy) || (data!=dummy) )
                {
                    //sum_data +=  coef * data;
                    //sum_count += coef;
                    //Kahan summation allows single precision arithmetics with error compensation
                    //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-                   y = coef*data - cd;
-                   t = sum_data + y;
-                   cd = (t - sum_data) - y;
-                   sum_data = t;
-                   y = coef - cc;
-                   t = sum_count + y;
-                   cc = (t - sum_count) - y;
-                   sum_count = t;
+                   // defined in kahan.cl
+                   sum_data = kahan_sum(sum_data, coef * data);
+                   sum_count = kahan_sum(sum_count, coef);
                };//end if dummy
        } //end if k < bin_bounds.y
        };//for j
@@ -117,10 +112,8 @@ csr_integrate(  const   global  float   *weights,
  */
 
 // REMEMBER TO PASS WORKGROUP_SIZE AS A CPP DEF
-    __local float super_sum_data[WORKGROUP_SIZE];
-    __local float super_sum_data_correction[WORKGROUP_SIZE];
-    __local float super_sum_count[WORKGROUP_SIZE];
-    __local float super_sum_count_correction[WORKGROUP_SIZE];
+    local float2 super_sum_data[WORKGROUP_SIZE];
+    local float2 super_sum_count[WORKGROUP_SIZE];
     
     float super_sum_temp = 0.0f;
     int index;
@@ -129,57 +122,38 @@ csr_integrate(  const   global  float   *weights,
     {
         if (thread_id_loc < bin_size)
         {
-            super_sum_data_correction[thread_id_loc] = cd;
-            super_sum_count_correction[thread_id_loc] = cc;
             super_sum_data[thread_id_loc] = sum_data;
             super_sum_count[thread_id_loc] = sum_count;
         }
         else
         {
-            super_sum_data_correction[thread_id_loc] = 0.0f;
-            super_sum_count_correction[thread_id_loc] = 0.0f;
-            super_sum_data[thread_id_loc] = 0.0f;
-            super_sum_count[thread_id_loc] = 0.0f;
+            super_sum_data[thread_id_loc] = (float2)(0.0f, 0.0f);
+            super_sum_count[thread_id_loc] = (float2)(0.0f, 0.0f);
         }
     }
     else
     {
-        super_sum_data_correction[thread_id_loc] = cd;
-        super_sum_count_correction[thread_id_loc] = cc;
         super_sum_data[thread_id_loc] = sum_data;
         super_sum_count[thread_id_loc] = sum_count;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-    cd = 0;
-    cc = 0;
-    
+
     while (active_threads != 1)
     {
         active_threads /= 2;
         if (thread_id_loc < active_threads)
         {
-            index = thread_id_loc+active_threads;
-            cd = super_sum_data_correction[thread_id_loc] + super_sum_data_correction[index];
-            super_sum_temp = super_sum_data[thread_id_loc];
-            y = super_sum_data[index] - cd;
-            t = super_sum_temp + y;
-            super_sum_data_correction[thread_id_loc] = (t - super_sum_temp) - y;
-            super_sum_data[thread_id_loc] = t;
-            
-            cc = super_sum_count_correction[thread_id_loc] + super_sum_count_correction[index];
-            super_sum_temp = super_sum_count[thread_id_loc];
-            y = super_sum_count[index] - cc;
-            t = super_sum_temp + y;
-            super_sum_count_correction[thread_id_loc]  = (t - super_sum_temp) - y;
-            super_sum_count[thread_id_loc] = t;
+            index = thread_id_loc + active_threads;
+            super_sum_data[thread_id_loc] = compensated_sum(super_sum_data[thread_id_loc], super_sum_data[index]);
+            super_sum_count[thread_id_loc] = compensated_sum(super_sum_count[thread_id_loc], super_sum_count[index]);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     if (thread_id_loc == 0)
     {
-        outData[bin_num] = super_sum_data[0];
-        outCount[bin_num] = super_sum_count[0];
+        outData[bin_num] = super_sum_data[0].s0;
+        outCount[bin_num] = super_sum_count[0].s0;
         if (outCount[bin_num] > epsilon)
             outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
         else
