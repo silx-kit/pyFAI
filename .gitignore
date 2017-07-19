@@ -4,9 +4,6 @@
 /testimages
 
 # Generated
-/package/*.*
-/package/pyFAI*
-/man
 /profile.log
 
 # Packages
