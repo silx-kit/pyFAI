@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "19/07/2017"
 __status__ = "production"
 
 
@@ -372,7 +372,10 @@ class Calibrant(object):
 
         :rtype: int
         """
-        return hash(self._wavelength) ^ hash(self.dSpacing)
+        h = hash(self._wavelength)
+        for d in self.dSpacing:
+                h = h ^ hash(d)
+        return h
 
     def __copy__(self):
         """
