@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "25/04/2017"
+__date__ = "19/07/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,7 +37,7 @@ import logging
 from collections import OrderedDict
 import numpy
 from .common import ocl, pyopencl, kernel_workgroup_size
-from ..utils import  calc_checksum
+from ..utils import calc_checksum
 
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -58,19 +58,19 @@ class OCL_CSR_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     buffers = [
-           BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
-           BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
-        ]
-    kernel_files = ["preprocess.cl", "memset.cl", "ocl_azim_CSR.cl"]
+               BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
+              ]
+    kernel_files = ["kahan.cl", "preprocess.cl", "memset.cl", "ocl_azim_CSR.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
@@ -189,7 +189,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
-        kernels = ("preprocess.cl", "memset.cl", kernel_file)
+        kernels = self.kernel_files[:-1] + [kernel_file]
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE)
@@ -197,7 +197,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         for kernel in self.program.all_kernels():
             kernel_name = kernel.function_name
             wg = kernel_workgroup_size(self.program, kernel)
-            self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),) # this is a tuple
+            self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),)  # this is a tuple
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -231,6 +231,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("outData", self.cl_mem["outData"]),
                                                             ("outCount", self.cl_mem["outCount"]),
                                                             ("outMerge", self.cl_mem["outMerge"])))
+        self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
+
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("outData", "outCount", "outMerge")))
         self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
@@ -317,7 +319,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw2["do_dummy"] = do_dummy
             kw2["dummy"] = dummy
 
-
             if dark is not None:
                 do_dark = numpy.int8(1)
                 # TODO: what is do_checksum=False and image not on device ...
@@ -381,7 +382,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.events += events
                 ev.wait()
                 return image
-
+            print(self.workgroup_size)
             wg = self.workgroup_size["csr_integrate"]
             wdim_bins = (self.bins * wg[0]),
             integrate = self.program.csr_integrate(self.queue, wdim_bins, wg, *list(kw2.values()))
