@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import tempfile
@@ -284,12 +284,10 @@ class TestIntegrateResult(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestIntegrate1D("testQ"))
-    testsuite.addTest(TestIntegrate1D("testR"))
-    testsuite.addTest(TestIntegrate1D("test2th"))
-    testsuite.addTest(TestIntegrate2D("testQ"))
-    testsuite.addTest(TestIntegrate2D("testR"))
-    testsuite.addTest(TestIntegrate2D("test2th"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestIntegrate1D))
+    testsuite.addTest(loader(TestIntegrate2D))
+    testsuite.addTest(loader(TestIntegrateResult))
 
     return testsuite
 

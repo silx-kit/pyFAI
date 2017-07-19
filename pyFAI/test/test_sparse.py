@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2017"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -138,8 +138,6 @@ class TestContainer(unittest.TestCase):
         d = abs(numpy.arange(nelem) - i).max()
         self.assertEqual(d, 0, "result is OK")
         self.assertLess(abs(f - i / 10.0).max(), 1e-6, "result is OK")
-        rep = str(cont)
-        size = cont.nbytes
 
     def test_container(self):
         nlines = 11
@@ -148,8 +146,6 @@ class TestContainer(unittest.TestCase):
         cont = sparse_utils.ArrayBuilder(nlines)
         for i in range(nelem):
             cont.append(i % nlines, i, 0.1 * i)
-        rep = str(cont)
-        size = cont.nbytes
         s = numpy.arange(nelem).reshape((ncol, nlines)).T.ravel()
         a, b, c = cont.as_CSR()
         err = abs(a - numpy.arange(0, nelem + 1, ncol)).max()
@@ -165,12 +161,11 @@ class TestContainer(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestSparseBBox("test_LUT"))
-    testsuite.addTest(TestSparseBBox("test_CSR"))
-    testsuite.addTest(TestSparseUtils("test_conversion"))
-    testsuite.addTest(TestContainer("test_vector"))
-    testsuite.addTest(TestContainer("test_container"))
+    testsuite.addTest(loader(TestSparseBBox))
+    testsuite.addTest(loader(TestSparseUtils))
+    testsuite.addTest(loader(TestContainer))
     return testsuite
 
 

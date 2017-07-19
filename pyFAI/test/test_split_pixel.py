@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import unittest
 import numpy
@@ -47,9 +47,7 @@ from ..detectors import Detector
 
 
 class TestSplitPixel(unittest.TestCase):
-    """
 
-    """
     def setUp(self):
         unittest.TestCase.setUp(self)
         img = numpy.zeros((512, 512))
@@ -124,10 +122,9 @@ class TestSplitPixel(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestSplitPixel("test_no_split"))
-    testsuite.addTest(TestSplitPixel("test_split_bbox"))
-    testsuite.addTest(TestSplitPixel("test_split_full"))
+    testsuite.addTest(loader(TestSplitPixel))
     return testsuite
 
 

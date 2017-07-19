@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import os
 import sys
@@ -65,12 +65,19 @@ class TestAIWidget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if qt is not None:
+        cls.app = None
+        if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
+            # On linux and no DISPLAY available (e.g., ssh without -X)
+            logger.warning('pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
+            cls.app = None
+        elif qt is not None:
             cls.app = qt.QApplication([])
 
     def setUp(self):
         if qt is None:
             self.skipTest("Qt is not available")
+        if self.__class__.app is None:
+            self.skipTest("DISPLAY env. is not set")
 
     @classmethod
     def tearDownClass(cls):
@@ -142,26 +149,11 @@ class TestAIWidget(unittest.TestCase):
             numpy.testing.assert_array_almost_equal(result[0][i], expected[0][i], decimal=1)
 
 
-if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
-    # On linux and no DISPLAY available (e.g., ssh without -X)
-    logger.warning('pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
-
-    class SkipGUITest(unittest.TestCase):
-        def runTest(self):
-            self.skipTest(
-                'pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
-
-    def suite():
-        suite = unittest.TestSuite()
-        suite.addTest(SkipGUITest())
-        return suite
-else:
-    def suite():
-        testsuite = unittest.TestSuite()
-        test_names = unittest.getTestCaseNames(TestAIWidget, "test")
-        for test in test_names:
-            testsuite.addTest(TestAIWidget(test))
-        return testsuite
+def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(loader(TestAIWidget))
+    return testsuite
 
 
 if __name__ == '__main__':

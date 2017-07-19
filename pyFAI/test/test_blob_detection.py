@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import unittest
 import numpy
@@ -84,12 +84,11 @@ class TestBlobDetection(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestBlobDetection("test_local_max"))
-#    testsuite.addTest(TestConvolution("test_vertical_convolution"))
-#    testsuite.addTest(TestConvolution("test_gaussian"))
-#    testsuite.addTest(TestConvolution("test_gaussian_filter"))
+    testsuite.addTest(loader(TestBlobDetection))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import unittest
 import numpy
@@ -279,14 +279,9 @@ class TestAverageMonitorName(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-
-    test_names = unittest.getTestCaseNames(TestAverage, "test")
-    for test in test_names:
-        testsuite.addTest(TestAverage(test))
-
-    test_names = unittest.getTestCaseNames(TestAverageMonitorName, "test")
-    for test in test_names:
-        testsuite.addTest(TestAverageMonitorName(test))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestAverage))
+    testsuite.addTest(loader(TestAverageMonitorName))
     return testsuite
 
 

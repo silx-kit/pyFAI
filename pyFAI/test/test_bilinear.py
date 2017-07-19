@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -111,10 +111,10 @@ class TestConversion(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestBilinear("test_max_search_round"))
-    testsuite.addTest(TestBilinear("test_max_search_half"))
-    testsuite.addTest(TestConversion("test4d"))
+    testsuite.addTest(loader(TestBilinear))
+    testsuite.addTest(loader(TestConversion))
     return testsuite
 
 

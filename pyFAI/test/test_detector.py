@@ -33,7 +33,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "19/07/2017"
 
 import os
 import tempfile
@@ -94,11 +94,11 @@ class TestDetector(unittest.TestCase):
 
         #personal communication of M. Blum:
 
-     self.desired_pixelsizes[4096]        = 39.500
-     self.desired_pixelsizes[2048]        = 79.000
-     self.desired_pixelsizes[1364]        = 118.616
-     self.desired_pixelsizes[1024]        = 158.000
-     self.desired_pixelsizes[512]        = 316.000
+        self.desired_pixelsizes[4096]        = 39.500
+        self.desired_pixelsizes[2048]        = 79.000
+        self.desired_pixelsizes[1364]        = 118.616
+        self.desired_pixelsizes[1024]        = 158.000
+        self.desired_pixelsizes[512]        = 316.000
 
         """
         sx165 = detector_factory("rayonixsx165")
@@ -263,14 +263,9 @@ class TestDetector(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestDetector("test_detector_instanciate"))
-    testsuite.addTest(TestDetector("test_detector_imxpad_s140"))
-    testsuite.addTest(TestDetector("test_detector_rayonix_sx165"))
-    testsuite.addTest(TestDetector("test_nexus_detector"))
-    testsuite.addTest(TestDetector("test_guess_binning"))
-    testsuite.addTest(TestDetector("test_Xpad_flat"))
-    testsuite.addTest(TestDetector("test_non_flat"))
+    testsuite.addTest(loader(TestDetector))
     return testsuite
 
 

@@ -30,7 +30,7 @@ __doc__ = """Test module for utils.shell module"""
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -54,11 +54,11 @@ class TestUtilShell(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    test_names = unittest.getTestCaseNames(TestUtilShell, "test")
-    for test in test_names:
-        testsuite.addTest(TestUtilShell(test))
+    testsuite.addTest(loader(TestUtilShell))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

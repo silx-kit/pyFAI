@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -88,6 +88,8 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(R < 20, "Numpy: Measure R=%s<2" % R)
 
     def testCython(self):
+        self.skipTest("Untested")
+
         qref, Iref, _s = self.ai.saxs(self.data, self.npt)
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="cython")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
@@ -140,17 +142,9 @@ class TestSaxs(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestSaxs("testMask"))
-    testsuite.addTest(TestSaxs("testNumpy"))
-#    testsuite.addTest(TestSaxs("testCython"))
-    testsuite.addTest(TestSaxs("testSplitBBox"))
-    testsuite.addTest(TestSaxs("testSplitPixel"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-
+    testsuite.addTest(loader(TestSaxs))
     return testsuite
 
 if __name__ == '__main__':

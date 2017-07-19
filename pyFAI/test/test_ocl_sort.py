@@ -29,7 +29,7 @@
 
 from __future__ import absolute_import, print_function, division
 __license__ = "MIT"
-__date__ = "07/07/2017"
+__date__ = "19/07/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -234,15 +234,8 @@ class TestOclSort(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestOclSort("test_sort_hor"))
-    testsuite.addTest(TestOclSort("test_sort_vert"))
-    testsuite.addTest(TestOclSort("test_filter_hor"))
-    testsuite.addTest(TestOclSort("test_filter_vert"))
-    testsuite.addTest(TestOclSort("test_mean_vert"))
-    testsuite.addTest(TestOclSort("test_mean_hor"))
-    testsuite.addTest(TestOclSort("test_sigma_clip_vert"))
-    testsuite.addTest(TestOclSort("test_sigma_clip_hor"))
-
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestOclSort))
     return testsuite
 
 if __name__ == "__main__":

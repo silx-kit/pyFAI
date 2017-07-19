@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -133,6 +133,8 @@ class testFabIOWriter(unittest.TestCase):
         self.tmpdir = None
 
     def test_writer(self):
+        self.skipTest("Untested")
+
         h5file = os.path.join(self.tmpdir)
         shape = 1024, 1024
         n = 100
@@ -153,11 +155,11 @@ class testFabIOWriter(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestIsoTime("test_get"))
-    testsuite.addTest(TestIsoTime("test_from"))
-    testsuite.addTest(TestNexus("test_new_detector"))
-    testsuite.addTest(testHDF5Writer("test_writer"))
-#    testsuite.addTest(testFabIOWriter("test_writer"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestIsoTime))
+    testsuite.addTest(loader(TestNexus))
+    testsuite.addTest(loader(testHDF5Writer))
+    testsuite.addTest(loader(testFabIOWriter))
     return testsuite
 
 if __name__ == "__main__":

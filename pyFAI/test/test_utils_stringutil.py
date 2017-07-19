@@ -30,7 +30,7 @@ __doc__ = """Test module for utils.string module"""
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -68,10 +68,9 @@ class TestUtilsString(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    test_names = unittest.getTestCaseNames(TestUtilsString, "test")
-    for test in test_names:
-        testsuite.addTest(TestUtilsString(test))
+    testsuite.addTest(loader(TestUtilsString))
     return testsuite
 
 if __name__ == '__main__':
