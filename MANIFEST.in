@@ -22,6 +22,7 @@ include README.rst
 include CHANGELOG.txt
 include TODO.txt
 include copyright
+include requirements.txt
 recursive-include scripts *
 recursive-exclude scripts *.*
 recursive-include package/debian *
