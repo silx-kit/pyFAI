@@ -26,13 +26,14 @@ Dependencies
 
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
-* Python: version 2.7, 3.4 and 3.5.
+* Python: version 2.7, 3.4, 3.5 and 3.6.
   Support for 2.6, 3.2 and 3.3 has been dropped in v0.12
 * NumPy: version 1.4 or newer
 * SciPy: version 0.7 or newer
 * Matplotlib: verson 0.99 or newer
-* FabIO: version 0.08 or newer
+* FabIO: version 0.4 or newer
 * h5py (to access HDF5 files)
+* silx (version 0.5+ http://www.silx.org)
 
 There are plenty of optional dependencies which will not prevent pyFAI from working
 by may impair performances or prevent tools from properly working:
