@@ -38,6 +38,7 @@ __date__ = "19/07/2017"
 
 
 import tempfile
+import contextlib
 import os
 import unittest
 import numpy.testing
@@ -50,6 +51,14 @@ from ..containers import Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
 
+
+@contextlib.contextmanager
+def resulttempfile():
+	fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".out")
+	os.close(fd)
+	os.remove(path)
+	yield path
+	os.remove(path)
 
 class TestIntegrate1D(unittest.TestCase):
 
@@ -109,21 +118,17 @@ class TestIntegrate1D(unittest.TestCase):
                 self.assertTrue(R <= self.Rmax, mesg)
 
     def test_filename(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        self.ai.integrate1d(self.data, self.npt, filename=f.name)
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+            self.ai.integrate1d(self.data, self.npt, filename=filename)
+            self.assertGreater(os.path.getsize(filename), 40)
 
     def test_defaultwriter(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        result = self.ai.integrate1d(self.data, self.npt)
-        writer = DefaultAiWriter(f.name, self.ai)
-        writer.write(result)
-        writer.close()
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+            result = self.ai.integrate1d(self.data, self.npt)
+            writer = DefaultAiWriter(filename, self.ai)
+            writer.write(result)
+            writer.close()
+            self.assertGreater(os.path.getsize(filename), 40)
 
 
 class TestIntegrate2D(unittest.TestCase):
@@ -199,21 +204,17 @@ class TestIntegrate2D(unittest.TestCase):
                 self.assertTrue(R <= self.Rmax, mesg)
 
     def test_filename(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        self.ai.integrate2d(self.data, self.npt, filename=f.name)
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+            self.ai.integrate2d(self.data, self.npt, filename=filename)
+            self.assertGreater(os.path.getsize(filename), 40)
 
     def test_defaultwriter(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        result = self.ai.integrate2d(self.data, self.npt)
-        writer = DefaultAiWriter(f.name, self.ai)
-        writer.write(result)
-        writer.close()
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+           result = self.ai.integrate2d(self.data, self.npt)
+           writer = DefaultAiWriter(filename, self.ai)
+           writer.write(result)
+           writer.close()
+           self.assertGreater(os.path.getsize(filename), 40)
 
 
 class TestIntegrateResult(unittest.TestCase):

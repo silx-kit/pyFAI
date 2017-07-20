@@ -33,7 +33,7 @@ import fabio
 import contextlib
 import unittest
 import pyFAI.app.integrate
-from fabio.ext.cf_io import tempfile
+import tempfile
 from .utilstest import UtilsTest
 import numpy
 
