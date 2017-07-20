@@ -25,16 +25,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+"test suite for masked arrays"
 
 from __future__ import absolute_import, division, print_function
-
-__doc__ = "test suite for masked arrays"
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "20/07/2017"
 
 
 import tempfile
@@ -54,11 +53,12 @@ from ..detectors import Pilatus1M
 
 @contextlib.contextmanager
 def resulttempfile():
-	fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".out")
-	os.close(fd)
-	os.remove(path)
-	yield path
-	os.remove(path)
+    fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".out")
+    os.close(fd)
+    os.remove(path)
+    yield path
+    os.remove(path)
+
 
 class TestIntegrate1D(unittest.TestCase):
 
@@ -141,6 +141,15 @@ class TestIntegrate2D(unittest.TestCase):
         cls.ai.wavelength = 1e-10
         cls.Rmax = 20
         cls.delta_pos_azim_max = 0.28
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.npt = None
+        cls.img = None
+        cls.data = None
+        cls.ai = None
+        cls.Rmax = None
+        cls.delta_pos_azim_max = None
 
     def testQ(self):
         res = {}
