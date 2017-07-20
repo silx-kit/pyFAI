@@ -8,6 +8,8 @@ recursive-include pyFAI/resources/calibration *.D
 recursive-include dll *.dll
 recursive-exclude benchmark *
 recursive-exclude test *
+recursive-exclude pyFAI.egg-info *
+exclude pyFAI.egg-info
 include stdeb.cfg
 include setup.cfg
 include MANIFEST.in
