@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for masked arrays"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for masked arrays"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "20/07/2017"
 
 
 import unittest
@@ -45,10 +46,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..utils import six
 
 
 class TestSaxs(unittest.TestCase):
@@ -70,7 +68,7 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(ss == 73533, "masked pixel = %s expected 73533" % ss)
 
     def testNumpy(self):
-        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        qref, Iref, _ = self.ai.saxs(self.data, self.npt)
 
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="numpy")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
@@ -88,8 +86,6 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(R < 20, "Numpy: Measure R=%s<2" % R)
 
     def testCython(self):
-        self.skipTest("Untested")
-
         qref, Iref, _s = self.ai.saxs(self.data, self.npt)
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="cython")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])

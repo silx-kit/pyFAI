@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for input/output stuff"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for input/output stuff"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "20/07/2017"
 
 
 import unittest
@@ -120,6 +121,7 @@ class testHDF5Writer(unittest.TestCase):
 
 
 class testFabIOWriter(unittest.TestCase):
+    """the tested class is not yet finished ... JK07/2017"""
 
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -133,7 +135,7 @@ class testFabIOWriter(unittest.TestCase):
         self.tmpdir = None
 
     def test_writer(self):
-        self.skipTest("Untested")
+        # self.skipTest("Untested")
 
         h5file = os.path.join(self.tmpdir)
         shape = 1024, 1024
@@ -159,7 +161,7 @@ def suite():
     testsuite.addTest(loader(TestIsoTime))
     testsuite.addTest(loader(TestNexus))
     testsuite.addTest(loader(testHDF5Writer))
-    testsuite.addTest(loader(testFabIOWriter))
+    # testsuite.addTest(loader(testFabIOWriter))
     return testsuite
 
 if __name__ == "__main__":
