@@ -73,7 +73,7 @@ class TestIntegrate1D(unittest.TestCase):
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        self.npt = self.img = self.data = self.ai = self.Rmax
+        self.npt = self.img = self.data = self.ai = self.Rmax = None
 
     def testQ(self):
         res = {}
@@ -219,11 +219,11 @@ class TestIntegrate2D(unittest.TestCase):
 
     def test_defaultwriter(self):
         with resulttempfile() as filename:
-           result = self.ai.integrate2d(self.data, self.npt)
-           writer = DefaultAiWriter(filename, self.ai)
-           writer.write(result)
-           writer.close()
-           self.assertGreater(os.path.getsize(filename), 40)
+            result = self.ai.integrate2d(self.data, self.npt)
+            writer = DefaultAiWriter(filename, self.ai)
+            writer.write(result)
+            writer.close()
+            self.assertGreater(os.path.getsize(filename), 40)
 
 
 class TestIntegrateResult(unittest.TestCase):
@@ -233,6 +233,9 @@ class TestIntegrateResult(unittest.TestCase):
         self.radial = numpy.array([[3, 2], [3, 4]])
         self.azimuthal = numpy.array([[2, 2], [3, 4]])
         self.sigma = numpy.array([[4, 2], [3, 4]])
+
+    def tearDown(self):
+        self.I = self.radial = self.azimuthal = self.sigma = None
 
     def test_result_1d(self):
         result = Integrate1dResult(self.radial, self.I)
