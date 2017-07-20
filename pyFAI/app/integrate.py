@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "19/07/2017"
 __satus__ = "production"
 import sys
 import logging
@@ -48,6 +48,7 @@ import time
 import os.path
 import fabio
 logging.basicConfig(level=logging.INFO)
+logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI")
 import pyFAI.utils
 import pyFAI.worker

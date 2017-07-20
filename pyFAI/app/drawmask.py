@@ -38,12 +38,13 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "19/07/2017"
 __satus__ = "Production"
 import os
 import numpy
 import logging
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
+logging.captureWarnings(True)
 import fabio
 
 try:

@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/05/2017"
+__date__ = "19/07/2017"
 __status__ = "production"
 
 import logging
@@ -42,6 +42,7 @@ import os
 import sys
 
 logging.basicConfig(level=logging.INFO)
+logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI-calib2")
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
