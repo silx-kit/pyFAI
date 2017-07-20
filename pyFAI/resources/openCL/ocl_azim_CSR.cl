@@ -115,7 +115,6 @@ csr_integrate(  const   global  float   *weights,
     local float2 super_sum_data[WORKGROUP_SIZE];
     local float2 super_sum_count[WORKGROUP_SIZE];
     
-    float super_sum_temp = 0.0f;
     int index;
     
     if (bin_size < WORKGROUP_SIZE)
