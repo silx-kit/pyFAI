@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/07/2017"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -361,9 +361,9 @@ class TestSaxs(unittest.TestCase):
             ref2d[method + "_1"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, error_model="poisson")
             ref2d[method + "_10"] = ai.integrate2d(copy.deepcopy(data), 100, 36, method=method, normalization_factor=10, error_model="poisson")
             ratio_i = ref2d[method + "_1"].intensity.mean() / ref2d[method + "_10"].intensity.mean()
-#             ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
+            # ratio_s = ref2d[method + "_1"].sigma.mean() / ref2d[method + "_10"].sigma.mean()
             self.assertAlmostEqual(ratio_i, 10.0, places=3, msg="test_normalization_factor 2d intensity Method: %s ratio: %s expected 10" % (method, ratio_i))
-#             self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
+            # self.assertAlmostEqual(ratio_s, 10.0, places=3, msg="test_normalization_factor 2d sigma Method: %s ratio: %s expected 10" % (method, ratio_s))
             # ai.reset()
 
     def test_inpainting(self):
@@ -410,24 +410,15 @@ class TestSetter(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestAzimHalfFrelon("test_cython_vs_fit2d"))
-    testsuite.addTest(TestAzimHalfFrelon("test_numpy_vs_fit2d"))
-    testsuite.addTest(TestAzimHalfFrelon("test_cythonSP_vs_fit2d"))
-    testsuite.addTest(TestAzimHalfFrelon("test_cython_vs_numpy"))
-    testsuite.addTest(TestAzimHalfFrelon("test_separate"))
-    testsuite.addTest(TestAzimHalfFrelon("test_medfilt1d"))
-    testsuite.addTest(TestAzimHalfFrelon("test_radial"))
-    testsuite.addTest(TestFlatimage("test_splitPixel"))
-    testsuite.addTest(TestFlatimage("test_splitBBox"))
-    testsuite.addTest(TestSetter("test_flat"))
-    testsuite.addTest(TestSetter("test_dark"))
-    testsuite.addTest(TestAzimPilatus("test_separate"))
-    testsuite.addTest(TestSaxs("test_mask"))
-    testsuite.addTest(TestSaxs("test_normalization_factor"))
-    testsuite.addTest(TestSaxs("test_inpainting"))
-
+    testsuite.addTest(loader(TestAzimHalfFrelon))
+    testsuite.addTest(loader(TestFlatimage))
+    testsuite.addTest(loader(TestSetter))
+    testsuite.addTest(loader(TestAzimPilatus))
+    testsuite.addTest(loader(TestSaxs))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

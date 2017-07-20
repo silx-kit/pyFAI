@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import sys
 import os
@@ -192,11 +192,12 @@ class TestBug174(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestBug170("test_bug170"))
-    testsuite.addTest(TestBug211("test_quantile"))
-    testsuite.addTest(TestBug232("test"))
-    testsuite.addTest(TestBug174("test"))
+    testsuite.addTest(loader(TestBug170))
+    testsuite.addTest(loader(TestBug211))
+    testsuite.addTest(loader(TestBug232))
+    testsuite.addTest(loader(TestBug174))
     return testsuite
 
 

@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -96,9 +96,9 @@ class TestBayes(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestBayes("test_llk"))
-    testsuite.addTest(TestBayes("test_background1d"))
+    testsuite.addTest(loader(TestBayes))
     return testsuite
 
 

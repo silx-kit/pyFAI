@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2016"
+__date__ = "19/07/2017"
 
 import unittest
 from .utilstest import UtilsTest, getLogger
@@ -131,9 +131,8 @@ class TestMultiGeometry(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestMultiGeometry("test_integrate1d"))
-    testsuite.addTest(TestMultiGeometry("test_integrate1d_withpol"))
-    testsuite.addTest(TestMultiGeometry("test_integrate2d"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestMultiGeometry))
     return testsuite
 
 

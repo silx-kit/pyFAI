@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "19/07/2017"
 
 import os
 import unittest
@@ -120,10 +120,9 @@ class TestTranslation(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestTranslation("test_serialize"))
-    testsuite.addTest(TestTranslation("test_equivalent"))
-    testsuite.addTest(TestTranslation("test_goniometer"))
+    testsuite.addTest(loader(TestTranslation))
     return testsuite
 
 

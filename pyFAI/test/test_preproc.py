@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2017"
+__date__ = "19/07/2017"
 
 
 import os
@@ -155,11 +155,9 @@ class TestPreproc(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestPreproc("test_python"))
-    testsuite.addTest(TestPreproc("test_cython"))
-    testsuite.addTest(TestPreproc("test_opencl"))
-
+    testsuite.addTest(loader(TestPreproc))
     return testsuite
 
 

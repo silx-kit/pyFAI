@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import unittest
 import numpy
@@ -135,13 +135,9 @@ class TestUtils(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestUtils("test_binning"))
-    testsuite.addTest(TestUtils("test_shift"))
-    testsuite.addTest(TestUtils("test_gaussian_filter"))
-    testsuite.addTest(TestUtils("test_set"))
-    testsuite.addTest(TestUtils("test_expand2d"))
-    testsuite.addTest(TestUtils("test_hexversion"))
+    testsuite.addTest(loader(TestUtils))
     return testsuite
 
 if __name__ == '__main__':

@@ -115,6 +115,7 @@ TESTCASES = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
 
 class Test_CSR(unittest.TestCase):
     def test_2d_splitbbox(self):
+        self.skipTest("Not working")
         ai.reset()
         img, tth, chi = ai.integrate2d(data, N, unit="2th_deg", method="splitbbox_LUT")
         img_csr, tth_csr, chi_csr = ai.integrate2d(data, N, unit="2th_deg", method="splitbbox_csr")
@@ -125,12 +126,13 @@ class Test_CSR(unittest.TestCase):
         self.assertTrue(numpy.allclose(img, img_csr), " img are the same")
 
     def test_2d_nosplit(self):
+        self.skipTest("Not working")
         ai.reset()
         img, tth, chi = ai.integrate2d(data, N, unit="2th_deg", method="histogram")
         img_csr, tth_csr, chi_csr = ai.integrate2d(data, N, unit="2th_deg", method="nosplit_csr")
-#        diff_crv(tth, tth_csr, "2th")
-#        self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
-#        self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
+        # diff_crv(tth, tth_csr, "2th")
+        # self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
+        # self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
         diff_img(img, img_csr, "no split")
         self.assertTrue(numpy.allclose(img, img_csr), " img are the same")
 
@@ -140,10 +142,9 @@ def suite():
     if opencl.ocl:
         for param in TESTCASES:
             testsuite.addTest(ParameterisedTestCase.parameterise(
-                    ParamOpenclCSR, param))
-    # if no opencl: no test
-    # testsuite.addTest(Test_CSR("test_2d_splitbbox"))
-    # testsuite.addTest(Test_CSR("test_2d_nosplit"))
+                              ParamOpenclCSR, param))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(Test_CSR))
     return testsuite
 
 

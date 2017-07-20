@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import unittest
 import time
@@ -354,15 +354,10 @@ class TestHistogram2d(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestHistogram1d("test_count_numpy"))
-    testsuite.addTest(TestHistogram1d("test_count_cython"))
-    testsuite.addTest(TestHistogram1d("test_count_csr"))
-    testsuite.addTest(TestHistogram1d("test_numpy_vs_cython_vs_csr_1d"))
-    testsuite.addTest(TestHistogram2d("test_count_numpy"))
-    testsuite.addTest(TestHistogram2d("test_count_cython"))
-    testsuite.addTest(TestHistogram2d("test_count_csr"))
-    testsuite.addTest(TestHistogram2d("test_numpy_vs_cython_vs_csr_2d"))
+    testsuite.addTest(loader(TestHistogram1d))
+    testsuite.addTest(loader(TestHistogram2d))
     return testsuite
 
 

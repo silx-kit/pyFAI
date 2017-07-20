@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/05/2017"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -401,16 +401,12 @@ class TestBug474(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestBug474("test_regression"))
-    testsuite.addTest(TestSolidAngle("testSolidAngle"))
-    testsuite.addTest(TestSolidAngle("test_nonflat_center"))
-    testsuite.addTest(TestSolidAngle("test_nonflat_outside"))
-    testsuite.addTest(TestSolidAngle("test_nonflat_inside"))
-    testsuite.addTest(TestBug88SolidAngle("testSolidAngle"))
-    testsuite.addTest(TestRecprocalSpacingSquarred("test_center"))
-    testsuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
-    testsuite.addTest(TestRecprocalSpacingSquarred("test_delta"))
+    testsuite.addTest(loader(TestBug474))
+    testsuite.addTest(loader(TestSolidAngle))
+    testsuite.addTest(loader(TestBug88SolidAngle))
+    testsuite.addTest(loader(TestRecprocalSpacingSquarred))
 
     for param in ParamTestGeometry.TESTCASES_FUNCT:
         testsuite.addTest(ParameterisedTestCase.parameterise(ParamTestGeometry, "test_geometry_functions", param))

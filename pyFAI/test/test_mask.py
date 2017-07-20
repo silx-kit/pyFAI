@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -319,20 +319,9 @@ class TestMaskBeamstop(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestMask("test_mask_hist"))
-    testsuite.addTest(TestMask("test_mask_splitBBox"))
-    testsuite.addTest(TestMask("test_mask_splitfull"))
-    testsuite.addTest(TestMask("test_mask_LUT"))
-    testsuite.addTest(TestMask("test_mask_CSR"))
-    testsuite.addTest(TestMask("test_mask_LUT_OCL"))
-    testsuite.addTest(TestMask("test_mask_CSR_OCL"))
-
-    testsuite.addTest(TestMaskBeamstop("test_nomask"))
-    testsuite.addTest(TestMaskBeamstop("test_mask_splitBBox"))
-    testsuite.addTest(TestMaskBeamstop("test_mask_LUT"))
-    testsuite.addTest(TestMaskBeamstop("test_mask_LUT_OCL"))
-    testsuite.addTest(TestMaskBeamstop("test_nomask_LUT"))
-    testsuite.addTest(TestMaskBeamstop("test_nomask_LUT_OCL"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestMask))
+    testsuite.addTest(loader(TestMaskBeamstop))
     return testsuite
 
 

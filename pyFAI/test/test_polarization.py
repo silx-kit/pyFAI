@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/05/2017"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -92,12 +92,9 @@ class TestPolarization(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestPolarization("testNoPol"))
-    testsuite.addTest(TestPolarization("testCircularPol"))
-    testsuite.addTest(TestPolarization("testHorizPol"))
-    testsuite.addTest(TestPolarization("testVertPol"))
-    testsuite.addTest(TestPolarization("testoffsetPol"))
+    testsuite.addTest(loader(TestPolarization))
     return testsuite
 
 

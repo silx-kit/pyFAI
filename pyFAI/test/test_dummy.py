@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -51,7 +51,8 @@ class TestDummy(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestDummy("test_dummy"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestDummy))
     return testsuite
 
 

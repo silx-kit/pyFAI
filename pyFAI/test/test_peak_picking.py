@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -47,7 +47,7 @@ from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement
 
 
-class testPeakPicking(unittest.TestCase):
+class TestPeakPicking(unittest.TestCase):
     """basic test"""
 
     def setUp(self):
@@ -131,8 +131,10 @@ class TestMassif(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(testPeakPicking("test_peakPicking"))
+    testsuite.addTest(loader(TestPeakPicking))
+    testsuite.addTest(loader(TestMassif))
     return testsuite
 
 

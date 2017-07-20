@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/02/2017"
+__date__ = "19/07/2017"
 
 import unittest
 import os
@@ -219,8 +219,8 @@ class TestGeometryRefinement(unittest.TestCase):
 
     def test_synthetic(self):
         """
-        Synthetic dataset usd to ensure the reliability 
-        
+        Synthetic dataset usd to ensure the reliability
+
         Calibration image produced with:
         import fabio
         from pyFAI import calibrant, AzimuthalIntegrator, detector_factory
@@ -229,8 +229,8 @@ class TestGeometryRefinement(unittest.TestCase):
         LaB6 = calibrant.ALL_CALIBRANTS("LaB6")
         LaB6.wavelength=1e-10
         img = LaB6.fake_calibration_image(ai, W=0.00001)
-        header = {"dist": 1.000000e-01, "poni1": 5.000000e-02, 
-                  "poni2": 6.000000e-02, "rot1":0.070000, "rot2": 0.080000, 
+        header = {"dist": 1.000000e-01, "poni1": 5.000000e-02,
+                  "poni2": 6.000000e-02, "rot1":0.070000, "rot2": 0.080000,
                   "rot3": 0.000000, "detector": "Fairchild"}
         fabio.edfimage.EdfImage(data=img,header=).save("sample.edf")
         then calibrated manually and validate the error:
@@ -864,9 +864,8 @@ class TestGeometryRefinement(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestGeometryRefinement("test_noSpline"))
-    testsuite.addTest(TestGeometryRefinement("test_Spline"))
-    testsuite.addTest(TestGeometryRefinement("test_synthetic"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestGeometryRefinement))
     return testsuite
 
 

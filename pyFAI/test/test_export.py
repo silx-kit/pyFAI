@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -121,9 +121,9 @@ class TestSPD(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestFIT2D("test_simple"))
-    testsuite.addTest(TestFIT2D("test_export"))
-    testsuite.addTest(TestSPD("test_simple"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestFIT2D))
+    testsuite.addTest(loader(TestSPD))
     return testsuite
 
 

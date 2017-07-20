@@ -35,7 +35,7 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "19/07/2017"
 
 import logging
 import numpy
@@ -125,9 +125,9 @@ class TestAddition(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testSuite = unittest.TestSuite()
-    testSuite.addTest(TestAddition("test_add"))
-    testSuite.addTest(TestAddition("test_measurement"))
+    testSuite.addTest(loader(TestAddition))
     return testSuite
 
 

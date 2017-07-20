@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/05/2017"
+__date__ = "19/07/2017"
 
 import sys
 import unittest
@@ -125,9 +125,9 @@ class TestScriptsHelp(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(
-        unittest.defaultTestLoader.loadTestsFromTestCase(TestScriptsHelp))
+    testsuite.addTest(loader(TestScriptsHelp))
     return testsuite
 
 
