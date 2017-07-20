@@ -1,6 +1,5 @@
 graft doc
 recursive-include pyFAI/ext  *.c *.h *.pyx *.pxd *.pxi
-recursive-include benchmark *.py *.spline *.poni
 recursive-include pyFAI *.py
 recursive-exclude pyFAI *.pyc
 recursive-include pyFAI/resources/openCL *.cl *.h
