@@ -6,6 +6,8 @@ recursive-include pyFAI/resources/openCL *.cl *.h
 recursive-include pyFAI/resources/gui *.ui
 recursive-include pyFAI/resources/calibration *.D
 recursive-include dll *.dll
+recursive-exclude benchmark *
+recursive-exclude test *
 include stdeb.cfg
 include setup.cfg
 include MANIFEST.in
