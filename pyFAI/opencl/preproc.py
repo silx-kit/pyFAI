@@ -106,6 +106,8 @@ class OCL_Preproc(OpenclProcessing):
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
         self.allocate_buffers()
+        self.compile_kernels()
+
         if poissonian:
             calc_variance = True
         if calc_variance:
@@ -173,7 +175,6 @@ class OCL_Preproc(OpenclProcessing):
                 kwargs["do_polarization"] = do_polarization
                 kwargs["do_absorption"] = do_absorption
                 kwargs["do_mask"] = do_mask
-        self.compile_kernels()
 
     @property
     def dummy(self):
@@ -326,7 +327,6 @@ class OCL_Preproc(OpenclProcessing):
         :param data: numpy array with data
         :param dest: name of the buffer as registered in the class
         """
-
         dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
         events = []
         if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
@@ -335,8 +335,8 @@ class OCL_Preproc(OpenclProcessing):
         else:
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
             kernel = getattr(self.program, self.mapping[data.dtype.type])
-            cast_to_float = kernel(self.queue, (self.shape,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
-            events += [EventDescription("copy raw %s" % dest,), EventDescription("cast to float", cast_to_float)]
+            cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+            events += [EventDescription("copy raw", dest), EventDescription("cast to float", cast_to_float)]
         if self.profile:
             self.events += events
         self.on_device[dest] = data
