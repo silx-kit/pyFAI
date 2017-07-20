@@ -25,19 +25,19 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+"test suite for masked arrays"
 
 from __future__ import absolute_import, division, print_function
-
-__doc__ = "test suite for masked arrays"
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "20/07/2017"
 
 
 import tempfile
+import contextlib
 import os
 import unittest
 import numpy.testing
@@ -49,6 +49,15 @@ from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
+
+
+@contextlib.contextmanager
+def resulttempfile():
+    fd, path = tempfile.mkstemp(prefix="pyfai_", suffix=".out")
+    os.close(fd)
+    os.remove(path)
+    yield path
+    os.remove(path)
 
 
 class TestIntegrate1D(unittest.TestCase):
@@ -64,7 +73,7 @@ class TestIntegrate1D(unittest.TestCase):
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        self.npt = self.img = self.data = self.ai = self.Rmax
+        self.npt = self.img = self.data = self.ai = self.Rmax = None
 
     def testQ(self):
         res = {}
@@ -109,21 +118,17 @@ class TestIntegrate1D(unittest.TestCase):
                 self.assertTrue(R <= self.Rmax, mesg)
 
     def test_filename(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        self.ai.integrate1d(self.data, self.npt, filename=f.name)
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+            self.ai.integrate1d(self.data, self.npt, filename=filename)
+            self.assertGreater(os.path.getsize(filename), 40)
 
     def test_defaultwriter(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        result = self.ai.integrate1d(self.data, self.npt)
-        writer = DefaultAiWriter(f.name, self.ai)
-        writer.write(result)
-        writer.close()
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+            result = self.ai.integrate1d(self.data, self.npt)
+            writer = DefaultAiWriter(filename, self.ai)
+            writer.write(result)
+            writer.close()
+            self.assertGreater(os.path.getsize(filename), 40)
 
 
 class TestIntegrate2D(unittest.TestCase):
@@ -136,6 +141,15 @@ class TestIntegrate2D(unittest.TestCase):
         cls.ai.wavelength = 1e-10
         cls.Rmax = 20
         cls.delta_pos_azim_max = 0.28
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.npt = None
+        cls.img = None
+        cls.data = None
+        cls.ai = None
+        cls.Rmax = None
+        cls.delta_pos_azim_max = None
 
     def testQ(self):
         res = {}
@@ -199,21 +213,17 @@ class TestIntegrate2D(unittest.TestCase):
                 self.assertTrue(R <= self.Rmax, mesg)
 
     def test_filename(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        self.ai.integrate2d(self.data, self.npt, filename=f.name)
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+            self.ai.integrate2d(self.data, self.npt, filename=filename)
+            self.assertGreater(os.path.getsize(filename), 40)
 
     def test_defaultwriter(self):
-        f = tempfile.NamedTemporaryFile(delete=True)
-        self.assertEquals(os.path.getsize(f.name), 0)
-        result = self.ai.integrate2d(self.data, self.npt)
-        writer = DefaultAiWriter(f.name, self.ai)
-        writer.write(result)
-        writer.close()
-        self.assertGreater(os.path.getsize(f.name), 40)
-        f.close()
+        with resulttempfile() as filename:
+            result = self.ai.integrate2d(self.data, self.npt)
+            writer = DefaultAiWriter(filename, self.ai)
+            writer.write(result)
+            writer.close()
+            self.assertGreater(os.path.getsize(filename), 40)
 
 
 class TestIntegrateResult(unittest.TestCase):
@@ -223,6 +233,9 @@ class TestIntegrateResult(unittest.TestCase):
         self.radial = numpy.array([[3, 2], [3, 4]])
         self.azimuthal = numpy.array([[2, 2], [3, 4]])
         self.sigma = numpy.array([[4, 2], [3, 4]])
+
+    def tearDown(self):
+        self.I = self.radial = self.azimuthal = self.sigma = None
 
     def test_result_1d(self):
         result = Integrate1dResult(self.radial, self.I)

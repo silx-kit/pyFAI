@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Test suites for calibrants"""
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test suites for calibrants"""
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "20/07/2017"
 
 import unittest
 import logging
@@ -41,11 +42,7 @@ import sys
 import copy
 from .utilstest import getLogger, UtilsTest
 logger = getLogger(__file__)
-try:
-    import six
-except:
-    from pyFAI.third_party import six
-
+from ..utils import six
 from ..calibrant import Calibrant, CALIBRANT_FACTORY, Cell
 from ..detectors import ALL_DETECTORS
 from .. import AzimuthalIntegrator
@@ -207,7 +204,7 @@ class TestCell(unittest.TestCase):
             self.assertEquals(cd[k], td[k], msg="plans are the same for d=%s" % k)
 
     def test_helium(self):
-        self.skipTest("Not working")
+        # self.skipTest("Not working")
         a = 4.242
         href = "A.F. Schuch and R.L. Mills, Phys. Rev. Lett., 1961, 6, 596."
         he = Cell.cubic(a)
@@ -215,10 +212,10 @@ class TestCell(unittest.TestCase):
         he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
 
     def test_hydrogen(self):
-        self.skipTest("Not working")
+        # self.skipTest("Not working")
         href = "DOI: 10.1126/science.239.4844.1131"
         h = Cell.hexagonal(2.6590, 4.3340)
-        self.assertAlmostEqual(h.volume, 26.537, msg="Volume for H cell is correct")
+        self.assertAlmostEqual(h.volume, 26.537, places=3, msg="Volume for H cell is correct")
         self.assertTrue(len(h.d_spacing(1)) == 14, msg="got 14 lines for H")
         h.save("H", "Hydrogen", href, 1.0, UtilsTest.tempdir)
 

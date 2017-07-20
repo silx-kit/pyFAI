@@ -4,7 +4,7 @@ Source: https://github.com/silx-kit/pyFAI
 Files-Excluded: pyFAI/third_party
 
 Files: *
-Copyright: 2011-2016 European Synchrotron Radiation Facility
+Copyright: 2011-2017 European Synchrotron Radiation Facility
 License: MIT/X11 (BSD like)
 
 Files: package/debian?/*

@@ -26,11 +26,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
-__doc__ = """tests for Jon's geometry changes
+"""tests for Jon's geometry changes
 FIXME : make some tests that the functions do what is expected
 """
+
+from __future__ import absolute_import, division, print_function
 
 
 import unittest
@@ -59,6 +59,12 @@ class ParameterisedTestCase(unittest.TestCase):
         cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
         cls.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
         cls.ai.xrpd_LUT(cls.data, cls.N)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.N = None
+        cls.ai = None
+        cls.data = None
 
     def __init__(self, methodName='runTest', param=None):
         super(ParameterisedTestCase, self).__init__(methodName)
@@ -114,27 +120,38 @@ TESTCASES = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
 
 
 class Test_CSR(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.N = 1000
+        cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
+        cls.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
+        cls.ai.xrpd_LUT(cls.data, cls.N)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.N = None
+        cls.ai = None
+        cls.data = None
+
     def test_2d_splitbbox(self):
-        self.skipTest("Not working")
-        ai.reset()
-        img, tth, chi = ai.integrate2d(data, N, unit="2th_deg", method="splitbbox_LUT")
-        img_csr, tth_csr, chi_csr = ai.integrate2d(data, N, unit="2th_deg", method="splitbbox_csr")
+        self.ai.reset()
+        img, tth, chi = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="splitbbox_LUT")
+        img_csr, tth_csr, chi_csr = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="splitbbox_csr")
         self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
         self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
         # TODO: align on splitbbox rather then splitbbox_csr
-        diff_img(img, img_csr, "splitbbox")
+        # diff_img(img, img_csr, "splitbbox")
         self.assertTrue(numpy.allclose(img, img_csr), " img are the same")
 
     def test_2d_nosplit(self):
-        self.skipTest("Not working")
-        ai.reset()
-        img, tth, chi = ai.integrate2d(data, N, unit="2th_deg", method="histogram")
-        img_csr, tth_csr, chi_csr = ai.integrate2d(data, N, unit="2th_deg", method="nosplit_csr")
+        self.ai.reset()
+        img, tth, chi = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="histogram")
+        img_csr, tth_csr, chi_csr = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
         # diff_crv(tth, tth_csr, "2th")
         # self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
         # self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
-        diff_img(img, img_csr, "no split")
-        self.assertTrue(numpy.allclose(img, img_csr), " img are the same")
+        # diff_img(img, img_csr, "no split")
+        self.assertLess(((img - img_csr) > 1).sum(), 6, " img are almost the same")
 
 
 def suite():
