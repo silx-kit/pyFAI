@@ -50,7 +50,7 @@ then
   sudo dpkg -i deb_dist/python3-pyfai*.deb
 else
   echo Using Python 2
-	PATH=$CCPATH python setup.py --command-packages=stdeb.command bdist_deb --no-cython
+  PATH=$CCPATH python setup.py --command-packages=stdeb.command build --no-cython bdist_deb
 fi
 
 sudo su -c  "dpkg -i deb_dist/pyfai*.deb"
