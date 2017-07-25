@@ -5,6 +5,10 @@
 ChangeLog of Versions
 =====================
 
+0.14.1: 25/07/2017
+------------------
+* Fixes Debian 7 and 8 packages
+
 0.14.0: 20/07/2017
 ------------------
 * Graphical user interface for calibration (pyFAI-calib2)
