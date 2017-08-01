@@ -18,11 +18,15 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
-dirname = os.path.dirname
-root_dir = dirname(dirname(dirname(os.path.abspath(__file__))))
-import pyFAI
-source_dir = dirname(dirname(pyFAI.__file__))
-os.environ["PYTHONPATH"] = source_dir + os.pathsep + os.environ.get("PYTHONPATH", "")
+project = u'pyFAI'
+try:
+    import pyFAI
+    project_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+    build_dir = os.path.abspath(pyFAI.__file__)
+    if not build_dir.startswith(project_dir):
+        raise RuntimeError("%s looks to come from the system. Fix your PYTHONPATH and restart sphinx." % project)
+except ImportError:
+    raise RuntimeError("%s is not on the path. Fix your PYTHONPATH and restart sphinx." % project)
 
 # -- General configuration -----------------------------------------------------
 
@@ -66,7 +70,6 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pyFAI'
 from pyFAI._version import strictversion, version, __date__ as pyfai_date
 year = pyfai_date.split("/")[-1]
 copyright = u'2012-%s, Data analysis unit, European Synchrotron Radiation Facility, Grenoble' % (year)
