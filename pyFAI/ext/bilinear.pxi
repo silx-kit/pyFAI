@@ -55,13 +55,13 @@ cdef class Bilinear:
 
     def f_cy(self, x):
         """
-        Function -f((y,x)) where f is a continuous function 
+        Function -f((y,x)) where f is a continuous function
         (y,x) are pixel coordinates
-        pixels outside the image are given an arbitrary high value to help the minimizer  
+        pixels outside the image are given an arbitrary high value to help the minimizer
 
         :param x: 2-tuple of float
-        :return: Interpolated negative signal from the image 
-        (negative for using minimizer to search for peaks)
+        :return: Interpolated negative signal from the image
+                 (negative for using minimizer to search for peaks)
         """
         cdef:
             float d0 = x[0]
@@ -76,15 +76,15 @@ cdef class Bilinear:
             res = self.mini - d1 + self.width - 1
         else:
             res = self._f_cy(d0, d1)
-        return -res 
-    
+        return -res
+
     def __call__(self, x):
         "Function f((y,x)) where f is a continuous function "
         cdef:
             float d0 = x[0]
             float d1 = x[1]
         return self._f_cy(d0, d1)
-        
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cdef float _f_cy(self, cython.floating d0, cython.floating d1) nogil:

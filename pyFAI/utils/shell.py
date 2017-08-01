@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/02/2017"
+__date__ = "01/08/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -52,11 +52,9 @@ class ProgressBar:
 
         The result looks like:
 
-        .. codeblock::
+        .. code-block:: none
 
             Title [■■■■■■      ]  50%  Message
-
-
 
         :param title: Title displayed before the progress bar
         :type title: str
