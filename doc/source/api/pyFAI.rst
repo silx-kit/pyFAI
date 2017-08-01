@@ -194,12 +194,12 @@ Contains the progress-bar in the shell command line
     :undoc-members:
     :show-inheritance:
 
-:mod:`utils.string` Module
+:mod:`utils.stringutil` Module
 ..........................
 
 Enhanced string formatter
 
-.. automodule:: pyFAI.utils.string
+.. automodule:: pyFAI.utils.stringutil
     :members:
     :undoc-members:
     :show-inheritance:
