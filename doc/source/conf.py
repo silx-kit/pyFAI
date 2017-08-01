@@ -18,6 +18,11 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
+dirname = os.path.dirname
+root_dir = dirname(dirname(dirname(os.path.abspath(__file__))))
+import pyFAI
+source_dir = dirname(dirname(pyFAI.__file__))
+os.environ["PYTHONPATH"] = source_dir + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 # -- General configuration -----------------------------------------------------
 
@@ -60,21 +65,11 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# Configure the environment to be able to use sphinxcontrib.programoutput
-# NOTE: Must be done after pyFAI._version import which at the end of the end imports PyMCA
-# Importing PyMCA redefine and reorder PYTHONPATH
-import glob
-root_dir = os.path.abspath("../..")
-build_dir = glob.glob('../../build/lib*')
-
-sys.path.insert(1, build_dir[0])
-os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
-
 # General information about the project.
 project = u'pyFAI'
 from pyFAI._version import strictversion, version, __date__ as pyfai_date
 year = pyfai_date.split("/")[-1]
-copyright = u'2012-%s, Jérôme Kieffer' % (year)
+copyright = u'2012-%s, Data analysis unit, European Synchrotron Radiation Facility, Grenoble' % (year)
 
 
 # The version info for the project you're documenting, acts as replacement for
