@@ -39,3 +39,4 @@ pip-log.txt
 *~
 *.swp
 
+.ipynb_checkpoints/*.ipynb
