@@ -39,4 +39,5 @@ pip-log.txt
 *~
 *.swp
 
-.ipynb_checkpoints/*.ipynb
+# Notebook
+.ipynb_checkpoints
