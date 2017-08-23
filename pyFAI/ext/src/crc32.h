@@ -20,4 +20,4 @@ THE SOFTWARE.
 
 #include <stdio.h>
 #include <stdint.h>
-uint32_t crc32(char *str, uint32_t len);
+uint32_t my_crc32(char *str, uint32_t len);

@@ -34,7 +34,7 @@ import cython
 cimport numpy
 import numpy
 
-from crc32 cimport crc32 as C_crc32
+from crc32 cimport my_crc32
 
 
 def crc32(numpy.ndarray data not None):
@@ -44,4 +44,4 @@ def crc32(numpy.ndarray data not None):
     :return: unsigned integer
     """
     cdef numpy.uint32_t size = data.nbytes
-    return C_crc32(<char *> data.data, size)
+    return my_crc32(<char *> data.data, size)
