@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "01/08/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -506,7 +506,6 @@ class DefaultAiWriter(Writer):
         :param normalization_factor: the monitor value
         :type normalization_factor: float, None
         :param metadata: JSON serializable dictionary containing the metadata
-        This method save the result of a 1D integration.
         """
         dim1_unit = units.to_unit(dim1_unit)
         with open(filename, "w") as f:
