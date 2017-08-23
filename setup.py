@@ -724,7 +724,8 @@ def get_project_configuration(dry_run):
         "scipy",
         "numexpr",
         # for the use of pkg_resources on script launcher
-        "setuptools"]
+        "setuptools",
+        "silx"]
 
     setup_requires = [
         "setuptools",
