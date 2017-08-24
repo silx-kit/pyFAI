@@ -195,7 +195,7 @@ Contains the progress-bar in the shell command line
     :show-inheritance:
 
 :mod:`utils.stringutil` Module
-..........................
+..............................
 
 Enhanced string formatter
 
