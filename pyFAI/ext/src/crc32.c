@@ -151,7 +151,7 @@ uint32_t fastcrc(const char *str, uint32_t len) {
 	return crc;
 }
 
-uint32_t my_crc32(char *str, uint32_t len) {
+uint32_t pyFAI_crc32(char *str, uint32_t len) {
   uint32_t eax, ebx, ecx, edx;
   cpuid(1, &eax, &ebx, &ecx, &edx);
 

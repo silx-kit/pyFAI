@@ -26,7 +26,7 @@
 Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
 """
 __author__ = "Jérôme Kieffer"
-__date__ = "02/02/2017"
+__date__ = "25/08/2017"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __license__ = "MIT"
 
@@ -34,7 +34,7 @@ import cython
 cimport numpy
 import numpy
 
-from crc32 cimport my_crc32
+from crc32 cimport pyFAI_crc32
 
 
 def crc32(numpy.ndarray data not None):
@@ -44,4 +44,4 @@ def crc32(numpy.ndarray data not None):
     :return: unsigned integer
     """
     cdef numpy.uint32_t size = data.nbytes
-    return my_crc32(<char *> data.data, size)
+    return pyFAI_crc32(<char *> data.data, size)
