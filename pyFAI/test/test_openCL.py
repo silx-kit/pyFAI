@@ -103,6 +103,7 @@ class TestMask(unittest.TestCase):
         recursive_delete(self.tmp_dir)
         self.tmp_dir = self.N = self.datasets = None
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -125,6 +126,7 @@ class TestMask(unittest.TestCase):
                 del ai, data
                 gc.collect()
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
     def test_OpenCL_LUT(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -153,6 +155,7 @@ class TestMask(unittest.TestCase):
                 del ai, data
                 gc.collect()
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
     def test_OpenCL_CSR(self):
         logger.info("Testing CSR-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):

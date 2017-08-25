@@ -46,7 +46,6 @@ import time
 import numpy
 import itertools
 import logging
-import gc
 from .utilstest import UtilsTest, getLogger, ParameterisedTestCase
 logger = getLogger(__file__)
 
@@ -74,6 +73,7 @@ class TestSolidAngle(unittest.TestCase):
     integration in 2theta between 0 and 56 deg in 1770 points
     """
 
+    @unittest.skipIf(UtilsTest.low_mem, "skipping test using >400M")
     def testSolidAngle(self):
         """
         This dataset goes up to 56deg, very good to test the solid angle correction

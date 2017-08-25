@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2017"
+__date__ = "25/08/2017"
 
 import unittest
 import os
@@ -58,7 +58,7 @@ except (ImportError, Exception):
     import six
 
 
-@unittest.skip
+@unittest.skipIf(UtilsTest.low_mem, "test using >500M")
 class TestAzimPilatus(unittest.TestCase):
     """This test uses a lot of memory"""
     @classmethod
@@ -149,6 +149,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         except Exception as e:
             logger.error(e)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_numpy_vs_fit2d(self):
         """
         Compare numpy histogram with results of fit2d
@@ -171,6 +172,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             six.moves.input("Press enter to quit")
         self.assertLess(rwp, 11, "Rwp numpy/fit2d: %.3f" % rwp)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_cython_vs_fit2d(self):
         """
         Compare cython histogram with results of fit2d
@@ -195,6 +197,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             six.moves.input("Press enter to quit")
         self.assertLess(rwp, 11, "Rwp cython/fit2d: %.3f" % rwp)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
     def test_cythonSP_vs_fit2d(self):
         """
         Compare cython splitPixel with results of fit2d
@@ -228,6 +231,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
             six.moves.input("Press enter to quit")
         self.assertLess(rwp, 11, "Rwp cythonSP/fit2d: %.3f" % rwp)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_cython_vs_numpy(self):
         """
         Compare cython histogram with numpy histogram
@@ -268,6 +272,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
         self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_medfilt1d(self):
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr")
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr")
