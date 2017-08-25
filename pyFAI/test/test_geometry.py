@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "25/08/2017"
 
 
 import unittest
@@ -46,6 +46,7 @@ import time
 import numpy
 import itertools
 import logging
+import gc
 from .utilstest import UtilsTest, getLogger, ParameterisedTestCase
 logger = getLogger(__file__)
 
@@ -72,51 +73,45 @@ class TestSolidAngle(unittest.TestCase):
     DirectBeamDist= 199.510mm    Center: x=1231.226, y=1253.864 pix    Tilt=0.591 deg  tiltPlanRotation= 139.352 deg
     integration in 2theta between 0 and 56 deg in 1770 points
     """
-    fit2dFile = 'powder_200_2_0001.chi'
-    pilatusFile = 'powder_200_2_0001.cbf'
-    ai = None
-    fit2d = None
-
-    def setUp(self):
-        """Download files"""
-        self.fit2dFile = UtilsTest.getimage(self.__class__.fit2dFile)
-        self.pilatusFile = UtilsTest.getimage(self.__class__.pilatusFile)
-        self.tth_fit2d, self.I_fit2d = numpy.loadtxt(self.fit2dFile, unpack=True)
-        self.ai = AzimuthalIntegrator(dist=1.994993e-01,
-                                      poni1=2.143248e-01,
-                                      poni2=2.133315e-01,
-                                      rot1=0.007823,
-                                      rot2=0.006716,
-                                      rot3=0,
-                                      pixel1=172e-6,
-                                      pixel2=172e-6)
-        self.data = fabio.open(self.pilatusFile).data
-        self.data[self.data < 0] = 0  # discard negative pixels
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.fit2dFile = self.pilatusFile = self.tth_fit2d = self.I_fit2d = self.ai = self.data = None
 
     def testSolidAngle(self):
         """
         This dataset goes up to 56deg, very good to test the solid angle correction
         any error will show off.
-        fit2d makes correction in 1/cos^3(2th) (without tilt). pyFAI used to correct in 1/cos(2th)
         """
-        tth, I_nogood = self.ai.integrate1d(self.data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=False)
-        delta_tth = abs(tth - self.tth_fit2d).max()
-        delta_I = abs(I_nogood - self.I_fit2d).max()
-        I = abs(I_nogood - self.I_fit2d).mean()
+        fit2dFile = 'powder_200_2_0001.chi'
+        pilatusFile = 'powder_200_2_0001.cbf'
+
+        fit2dFile = UtilsTest.getimage(fit2dFile)
+        pilatusFile = UtilsTest.getimage(pilatusFile)
+        tth_fit2d, I_fit2d = numpy.loadtxt(fit2dFile, unpack=True)
+        ai = AzimuthalIntegrator(dist=1.994993e-01,
+                                 poni1=2.143248e-01,
+                                 poni2=2.133315e-01,
+                                 rot1=0.007823,
+                                 rot2=0.006716,
+                                 rot3=0,
+                                 pixel1=172e-6,
+                                 pixel2=172e-6)
+        data = fabio.open(pilatusFile).data
+        data[data < 0] = 0  # discard negative pixels
+
+        tth, I_nogood = ai.integrate1d(data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=False)
+        delta_tth = abs(tth - tth_fit2d).max()
+        delta_I = abs(I_nogood - I_fit2d).max()
+        I = abs(I_nogood - I_fit2d).mean()
         self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
         self.assertTrue(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
         self.assertTrue(I > 2, 'Error on (wrong) I are large: %s >2' % I)
-        tth, I_good = self.ai.integrate1d(self.data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=3)
-        delta_tth = abs(tth - self.tth_fit2d).max()
-        delta_I = abs(I_good - self.I_fit2d).max()
-        I = abs(I_good - self.I_fit2d).mean()
+
+        tth, I_good = ai.integrate1d(data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=3)
+        delta_tth = abs(tth - tth_fit2d).max()
+        delta_I = abs(I_good - I_fit2d).max()
+        I = abs(I_good - I_fit2d).mean()
         self.assertTrue(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
         self.assertTrue(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
         self.assertTrue(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
+        ai.reset()
 
     def test_nonflat_center(self):
         """

@@ -141,6 +141,8 @@ else:
 # Few constants for engine names:
 OCL_CSR_ENGINE = "ocl_csr_integr"
 OCL_LUT_ENGINE = "ocl_lut_integr"
+OCL_HIST_ENGINE = "ocl_histogram"
+OCL_SORT_ENGINE = "ocl_sorter"
 EXT_LUT_ENGINE = "lut_integrator"
 EXT_CSR_ENGINE = "csr_integrator"
 
@@ -935,14 +937,18 @@ class AzimuthalIntegrator(Geometry):
         if dark is not None:
             data = data.astype(numpy.float32) - dark
 
-        if "ocl_integrator" in self.engines:
-            engine = self.engines["ocl_integrator"].engine
+        if OCL_HIST_ENGINE in self.engines:
+            engine = self.engines[OCL_HIST_ENGINE]
         else:
-            with self.lock:
-                engine = self.engines["ocl_integrator"] = Engine()
-        if engine.engine is None:
+            with self._lock:
+                if OCL_HIST_ENGINE in self.engines:
+                    engine = self.engines[OCL_HIST_ENGINE]
+                else:
+                    engine = self.engines[OCL_HIST_ENGINE] = Engine()
+        integr = engine.engine
+        if integr is None:
             with engine.lock:
-                if engine.engine is None:
+                if integr is None:
                     size = data.size
                     fd, tmpfile = tempfile.mkstemp(".log", "pyfai-opencl-")
                     os.close(fd)
@@ -3489,22 +3495,29 @@ class AzimuthalIntegrator(Geometry):
                 rdata = numpy.ascontiguousarray(integ2d, dtype=numpy.float32)
                 horizontal = False
 
-            if self._ocl_sorter:
-                if self._ocl_sorter.npt_width != rdata.shape[1] or self._ocl_sorter.npt_height != rdata.shape[0]:
-                    self._ocl_sorter = None
-            if not self._ocl_sorter:
-                logger.info("reset opencl sorter")
-                self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+            if OCL_SORT_ENGINE not in self.engines:
+                with self._lock:
+                    if OCL_SORT_ENGINE not in self.engines:
+                        self.engines[OCL_SORT_ENGINE] = Engine()
+            engine = self.engines[OCL_SORT_ENGINE]
+            with engine.lock:
+                sorter = engine.engine
+                if (sorter is None) or \
+                   (sorter.npt_width != rdata.shape[1]) or\
+                   (sorter.npt_height != rdata.shape[0]):
+                    logger.info("reset opencl sorter")
+                    sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+                    engine.set_engine(sorter)
             if "__len__" in dir(percentile):
                 if horizontal:
-                    spectrum = self._ocl_sorter.trimmed_mean_horizontal(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+                    spectrum = sorter.trimmed_mean_horizontal(rdata, dummy, [(i / 100.0) for i in percentile]).get()
                 else:
-                    spectrum = self._ocl_sorter.trimmed_mean_vertical(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+                    spectrum = sorter.trimmed_mean_vertical(rdata, dummy, [(i / 100.0) for i in percentile]).get()
             else:
                 if horizontal:
-                    spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+                    spectrum = sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
                 else:
-                    spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
+                    spectrum = sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
         else:
             dummies = (integ2d == dummy).sum(axis=0)
             # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
@@ -3625,22 +3638,30 @@ class AzimuthalIntegrator(Geometry):
                 rdata = numpy.ascontiguousarray(image, dtype=numpy.float32)
                 horizontal = False
 
-            if self._ocl_sorter:
-                if self._ocl_sorter.npt_width != rdata.shape[1] or self._ocl_sorter.npt_height != rdata.shape[0]:
-                    self._ocl_sorter = None
-            if not self._ocl_sorter:
-                logger.info("reset opencl sorter")
-                self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+            if OCL_SORT_ENGINE not in self.engines:
+                with self._lock:
+                    if OCL_SORT_ENGINE not in self.engines:
+                        self.engines[OCL_SORT_ENGINE] = Engine()
+            engine = self.engines[OCL_SORT_ENGINE]
+            with engine.lock:
+                sorter = engine.engine
+                if (sorter is None) or \
+                   (sorter.npt_width != rdata.shape[1]) or\
+                   (sorter.npt_height != rdata.shape[0]):
+                    logger.info("reset opencl sorter")
+                    sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+                    engine.set_engine(sorter)
+
             if horizontal:
-                res = self._ocl_sorter.sigma_clip_horizontal(rdata, dummy=dummy,
-                                                             sigma_lo=sigma_lo,
-                                                             sigma_hi=sigma_hi,
-                                                             max_iter=max_iter)
+                res = sorter.sigma_clip_horizontal(rdata, dummy=dummy,
+                                                   sigma_lo=sigma_lo,
+                                                   sigma_hi=sigma_hi,
+                                                   max_iter=max_iter)
             else:
-                res = self._ocl_sorter.sigma_clip_vertical(rdata, dummy=dummy,
-                                                           sigma_lo=sigma_lo,
-                                                           sigma_hi=sigma_hi,
-                                                           max_iter=max_iter)
+                res = sorter.sigma_clip_vertical(rdata, dummy=dummy,
+                                                 sigma_lo=sigma_lo,
+                                                 sigma_hi=sigma_hi,
+                                                 max_iter=max_iter)
             mean = res[0].get()
             std = res[1].get()
         else:
@@ -3650,7 +3671,7 @@ class AzimuthalIntegrator(Geometry):
             image[mask] = numpy.NaN
             mean = numpy.nanmean(image, axis=0)
             std = numpy.nanstd(image, axis=0)
-            for i in range(max_iter):
+            for _ in range(max_iter):
                 mean2d = as_strided(mean, image.shape, (0, mean.strides[0]))
                 std2d = as_strided(std, image.shape, (0, std.strides[0]))
                 with warnings.catch_warnings():
