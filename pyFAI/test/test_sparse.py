@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Test suites for sparse matrix multiplication modules"""
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test suites for sparse matrix multiplication modules"""
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "25/08/2017"
 
 
 import unittest
@@ -70,7 +71,7 @@ class TestSparseBBox(unittest.TestCase):
         logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
         self.assertTrue(numpy.allclose(obt, self.ref))
 
-        cython = self.ai._lut_integrator.integrate(self.data)
+        cython = self.ai.engines["lut_integrator"].engine.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
             logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
             self.assertTrue(numpy.allclose(obt, ref))
@@ -80,7 +81,7 @@ class TestSparseBBox(unittest.TestCase):
         logger.debug("delta on global result: %s", (abs(obt - self.ref) / self.ref).max())
         self.assertTrue(numpy.allclose(obt, self.ref))
 
-        cython = self.ai._csr_integrator.integrate(self.data)
+        cython = self.ai.engines["csr_integrator"].engine.integrate(self.data)
         for ref, obt in zip(self.cython, cython):
             logger.debug("delta on cython result: %s", (abs(obt - ref) / ref).max())
             self.assertTrue(numpy.allclose(obt, ref))

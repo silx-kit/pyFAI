@@ -26,18 +26,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
-__doc__ = """test suite for non regression on some bugs.
+"""test suite for non regression on some bugs.
 
 Please refer to their respective bug number
 https://github.com/kif/pyFAI/issues
 """
+
+
+from __future__ import absolute_import, division, print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "25/08/2017"
 
 import sys
 import os
@@ -81,6 +83,7 @@ Wavelength: 7e-11
             os.unlink(self.ponifile)
         self.data = None
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_bug170(self):
         ai = load(self.ponifile)
         logger.debug(ai.mask.shape)
