@@ -1784,7 +1784,7 @@ class Geometry(object):
         axis3 (==axis0) is along the beam
         see:
         http://pyfai.readthedocs.io/en/latest/geometry.html#detector-position
-        or ../doc/source/img/PONI.pdf
+        or ../doc/source/img/PONI.png
 
         :param param: list of geometry parameters, defaults to self.param
                       uses elements [3],[4],[5]
@@ -1807,17 +1807,6 @@ class Geometry(object):
                                         cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3,
                                         cosRot3 * sinRot1 - cosRot1 * sinRot2 * sinRot3],
                                        [sinRot2, -cosRot2 * sinRot1, +cosRot1 * cosRot2]])
-#
-#         rot1 = [[ cosRot1, 0.0, -sinRot1 ],
-#                 [     0.0, 1.0, 0.0 ],
-#                 [ sinRot1, 0.0, cosRot1 ]]  # Rotation about axis 1
-#         rot2 = [[ cosRot2, sinRot2, 0.0 ],
-#                 [-sinRot2, cosRot2, 0.0 ],
-#                 [     0.0, 0.0, 1.0 ]]  # Rotation about axis 2
-#         rot3 = [[ 1.0, 0.0, 0.0 ],
-#                 [ 0.0, cosRot3, -sinRot3 ],
-#                 [ 0.0, sinRot3, cosRot3 ] ]  # Rotation about axis 0 (3 via a mod 3?)
-#          = numpy.dot(numpy.dot(rot3, rot2), rot1)  # 3x3 matrix
         return rotation_matrix
 
 # ############################################
