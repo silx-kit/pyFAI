@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "28/08/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -228,11 +228,12 @@ class Geometry(object):
         """Calculate the position of a set of points in space in the sample's centers referential.
 
         This is usually used for calculating the pixel position in space.
-
+        
+        Nota: dim3 is the same as dim0 
 
         :param d0: altitude on the point compared to the detector (i.e. z), may be None
-        :param d1: position on the detector along the slow dimention (i.e. y)
-        :param d2: position on the detector along the fastest dimention (i.e. x)
+        :param d1: position on the detector along the slow dimension (i.e. y)
+        :param d2: position on the detector along the fastest dimension (i.e. x)
         :param corners: return positions on the corners (instead of center)
         :return: 3-tuple of nd-array, with dim0=along the beam,
                                            dim1=along slowest dimension
@@ -262,25 +263,23 @@ class Geometry(object):
         if use_cython and (_geometry is not None):
             t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3)
         else:
-            p1 = p1 - poni1
-            p2 = p2 - poni2
-            # we make copies
-            if p3 is not None:
-                L = L + p3
-
-            cosRot1 = cos(rot1)
-            cosRot2 = cos(rot2)
-            cosRot3 = cos(rot3)
-            sinRot1 = sin(rot1)
-            sinRot2 = sin(rot2)
-            sinRot3 = sin(rot3)
-            t1 = p1 * cosRot2 * cosRot3 + \
-                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            t2 = p1 * cosRot2 * sinRot3 + \
-                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-            t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+            shape = p1.shape
+            size = p1.size
+            p1 = (p1 - poni1).ravel()
+            p2 = (p2 - poni2).ravel()
+            # we did make copies with the subtraction
+            assert size == p2.size
+            if p3 is None:
+                p3 = numpy.zeros(size) + L
+            else:
+                p3 = (L + p3).ravel()
+                assert size == p3.size
+            coord_det = numpy.vstack((p1, p2, p3))
+            coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
+            t1, t2, t3 = coord_sample
+            t1.shape = shape
+            t2.shape = shape
+            t3.shape = shape
         return (t3, t1, t2)
 
     def tth(self, d1, d2, param=None, path="cython"):
@@ -1767,6 +1766,59 @@ class Geometry(object):
                 memo[id(old_value)] = new_value
         new._cached_array = cached
         return new
+
+    def rotation_matrix(self, param=None):
+        """Compute and return the detector tilts as a single matrix
+        
+        Corresponds to rotations about axes 1 then 2 then 3(==0)
+         For those using spd (PB = Peter Boesecke), tilts relate to
+        this system (JK = Jerome Kieffer) as follows:
+        JK1 = PB2 (Y)
+        JK2 = PB1 (X)
+        JK3 = -PB3 (-Z)
+        ...slight differences will result from the order
+        FIXME: make backwards and forwards converter helper function
+
+        axis1 is  vertical and perpendicular to beam
+        axis2 is  horizontal and perpendicular to beam
+        axis3 (==axis0) is along the beam
+        see:
+        http://pyfai.readthedocs.io/en/latest/geometry.html#detector-position
+        or ../doc/source/img/PONI.pdf
+
+        :param param: list of geometry parameters, defaults to self.param
+                      uses elements [3],[4],[5]
+        :type: list of floats
+        :return rotation matrix
+        :rtype: 3x3 float array
+        """
+        if param is None:
+            param = self.param
+        cosRot1 = cos(param[3])
+        cosRot2 = cos(param[4])
+        cosRot3 = cos(param[5])
+        sinRot1 = sin(param[3])
+        sinRot2 = sin(param[4])
+        sinRot3 = sin(param[5])
+        rotation_matrix = numpy.array([[cosRot2 * cosRot3,
+                                        cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3,
+                                        - (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)],
+                                       [cosRot2 * sinRot3,
+                                        cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3,
+                                        cosRot3 * sinRot1 - cosRot1 * sinRot2 * sinRot3],
+                                       [sinRot2, -cosRot2 * sinRot1, +cosRot1 * cosRot2]])
+#
+#         rot1 = [[ cosRot1, 0.0, -sinRot1 ],
+#                 [     0.0, 1.0, 0.0 ],
+#                 [ sinRot1, 0.0, cosRot1 ]]  # Rotation about axis 1
+#         rot2 = [[ cosRot2, sinRot2, 0.0 ],
+#                 [-sinRot2, cosRot2, 0.0 ],
+#                 [     0.0, 0.0, 1.0 ]]  # Rotation about axis 2
+#         rot3 = [[ 1.0, 0.0, 0.0 ],
+#                 [ 0.0, cosRot3, -sinRot3 ],
+#                 [ 0.0, sinRot3, cosRot3 ] ]  # Rotation about axis 0 (3 via a mod 3?)
+#          = numpy.dot(numpy.dot(rot3, rot2), rot1)  # 3x3 matrix
+        return rotation_matrix
 
 # ############################################
 # Accessors and public properties of the class
