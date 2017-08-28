@@ -525,21 +525,21 @@ class Geometry(object):
                                      pos1=p1, pos2=p2, pos3=p3)
             tmp.shape = d1.shape
         else:
-            cosRot1 = cos(self._rot1)
-            cosRot2 = cos(self._rot2)
-            cosRot3 = cos(self._rot3)
-            sinRot1 = sin(self._rot1)
-            sinRot2 = sin(self._rot2)
-            sinRot3 = sin(self._rot3)
+            cos_rot1 = cos(self._rot1)
+            cos_rot2 = cos(self._rot2)
+            cos_rot3 = cos(self._rot3)
+            sin_rot1 = sin(self._rot1)
+            sin_rot2 = sin(self._rot2)
+            sin_rot3 = sin(self._rot3)
             L = self._dist
             if p3 is not None:
                 L = L + p3
-            num = p1 * cosRot2 * cosRot3 \
-                + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) \
-                - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            den = p1 * cosRot2 * sinRot3 \
-                - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) \
-                + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
+            num = p1 * cos_rot2 * cos_rot3 \
+                + p2 * (cos_rot3 * sin_rot1 * sin_rot2 - cos_rot1 * sin_rot3) \
+                - L * (cos_rot1 * cos_rot3 * sin_rot2 + sin_rot1 * sin_rot3)
+            den = p1 * cos_rot2 * sin_rot3 \
+                - L * (-(cos_rot3 * sin_rot1) + cos_rot1 * sin_rot2 * sin_rot3) \
+                + p2 * (cos_rot1 * cos_rot3 + sin_rot1 * sin_rot2 * sin_rot3)
             tmp = numpy.arctan2(num, den)
         return tmp
 
@@ -1794,19 +1794,19 @@ class Geometry(object):
         """
         if param is None:
             param = self.param
-        cosRot1 = cos(param[3])
-        cosRot2 = cos(param[4])
-        cosRot3 = cos(param[5])
-        sinRot1 = sin(param[3])
-        sinRot2 = sin(param[4])
-        sinRot3 = sin(param[5])
-        rotation_matrix = numpy.array([[cosRot2 * cosRot3,
-                                        cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3,
-                                        - (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)],
-                                       [cosRot2 * sinRot3,
-                                        cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3,
-                                        cosRot3 * sinRot1 - cosRot1 * sinRot2 * sinRot3],
-                                       [sinRot2, -cosRot2 * sinRot1, +cosRot1 * cosRot2]])
+        cos_rot1 = cos(param[3])
+        cos_rot2 = cos(param[4])
+        cos_rot3 = cos(param[5])
+        sin_rot1 = sin(param[3])
+        sin_rot2 = sin(param[4])
+        sin_rot3 = sin(param[5])
+        rotation_matrix = numpy.array([[cos_rot2 * cos_rot3,
+                                        cos_rot3 * sin_rot1 * sin_rot2 - cos_rot1 * sin_rot3,
+                                        - (cos_rot1 * cos_rot3 * sin_rot2 + sin_rot1 * sin_rot3)],
+                                       [cos_rot2 * sin_rot3,
+                                        cos_rot1 * cos_rot3 + sin_rot1 * sin_rot2 * sin_rot3,
+                                        cos_rot3 * sin_rot1 - cos_rot1 * sin_rot2 * sin_rot3],
+                                       [sin_rot2, -cos_rot2 * sin_rot1, +cos_rot1 * cos_rot2]])
         return rotation_matrix
 
 # ############################################
