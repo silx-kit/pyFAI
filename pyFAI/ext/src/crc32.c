@@ -95,7 +95,7 @@ void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *e
 int is_initialized=0;
 uint32_t slowcrc_table[1<<8];
 
-void slowcrc_init(void) {
+void static slowcrc_init(void) {
 	uint32_t i, j, a;
 
 	for (i=0;i<(1<<8);i++) {
@@ -111,7 +111,7 @@ void slowcrc_init(void) {
 	is_initialized=1;
 }
 
-uint32_t slowcrc(char *str, uint32_t len) {
+uint32_t static slowcrc(char *str, uint32_t len) {
 	uint32_t lcrc=~0;
 	char *p, *e;
 
@@ -121,7 +121,7 @@ uint32_t slowcrc(char *str, uint32_t len) {
 	return ~lcrc;
 }
 
-uint32_t fastcrc(const char *str, uint32_t len) {
+uint32_t static fastcrc(const char *str, uint32_t len) {
 	uint32_t q=len/sizeof(uint32_t),
 		     r=len%sizeof(uint32_t),
 		     *p=(uint32_t*)str,
