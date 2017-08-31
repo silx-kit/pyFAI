@@ -546,10 +546,11 @@ class BuildExt(build_ext):
                                       for f in ext.extra_compile_args]
             ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
                                    for f in ext.extra_link_args]
-
-        elif self.compiler.compiler_type == 'gcc':
-            # directly linked to bug #649: use local function, without runtime resolution
-            ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
+#
+#         elif self.compiler.compiler_type == 'gcc':
+#             # directly linked to bug #649: use local function, without runtime resolution
+#             ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
+#             #Unfortunatly not available on Manylinux1 platform
 
     def build_extensions(self):
         for ext in self.extensions:
