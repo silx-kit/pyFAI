@@ -1329,7 +1329,7 @@ static const char __pyx_k_import[] = "__import__";
 static const char __pyx_k_nbytes[] = "nbytes";
 static const char __pyx_k_contact[] = "__contact__";
 static const char __pyx_k_license[] = "__license__";
-static const char __pyx_k_25_08_2017[] = "25/08/2017";
+static const char __pyx_k_02_02_2017[] = "02/02/2017";
 static const char __pyx_k_ValueError[] = "ValueError";
 static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_Jrme_Kieffer[] = "J\303\251r\303\264me Kieffer";
@@ -1346,7 +1346,7 @@ static const char __pyx_k_Non_native_byte_order_not_suppor[] = "Non-native byte 
 static const char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static const char __pyx_k_numpy_core_umath_failed_to_impor[] = "numpy.core.umath failed to import";
 static const char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_25_08_2017;
+static PyObject *__pyx_kp_s_02_02_2017;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor_2;
 static PyObject *__pyx_n_s_ImportError;
@@ -1431,7 +1431,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7fastcrc_crc32(CYTHON_UNUSED PyObject *__p
  *     :return: unsigned integer
  *     """
  *     cdef numpy.uint32_t size = data.nbytes             # <<<<<<<<<<<<<<
- *     return pyFAI_crc32(<char *> data.data, size)
+ *     return C_crc32(<char *> data.data, size)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_data), __pyx_n_s_nbytes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -1442,10 +1442,10 @@ static PyObject *__pyx_pf_5pyFAI_3ext_7fastcrc_crc32(CYTHON_UNUSED PyObject *__p
   /* "pyFAI/ext/fastcrc.pyx":47
  *     """
  *     cdef numpy.uint32_t size = data.nbytes
- *     return pyFAI_crc32(<char *> data.data, size)             # <<<<<<<<<<<<<<
+ *     return C_crc32(<char *> data.data, size)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(pyFAI_crc32(((char *)__pyx_v_data->data), __pyx_v_size)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_uint32_t(crc32(((char *)__pyx_v_data->data), __pyx_v_size)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4007,7 +4007,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_25_08_2017, __pyx_k_25_08_2017, sizeof(__pyx_k_25_08_2017), 0, 0, 1, 0},
+  {&__pyx_kp_s_02_02_2017, __pyx_k_02_02_2017, sizeof(__pyx_k_02_02_2017), 0, 0, 1, 0},
   {&__pyx_kp_u_Format_string_allocated_too_shor, __pyx_k_Format_string_allocated_too_shor, sizeof(__pyx_k_Format_string_allocated_too_shor), 0, 1, 0, 0},
   {&__pyx_kp_u_Format_string_allocated_too_shor_2, __pyx_k_Format_string_allocated_too_shor_2, sizeof(__pyx_k_Format_string_allocated_too_shor_2), 0, 1, 0, 0},
   {&__pyx_n_s_ImportError, __pyx_k_ImportError, sizeof(__pyx_k_ImportError), 0, 0, 1, 1},
@@ -4283,7 +4283,7 @@ PyMODINIT_FUNC PyInit_fastcrc(void)
  * Simple Cython module for doing CRC32 for checksums, possibly with SSE4 acceleration
  * """
  * __author__ = "Jrme Kieffer"             # <<<<<<<<<<<<<<
- * __date__ = "25/08/2017"
+ * __date__ = "02/02/2017"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jrme_Kieffer) < 0) __PYX_ERR(0, 28, __pyx_L1_error)
@@ -4291,15 +4291,15 @@ PyMODINIT_FUNC PyInit_fastcrc(void)
   /* "pyFAI/ext/fastcrc.pyx":29
  * """
  * __author__ = "Jrme Kieffer"
- * __date__ = "25/08/2017"             # <<<<<<<<<<<<<<
+ * __date__ = "02/02/2017"             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __license__ = "MIT"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_25_08_2017) < 0) __PYX_ERR(0, 29, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_02_02_2017) < 0) __PYX_ERR(0, 29, __pyx_L1_error)
 
   /* "pyFAI/ext/fastcrc.pyx":30
  * __author__ = "Jrme Kieffer"
- * __date__ = "25/08/2017"
+ * __date__ = "02/02/2017"
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
  * 
@@ -4307,7 +4307,7 @@ PyMODINIT_FUNC PyInit_fastcrc(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) __PYX_ERR(0, 30, __pyx_L1_error)
 
   /* "pyFAI/ext/fastcrc.pyx":31
- * __date__ = "25/08/2017"
+ * __date__ = "02/02/2017"
  * __contact__ = "Jerome.kieffer@esrf.fr"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
  * 
@@ -4320,7 +4320,7 @@ PyMODINIT_FUNC PyInit_fastcrc(void)
  * cimport numpy
  * import numpy             # <<<<<<<<<<<<<<
  * 
- * from crc32 cimport pyFAI_crc32
+ * from crc32 cimport crc32 as C_crc32
  */
   __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 35, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);

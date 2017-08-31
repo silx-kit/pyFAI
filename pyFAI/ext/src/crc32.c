@@ -18,6 +18,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#ifdef __GNUC__
+#define PYFAI_VISIBILITY_HIDDEN __attribute__((visibility("hidden")))
+#else
+#define PYFAI_VISIBILITY_HIDDEN
+#endif
+
 #include <stdint.h>
 
 //#include <smmintrin.h>
@@ -151,7 +157,7 @@ uint32_t static fastcrc(const char *str, uint32_t len) {
 	return crc;
 }
 
-uint32_t pyFAI_crc32(char *str, uint32_t len) {
+PYFAI_VISIBILITY_HIDDEN uint32_t crc32(char *str, uint32_t len) {
   uint32_t eax, ebx, ecx, edx;
   cpuid(1, &eax, &ebx, &ecx, &edx);
 
