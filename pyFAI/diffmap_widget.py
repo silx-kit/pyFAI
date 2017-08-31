@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2016"
+__date__ = "31/08/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -260,6 +260,10 @@ class DiffMapWidget(qt.QWidget):
                          "Select one or more diffraction image files",
                          qt.QDir.currentPath(),
                          filter=self.tr(";;".join(filters)))
+        if isinstance(fnames, tuple):
+            # Compatibility with PyQt5
+            fnames = fnames[0]
+
         for i in fnames:
             self.list_dataset.append(DataSet(str_(i), None, None, None))
 
@@ -295,6 +299,10 @@ class DiffMapWidget(qt.QWidget):
         fname = qt.QFileDialog.getSaveFileName(self, "Output file",
                                                qt.QDir.currentPath(),
                                                filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
+        if isinstance(fname, tuple):
+            # Compatibility with PyQt5
+            fname = fname[0]
+
         self.outputFile.setText(fname)
 
     def start_processing(self, *arg, **kwarg):
@@ -413,9 +421,13 @@ class DiffMapWidget(qt.QWidget):
 
     def save_config(self):
         logger.debug("save_config")
-        json_file = str_(qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
-                                                        directory=self.json_file,
-                                                        filter="Config (*.json)"))
+        json_file = qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
+                                                   directory=self.json_file,
+                                                   filter="Config (*.json)")
+        if isinstance(json_file, tuple):
+            # Compatibility with PyQt5
+            json_file = json_file[0]
+
         if json_file:
             self.dump(json_file)
 
