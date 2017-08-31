@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "31/08/2017"
 
 import sys
 import os
@@ -131,14 +131,16 @@ class TestBug211(unittest.TestCase):
             logger.error("Error with executable: %s, not found. Skipping test", self.exe)
             return
 
-        p = subprocess.Popen([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
-                            shell=False, env=self.env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command_line = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
+
+        p = subprocess.Popen(command_line,
+                             shell=False, env=self.env,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         rc = p.wait()
         if rc:
             logger.info(p.stdout.read())
             logger.error(p.stderr.read())
-            l = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
-            logger.error(os.linesep + (" ".join(l)))
+            logger.error(os.linesep + (" ".join(command_line)))
             env = "Environment:"
             for k, v in self.env.items():
                 env += "%s    %s: %s" % (os.linesep, k, v)
