@@ -38,7 +38,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "31/08/2017"
 __satus__ = "Production"
 import os
 import numpy
@@ -92,16 +92,20 @@ class AbstractMaskImageWidget(qt.QMainWindow):
 
     def saveAndClose(self):
         if self.__outputFile is None:
-            self.__outputFile = qt.QFileDialog.getSaveFileName(self)
-            if self.__outputFile == "":
-                # Save dialog cancelled
-                self.__outputFile = None
+            filename = qt.QFileDialog.getSaveFileName(self)
+            if isinstance(filename, tuple):
+                # Compatibility with PyQt5
+                filename = filename[0]
+
+            if filename is None or filename == "":
+                # Cancel the closing of the application
                 return
-        if self.__outputFile is not None:
-            mask = self.getSelectionMask()
-            fabio.edfimage.edfimage(data=mask).write(self.__outputFile)
-            print("Mask-file saved into %s" % (self.__outputFile))
-            self.close()
+            self.__outputFile = filename
+
+        mask = self.getSelectionMask()
+        fabio.edfimage.edfimage(data=mask).write(self.__outputFile)
+        print("Mask-file saved into %s" % (self.__outputFile))
+        self.close()
 
 
 if BACKEND == "SILX":
