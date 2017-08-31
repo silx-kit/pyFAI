@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/05/2017"
+__date__ = "31/08/2017"
 __status__ = "stable"
 
 
@@ -114,6 +114,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 # ########## #
 # version.py #
 # ########## #
+
 
 class build_py(_build_py):
     """
@@ -319,6 +320,7 @@ else:
 # ############################# #
 # numpy.distutils Configuration #
 # ############################# #
+
 
 def configuration(parent_package='', top_path=None):
     """Recursive construction of package info to be used in setup().
@@ -544,6 +546,10 @@ class BuildExt(build_ext):
                                       for f in ext.extra_compile_args]
             ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
                                    for f in ext.extra_link_args]
+
+        elif self.compiler.compiler_type == 'gcc':
+            # directly linked to bug #649: use local function, without runtime resolution
+            ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
 
     def build_extensions(self):
         for ext in self.extensions:
