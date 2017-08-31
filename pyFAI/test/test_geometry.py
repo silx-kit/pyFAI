@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "31/08/2017"
 
 
 import unittest
@@ -332,7 +332,8 @@ class ParamTestGeometry(ParameterisedTestCase):
                  ("tth", ("cos", "tan")),
                  ("tth", ("tan", "cython")),
                  ("qFunction", ("numpy", "cython")),
-                 ("rFunction", ("numpy", "cython"))]
+                 ("rFunction", ("numpy", "cython")),
+                 ("chi", ("numpy", "cython"))]
     pixels = {"detector": "Pilatus100k",
               "wavelength": 1e-10}
     geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
