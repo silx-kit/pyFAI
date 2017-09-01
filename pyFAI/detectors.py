@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/06/2017"
+__date__ = "01/09/2017"
 __status__ = "stable"
 
 
@@ -2706,6 +2706,15 @@ class RaspberryPi8M(Detector):
     def __init__(self, pixel1=1.12e-6, pixel2=1.12e-6):
         super(RaspberryPi8M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
+
+class Mythen(Detector):
+    "Mythen dtrip detector from Dectris"
+    aliases = ["Mythen 1280"]
+    force_pixel = True
+    MAX_SHAPE = (1, 1280)
+
+    def __init__(self, pixel1=8e-3, pixel2=50e-6):
+        super(Mythen, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
