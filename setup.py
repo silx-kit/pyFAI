@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "01/09/2017"
 __status__ = "stable"
 
 
@@ -547,10 +547,15 @@ class BuildExt(build_ext):
             ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
                                    for f in ext.extra_link_args]
 #
-#         elif self.compiler.compiler_type == 'gcc':
-#             # directly linked to bug #649: use local function, without runtime resolution
-#             ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
-#             #Unfortunatly not available on Manylinux1 platform
+        elif self.compiler.compiler_type == 'unix':
+            # directly linked to bug #649: use local function, without runtime resolution
+            # ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
+            # Unfortunatly not available on Manylinux1 platform
+            if sys.version_info[0] <= 2:
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) void ' ''')
+            else:  # Python3
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) PyObject* ' ''')
+            # ext.extra_link_args.append("-fvisibility=hidden")
 
     def build_extensions(self):
         for ext in self.extensions:
