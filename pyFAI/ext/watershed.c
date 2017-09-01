@@ -2434,10 +2434,10 @@ static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direc
 static const char __pyx_k_Cannot_increase_threshold_was_s[] = "Cannot increase threshold: was %s, requested %s. You should re-init the object.";
 static const char __pyx_k_Idea_label_all_peaks_define_reg[] = "\n    Idea:\n\n    * label all peaks\n    * define region around those peaks which raise always to this peak\n    * define the border of such region\n    * search for the pass between two peaks\n    * merge region with high pass between them\n\n    ";
 static const char __pyx_k_Version_of_module_used_for_HDF5[] = "Version of module used for HDF5";
-static const char __pyx_k_home_kieffer_workspace_pyFAI_py[] = "/home/kieffer/workspace/pyFAI/pyFAI/ext/watershed.pyx";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_peaks_s_maxi_s_mini_s_pass_s_to[] = "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
+static const char __pyx_k_users_kieffer_workspace_400_pyF[] = "/users/kieffer/workspace-400/pyFAI/pyFAI/ext/watershed.pyx";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static const char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
 static const char __pyx_k_Empty_shape_tuple_for_cython_arr[] = "Empty shape tuple for cython.array";
@@ -2573,7 +2573,6 @@ static PyObject *__pyx_n_s_h5;
 static PyObject *__pyx_n_s_h5py;
 static PyObject *__pyx_n_s_height;
 static PyObject *__pyx_n_s_highest_pass;
-static PyObject *__pyx_kp_s_home_kieffer_workspace_pyFAI_py;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_idx;
@@ -2697,6 +2696,7 @@ static PyObject *__pyx_kp_s_unable_to_allocate_array_data;
 static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
+static PyObject *__pyx_kp_s_users_kieffer_workspace_400_pyF;
 static PyObject *__pyx_n_s_val;
 static PyObject *__pyx_n_s_value;
 static PyObject *__pyx_n_s_values;
@@ -3189,7 +3189,7 @@ static void __pyx_pf_5pyFAI_3ext_9watershed_8Bilinear_2__dealloc__(struct __pyx_
 
 /* Python wrapper */
 static PyObject *__pyx_pw_5pyFAI_3ext_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_9watershed_8Bilinear_4f_cy[] = "Bilinear.f_cy(self, x)\n\n        Function -f((y,x)) where f is a continuous function \n        (y,x) are pixel coordinates\n        pixels outside the image are given an arbitrary high value to help the minimizer  \n\n        :param x: 2-tuple of float\n        :return: Interpolated negative signal from the image \n        (negative for using minimizer to search for peaks)\n        ";
+static char __pyx_doc_5pyFAI_3ext_9watershed_8Bilinear_4f_cy[] = "Bilinear.f_cy(self, x)\n\n        Function -f((y,x)) where f is a continuous function\n        (y,x) are pixel coordinates\n        pixels outside the image are given an arbitrary high value to help the minimizer\n\n        :param x: 2-tuple of float\n        :return: Interpolated negative signal from the image\n                 (negative for using minimizer to search for peaks)\n        ";
 static PyObject *__pyx_pw_5pyFAI_3ext_9watershed_8Bilinear_5f_cy(PyObject *__pyx_v_self, PyObject *__pyx_v_x) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -31375,7 +31375,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_h5py, __pyx_k_h5py, sizeof(__pyx_k_h5py), 0, 0, 1, 1},
   {&__pyx_n_s_height, __pyx_k_height, sizeof(__pyx_k_height), 0, 0, 1, 1},
   {&__pyx_n_s_highest_pass, __pyx_k_highest_pass, sizeof(__pyx_k_highest_pass), 0, 0, 1, 1},
-  {&__pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_k_home_kieffer_workspace_pyFAI_py, sizeof(__pyx_k_home_kieffer_workspace_pyFAI_py), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_idx, __pyx_k_idx, sizeof(__pyx_k_idx), 0, 0, 1, 1},
@@ -31499,6 +31498,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_unable_to_allocate_shape_and_str, __pyx_k_unable_to_allocate_shape_and_str, sizeof(__pyx_k_unable_to_allocate_shape_and_str), 0, 0, 1, 0},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_unpack, __pyx_k_unpack, sizeof(__pyx_k_unpack), 0, 0, 1, 1},
+  {&__pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_k_users_kieffer_workspace_400_pyF, sizeof(__pyx_k_users_kieffer_workspace_400_pyF), 0, 0, 1, 0},
   {&__pyx_n_s_val, __pyx_k_val, sizeof(__pyx_k_val), 0, 0, 1, 1},
   {&__pyx_n_s_value, __pyx_k_value, sizeof(__pyx_k_value), 0, 0, 1, 1},
   {&__pyx_n_s_values, __pyx_k_values, sizeof(__pyx_k_values), 0, 0, 1, 1},
@@ -31896,7 +31896,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__33 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_data, __pyx_n_s_thres); if (unlikely(!__pyx_tuple__33)) __PYX_ERR(0, 203, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__33);
   __Pyx_GIVEREF(__pyx_tuple__33);
-  __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init, 203, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) __PYX_ERR(0, 203, __pyx_L1_error)
+  __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init, 203, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) __PYX_ERR(0, 203, __pyx_L1_error)
   __pyx_tuple__35 = PyTuple_Pack(1, ((PyObject*)__pyx_float_1_0)); if (unlikely(!__pyx_tuple__35)) __PYX_ERR(0, 203, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__35);
   __Pyx_GIVEREF(__pyx_tuple__35);
@@ -31911,7 +31911,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__36 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__36)) __PYX_ERR(0, 219, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__36);
   __Pyx_GIVEREF(__pyx_tuple__36);
-  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_dealloc, 219, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) __PYX_ERR(0, 219, __pyx_L1_error)
+  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_dealloc, 219, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) __PYX_ERR(0, 219, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":228
  *         self.dict = None
@@ -31923,7 +31923,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__38 = PyTuple_Pack(8, __pyx_n_s_self, __pyx_n_s_fname, __pyx_n_s_h5py, __pyx_n_s_h5, __pyx_n_s_i, __pyx_n_s_r, __pyx_n_s_s, __pyx_n_s_j); if (unlikely(!__pyx_tuple__38)) __PYX_ERR(0, 228, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__38);
   __Pyx_GIVEREF(__pyx_tuple__38);
-  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_save, 228, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) __PYX_ERR(0, 228, __pyx_L1_error)
+  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_save, 228, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) __PYX_ERR(0, 228, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":246
  * 
@@ -31935,7 +31935,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__40 = PyTuple_Pack(8, __pyx_n_s_cls, __pyx_n_s_fname, __pyx_n_s_h5py, __pyx_n_s_h5, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_r, __pyx_n_s_j); if (unlikely(!__pyx_tuple__40)) __PYX_ERR(0, 246, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__40);
   __Pyx_GIVEREF(__pyx_tuple__40);
-  __pyx_codeobj__41 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__40, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_load, 246, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__41)) __PYX_ERR(0, 246, __pyx_L1_error)
+  __pyx_codeobj__41 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__40, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_load, 246, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__41)) __PYX_ERR(0, 246, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":271
  *         return self
@@ -31947,7 +31947,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__42 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__42)) __PYX_ERR(0, 271, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__42);
   __Pyx_GIVEREF(__pyx_tuple__42);
-  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init_2, 271, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) __PYX_ERR(0, 271, __pyx_L1_error)
+  __pyx_codeobj__43 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__42, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init_2, 271, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__43)) __PYX_ERR(0, 271, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":285
  *     @cython.wraparound(False)
@@ -31959,7 +31959,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__44 = PyTuple_Pack(10, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_width, __pyx_n_s_height, __pyx_n_s_idx, __pyx_n_s_res, __pyx_n_s_labels, __pyx_n_s_regions, __pyx_n_s_bilinear); if (unlikely(!__pyx_tuple__44)) __PYX_ERR(0, 285, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__44);
   __Pyx_GIVEREF(__pyx_tuple__44);
-  __pyx_codeobj__45 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__44, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init_labels, 285, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__45)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __pyx_codeobj__45 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__44, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init_labels, 285, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__45)) __PYX_ERR(0, 285, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":303
  *     @cython.wraparound(False)
@@ -31971,7 +31971,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__46 = PyTuple_Pack(10, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_width, __pyx_n_s_height, __pyx_n_s_idx, __pyx_n_s_res, __pyx_n_s_labels, __pyx_n_s_borders, __pyx_n_s_neighb); if (unlikely(!__pyx_tuple__46)) __PYX_ERR(0, 303, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__46);
   __Pyx_GIVEREF(__pyx_tuple__46);
-  __pyx_codeobj__47 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__46, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init_borders, 303, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__47)) __PYX_ERR(0, 303, __pyx_L1_error)
+  __pyx_codeobj__47 = (PyObject*)__Pyx_PyCode_New(1, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__46, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init_borders, 303, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__47)) __PYX_ERR(0, 303, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":336
  *     @cython.wraparound(False)
@@ -31983,7 +31983,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__48 = PyTuple_Pack(12, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_idx, __pyx_n_s_res, __pyx_n_s_labels, __pyx_n_s_borders, __pyx_n_s_neighb, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_width, __pyx_n_s_height); if (unlikely(!__pyx_tuple__48)) __PYX_ERR(0, 336, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__48);
   __Pyx_GIVEREF(__pyx_tuple__48);
-  __pyx_codeobj__49 = (PyObject*)__Pyx_PyCode_New(1, 0, 12, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__48, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init_regions, 336, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__49)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __pyx_codeobj__49 = (PyObject*)__Pyx_PyCode_New(1, 0, 12, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__48, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init_regions, 336, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__49)) __PYX_ERR(0, 336, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":376
  *     @cython.boundscheck(False)
@@ -31995,7 +31995,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__50 = PyTuple_Pack(14, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_imax, __pyx_n_s_imin, __pyx_n_s_flat, __pyx_n_s_neighb, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_val, __pyx_n_s_maxi, __pyx_n_s_mini, __pyx_n_s_width); if (unlikely(!__pyx_tuple__50)) __PYX_ERR(0, 376, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__50);
   __Pyx_GIVEREF(__pyx_tuple__50);
-  __pyx_codeobj__51 = (PyObject*)__Pyx_PyCode_New(1, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__50, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_init_pass, 376, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__51)) __PYX_ERR(0, 376, __pyx_L1_error)
+  __pyx_codeobj__51 = (PyObject*)__Pyx_PyCode_New(1, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__50, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_init_pass, 376, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__51)) __PYX_ERR(0, 376, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":389
  *                 regions.pop(region.index)
@@ -32007,7 +32007,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__52 = PyTuple_Pack(19, __pyx_n_s_self, __pyx_n_s_idx, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_key, __pyx_n_s_key1, __pyx_n_s_region1, __pyx_n_s_region2, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_neighb, __pyx_n_s_ref, __pyx_n_s_data, __pyx_n_s_labels, __pyx_n_s_borders, __pyx_n_s_to_merge, __pyx_n_s_width, __pyx_n_s_cnt, __pyx_n_s_flat); if (unlikely(!__pyx_tuple__52)) __PYX_ERR(0, 389, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__52);
   __Pyx_GIVEREF(__pyx_tuple__52);
-  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(1, 0, 19, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_merge_singleton, 389, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 389, __pyx_L1_error)
+  __pyx_codeobj__53 = (PyObject*)__Pyx_PyCode_New(1, 0, 19, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__52, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_merge_singleton, 389, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__53)) __PYX_ERR(0, 389, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":454
  *         logger.info("Did %s merge_singleton" % cnt)
@@ -32019,7 +32019,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__54 = PyTuple_Pack(23, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_imax, __pyx_n_s_imin, __pyx_n_s_key1, __pyx_n_s_key2, __pyx_n_s_key, __pyx_n_s_flat, __pyx_n_s_neighb, __pyx_n_s_region1, __pyx_n_s_region2, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_val, __pyx_n_s_maxi, __pyx_n_s_mini, __pyx_n_s_found, __pyx_n_s_width, __pyx_n_s_cnt, __pyx_n_s_idx1, __pyx_n_s_idx2); if (unlikely(!__pyx_tuple__54)) __PYX_ERR(0, 454, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__54);
   __Pyx_GIVEREF(__pyx_tuple__54);
-  __pyx_codeobj__55 = (PyObject*)__Pyx_PyCode_New(1, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__54, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_merge_twins, 454, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__55)) __PYX_ERR(0, 454, __pyx_L1_error)
+  __pyx_codeobj__55 = (PyObject*)__Pyx_PyCode_New(1, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__54, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_merge_twins, 454, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__55)) __PYX_ERR(0, 454, __pyx_L1_error)
 
   /* "pyFAI/ext/watershed.pyx":486
  *         logger.info("Did %s merge_twins" % cnt)
@@ -32031,7 +32031,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__56 = PyTuple_Pack(14, __pyx_n_s_self, __pyx_n_s_thres, __pyx_n_s_key1, __pyx_n_s_key2, __pyx_n_s_idx1, __pyx_n_s_idx2, __pyx_n_s_region1, __pyx_n_s_region2, __pyx_n_s_region, __pyx_n_s_regions, __pyx_n_s_ratio, __pyx_n_s_flat, __pyx_n_s_cnt, __pyx_n_s_key); if (unlikely(!__pyx_tuple__56)) __PYX_ERR(0, 486, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__56);
   __Pyx_GIVEREF(__pyx_tuple__56);
-  __pyx_codeobj__57 = (PyObject*)__Pyx_PyCode_New(2, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__56, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_merge_intense, 486, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__57)) __PYX_ERR(0, 486, __pyx_L1_error)
+  __pyx_codeobj__57 = (PyObject*)__Pyx_PyCode_New(2, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__56, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_merge_intense, 486, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__57)) __PYX_ERR(0, 486, __pyx_L1_error)
   __pyx_tuple__58 = PyTuple_Pack(1, ((PyObject*)__pyx_float_1_0)); if (unlikely(!__pyx_tuple__58)) __PYX_ERR(0, 486, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__58);
   __Pyx_GIVEREF(__pyx_tuple__58);
@@ -32046,7 +32046,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__59 = PyTuple_Pack(29, __pyx_n_s_self, __pyx_n_s_mask, __pyx_n_s_Imin, __pyx_n_s_keep, __pyx_n_s_refine, __pyx_n_s_dmin, __pyx_n_s_kwarg, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_l, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_width, __pyx_n_s_mask_flat, __pyx_n_s_input_points, __pyx_n_s_labels, __pyx_n_s_regions, __pyx_n_s_region, __pyx_n_s_output_points, __pyx_n_s_intensities, __pyx_n_s_argsort, __pyx_n_s_tmp_lst, __pyx_n_s_rej_lst, __pyx_n_s_keep_regions, __pyx_n_s_data, __pyx_n_s_d2, __pyx_n_s_dmin2, __pyx_n_s_pt, __pyx_n_s_pt2); if (unlikely(!__pyx_tuple__59)) __PYX_ERR(0, 519, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__59);
   __Pyx_GIVEREF(__pyx_tuple__59);
-  __pyx_codeobj__60 = (PyObject*)__Pyx_PyCode_New(6, 0, 29, 0, CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__59, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_py, __pyx_n_s_peaks_from_area, 519, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__60)) __PYX_ERR(0, 519, __pyx_L1_error)
+  __pyx_codeobj__60 = (PyObject*)__Pyx_PyCode_New(6, 0, 29, 0, CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__59, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_peaks_from_area, 519, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__60)) __PYX_ERR(0, 519, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name

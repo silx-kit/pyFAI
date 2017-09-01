@@ -19,7 +19,7 @@ THE SOFTWARE.
 */
 
 #include <stdint.h>
-#include "src/crc32.h"
+#include "crc32.h"
 
 //#include <smmintrin.h>
 //#include <cpuid.h>
@@ -165,4 +165,3 @@ PYFAI_VISIBILITY_HIDDEN uint32_t crc32(char *str, uint32_t len) {
   		 return slowcrc(str,len);
   	 }
 }
-

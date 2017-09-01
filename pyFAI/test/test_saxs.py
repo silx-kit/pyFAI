@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2017"
+__date__ = "25/08/2017"
 
 
 import unittest
@@ -67,6 +67,7 @@ class TestSaxs(unittest.TestCase):
         ss = self.ai.mask.sum()
         self.assertTrue(ss == 73533, "masked pixel = %s expected 73533" % ss)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def testNumpy(self):
         qref, Iref, _ = self.ai.saxs(self.data, self.npt)
 
@@ -85,6 +86,7 @@ class TestSaxs(unittest.TestCase):
             pylab.yscale("log")
         self.assertTrue(R < 20, "Numpy: Measure R=%s<2" % R)
 
+    @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def testCython(self):
         qref, Iref, _s = self.ai.saxs(self.data, self.npt)
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="cython")
