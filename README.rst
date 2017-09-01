@@ -125,11 +125,12 @@ For full functionality of pyFAI the following modules need to be installed.
     * numpy 		- 	http://www.numpy.org
     * scipy 		- 	http://www.scipy.org
     * matplotlib 	- 	http://matplotlib.sourceforge.net/
-    * fabio		-	http://sourceforge.net/projects/fable/files/fabio/
-    * h5py		-  	http://www.h5py.org/
+    * fabio 		-	http://sourceforge.net/projects/fable/files/fabio/
+    * h5py	    	-  	http://www.h5py.org/
     * pyopencl		-	http://mathema.tician.de/software/pyopencl/
     * python-qt4	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
     * silx          -   http://www.silx.org
+    * numexpr       -   https://github.com/pydata/numexpr
 
 Those dependencies can simply be installed by::
 
