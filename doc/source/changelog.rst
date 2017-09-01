@@ -10,6 +10,7 @@ ChangeLog of Versions
 * Fix seg-fault with manylinux1 wheels, in fastcrc module (thanks Thomas)
 * Fix Qt4-Qt5 compatibility (thanks Vadim)
 * Easier to understand geometry transformation (thanks Jon)
+* Lower memory consumption, better cache management
 * Unified debian packaging working for 6->9
 * New detector: Mythen & CirPad (thanks Fred)
 
