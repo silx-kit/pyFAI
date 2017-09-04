@@ -10,7 +10,7 @@ example: ./bootstrap.py ipython
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "18/05/2017"
+__date__ = "04/09/2017"
 
 
 import sys
@@ -106,6 +106,8 @@ def run_entry_point(entry_point, argv):
         (NAME = PACKAGE.MODULE:FUNCTION)
     """
     import importlib
+    # Remove ending extra dependencies
+    entry_point = entry_point.split("[")[0]
     elements = entry_point.split("=")
     target_name = elements[0].strip()
     elements = elements[1].split(":")

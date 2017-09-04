@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/05/2017"
+__date__ = "04/09/2017"
 __status__ = "stable"
 
 
@@ -187,6 +187,8 @@ class BuildMan(Command):
         scripts.extend(console_scripts)
         scripts.extend(gui_scripts)
         for script in scripts:
+            # Remove ending extra dependencies
+            script = script.split("[")[0]
             elements = script.split("=")
             target_name = elements[0].strip()
             elements = elements[1].split(":")
