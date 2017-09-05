@@ -59,7 +59,6 @@ else:
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
     stdout/err from tests and to display them only when a test fail.
-
     This class allow to use unittest stdout-capture by using the last sys.stdout
     and not a cached one.
     """
@@ -74,10 +73,20 @@ class StreamHandlerUnittestReady(logging.StreamHandler):
     def flush(self):
         pass
 
-# Same as basicConfig with a custom handler but portable Python 2 and 3
-root = logging.getLogger()
-root.addHandler(StreamHandlerUnittestReady())
-root.setLevel(logging.WARNING)
+
+def createBasicHandler():
+    """Create the handler using the basic configuration"""
+    hdlr = StreamHandlerUnittestReady()
+    fs = logging.BASIC_FORMAT
+    dfs = None
+    fmt = logging.Formatter(fs, dfs)
+    hdlr.setFormatter(fmt)
+    return hdlr
+
+
+# Use an handler compatible with unittests, else use_buffer is not working
+logging.root.addHandler(createBasicHandler())
+logging.captureWarnings(True)
 
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
