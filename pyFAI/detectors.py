@@ -1542,8 +1542,8 @@ class ImXPadS10(Detector):
             size[i * module_size - 1] = cls.BORDER_SIZE_RELATIVE
             size[i * module_size] = cls.BORDER_SIZE_RELATIVE
         # outer pixels have the normal size
-#         size[0] = 1.0
-#         size[-1] = 1.0
+        # size[0] = 1.0
+        # size[-1] = 1.0
         return pixel_size * size
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6, max_shape=None, module_size=None):
@@ -2832,9 +2832,10 @@ class Cirpad(ImXPadS10):
         n_corners = corners
 
         # then we compute the positions of the 19 remaining ones
-        for i in range(1, 20):
+        for _ in range(1, 20):
             n_corners = self._passage(n_corners, self.ROT)
-            corners = numpy.concatenate((corners, n_corners), axis=0)  # A voir la disposition finale souhaité
+            # Depending on the expected layout
+            corners = numpy.concatenate((corners, n_corners), axis=0)
         return corners
 
     # Pas fait encore
