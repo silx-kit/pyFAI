@@ -19,7 +19,7 @@ THE SOFTWARE.
 */
 
 #include <stdint.h>
-#include "src/crc32.h"
+#include "crc32.h"
 
 //#include <smmintrin.h>
 //#include <cpuid.h>
