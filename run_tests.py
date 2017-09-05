@@ -170,7 +170,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
                          time.time() - self.__time_start, memusage, test.id())
 
 
-def report_rst(cov, package="fabio", version="0.0.0", base=""):
+def report_rst(cov, package, version="0.0.0", base=""):
     """
     Generate a report of test coverage in RST (for Sphinx inclusion)
 
