@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/05/2017"
+__date__ = "04/09/2017"
 __status__ = "stable"
 
 
@@ -187,6 +187,8 @@ class BuildMan(Command):
         scripts.extend(console_scripts)
         scripts.extend(gui_scripts)
         for script in scripts:
+            # Remove ending extra dependencies
+            script = script.split("[")[0]
             elements = script.split("=")
             target_name = elements[0].strip()
             elements = elements[1].split(":")
@@ -743,6 +745,10 @@ def get_project_configuration(dry_run):
         ]
     }
 
+    extras_require = {
+        'calib2': ["fabio>=0.5"],
+    }
+
     console_scripts = [
         'check_calib = pyFAI.app.check_calib:main',
         'detector2nexus = pyFAI.app.detector2nexus:main',
@@ -753,7 +759,7 @@ def get_project_configuration(dry_run):
         'pyFAI-average = pyFAI.app.average:main',
         'pyFAI-benchmark = pyFAI.app.benchmark:main',
         'pyFAI-calib = pyFAI.app.calib:main',
-        'pyFAI-calib2 = pyFAI.app.calib2:main',
+        'pyFAI-calib2 = pyFAI.app.calib2:main [calib2]',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
         'pyFAI-recalib = pyFAI.app.recalib:main',
@@ -809,6 +815,7 @@ def get_project_configuration(dry_run):
                         package_data=package_data,
                         zip_safe=False,
                         entry_points=entry_points,
+                        extras_require=extras_require,
                         )
     return setup_kwargs
 
