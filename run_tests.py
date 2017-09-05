@@ -286,9 +286,6 @@ parser.add_argument("-v", "--verbose", default=0,
                     help="Increase verbosity. Option -v prints additional " +
                          "INFO messages. Use -vv for full verbosity, " +
                          "including debug messages and test help strings.")
-parser.add_argument("-n", "--noisy", default=True,
-                    action="store_false", dest="display_buffer",
-                    help="Display all warnings from the system")
 parser.add_argument("-l", "--low-mem", default=False,
                     action="store_true", dest="low_mem",
                     help="Use this option to discard all test using >100MB memory")
@@ -315,13 +312,17 @@ sys.argv = [sys.argv[0]]
 
 
 test_verbosity = 1
+use_buffer = True
 if options.verbose == 1:
     logging.root.setLevel(logging.INFO)
     logger.info("Set log level: INFO")
+    test_verbosity = 2
+    use_buffer = False
 elif options.verbose > 1:
     logging.root.setLevel(logging.DEBUG)
     logger.info("Set log level: DEBUG")
     test_verbosity = 2
+    use_buffer = False
 
 # if not options.gui:
 #    os.environ["WITH_QT_TEST"] = "False"
@@ -331,7 +332,6 @@ elif options.verbose > 1:
 #
 # if options.low_mem:isy
 #    os.environ["SILX_TEST_LOW_MEM"] = "True"
-
 
 if options.coverage:
     logger.info("Running test-coverage")
@@ -375,7 +375,7 @@ PROJECT_PATH = module.__path__[0]
 # Run the tests
 runnerArgs = {}
 runnerArgs["verbosity"] = test_verbosity
-runnerArgs["buffer"] = options.display_buffer
+runnerArgs["buffer"] = use_buffer
 if options.memprofile:
     runnerArgs["resultclass"] = ProfileTextTestResult
 runner = unittest.TextTestRunner(**runnerArgs)
