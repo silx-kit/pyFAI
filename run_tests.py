@@ -36,7 +36,6 @@ __date__ = "25/08/2017"
 __license__ = "MIT"
 
 import distutils.util
-import distutils.dir_util
 import logging
 import os
 import subprocess
@@ -231,7 +230,6 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
 
 def build_project(name, root_dir):
     """Run python setup.py build for the project.
-    and copy data files to run the tests
 
     Build directory can be modified by environment variables.
 
@@ -255,9 +253,6 @@ def build_project(name, root_dir):
     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                          shell=False, cwd=root_dir)
     logger.debug("subprocess ended with rc= %s", p.wait())
-
-    distutils.dir_util.copy_tree("pyFAI/resources", os.path.join(home, PROJECT_NAME, "resources"), update=1)
-
     return home
 
 
