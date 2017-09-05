@@ -2,7 +2,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
+# Copyright (c) 2015-2017 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@ __date__ = "25/08/2017"
 __license__ = "MIT"
 
 import distutils.util
-import distutils.dir_util
 import logging
 import os
 import subprocess
@@ -60,7 +59,6 @@ else:
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
     stdout/err from tests and to display them only when a test fail.
-
     This class allow to use unittest stdout-capture by using the last sys.stdout
     and not a cached one.
     """
@@ -75,10 +73,20 @@ class StreamHandlerUnittestReady(logging.StreamHandler):
     def flush(self):
         pass
 
-# Same as basicConfig with a custom handler but portable Python 2 and 3
-root = logging.getLogger()
-root.addHandler(StreamHandlerUnittestReady())
-root.setLevel(logging.WARNING)
+
+def createBasicHandler():
+    """Create the handler using the basic configuration"""
+    hdlr = StreamHandlerUnittestReady()
+    fs = logging.BASIC_FORMAT
+    dfs = None
+    fmt = logging.Formatter(fs, dfs)
+    hdlr.setFormatter(fmt)
+    return hdlr
+
+
+# Use an handler compatible with unittests, else use_buffer is not working
+logging.root.addHandler(createBasicHandler())
+logging.captureWarnings(True)
 
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
@@ -171,7 +179,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
                          time.time() - self.__time_start, memusage, test.id())
 
 
-def report_rst(cov, package="fabio", version="0.0.0", base=""):
+def report_rst(cov, package, version="0.0.0", base=""):
     """
     Generate a report of test coverage in RST (for Sphinx inclusion)
 
@@ -231,7 +239,6 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
 
 def build_project(name, root_dir):
     """Run python setup.py build for the project.
-    and copy data files to run the tests
 
     Build directory can be modified by environment variables.
 
@@ -255,9 +262,6 @@ def build_project(name, root_dir):
     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                          shell=False, cwd=root_dir)
     logger.debug("subprocess ended with rc= %s", p.wait())
-
-    distutils.dir_util.copy_tree("pyFAI/resources", os.path.join(home, PROJECT_NAME, "resources"), update=1)
-
     return home
 
 
@@ -291,9 +295,6 @@ parser.add_argument("-v", "--verbose", default=0,
                     help="Increase verbosity. Option -v prints additional " +
                          "INFO messages. Use -vv for full verbosity, " +
                          "including debug messages and test help strings.")
-parser.add_argument("-n", "--noisy", default=True,
-                    action="store_false", dest="display_buffer",
-                    help="Display all warnings from the system")
 parser.add_argument("-l", "--low-mem", default=False,
                     action="store_true", dest="low_mem",
                     help="Use this option to discard all test using >100MB memory")
@@ -320,13 +321,17 @@ sys.argv = [sys.argv[0]]
 
 
 test_verbosity = 1
+use_buffer = True
 if options.verbose == 1:
     logging.root.setLevel(logging.INFO)
     logger.info("Set log level: INFO")
+    test_verbosity = 2
+    use_buffer = False
 elif options.verbose > 1:
     logging.root.setLevel(logging.DEBUG)
     logger.info("Set log level: DEBUG")
     test_verbosity = 2
+    use_buffer = False
 
 # if not options.gui:
 #    os.environ["WITH_QT_TEST"] = "False"
@@ -336,7 +341,6 @@ elif options.verbose > 1:
 #
 # if options.low_mem:isy
 #    os.environ["SILX_TEST_LOW_MEM"] = "True"
-
 
 if options.coverage:
     logger.info("Running test-coverage")
@@ -380,7 +384,7 @@ PROJECT_PATH = module.__path__[0]
 # Run the tests
 runnerArgs = {}
 runnerArgs["verbosity"] = test_verbosity
-runnerArgs["buffer"] = options.display_buffer
+runnerArgs["buffer"] = use_buffer
 if options.memprofile:
     runnerArgs["resultclass"] = ProfileTextTestResult
 runner = unittest.TextTestRunner(**runnerArgs)
