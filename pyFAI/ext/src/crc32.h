@@ -20,4 +20,12 @@ THE SOFTWARE.
 
 #include <stdio.h>
 #include <stdint.h>
-uint32_t pyFAI_crc32(char *str, uint32_t len);
+
+#ifdef __GNUC__
+#define PYFAI_VISIBILITY_HIDDEN __attribute__((visibility("hidden")))
+#else
+#define PYFAI_VISIBILITY_HIDDEN
+#endif
+
+PYFAI_VISIBILITY_HIDDEN uint32_t crc32(char *str, uint32_t len);
+

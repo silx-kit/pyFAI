@@ -24,7 +24,7 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "17/05/2017"
+__date__ = "31/08/2017"
 
 from numpy.distutils.misc_util import Configuration
 import platform

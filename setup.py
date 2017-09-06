@@ -115,6 +115,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 # version.py #
 # ########## #
 
+
 class build_py(_build_py):
     """
     Enhanced build_py which copies version.py to <PROJECT>._version.py
@@ -321,6 +322,7 @@ else:
 # ############################# #
 # numpy.distutils Configuration #
 # ############################# #
+
 
 def configuration(parent_package='', top_path=None):
     """Recursive construction of package info to be used in setup().
@@ -546,6 +548,16 @@ class BuildExt(build_ext):
                                       for f in ext.extra_compile_args]
             ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
                                    for f in ext.extra_link_args]
+#
+        elif self.compiler.compiler_type == 'unix':
+            # directly linked to bug #649: use local function, without runtime resolution
+            # ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
+            # Unfortunatly not available on Manylinux1 platform
+            if sys.version_info[0] <= 2:
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) void ' ''')
+            else:  # Python3
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) PyObject* ' ''')
+            # ext.extra_link_args.append("-fvisibility=hidden")
 
     def build_extensions(self):
         for ext in self.extensions:
