@@ -79,6 +79,7 @@ class UtilsTest(object):
     clean_up = resources.clean_up
     getimage = resources.getfile
     low_mem = bool(os.environ.get("PYFAI_LOW_MEM"))
+    opencl = bool(os.environ.get("PYFAI_OPENCL", True))
 
     @classmethod
     def deep_reload(cls):

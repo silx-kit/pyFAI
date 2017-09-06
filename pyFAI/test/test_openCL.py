@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "06/09/2017"
 
 
 import unittest
@@ -58,11 +58,14 @@ if ocl is not None:
     import pyopencl.array
 from .. import load
 from ..opencl.utils import read_cl_file
+from .utilstest import UtilsTest
 
 
 class TestMask(unittest.TestCase):
 
     def setUp(self):
+        if not UtilsTest.opencl:
+            self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
             self.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
@@ -192,6 +195,8 @@ class TestSort(unittest.TestCase):
     ws = N // 8
 
     def setUp(self):
+        if not UtilsTest.opencl:
+            self.skipTest("User request to skip OpenCL tests")
         if pyopencl is None or ocl is None:
             self.skipTest("OpenCL module (pyopencl) is not present or no device available")
 
