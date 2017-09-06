@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "25/08/2017"
+__date__ = "06/09/2017"
 __license__ = "MIT"
 
 import distutils.util
@@ -48,7 +48,7 @@ else:
     resource = None
 try:
     import importlib
-except:
+except ImportError:
     importer = __import__
     old_importer = True
 else:
@@ -95,20 +95,20 @@ logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
 try:
     import numpy
-except:
+except ImportError:
     logger.warning("numpy missing")
 else:
     print("numpy %s from %s" % (numpy.version.version, numpy.__path__))
 try:
     import scipy
-except:
+except ImportError:
     logger.warning("Scipy missing")
 else:
     print("Scipy %s from %s" % (scipy.version.version, scipy.__path__))
 
 try:
     import fabio
-except:
+except ImportError:
     logger.warning("FabIO missing")
 else:
     print("FabIO %s" % fabio.version)
@@ -122,7 +122,7 @@ else:
 
 try:
     import Cython
-except:
+except ImportError:
     print("Cython missing")
 else:
     print("Cython %s" % Cython.__version__)
@@ -270,10 +270,11 @@ try:
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
 
-epilog = """Environment variables: 
-PYFAI_LOW_MEM: set to True to skip all tests >100Mb"""
+epilog = """Environment variables:
+PYFAI_LOW_MEM: set to True to skip all tests >100Mb
+PYFAI_OPENCL=False to disable OpenCL tests.
+"""
 # WITH_QT_TEST=False to disable graphical tests,
-# SILX_OPENCL=False to disable OpenCL tests.
 # SILX_TEST_LOW_MEM=True to disable tests taking large amount of memory
 # GPU=False to disable the use of a GPU with OpenCL test
 # """
@@ -298,14 +299,14 @@ parser.add_argument("-v", "--verbose", default=0,
 parser.add_argument("-l", "--low-mem", default=False,
                     action="store_true", dest="low_mem",
                     help="Use this option to discard all test using >100MB memory")
+parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
+                    action="store_false",
+                    help="Disable the test of the OpenCL part")
 
 
 # parser.add_argument("-x", "--no-gui", dest="gui", default=True,
 #                    action="store_false",
 #                    help="Disable the test of the graphical use interface")
-# parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
-#                    action="store_false",
-#                    help="Disable the test of the OpenCL part")
 # parser.add_argument("-l", "--low-mem", dest="low_mem", default=False,
 #                    action="store_true",
 #                    help="Disable test with large memory consumption (>100Mbyte")
@@ -363,7 +364,7 @@ if (os.path.dirname(os.path.abspath(__file__)) ==
 if not options.insource:
     try:
         module = importer(PROJECT_NAME)
-    except:
+    except ImportError:
         logger.warning(
             "%s missing, using built (i.e. not installed) version",
             PROJECT_NAME)
@@ -404,9 +405,14 @@ UtilsTest = getattr(utilstest, "UtilsTest")
 UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
 UtilsTest.testimages = os.path.join(UtilsTest.image_home, "all_testimages.json")
 UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
+
 if options.low_mem:
     logger.info("Switch to low_mem mode")
     UtilsTest.low_mem = True
+
+if not options.opencl:
+    logger.info("Disable OpenCL tests")
+    UtilsTest.opencl = False
 
 test_suite = unittest.TestSuite()
 

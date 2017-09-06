@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "06/09/2017"
 
 import unittest
 import os
@@ -272,6 +272,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         self.assertTrue(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
         self.assertTrue(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
 
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_medfilt1d(self):
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr")
@@ -377,7 +378,10 @@ class TestSaxs(unittest.TestCase):
 
         ai = AzimuthalIntegrator(detector="Pilatus100k")
         ai.wavelength = 1e-10
-        methods = ["cython", "numpy", "lut", "csr", "ocl_lut", "ocl_csr", "splitpixel"]
+        methods = ["cython", "numpy", "lut", "csr", "splitpixel"]
+        if UtilsTest.opencl:
+            methods.extend(["ocl_lut", "ocl_csr"])
+
         ref1d = {}
         ref2d = {}
 

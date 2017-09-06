@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "06/09/2017"
 
 
 import os
@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 from .. import preproc as python_preproc
 from ..ext import preproc as cython_preproc
 from ..opencl import preproc as ocl_preproc
+from .utilstest import UtilsTest
 
 
 class TestPreproc(unittest.TestCase):
@@ -149,6 +150,7 @@ class TestPreproc(unittest.TestCase):
     def test_cython(self):
         self.one_test(cython_preproc)
 
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_opencl(self):
         if ocl_preproc.ocl is not None:
             self.one_test(ocl_preproc)

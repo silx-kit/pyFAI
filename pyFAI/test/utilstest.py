@@ -29,13 +29,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "06/09/2017"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
-
-if __name__ == "__main__":
-    __name__ = "pyFAI.test"
 
 import os
 import sys
@@ -82,6 +79,7 @@ class UtilsTest(object):
     clean_up = resources.clean_up
     getimage = resources.getfile
     low_mem = bool(os.environ.get("PYFAI_LOW_MEM"))
+    opencl = bool(os.environ.get("PYFAI_OPENCL", True))
 
     @classmethod
     def deep_reload(cls):

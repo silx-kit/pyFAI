@@ -29,7 +29,7 @@
 
 from __future__ import absolute_import, print_function, division
 __license__ = "MIT"
-__date__ = "19/07/2017"
+__date__ = "06/09/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -83,6 +83,7 @@ def sigma_clip(image, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0):
     return mean, std
 
 
+@unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
 @unittest.skipIf(ocl is None, "OpenCL is not available")
 class TestOclSort(unittest.TestCase):
     def setUp(self):
