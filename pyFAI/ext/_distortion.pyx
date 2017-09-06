@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/02/2017"
+__date__ = "01/09/2017"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1286,6 +1286,17 @@ class Distortion(object):
                                 idx += 1
                     self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)
         return self.LUT
+
+    def demo_ArrayBuilder(self, int n=10):
+        "this just ensures the shared C-library works"
+        cdef: 
+            ArrayBuilder ab
+            int i
+         
+        ab = ArrayBuilder(n)
+        for i in range(n):
+            ab._append(i, i, 1.0)
+        return ab
 
     @cython.wraparound(False)
     @cython.boundscheck(False)

@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/05/2017"
+__date__ = "01/09/2017"
 __status__ = "stable"
 
 
@@ -114,6 +114,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 # ########## #
 # version.py #
 # ########## #
+
 
 class build_py(_build_py):
     """
@@ -319,6 +320,7 @@ else:
 # ############################# #
 # numpy.distutils Configuration #
 # ############################# #
+
 
 def configuration(parent_package='', top_path=None):
     """Recursive construction of package info to be used in setup().
@@ -544,6 +546,16 @@ class BuildExt(build_ext):
                                       for f in ext.extra_compile_args]
             ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
                                    for f in ext.extra_link_args]
+#
+        elif self.compiler.compiler_type == 'unix':
+            # directly linked to bug #649: use local function, without runtime resolution
+            # ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
+            # Unfortunatly not available on Manylinux1 platform
+            if sys.version_info[0] <= 2:
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) void ' ''')
+            else:  # Python3
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) PyObject* ' ''')
+            # ext.extra_link_args.append("-fvisibility=hidden")
 
     def build_extensions(self):
         for ext in self.extensions:
@@ -724,7 +736,8 @@ def get_project_configuration(dry_run):
         "scipy",
         "numexpr",
         # for the use of pkg_resources on script launcher
-        "setuptools"]
+        "setuptools",
+        "silx"]
 
     setup_requires = [
         "setuptools",

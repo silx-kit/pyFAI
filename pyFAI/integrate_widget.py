@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/06/2017"
+__date__ = "31/08/2017"
 __status__ = "development"
 
 import logging
@@ -557,13 +557,34 @@ class AIWidget(qt.QWidget):
         if setup_data.get("do_OpenCL"):
             self.openCL_changed()
 
+    def getOpenFileName(self, title):
+        """Display a dialog to select a filename and return it.
+
+        Returns None if nothing selected.
+
+        This code is compatible PyQt4/PyQt5 which is not the case for static
+        functions provided by `qt.QFileDialog`.
+        """
+        dialog = qt.QFileDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setModal(True)
+        dialog.setFileMode(qt.QFileDialog.ExistingFile)
+
+        result = dialog.exec_()
+        if not result:
+            return None
+
+        filename = dialog.selectedFiles()[0]
+        return filename
+
     def select_ponifile(self):
-        ponifile = qt.QFileDialog.getOpenFileName()
-        self.set_ponifile(str_(ponifile))
+        ponifile = self.getOpenFileName("Open a poni file")
+        if ponifile is not None:
+            self.set_ponifile(ponifile)
 
     def select_splinefile(self):
         logger.debug("select_splinefile")
-        splinefile = str_(qt.QFileDialog.getOpenFileName())
+        splinefile = self.getOpenFileName("Open a spline file")
         if splinefile:
             try:
                 ai = AzimuthalIntegrator()
@@ -576,21 +597,21 @@ class AIWidget(qt.QWidget):
 
     def select_maskfile(self):
         logger.debug("select_maskfile")
-        maskfile = str_(qt.QFileDialog.getOpenFileName())
+        maskfile = self.getOpenFileName("Open a mask image")
         if maskfile:
             self.mask_file.setText(maskfile or "")
             self.do_mask.setChecked(True)
 
     def select_darkcurrent(self):
         logger.debug("select_darkcurrent")
-        darkcurrent = str_(qt.QFileDialog.getOpenFileName())
+        darkcurrent = self.getOpenFileName("Open a dark image")
         if darkcurrent:
             self.dark_current.setText(str_(darkcurrent))
             self.do_dark.setChecked(True)
 
     def select_flatfield(self):
         logger.debug("select_flatfield")
-        flatfield = str_(qt.QFileDialog.getOpenFileName())
+        flatfield = self.getOpenFileName("Open a flatfield image")
         if flatfield:
             self.flat_field.setText(str_(flatfield))
             self.do_flat.setChecked(True)
@@ -701,8 +722,15 @@ class AIWidget(qt.QWidget):
 
     def save_config(self):
         logger.debug("save_config")
-        json_file = str_(qt.QFileDialog.getSaveFileName(caption="Save configuration as json",
-                                                           directory=self.json_file,
-                                                           filter="Config (*.json)"))
+
+        result = qt.QFileDialog.getSaveFileName(
+            caption="Save configuration as json",
+            directory=self.json_file,
+            filter="Config (*.json)")
+        if isinstance(result, tuple):
+            # PyQt5 compatibility
+            result = result[0]
+
+        json_file = result
         if json_file:
             self.dump(json_file)

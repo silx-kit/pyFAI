@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "31/08/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -228,11 +228,12 @@ class Geometry(object):
         """Calculate the position of a set of points in space in the sample's centers referential.
 
         This is usually used for calculating the pixel position in space.
-
+        
+        Nota: dim3 is the same as dim0  
 
         :param d0: altitude on the point compared to the detector (i.e. z), may be None
-        :param d1: position on the detector along the slow dimention (i.e. y)
-        :param d2: position on the detector along the fastest dimention (i.e. x)
+        :param d1: position on the detector along the slow dimension (i.e. y)
+        :param d2: position on the detector along the fastest dimension (i.e. x)
         :param corners: return positions on the corners (instead of center)
         :return: 3-tuple of nd-array, with dim0=along the beam,
                                            dim1=along slowest dimension
@@ -262,25 +263,28 @@ class Geometry(object):
         if use_cython and (_geometry is not None):
             t3, t1, t2 = _geometry.calc_pos_zyx(L, poni1, poni2, rot1, rot2, rot3, p1, p2, p3)
         else:
-            p1 = p1 - poni1
-            p2 = p2 - poni2
-            # we make copies
-            if p3 is not None:
-                L = L + p3
+            shape = p1.shape
+            size = p1.size
+            p1 = (p1 - poni1).ravel()
+            p2 = (p2 - poni2).ravel()
+            # we did make copies with the subtraction
+            assert size == p2.size
 
-            cosRot1 = cos(rot1)
-            cosRot2 = cos(rot2)
-            cosRot3 = cos(rot3)
-            sinRot1 = sin(rot1)
-            sinRot2 = sin(rot2)
-            sinRot3 = sin(rot3)
-            t1 = p1 * cosRot2 * cosRot3 + \
-                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            t2 = p1 * cosRot2 * sinRot3 + \
-                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-            t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+            # note the change of sign in the third dimension:
+            # Before the rotation we are in the detector's referential,
+            # the sample position is at d3= -L <0
+            # the sample detector distance is always positive.
+            if p3 is None:
+                p3 = numpy.zeros(size) + L
+            else:
+                p3 = (L + p3).ravel()
+                assert size == p3.size
+            coord_det = numpy.vstack((p1, p2, -p3))
+            coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
+            t1, t2, t3 = coord_sample
+            t1.shape = shape
+            t2.shape = shape
+            t3.shape = shape
         return (t3, t1, t2)
 
     def tth(self, d1, d2, param=None, path="cython"):
@@ -504,13 +508,9 @@ class Geometry(object):
     def chi(self, d1, d2, path="cython"):
         """
         Calculate the chi (azimuthal angle) for the centre of a pixel
-        at coordinate d1,d2 which in the lab ref has coordinate:
-
-        X1 = p1*cos(rot2)*cos(rot3) + p2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) -  L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
-        X2 = p1*cos(rot2)*sin(rot3) - L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +  p2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))
-        X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
-        hence tan(Chi) =  X2 / X1
-
+        at coordinate d1, d2. 
+        Conversion to lab coordinate system is performed in calc_pos_zyx.
+        
         :param d1: pixel coordinate along the 1st dimention (C convention)
         :type d1: float or array of them
         :param d2: pixel coordinate along the 2nd dimention (C convention)
@@ -518,41 +518,21 @@ class Geometry(object):
         :param path: can be "tan" (i.e via numpy) or "cython"
         :return: chi, the azimuthal angle in rad
         """
-        p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2)
-
         if (path == "cython") and (_geometry is not None):
-            tmp = _geometry.calc_chi(L=self._dist,
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2)
+            chi = _geometry.calc_chi(L=self._dist,
                                      rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
                                      pos1=p1, pos2=p2, pos3=p3)
-            tmp.shape = d1.shape
+            chi.shape = d1.shape
         else:
-            cosRot1 = cos(self._rot1)
-            cosRot2 = cos(self._rot2)
-            cosRot3 = cos(self._rot3)
-            sinRot1 = sin(self._rot1)
-            sinRot2 = sin(self._rot2)
-            sinRot3 = sin(self._rot3)
-            L = self._dist
-            if p3 is not None:
-                L = L + p3
-            num = p1 * cosRot2 * cosRot3 \
-                + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) \
-                - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            den = p1 * cosRot2 * sinRot3 \
-                - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) \
-                + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
-            tmp = numpy.arctan2(num, den)
-        return tmp
+            _, t1, t2 = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, corners=False, use_cython=False)
+            chi = numpy.arctan2(t1, t2)
+        return chi
 
     def chi_corner(self, d1, d2):
         """
         Calculate the chi (azimuthal angle) for the corner of a pixel
         at coordinate d1,d2 which in the lab ref has coordinate:
-
-        X1 = p1*cos(rot2)*cos(rot3) + p2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) -  L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
-        X2 = p1*cos(rot2)*sin(rot3) - L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +  p2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))
-        X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
-        hence tan(Chi) =  X2 / X1
 
         :param d1: pixel coordinate along the 1st dimention (C convention)
         :type d1: float or array of them
@@ -1594,7 +1574,7 @@ class Geometry(object):
                 if pol is None or (pol.array.shape != shape):
                     cos2_tth = numpy.cos(tth) ** 2
                     pola = 0.5 * (1.0 + cos2_tth -
-                      factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
+                                  factor * numpy.cos(2.0 * (chi + axis_offset)) * (1.0 - cos2_tth))
                     pola = pola.astype(numpy.float32)
                     polc = crc32(pola)
                     pol = PolarizationArray(pola, polc)
@@ -1767,6 +1747,56 @@ class Geometry(object):
                 memo[id(old_value)] = new_value
         new._cached_array = cached
         return new
+
+    def rotation_matrix(self, param=None):
+        """Compute and return the detector tilts as a single rotation matrix
+        
+        Corresponds to rotations about axes 1 then 2 then 3(=> 0 later on)
+         For those using spd (PB = Peter Boesecke), tilts relate to
+        this system (JK = Jerome Kieffer) as follows:
+        JK1 = PB2 (Y)
+        JK2 = PB1 (X)
+        JK3 = -PB3 (-Z)
+        ...slight differences will result from the order
+        FIXME: make backwards and forwards converter helper function
+
+        axis1 is  vertical and perpendicular to beam
+        axis2 is  horizontal and perpendicular to beam
+        axis3  is along the beam, becomes axis0
+        see:
+        http://pyfai.readthedocs.io/en/latest/geometry.html#detector-position
+        or ../doc/source/img/PONI.png
+
+        :param param: list of geometry parameters, defaults to self.param
+                      uses elements [3],[4],[5]
+        :type: list of floats
+        :return rotation matrix
+        :rtype: 3x3 float array
+        """
+        if param is None:
+            param = self.param
+        cos_rot1 = cos(param[3])
+        cos_rot2 = cos(param[4])
+        cos_rot3 = cos(param[5])
+        sin_rot1 = sin(param[3])
+        sin_rot2 = sin(param[4])
+        sin_rot3 = sin(param[5])
+
+        # Rotation about axis 1
+        rot1 = numpy.array([[1.0, 0.0, 0.0],
+                            [0.0, cos_rot1, -sin_rot1],
+                            [0.0, sin_rot1, cos_rot1]])
+        # Rotation about axis 2. Note this rotation is left-handed
+        rot2 = numpy.array([[cos_rot2, 0.0, sin_rot2],
+                            [0.0, 1.0, 0.0],
+                            [-sin_rot2, 0.0, cos_rot2]])
+        # Rotation about axis 3
+        rot3 = numpy.array([[cos_rot3, -sin_rot3, 0.0],
+                            [sin_rot3, cos_rot3, 0.0],
+                            [0.0, 0.0, -1.0]])
+        rotation_matrix = numpy.dot(numpy.dot(rot3, rot2), rot1)  # 3x3 matrix
+
+        return rotation_matrix
 
 # ############################################
 # Accessors and public properties of the class

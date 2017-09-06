@@ -1,4 +1,10 @@
-graft doc
+# Patterns to exclude from any directory
+global-exclude *~
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude .ipynb_checkpoints
+
 recursive-include pyFAI/ext  *.c *.h *.pyx *.pxd *.pxi
 recursive-include pyFAI *.py
 recursive-exclude pyFAI *.pyc
@@ -26,3 +32,9 @@ include requirements.txt
 recursive-include scripts *
 recursive-exclude scripts *.*
 recursive-include package/debian *
+
+
+#Include doc without checkpoints
+recursive-include doc *
+recursive-exclude doc .ipynb_checkpoints/*.ipynb
+

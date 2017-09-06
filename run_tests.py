@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "18/05/2017"
+__date__ = "25/08/2017"
 __license__ = "MIT"
 
 import distutils.util
@@ -266,7 +266,8 @@ try:
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
 
-epilog = """Environment variables: None"""
+epilog = """Environment variables: 
+PYFAI_LOW_MEM: set to True to skip all tests >100Mb"""
 # WITH_QT_TEST=False to disable graphical tests,
 # SILX_OPENCL=False to disable OpenCL tests.
 # SILX_TEST_LOW_MEM=True to disable tests taking large amount of memory
@@ -293,6 +294,10 @@ parser.add_argument("-v", "--verbose", default=0,
 parser.add_argument("-n", "--noisy", default=True,
                     action="store_false", dest="display_buffer",
                     help="Display all warnings from the system")
+parser.add_argument("-l", "--low-mem", default=False,
+                    action="store_true", dest="low_mem",
+                    help="Use this option to discard all test using >100MB memory")
+
 
 # parser.add_argument("-x", "--no-gui", dest="gui", default=True,
 #                    action="store_false",
@@ -395,6 +400,9 @@ UtilsTest = getattr(utilstest, "UtilsTest")
 UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
 UtilsTest.testimages = os.path.join(UtilsTest.image_home, "all_testimages.json")
 UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
+if options.low_mem:
+    logger.info("Switch to low_mem mode")
+    UtilsTest.low_mem = True
 
 test_suite = unittest.TestSuite()
 
