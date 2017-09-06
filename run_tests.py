@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "25/08/2017"
+__date__ = "06/09/2017"
 __license__ = "MIT"
 
 import distutils.util
@@ -48,7 +48,7 @@ else:
     resource = None
 try:
     import importlib
-except:
+except ImportError:
     importer = __import__
     old_importer = True
 else:
@@ -95,20 +95,20 @@ logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
 try:
     import numpy
-except:
+except ImportError:
     logger.warning("numpy missing")
 else:
     print("numpy %s from %s" % (numpy.version.version, numpy.__path__))
 try:
     import scipy
-except:
+except ImportError:
     logger.warning("Scipy missing")
 else:
     print("Scipy %s from %s" % (scipy.version.version, scipy.__path__))
 
 try:
     import fabio
-except:
+except ImportError:
     logger.warning("FabIO missing")
 else:
     print("FabIO %s" % fabio.version)
@@ -122,7 +122,7 @@ else:
 
 try:
     import Cython
-except:
+except ImportError:
     print("Cython missing")
 else:
     print("Cython %s" % Cython.__version__)
@@ -270,7 +270,7 @@ try:
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
 
-epilog = """Environment variables: 
+epilog = """Environment variables:
 PYFAI_LOW_MEM: set to True to skip all tests >100Mb"""
 # WITH_QT_TEST=False to disable graphical tests,
 # SILX_OPENCL=False to disable OpenCL tests.
@@ -363,7 +363,7 @@ if (os.path.dirname(os.path.abspath(__file__)) ==
 if not options.insource:
     try:
         module = importer(PROJECT_NAME)
-    except:
+    except ImportError:
         logger.warning(
             "%s missing, using built (i.e. not installed) version",
             PROJECT_NAME)
