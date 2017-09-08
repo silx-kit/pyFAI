@@ -136,7 +136,6 @@ Options:
   -p PIXEL, --pixel PIXEL
                         size of the pixel in micron
 
-
 Tips & Tricks
 -------------
 

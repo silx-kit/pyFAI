@@ -27,7 +27,9 @@ Usage: pyFAI-drawmask [options] file1.edf file2.edf ...
 Options:
 --------
 
-  --version   show program's version number and exit
-  -h, --help  show help message and exit
+  -h, --help     show this help message and exit
+  -v, --version  show program's version number and exit
 
-Optionally the script will print the number of pixel masked and the intensity masked (as well on other files provided in input)
+The mask image is saved into file1-masked.edf. Optionally the script will
+print the number of pixel masked and the intensity masked (as well on other
+files provided in input)

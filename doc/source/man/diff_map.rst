@@ -55,14 +55,15 @@ Usage:
 diff_map [options] imagefiles*
 
 positional arguments:
-  FILE                  List of files to integrate
+  FILE                  List of files to integrate. Mandatory without GUI
 
 optional arguments:
   -h, --help            show this help message and exit
   -V, --version         show program's version number and exit
   -o FILE, --output FILE
-                        HDF5 File where processed map will be saved
-  -v, --verbose         switch to verbose/debug mode, defaut: quiet
+                        HDF5 File where processed map will be saved. Mandatory
+                        without GUI
+  -v, --verbose         switch to verbose/debug mode, default: quiet
   -P FILE, --prefix FILE
                         Prefix or common base for all files
   -e EXTENSION, --extension EXTENSION
@@ -72,10 +73,12 @@ optional arguments:
   -r SLOW, --slow SLOW  number of points for slow motion. Mandatory without
                         GUI
   -c NPT_RAD, --npt NPT_RAD
-                        number of points in diffraction powder pattern,
+                        number of points in diffraction powder pattern.
                         Mandatory without GUI
-  -d FILE, --dark FILE  list of dark images to average and subtract
-  -f FILE, --flat FILE  list of flat images to average and divide
+  -d FILE, --dark FILE  list of dark images to average and subtract (comma
+                        separated list)
+  -f FILE, --flat FILE  list of flat images to average and divide (comma
+                        separated list)
   -m FILE, --mask FILE  file containing the mask, no mask by default
   -p FILE, --poni FILE  file containing the diffraction parameter (poni-file),
                         Mandatory without GUI
