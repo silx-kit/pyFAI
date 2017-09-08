@@ -31,8 +31,8 @@ Options:
                         pyFAI.detectors
   -s SPLINEFILE, --splinefile SPLINEFILE
                         Geometric distortion file from FIT2D
-  -dx DX, --x-corr DX   Geometric correction for pilatus
-  -dy DY, --y-corr DY   Geometric correction for pilatus
+  --dx DX, --x-corr DX   Geometric correction for pilatus
+  --dy DY, --y-corr DY   Geometric correction for pilatus
   -p PIXEL, --pixel PIXEL
                         pixel size (comma separated): x,y
   -S SHAPE, --shape SHAPE
