@@ -10,7 +10,7 @@ You will need to provide a calibrant or a "d-spacing" file containing the spacin
 Angstrom (in decreasing order).
 
 If you are using a standard calibrant, look at
-https://github.com/kif/pyFAI/tree/master/calibration
+https://github.com/silx-kit/pyFAI/tree/master/calibration
 or search in the American Mineralogist database:
 [AMD]_ or in the [COD]_.
 The --calibrant option is mandatory !

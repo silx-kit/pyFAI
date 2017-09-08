@@ -29,7 +29,7 @@
 """test suite for non regression on some bugs.
 
 Please refer to their respective bug number
-https://github.com/kif/pyFAI/issues
+https://github.com/silx-kit/pyFAI/issues
 """
 
 

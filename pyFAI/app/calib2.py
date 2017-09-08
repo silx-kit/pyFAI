@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/silx-kit/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "08/09/2017"
 __status__ = "production"
 
 import logging

@@ -38,7 +38,7 @@ This file is very short and simple in such a way to be mangled by installers
 It is used by pyFAI.utils._get_data_path
 
 See bug #144 for discussion about implementation
-https://github.com/kif/pyFAI/issues/144
+https://github.com/silx-kit/pyFAI/issues/144
 """
 
 __author__ = "Jerome Kieffer"
