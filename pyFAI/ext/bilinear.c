@@ -4475,7 +4475,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_4calc_cartesian_positions(CYTHON
                             goto __pyx_L38;
                             __pyx_L38:;
                             #ifdef _OPENMP
-                            #pragma omp critical(__pyx_parallel_lastprivates0)
+                            #pragma omp critical(__pyx_parallel_lastprivates20)
                             #endif /* _OPENMP */
                             {
                                 __pyx_parallel_temp0 = __pyx_v_A0;
@@ -5962,7 +5962,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_8bilinear_6calc_cartesian_positions(CYTHON
                             goto __pyx_L38;
                             __pyx_L38:;
                             #ifdef _OPENMP
-                            #pragma omp critical(__pyx_parallel_lastprivates1)
+                            #pragma omp critical(__pyx_parallel_lastprivates21)
                             #endif /* _OPENMP */
                             {
                                 __pyx_parallel_temp0 = __pyx_v_A0;

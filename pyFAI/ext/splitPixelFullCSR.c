@@ -8430,7 +8430,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates12)
+                                #pragma omp critical(__pyx_parallel_lastprivates16)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -8738,7 +8738,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_1d_4int
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates13)
+                                #pragma omp critical(__pyx_parallel_lastprivates17)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -16881,7 +16881,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates14)
+                                #pragma omp critical(__pyx_parallel_lastprivates18)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -17189,7 +17189,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_17splitPixelFullCSR_15FullSplitCSR_2d_4int
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates15)
+                                #pragma omp critical(__pyx_parallel_lastprivates19)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;

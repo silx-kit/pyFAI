@@ -27,5 +27,5 @@ THE SOFTWARE.
 #define PYFAI_VISIBILITY_HIDDEN
 #endif
 
-
 PYFAI_VISIBILITY_HIDDEN uint32_t crc32(char *str, uint32_t len);
+

@@ -15,14 +15,14 @@ addons:
   apt:
     packages:
       # Only used by the DISTRIB="ubuntu" setting
-      - libhdf5-serial-1.8.4
-      - libhdf5-serial-dev
+      - libhdf5-7
+      - libhdf5-dev
       - gfortran
       - libatlas-base-dev
       - libqtcore4
 #For OpenCL:
-      - libboost1.48-dev
-      - libboost-python1.48
+      - libboost-python1.54.0
+      - libboost-python1.54-dev
       - opencl-headers
       - python-pyopencl
 # command to install dependencies

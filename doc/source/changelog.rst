@@ -5,14 +5,16 @@
 ChangeLog of Versions
 =====================
 
-0.14.2: 01/09/2017
-------------------
+0.14.2: Not yet released
+------------------------
 * Fix seg-fault with manylinux1 wheels, in fastcrc module (thanks Thomas)
 * Fix Qt4-Qt5 compatibility (thanks Vadim)
 * Easier to understand geometry transformation (thanks Jon)
 * Lower memory consumption, better cache management
 * Unified debian packaging working for 6->9
 * New detector: Mythen & CirPad (thanks Fred)
+* Clean up debug code which avoid to use pyFAI-calib2
+* pyFAI-calib2 now expect fabio >= 0.5
 
 0.14.1: 25/07/2017
 ------------------

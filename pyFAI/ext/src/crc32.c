@@ -165,3 +165,4 @@ PYFAI_VISIBILITY_HIDDEN uint32_t crc32(char *str, uint32_t len) {
   		 return slowcrc(str,len);
   	 }
 }
+

@@ -7751,7 +7751,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates0)
+                                #pragma omp critical(__pyx_parallel_lastprivates4)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -8059,7 +8059,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_24splitPixelFullLUT_double_19HistoLUT1dFul
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates1)
+                                #pragma omp critical(__pyx_parallel_lastprivates5)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
