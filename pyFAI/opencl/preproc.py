@@ -334,7 +334,7 @@ class OCL_Preproc(OpenclProcessing):
             events.append(EventDescription("copy %s" % dest, copy_image))
         else:
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
-            kernel = getattr(self.program, self.mapping[data.dtype.type])
+            kernel = self.kernels[self.mapping[data.dtype.type]]
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
             events += [EventDescription("copy raw", dest), EventDescription("cast to float", cast_to_float)]
         if self.profile:
