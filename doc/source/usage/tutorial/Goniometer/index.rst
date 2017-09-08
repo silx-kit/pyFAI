@@ -3,7 +3,7 @@
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks for Goniometer
 
-.. _tutorials:
+.. _goniometer_tutorials:
 
 Goniometer and translation table calibration
 ============================================
