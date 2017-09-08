@@ -1339,7 +1339,6 @@ class Distortion(object):
                 lout[i] += lin[idx] * coef
         return out[:img_shape[0], :img_shape[1]]
 
-    @timeit
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
