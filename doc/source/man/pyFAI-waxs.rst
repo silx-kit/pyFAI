@@ -49,10 +49,3 @@ Options:
 
 pyFAI-waxs is the script of pyFAI that allows data reduction (azimuthal integration) for Wide Angle Scattering
 to produce X-Ray Powder Diffraction Pattern with output axis in 2-theta space.
-
-Example:
---------
-
-
-.. command-output:: pyFAI-waxs --help
-    :nostderr:

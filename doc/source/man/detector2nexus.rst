@@ -40,6 +40,3 @@ Options:
   -d DARK, --dark DARK  Dark noise to be subtracted
   -f FLAT, --flat FLAT  Flat field correction
   -v, --verbose         switch to verbose/debug mode
-
-.. command-output:: detector2nexus --help
-    :nostderr:

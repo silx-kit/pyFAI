@@ -56,7 +56,3 @@ Options:
 
 
 Most of those options are mandatory to define the structure of the dataset.
-
-
-.. command-output:: diff_tomo --help
-    :nostderr:

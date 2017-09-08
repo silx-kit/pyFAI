@@ -37,8 +37,3 @@ optional arguments:
   -v, --verbose         switch to verbose/debug mode
   -q QUANTILES, --quantiles QUANTILES
                         average out between two quantiles -q 0.20-0.90
-
-
-.. command-output:: pyFAI-average --help
-    :nostderr:
-

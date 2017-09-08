@@ -31,6 +31,3 @@ Options:
   -h, --help  show help message and exit
 
 Optionally the script will print the number of pixel masked and the intensity masked (as well on other files provided in input)
-
-.. command-output:: pyFAI-drawmask --help
-    :nostderr:

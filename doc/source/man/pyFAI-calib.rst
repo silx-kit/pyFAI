@@ -149,10 +149,6 @@ entry (time-stamps will help you).
 Example of usage:
 -----------------
 
-
-.. command-output:: pyFAI-calib --help
-    :nostderr:
-
 Pilatus 1M image of Silver Behenate taken at ESRF-BM26:
 .......................................................
 

@@ -95,7 +95,3 @@ Bugs:
 #. There is a known bug on Debian7 where importing a large
    number of file can take much longer than the integration itself: consider
    passing files in the command line
-
-
-.. command-output:: diff_map --help
-    :nostderr:
