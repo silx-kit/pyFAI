@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2017"
+__date__ = "08/09/2017"
 __status__ = "stable"
 
 
@@ -110,6 +110,7 @@ class OpenclProcessing(object):
         self.set_profiling(profile)
         self.block_size = block_size
         self.program = None
+        self.kernels = {}
 
     def __del__(self):
         """Destructor: release all buffers and programs
@@ -200,12 +201,17 @@ class OpenclProcessing(object):
             self.program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
+        else:
+            for kernel in self.program.all_kernels():
+                self.kernels[kernel.function_name] = kernel
 
     def free_kernels(self):
         """Free all kernels
         """
         for kernel in self.cl_kernel_args:
             self.cl_kernel_args[kernel] = []
+        for kernel in list(self.kernels.keys()):
+            self.kernels.pop(kernel)
         self.program = None
 
     def set_profiling(self, value=True):

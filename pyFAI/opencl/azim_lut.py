@@ -30,13 +30,11 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "26/06/2017"
+__date__ = "08/09/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import gc
 import logging
-import threading
 import numpy
 from collections import OrderedDict
 from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
@@ -279,7 +277,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            memset = self.program.memset_out(self.queue, self.wdim_bins, self.workgroup_size, *list(self.cl_kernel_args["memset_out"].values()))
+            memset = self.kernels["memset_out"](self.queue, self.wdim_bins, self.workgroup_size, *list(self.cl_kernel_args["memset_out"].values()))
             events.append(EventDescription("memset", memset))
             kw1 = self.cl_kernel_args["corrections"]
             kw2 = self.cl_kernel_args["lut_integrate"]
@@ -352,7 +350,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw1["do_absorption"] = do_absorption
 
-            ev = self.program.corrections(self.queue, self.wdim_data, self.workgroup_size, *list(kw1.values()))
+            ev = self.kernels["corrections"](self.queue, self.wdim_data, self.workgroup_size, *list(kw1.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -363,7 +361,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                     self.events += events
                 ev.wait()
                 return image
-            integrate = self.program.lut_integrate(self.queue, self.wdim_bins, self.workgroup_size, *list(kw2.values()))
+            integrate = self.kernels["lut_integrate"](self.queue, self.wdim_bins, self.workgroup_size, *list(kw2.values()))
             events.append(EventDescription("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)

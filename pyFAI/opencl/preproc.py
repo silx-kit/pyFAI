@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "10/02/2017"
+__date__ = "08/09/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -387,7 +387,7 @@ class OCL_Preproc(OpenclProcessing):
             kwargs["normalization_factor"] = numpy.float32(normalization_factor)
             if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
                 kwargs["do_dark_variance"] = do_dark
-            kernel = self.program.__getattr__(kernel_name)
+            kernel = self.kernels[kernel_name]
             evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
             if kernel_name.startswith("corrections3"):
                 dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)

@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "19/07/2017"
+__date__ = "08/09/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -194,8 +194,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE)
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
-        for kernel in self.program.all_kernels():
-            kernel_name = kernel.function_name
+        for kernel_name, kernel in self.kernels.items():
             wg = kernel_workgroup_size(self.program, kernel)
             self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),)  # this is a tuple
 
@@ -295,7 +294,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             self.send_buffer(data, "image")
             wg = self.workgroup_size["memset_out"]
             wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
-            memset = self.program.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
+            memset = self.kernels["memset_out"](self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
             events.append(EventDescription("memset_out", memset))
             kw1 = self.cl_kernel_args["corrections"]
             kw2 = self.cl_kernel_args["csr_integrate"]
@@ -371,7 +370,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw1["do_absorption"] = do_absorption
 
             wg = self.workgroup_size["corrections"]
-            ev = self.program.corrections(self.queue, self.wdim_data, wg, *list(kw1.values()))
+            ev = self.kernels["corrections"](self.queue, self.wdim_data, wg, *list(kw1.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -386,10 +385,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
             wdim_bins = (self.bins * wg),
             if wg == 1:
-                integrate = self.program.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw2.values())
+                integrate = self.kernels["csr_integrate_single"](self.queue, wdim_bins, (wg,), *kw2.values())
                 events.append(EventDescription("integrate_single", integrate))
             else:
-                integrate = self.program.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
+                integrate = self.kernels["csr_integrate"](self.queue, wdim_bins, (wg,), *kw2.values())
                 events.append(EventDescription("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
