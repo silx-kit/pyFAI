@@ -284,8 +284,8 @@ class ParamFastPath(ParameterisedTestCase):
         delta_r = delta[..., 0].max()
         # issue with numerical stability of azimuthal position due to arctan(y,x)
         cnt_delta_a = (delta[..., 1] > self.epsilon_a).sum()
-        logger.info("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
-                    space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
+        logger.debug("TIMINGS\t meth: %s %s Python: %.3fs, Cython: %.3fs\t x%.3f\t delta_r:%s",
+                     space, data["detector"], t01 - t00, t11 - t10, (t01 - t00) / numpy.float64(t11 - t10), delta)
         self.assertTrue(delta_r < self.epsilon_r, "data=%s, space='%s' delta_r: %s" % (data, space, delta_r))
         self.assertTrue(cnt_delta_a < self.count_a, "data:%s, space: %s cnt_delta_a: %s" % (data, space, cnt_delta_a))
 
@@ -299,8 +299,8 @@ class ParamFastPath(ParameterisedTestCase):
         cy_res = geo.calc_pos_zyx(corners=True, use_cython=True)
         t2 = timer()
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
-        logger.info("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
-                    kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
+        logger.debug("TIMINGS\t meth: calc_pos_zyx %s, corner=True python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
+                     kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
         self.assertTrue(numpy.alltrue(delta.max() < self.epsilon), msg)
         logger.debug(msg)
@@ -317,8 +317,8 @@ class ParamFastPath(ParameterisedTestCase):
         cy_res = geo.deltaChi(use_cython=True)
         t2 = timer()
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
-        logger.info("TIMINGS\t meth: deltaChi %s python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
-                    kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
+        logger.debug("TIMINGS\t meth: deltaChi %s python t=%.3fs\t cython: t=%.3fs \t x%.3f delta %s",
+                     kwds["detector"], t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "delta=%s<%s, geo= \n%s" % (delta, self.epsilon, geo)
         self.assertTrue(numpy.alltrue(delta.max() < self.epsilon), msg)
         logger.debug(msg)
@@ -360,8 +360,8 @@ class ParamTestGeometry(ParameterisedTestCase):
         newret = getattr(geo, func)(self.d1, self.d2, path=varargs[1])
         t2 = timer()
         delta = abs(oldret - newret).max()
-        logger.info("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
-                    func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
+        logger.debug("TIMINGS\t %s meth: %s %.3fs\t meth: %s %.3fs, x%.3f delta %s",
+                     func, varargs[0], t1 - t0, varargs[1], t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "func: %s max delta=%.3f, geo:%s" % (func, delta, geo)
         self.assertAlmostEqual(delta, 0, 3, msg)
         logger.debug(msg)
@@ -376,8 +376,8 @@ class ParamTestGeometry(ParameterisedTestCase):
         cy_res = geo.calc_pos_zyx(None, self.d1, self.d2, corners=corners, use_cython=True)
         t2 = timer()
         delta = numpy.array([abs(py - cy).max() for py, cy in zip(py_res, cy_res)])
-        logger.info("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s",
-                    corners, t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
+        logger.debug("TIMINGS\t meth: calc_pos_zyx, corner=%s python t=%.3fs\t cython: t=%.3fs\t x%.3f delta %s",
+                     corners, t1 - t0, t2 - t1, (t1 - t0) / numpy.float64(t2 - t1), delta)
         msg = "delta=%s, geo= \n%s" % (delta, geo)
         self.assertTrue(numpy.allclose(numpy.vstack(cy_res), numpy.vstack(py_res)), msg)
         logger.debug(msg)
