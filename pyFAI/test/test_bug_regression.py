@@ -153,7 +153,7 @@ class TestBug211(unittest.TestCase):
 
         self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
         self.assertTrue(numpy.allclose(fabio.open(self.outfile).data, self.res),
-                     "pyFAI-average with quantiles gives good results")
+                        "pyFAI-average with quantiles gives good results")
 
 
 class TestBug232(unittest.TestCase):
