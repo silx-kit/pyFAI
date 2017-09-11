@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "11/09/2017"
 
 
 import unittest
@@ -231,18 +231,19 @@ class ParamFastPath(ParameterisedTestCase):
     epsilon_a = 1e-5
     count_a = 17
     # Here is a set of pathological cases ...
-    geometries = [  # Provides atol = 1.08e-5
-                  {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605, "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
-                  # Provides atol = 2.8e-5
-                  {'dist': 0.48459003559204783, 'poni2':-0.15784154756282065, 'poni1': 0.02783657100374448, 'rot3':-0.2901541134116695, 'rot1':-0.3927992588689394, 'rot2': 0.148115949280184, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
-                  # Provides atol = 3.67761e-05
-                  {'poni1':-0.22055143279015976, 'poni2':-0.11124668733292842, 'rot1':-0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus100k', 'dist': 0.7350926443000882},
-                  # Provides atol = 4.94719e-05
-                  {'poni2': 0.1010652698401574, 'rot3':-0.30578860159890153, 'rot1': 0.46240992613529186, 'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2':-0.027476969196682077, 'dist': 0.04711960678381288, 'poni1': 0.012745759325719641},
-                  # atol=2pi
-                  {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1':-0.33177239820033455, 'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118, 'detector': 'Pilatus100k', 'dist': 0.43544642285972124},
-                  {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077, 'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536, 'poni2': 0.05248001026597382, 'detector': 'Pilatus100k'}
-                  ]
+    geometries = [
+        # Provides atol = 1.08e-5
+        {"dist": 0.037759112584709535, "poni1": 0.005490358659182459, "poni2": 0.06625690275821605, "rot1": 0.20918568578536278, "rot2": 0.42161920581114365, "rot3": 0.38784171093239983, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+        # Provides atol = 2.8e-5
+        {'dist': 0.48459003559204783, 'poni2': -0.15784154756282065, 'poni1': 0.02783657100374448, 'rot3': -0.2901541134116695, 'rot1': -0.3927992588689394, 'rot2': 0.148115949280184, "wavelength": 1e-10, 'detector': 'Pilatus100k'},
+        # Provides atol = 3.67761e-05
+        {'poni1': -0.22055143279015976, 'poni2': -0.11124668733292842, 'rot1': -0.18105235367380956, 'wavelength': 1e-10, 'rot3': 0.2146474866836957, 'rot2': 0.36581323339171257, 'detector': 'Pilatus100k', 'dist': 0.7350926443000882},
+        # Provides atol = 4.94719e-05
+        {'poni2': 0.1010652698401574, 'rot3': -0.30578860159890153, 'rot1': 0.46240992613529186, 'wavelength': 1e-10, 'detector': 'Pilatus300k', 'rot2': -0.027476969196682077, 'dist': 0.04711960678381288, 'poni1': 0.012745759325719641},
+        # atol=2pi
+        {'poni1': 0.07803878450256929, 'poni2': 0.2601779472529494, 'rot1': -0.33177239820033455, 'wavelength': 1e-10, 'rot3': 0.2928945825578625, 'rot2': 0.2762729953307118, 'detector': 'Pilatus100k', 'dist': 0.43544642285972124},
+        {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1': -0.16145635108891077, 'poni1': 0.16271587645146157, 'rot2': -0.443426307059295, 'rot3': 0.40517456402269536, 'poni2': 0.05248001026597382, 'detector': 'Pilatus100k'}
+    ]
     for i in range(number_of_geometries):
         geo = {"dist": 0.01 + random.random(),
                "poni1": random.random() - 0.5,
@@ -337,12 +338,12 @@ class ParamTestGeometry(ParameterisedTestCase):
     pixels = {"detector": "Pilatus100k",
               "wavelength": 1e-10}
     geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
-                  {'dist': 1, 'rot1':-1, 'rot2': 1, 'rot3': 1},
-                  {'dist': 1, 'rot1':-.2, 'rot2': 1, 'rot3':-.1},
-                  {'dist': 1, 'rot1':-1, 'rot2':-.2, 'rot3': 1},
+                  {'dist': 1, 'rot1': -1, 'rot2': 1, 'rot3': 1},
+                  {'dist': 1, 'rot1': -.2, 'rot2': 1, 'rot3': -.1},
+                  {'dist': 1, 'rot1': -1, 'rot2': -.2, 'rot3': 1},
                   {'dist': 1, 'rot1': 1, 'rot2': 5, 'rot3': .4},
-                  {'dist': 1, 'rot1':-1.2, 'rot2': 1, 'rot3': 1},
-                  {'dist': 100, 'rot1':-2, 'rot2': 2, 'rot3': 1},
+                  {'dist': 1, 'rot1': -1.2, 'rot2': 1, 'rot3': 1},
+                  {'dist': 100, 'rot1': -2, 'rot2': 2, 'rot3': 1},
                   ]
     for g in geometries:
         g.update(pixels)
