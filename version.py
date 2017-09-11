@@ -48,16 +48,17 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/07/2017"
+__date__ = "11/09/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
-__all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion", "calc_hexversion"]
+__all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion",
+           "calc_hexversion", "citation"]
 
 RELEASE_LEVEL_VALUE = {"dev": 0,
                        "alpha": 10,
                        "beta": 11,
-                       "gamma": 11,
-                       "rc": 12,
+                       "gamma": 12,
+                       "rc": 13,
                        "final": 15}
 
 MAJOR = 0
@@ -108,6 +109,8 @@ def calc_hexversion(major=0, minor=0, micro=0, releaselevel="dev", serial=0):
 
 
 hexversion = calc_hexversion(*version_info)
+
+citation = "doi:10.1107/S1600576715004306"
 
 if __name__ == "__main__":
     print(version)
