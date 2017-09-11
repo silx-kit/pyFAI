@@ -450,8 +450,8 @@ class AzimuthalIntegrator(Geometry):
                                  range=tthRange)
         tthAxis = 90.0 * (b[1:] + b[:-1]) / pi
         I = val / self._nbPixCache[npt]
-        self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg",
+                      dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -506,8 +506,8 @@ class AzimuthalIntegrator(Geometry):
                                                pixelSize_in_Pos=pixelSize,
                                                empty=dummy if dummy is not None else self._empty)
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg",
+                      dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -664,7 +664,7 @@ class AzimuthalIntegrator(Geometry):
                                                  polarization=polarization,
                                                  )
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg", dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg", dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -802,8 +802,8 @@ class AzimuthalIntegrator(Geometry):
                                                   polarization=polarization,
                                                   )
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg",
+                      dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     # Default implementation:
@@ -1010,7 +1010,7 @@ class AzimuthalIntegrator(Geometry):
                     integr.unsetMask()
             tthAxis, I, _, = integr.execute(data)
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg")
+        self.__save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
     def setup_LUT(self, shape, npt, mask=None,
@@ -1733,7 +1733,7 @@ class AzimuthalIntegrator(Geometry):
                                                   weights=data,
                                                   range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
-        self.save2D(filename, I, bins2Th, binsChi)
+        self.__save2D(filename, I, bins2Th, binsChi)
 
         return I, bins2Th, binsChi
 
@@ -1849,7 +1849,7 @@ class AzimuthalIntegrator(Geometry):
                                                               empty=dummy if dummy is not None else self._empty)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi)
+        self.__save2D(filename, I, bins2Th, binsChi)
         return I, bins2Th, binsChi
 
     @deprecated
@@ -1993,8 +1993,8 @@ class AzimuthalIntegrator(Geometry):
                                                           polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
-                    polarization_factor=polarization_factor)
+        self.__save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
+                      polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
     @deprecated
@@ -2138,9 +2138,9 @@ class AzimuthalIntegrator(Geometry):
                                                            polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None,
-                    has_flat=flat is not None,
-                    polarization_factor=polarization_factor)
+        self.__save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None,
+                      has_flat=flat is not None,
+                      polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
     xrpd2 = xrpd2_splitBBox
@@ -3379,6 +3379,39 @@ class AzimuthalIntegrator(Geometry):
         :param normalization_factor: the monitor value
         :type normalization_factor: float
         """
+        self.__save1D(filename=filename,
+                      dim1=dim1,
+                      I=I,
+                      error=error,
+                      dim1_unit=dim1_unit,
+                      has_dark=has_dark,
+                      has_flat=has_flat,
+                      polarization_factor=polarization_factor,
+                      normalization_factor=normalization_factor)
+
+    def __save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+                 has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
+        """This method save the result of a 1D integration.
+
+        :param filename: the filename used to save the 1D integration
+        :type filename: str
+        :param dim1: the x coordinates of the integrated curve
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float
+        """
         if not filename:
             return
         writer = DefaultAiWriter(None, self)
@@ -3389,6 +3422,45 @@ class AzimuthalIntegrator(Geometry):
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None):
+        """This method save the result of a 2D integration.
+
+        Deprecated on 13/06/2017
+
+        :param filename: the filename used to save the 2D histogram
+        :type filename: str
+        :param dim1: the 1st coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param dim1: the 2nd coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float
+        """
+        self.__save2D(filename=filename,
+                      I=I,
+                      dim1=dim1,
+                      dim2=dim2,
+                      error=error,
+                      dim1_unit=dim1_unit,
+                      has_dark=has_dark,
+                      has_flat=has_flat,
+                      polarization_factor=polarization_factor,
+                      normalization_factor=normalization_factor)
+
+    def __save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+                 has_dark=False, has_flat=False,
+                 polarization_factor=None, normalization_factor=None):
         """This method save the result of a 2D integration.
 
         Deprecated on 13/06/2017
