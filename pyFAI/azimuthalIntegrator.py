@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "11/09/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -44,7 +44,7 @@ import tempfile
 import threading
 import gc
 import numpy
-from math import pi, log, ceil
+from math import pi, log
 from numpy import rad2deg
 from .geometry import Geometry
 from . import units
@@ -414,7 +414,7 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is correction for circular 
+        correct your data. If set to 0 there is correction for circular
         polarization, When set to None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
@@ -589,7 +589,7 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0, the circular polarization is used. 
+        correct your data. If set to 0, the circular polarization is used.
         When None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
@@ -747,7 +747,7 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0: circular polarization. 
+        correct your data. If set to 0: circular polarization.
         None for no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
@@ -768,7 +768,7 @@ class AzimuthalIntegrator(Geometry):
                                    dark=dark,
                                    flat=flat)
 
-        pos = self.cornerArray(data.shape)
+        pos = self.corner_array(data.shape, unit=units.TTH_RAD, scale=False)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
@@ -1931,7 +1931,7 @@ class AzimuthalIntegrator(Geometry):
 
         the polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0: circular polarization. When None there 
+        correct your data. If set to 0: circular polarization. When None there
         is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
@@ -2076,7 +2076,7 @@ class AzimuthalIntegrator(Geometry):
 
         the polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0: circular polarization. 
+        correct your data. If set to 0: circular polarization.
         When None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
@@ -2100,7 +2100,7 @@ class AzimuthalIntegrator(Geometry):
                                     dark=dark,
                                     flat=flat)
 
-        pos = self.cornerArray(data.shape)
+        pos = self.corner_array(data.shape, unit=units.TTH_RAD, scale=False)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
@@ -2539,53 +2539,52 @@ class AzimuthalIntegrator(Geometry):
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                         if variance is not None:
                             _, var1d, a, b = integr.integrate(variance,
-                                                                            solidAngle=None,
-                                                                            dummy=dummy,
-                                                                            delta_dummy=delta_dummy,
-                                                                            normalization_factor=1.0)
+                                                              solidAngle=None,
+                                                              dummy=dummy,
+                                                              delta_dummy=delta_dummy,
+                                                              normalization_factor=1.0)
                             with numpy.errstate(divide='ignore'):
                                 sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("splitpix" in method):
-#            if "full" in method:
-                if splitPixel is None:
-                    logger.warning("SplitPixelFull is not available,"
-                                " falling back on splitbbox histogram !")
-                    method = self.DEFAULT_METHOD
-                else:
-                    logger.debug("integrate1d uses SplitPixel implementation")
-                    pos = self.array_from_unit(shape, "corner", unit, scale=False)
-                    qAxis, I, sum_, count = splitPixel.fullSplit1D(pos=pos,
-                                                                   weights=data,
-                                                                   bins=npt,
-                                                                   pos0Range=radial_range,
-                                                                   pos1Range=azimuth_range,
-                                                                   dummy=dummy,
-                                                                   delta_dummy=delta_dummy,
-                                                                   mask=mask,
-                                                                   dark=dark,
-                                                                   flat=flat,
-                                                                   solidangle=solidangle,
-                                                                   polarization=polarization,
-                                                                   normalization_factor=normalization_factor
-                                                                   )
-                    if error_model == "azimuthal":
-                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
-                    if variance is not None:
-                        _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
-                                                                weights=variance,
-                                                                bins=npt,
-                                                                pos0Range=radial_range,
-                                                                pos1Range=azimuth_range,
-                                                                dummy=dummy,
-                                                                delta_dummy=delta_dummy,
-                                                                mask=mask,
-                                                                normalization_factor=1.0
-                                                                )
-                        with numpy.errstate(divide='ignore'):
-                            sigma = numpy.sqrt(a) / (b * normalization_factor)
-                        sigma[b == 0] = dummy if dummy is not None else self._empty
+            if splitPixel is None:
+                logger.warning("SplitPixelFull is not available,"
+                               " falling back on splitbbox histogram !")
+                method = self.DEFAULT_METHOD
+            else:
+                logger.debug("integrate1d uses SplitPixel implementation")
+                pos = self.array_from_unit(shape, "corner", unit, scale=False)
+                qAxis, I, sum_, count = splitPixel.fullSplit1D(pos=pos,
+                                                               weights=data,
+                                                               bins=npt,
+                                                               pos0Range=radial_range,
+                                                               pos1Range=azimuth_range,
+                                                               dummy=dummy,
+                                                               delta_dummy=delta_dummy,
+                                                               mask=mask,
+                                                               dark=dark,
+                                                               flat=flat,
+                                                               solidangle=solidangle,
+                                                               polarization=polarization,
+                                                               normalization_factor=normalization_factor
+                                                               )
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                if variance is not None:
+                    _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
+                                                            weights=variance,
+                                                            bins=npt,
+                                                            pos0Range=radial_range,
+                                                            pos1Range=azimuth_range,
+                                                            dummy=dummy,
+                                                            delta_dummy=delta_dummy,
+                                                            mask=mask,
+                                                            normalization_factor=1.0
+                                                            )
+                    with numpy.errstate(divide='ignore'):
+                        sigma = numpy.sqrt(a) / (b * normalization_factor)
+                    sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
@@ -2841,8 +2840,8 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 (vertical) 
-                and +1 (horizontal). 0 for circular polarization or random, 
+        :param polarization_factor: polarization factor between -1 (vertical)
+                and +1 (horizontal). 0 for circular polarization or random,
                 None for no correction
         :type polarization_factor: float
         :param dark: dark noise image
@@ -3136,11 +3135,11 @@ class AzimuthalIntegrator(Geometry):
                                 bins_azim = integr.outPos1
                     else:
                         I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
-                                                                                             solidAngle=solidangle,
-                                                                                             dummy=dummy,
-                                                                                             delta_dummy=delta_dummy,
-                                                                                             polarization=polarization,
-                                                                                             normalization_factor=normalization_factor)
+                                                                               solidAngle=solidangle,
+                                                                               dummy=dummy,
+                                                                               delta_dummy=delta_dummy,
+                                                                               polarization=polarization,
+                                                                               normalization_factor=normalization_factor)
 
         if (I is None) and ("splitpix" in method):
             if splitPixel is None:
@@ -3321,7 +3320,7 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 and +1. 
+        :param polarization_factor: polarization factor between -1 and +1.
                                0 for circular correction, None for no correction
         :type polarization_factor: float
         :param dark: dark noise image
@@ -3358,9 +3357,9 @@ class AzimuthalIntegrator(Geometry):
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """This method save the result of a 1D integration.
-        
+
         Deprecated on 13/06/2017
-        
+
         :param filename: the filename used to save the 1D integration
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
@@ -3379,8 +3378,6 @@ class AzimuthalIntegrator(Geometry):
         :type polarization_factor: float
         :param normalization_factor: the monitor value
         :type normalization_factor: float
-
-        
         """
         if not filename:
             return
@@ -3393,9 +3390,9 @@ class AzimuthalIntegrator(Geometry):
                has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None):
         """This method save the result of a 2D integration.
-        
+
         Deprecated on 13/06/2017
-        
+
         :param filename: the filename used to save the 2D histogram
         :type filename: str
         :param dim1: the 1st coordinates of the histogram
@@ -3416,8 +3413,6 @@ class AzimuthalIntegrator(Geometry):
         :type polarization_factor: float
         :param normalization_factor: the monitor value
         :type normalization_factor: float
-
-        
         """
         if not filename:
             return
@@ -3432,12 +3427,12 @@ class AzimuthalIntegrator(Geometry):
                   percentile=50, mask=None, normalization_factor=1.0, metadata=None):
         """Perform the 2D integration and filter along each row using a median
         filter
-        
+
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param npt_azim: number of azimuthal points
         :param correctSolidAngle: correct for solid angle of each pixel if True
-        :type correctSolidAngle: bool    
+        :type correctSolidAngle: bool
         :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
                0 for circular polarization or random,
                None for no correction,
@@ -3450,12 +3445,12 @@ class AzimuthalIntegrator(Geometry):
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
         :param percentile: which percentile use for cutting out
-                           percentil can be a 2-tuple to specify a region to 
+                           percentil can be a 2-tuple to specify a region to
                            average out
         :param mask: masked out pixels array
         :param normalization_factor: Value of a normalization monitor
         :type normalization_factor: float
-        :param metadata: any other metadata, 
+        :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :return: Integrate1D like result like
         """
@@ -3567,31 +3562,30 @@ class AzimuthalIntegrator(Geometry):
                    method="splitpixel", unit=units.Q,
                    thres=3, max_iter=5,
                    mask=None, normalization_factor=1.0, metadata=None):
-        """Perform the 2D integration and perform a sigm-clipping iterative filter 
-        along each row. see the doc of scipy.stats.sigmaclip for the options.
-        
+        """Perform the 2D integration and perform a sigm-clipping iterative
+        filter along each row. see the doc of scipy.stats.sigmaclip for the
+        options.
+
         :param data: input image as numpy array
         :param npt_rad: number of radial points
         :param npt_azim: number of azimuthal points
-        :param correctSolidAngle: correct for solid angle of each pixel if True
-        :type correctSolidAngle: bool    
-        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
-               0 for circular polarization or random,
-               None for no correction,
-               True for using the former correction
-        :type polarization_factor: float
-        :param dark: dark noise image
-        :type dark: ndarray
-        :param flat: flat field image
-        :type flat: ndarray
+        :param bool correctSolidAngle: correct for solid angle of each pixel
+                if True
+        :param float polarization_factor: polarization factor between -1 (vertical)
+                and +1 (horizontal).
+
+                - 0 for circular polarization or random,
+                - None for no correction,
+                - True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
         :param unit: unit to be used for integration
         :param method: pathway for integration and sort
-        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres. 
+        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
                 The threshold can be a 2-tuple with sigma_low and sigma_high.
         :param max_iter: maximum number of iterations        :param mask: masked out pixels array
-        :param normalization_factor: Value of a normalization monitor
-        :type normalization_factor: float
-        :param metadata: any other metadata, 
+        :param float normalization_factor: Value of a normalization monitor
+        :param metadata: any other metadata,
         :type metadata: JSON serializable dict
         :return: Integrate1D like result like
         """
@@ -3744,9 +3738,9 @@ class AzimuthalIntegrator(Geometry):
         :param method: pathway for integration
         :param poissonian: If True, add some poisonian noise to the data to make
                            then more realistic
-        :param grow_mask: grow mask in polar coordinated to accomodate pixel splitting algoritm
-        
-        :return: inpainting object which contains the restored image as .data 
+        :param grow_mask: grow mask in polar coordinated to accomodate pixel
+            splitting algoritm
+        :return: inpainting object which contains the restored image as .data
         """
         from .ext import inpainting
         dummy = -1
@@ -3834,15 +3828,15 @@ class AzimuthalIntegrator(Geometry):
     flatfield = property(get_flatfield, set_flatfield)
 
     def set_darkfiles(self, files=None, method="mean"):
-        """Moved to Detector
-        
+        """Set the dark current from one or mutliple files, avaraged
+        according to the method provided.
+
+        Moved to Detector.
+
         :param files: file(s) used to compute the dark.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
-
-        Set the dark current from one or mutliple files, avaraged
-        according to the method provided
         """
         self.detector.set_darkfiles(files, method)
 
@@ -3851,15 +3845,15 @@ class AzimuthalIntegrator(Geometry):
         return self.detector.darkfiles
 
     def set_flatfiles(self, files, method="mean"):
-        """Moved to Detector
-        
+        """Set the flat field from one or mutliple files, averaged
+        according to the method provided.
+
+        Moved to Detector.
+
         :param files: file(s) used to compute the flat-field.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
-
-        Set the flat field from one or mutliple files, averaged
-        according to the method provided
         """
         self.detector.set_flatfiles(files, method)
 
@@ -3881,4 +3875,3 @@ class AzimuthalIntegrator(Geometry):
                     except Exception as exeption:
                         logger.error(exeption)
     empty = property(get_empty, set_empty)
-
