@@ -7,7 +7,7 @@ In this tutorial we will see how to generate a file describing a
 experimental setup, especially the position of the detector.
 
 In pyFAI, calibrant are defined in a bunch of files available from
-`github <https://github.com/kif/pyFAI/tree/master/calibration>`__. Those
+`github <https://github.com/silx-kit/pyFAI/tree/master/calibration>`__. Those
 files are automatically installed with pyFAI and readily available from
 the programming interface, as described in the **Calibrant** tutorial.
 

@@ -168,7 +168,7 @@ class TestBug88SolidAngle(unittest.TestCase):
     """
     Test case for solid angle where data got modified inplace.
 
-    https://github.com/kif/pyFAI/issues/88
+    https://github.com/silx-kit/pyFAI/issues/88
     """
 
     def testSolidAngle(self):

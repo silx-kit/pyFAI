@@ -105,10 +105,3 @@ This tool has been developed for ESRF MX-beamlines where an acceptable
 calibration is usually present is the header of the image. PyFAI reads it and
 does a "recalib" on each of them before exporting a linear regression of all
 parameters versus this distance.
-
-Example:
---------
-
-
-.. command-output:: MX-calibrate --help
-    :nostderr:

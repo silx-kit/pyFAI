@@ -26,8 +26,10 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         Output/ destination of average image
   -m METHOD, --method METHOD
-                        Method used for averaging, can be 'mean'(default) or
-                        'min', 'max', 'median', 'sum', 'quantiles'
+                        Method used for averaging, can be 'mean' (default) or
+                        'min', 'max', 'median', 'sum', 'quantiles' , 'cutoff',
+                        'std'. Multiple filters can be defined with ','
+                        separator.
   -c CUTOFF, --cutoff CUTOFF
                         Take the mean of the average +/- cutoff * std_dev.
   -F FORMAT, --format FORMAT
@@ -37,8 +39,16 @@ optional arguments:
   -v, --verbose         switch to verbose/debug mode
   -q QUANTILES, --quantiles QUANTILES
                         average out between two quantiles -q 0.20-0.90
+  --monitor-name MONITOR_KEY
+                        Name of the monitor in the header of each input files.
+                        If defined the contribution of each input file is
+                        divided by the monitor. If the header does not contain
+                        or contains a wrong value, the contribution of the
+                        input file is ignored. On EDF files, values from
+                        'counter_pos' can accessed by using the expected
+                        mnemonic. For example 'counter/bmon'.
+  --quiet               Only error messages are printed out
 
-
-.. command-output:: pyFAI-average --help
-    :nostderr:
-
+It can also be used to merge many images from the same sample when using a
+small beam and reduce the spotty-ness of Debye-Sherrer rings. In this case the
+"max-filter" is usually recommended.
