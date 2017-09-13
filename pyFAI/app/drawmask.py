@@ -38,7 +38,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "08/09/2017"
 __satus__ = "Production"
 import os
 import numpy
@@ -47,6 +47,9 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 import fabio
 
+_logger = logging.getLogger("drawmask")
+
+BACKEND = None
 try:
     import silx
     if silx.version_info < (0, 2):
@@ -55,14 +58,27 @@ try:
     from silx.gui import qt
     BACKEND = "SILX"
 except ImportError:
+    _logger.error("Error while importing silx", exc_info=True)
+
+if BACKEND is None:
     try:
         import PyMca.MaskImageWidget as PyMcaMaskImageWidget
+        from pyFAI.gui import qt
+        BACKEND = "PYMCA"
     except ImportError:
+        _logger.error("Error while importing PyMca", exc_info=True)
+
+if BACKEND is None:
+    try:
         import PyMca5.PyMca.MaskImageWidget as PyMcaMaskImageWidget
-    from pyFAI.gui import qt
+        from pyFAI.gui import qt
+        BACKEND = "PYMCA"
+    except ImportError:
+        _logger.error("Error while importing PyMca", exc_info=True)
     BACKEND = "PYMCA"
-except:
-    BACKEND = None
+
+if BACKEND is None:
+    raise Exception("No supported backend found")
 
 import pyFAI.utils
 
@@ -70,8 +86,6 @@ try:
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
-
-_logger = logging.getLogger("drawmask")
 
 
 class AbstractMaskImageWidget(qt.QMainWindow):

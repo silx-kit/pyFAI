@@ -169,7 +169,7 @@ Install pyFAI from sources
 --------------------------
 
 The sources of pyFAI are available at https://github.com/silx-kit/pyFAI/releases
-the development is performed on https://github.com/kif/pyFAI
+the development is performed on https://github.com/silx-kit/pyFAI
 
 In addition to the Python interpreter, you will need *the* C compiler compatible
 with your Python interpreter, for example you can find the one for Python2.7 at:

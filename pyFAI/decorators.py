@@ -24,7 +24,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
+"""Bunch of useful decorators"""
 
 from __future__ import absolute_import, print_function, division
 
@@ -32,31 +32,96 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "11/09/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """Bunch of useful decorators"""
 
-import os
 import sys
 import time
-import traceback
+import functools
 import logging
+import traceback
 
 
 timelog = logging.getLogger("pyFAI.timeit")
-depreclog = logging.getLogger("DEPRECATION")
+depreclog = logging.getLogger("pyFAI.DEPRECATION")
+
+deprecache = set([])
 
 
-def deprecated(func):
-    def wrapper(*arg, **kw):
-        """
-        decorator that deprecates the use of a function
-        """
-        name = func.func_name if sys.version_info[0] < 3 else func.__name__
-        depreclog.warning("%s is Deprecated !!! %s", name, os.linesep.join([""] + traceback.format_stack()[:-1]))
-        return func(*arg, **kw)
-    return wrapper
+def deprecated(func=None, reason=None, replacement=None, since_version=None, only_once=False):
+    """
+    Decorator that deprecates the use of a function
+
+    :param str reason: Reason for deprecating this function
+        (e.g. "feature no longer provided",
+    :param str replacement: Name of replacement function (if the reason for
+        deprecating was to rename the function)
+    :param str since_version: First *silx* version for which the function was
+        deprecated (e.g. "0.5.0").
+    :param bool only_once: If true, the deprecation warning will only be
+        generated one time. Default is true.
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            name = func.func_name if sys.version_info[0] < 3 else func.__name__
+
+            deprecated_warning(type_='function',
+                               name=name,
+                               reason=reason,
+                               replacement=replacement,
+                               since_version=since_version,
+                               only_once=only_once,
+                               skip_backtrace_count=1)
+            return func(*args, **kwargs)
+        return wrapper
+    if func is not None:
+        return decorator(func)
+    return decorator
+
+
+def deprecated_warning(type_, name, reason=None, replacement=None,
+                       since_version=None, only_once=False,
+                       skip_backtrace_count=0):
+    """
+    Decorator that deprecates the use of a function
+
+    :param str type_: Module, function, class ...
+    :param str reason: Reason for deprecating this function
+        (e.g. "feature no longer provided",
+    :param str replacement: Name of replacement function (if the reason for
+        deprecating was to rename the function)
+    :param str since_version: First *silx* version for which the function was
+        deprecated (e.g. "0.5.0").
+    :param bool only_once: If true, the deprecation warning will only be
+        generated one time. Default is true.
+    :param int skip_backtrace_count: Amount of last backtrace to ignore when
+        logging the backtrace
+    """
+    if not depreclog.isEnabledFor(logging.WARNING):
+        # Avoid computation when it is not logged
+        return
+
+    msg = "%s, %s is deprecated"
+    if since_version is not None:
+        msg += " since silx version %s" % since_version
+    msg += "!"
+    if reason is not None:
+        msg += " Reason: %s." % reason
+    if replacement is not None:
+        msg += " Use '%s' instead." % replacement
+    msg = msg + "\n%s"
+    selection = slice(-2 - skip_backtrace_count, -1 - skip_backtrace_count)
+    backtrace = "".join(traceback.format_stack()[selection])
+    backtrace = backtrace.rstrip()
+    if only_once:
+        data = (msg, type_, name, backtrace)
+        if data in deprecache:
+            return
+        else:
+            deprecache.add(data)
+    depreclog.warning(msg, type_, name, backtrace)
 
 
 def timeit(func):

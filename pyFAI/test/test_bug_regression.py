@@ -29,7 +29,7 @@
 """test suite for non regression on some bugs.
 
 Please refer to their respective bug number
-https://github.com/kif/pyFAI/issues
+https://github.com/silx-kit/pyFAI/issues
 """
 
 
@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "11/09/2017"
 
 import sys
 import os
@@ -116,6 +116,10 @@ class TestBug211(unittest.TestCase):
             self.image_files.append(fn)
         self.res = res / 3.0
         self.exe, self.env = UtilsTest.script_path("pyFAI-average")
+        # It is not anymore a script, but a module
+        if not os.path.exists(self.exe):
+            import pyFAI.app.average
+            self.exe = pyFAI.app.average.__file__
 
     def tearDown(self):
         for fn in self.image_files:
@@ -127,10 +131,6 @@ class TestBug211(unittest.TestCase):
         self.exe = self.env = None
 
     def test_quantile(self):
-        if not os.path.exists(self.exe):
-            logger.error("Error with executable: %s, not found. Skipping test", self.exe)
-            return
-
         command_line = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
 
         p = subprocess.Popen(command_line,
@@ -153,7 +153,7 @@ class TestBug211(unittest.TestCase):
 
         self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
         self.assertTrue(numpy.allclose(fabio.open(self.outfile).data, self.res),
-                     "pyFAI-average with quantiles gives good results")
+                        "pyFAI-average with quantiles gives good results")
 
 
 class TestBug232(unittest.TestCase):

@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "08/09/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1750,9 +1750,9 @@ class Geometry(object):
 
     def rotation_matrix(self, param=None):
         """Compute and return the detector tilts as a single rotation matrix
-        
-        Corresponds to rotations about axes 1 then 2 then 3(=> 0 later on)
-         For those using spd (PB = Peter Boesecke), tilts relate to
+
+        Corresponds to rotations about axes 1 then 2 then 3 (=> 0 later on)
+        For those using spd (PB = Peter Boesecke), tilts relate to
         this system (JK = Jerome Kieffer) as follows:
         JK1 = PB2 (Y)
         JK2 = PB1 (X)
@@ -1769,8 +1769,8 @@ class Geometry(object):
 
         :param param: list of geometry parameters, defaults to self.param
                       uses elements [3],[4],[5]
-        :type: list of floats
-        :return rotation matrix
+        :type param: list of float
+        :return: rotation matrix
         :rtype: 3x3 float array
         """
         if param is None:

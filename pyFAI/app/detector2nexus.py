@@ -35,9 +35,10 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "08/09/2017"
 __status__ = "development"
 
+import sys
 import logging
 import numpy
 import fabio
@@ -80,9 +81,9 @@ def main():
     parser.add_argument("-s", "--splinefile", dest="splinefile", type=str,
                         default=None,
                         help="Geometric distortion file from FIT2D")
-    parser.add_argument("-dx", "--x-corr", dest="dx", type=str, default=None,
+    parser.add_argument("--dx", "--x-corr", dest="dx", type=str, default=None,
                         help="Geometric correction for pilatus")
-    parser.add_argument("-dy", "--y-corr", dest="dy", type=str, default=None,
+    parser.add_argument("--dy", "--y-corr", dest="dy", type=str, default=None,
                         help="Geometric correction for pilatus")
     parser.add_argument("-p", "--pixel", dest="pixel", type=str, default=None,
                         help="pixel size (comma separated): x,y")
@@ -94,10 +95,16 @@ def main():
                         help="Flat field correction")
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False,
                         help="switch to verbose/debug mode")
-#     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
-#                         help="Files to be processed")
+    # parser.add_argument("args", metavar='FILE', type=str, nargs='+',
+    #                     help="Files to be processed")
 
-    options = parser.parse_args()
+    argv = sys.argv
+    # hidden backward compatibility for -dx and -dy
+    # A short option only expect a single char
+    argv = ["-" + a if a.startswith("-dx") else a for a in argv]
+    argv = ["-" + a if a.startswith("-dy") else a for a in argv]
+    print(argv)
+    options = parser.parse_args(args=argv[1:])
 
     if options.verbose:
         logger.setLevel(logging.DEBUG)

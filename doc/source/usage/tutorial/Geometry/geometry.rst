@@ -500,6 +500,7 @@ following figure:
    :alt: test
 
    PONI figure
+
 It may appear strange to have (x\_1, x\_2, x\_3) indirect indirect but
 this has been made in such a way chi, the azimuthal angle, is 0 along
 x\_2 and 90\_deg along x\_1 (and not vice-versa).

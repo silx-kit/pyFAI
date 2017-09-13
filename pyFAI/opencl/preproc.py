@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "08/09/2017"
+__date__ = "11/09/2017"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -334,7 +334,7 @@ class OCL_Preproc(OpenclProcessing):
             events.append(EventDescription("copy %s" % dest, copy_image))
         else:
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
-            kernel = getattr(self.program, self.mapping[data.dtype.type])
+            kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
             events += [EventDescription("copy raw", dest), EventDescription("cast to float", cast_to_float)]
         if self.profile:
@@ -387,7 +387,7 @@ class OCL_Preproc(OpenclProcessing):
             kwargs["normalization_factor"] = numpy.float32(normalization_factor)
             if (kernel_name == "corrections3") and (self.on_device.get("dark_variance") is not None):
                 kwargs["do_dark_variance"] = do_dark
-            kernel = self.kernels[kernel_name]
+            kernel = self.kernels.get_kernel(kernel_name)
             evt = kernel(self.queue, (self.size,), None, *list(kwargs.values()))
             if kernel_name.startswith("corrections3"):
                 dest = numpy.empty(self.on_device.get("image").shape + (3,), dtype=numpy.float32)

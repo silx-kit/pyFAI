@@ -30,16 +30,14 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "08/09/2017"
+__date__ = "11/09/2017"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 import numpy
 from collections import OrderedDict
-from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
-from ..ext.splitBBoxLUT import HistoBBox1d
-from .utils import concatenate_cl_kernel
+from .common import ocl, pyopencl
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -123,7 +121,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
         self.buffers = [BufferDescription(i.name, i.size * self.size, i.dtype, i.flags)
                         for i in self.__class__.buffers]
         self.buffers += [BufferDescription("lut", self.bins * self.lut_size,
-                                     [("bins", numpy.float32), ("lut_size", numpy.int32)], mf.READ_ONLY),
+                                           [("bins", numpy.float32),
+                                            ("lut_size", numpy.int32)], mf.READ_ONLY),
                          BufferDescription("outData", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("outCount", self.bins, numpy.float32, mf.WRITE_ONLY),
                          BufferDescription("outMerge", self.bins, numpy.float32, mf.WRITE_ONLY),
@@ -238,14 +237,13 @@ class OCL_LUT_Integrator(OpenclProcessing):
             events.append(EventDescription("copy %s" % dest, copy_image))
         else:
             copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
-            kernel = getattr(self.program, self.mapping[data.dtype.type])
+            kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
             cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
             events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
         if self.profile:
             self.events += events
         if checksum is not None:
             self.on_device[dest] = checksum
-
 
     def integrate(self, data, dummy=None, delta_dummy=None,
                   dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
@@ -277,7 +275,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            memset = self.kernels["memset_out"](self.queue, self.wdim_bins, self.workgroup_size, *list(self.cl_kernel_args["memset_out"].values()))
+            memset = self.kernels.memset_out(self.queue, self.wdim_bins, self.workgroup_size, *list(self.cl_kernel_args["memset_out"].values()))
             events.append(EventDescription("memset", memset))
             kw1 = self.cl_kernel_args["corrections"]
             kw2 = self.cl_kernel_args["lut_integrate"]
@@ -350,7 +348,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw1["do_absorption"] = do_absorption
 
-            ev = self.kernels["corrections"](self.queue, self.wdim_data, self.workgroup_size, *list(kw1.values()))
+            ev = self.kernels.corrections(self.queue, self.wdim_data, self.workgroup_size, *list(kw1.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -361,7 +359,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                     self.events += events
                 ev.wait()
                 return image
-            integrate = self.kernels["lut_integrate"](self.queue, self.wdim_bins, self.workgroup_size, *list(kw2.values()))
+            integrate = self.kernels.lut_integrate(self.queue, self.wdim_bins, self.workgroup_size, *list(kw2.values()))
             events.append(EventDescription("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)

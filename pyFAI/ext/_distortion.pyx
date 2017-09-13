@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "01/09/2017"
+__date__ = "08/09/2017"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -36,7 +36,7 @@ import cython
 cimport numpy
 import numpy
 from cython cimport view, floating
-from cython.parallel import prange#, threadlocal
+from cython.parallel import prange
 from cpython.ref cimport PyObject, Py_XDECREF
 from libc.string cimport memset, memcpy
 from libc.math cimport floor, ceil, fabs, copysign
@@ -49,15 +49,13 @@ import time
 logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..utils import expand2d
-from ..decorators import timeit
 try:
     from ..third_party import six
 except ImportError:
     import six
 import fabio
 
-#include "sparse_common.pxi"
-from sparse_utils cimport ArrayBuilder, lut_point 
+from sparse_utils cimport ArrayBuilder, lut_point
 from sparse_utils import ArrayBuilder, dtype_lut
 # cdef struct lut_point:
 #     int idx
@@ -120,7 +118,7 @@ cdef inline void integrate(float[:, ::1] box, float start, float stop, float slo
     cdef:
         int i, h = 0
         float P, dP, segment_area, abs_area, dA
-        #, sign
+        # , sign
     if start < stop:  # positive contribution
         P = ceil(start)
         dP = P - start
@@ -407,9 +405,9 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
     outMax[:, :] = 0
     buffer = numpy.empty((delta0, delta1), dtype=numpy.float32)
     buffer_nbytes = buffer.nbytes
-    if (size == 0): # fix 271
-        raise RuntimeError("The look-up table has dimension 0 which is a non-sense."
-                           + "Did you mask out all pixel or is your image out of the geometry range ?")
+    if (size == 0):  # fix 271
+        raise RuntimeError("The look-up table has dimension 0 which is a non-sense." +
+                           " Did you mask out all pixel or is your image out of the geometry range?")
     lut = view.array(shape=(shape0, shape1, size), itemsize=sizeof(lut_point), format="if")
     lut_total_size = shape0 * shape1 * size * sizeof(lut_point)
     memset(&lut[0, 0, 0], 0, lut_total_size)
@@ -421,7 +419,7 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
             for j in range(shape1):
                 if do_mask and mask[i, j]:
                     continue
-                #reset buffer
+                # reset buffer
                 buffer[:, :] = 0.0
 
                 A0 = pos[i, j, 0, 0]
@@ -795,14 +793,14 @@ def calc_openmp(float[:, :, :, ::1] pos not None,
                         continue
 
                     bin_number = ml * shape_out1 + nl
-#                     with gil: #Use the gil to perform an atomic operation
+                    # with gil: #Use the gil to perform an atomic operation
                     counter += 1
                     pixel_count[bin_number] += 1
                     if counter >= large_size:
                         with gil:
                             raise RuntimeError("Provided temporary space for storage is not enough. " +
-                                               "Please increase bins_per_pixel=%s. "%bins_per_pixel +
-                                               "The suggested value is %i or greater."%ceil(1.1*bins_per_pixel*size_in/idx))
+                                               "Please increase bins_per_pixel=%s. " % bins_per_pixel +
+                                               "The suggested value is %i or greater." % ceil(1.1 * bins_per_pixel * size_in / idx))
                     idx_pixel[counter] += idx
                     idx_bin[counter] += bin_number
                     large_data[counter] += value
@@ -1289,10 +1287,10 @@ class Distortion(object):
 
     def demo_ArrayBuilder(self, int n=10):
         "this just ensures the shared C-library works"
-        cdef: 
+        cdef:
             ArrayBuilder ab
             int i
-         
+
         ab = ArrayBuilder(n)
         for i in range(n):
             ab._append(i, i, 1.0)
@@ -1341,7 +1339,6 @@ class Distortion(object):
                 lout[i] += lin[idx] * coef
         return out[:img_shape[0], :img_shape[1]]
 
-    @timeit
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)

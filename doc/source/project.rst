@@ -240,7 +240,7 @@ The builds cannot yet be retrieved with Travis-CI, but manylinux-wheels are on t
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/kif/pyFAI>`_, 64 bits computer with Python 2.7 and 3.4.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 2.7 and 3.4.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
 Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
 

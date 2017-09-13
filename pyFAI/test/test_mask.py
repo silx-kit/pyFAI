@@ -245,7 +245,7 @@ class TestMask(unittest.TestCase):
 
 class TestMaskBeamstop(unittest.TestCase):
     """
-    Test for https://github.com/kif/pyFAI/issues/76
+    Test for https://github.com/silx-kit/pyFAI/issues/76
     """
     dataFile = "mock.tif"
 
