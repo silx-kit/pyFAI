@@ -4,12 +4,12 @@ global-exclude *.pyc
 global-exclude *.pyo
 global-exclude .git
 global-exclude .ipynb_checkpoints
-
+recursive-include package/debian? *
 recursive-include pyFAI/ext  *.c *.h *.pyx *.pxd *.pxi
 recursive-include pyFAI *.py
 recursive-exclude pyFAI *.pyc
 recursive-include pyFAI/resources/openCL *.cl *.h
-recursive-include pyFAI/resources/gui *.ui
+recursive-include pyFAI/resources/gui *.ui *.png *.svg
 recursive-include pyFAI/resources/calibration *.D
 recursive-include dll *.dll
 recursive-exclude benchmark *
@@ -27,10 +27,6 @@ include CHANGELOG.txt
 include TODO.txt
 include copyright
 include requirements.txt
-recursive-include scripts *
-recursive-exclude scripts *.*
-recursive-include package/debian *
-
 
 #Include doc without checkpoints
 recursive-include doc *
