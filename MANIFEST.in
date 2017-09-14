@@ -19,9 +19,7 @@ exclude pyFAI.egg-info
 include stdeb.cfg
 include setup.cfg
 include MANIFEST.in
-include build-deb7.sh
-include build-deb8.sh
-include build-msi.bat
+include build-deb.sh
 include run_tests.py
 include bootstrap.py
 include README.rst
