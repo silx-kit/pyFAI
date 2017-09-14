@@ -1,9 +1,23 @@
 :Author: Jérôme Kieffer
-:Date: 20/07/2017
+:Date: 14/09/2017
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.14.2: 14/09/2017
+------------------
+* Fix seg-fault with manylinux1 wheels, in fastcrc module (thanks Thomas)
+* Fix Qt4-Qt5 compatibility (thanks Vadim)
+* Easier to understand geometry transformation (thanks Jon)
+* Lower memory consumption, better cache management
+* Unified debian packaging working for 6->9
+* New detector: Mythen & CirPad (thanks Fred)
+* Clean up debug code which avoid to use pyFAI-calib2
+* pyFAI-calib2 now expect fabio >= 0.5
+* Fix issue with metadata saving in 1d
+* Fix performance regression with pyopencl >2015.2 (Thanks Andreas)
+* pyFAI saxs and waxs scripts guess now the binning of the detector (thanks Fred).
 
 0.14.1: 25/07/2017
 ------------------

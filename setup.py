@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/05/2017"
+__date__ = "04/09/2017"
 __status__ = "stable"
 
 
@@ -115,6 +115,7 @@ classifiers = ["Development Status :: 5 - Production/Stable",
 # version.py #
 # ########## #
 
+
 class build_py(_build_py):
     """
     Enhanced build_py which copies version.py to <PROJECT>._version.py
@@ -187,6 +188,8 @@ class BuildMan(Command):
         scripts.extend(console_scripts)
         scripts.extend(gui_scripts)
         for script in scripts:
+            # Remove ending extra dependencies
+            script = script.split("[")[0]
             elements = script.split("=")
             target_name = elements[0].strip()
             elements = elements[1].split(":")
@@ -319,6 +322,7 @@ else:
 # ############################# #
 # numpy.distutils Configuration #
 # ############################# #
+
 
 def configuration(parent_package='', top_path=None):
     """Recursive construction of package info to be used in setup().
@@ -544,6 +548,16 @@ class BuildExt(build_ext):
                                       for f in ext.extra_compile_args]
             ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
                                    for f in ext.extra_link_args]
+#
+        elif self.compiler.compiler_type == 'unix':
+            # directly linked to bug #649: use local function, without runtime resolution
+            # ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
+            # Unfortunatly not available on Manylinux1 platform
+            if sys.version_info[0] <= 2:
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) void ' ''')
+            else:  # Python3
+                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) PyObject* ' ''')
+            # ext.extra_link_args.append("-fvisibility=hidden")
 
     def build_extensions(self):
         for ext in self.extensions:
@@ -724,7 +738,8 @@ def get_project_configuration(dry_run):
         "scipy",
         "numexpr",
         # for the use of pkg_resources on script launcher
-        "setuptools"]
+        "setuptools",
+        "silx"]
 
     setup_requires = [
         "setuptools",
@@ -742,6 +757,10 @@ def get_project_configuration(dry_run):
         ]
     }
 
+    extras_require = {
+        'calib2': ["fabio>=0.5"],
+    }
+
     console_scripts = [
         'check_calib = pyFAI.app.check_calib:main',
         'detector2nexus = pyFAI.app.detector2nexus:main',
@@ -752,7 +771,7 @@ def get_project_configuration(dry_run):
         'pyFAI-average = pyFAI.app.average:main',
         'pyFAI-benchmark = pyFAI.app.benchmark:main',
         'pyFAI-calib = pyFAI.app.calib:main',
-        'pyFAI-calib2 = pyFAI.app.calib2:main',
+        'pyFAI-calib2 = pyFAI.app.calib2:main [calib2]',
         'pyFAI-drawmask = pyFAI.app.drawmask:main',
         'pyFAI-integrate = pyFAI.app.integrate:main',
         'pyFAI-recalib = pyFAI.app.recalib:main',
@@ -808,6 +827,7 @@ def get_project_configuration(dry_run):
                         package_data=package_data,
                         zip_safe=False,
                         entry_points=entry_points,
+                        extras_require=extras_require,
                         )
     return setup_kwargs
 

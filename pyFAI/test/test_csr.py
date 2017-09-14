@@ -35,7 +35,7 @@ from __future__ import absolute_import, division, print_function
 
 import unittest
 import numpy
-from .utilstest import UtilsTest, getLogger, diff_img
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 from .. import opencl
 from ..ext import splitBBox
@@ -84,6 +84,10 @@ class ParameterisedTestCase(unittest.TestCase):
 
 
 class ParamOpenclCSR(ParameterisedTestCase):
+
+    def setUp(self):
+        if not UtilsTest.opencl:
+            self.skipTest("User request to skip OpenCL tests")
 
     def test_csr(self):
         workgroup_size = self.param

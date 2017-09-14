@@ -125,11 +125,12 @@ For full functionality of pyFAI the following modules need to be installed.
     * numpy 		- 	http://www.numpy.org
     * scipy 		- 	http://www.scipy.org
     * matplotlib 	- 	http://matplotlib.sourceforge.net/
-    * fabio		-	http://sourceforge.net/projects/fable/files/fabio/
-    * h5py		-  	http://www.h5py.org/
+    * fabio 		-	http://sourceforge.net/projects/fable/files/fabio/
+    * h5py	    	-  	http://www.h5py.org/
     * pyopencl		-	http://mathema.tician.de/software/pyopencl/
-    * python-qt4	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
+    * python-pyqt5	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
     * silx          -   http://www.silx.org
+    * numexpr       -   https://github.com/pydata/numexpr
 
 Those dependencies can simply be installed by::
 
@@ -154,12 +155,15 @@ The extra Ubuntu packages needed are:
     * python-dev
     * python-fabio
     * python-pyopencl
-    * python-qt4
+    * python-pyqt5
     * python-silx
+    * python-numexpr
 
+and the same with python3
 using apt-get these can be installed as::
 
-    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-qt4 python-silx
+    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-pyqt5 python-silx python-numexpr
+    sudo apt-get install python3-numpy python3-scipy python3-matplotlib  python3-dev python3-fabio python3-pyopencl python3-pyqt5 python3-silx python3-numexpr 
 
 MacOSX
 ------
@@ -173,7 +177,7 @@ before running::
 
     pip install cython --user --upgrade
     rm pyFAI/ext/histogram.c
-    python setup.py build --no-openmp
+    python setup.py build --force-cython --no-openmp
 
 
 Windows
@@ -206,6 +210,7 @@ Contributors
 ------------
 
  * Frédéric-Emmanuel Picca (Soleil)
+ * Thomas Vincent (ESRF)
  * Dimitris Karkoulis (ESRF)
  * Aurore Deschildre (ESRF)
  * Giannis Ashiotis (ESRF)

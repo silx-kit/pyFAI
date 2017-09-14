@@ -78,7 +78,7 @@ Introduction to diffraction image analysis using the notebook
 All the tutorials in pyFAI are based on the notebook and if you wish to
 practice the exercises, you can download the notebook files (.ipynb)
 from
-`Github <https://github.com/kif/pyFAI/tree/master/doc/source/usage/tutorial>`__
+`Github <https://github.com/silx-kit/pyFAI/tree/master/doc/source/usage/tutorial>`__
 
 Load and display diffraction images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

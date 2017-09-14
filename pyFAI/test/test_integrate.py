@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2017"
+__date__ = "06/09/2017"
 
 
 import tempfile
@@ -70,6 +70,9 @@ class TestIntegrate1D(unittest.TestCase):
         self.ai = AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=Pilatus1M())
         self.ai.wavelength = 1e-10
         self.Rmax = 3
+        self.methods = ["numpy", "cython", "BBox", "splitpixel", "lut"]
+        if UtilsTest.opencl:
+            self.methods.append("lut_ocl")
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -77,7 +80,7 @@ class TestIntegrate1D(unittest.TestCase):
 
     def testQ(self):
         res = {}
-        for m in ("numpy", "cython", "BBox", "splitpixel", "lut", "lut_ocl"):
+        for m in self.methods:
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, radial_range=(0.5, 5.8))
         for a in res:
             for b in res:
@@ -91,7 +94,7 @@ class TestIntegrate1D(unittest.TestCase):
 
     def testR(self):
         res = {}
-        for m in ("numpy", "cython", "BBox", "splitpixel", "lut", "lut_ocl"):
+        for m in self.methods:
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, unit="r_mm", radial_range=(20, 150))
         for a in res:
             for b in res:
@@ -105,7 +108,7 @@ class TestIntegrate1D(unittest.TestCase):
 
     def test2th(self):
         res = {}
-        for m in ("numpy", "cython", "BBox", "splitpixel", "lut", "lut_ocl"):
+        for m in self.methods:
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, unit="2th_deg", radial_range=(0.5, 5.5))
         for a in res:
             for b in res:

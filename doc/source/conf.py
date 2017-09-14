@@ -18,6 +18,15 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
+project = u'pyFAI'
+try:
+    import pyFAI
+    project_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+    build_dir = os.path.abspath(pyFAI.__file__)
+    if not build_dir.startswith(project_dir):
+        raise RuntimeError("%s looks to come from the system. Fix your PYTHONPATH and restart sphinx." % project)
+except ImportError:
+    raise RuntimeError("%s is not on the path. Fix your PYTHONPATH and restart sphinx." % project)
 
 # -- General configuration -----------------------------------------------------
 
@@ -60,21 +69,10 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# Configure the environment to be able to use sphinxcontrib.programoutput
-# NOTE: Must be done after pyFAI._version import which at the end of the end imports PyMCA
-# Importing PyMCA redefine and reorder PYTHONPATH
-import glob
-root_dir = os.path.abspath("../..")
-build_dir = glob.glob('../../build/lib*')
-
-sys.path.insert(1, build_dir[0])
-os.environ["PYTHONPATH"] = os.path.abspath(build_dir[0]) + os.pathsep + os.environ.get("PYTHONPATH", "")
-
 # General information about the project.
-project = u'pyFAI'
 from pyFAI._version import strictversion, version, __date__ as pyfai_date
 year = pyfai_date.split("/")[-1]
-copyright = u'2012-%s, Jérôme Kieffer' % (year)
+copyright = u'2012-%s, Data analysis unit, European Synchrotron Radiation Facility, Grenoble' % (year)
 
 
 # The version info for the project you're documenting, acts as replacement for
@@ -154,7 +152,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = []
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

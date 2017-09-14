@@ -34,7 +34,7 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "19/07/2017"
+__date__ = "11/09/2017"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -226,7 +226,7 @@ class Separator(OpenclProcessing):
                 kargs["src_size"] = numpy.int32(data.size),
                 wg = min(32, self.block_size)
                 size = ((self.npt_height * self.npt_width) + wg - 1) & ~(wg - 1)
-                evt = self.program.copy_pad(self.queue, (size,), (wg,), *kargs.values())
+                evt = self.kernels.copy_pad(self.queue, (size,), (wg,), *kargs.values())
                 events.append(("copy_pad", evt))
             else:
                 data_big = numpy.zeros((self.npt_height, self.npt_width), dtype=numpy.float32) + dummy
@@ -246,7 +246,7 @@ class Separator(OpenclProcessing):
         local_mem = kargs["l_data"]
         if not local_mem or local_mem.size < ws * 32:
             kargs["l_data"] = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
-        evt = self.program.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *kargs.values())
+        evt = self.kernels.bsort_vertical(self.queue, (ws, self.npt_width), (ws, 1), *kargs.values())
         events.append(("bsort_vertical", evt))
 
         if self.profile:
@@ -294,7 +294,7 @@ class Separator(OpenclProcessing):
         local_mem = kargs["l_data"]
         if not local_mem or local_mem.size < ws * 32:
             kargs["l_data"] = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
-        evt = self.program.bsort_horizontal(self.queue, (self.npt_height, ws), (1, ws), *kargs.values())
+        evt = self.kernels.bsort_horizontal(self.queue, (self.npt_height, ws), (1, ws), *kargs.values())
         events.append(("bsort_horizontal", evt))
 
         if self.profile:
@@ -322,7 +322,7 @@ class Separator(OpenclProcessing):
             kargs = self.cl_kernel_args["filter_vertical"]
             kargs["dummy"] = dummy
             kargs['quantile'] = numpy.float32(quantile)
-            evt = self.program.filter_vertical(self.queue, (ws,), (wg,), *kargs.values())
+            evt = self.kernels.filter_vertical(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("filter_vertical", evt))
         return self.cl_mem["vector_vertical"]
 
@@ -346,7 +346,7 @@ class Separator(OpenclProcessing):
             kargs = self.cl_kernel_args["filter_horizontal"]
             kargs["dummy"] = dummy
             kargs["quantile"] = numpy.float32(quantile)
-            evt = self.program.filter_horizontal(self.queue, (ws,), (wg,), *kargs.values())
+            evt = self.kernels.filter_horizontal(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("filter_horizontal", evt))
         return self.cl_mem["vector_horizontal"]
 
@@ -372,7 +372,7 @@ class Separator(OpenclProcessing):
             kargs["dummy"] = dummy
             kargs["lower_quantile"] = numpy.float32(min(quantiles))
             kargs["upper_quantile"] = numpy.float32(max(quantiles))
-            evt = self.program.trimmed_mean_vertical(self.queue, (ws,), (wg,), *kargs.values())
+            evt = self.kernels.trimmed_mean_vertical(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("trimmed_mean_vertical", evt))
         return self.cl_mem["vector_vertical"]
 
@@ -398,7 +398,7 @@ class Separator(OpenclProcessing):
             kargs["dummy"] = dummy
             kargs["lower_quantile"] = numpy.float32(min(quantiles))
             kargs["upper_quantile"] = numpy.float32(max(quantiles))
-            evt = self.program.trimmed_mean_horizontal(self.queue, (ws,), (wg,), *kargs.values())
+            evt = self.kernels.trimmed_mean_horizontal(self.queue, (ws,), (wg,), *kargs.values())
             self.events.append(("trimmed_mean_horizontal", evt))
         return self.cl_mem["vector_horizontal"]
 
@@ -420,7 +420,7 @@ class Separator(OpenclProcessing):
             local_mem = kargs["l_data"]
             if not local_mem or local_mem.size < wg * 20:
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
-            evt = self.program.mean_std_vertical(self.queue, ws, (wg, 1), *kargs.values())
+            evt = self.kernels.mean_std_vertical(self.queue, ws, (wg, 1), *kargs.values())
             self.events.append(("mean_std_vertical", evt))
         return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
 
@@ -441,7 +441,7 @@ class Separator(OpenclProcessing):
             local_mem = kargs["l_data"]
             if not local_mem or local_mem.size < wg * 20:
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
-            evt = self.program.mean_std_horizontal(self.queue, ws, (1, wg), *kargs.values())
+            evt = self.kernels.mean_std_horizontal(self.queue, ws, (1, wg), *kargs.values())
             self.events.append(("mean_std_horizontal", evt))
         return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]
 
@@ -468,7 +468,7 @@ class Separator(OpenclProcessing):
             local_mem = kargs["l_data"]
             if not local_mem or local_mem.size < wg * 20:
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
-            evt = self.program.sigma_clip_vertical(self.queue, ws, (wg, 1), *kargs.values())
+            evt = self.kernels.sigma_clip_vertical(self.queue, ws, (wg, 1), *kargs.values())
             self.events.append(("sigma_clip_vertical", evt))
         return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
 
@@ -493,6 +493,6 @@ class Separator(OpenclProcessing):
             local_mem = kargs["l_data"]
             if not local_mem or local_mem.size < wg * 20:
                 kargs["l_data"] = pyopencl.LocalMemory(wg * 20)  # 5 float per thread
-            evt = self.program.sigma_clip_horizontal(self.queue, ws, (1, wg), *kargs.values())
+            evt = self.kernels.sigma_clip_horizontal(self.queue, ws, (1, wg), *kargs.values())
             self.events.append(("sigma_clip_horizontal", evt))
         return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]

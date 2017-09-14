@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "25/08/2017"
 
 
 import unittest
@@ -71,6 +71,7 @@ class TestHalfCCD(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = self.ref = None
 
+    @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def test_pos_lut(self):
         """
         Compare position from _distortion.Distortion and distortion.Distortion.

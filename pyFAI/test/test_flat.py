@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for dark_current / flat_field correction"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for dark_current / flat_field correction"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "06/09/2017"
 
 
 import unittest
@@ -43,6 +44,7 @@ from .utilstest import getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from ..opencl import ocl
+from .utilstest import UtilsTest
 
 
 class TestFlat1D(unittest.TestCase):
@@ -76,7 +78,7 @@ class TestFlat1D(unittest.TestCase):
 
     def test_correct(self):
         all_methods = ["numpy", "cython", "splitbbox", "splitpix", "lut", "csr"]
-        if ocl:
+        if ocl and UtilsTest.opencl:
             for device in ["cpu", "gpu", "acc"]:
                 if ocl.select_device(dtype=device):
                     all_methods.append("lut_ocl_%s" % device)
@@ -92,7 +94,7 @@ class TestFlat1D(unittest.TestCase):
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assertTrue(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
-        if ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
+        if ocl and UtilsTest.opencl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
             meth = "xrpd_OpenCL"
             _, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
@@ -138,7 +140,7 @@ class TestFlat2D(unittest.TestCase):
                   "splitpix": self.eps,
                   "lut": self.eps,
                   }
-        if ocl:
+        if ocl and UtilsTest.opencl:
             for device in ["cpu", "gpu", "acc"]:
                 if ocl.select_device(dtype=device):
                     test2d["lut_ocl_%s" % device] = self.eps

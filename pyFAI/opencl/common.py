@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "11/09/2017"
 __status__ = "stable"
 __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
            "measure_workgroup_size", "kernel_workgroup_size"]
@@ -550,5 +550,3 @@ def kernel_workgroup_size(program, kernel):
     device = program.devices[0]
     query_wg = pyopencl.kernel_work_group_info.WORK_GROUP_SIZE
     return kernel.get_work_group_info(query_wg, device)
-
-
