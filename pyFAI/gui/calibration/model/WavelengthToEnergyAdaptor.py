@@ -27,28 +27,23 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "14/02/2017"
+__date__ = "18/09/2017"
 
 from .DataModelAdaptor import DataModelAdaptor
+from pyFAI import units
 
 
 class WavelengthToEnergyAdaptor(DataModelAdaptor):
     """Adapte a wavelength in angstrom to energy in KeV ."""
 
-    angstrom = 1.00001501e-4
-    """One angstrom in micro-meter."""
-
-    hc = 1.2398
-    """Product of h the Planck constant, and c the speed of light in vacuum."""
-
     def fromModel(self, value):
         """Returns energy in KeV from wavelength in angstrom"""
         if value is None:
             return None
-        return self.hc / (value * 1000 * self.angstrom)
+        return units.hc / value
 
     def toModel(self, value):
         """Returns wavelength in angstrom from energy in KeV"""
         if value is None:
             return None
-        return self.hc / (value * 1000 * self.angstrom)
+        return units.hc / value
