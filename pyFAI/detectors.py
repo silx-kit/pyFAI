@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/09/2017"
+__date__ = "21/09/2017"
 __status__ = "stable"
 
 
@@ -700,6 +700,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
                                            dtype=numpy.int8)
             self.set_mask(mask)
+            self._maskfile = maskfile
         else:
             logger.error("FabIO is not available, unable to load the image to set the mask.")
 
