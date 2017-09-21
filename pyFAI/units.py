@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/07/2017"
+__date__ = "18/09/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -60,7 +60,11 @@ except (ImportError, Exception):
 ################################################################################
 
 hc = CONST_hc = 12.398419292004204
+"""Product of h the Planck constant, and c the speed of light in vacuum
+in Angstrom.KeV"""
+
 CONST_q = 1.602176565e-19
+"""One electron-volt is equal to 1.602176565⋅10-19 joules"""
 
 
 class Unit(object):
