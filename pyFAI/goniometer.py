@@ -675,7 +675,7 @@ class GoniometerRefinement(Goniometer):
 
         # print("Constrained Least square %s --> %s" % (former_error, new_error))
         if new_error < former_error:
-            print(param, newparam)
+            # print(param, newparam)
 
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
@@ -688,11 +688,11 @@ class GoniometerRefinement(Goniometer):
 #             if self.fit_wavelength:
 #                 self.wavelength = self.
         elif self.fit_wavelength:
-            print("Restore wavelength")
+            print("Restore wavelength and former parameters")
             former_wavelength = self.wavelength
             for sg in self.single_geometries.values():
                 sg.calibrant.setWavelength_change2th(former_wavelength)
-
+            print(self.nt_param(*self.param))
         return self.param
 
     def set_bounds(self, name, mini=None, maxi=None):
