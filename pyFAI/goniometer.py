@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/09/2017"
+__date__ = "22/09/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -56,6 +56,8 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .utils import StringTypes
 from .multi_geometry import MultiGeometry
 from .ext.marchingsquares import isocontour
+from .units import CONST_hc, CONST_q
+
 logger = logging.getLogger("pyFAI.goniometer")
 
 try:
@@ -225,7 +227,9 @@ class ExtendedTransformation(object):
         if wavelength_expr is not None:
             self.expressions["wavelength"] = wavelength_expr
         self.ParamNT = namedtuple("ParamNT", list(self.expressions.keys()))
-        self.variables = {"pi": numpy.pi}
+        self.variables = {"pi": numpy.pi,
+                          "hc": CONST_hc,
+                          "q": CONST_q}
         if constants is not None:
             self.variables.update(constants)
         self.param_names = tuple(param_names) if param_names is not None else tuple()
@@ -651,22 +655,28 @@ class GoniometerRefinement(Goniometer):
         :param method: name of the minimizer
         :param options: options for the minimizer
         """
+        if method.lower() in ["simplex", "nelder-mead"]:
+            method = "Nelder-Mead"
+            bounds = None
+        else:
+            bounds = self.bounds
         former_error = self.chi2()
         print("Cost function before refinement: %s" % former_error)
         param = numpy.asarray(self.param, dtype=numpy.float64)
         print(param)
         res = minimize(self.residu2, param, method=method,
-                       bounds=self.bounds, tol=1e-12,
+                       bounds=bounds, tol=1e-12,
                        options=options)
         print(res)
         newparam = res.x
         new_error = res.fun
         print("Cost function after refinement: %s" % new_error)
-        print("wavelength")
         print(self.nt_param(*newparam))
 
         # print("Constrained Least square %s --> %s" % (former_error, new_error))
         if new_error < former_error:
+            print(param, newparam)
+
             i = abs(param - newparam).argmax()
             if "_fields" in dir(self.nt_param):
                 name = self.nt_param._fields[i]
@@ -674,6 +684,15 @@ class GoniometerRefinement(Goniometer):
             else:
                 print("maxdelta on: %i %s --> %s" % (i, self.param[i], newparam[i]))
             self.param = newparam
+            # update wavelength after successful optimization: not easy
+#             if self.fit_wavelength:
+#                 self.wavelength = self.
+        elif self.fit_wavelength:
+            print("Restore wavelength")
+            former_wavelength = self.wavelength
+            for sg in self.single_geometries.values():
+                sg.calibrant.setWavelength_change2th(former_wavelength)
+
         return self.param
 
     def set_bounds(self, name, mini=None, maxi=None):
