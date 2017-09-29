@@ -831,6 +831,32 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
+    __statevars = ('_pixel_corners',
+        '_binning',
+        '_mask',
+        '_mask_crc',
+        '_maskfile',
+        'spline',
+        '_dx',
+        '_dy',
+        '_flatfield',
+        '_flatfield_crc',
+        '_darkcurrent',
+        '_darkcurrent_crc',
+        'flatfiles',
+        'darkfiles',
+        '_splineCache')
+
+    def __getnewargs_ex__(self):
+        return self._pixel1, self._pixel2, self._splineFile, self.max_shape
+
+    def __getstate__(self):
+        return tuple(getattr(self, var) for var in self.__statevars)
+
+    def __setstate__(self, state):
+        for statevar, varkey in zip(state, self.__statevars):
+            setattr(self, varkey, statevar)
+
 
 class NexusDetector(Detector):
     """
