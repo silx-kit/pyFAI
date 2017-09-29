@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2017"
+__date__ = "18/09/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -644,7 +644,7 @@ class Geometry(object):
             with self._sem:
                 if self._cached_array.get(key) is None or shape != self._cached_array.get(key).shape[:2]:
                     corners = None
-                    if use_cython:
+                    if (_geometry is not None) and use_cython:
                         if self.detector.IS_CONTIGUOUS:
                             d1 = utils.expand2d(numpy.arange(shape[0] + 1.0), shape[1] + 1.0, False)
                             d2 = utils.expand2d(numpy.arange(shape[1] + 1.0), shape[0] + 1.0, True)
@@ -661,6 +661,8 @@ class Geometry(object):
                                                           space, self._wavelength)
                         except KeyError:
                             logger.warning("No fast path for space: %s", space)
+                        except AttributeError as err:
+                            logger.warning("AttributeError: The binary extension _geomety may be missing: %s", err)
                         else:
                             if self.detector.IS_CONTIGUOUS:
                                 if bilinear:

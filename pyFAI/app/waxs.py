@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "14/09/2017"
 __status__ = "production"
 
 import os
@@ -154,6 +154,10 @@ def main():
                 method = "full_csr"
             else:
                 method = "splitpixel"
+        if to_process:
+            first = to_process[0]
+            fabimg = fabio.open(first)
+            integrator.detector.guess_binning(fabimg.data)
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
         for afile in to_process:
