@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2017"
+__date__ = "29/09/2017"
 __status__ = "stable"
 
 
@@ -635,8 +635,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         if "shape" in dir(data):
             shape = data.shape
-        else:
+        elif "__len__" in dir(data):
             shape = tuple(data[:2])
+        else:
+            logger.warning("No shape available to guess the binning: %s", data)
+            return
         if not self.force_pixel:
             if shape != self.max_shape:
                 logger.warning("guess_binning is not implemented for %s detectors!\
@@ -687,6 +690,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_mask(self, mask):
         with self._sem:
+            self.guess_binning(mask)
             self._mask = mask
             if mask is not None:
                 self._mask_crc = crc32(mask)
@@ -696,11 +700,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_maskfile(self, maskfile):
         if fabio:
-            with self._sem:
-                self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
-                                                     dtype=numpy.int8)
-                self._mask_crc = crc32(self._mask)
-                self._maskfile = maskfile
+            mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
+                                           dtype=numpy.int8)
+            self.set_mask(mask)
+            self._maskfile = maskfile
         else:
             logger.error("FabIO is not available, unable to load the image to set the mask.")
 
@@ -1494,8 +1497,11 @@ class Mar345(Detector):
         """
         if "shape" in dir(data):
             shape = data.shape
+        elif "__len__" in dir(data):
+            shape = tuple(data[:2])
         else:
-            shape = data[:2]
+            logger.warning("No shape available to guess the binning: %s", data)
+            return
 
         dim1, dim2 = shape
         self._pixel1 = self.VALID_SIZE[dim1]
@@ -1960,8 +1966,11 @@ class Rayonix(Detector):
         """
         if "shape" in dir(data):
             shape = data.shape
-        else:
+        elif "__len__" in dir(data):
             shape = tuple(data[:2])
+        else:
+            logger.warning("No shape available to guess the binning: %s", data)
+            return
         bin1 = self.max_shape[0] // shape[0]
         bin2 = self.max_shape[1] // shape[1]
         self._binning = (bin1, bin2)
