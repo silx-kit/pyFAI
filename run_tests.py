@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "06/09/2017"
+__date__ = "14/09/2017"
 __license__ = "MIT"
 
 import distutils.util
@@ -208,27 +208,26 @@ def report_rst(cov, package, version="0.0.0", base=""):
             '']
     tot_sum_lines = 0
     tot_sum_hits = 0
-
+    print(base)
     for cl in classes:
         name = cl.get("name")
         fname = cl.get("filename")
-        if not os.path.abspath(fname).startswith(base):
-            continue
-        lines = cl.find("lines").getchildren()
-        hits = [int(i.get("hits")) for i in lines]
+        if os.path.abspath(fname).startswith(base):
+            lines = cl.find("lines").getchildren()
+            hits = [int(i.get("hits")) for i in lines]
 
-        sum_hits = sum(hits)
-        sum_lines = len(lines)
+            sum_hits = sum(hits)
+            sum_lines = len(lines)
 
-        cover = 100.0 * sum_hits / sum_lines if sum_lines else 0
+            cover = 100.0 * sum_hits / sum_lines if sum_lines else 0
 
-        if base:
-            name = os.path.relpath(fname, base)
+            if base:
+                name = os.path.relpath(fname, base)
 
-        res.append('   "%s", "%s", "%s", "%.1f %%"' %
-                   (name, sum_lines, sum_hits, cover))
-        tot_sum_lines += sum_lines
-        tot_sum_hits += sum_hits
+            res.append('   "%s", "%s", "%s", "%.1f %%"' %
+                       (name, sum_lines, sum_hits, cover))
+            tot_sum_lines += sum_lines
+            tot_sum_hits += sum_hits
     res.append("")
     res.append('   "%s total", "%s", "%s", "%.1f %%"' %
                (package, tot_sum_lines, tot_sum_hits,
@@ -443,7 +442,7 @@ if options.coverage:
     cov.stop()
     cov.save()
     with open("coverage.rst", "w") as fn:
-        fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
+        fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, os.path.join(PROJECT_PATH, "build")))
     print(cov.report())
 
 sys.exit(exit_status)

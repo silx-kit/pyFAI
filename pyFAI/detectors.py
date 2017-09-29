@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2017"
+__date__ = "14/09/2017"
 __status__ = "stable"
 
 
@@ -687,6 +687,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_mask(self, mask):
         with self._sem:
+            self.guess_binning(mask)
             self._mask = mask
             if mask is not None:
                 self._mask_crc = crc32(mask)
@@ -696,11 +697,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_maskfile(self, maskfile):
         if fabio:
-            with self._sem:
-                self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
-                                                     dtype=numpy.int8)
-                self._mask_crc = crc32(self._mask)
-                self._maskfile = maskfile
+            mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
+                                           dtype=numpy.int8)
+            self.set_mask(mask)
         else:
             logger.error("FabIO is not available, unable to load the image to set the mask.")
 

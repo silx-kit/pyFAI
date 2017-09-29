@@ -374,3 +374,4 @@ class OCL_LUT_Integrator(OpenclProcessing):
         if self.profile:
             self.events += events
         return outMerge, outData, outCount
+
