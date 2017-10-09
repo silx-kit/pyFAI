@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "01/06/2017"
+__date__ = "03/10/2017"
 
 import logging
 import numpy
@@ -397,12 +397,11 @@ class IntegrationTask(AbstractCalibrationTask):
         pyfaiGeometry.rot1 = geometry.rotation1().value()
         pyfaiGeometry.rot2 = geometry.rotation2().value()
         pyfaiGeometry.rot3 = geometry.rotation3().value()
+        pyfaiGeometry.wavelength = geometry.wavelength().value() * 1e-10
 
         experimentSettingsModel = self.model().experimentSettingsModel()
         detector = experimentSettingsModel.detector()
         pyfaiGeometry.detector = detector
-        wavelength = experimentSettingsModel.wavelength().value() * 1e-10
-        pyfaiGeometry.wavelength = wavelength
 
         pyfaiGeometry.save(filename)
 
