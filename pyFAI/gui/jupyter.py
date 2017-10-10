@@ -73,7 +73,8 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
     if cp is not None:
         for lbl in cp.get_labels():
             pt = numpy.array(cp.get(lbl=lbl).points)
-            ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
+            if len(pt) > 0:
+                ax.scatter(pt[:, 1], pt[:, 0], label=lbl)
         if ai is not None and cp.calibrant is not None:
             tth = cp.calibrant.get_2th()
             ttha = ai.twoThetaArray()
