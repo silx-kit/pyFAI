@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/05/2017"
+__date__ = "10/10/2017"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -84,7 +84,7 @@ def display(img=None, cp=None, ai=None, label=None, sg=None, ax=None):
 
 def plot1d(result, calibrant=None, label=None, ax=None):
     """Display the powder diffraction pattern in the jupyter notebook
-    
+
     :param result: instance of Integrate1dResult
     :param calibrant: Calibrant instance to overlay diffraction lines
     :param label: (str) name of the curve
@@ -129,7 +129,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
 
 def plot2d(result, calibrant=None, label=None, ax=None):
     """Display the caked image in the jupyter notebook
-    
+
     :param result: instance of Integrate2dResult
     :param calibrant: Calibrant instance to overlay diffraction lines
     :param label: (str) name of the curve
