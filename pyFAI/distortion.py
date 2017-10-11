@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "09/10/2017"
 __status__ = "development"
 
 import logging
@@ -64,7 +64,7 @@ except IOError:
     linalg = None
 else:
     import scipy
-    v = tuple(int(i) for i in scipy.version.short_version.split("."))
+    v = tuple(int(i) for i in scipy.version.short_version.split(".") if i.isdigit())
     if v < (0, 11):
         logger.warning("Scipy is too old ... uncorrection will be handled the old way")
         linalg = None
