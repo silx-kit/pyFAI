@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/06/2017"
+__date__ = "22/09/2017"
 __status__ = "development"
 
 import os
@@ -253,10 +253,17 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         if wavelength is None:
             wavelength = self.wavelength
+        if wavelength <= 0:
+            return [numpy.finfo("float32").max] * len(rings)
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
+
         if wavelength != self.calibrant.wavelength:
             self.calibrant.setWavelength_change2th(wavelength)
-        return numpy.array(self.calibrant.get_2th(), dtype=numpy.float64)[rings]
+        ary = self.calibrant.get_2th()
+        if len(ary) < rings.max():
+            # complete turn ~ 2pi ~ 7: help the optimizer to find the right way
+            ary += [10.0 * (rings.max() - len(ary))] * (1 + rings.max() - len(ary))
+        return numpy.array(ary, dtype=numpy.float64)[rings]
 
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
