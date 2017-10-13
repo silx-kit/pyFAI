@@ -29,7 +29,7 @@
 """Jupyter helper functions
 """
 
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
