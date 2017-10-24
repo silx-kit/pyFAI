@@ -1,6 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
-# Copyright (C) 2016 European Synchrotron Radiation Facility
+#
+# Copyright (c) 2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +21,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ############################################################################*/
+# ###########################################################################*/
+"""Tests for Qt dialogs"""
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "23/10/2017"
-
-from numpy.distutils.misc_util import Configuration
+__date__ = "24/10/2017"
 
 
-def configuration(parent_package='', top_path=None):
-    config = Configuration('gui', parent_package, top_path)
-    config.add_subpackage('calibration')
-    config.add_subpackage('dialog')
-    config.add_subpackage('test')
-    return config
+import logging
+import os
+import sys
+import unittest
 
 
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(configuration=configuration)
+_logger = logging.getLogger(__name__)
+
+
+def suite():
+    test_suite = unittest.TestSuite()
+    from . import test_imagefiledialog
+    test_suite.addTest(test_imagefiledialog.suite())
+    return test_suite

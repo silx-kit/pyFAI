@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "24/10/2017"
 
 import sys
 import unittest
@@ -82,10 +82,12 @@ from . import test_scripts
 from . import test_goniometer
 from . import test_integrate_app
 from ..opencl import test as test_opencl
+from ..gui import test as test_gui
 
 
 def suite():
     testsuite = unittest.TestSuite()
+    testsuite.addTest(test_gui.suite())
     testsuite.addTest(test_average.suite())
     testsuite.addTest(test_dummy.suite())
     testsuite.addTest(test_histogram.suite())
