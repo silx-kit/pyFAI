@@ -16,3 +16,9 @@ mako
 pyopencl==2015.1
 numexpr
 silx
+
+# Require PyQt when wheel is available
+PySide; python_version == '3.4'
+PyQt5; python_version >= '3.5'
+PyQt4; sys_platform == 'win32' and python_version == '2.7'  # From silx.org
+PyQt4; sys_platform == 'darwin' and python_version == '2.7'  # From silx.org
