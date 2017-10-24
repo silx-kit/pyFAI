@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "14/09/2017"
+__date__ = "24/10/2017"
 __license__ = "MIT"
 
 import distutils.util
@@ -272,8 +272,8 @@ except ImportError:
 epilog = """Environment variables:
 PYFAI_LOW_MEM: set to True to skip all tests >100Mb
 PYFAI_OPENCL=False to disable OpenCL tests.
+WITH_QT_TEST=False to disable graphical tests
 """
-# WITH_QT_TEST=False to disable graphical tests,
 # SILX_TEST_LOW_MEM=True to disable tests taking large amount of memory
 # GPU=False to disable the use of a GPU with OpenCL test
 # """
@@ -301,16 +301,15 @@ parser.add_argument("-l", "--low-mem", default=False,
 parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
                     action="store_false",
                     help="Disable the test of the OpenCL part")
+parser.add_argument("-x", "--no-gui", dest="gui", default=True,
+                    action="store_false",
+                    help="Disable the test of the graphical use interface")
+parser.add_argument("--qt-binding", dest="qt_binding", default=None,
+                    help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
 
-
-# parser.add_argument("-x", "--no-gui", dest="gui", default=True,
-#                    action="store_false",
-#                    help="Disable the test of the graphical use interface")
 # parser.add_argument("-l", "--low-mem", dest="low_mem", default=False,
 #                    action="store_true",
 #                    help="Disable test with large memory consumption (>100Mbyte")
-# parser.add_argument("--qt-binding", dest="qt_binding", default=None,
-#                    help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
 
 default_test_name = "%s.test.suite" % PROJECT_NAME
 parser.add_argument("test_name", nargs='*',
@@ -333,9 +332,9 @@ elif options.verbose > 1:
     test_verbosity = 2
     use_buffer = False
 
-# if not options.gui:
-#    os.environ["WITH_QT_TEST"] = "False"
-#
+if not options.gui:
+    os.environ["WITH_QT_TEST"] = "False"
+
 # if not options.opencl:
 #    os.environ["SILX_OPENCL"] = "False"
 #
@@ -350,6 +349,27 @@ if options.coverage:
     except AttributeError:
         cov = coverage.coverage(omit=["*test*", "*third_party*", "*/setup.py"])
     cov.start()
+
+if options.qt_binding:
+    binding = options.qt_binding.lower()
+    if binding == "pyqt4":
+        logger.info("Force using PyQt4")
+        if sys.version < "3.0.0":
+            try:
+                import sip
+                sip.setapi("QString", 2)
+                sip.setapi("QVariant", 2)
+            except:
+                logger.warning("Cannot set sip API")
+        import PyQt4.QtCore  # noqa
+    elif binding == "pyqt5":
+        logger.info("Force using PyQt5")
+        import PyQt5.QtCore  # noqa
+    elif binding == "pyside":
+        logger.info("Force using PySide")
+        import PySide.QtCore  # noqa
+    else:
+        raise ValueError("Qt binding '%s' is unknown" % options.qt_binding)
 
 
 # Prevent importing from source directory
