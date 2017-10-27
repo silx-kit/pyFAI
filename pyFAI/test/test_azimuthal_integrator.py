@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "27/10/2017"
 
 import unittest
 import os
@@ -415,6 +415,18 @@ class TestSaxs(unittest.TestCase):
         logger.debug("neg=%s" % neg)
         self.assertTrue(neg == 0, "all negative pixels got inpainted actually all but %s" % neg)
         self.assertTrue(mask.sum() > 0, "some pixel needed inpainting")
+
+    def test_variance(self):
+        "tests the different variance model available"
+        img = fabio.open(self.edfPilatus).data
+        ai = AzimuthalIntegrator(pixel1=172e-6, pixel2=172e-6)
+        ai.setFit2D(2000, 870, 102.123456789)  # rational numbers are hell !
+        ai.wavelength = 1e-10
+        mask = img < 0
+        res_poisson = ai.integrate1d(img, 1000, mask=mask, error_model="poisson")
+        self.assertGreater(res_poisson.sigma.min(), 0, "Poisson error are positive")
+        res_azimuthal = ai.integrate1d(img, 1000, mask=mask, error_model="azimuthal")
+        self.assertGreater(res_azimuthal.sigma.min(), 0, "Azimuthal error are positive")
 
 
 class TestSetter(unittest.TestCase):
