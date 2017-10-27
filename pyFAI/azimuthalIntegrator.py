@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/09/2017"
+__date__ = "27/10/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2380,7 +2380,8 @@ class AzimuthalIntegrator(Geometry):
                                                                       normalization_factor=normalization_factor)
                                 qAxis = integr.outPos  # this will be copied later
                                 if error_model == "azimuthal":
-                                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+
+                                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                                 if variance is not None:
                                     var1d, a, b = ocl_integr.integrate(variance,
                                                                        solidangle=None,
@@ -2399,7 +2400,7 @@ class AzimuthalIntegrator(Geometry):
                                                                  normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
-                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
                             _, var1d, a, b = integr.integrate(variance,
                                                               solidAngle=None,
@@ -2518,7 +2519,7 @@ class AzimuthalIntegrator(Geometry):
                                                                   normalization_factor=normalization_factor)
                             qAxis = integr.outPos  # this will be copied later
                             if error_model == "azimuthal":
-                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                             if variance is not None:
                                 var1d, a, b = ocl_integr.integrate(variance,
                                                                    solidangle=None,
@@ -2536,7 +2537,7 @@ class AzimuthalIntegrator(Geometry):
                                                                  normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
-                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
                             _, var1d, a, b = integr.integrate(variance,
                                                               solidAngle=None,
@@ -2570,7 +2571,7 @@ class AzimuthalIntegrator(Geometry):
                                                                normalization_factor=normalization_factor
                                                                )
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                 if variance is not None:
                     _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
                                                             weights=variance,
@@ -2617,7 +2618,7 @@ class AzimuthalIntegrator(Geometry):
                                                               polarization=polarization,
                                                               normalization_factor=normalization_factor)
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                 if variance is not None:
                     _, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
                                                            pos0=pos0,
@@ -2673,7 +2674,7 @@ class AzimuthalIntegrator(Geometry):
                                                                 empty=dummy if dummy is not None else self._empty,
                                                                 normalization_factor=normalization_factor)
                     if error_model == "azimuthal":
-                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)[mask]) ** 2
                     if variance is not None:
                         _, var1d, a, b = histogram.histogram(pos=pos0,
                                                              weights=variance,
@@ -2696,7 +2697,7 @@ class AzimuthalIntegrator(Geometry):
             sum_, b = numpy.histogram(pos0, npt, weights=data, range=radial_range)
             with numpy.errstate(divide='ignore'):
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)[mask]) ** 2
                 if variance is not None:
                     var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
                     sigma = numpy.sqrt(var1d) / (count * normalization_factor)
