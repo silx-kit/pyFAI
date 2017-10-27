@@ -96,7 +96,7 @@ class OpenclProcessing(object):
     kernel_files = []
 
     def __init__(self, ctx=None, devicetype="all", platformid=None, deviceid=None,
-                 block_size=None, profile=False):
+                 block_size=None, memory=None, profile=False):
         """Constructor of the abstract OpenCL processing class
 
         :param ctx: actual working context, left to None for automatic
@@ -105,6 +105,7 @@ class OpenclProcessing(object):
         :param platformid: integer with the platform_identifier, as given by clinfo
         :param deviceid: Integer with the device identifier, as given by clinfo
         :param block_size: preferred workgroup size, may vary depending on the outpcome of the compilation
+        :param memory: minimum memory available on device
         :param profile: switch on profiling to be able to profile at the kernel level,
                         store profiling elements (makes code slightly slower)
         """

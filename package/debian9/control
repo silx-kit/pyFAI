@@ -28,7 +28,8 @@ Build-Depends: cython,
                python3-pyqt5|python3-pyqt4|python3-pyside,
                python3-scipy,
                python3-sphinx,
-               python3-sphinxcontrib.programoutput
+               python3-sphinxcontrib.programoutput,
+               help2man
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/pyfai.git
