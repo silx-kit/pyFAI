@@ -88,7 +88,6 @@ optional arguments:
     --debian7  Simulate a debian7 system (fail-safe)
     --debian8  Simulate a debian 8 Jessie system
     --debian9  Simulate a debian 9 Stretch system
-               
 "
 
 install=0
@@ -125,7 +124,7 @@ do
           ;;
       --debian9)
           debian_version=9
-      target_system=debian${debian_version}
+          target_system=debian${debian_version}
           dist_directory=${project_directory}/dist/${target_system}
           build_directory=${project_directory}/build/${target_system}
           shift
@@ -160,13 +159,13 @@ build_deb_8_plus () {
     then
       cp -f dist/${project}-testimages.tar.gz ${build_directory}
     fi
-    
+
     cd ${build_directory}
     tar -xzf ${tarname}
-    
+
     directory=${project}-${strictversion}
     newname=${deb_name}_${debianversion}.orig.tar.gz
-    
+
     #echo tarname $tarname newname $newname
     if [ $tarname != $newname ]
     then
@@ -176,7 +175,7 @@ build_deb_8_plus () {
       fi
         ln -s ${tarname} ${newname}
     fi
-    
+
     if [ -f ${project}-testimages.tar.gz ]
     then
       if [ ! -h  ${deb_name}_${debianversion}.orig-testimages.tar.gz ]
@@ -184,11 +183,11 @@ build_deb_8_plus () {
         ln -s ${project}-testimages.tar.gz ${deb_name}_${debianversion}.orig-testimages.tar.gz
       fi
     fi
-    
+
     cd ${directory}
     cp -r ${project_directory}/package/${target_system} debian
     cp ${project_directory}/copyright debian
-    
+
     #handle test images
     if [ -f ../${deb_name}_${debianversion}.orig-testimages.tar.gz ]
     then
@@ -206,12 +205,12 @@ build_deb_8_plus () {
       #export PYBUILD_DISABLE_python3=test
       #export DEB_BUILD_OPTIONS=nocheck
     fi
-    
+
     dch -v ${debianversion}-1 "upstream development build of ${project} ${version}"
     dch --bpo "${project} snapshot ${version} built for ${target_system}"
     dpkg-buildpackage -r
     rc=$?
-    
+
     if [ $rc -eq 0 ]; then
       # move packages to dist directory
       echo Build succeeded...
@@ -232,13 +231,13 @@ build_deb_7_minus () {
     echo "Build for debian 7 or older using stdeb"
     tarname=${project}-${strictversion}.tar.gz
     clean_up
-    
+
     python setup.py sdist
     cp -f dist/${tarname} ${build_directory}
     cd ${build_directory}
     tar -xzf ${tarname}
     cd ${project}-${strictversion}
-    
+
     if [ $use_python3 = 1 ]
     then
       echo Using Python 2+3
@@ -250,12 +249,12 @@ build_deb_7_minus () {
       python setup.py --command-packages=stdeb.command build --no-cython bdist_deb
       rc=$?
     fi
-    
+
     # move packages to dist directory
     rm -rf ${dist_directory}
     mkdir -p ${dist_directory}
     mv -f deb_dist/*.deb ${dist_directory}
-    
+
     # back to the root
     cd ../../..
 }
