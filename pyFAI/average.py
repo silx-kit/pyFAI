@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "30/10/2017"
 __status__ = "production"
 
 import logging
@@ -797,10 +797,19 @@ class Average(object):
         """
         self._fabio_images = []
         self._nb_frames = 0
+        if len(image_list) > 1000:
+            # if too many files are opened, it may crash
+            copy_data = True
+        else:
+            copy_data = False
         for image_index, image in enumerate(image_list):
             if isinstance(image, six.string_types):
                 logger.info("Reading %s", image)
-                fabio_image = fabio.open(image)
+                if copy_data:
+                    with fabio.open(image) as fimg:
+                        fabio_image = fimg.convert(fimg.__class__)
+                else:
+                    fabio_image = fabio.open(image)
             elif isinstance(image, fabio.fabioimage.fabioimage):
                 fabio_image = image
             else:
