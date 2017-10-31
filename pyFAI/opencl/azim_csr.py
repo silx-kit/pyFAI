@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "11/09/2017"
+__date__ = "17/10/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -249,14 +249,29 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
         events = []
-        if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
-            copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-            events.append(EventDescription("copy %s" % dest, copy_image))
+        if isinstance(data, pyopencl.array.Array):
+            if (data.dtype == dest_type):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
+                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw D->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
         else:
-            copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
-            kernel = self.kernels.get_kernel(self.mapping[data.dtype.type])
-            cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
-            events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
+            # Assume it is a numpy array
+            if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
+                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw H->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
         if self.profile:
             self.events += events
         if checksum is not None:
