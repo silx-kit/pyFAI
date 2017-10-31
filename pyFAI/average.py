@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2017"
+__date__ = "31/10/2017"
 __status__ = "production"
 
 import logging
@@ -807,8 +807,9 @@ class Average(object):
                 logger.info("Reading %s", image)
                 fabio_image = fabio.open(image)
                 if copy_data and fabio_image.nframes == 1:
-                    # copy the data so that we can close the file
+                    # copy the data so that we can close the file right now.
                     fimg = fabio_image.convert(fabio_image.__class__)
+                    fimg.filename = image
                     fabio_image.close()
                     fabio_image = fimg
             elif isinstance(image, fabio.fabioimage.fabioimage):
