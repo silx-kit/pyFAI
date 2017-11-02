@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "31/10/2017"
 __status__ = "production"
 
 import logging
@@ -797,10 +797,21 @@ class Average(object):
         """
         self._fabio_images = []
         self._nb_frames = 0
+        if len(image_list) > 100:
+            # if too many files are opened, it may crash. The har limit is 1024
+            copy_data = True
+        else:
+            copy_data = False
         for image_index, image in enumerate(image_list):
             if isinstance(image, six.string_types):
                 logger.info("Reading %s", image)
                 fabio_image = fabio.open(image)
+                if copy_data and fabio_image.nframes == 1:
+                    # copy the data so that we can close the file right now.
+                    fimg = fabio_image.convert(fabio_image.__class__)
+                    fimg.filename = image
+                    fabio_image.close()
+                    fabio_image = fimg
             elif isinstance(image, fabio.fabioimage.fabioimage):
                 fabio_image = image
             else:
