@@ -121,8 +121,13 @@ class _Item(object):
     def findChildrenByPath(self, path):
         if path == "":
             return self
-        info = qt.QFileInfo(path)
         print("findChildrenByPath", path)
+
+        # remove any links from the path
+        path = os.path.realpath(path)
+        print("realPath", path)
+
+        info = qt.QFileInfo(path)
         if info.isSymLink():
             path = info.symLinkTarget()
             print("findChildrenByPath [fixed]", path)
