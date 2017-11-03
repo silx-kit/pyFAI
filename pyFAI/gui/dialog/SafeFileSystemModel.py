@@ -121,6 +121,9 @@ class _Item(object):
     def findChlidrenByPath(self, path):
         if path == "":
             return self
+        info = qt.QFileInfo(path)
+        if info.isSymLink():
+            path = info.symLinkTarget()
         path = path.replace("\\", "/")
         if path[-1] == "/":
             path = path[:-1]
