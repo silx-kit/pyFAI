@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "03/11/2017"
 
 import os
 import sys
@@ -71,7 +71,9 @@ class TestAIWidget(unittest.TestCase):
             logger.warning('pyFAI.integrate_widget tests disabled (DISPLAY env. variable not set)')
             cls.app = None
         elif qt is not None:
-            cls.app = qt.QApplication([])
+            # Makes sure a QApplication exists and do it once for all
+            qapp = qt.QApplication.instance() or qt.QApplication([])
+            cls.app = qapp
 
     def setUp(self):
         if qt is None:
