@@ -179,7 +179,8 @@ class _Item(object):
             items = qt.QDir.drives()
         else:
             directory = qt.QDir(self.absoluteFilePath())
-            items = directory.entryInfoList()
+            filters = qt.QDir.AllEntries | qt.QDir.Hidden | qt.QDir.System
+            items = directory.entryInfoList(filters)
             print([i.fileName() for i in items])
         for fileInfo in items:
             i = _Item(fileInfo)
