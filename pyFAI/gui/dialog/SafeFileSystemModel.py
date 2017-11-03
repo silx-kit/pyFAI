@@ -122,8 +122,10 @@ class _Item(object):
         if path == "":
             return self
         info = qt.QFileInfo(path)
+        print("findChildrenByPath", path)
         if info.isSymLink():
             path = info.symLinkTarget()
+            print("findChildrenByPath [fixed]", path)
         path = path.replace("\\", "/")
         if path[-1] == "/":
             path = path[:-1]
@@ -142,10 +144,12 @@ class _Item(object):
                     count -= 1
                     break
             else:
+                print("findChildrenByPath None")
                 return None
             if count == 0:
                 break
         else:
+            print("findChildrenByPath None")
             return None
         return cursor
 
