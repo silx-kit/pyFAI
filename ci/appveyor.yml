@@ -30,23 +30,17 @@ environment:
     matrix:
         # Python 2.7
         - PYTHON_DIR: "C:\\Python27-x64"
+          QT_BINDING: "PyQt4"
           PYTHON_VERSION: "2.7.11"
           PYTHON_ARCH: "64"
           BUILD_ARGS: ""
 
-        # Python 3.5
-        - PYTHON_DIR: "C:\\Python35-x64"
-          PYTHON_VERSION: "3.5.0"
+        # Python 2.7
+        - PYTHON_DIR: "C:\\Python27-x64"
+          QT_BINDING: "PySide"
+          PYTHON_VERSION: "2.7.11"
           PYTHON_ARCH: "64"
           BUILD_ARGS: ""
-
-        # Python 3.6
-        - PYTHON_DIR: "C:\\Python36-x64"
-          #PYTHON_VERSION: "3.4.3"
-          PYTHON_ARCH: "64"
-          # OpenMP is not available on python 3.4
-          #BUILD_ARGS: "--no-openmp"
-
 
 install:
     # Add Python to PATH
@@ -88,7 +82,7 @@ build_script:
     - "del pyFAI\\ext\\histogram.c"
     - "python setup.py build %BUILD_ARGS%"
     #- "python setup.py test"
-    - "python run_tests.py -i -m"
+    #- "python run_tests.py -i -m --no-gui"
     - "python setup.py bdist_wheel bdist_msi"
     - ps: "ls dist"
     # Install the generated wheel package to test it
@@ -110,13 +104,15 @@ test_script:
     - "pip install cython numpy scipy --upgrade --pre" 
     # Install other build dependencies
     - "pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ -r ci/requirements_appveyor.txt --upgrade"
+    # Install selected Qt binding
+    - "pip install --pre --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ %QT_BINDING%"
     # Install the generated wheel package to test it
     - "pip install --pre --find-links dist/ pyFAI"
 
     # Print Python info
     - "python ci\\info_platform.py"
     - "pip list"
-    - "python run_tests.py"
+    - "python run_tests.py -v --qt-binding %QT_BINDING% pyFAI.gui.dialog.test.test_imagefiledialog.TestImageFileDialogInteraction.testDisplayAndClickOpen"
 
     # Leave test virtualenv
     - "%VENV_TEST_DIR%\\Scripts\\deactivate.bat"

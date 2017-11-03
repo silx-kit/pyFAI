@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2017"
+__date__ = "03/11/2017"
 
 import unittest
 import logging
@@ -85,9 +85,8 @@ class TestCalibrant(unittest.TestCase):
         """test for fake image generation"""
         with_plot = (logger.getEffectiveLevel() <= logging.DEBUG)
         if with_plot:
-            import matplotlib
-            import matplotlib.pyplot as plt
-            fig = plt.figure()
+            from ..gui.matplotlib import pyplot
+            fig = pyplot.figure()
             ax = fig.add_subplot(1, 1, 1)
 
         detectors = set(ALL_DETECTORS.values())
