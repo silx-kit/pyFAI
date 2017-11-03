@@ -149,8 +149,19 @@ class _Item(object):
                     count -= 1
                     break
             else:
-                print("findChildrenByPath None")
-                return None
+                if os.path.exists(path):
+                    print("findChildrenByPath MAGIC CREATION")
+                    # FIXME: That's a hack, model is not aware of this change
+                    newpath = cursor.filePath() + "/" + name
+                    fileInfo = qt.QFileInfo(newpath)
+                    item = _Item(fileInfo)
+                    self.__children.append(item)
+                    item._setParent(self)
+                    cursor = item
+                    count -= 1
+                else:
+                    print("findChildrenByPath None")
+                    return None
             if count == 0:
                 break
         else:
