@@ -128,7 +128,7 @@ test_script:
     # Print Python info
     - "python ci\\info_platform.py"
     - "pip list"
-    - "python run_tests.py --qt-binding %QT_BINDING%"
+    - "python run_tests.py -v --qt-binding %QT_BINDING%"
 
     # Leave test virtualenv
     - "%VENV_TEST_DIR%\\Scripts\\deactivate.bat"
