@@ -52,6 +52,7 @@ _tmpDirectory = None
 
 
 def setUpModule():
+    print("setUpModule")
     global _tmpDirectory
     _tmpDirectory = tempfile.mkdtemp(prefix=__name__)
 
@@ -85,9 +86,11 @@ def setUpModule():
     filename = _tmpDirectory + "/badformat.edf"
     with io.open(filename, "wb") as f:
         f.write(b"{\nHello Nurse!")
+    print("setUpModule end")
 
 
 def tearDownModule():
+    print("tearDownModule")
     global _tmpDirectory
     if sys.platform == "win32" and fabio is not None:
         # gc collect is needed to close a file descriptor
@@ -97,6 +100,7 @@ def tearDownModule():
         gc.collect()
     shutil.rmtree(_tmpDirectory)
     _tmpDirectory = None
+    print("tearDownModule end")
 
 
 class _UtilsMixin(object):
@@ -179,6 +183,9 @@ class TestImageFileDialogInteraction(utils.TestCaseQt, _UtilsMixin):
         self.qWaitForWindowExposed(dialog)
         self.assertTrue(dialog.isVisible())
         filename = _tmpDirectory + "/singleimage.edf"
+        print(filename)
+        print(os.path.exists(_tmpDirectory))
+        print(os.path.exists(filename))
         dialog.selectFile(filename)
         self.qWaitForPendingActions(dialog)
 

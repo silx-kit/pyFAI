@@ -5,21 +5,7 @@ git:
     depth: 1
 
 matrix:
-    include:
-        - python: "2.7"
-          os: linux
-          env:
-              - WITH_QT_TEST=False
-
-        - python: "3.4"
-          os: linux
-          env:
-              - WITH_QT_TEST=False
-
-        - python: "3.5"
-          os: linux
-          env:
-              - WITH_QT_TEST=True
+    # ...
 
 #virtualenv:
 #    system_site_packages: NO !!!

@@ -28,7 +28,7 @@ This module contains an :class:`SafeFileSystemModel`.
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "31/10/2017"
+__date__ = "03/11/2017"
 
 import sys
 import os.path
@@ -149,16 +149,20 @@ class _Item(object):
     def populate(self):
         if self.__children is not None:
             return
+        print("POPULATE")
+        print(self.filePath())
         self.__children = []
         if self.isRoot():
             items = qt.QDir.drives()
         else:
             directory = qt.QDir(self.absoluteFilePath())
             items = directory.entryInfoList()
+            print([i.fileName() for i in items])
         for fileInfo in items:
             i = _Item(fileInfo)
             self.__children.append(i)
             i._setParent(self)
+        print("POPULATE END")
 
 
 class _RawFileSystemModel(qt.QAbstractItemModel):

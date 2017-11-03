@@ -1445,6 +1445,8 @@ class ImageFileDialog(qt.QDialog):
 
     def __pathChanged(self):
         uri = _ImageUri(path=self.__pathEdit.text())
+        print("__pathChanged", self.__pathEdit.text())
+        print(uri.filename(), uri.dataPath(), uri.slice(), uri.path())
         if uri.isValid():
             if uri.filename() in ["", "/"]:
                 self.__fileModel_setRootPath(qt.QDir.rootPath())
@@ -1455,16 +1457,30 @@ class ImageFileDialog(qt.QDialog):
                     index = self.__fileModel.index(uri.filename())
                 elif os.path.isfile(uri.filename()):
                     loaded = self.__openFile(uri.filename())
+                    print("#1")
                     if loaded:
+                        print("#2")
                         if self.__h5 is not None:
+                            print("#3")
                             rootIndex = _silxutils.indexFromH5Object(self.__dataModel, self.__h5)
                         elif self.__fabio is not None:
+                            print("#4")
+                            path = uri.filename().replace("\\", "/")
+                            paths = path.split("/")
+                            for i in range(len(paths)):
+                                path = "/".join(paths[0:i])
+                                print(path)
+                                index = self.__fileModel.index(path)
+                                print(path, index.isValid())
+
                             index = self.__fileModel.index(uri.filename())
+                            print(uri.filename(), index.isValid())
                             rootIndex = index
                     else:
                         self.__clearData()
 
                 if rootIndex is not None:
+                    print("#5", rootIndex, rootIndex.isValid)
                     if rootIndex.model() == self.__dataModel:
                         if uri.dataPath() is not None:
                             dataPath = uri.dataPath()
