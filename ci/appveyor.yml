@@ -28,28 +28,7 @@ environment:
         VENV_TEST_DIR: "venv_test"
 
     matrix:
-        # Python 2.7
-        - PYTHON_DIR: "C:\\Python27-x64"
-          QT_BINDING: "PyQt4"
-          PYTHON_VERSION: "2.7.11"
-          PYTHON_ARCH: "64"
-          BUILD_ARGS: ""
-
-        # Python 2.7
-        - PYTHON_DIR: "C:\\Python27-x64"
-          QT_BINDING: "PySide"
-          PYTHON_VERSION: "2.7.11"
-          PYTHON_ARCH: "64"
-          BUILD_ARGS: ""
-
-        # Python 3.6
-        - PYTHON_DIR: "C:\\Python36-x64"
-          QT_BINDING: "PyQt5"
-          PYTHON_VERSION: "3.6"
-          PYTHON_ARCH: "64"
-          # OpenMP is not available on python 3.4
-          #BUILD_ARGS: "--no-openmp"
-
+       # pass
 
 install:
     # Add Python to PATH
