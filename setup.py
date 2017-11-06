@@ -143,7 +143,7 @@ class PyTest(Command):
 
     def run(self):
         import subprocess
-        errno = subprocess.call([sys.executable, 'run_tests.py', '-i'])
+        errno = subprocess.call([sys.executable, 'run_tests.py', '-i', '--no-gui'])
         if errno != 0:
             raise SystemExit(errno)
 
@@ -858,6 +858,7 @@ def setup_package():
 
     setup_kwargs = get_project_configuration(dry_run)
     setup(**setup_kwargs)
+
 
 if __name__ == "__main__":
     setup_package()

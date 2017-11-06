@@ -1,12 +1,16 @@
-os:
-  - linux
-#  - osx
 
 language: python
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
+
+git:
+    depth: 1
+
+matrix:
+    include:
+        - python: "3.5"
+          os: linux
+          env:
+              - WITH_QT_TEST=True
+
 #virtualenv:
 #    system_site_packages: NO !!!
 # the system python and the one from travis have been compiled with different options
@@ -43,6 +47,16 @@ install:
   - "python setup.py build"
   - "python setup.py bdist_wheel"
   - "pip install --pre --no-index --find-links dist/ pyFAI"
+
+before_script:
+    # Start X Virtual Framebuffer useful for GUI testing
+    # Doc: https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
+    - if [ "$TRAVIS_OS_NAME" == "linux" ];
+      then
+          export DISPLAY=:99.0;
+          sh -e /etc/init.d/xvfb start;
+          sleep 3;
+      fi
 
 # command to run tests
 script:
