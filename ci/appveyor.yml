@@ -42,17 +42,10 @@ environment:
           PYTHON_ARCH: "64"
           BUILD_ARGS: ""
 
-        # Python 3.5
-        - PYTHON_DIR: "C:\\Python35-x64"
-          QT_BINDING: "PyQt5"
-          PYTHON_VERSION: "3.5.0"
-          PYTHON_ARCH: "64"
-          BUILD_ARGS: ""
-
         # Python 3.6
         - PYTHON_DIR: "C:\\Python36-x64"
           QT_BINDING: "PyQt5"
-          #PYTHON_VERSION: "3.4.3"
+          PYTHON_VERSION: "3.6"
           PYTHON_ARCH: "64"
           # OpenMP is not available on python 3.4
           #BUILD_ARGS: "--no-openmp"
