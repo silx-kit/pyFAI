@@ -202,6 +202,7 @@ class TestImageFileDialogInteraction(utils.TestCaseQt, _UtilsMixin):
         self.assertSamePath(url.text(), _tmpDirectory)
 
         urls = sidebar.urls()
+        print(urls)
         if len(urls) == 0:
             self.skipTest("No sidebar path")
         path = urls[0].path()
@@ -220,8 +221,10 @@ class TestImageFileDialogInteraction(utils.TestCaseQt, _UtilsMixin):
             path = ""
         else:
             path = index.model().filePath(index)
+        print(path)
+        print(_tmpDirectory)
         self.assertNotSamePath(_tmpDirectory, path)
-        self.assertNotSamePath(url.text(), _tmpDirectory)
+        self.assertSamePath(path, url.text())
 
     def testClickOnDetailView(self):
         dialog = self.createDialog()
