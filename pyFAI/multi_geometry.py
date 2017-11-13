@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2017"
+__date__ = "13/11/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -151,8 +151,9 @@ class MultiGeometry(object):
                     sigma2 = numpy.zeros(npt, dtype=numpy.float64)
                 sigma2 += (res.sigma ** 2) / monitor
 
-        norm = numpy.maximum(count, EPS32 - 1)
-        invalid = count <= (EPS32 - 1)
+        tiny = numpy.finfo("float32").tiny
+        norm = numpy.maximum(count, tiny)
+        invalid = count <= 0.0
         I = sum_ / norm
         I[invalid] = self.empty
 
@@ -236,8 +237,9 @@ class MultiGeometry(object):
                     sigma2 = count = numpy.zeros_like(sum_)
                 sigma2 += (res.sigma ** 2) / monitor
 
-        norm = numpy.maximum(count, EPS32 - 1)
-        invalid = count <= (EPS32 - 1)
+        tiny = numpy.finfo("float32").tiny
+        norm = numpy.maximum(count, tiny)
+        invalid = count <= 0
         I = sum_ / norm
         I[invalid] = self.empty
 
