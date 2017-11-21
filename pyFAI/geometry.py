@@ -1662,7 +1662,7 @@ class Geometry(object):
 
         """
         dim1_unit = units.to_unit(dim1_unit)
-        tth = tth.copy() / dim1_unit.scale
+        tth = tth / dim1_unit.scale
 
         if shape is None:
             shape = self.detector.max_shape
@@ -1691,8 +1691,8 @@ class Geometry(object):
         return calcimage
 
     def calcfrom2d(self, I, tth, chi, shape=None, mask=None,
-                   dim1_unit=units.TTH, correctSolidAngle=True,
-                   dummy=0.0,
+                   dim1_unit=units.TTH, dim2_unit=units.CHI_DEG,
+                   correctSolidAngle=True, dummy=0.0,
                    polarization_factor=None, polarization_axis_offset=0,
                    dark=None, flat=None,
                    ):
@@ -1701,9 +1701,10 @@ class Geometry(object):
 
         :param I: scattering intensity, as an image n_tth, n_chi
         :param tth: 1D array with radial unit, this array needs to be ordered 
-        
+        :param chi: 1D array with azimuthal unit, this array needs to be ordered
         :param shape: shape of the image (if not defined by the detector)
         :param dim1_unit: unit for the "tth" array
+        :param dim2_unit: unit for the "chi" array
         :param correctSolidAngle:
         :param dummy: value for masked pixels
         :param polarization_factor: set to true to use previously used value
@@ -1714,8 +1715,9 @@ class Geometry(object):
 
         """
         dim1_unit = units.to_unit(dim1_unit)
-        tth = tth.copy() / dim1_unit.scale
-
+        dim2_unit = units.to_unit(dim2_unit)
+        tth = numpy.ascontiguousarray(tth, numpy.float64) / dim1_unit.scale
+        chi = numpy.ascontiguousarray(chi, numpy.float64) / dim2_unit.scale
         if shape is None:
             shape = self.detector.max_shape
         try:
@@ -1736,8 +1738,8 @@ class Geometry(object):
                                       radial=ttha,
                                       azimuthal=chia,
                                       polar=I,
-                                      rad_pos=numpy.ascontiguousarray(tth, numpy.float64),
-                                      azim_pos=numpy.ascontiguousarray(chi, numpy.float64))
+                                      rad_pos=tth,
+                                      azim_pos=chi)
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
         if polarization_factor is not None:
