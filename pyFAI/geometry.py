@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/09/2017"
+__date__ = "21/11/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1673,6 +1673,71 @@ class Geometry(object):
                                str(dim1_unit) + " not (yet?) Implemented")
         calcimage = numpy.interp(ttha.ravel(), tth, I)
         calcimage.shape = shape
+        if correctSolidAngle:
+            calcimage *= self.solidAngleArray(shape)
+        if polarization_factor is not None:
+            calcimage *= self.polarization(shape, polarization_factor,
+                                           axis_offset=polarization_axis_offset,
+                                           with_checksum=False)
+        if flat is not None:
+            assert flat.shape == tuple(shape)
+            calcimage *= flat
+        if dark is not None:
+            assert dark.shape == tuple(shape)
+            calcimage += dark
+        if mask is not None:
+            assert mask.shape == tuple(shape)
+            calcimage[numpy.where(mask)] = dummy
+        return calcimage
+
+    def calcfrom2d(self, I, tth, chi, shape=None, mask=None,
+                   dim1_unit=units.TTH, correctSolidAngle=True,
+                   dummy=0.0,
+                   polarization_factor=None, polarization_axis_offset=0,
+                   dark=None, flat=None,
+                   ):
+        """
+        Computes a 2D image from a cake / 2D integrated image
+
+        :param I: scattering intensity, as an image n_tth, n_chi
+        :param tth: 1D array with radial unit, this array needs to be ordered 
+        
+        :param shape: shape of the image (if not defined by the detector)
+        :param dim1_unit: unit for the "tth" array
+        :param correctSolidAngle:
+        :param dummy: value for masked pixels
+        :param polarization_factor: set to true to use previously used value
+        :param polarization_axis_offset: axis_offset to be send to the polarization method
+        :param dark: dark current correction
+        :param flat: flatfield corrction
+        :return: 2D image reconstructed
+
+        """
+        dim1_unit = units.to_unit(dim1_unit)
+        tth = tth.copy() / dim1_unit.scale
+
+        if shape is None:
+            shape = self.detector.max_shape
+        try:
+            ttha = self.__getattribute__(dim1_unit.center)(shape)
+
+        except:
+            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " +
+                               str(dim1_unit) + " not (yet?) Implemented")
+        chia = self.chia
+
+        built_mask = numpy.ones(shape, dtype=numpy.int8)
+        empty_data = numpy.zeros(shape, dtype=numpy.float32)
+
+        from .ext.inpainting import polar_interpolate
+
+        calcimage = polar_interpolate(empty_data,
+                                      mask=built_mask,
+                                      radial=ttha,
+                                      azimuthal=chia,
+                                      polar=I,
+                                      rad_pos=numpy.ascontiguousarray(tth, numpy.float64),
+                                      azim_pos=numpy.ascontiguousarray(chi, numpy.float64))
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
         if polarization_factor is not None:
