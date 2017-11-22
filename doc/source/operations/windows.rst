@@ -21,8 +21,8 @@ Get Python
 Unlike on Unix computers, Python is not available by default on Windows computers.
 We recommend you to install the 64 bit version of `Python <http://python.org>`_,
 preferably the latest 64 bits version from the
-`2.7 series <https://www.python.org/downloads/release/python-2710/>`_.
-But Python 3.4 and 3.5 are also very good candidates.
+`3.6 series <https://www.python.org/downloads/release/python-3600/>`_.
+But Python 2.7, 3.4 and 3.5 are also very good candidates.
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI v0.12.
 
 The 64 bits version is strongly advised if your hardware and operating system
@@ -30,7 +30,7 @@ supports it, as the 32 bits versions is
 limited to 2 GB of memory, hence unable to treat large images (like 4096 x 4096).
 The test suite is not passing on Windows 32 bits due to the limited amount of
 memory available to the Python process,
-nevertheless, pyFAI is running on Winodws 32 bits (but not as well).
+nevertheless, pyFAI is running on Windows 32 bits (but not as well).
 
 Alternative Scientific Python stacks exists, like
 `Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ ,
@@ -87,13 +87,14 @@ The strict dependencies for pyFAI are:
 * matplotlib
 * FabIO
 * h5py
+* silx
 
 Recommended dependencies are:
 
 * cython
 * h5py
 * pyopencl
-* PyQt4
+* PyQt5
 * pymca
 * rfoo
 * pyfftw3
@@ -109,8 +110,9 @@ Most of the dependencies are available via PIP:
    pip install numpy --upgrade
    pip install scipy --upgrade
    pip install matplotlib --upgrade
+   pip install PyQt5 --upgrade
    pip install fabio --upgrade
-   pip install PyQt4 --upgrade
+   pip install silx --upgrade
 
 Note that numpy/scipy/matplotlib are already installed in most "Scientific Python distribution"
 
@@ -150,7 +152,7 @@ Alternatively, you can use the wheelhouse of the silx project:
 
 .. code::
 
-   pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy scipy matplotlib fabio PyQt4
+   pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy scipy matplotlib fabio PyQt5
 
 Install pyFAI via PIP
 ---------------------
@@ -167,7 +169,7 @@ Install pyFAI from sources
 --------------------------
 
 The sources of pyFAI are available at https://github.com/silx-kit/pyFAI/releases
-the development is performed on https://github.com/kif/pyFAI
+the development is performed on https://github.com/silx-kit/pyFAI
 
 In addition to the Python interpreter, you will need *the* C compiler compatible
 with your Python interpreter, for example you can find the one for Python2.7 at:

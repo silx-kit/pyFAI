@@ -34,14 +34,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import sys
-import os
 import unittest
-import subprocess
+import runpy
 
-from .utilstest import getLogger, UtilsTest  # , Rwp, getLogger
+from .utilstest import getLogger
 logger = getLogger(__file__)
 
 try:
@@ -62,85 +61,73 @@ except:
 
 class TestScriptsHelp(unittest.TestCase):
 
-    def executeScipt(self, scriptName):
-        scriptPath, env = UtilsTest.script_path(scriptName)
-        p = subprocess.Popen(
-            [sys.executable, scriptPath, "--help"],
-            shell=False,
-            env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-
-        out, err = p.communicate()
-        if p.returncode != 0:
-            logger.error("Error while requesting help")
-            logger.error("Stdout:")
-            logger.error(out)
-            logger.error("Stderr:")
-            logger.error(err)
-            envString = "Environment:"
-            for k, v in env.items():
-                envString += "%s    %s: %s" % (os.linesep, k, v)
-            logger.error(envString)
-            self.fail()
+    def executeAppHelp(self, module):
+        old_sys_argv = list(sys.argv)
+        try:
+            sys.argv = [None, "--help"]
+            runpy.run_module(mod_name=module, run_name="__main__", alter_sys=True)
+        except SystemExit as e:
+            self.assertEquals(e.args[0], 0)
+        finally:
+            sys.argv = old_sys_argv
 
     def testCheckCalib(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeScipt("check_calib")
+        self.executeAppHelp("pyFAI.app.check_calib")
 
     def testDetector2Nexus(self):
-        self.executeScipt("detector2nexus")
+        self.executeAppHelp("pyFAI.app.detector2nexus")
 
     def testDiffMap(self):
-        self.executeScipt("diff_map")
+        self.executeAppHelp("pyFAI.app.diff_map")
 
     def testDiffTomo(self):
-        self.executeScipt("diff_tomo")
+        self.executeAppHelp("pyFAI.app.diff_tomo")
 
     def testEigerMask(self):
-        self.executeScipt("eiger-mask")
+        self.executeAppHelp("pyFAI.app.eiger_mask")
 
     def testMxcalibrate(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeScipt("MX-calibrate")
+        self.executeAppHelp("pyFAI.app.mx_calibrate")
 
     def testPyfaiAverage(self):
-        self.executeScipt("pyFAI-average")
+        self.executeAppHelp("pyFAI.app.average")
 
     def testPyfaiBenchmark(self):
-        self.executeScipt("pyFAI-benchmark")
+        self.executeAppHelp("pyFAI.app.benchmark")
 
     def testPyfaiCalib(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeScipt("pyFAI-calib")
+        self.executeAppHelp("pyFAI.app.calib")
 
     def testPyfaiDrawmask(self):
         if qt is None or (PyMca is None and silx is None):
             self.skipTest("Library Qt, PyMca and silx are not available")
-        self.executeScipt("pyFAI-drawmask")
+        self.executeAppHelp("pyFAI.app.drawmask")
 
     def testPyfaiIntegrate(self):
-        self.executeScipt("pyFAI-integrate")
+        self.executeAppHelp("pyFAI.app.integrate")
 
     def testPyfaiRecalib(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeScipt("pyFAI-recalib")
+        self.executeAppHelp("pyFAI.app.recalib")
 
     def testPyfaiSaxs(self):
-        self.executeScipt("pyFAI-saxs")
+        self.executeAppHelp("pyFAI.app.saxs")
 
     def testPyfaiWaxs(self):
-        self.executeScipt("pyFAI-waxs")
+        self.executeAppHelp("pyFAI.app.waxs")
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(
-        unittest.defaultTestLoader.loadTestsFromTestCase(TestScriptsHelp))
+    testsuite.addTest(loader(TestScriptsHelp))
     return testsuite
 
 

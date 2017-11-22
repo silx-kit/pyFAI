@@ -8,26 +8,34 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#  .
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#  .
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+
+"""Semi-graphical tool for peak-picking and extracting visually control points
+from an image with Debye-Scherer rings"""
 
 from __future__ import print_function, absolute_import
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2016"
+__date__ = "15/05/2017"
 __status__ = "production"
 
 import os
@@ -39,6 +47,7 @@ import types
 import array
 import operator
 import numpy
+from collections import OrderedDict
 
 try:
     from .gui import qt
@@ -51,7 +60,7 @@ if qt is not None:
     from .gui import utils as gui_utils
 
 import fabio
-from .calibrant import Calibrant, ALL_CALIBRANTS
+from .calibrant import Calibrant, CALIBRANT_FACTORY
 from .blob_detection import BlobDetection
 from .massif import Massif
 from .ext.reconstruct import reconstruct
@@ -574,7 +583,7 @@ class PeakPicker(object):
         if not callback:
             if not self.points.calibrant.dSpacing:
                 logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
-                print(ALL_CALIBRANTS)
+                print(CALIBRANT_FACTORY)
                 raise RuntimeError("Invalid calibrant")
             six.moves.input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
@@ -708,11 +717,12 @@ class PeakPicker(object):
 ################################################################################
 class ControlPoints(object):
     """
-    This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ...
+    This class contains a set of control points with (optionally) their ring number 
+    hence d-spacing and diffraction  2Theta angle ...
     """
     def __init__(self, filename=None, calibrant=None, wavelength=None):
         self._sem = threading.Semaphore()
-        self._groups = {}
+        self._groups = OrderedDict()
         self.calibrant = Calibrant(wavelength=wavelength)
         if filename is not None:
             self.load(filename)
@@ -723,8 +733,8 @@ class ControlPoints(object):
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
             elif type(calibrant) in types.StringTypes:
-                if calibrant in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                if calibrant in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(calibrant)
                 elif os.path.isfile(calibrant):
                     self.calibrant = Calibrant(calibrant)
                 else:
@@ -741,8 +751,7 @@ class ControlPoints(object):
         lstOut = ["ControlPoints instance containing %i group of point:" % len(self)]
         if self.calibrant:
             lstOut.append(self.calibrant.__repr__())
-        labels = list(self._groups.keys())
-        labels.sort(key=lambda item: self._groups[item].code)
+        labels = self.get_labels()
         lstOut.append("Containing %s groups of points:" % len(labels))
         for lbl in labels:
             lstOut.append(str(self._groups[lbl]))
@@ -752,21 +761,20 @@ class ControlPoints(object):
         return len(self._groups)
 
     def check(self):
-        """
-        check internal consistency of the class
+        """check internal consistency of the class, disabled for now
         """
         pass
 
     def reset(self):
-        """
-        remove all stored values and resets them to default
+        """remove all stored values and resets them to default
         """
         with self._sem:
-            self._groups = {}
+            self._groups = OrderedDict()
             PointGroup.reset_label()
 
     def append(self, points, ring=None, annotate=None, plot=None):
-        """
+        """Append a group of points to a given ring
+
         :param point: list of points
         :param ring: ring number
         :param annotate: matplotlib.annotate reference
@@ -779,37 +787,39 @@ class ControlPoints(object):
         return gpt
 
     def append_2theta_deg(self, points, angle=None, ring=None):
-        """
+        """Append a group of points to a given ring
+        
         :param point: list of points
         :param angle: 2-theta angle in degrees
+        :param: ring: ring number
         """
         if angle:
             self.append(points, numpy.deg2rad(angle), ring)
         else:
             self.append(points, None, ring)
 
-    def get(self, ring=None):
-        """
-        retireves the last set of points for a given ring (by default the last)
+    def get(self, ring=None, lbl=None):
+        """Retireves the last group of points for a given ring (by default the last)
 
         :param ring: index of ring to search for
+        :param lbl: label of the group to retrieve 
         """
         out = None
         with self._sem:
-            if (ring is None):
-                lst = list(self._groups.keys())
-                lst.sort(key=lambda item: self._groups[item].code)
-                if not lst:
-                    logger.warning("No group in ControlPoints.get")
-                    return
-                lbl = lst[-1]
-            else:
-                lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
-                lst.sort(key=lambda item: self._groups[item].code)
-                if not lst:
-                    logger.warning("No group for ring %s in ControlPoints.get", ring)
-                    return
-                lbl = lst[-1]
+            if lbl is None:
+                if (ring is None):
+                    lst = self.get_labels()
+                    if not lst:
+                        logger.warning("No group in ControlPoints.get")
+                        return
+                    lbl = lst[-1]
+                else:
+                    lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
+                    lst.sort(key=lambda item: self._groups[item].code)
+                    if not lst:
+                        logger.warning("No group for ring %s in ControlPoints.get", ring)
+                        return
+                    lbl = lst[-1]
             if lbl in self._groups:
                 out = self._groups.get(lbl)
             else:
@@ -861,8 +871,7 @@ class ControlPoints(object):
             if self.calibrant.wavelength is not None:
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
-            lst = list(self._groups.keys())
-            lst.sort(key=lambda item: self._groups[item].code)
+            lst = self.get_labels()
             tth = self.calibrant.get_2th()
             for idx, lbl in enumerate(lst):
                 gpt = self._groups[lbl]
@@ -900,8 +909,8 @@ class ControlPoints(object):
                 key = key.strip().lower()
                 if key == "calibrant":
                     words = value.split()
-                    if words[0] in ALL_CALIBRANTS:
-                        calibrant = ALL_CALIBRANTS[words[0]]
+                    if words[0] in CALIBRANT_FACTORY:
+                        calibrant = CALIBRANT_FACTORY(words[0])
                     try:
                         wavelength = float(words[-1])
                         calibrant.set_wavelength(wavelength)
@@ -1071,6 +1080,15 @@ class ControlPoints(object):
         self.calibrant.dSpacing = lst
     dSpacing = property(get_dSpacing, set_dSpacing)
 
+    def get_labels(self):
+        """Retieve the list of labels 
+        
+        :return: list of labels as string  
+        """
+        labels = list(self._groups.keys())
+        labels.sort(key=lambda item: self._groups[item].code)
+        return labels
+
 
 class PointGroup(object):
     """
@@ -1088,8 +1106,12 @@ class PointGroup(object):
         cls.last_label += 1
         if code < 26:
             label = chr(97 + code)
-        else:
+        elif code < 26 * 26:
             label = chr(96 + code // 26) + chr(97 + code % 26)
+        else:
+            a = code % 26
+            b = code // 26
+            label = chr(96 + b // 26) + chr(97 + b % 26) + chr(97 + a)
         return label, code
 
     @classmethod
@@ -1099,8 +1121,12 @@ class PointGroup(object):
         """
         if len(label) == 1:
             code = ord(label) - 97
-        else:
+        elif len(label) == 2:
             code = (ord(label[0]) - 96) * 26 + (ord(label[1]) - 97)
+        else:
+            code = (ord(label[0]) - 96) * 26 * 26 + \
+                   (ord(label[1]) - 97) * 26 + \
+                   (ord(label) - 97)
         if cls.last_label <= code:
             cls.last_label = code + 1
         return code

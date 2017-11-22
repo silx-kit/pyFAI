@@ -4,9 +4,6 @@
 /testimages
 
 # Generated
-/package/*.*
-/package/pyFAI*
-/man
 /profile.log
 
 # Packages
@@ -42,3 +39,5 @@ pip-log.txt
 *~
 *.swp
 
+# Notebook
+.ipynb_checkpoints

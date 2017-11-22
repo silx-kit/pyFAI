@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2015
+:Date: 20/07/2017
 :Keywords: Installation procedure on MacOSX
 :Target: System administrators
 
@@ -19,7 +19,9 @@ MacOSX provides by default Python2.7 with Numpy which is a good basis.
     sudo pip install fabio --upgrade
     sudo pip install h5py --upgrade
     sudo pip install cython --upgrade
+    sudo pip install silx --upgrade
     sudo pip install pyFAI --upgrade
+    
 
 If you get an error about the local "UTF-8", try to:
 
@@ -69,7 +71,7 @@ one needs to regenerate all Cython files without OpenMP.
 
     sudo pip install cython --upgrade
     rm pyFAI/ext/*.c
-    python setup.py build --no-openmp
+    python setup.py build --force-cython --no-openmp
     python setup.py bdist_wheel
     sudo pip install --find-links=dist/ --pre --no-index --upgrade pyFAI
 

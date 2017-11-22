@@ -8,19 +8,23 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 """
 pyFAI-calib
@@ -31,9 +35,9 @@ A tool for determining the geometry of a detector using a reference sample.
 from __future__ import print_function, division
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "16/05/2017"
 __status__ = "production"
 
 import os
@@ -75,7 +79,7 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
 from . import date as PyFAI_DATE
-from .calibrant import Calibrant, ALL_CALIBRANTS
+from .calibrant import Calibrant, CALIBRANT_FACTORY
 try:
     from ._convolution import gaussian_filter
 except ImportError:
@@ -202,8 +206,8 @@ class AbstractCalibration(object):
         if calibrant:
             if isinstance(calibrant, Calibrant):
                 self.calibrant = calibrant
-            elif calibrant in ALL_CALIBRANTS:
-                self.calibrant = ALL_CALIBRANTS[calibrant]
+            elif calibrant in CALIBRANT_FACTORY:
+                self.calibrant = CALIBRANT_FACTORY(calibrant)
             elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
@@ -422,8 +426,8 @@ class AbstractCalibration(object):
 
         self.pointfile = options.npt
         if options.spacing:
-            if options.spacing in ALL_CALIBRANTS:
-                self.calibrant = ALL_CALIBRANTS[options.spacing]
+            if options.spacing in CALIBRANT_FACTORY:
+                self.calibrant = CALIBRANT_FACTORY(options.spacing)
             elif os.path.isfile(options.spacing):
                 self.calibrant = Calibrant(options.spacing)
             else:
@@ -550,8 +554,8 @@ class AbstractCalibration(object):
             while valid:
                 ans = six.moves.input("Please enter the calibrant name or the file"
                             " containing the d-spacing:\t").strip()
-                if ans in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[ans]
+                if ans in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(ans)
                     valid = True
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(ans)
@@ -730,7 +734,7 @@ class AbstractCalibration(object):
                     if (count == 0):
                         previous = six.MAXSIZE
                     else:
-                        previous = self.geoRef.chi2()
+                        previous = self.geoRef.chi2_wavelength()
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
@@ -985,7 +989,9 @@ class AbstractCalibration(object):
             elif action == "assign":
                 # Re assign a group of point to a ring ...
                 if self.peakPicker and self.peakPicker.points:
-                    self.peakPicker.points.readRingNrFromKeyboard()
+                    control_points = self.peakPicker.points
+                    control_points.readRingNrFromKeyboard()
+                    control_points.save(self.basename + ".npt")
                     if self.weighted:
                         self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
                     else:
@@ -1146,7 +1152,8 @@ class AbstractCalibration(object):
         t2 = time.time()
         self.geoRef.chiArray(self.peakPicker.shape)
         t2a = time.time()
-        self.geoRef.corner_array(self.peakPicker.shape, "2th_deg")
+        self.geoRef.corner_array(self.peakPicker.shape, units.TTH_DEG,
+                                 scale=False)
         t2b = time.time()
         if self.gui:
             if self.fig_integrate is None:
@@ -1429,7 +1436,7 @@ Angstrom (in decreasing order).
 %s
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
-The --calibrant option is mandatory !""" % str(ALL_CALIBRANTS)
+The --calibrant option is mandatory !""" % str(CALIBRANT_FACTORY)
 
         epilog = """The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
@@ -1631,7 +1638,7 @@ Angstrom (in decreasing order).
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
 The --calibrant option is mandatory !
-""" % str(ALL_CALIBRANTS)
+""" % str(CALIBRANT_FACTORY)
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
 rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
@@ -2013,8 +2020,8 @@ class MultiCalib(object):
 
     def read_dSpacingFile(self):
         """Read the name of the calibrant or the file with d-spacing"""
-        if self.calibrant in ALL_CALIBRANTS:
-            self.calibrant = ALL_CALIBRANTS[self.calibrant]
+        if self.calibrant in CALIBRANT_FACTORY:
+            self.calibrant = CALIBRANT_FACTORY(self.calibrant)
         elif os.path.isfile(self.calibrant):
             self.calibrant = Calibrant(filename=self.calibrant)
         else:
@@ -2031,8 +2038,8 @@ class MultiCalib(object):
             while not self.calibrant:
                 ans = six.moves.input("Please enter the name of the calibrant"
                             " or the file containing the d-spacing:\t").strip()
-                if ans in ALL_CALIBRANTS:
-                    self.calibrant = ALL_CALIBRANTS[ans]
+                if ans in CALIBRANT_FACTORY:
+                    self.calibrant = CALIBRANT_FACTORY(ans)
                 elif os.path.isfile(ans):
                     self.calibrant = Calibrant(filename=ans)
 

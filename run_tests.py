@@ -2,7 +2,7 @@
 # coding: utf-8
 # /*##########################################################################
 #
-# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
+# Copyright (c) 2015-2017 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,10 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "01/12/2016"
+__date__ = "14/09/2017"
 __license__ = "MIT"
 
 import distutils.util
-import distutils.dir_util
 import logging
 import os
 import subprocess
@@ -49,7 +48,7 @@ else:
     resource = None
 try:
     import importlib
-except:
+except ImportError:
     importer = __import__
     old_importer = True
 else:
@@ -60,7 +59,6 @@ else:
 class StreamHandlerUnittestReady(logging.StreamHandler):
     """The unittest class TestResult redefine sys.stdout/err to capture
     stdout/err from tests and to display them only when a test fail.
-
     This class allow to use unittest stdout-capture by using the last sys.stdout
     and not a cached one.
     """
@@ -75,10 +73,20 @@ class StreamHandlerUnittestReady(logging.StreamHandler):
     def flush(self):
         pass
 
-# Same as basicConfig with a custom handler but portable Python 2 and 3
-root = logging.getLogger()
-root.addHandler(StreamHandlerUnittestReady())
-root.setLevel(logging.WARNING)
+
+def createBasicHandler():
+    """Create the handler using the basic configuration"""
+    hdlr = StreamHandlerUnittestReady()
+    fs = logging.BASIC_FORMAT
+    dfs = None
+    fmt = logging.Formatter(fs, dfs)
+    hdlr.setFormatter(fmt)
+    return hdlr
+
+
+# Use an handler compatible with unittests, else use_buffer is not working
+logging.root.addHandler(createBasicHandler())
+logging.captureWarnings(True)
 
 logger = logging.getLogger("run_tests")
 logger.setLevel(logging.WARNING)
@@ -87,20 +95,20 @@ logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
 try:
     import numpy
-except:
+except ImportError:
     logger.warning("numpy missing")
 else:
     print("numpy %s from %s" % (numpy.version.version, numpy.__path__))
 try:
     import scipy
-except:
+except ImportError:
     logger.warning("Scipy missing")
 else:
     print("Scipy %s from %s" % (scipy.version.version, scipy.__path__))
 
 try:
     import fabio
-except:
+except ImportError:
     logger.warning("FabIO missing")
 else:
     print("FabIO %s" % fabio.version)
@@ -114,7 +122,7 @@ else:
 
 try:
     import Cython
-except:
+except ImportError:
     print("Cython missing")
 else:
     print("Cython %s" % Cython.__version__)
@@ -171,7 +179,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
                          time.time() - self.__time_start, memusage, test.id())
 
 
-def report_rst(cov, package="fabio", version="0.0.0", base=""):
+def report_rst(cov, package, version="0.0.0", base=""):
     """
     Generate a report of test coverage in RST (for Sphinx inclusion)
 
@@ -200,27 +208,26 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
             '']
     tot_sum_lines = 0
     tot_sum_hits = 0
-
+    print(base)
     for cl in classes:
         name = cl.get("name")
         fname = cl.get("filename")
-        if not os.path.abspath(fname).startswith(base):
-            continue
-        lines = cl.find("lines").getchildren()
-        hits = [int(i.get("hits")) for i in lines]
+        if os.path.abspath(fname).startswith(base):
+            lines = cl.find("lines").getchildren()
+            hits = [int(i.get("hits")) for i in lines]
 
-        sum_hits = sum(hits)
-        sum_lines = len(lines)
+            sum_hits = sum(hits)
+            sum_lines = len(lines)
 
-        cover = 100.0 * sum_hits / sum_lines if sum_lines else 0
+            cover = 100.0 * sum_hits / sum_lines if sum_lines else 0
 
-        if base:
-            name = os.path.relpath(fname, base)
+            if base:
+                name = os.path.relpath(fname, base)
 
-        res.append('   "%s", "%s", "%s", "%.1f %%"' %
-                   (name, sum_lines, sum_hits, cover))
-        tot_sum_lines += sum_lines
-        tot_sum_hits += sum_hits
+            res.append('   "%s", "%s", "%s", "%.1f %%"' %
+                       (name, sum_lines, sum_hits, cover))
+            tot_sum_lines += sum_lines
+            tot_sum_hits += sum_hits
     res.append("")
     res.append('   "%s total", "%s", "%s", "%.1f %%"' %
                (package, tot_sum_lines, tot_sum_hits,
@@ -231,7 +238,6 @@ def report_rst(cov, package="fabio", version="0.0.0", base=""):
 
 def build_project(name, root_dir):
     """Run python setup.py build for the project.
-    and copy data files to run the tests
 
     Build directory can be modified by environment variables.
 
@@ -255,9 +261,6 @@ def build_project(name, root_dir):
     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                          shell=False, cwd=root_dir)
     logger.debug("subprocess ended with rc= %s", p.wait())
-
-    distutils.dir_util.copy_tree("pyFAI/resources", os.path.join(home, PROJECT_NAME, "resources"), update=1)
-
     return home
 
 
@@ -266,9 +269,11 @@ try:
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
 
-epilog = """Environment variables: None"""
+epilog = """Environment variables:
+PYFAI_LOW_MEM: set to True to skip all tests >100Mb
+PYFAI_OPENCL=False to disable OpenCL tests.
+"""
 # WITH_QT_TEST=False to disable graphical tests,
-# SILX_OPENCL=False to disable OpenCL tests.
 # SILX_TEST_LOW_MEM=True to disable tests taking large amount of memory
 # GPU=False to disable the use of a GPU with OpenCL test
 # """
@@ -290,16 +295,17 @@ parser.add_argument("-v", "--verbose", default=0,
                     help="Increase verbosity. Option -v prints additional " +
                          "INFO messages. Use -vv for full verbosity, " +
                          "including debug messages and test help strings.")
-parser.add_argument("-n", "--noisy", default=True,
-                    action="store_false", dest="display_buffer",
-                    help="Display all warnings from the system")
+parser.add_argument("-l", "--low-mem", default=False,
+                    action="store_true", dest="low_mem",
+                    help="Use this option to discard all test using >100MB memory")
+parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
+                    action="store_false",
+                    help="Disable the test of the OpenCL part")
+
 
 # parser.add_argument("-x", "--no-gui", dest="gui", default=True,
 #                    action="store_false",
 #                    help="Disable the test of the graphical use interface")
-# parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
-#                    action="store_false",
-#                    help="Disable the test of the OpenCL part")
 # parser.add_argument("-l", "--low-mem", dest="low_mem", default=False,
 #                    action="store_true",
 #                    help="Disable test with large memory consumption (>100Mbyte")
@@ -315,13 +321,17 @@ sys.argv = [sys.argv[0]]
 
 
 test_verbosity = 1
+use_buffer = True
 if options.verbose == 1:
     logging.root.setLevel(logging.INFO)
     logger.info("Set log level: INFO")
+    test_verbosity = 2
+    use_buffer = False
 elif options.verbose > 1:
     logging.root.setLevel(logging.DEBUG)
     logger.info("Set log level: DEBUG")
     test_verbosity = 2
+    use_buffer = False
 
 # if not options.gui:
 #    os.environ["WITH_QT_TEST"] = "False"
@@ -331,7 +341,6 @@ elif options.verbose > 1:
 #
 # if options.low_mem:isy
 #    os.environ["SILX_TEST_LOW_MEM"] = "True"
-
 
 if options.coverage:
     logger.info("Running test-coverage")
@@ -354,7 +363,7 @@ if (os.path.dirname(os.path.abspath(__file__)) ==
 if not options.insource:
     try:
         module = importer(PROJECT_NAME)
-    except:
+    except ImportError:
         logger.warning(
             "%s missing, using built (i.e. not installed) version",
             PROJECT_NAME)
@@ -375,6 +384,7 @@ PROJECT_PATH = module.__path__[0]
 # Run the tests
 runnerArgs = {}
 runnerArgs["verbosity"] = test_verbosity
+runnerArgs["buffer"] = use_buffer
 if options.memprofile:
     runnerArgs["resultclass"] = ProfileTextTestResult
 runner = unittest.TextTestRunner(**runnerArgs)
@@ -394,6 +404,14 @@ UtilsTest = getattr(utilstest, "UtilsTest")
 UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
 UtilsTest.testimages = os.path.join(UtilsTest.image_home, "all_testimages.json")
 UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
+
+if options.low_mem:
+    logger.info("Switch to low_mem mode")
+    UtilsTest.low_mem = True
+
+if not options.opencl:
+    logger.info("Disable OpenCL tests")
+    UtilsTest.opencl = False
 
 test_suite = unittest.TestSuite()
 
@@ -424,7 +442,7 @@ if options.coverage:
     cov.stop()
     cov.save()
     with open("coverage.rst", "w") as fn:
-        fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
+        fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, os.path.join(PROJECT_PATH, "build")))
     print(cov.report())
 
 sys.exit(exit_status)

@@ -28,8 +28,6 @@ Build-Depends: cython,
                python-scipy-dbg,
                python-sphinx,
                python-sphinxcontrib.programoutput,
-               python-tk,
-               python-tk-dbg,
                python3-all-dev,
                python3-all-dbg,
                python3-fabio,
@@ -46,8 +44,7 @@ Build-Depends: cython,
                python3-scipy-dbg,
                python3-sphinx,
                python3-sphinxcontrib.programoutput,
-               python3-tk,
-               python3-tk-dbg
+               help2man
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/pyfai.git
@@ -60,6 +57,7 @@ Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          ${shlibs:Depends},
+         python-pkg-resources,
          python-pyfai (>= ${source:Version})
 Description: Fast Azimuthal Integration scripts
  PyFAI is a Python library for azimuthal integration; it allows the conversion
@@ -84,10 +82,11 @@ Section: python
 Depends: ${misc:Depends},
          ${python:Depends},
          ${shlibs:Depends},
-         python-fabio (>=0.3),
+         python-fabio (>=0.5),
          python-imaging,
          python-matplotlib,
-         python-scipy
+         python-scipy,
+         python-silx
 Recommends: python-h5py,
             python-pyopencl,
             python-qt4 | python-pyside
@@ -122,7 +121,7 @@ Depends: ${misc:Depends},
          ${python:Depends},
          ${shlibs:Depends},
          python-pyfai (= ${binary:Version}),
-         python-fabio-dbg (>= 0.3),
+         python-fabio-dbg (>= 0.5),
          python-imaging-dbg,
          python-matplotlib-dbg,
          python-scipy-dbg
@@ -157,10 +156,11 @@ Section: python
 Depends: ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends},
-         python3-fabio (>= 0.3),
+         python3-fabio (>= 0.5),
          python3-pil,
          python3-matplotlib,
-         python3-scipy
+         python3-scipy,
+         python3-silx
 Recommends: python3-pyopencl,
             python3-pyqt4 | python3-pyside
 Suggests: python3-h5py
@@ -190,7 +190,7 @@ Depends: ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends},
          python3-pyfai (= ${binary:Version}),
-         python3-fabio-dbg (>=0.3),
+         python3-fabio-dbg (>=0.5),
          python3-pil-dbg,
          python3-matplotlib-dbg,
          python3-scipy-dbg

@@ -45,11 +45,10 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "14/09/2017"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-import fabio
 import json
 import logging
 import numpy
@@ -59,7 +58,13 @@ import sys
 import threading
 import time
 
-from .utils import StringTypes
+try:
+    from collections import OrderedDict
+except ImportError:
+    OrderedDict = dict
+
+
+from .utils import StringTypes, fully_qualified_name
 from . import units
 from . import version
 
@@ -75,6 +80,11 @@ else:
         h5py._errors.silence_errors()
     except AttributeError:  # old h5py
         pass
+try:
+    import fabio
+except ImportError:
+    fabio = None
+    logger.error("fabio module missing")
 
 
 def get_isotime(forceTime=None):
@@ -421,13 +431,14 @@ class HDF5Writer(Writer):
 
 class DefaultAiWriter(Writer):
 
-    def __init__(self, filename, ai):
-        """
-        Constructor of the historical writer of azimuthalIntegrator.
+    def __init__(self, filename, engine=None):
+        """Constructor of the historical writer of azimuthalIntegrator.
+
+        :param filename: name of the output file
+        :param ai: integrator, should provide make_headers method.
         """
         self._filename = filename
-        self._ai = ai
-        self._header = None
+        self._engine = engine
         self._already_written = False
 
     def set_filename(self, filename):
@@ -437,8 +448,9 @@ class DefaultAiWriter(Writer):
         self._filename = filename
         self._already_written = False
 
-    def make_headers(self, hdr="#", has_dark=False, has_flat=False,
-                    polarization_factor=None, normalization_factor=None):
+    def make_headers(self, hdr="#", has_mask=None, has_dark=None, has_flat=None,
+                     polarization_factor=None, normalization_factor=None,
+                     metadata=None):
         """
         :param hdr: string used as comment in the header
         :type hdr: str
@@ -452,53 +464,29 @@ class DefaultAiWriter(Writer):
         :return: the header
         :rtype: str
         """
-        if self._header is None:
-            ai = self._ai
-            headerLst = ["== pyFAI calibration =="]
-            headerLst.append("SplineFile: %s" % ai.splineFile)
-            headerLst.append("PixelSize: %.3e, %.3e m" %
-                             (ai.pixel1, ai.pixel2))
-            headerLst.append("PONI: %.3e, %.3e m" % (ai.poni1, ai.poni2))
-            headerLst.append("Distance Sample to Detector: %s m" %
-                             ai.dist)
-            headerLst.append("Rotations: %.6f %.6f %.6f rad" %
-                             (ai.rot1, ai.rot2, ai.rot3))
-            headerLst += ["", "== Fit2d calibration =="]
+        if "make_headers" in dir(self._engine):
+            header_lst = self._engine.make_headers()
+        else:
+            header_lst = [str(self._engine), ""]
 
-            f2d = ai.getFit2D()
-            headerLst.append("Distance Sample-beamCenter: %.3f mm" %
-                             f2d["directDist"])
-            headerLst.append("Center: x=%.3f, y=%.3f pix" %
-                             (f2d["centerX"], f2d["centerY"]))
-            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" %
-                             (f2d["tilt"], f2d["tiltPlanRotation"]))
-            headerLst.append("")
+        header_lst += ["Mask applied: %s" % has_mask,
+                       "Dark current applied: %s" % has_dark,
+                       "Flat field applied: %s" % has_flat,
+                       "Polarization factor: %s" % polarization_factor,
+                       "Normalization factor: %s" % normalization_factor]
 
-            if ai._wavelength is not None:
-                headerLst.append("Wavelength: %s" % ai.wavelength)
-            if ai.maskfile is not None:
-                headerLst.append("Mask File: %s" % ai.maskfile)
-            if has_dark or (ai.darkcurrent is not None):
-                if ai.darkfiles:
-                    headerLst.append("Dark current: %s" % ai.darkfiles)
-                else:
-                    headerLst.append("Dark current: Done with unknown file")
-            if has_flat or (ai.flatfield is not None):
-                if ai.flatfiles:
-                    headerLst.append("Flat field: %s" % ai.flatfiles)
-                else:
-                    headerLst.append("Flat field: Done with unknown file")
-            if polarization_factor is None and ai._polarization is not None:
-                polarization_factor = ai._polarization_factor
-            headerLst.append("Polarization factor: %s" % polarization_factor)
-            headerLst.append("Normalization factor: %s" % normalization_factor)
-            self._header = "\n".join([hdr + " " + i for i in headerLst])
+        if metadata is not None:
+            header_lst += ["", "Headers of the input frame:"]
+            header_lst += [i.strip() for i in json.dumps(metadata, indent=2).split("\n")]
+        header = "\n".join(["%s %s" % (hdr, i) for i in header_lst])
 
-        return self._header
+        return header
 
     def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg",
-               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
-        """
+               has_mask=None, has_dark=False, has_flat=False,
+               polarization_factor=None, normalization_factor=None, metadata=None):
+        """This method save the result of a 1D integration as ASCII file.
+
         :param filename: the filename used to save the 1D integration
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
@@ -509,22 +497,22 @@ class DefaultAiWriter(Writer):
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
         :type dim1_unit: pyFAI.units.Unit
-        :param has_dark: save the darks filenames (default: no)
-        :type has_dark: bool
-        :param has_flat: save the flat filenames (default: no)
-        :type has_flat: bool
+        :param has_mask: a mask was used 
+        :param has_dark: a dark-current was applied
+        :param has_flat: flat-field was applied
         :param polarization_factor: the polarization factor
         :type polarization_factor: float, None
         :param normalization_factor: the monitor value
         :type normalization_factor: float, None
-
-        This method save the result of a 1D integration.
+        :param metadata: JSON serializable dictionary containing the metadata
         """
         dim1_unit = units.to_unit(dim1_unit)
         with open(filename, "w") as f:
-            f.write(self.make_headers(has_dark=has_dark, has_flat=has_flat,
-                                     polarization_factor=polarization_factor,
-                                     normalization_factor=normalization_factor))
+            f.write(self.make_headers(has_mask=has_mask, has_dark=has_dark,
+                                      has_flat=has_flat,
+                                      polarization_factor=polarization_factor,
+                                      normalization_factor=normalization_factor,
+                                      metadata=metadata))
             try:
                 f.write("\n# --> %s\n" % (filename))
             except UnicodeError:
@@ -539,8 +527,11 @@ class DefaultAiWriter(Writer):
             f.write("\n")
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit="2th_deg",
-               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
-        """
+               has_mask=None, has_dark=False, has_flat=False,
+               polarization_factor=None, normalization_factor=None,
+               metadata=None):
+        """This method save the result of a 2D integration.
+
         :param filename: the filename used to save the 2D histogram
         :type filename: str
         :param dim1: the 1st coordinates of the histogram
@@ -553,58 +544,47 @@ class DefaultAiWriter(Writer):
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
         :type dim1_unit: pyFAI.units.Unit
-        :param has_dark: save the darks filenames (default: no)
-        :type has_dark: bool
-        :param has_flat: save the flat filenames (default: no)
-        :type has_flat: bool
+        :param has_mask: a mask was used 
+        :param has_dark: a dark-current was applied
+        :param has_flat: flat-field was applied
         :param polarization_factor: the polarization factor
         :type polarization_factor: float, None
         :param normalization_factor: the monitor value
         :type normalization_factor: float, None
-
-        This method save the result of a 2D integration.
+        :param metadata: JSON serializable dictionary containing the metadata
         """
+        if fabio is None:
+            raise RuntimeError("FabIO module is needed to save EDF images")
         dim1_unit = units.to_unit(dim1_unit)
-        # TODO: propoerly manage ordered dict
-        try:
-            from collections import OrderedDict
-        except:
-            header = {}
-        else:
-            header = OrderedDict()
 
-        ai = self._ai
-        header["dist"] = str(ai._dist)
-        header["poni1"] = str(ai._poni1)
-        header["poni2"] = str(ai._poni2)
-        header["rot1"] = str(ai._rot1)
-        header["rot2"] = str(ai._rot2)
-        header["rot3"] = str(ai._rot3)
-        header["chi_min"] = str(dim2.min())
-        header["chi_max"] = str(dim2.max())
+        # Remove \n and \t)
+        engine_info = " ".join(str(self._engine).split())
+        header = OrderedDict()
+        header["Engine"] = engine_info
+
+        if "make_headers" in dir(self._engine):
+            header.update(self._engine.make_headers("dict"))
+
         header[dim1_unit.name + "_min"] = str(dim1.min())
         header[dim1_unit.name + "_max"] = str(dim1.max())
-        header["pixelX"] = str(ai.pixel2)  # this is not a bug ... most people expect dim1 to be X
-        header["pixelY"] = str(ai.pixel1)  # this is not a bug ... most people expect dim2 to be Y
+
+        header["chi_min"] = str(dim2.min())
+        header["chi_max"] = str(dim2.max())
+
+        header["has_mask_applied"] = str(has_mask)
+        header["has_dark_correction"] = str(has_dark)
+        header["has_flat_correction"] = str(has_flat)
         header["polarization_factor"] = str(polarization_factor)
         header["normalization_factor"] = str(normalization_factor)
 
-        if ai.splineFile:
-            header["spline"] = str(ai.splineFile)
-
-        if has_dark:
-            if ai.darkfiles:
-                header["dark"] = ai.darkfiles
-            else:
-                header["dark"] = 'unknown dark applied'
-        if has_flat:
-            if ai.flatfiles:
-                header["flat"] = ai.flatfiles
-            else:
-                header["flat"] = 'unknown flat applied'
-        f2d = ai.getFit2D()
-        for key in f2d:
-            header["key"] = f2d[key]
+        if metadata is not None:
+            blacklist = ['HEADERID', 'IMAGE', 'BYTEORDER', 'DATATYPE', 'DIM_1',
+                         'DIM_2', 'DIM_3', 'SIZE']
+            for key, value in metadata.items():
+                if key.upper() in blacklist or key in header:
+                    continue
+                else:
+                    header[key] = value
         try:
             img = fabio.edfimage.edfimage(data=I.astype("float32"),
                                           header=header)
@@ -627,31 +607,32 @@ class DefaultAiWriter(Writer):
             raise Exception("This file format do not support multi frame. You have to change the filename.")
         self._already_written = True
 
-        from .containers import Integrate1dResult
-        from .containers import Integrate2dResult
+        if fully_qualified_name(data) == 'pyFAI.containers.Integrate1dResult':
+            self.save1D(filename=self._filename,
+                        dim1=data.radial,
+                        I=data.intensity,
+                        error=data.sigma,
+                        dim1_unit=data.unit,
+                        has_mask=data.has_mask_applied,
+                        has_dark=data.has_dark_correction,
+                        has_flat=data.has_flat_correction,
+                        polarization_factor=data.polarization_factor,
+                        normalization_factor=data.normalization_factor,
+                        metadata=data.metadata)
 
-        if isinstance(data, Integrate1dResult):
-            self.save1D(self._filename,
-                        data.radial,
-                        data.intensity,
-                        data.sigma,
-                        data.unit,
-                        data.has_dark_correction,
-                        data.has_flat_correction,
-                        data.polarization_factor,
-                        data.normalization_factor)
-
-        elif isinstance(data, Integrate2dResult):
-            self.save2D(self._filename,
-                        data.intensity,
-                        data.radial,
-                        data.azimuthal,
-                        data.sigma,
-                        data.unit,
-                        data.has_dark_correction,
-                        data.has_flat_correction,
-                        data.polarization_factor,
-                        data.normalization_factor)
+        elif fully_qualified_name(data) == 'pyFAI.containers.Integrate2dResult':
+            self.save2D(filename=self._filename,
+                        I=data.intensity,
+                        dim1=data.radial,
+                        dim2=data.azimuthal,
+                        error=data.sigma,
+                        dim1_unit=data.unit,
+                        has_mask=data.has_mask_applied,
+                        has_dark=data.has_dark_correction,
+                        has_flat=data.has_flat_correction,
+                        polarization_factor=data.polarization_factor,
+                        normalization_factor=data.normalization_factor,
+                        metadata=data.metadata)
         else:
             raise Exception("Unsupported data type: %s" % type(data))
 
@@ -690,38 +671,38 @@ class AsciiWriter(Writer):
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-            headerLst = ["", "== Detector =="]
+            header_lst = ["", "== Detector =="]
             if "detector" in self.fai_cfg:
-                headerLst.append("Detector: %s" % self.fai_cfg["detector"])
+                header_lst.append("Detector: %s" % self.fai_cfg["detector"])
             if "splineFile" in self.fai_cfg:
-                headerLst.append("SplineFile: %s" % self.fai_cfg["splineFile"])
+                header_lst.append("SplineFile: %s" % self.fai_cfg["splineFile"])
             if "pixel1" in self.fai_cfg:
-                headerLst.append("PixelSize: %.3e, %.3e m" % (self.fai_cfg["pixel1"], self.fai_cfg["pixel2"]))
+                header_lst.append("PixelSize: %.3e, %.3e m" % (self.fai_cfg["pixel1"], self.fai_cfg["pixel2"]))
             if "mask_file" in self.fai_cfg:
-                headerLst.append("MaskFile: %s" % (self.fai_cfg["mask_file"]))
+                header_lst.append("MaskFile: %s" % (self.fai_cfg["mask_file"]))
 
-            headerLst.append("== pyFAI calibration ==")
+            header_lst.append("== pyFAI calibration ==")
             if "poni1" in self.fai_cfg:
-                headerLst.append("PONI: %.3e, %.3e m" % (self.fai_cfg["poni1"], self.fai_cfg["poni2"]))
+                header_lst.append("PONI: %.3e, %.3e m" % (self.fai_cfg["poni1"], self.fai_cfg["poni2"]))
             if "dist" in self.fai_cfg:
-                headerLst.append("Distance Sample to Detector: %s m" % self.fai_cfg["dist"])
+                header_lst.append("Distance Sample to Detector: %s m" % self.fai_cfg["dist"])
             if "rot1" in self.fai_cfg:
-                headerLst.append("Rotations: %.6f %.6f %.6f rad" % (self.fai_cfg["rot1"], self.fai_cfg["rot2"], self.fai_cfg["rot3"]))
+                header_lst.append("Rotations: %.6f %.6f %.6f rad" % (self.fai_cfg["rot1"], self.fai_cfg["rot2"], self.fai_cfg["rot3"]))
             if "wavelength" in self.fai_cfg:
-                headerLst.append("Wavelength: %s" % self.fai_cfg["wavelength"])
+                header_lst.append("Wavelength: %s" % self.fai_cfg["wavelength"])
             if "dark_current" in self.fai_cfg:
-                headerLst.append("Dark current: %s" % self.fai_cfg["dark_current"])
+                header_lst.append("Dark current: %s" % self.fai_cfg["dark_current"])
             if "flat_field" in self.fai_cfg:
-                headerLst.append("Flat field: %s" % self.fai_cfg["flat_field"])
+                header_lst.append("Flat field: %s" % self.fai_cfg["flat_field"])
             if "polarization_factor" in self.fai_cfg:
-                headerLst.append("Polarization factor: %s" % self.fai_cfg["polarization_factor"])
-            headerLst.append("")
+                header_lst.append("Polarization factor: %s" % self.fai_cfg["polarization_factor"])
+            header_lst.append("")
             if "do_poisson" in self.fai_cfg:
-                headerLst.append("%14s %14s %s" % (self.fai_cfg["unit"], "I", "sigma"))
+                header_lst.append("%14s %14s %s" % (self.fai_cfg["unit"], "I", "sigma"))
             else:
-                headerLst.append("%14s %14s" % (self.fai_cfg["unit"], "I"))
-#            headerLst.append("")
-            self.header = os.linesep.join([""] + ["# " + i for i in headerLst] + [""])
+                header_lst.append("%14s %14s" % (self.fai_cfg["unit"], "I"))
+#            header_lst.append("")
+            self.header = os.linesep.join([""] + ["# " + i for i in header_lst] + [""])
         self.prefix = lima_cfg.get("prefix", self.prefix)
         self.index_format = lima_cfg.get("index_format", self.index_format)
         self.start_index = lima_cfg.get("start_index", self.start_index)
@@ -763,6 +744,8 @@ class FabioWriter(Writer):
         self.index_format = "%04i"
         self.start_index = 0
         self.fabio_class = None
+        if fabio is None:
+            raise RuntimeError("FabIO module is needed to save images")
 
     def __repr__(self):
         return "Image writer on file %s" % (self.filename)

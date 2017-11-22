@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 27/10/2015
+:Date: 29/05/2017
 :Keywords: Tutorials
 :Target: Advanced users
 
@@ -73,7 +73,7 @@ Examples
 .. toctree::
    :maxdepth: 2
 
-   MultiGeometry/index
+   MultiGeometry/MultiGeometry
 
 Conclusion
 ==========

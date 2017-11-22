@@ -13,7 +13,7 @@ Diff_map provides a Graphical User Interface (based on top of PyQt, pyFAI and h5
 which allows the reduction of this 4D dataset into a 3D dataset containing the
 two dimension of movement and the many diffraction angles (the output can be q-space for PDF-CT).
 
-.. figure:: diffmap_main.png
+.. figure:: ../img/diffmap_main.png
    :align: center
    :alt: image
 
@@ -25,7 +25,7 @@ On the right-hand side, the motor range can be specified togeather with their
 names. The diffraction parameters can be setup in a similar way to *pyFAI-integrate*.
 The output name can also be specified.
 
-.. figure:: diffmap_integrate.png
+.. figure:: ../img/diffmap_integrate.png
    :align: center
    :alt: image
 
@@ -35,7 +35,7 @@ construction.
 During this processing, one can select a scatering range to highlight the regions
 of interest.
 
-.. figure:: diffmap_running.png
+.. figure:: ../img/diffmap_running.png
    :align: center
    :alt: image
 
@@ -55,14 +55,15 @@ Usage:
 diff_map [options] imagefiles*
 
 positional arguments:
-  FILE                  List of files to integrate
+  FILE                  List of files to integrate. Mandatory without GUI
 
 optional arguments:
   -h, --help            show this help message and exit
   -V, --version         show program's version number and exit
   -o FILE, --output FILE
-                        HDF5 File where processed map will be saved
-  -v, --verbose         switch to verbose/debug mode, defaut: quiet
+                        HDF5 File where processed map will be saved. Mandatory
+                        without GUI
+  -v, --verbose         switch to verbose/debug mode, default: quiet
   -P FILE, --prefix FILE
                         Prefix or common base for all files
   -e EXTENSION, --extension EXTENSION
@@ -72,10 +73,12 @@ optional arguments:
   -r SLOW, --slow SLOW  number of points for slow motion. Mandatory without
                         GUI
   -c NPT_RAD, --npt NPT_RAD
-                        number of points in diffraction powder pattern,
+                        number of points in diffraction powder pattern.
                         Mandatory without GUI
-  -d FILE, --dark FILE  list of dark images to average and subtract
-  -f FILE, --flat FILE  list of flat images to average and divide
+  -d FILE, --dark FILE  list of dark images to average and subtract (comma
+                        separated list)
+  -f FILE, --flat FILE  list of flat images to average and divide (comma
+                        separated list)
   -m FILE, --mask FILE  file containing the mask, no mask by default
   -p FILE, --poni FILE  file containing the diffraction parameter (poni-file),
                         Mandatory without GUI
@@ -95,7 +98,3 @@ Bugs:
 #. There is a known bug on Debian7 where importing a large
    number of file can take much longer than the integration itself: consider
    passing files in the command line
-
-
-.. command-output:: diff_map --help
-    :nostderr:

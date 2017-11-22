@@ -26,18 +26,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import, division, print_function
-
-__doc__ = """test suite for non regression on some bugs.
+"""test suite for non regression on some bugs.
 
 Please refer to their respective bug number
-https://github.com/kif/pyFAI/issues
+https://github.com/silx-kit/pyFAI/issues
 """
+
+
+from __future__ import absolute_import, division, print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "11/09/2017"
 
 import sys
 import os
@@ -81,6 +83,7 @@ Wavelength: 7e-11
             os.unlink(self.ponifile)
         self.data = None
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def test_bug170(self):
         ai = load(self.ponifile)
         logger.debug(ai.mask.shape)
@@ -113,6 +116,10 @@ class TestBug211(unittest.TestCase):
             self.image_files.append(fn)
         self.res = res / 3.0
         self.exe, self.env = UtilsTest.script_path("pyFAI-average")
+        # It is not anymore a script, but a module
+        if not os.path.exists(self.exe):
+            import pyFAI.app.average
+            self.exe = pyFAI.app.average.__file__
 
     def tearDown(self):
         for fn in self.image_files:
@@ -124,18 +131,16 @@ class TestBug211(unittest.TestCase):
         self.exe = self.env = None
 
     def test_quantile(self):
-        if not os.path.exists(self.exe):
-            logger.error("Error with executable: %s, not found. Skipping test", self.exe)
-            return
+        command_line = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
 
-        p = subprocess.Popen([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
-                            shell=False, env=self.env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(command_line,
+                             shell=False, env=self.env,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         rc = p.wait()
         if rc:
             logger.info(p.stdout.read())
             logger.error(p.stderr.read())
-            l = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
-            logger.error(os.linesep + (" ".join(l)))
+            logger.error(os.linesep + (" ".join(command_line)))
             env = "Environment:"
             for k, v in self.env.items():
                 env += "%s    %s: %s" % (os.linesep, k, v)
@@ -148,7 +153,7 @@ class TestBug211(unittest.TestCase):
 
         self.assertEqual(rc, 0, msg="pyFAI-average return code %i != 0" % rc)
         self.assertTrue(numpy.allclose(fabio.open(self.outfile).data, self.res),
-                     "pyFAI-average with quantiles gives good results")
+                        "pyFAI-average with quantiles gives good results")
 
 
 class TestBug232(unittest.TestCase):
@@ -192,11 +197,12 @@ class TestBug174(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestBug170("test_bug170"))
-    testsuite.addTest(TestBug211("test_quantile"))
-    testsuite.addTest(TestBug232("test"))
-    testsuite.addTest(TestBug174("test"))
+    testsuite.addTest(loader(TestBug170))
+    testsuite.addTest(loader(TestBug211))
+    testsuite.addTest(loader(TestBug232))
+    testsuite.addTest(loader(TestBug174))
     return testsuite
 
 

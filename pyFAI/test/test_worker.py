@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 
 import unittest
@@ -249,10 +249,9 @@ class TestWorker(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    test_names = unittest.getTestCaseNames(TestWorker, "test")
-    for test in test_names:
-        testsuite.addTest(TestWorker(test))
+    testsuite.addTest(loader(TestWorker))
     return testsuite
 
 

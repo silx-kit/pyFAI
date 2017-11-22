@@ -15,8 +15,8 @@ thanks to pixel splitting.
 Finally pyFAI provides also tools to calibrate the experimental setup using Debye-Scherrer
 rings of a reference compound.
 
-References:
------------
+References
+----------
 
 * The philosophy of pyFAI is described in the proceedings of SRI2012:
   doi:10.1088/1742-6596/425/20/202012 http://iopscience.iop.org/1742-6596/425/20/202012/
@@ -29,6 +29,9 @@ References:
 Installation
 ------------
 
+With PIP
+........
+
 As most Python packages, pyFAI is available via PIP::
 
    pip install pyFAI [--user]
@@ -37,8 +40,20 @@ Provide the *--user* to perform an installation local to your user.
 Under UNIX, you may have to run the command via *sudo* to gain root access an
 perform a system wide installation.
 
+With conda
+..........
+
+pyFAI is also available via conda (for Linux and Mac, currently)::
+
+  conda install pyfai -c conda-forge
+
+To install conda please see either `conda <https://conda.io/docs/install/quick.html>`_ or `Anaconda <https://www.continuum.io/downloads>`_.
+
+From source code
+................
+
 The latest release of pyFAI can be downloaded from
-`Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_ .
+`Github <https://github.com/silx-kit/pyFAI/archive/master.zip>`_.
 Presently the source code has been distributed as a zip package.
 Download it one and unpack it::
 
@@ -103,25 +118,27 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 2.7, 3.4 and 3.5 are well tested.
+Python 2.7, 3.4, 3.5 and 3.6 are well tested.
 Python 2.6, 3.2 and 3.3 are no more supported since pyFAI 0.12
 For full functionality of pyFAI the following modules need to be installed.
 
     * numpy 		- 	http://www.numpy.org
     * scipy 		- 	http://www.scipy.org
     * matplotlib 	- 	http://matplotlib.sourceforge.net/
-    * fabio		-	http://sourceforge.net/projects/fable/files/fabio/
-    * h5py		-  	http://www.h5py.org/
+    * fabio 		-	http://sourceforge.net/projects/fable/files/fabio/
+    * h5py	    	-  	http://www.h5py.org/
     * pyopencl		-	http://mathema.tician.de/software/pyopencl/
-    * python-qt4	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
+    * python-pyqt5	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
+    * silx          -   http://www.silx.org
+    * numexpr       -   https://github.com/pydata/numexpr
 
 Those dependencies can simply be installed by::
 
    pip install -r requirements.txt
 
 
-Ubuntu and Debian Like linux distributions:
--------------------------------------------
+Ubuntu and Debian-like Linux distributions
+------------------------------------------
 
 To use pyFAI on Ubuntu/Debian the needed python modules
 can be installed either through the Synaptic Package Manager
@@ -130,7 +147,7 @@ or using apt-get on from the command line in a terminal::
 
    sudo apt-get install pyfai
 
-The extra ubuntu packages needed are:
+The extra Ubuntu packages needed are:
 
     * python-numpy
     * python-scipy
@@ -138,11 +155,15 @@ The extra ubuntu packages needed are:
     * python-dev
     * python-fabio
     * python-pyopencl
-    * python-qt4
+    * python-pyqt5
+    * python-silx
+    * python-numexpr
 
+and the same with python3
 using apt-get these can be installed as::
 
-    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-qt4
+    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-pyqt5 python-silx python-numexpr
+    sudo apt-get install python3-numpy python3-scipy python3-matplotlib  python3-dev python3-fabio python3-pyopencl python3-pyqt5 python3-silx python3-numexpr 
 
 MacOSX
 ------
@@ -156,7 +177,7 @@ before running::
 
     pip install cython --user --upgrade
     rm pyFAI/ext/histogram.c
-    python setup.py build --no-openmp
+    python setup.py build --force-cython --no-openmp
 
 
 Windows
@@ -189,6 +210,7 @@ Contributors
 ------------
 
  * Frédéric-Emmanuel Picca (Soleil)
+ * Thomas Vincent (ESRF)
  * Dimitris Karkoulis (ESRF)
  * Aurore Deschildre (ESRF)
  * Giannis Ashiotis (ESRF)
@@ -199,8 +221,8 @@ Contributors
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
 
-Indirect contributors (ideas, ...):
------------------------------------
+Indirect contributors (ideas...)
+--------------------------------
 
  * Peter Boesecke
  * Manuel Sánchez del Río

@@ -8,27 +8,32 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 #
 
 "test suite for masked arrays"
 
 __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
-__license__ = "GPLv3+"
+__license__ = "MIT+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "19/07/2017"
 
 import os
 import tempfile
@@ -89,11 +94,11 @@ class TestDetector(unittest.TestCase):
 
         #personal communication of M. Blum:
 
-     self.desired_pixelsizes[4096]        = 39.500
-     self.desired_pixelsizes[2048]        = 79.000
-     self.desired_pixelsizes[1364]        = 118.616
-     self.desired_pixelsizes[1024]        = 158.000
-     self.desired_pixelsizes[512]        = 316.000
+        self.desired_pixelsizes[4096]        = 39.500
+        self.desired_pixelsizes[2048]        = 79.000
+        self.desired_pixelsizes[1364]        = 118.616
+        self.desired_pixelsizes[1024]        = 158.000
+        self.desired_pixelsizes[512]        = 316.000
 
         """
         sx165 = detector_factory("rayonixsx165")
@@ -258,14 +263,9 @@ class TestDetector(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestDetector("test_detector_instanciate"))
-    testsuite.addTest(TestDetector("test_detector_imxpad_s140"))
-    testsuite.addTest(TestDetector("test_detector_rayonix_sx165"))
-    testsuite.addTest(TestDetector("test_nexus_detector"))
-    testsuite.addTest(TestDetector("test_guess_binning"))
-    testsuite.addTest(TestDetector("test_Xpad_flat"))
-    testsuite.addTest(TestDetector("test_non_flat"))
+    testsuite.addTest(loader(TestDetector))
     return testsuite
 
 

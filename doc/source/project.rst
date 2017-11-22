@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 01/12/2016
+:Date: 09/05/2017
 :Keywords: Project management description
 :Target: developers
 
@@ -9,8 +9,9 @@ Project
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
-PyFAI is an open source project licensed under the GPL (switching to MIT) mainly
-written in Python (v2.7 or newer, 3.4 or newer) and heavily relying on the
+PyFAI is an open source project licensed under the MIT license (previously
+under GPL) mainly written in Python (v2.7, 3.4 or newer).
+It is managed by the Silx team and is heavily relying on the
 Python scientific ecosystem: numpy, scipy and matplotlib.
 It provides high performances image treatment thanks to Cython and
 OpenCL... but only a C-compiler is needed to build it.
@@ -52,10 +53,11 @@ into the main branch via pull-requests.
 Getting help
 ------------
 
-A mailing list: pyfai@esrf.fr is publicly available, it is the best place to ask
-your questions: the author and many advanced users are there and willing to help you.
+A mailing list, pyfai@esrf.fr, is publicly available.
+I t is the best place to ask your questions: the author and many advanced users
+are there and willing to help you.
 To subscribe to this mailing list, send an email to
-`sympa@esrf.fr with "subscribe pyfai" as subject <mailto:sympa@esrf.fr?Subject=subscribe%20pyfai>`_.
+`pyfai-subscribe@esrf.fr <mailto:pyfai-subscribe@esrf.fr>`_.
 
 On this mailing list, you will have information about release of the software,
 new features available and meet experts to help you solve issues related to
@@ -86,7 +88,7 @@ continue funding development.
 Run dependencies
 ----------------
 
-* Python version 2.7, 3.4, 3.5
+* Python version 2.7, 3.4, 3.5, 3.6
 * NumPy
 * SciPy
 * Matplotlib
@@ -94,6 +96,7 @@ Run dependencies
 * h5py
 * pyopencl (optional)
 * PyQt4 or PySide (for the graphical user interface)
+* Silx
 
 Build dependencies
 ------------------
@@ -124,7 +127,7 @@ As most of the Python projects:
 .. code::
 
     python setup.py build bdist_wheel
-    pip install dist/pyFAI-0.13.0*.whl --upgrade
+    pip install dist/pyFAI-0.14.0*.whl --upgrade
 
 
 There are few specific options to setup.py:
@@ -237,7 +240,7 @@ The builds cannot yet be retrieved with Travis-CI, but manylinux-wheels are on t
 AppVeyor
 ........
 
-`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/kif/pyFAI>`_, 64 bits computer with Python 2.7 and 3.4.
+`AppVeyor provides continuous integration on Windows <https://ci.appveyor.com/project/ESRF/pyfai>`_, 64 bits computer with Python 2.7 and 3.4.
 Successful builds provide installers for pyFAI as *wheels* and *msi*, they are anonymously available as *artifacts*.
 Due to the limitation of AppVeyor's build system, those installers have openMP disabled.
 
@@ -248,23 +251,25 @@ List of contributors in code
 
     $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 06/2016:
+As of 07/2017:
  * Jérôme Kieffer (ESRF)
+ * Valentin Valls (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
  * Aurore Deschildre (ESRF)
  * Giannis Ashiotis (ESRF)
  * Dimitrios Karkoulis (ESRF)
- * Valentin Valls (ESRF)
  * Jon Wright (ESRF)
  * Zubair Nawaz (Sesame)
- * Amund Hov (ESRF)
  * Dodogerstlin @github
+ * Vadim Dyadkin (ESRF/SNBL)
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
- * Vadim Dyadkin (ESRF)
+ * Christopher J. Wright (Columbia University)
  * Sigmund Neher (GWDG)
+ * Wout De Nolf (ESRF)
+ * Bertrand Faure (Xenocs)
  * Thomas Vincent (ESRF)
-
+ * Amund Hov (ESRF)
 
 List of other contributors (ideas or code)
 ------------------------------------------
@@ -282,6 +287,6 @@ List of supporters
 * ESRF ID13: Provided manpower in 2012, 2013, 2014, 2015, 2016 and beamtime
 * ESRF ID29: provided manpower in 2013 (MX-calibrate)
 * ESRF ID02: provided manpower 2014, 2016
-* ESRF ID15: provide manpower 2015, 2016
+* ESRF ID15: provide manpower 2015, 2016, 2017
 * ESRF ID21: provide manpower 2015, 2016
-* ESRF ID31: provide manpower 2016
+* ESRF ID31: provide manpower 2016, 2017

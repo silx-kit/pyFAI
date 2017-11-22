@@ -1,0 +1,5 @@
+numpy
+fabio
+sphinx
+sphinxcontrib-programoutput
+silx

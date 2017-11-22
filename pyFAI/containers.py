@@ -32,7 +32,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2016"
+__date__ = "26/06/2017"
 __status__ = "development"
 
 
@@ -42,26 +42,46 @@ class IntegrateResult(tuple):
     """
 
     def __init__(self):
+        self._method_called = None
+        self._compute_engine = None
         self._sum = None
         self._count = None
         self._unit = None
+        self._has_mask_applied = None
         self._has_dark_correction = None
         self._has_flat_correction = None
         self._normalization_factor = None
         self._polarization_factor = None
+        self._metadata = None
+        self._npt_azim = None
+        self._percentile = None
+
+    @property
+    def method_called(self):
+        "return the name of the method called"
+        return self._method_called
+
+    def _set_method_called(self, value):
+        self._method_called = value
+
+    @property
+    def compute_engine(self):
+        "return the name of the compute engine, like CSR"
+        return self._compute_engine
+
+    def _set_compute_engine(self, value):
+        self._compute_engine = value
 
     @property
     def sum(self):
-        """
-        Sum information
+        """Sum information
 
         :rtype: numpy.ndarray
         """
         return self._sum
 
     def _set_sum(self, sum_):
-        """
-        Set the sum information
+        """Set the sum information
 
         :type count: numpy.ndarray
         """
@@ -69,16 +89,14 @@ class IntegrateResult(tuple):
 
     @property
     def count(self):
-        """
-        Count information
+        """Count information
 
         :rtype: numpy.ndarray
         """
         return self._count
 
     def _set_count(self, count):
-        """
-        Set the count information
+        """Set the count information
 
         :type count: numpy.ndarray
         """
@@ -86,33 +104,44 @@ class IntegrateResult(tuple):
 
     @property
     def unit(self):
-        """
-        Radial unit
+        """Radial unit
 
         :rtype: string
         """
         return self._unit
 
     def _set_unit(self, unit):
-        """
-        Define the radial unit
+        """Define the radial unit
 
         :type unit: str
         """
         self._unit = unit
 
     @property
-    def has_dark_correction(self):
+    def has_mask_applied(self):
+        """True if a mask was applied
+
+        :rtype: bool
         """
-        True if a dark correction was applied
+        return self._has_mask_applied
+
+    def _set_has_mask_applied(self, has_mask):
+        """Define if dark correction was applied
+
+        :type has_mask: bool (or string)
+        """
+        self._has_mask_applied = has_mask
+
+    @property
+    def has_dark_correction(self):
+        """True if a dark correction was applied
 
         :rtype: bool
         """
         return self._has_dark_correction
 
     def _set_has_dark_correction(self, has_dark_correction):
-        """
-        Define if dark correction was applied
+        """Define if dark correction was applied
 
         :type has_dark_correction: bool
         """
@@ -120,16 +149,14 @@ class IntegrateResult(tuple):
 
     @property
     def has_flat_correction(self):
-        """
-        True if a flat correction was applied
+        """True if a flat correction was applied
 
         :rtype: bool
         """
         return self._has_flat_correction
 
     def _set_has_flat_correction(self, has_flat_correction):
-        """
-        Define if flat correction was applied
+        """Define if flat correction was applied
 
         :type has_flat_correction: bool
         """
@@ -137,16 +164,14 @@ class IntegrateResult(tuple):
 
     @property
     def normalization_factor(self):
-        """
-        The normalisation factor used
+        """The normalisation factor used
 
         :rtype: float
         """
         return self._normalization_factor
 
     def _set_normalization_factor(self, normalization_factor):
-        """
-        Define the used normalisation factor
+        """Define the used normalisation factor
 
         :type normalization_factor: float
         """
@@ -154,20 +179,49 @@ class IntegrateResult(tuple):
 
     @property
     def polarization_factor(self):
-        """
-        The polarization factor used
+        """The polarization factor used
 
         :rtype: float
         """
         return self._polarization_factor
 
     def _set_polarization_factor(self, polarization_factor):
-        """
-        Define the used polarization factor
+        """Define the used polarization factor
 
         :type polarization_factor: float
         """
         self._polarization_factor = polarization_factor
+
+    @property
+    def metadata(self):
+        """Metadata associated with the input frame
+
+        :rtype: JSON serializable dict object
+        """
+        return self._metadata
+
+    def _set_metadata(self, metadata):
+        """Define the metadata associated with the input frame
+
+        :type metadata: JSON serializable dict object
+        """
+        self._metadata = metadata
+
+    @property
+    def percentile(self):
+        "for median filter along the azimuth, position of the centile retrieved"
+        return self._percentile
+
+    def _set_percentile(self, value):
+        self._percentile = value
+
+    @property
+    def npt_azim(self):
+        "for median filter along the azimuth, number of azimuthal bin initially used"
+        return self._npt_azim
+
+    def _set_npt_azim(self, value):
+        self._npt_azim = value
 
 
 class Integrate1dResult(IntegrateResult):

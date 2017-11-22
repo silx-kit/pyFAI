@@ -35,7 +35,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Vincent Favre-Nicolin", "Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "01/08/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -50,7 +50,9 @@ class BayesianBackground(object):
     http://journals.iucr.org/j/issues/2001/03/00/he0278/he0278.pdf
 
     The log likelihood is described in correspond to eq7 of the paper:
-    z = y/sigma^2
+
+    .. math:: z =  y / sigma^2
+
     * if z<0: a quadratic behaviour is expected
     * if z>>1 it is likely a bragg peak so the penalty should be small: log(z).
     * The spline is used to have a quadratic behaviour near 0 and the log one
@@ -58,8 +60,7 @@ class BayesianBackground(object):
 
     The threshold is taken at 8 as erf is 1 above 6:
     The points 6, 7 and 8 are used in the spline to ensure a continuous junction
-    with the logarithmic continuation
-
+    with the logarithmic continuation.
     """
     s1 = None
     PREFACTOR = 1
@@ -258,7 +259,8 @@ class BayesianBackground(object):
                                   args=(d0_sparse, d1_sparse, d0_pos, d1_pos, img, w, valid, k),
                                   disp=True, callback=lambda x: print(x))
 
-        spline = RectBivariateSpline(d0_sparse, d1_sparse, y1, k, k)
+        values = y1.reshape(d0_sparse.size, d1_sparse.size)
+        spline = RectBivariateSpline(d0_sparse, d1_sparse, values, k, k)
         bg = spline(d0_pos, d1_pos)
         return bg
 

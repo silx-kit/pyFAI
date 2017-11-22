@@ -42,11 +42,3 @@ Options:
                         2th_deg, 2th_rad or r_mm
   --ext EXT             extension of the regrouped filename (.dat)
   --method METHOD       Integration method
-
-
-Example:
---------
-
-
-.. command-output:: pyFAI-saxs --help
-    :nostderr:

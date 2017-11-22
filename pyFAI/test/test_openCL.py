@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for OpenCL code"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for OpenCL code"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "06/09/2017"
 
 
 import unittest
@@ -57,11 +58,17 @@ if ocl is not None:
     import pyopencl.array
 from .. import load
 from ..opencl.utils import read_cl_file
+from .utilstest import UtilsTest
 
 
 class TestMask(unittest.TestCase):
 
     def setUp(self):
+        if not UtilsTest.opencl:
+            self.skipTest("User request to skip OpenCL tests")
+        if pyopencl is None or ocl is None:
+            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
+
         self.tmp_dir = os.path.join(UtilsTest.tempdir, "opencl")
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
@@ -99,6 +106,7 @@ class TestMask(unittest.TestCase):
         recursive_delete(self.tmp_dir)
         self.tmp_dir = self.N = self.datasets = None
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -117,9 +125,11 @@ class TestMask(unittest.TestCase):
                 r = Rwp(ref, res)
                 logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                 self.assertTrue(r < 6, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                ai.reset()
                 del ai, data
                 gc.collect()
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
     def test_OpenCL_LUT(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -144,9 +154,11 @@ class TestMask(unittest.TestCase):
                     r = Rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
+                ai.reset()
                 del ai, data
                 gc.collect()
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >200M")
     def test_OpenCL_CSR(self):
         logger.info("Testing CSR-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
@@ -170,6 +182,7 @@ class TestMask(unittest.TestCase):
                     r = Rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+                ai.reset()
                 del ai, data
                 gc.collect()
 
@@ -182,6 +195,11 @@ class TestSort(unittest.TestCase):
     ws = N // 8
 
     def setUp(self):
+        if not UtilsTest.opencl:
+            self.skipTest("User request to skip OpenCL tests")
+        if pyopencl is None or ocl is None:
+            self.skipTest("OpenCL module (pyopencl) is not present or no device available")
+
         self.h_data = numpy.random.random(self.N).astype("float32")
         self.h2_data = numpy.random.random((self.N, self.N)).astype("float32").reshape((self.N, self.N))
 
@@ -289,17 +307,9 @@ class TestSort(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    if pyopencl is None or ocl is None:
-        logger.warning("OpenCL module (pyopencl) is not present or no device available: skip tests")
-    else:
-        testsuite.addTest(TestMask("test_OpenCL"))
-        testsuite.addTest(TestMask("test_OpenCL_LUT"))
-        testsuite.addTest(TestMask("test_OpenCL_CSR"))
-        testsuite.addTest(TestSort("test_reference_book"))
-        testsuite.addTest(TestSort("test_reference_file"))
-        testsuite.addTest(TestSort("test_sort_all"))
-        testsuite.addTest(TestSort("test_sort_horizontal"))
-        testsuite.addTest(TestSort("test_sort_vertical"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestMask))
+    testsuite.addTest(loader(TestSort))
     return testsuite
 
 

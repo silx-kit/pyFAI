@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for dark_current / flat_field correction"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for dark_current / flat_field correction"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "06/09/2017"
 
 
 import unittest
@@ -43,6 +44,7 @@ from .utilstest import getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from ..opencl import ocl
+from .utilstest import UtilsTest
 
 
 class TestFlat1D(unittest.TestCase):
@@ -76,7 +78,7 @@ class TestFlat1D(unittest.TestCase):
 
     def test_correct(self):
         all_methods = ["numpy", "cython", "splitbbox", "splitpix", "lut", "csr"]
-        if ocl:
+        if ocl and UtilsTest.opencl:
             for device in ["cpu", "gpu", "acc"]:
                 if ocl.select_device(dtype=device):
                     all_methods.append("lut_ocl_%s" % device)
@@ -92,7 +94,7 @@ class TestFlat1D(unittest.TestCase):
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assertTrue(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
-        if ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
+        if ocl and UtilsTest.opencl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
             meth = "xrpd_OpenCL"
             _, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
@@ -101,15 +103,27 @@ class TestFlat1D(unittest.TestCase):
 
 
 class TestFlat2D(unittest.TestCase):
-    shape = 640, 480
-    flat = 1 + numpy.random.random(shape)
-    dark = numpy.random.random(shape)
-    raw = flat + dark
-    eps = 1e-6
-    ai = pyFAI.AzimuthalIntegrator()
-    ai.setFit2D(directDist=1, centerX=shape[1] // 2, centerY=shape[0] // 2, pixelX=1, pixelY=1)
-    bins = 500
-    azim = 360
+
+    def setUp(self):
+        self.shape = 640, 480
+        self.flat = 1 + numpy.random.random(self.shape)
+        self.dark = numpy.random.random(self.shape)
+        self.raw = self.flat + self.dark
+        self.eps = 1e-6
+        self.ai = pyFAI.AzimuthalIntegrator()
+        self.ai.setFit2D(directDist=1, centerX=self.shape[1] // 2, centerY=self.shape[0] // 2, pixelX=1, pixelY=1)
+        self.bins = 500
+        self.azim = 360
+
+    def tearDown(self):
+        self.shape = None
+        self.flat = None
+        self.dark = None
+        self.raw = None
+        self.eps = None
+        self.ai = None
+        self.bins = None
+        self.azim = None
 
     def test_no_correct(self):
         I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", correctSolidAngle=False)
@@ -126,7 +140,7 @@ class TestFlat2D(unittest.TestCase):
                   "splitpix": self.eps,
                   "lut": self.eps,
                   }
-        if ocl:
+        if ocl and UtilsTest.opencl:
             for device in ["cpu", "gpu", "acc"]:
                 if ocl.select_device(dtype=device):
                     test2d["lut_ocl_%s" % device] = self.eps
@@ -158,11 +172,9 @@ class TestFlat2D(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestFlat1D("test_no_correct"))
-    testsuite.addTest(TestFlat1D("test_correct"))
-    testsuite.addTest(TestFlat2D("test_no_correct"))
-    testsuite.addTest(TestFlat2D("test_correct"))
-
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestFlat1D))
+    testsuite.addTest(loader(TestFlat2D))
     return testsuite
 
 

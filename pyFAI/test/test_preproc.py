@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "06/09/2017"
 
 
 import os
@@ -42,12 +42,13 @@ import unittest
 import numpy
 import logging
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 from .. import preproc as python_preproc
 from ..ext import preproc as cython_preproc
 from ..opencl import preproc as ocl_preproc
+from .utilstest import UtilsTest
 
 
 class TestPreproc(unittest.TestCase):
@@ -61,7 +62,7 @@ class TestPreproc(unittest.TestCase):
         shape = 8, 8
         size = shape[0] * shape[1]
         target = numpy.ones(shape)
-        dummy = -1
+        dummy = -1.0
         target[:2, :] = dummy
         target[-2:, :] = dummy
         target[:, -2:] = dummy
@@ -70,12 +71,14 @@ class TestPreproc(unittest.TestCase):
         mask[:2, :] = 1
         dark = numpy.random.poisson(10, size).reshape(shape)
         flat = 1.0 + numpy.random.random(shape)
-        scale = 10
+        scale = 10.0
         raw = scale * flat + dark
         raw[-2:, :] = numpy.NaN
 
         raw[:, :2] = dummy
         flat[:, -2:] = dummy
+
+        epsilon = 1e-3
 
         # add some tests with various levels of conditioning
         res = preproc.preproc(raw)
@@ -88,7 +91,7 @@ class TestPreproc(unittest.TestCase):
         self.assertEqual(abs(res[-2:, :] + 1).max(), 0, "Nan filtering with empty filling")
 
         # test dummy
-        res = preproc.preproc(raw, dummy=-1, delta_dummy=0.5)
+        res = preproc.preproc(raw, dummy=dummy, delta_dummy=0.5)
         self.assertEqual(abs(res[-2:, :] + 1).max(), 0, "dummy filtering")
 
         # test polarization, solidangle and sensor thickness  with dummy.
@@ -99,27 +102,47 @@ class TestPreproc(unittest.TestCase):
         # search for numerical instability:
         # delta = abs(numpy.round(res, 3) - target).max()
         delta = abs(res - target).max()
-        if delta <= 0.1:
-            l = ["raw:", str(raw),
+        if delta <= epsilon:
+            l = ["flat != polarization",
+                 str(preproc),
+                 "raw:", str(raw),
                  "dark", str(dark),
                  "flat:", str(flat),
                  "delta", str(delta)]
-
             logger.warning(os.linesep.join(l))
 
-        self.assertGreater(abs(res - target).max(), 1e-3, "flat != polarization")
+        delta = abs(res - target).max()
+        self.assertGreater(delta, epsilon, "flat != polarization")
 
         res = preproc.preproc(raw, dark, solidangle=flat, dummy=dummy, mask=mask, normalization_factor=scale)
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
-        self.assertGreater(abs(numpy.round(res) - target).max(), 0, "flat != solidangle")
+        delta = abs(res - target).max()
+        if delta <= epsilon:
+            l = ["flat != solidangle",
+                 str(preproc),
+                 "raw:", str(raw),
+                 "dark", str(dark),
+                 "flat:", str(flat),
+                 "delta", str(delta)]
+            logger.warning(os.linesep.join(l))
+        self.assertGreater(delta, epsilon, "flat != solidangle")
 
         res = preproc.preproc(raw, dark, absorption=flat, dummy=dummy, mask=mask, normalization_factor=scale)
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
-        self.assertGreater(abs(numpy.round(res) - target).max(), 0, "flat != absorption")
+        delta = abs(res - target).max()
+        if delta <= epsilon:
+            l = ["flat != absorption",
+                 str(preproc),
+                 "raw:", str(raw),
+                 "dark", str(dark),
+                 "flat:", str(flat),
+                 "delta", str(delta)]
+            logger.warning(os.linesep.join(l))
+        self.assertGreater(delta, epsilon, "flat != absorption")
 
         # Test all features together
         res = preproc.preproc(raw, dark=dark, flat=flat, dummy=dummy, mask=mask, normalization_factor=scale)
-        self.assertLessEqual(abs(res - target).max(), 1e-3, "test all features ")
+        self.assertLessEqual(abs(res - target).max(), 1e-6, "test all features ")
 
     def test_python(self):
         self.one_test(python_preproc)
@@ -127,17 +150,16 @@ class TestPreproc(unittest.TestCase):
     def test_cython(self):
         self.one_test(cython_preproc)
 
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_opencl(self):
         if ocl_preproc.ocl is not None:
             self.one_test(ocl_preproc)
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestPreproc("test_python"))
-    testsuite.addTest(TestPreproc("test_cython"))
-    testsuite.addTest(TestPreproc("test_opencl"))
-
+    testsuite.addTest(loader(TestPreproc))
     return testsuite
 
 

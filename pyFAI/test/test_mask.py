@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "06/09/2017"
 
 
 import unittest
@@ -192,6 +192,7 @@ class TestMask(unittest.TestCase):
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_mask_LUT_OCL(self):
         """
         The masked image has a masked ring around 1.5deg with value -10
@@ -216,6 +217,7 @@ class TestMask(unittest.TestCase):
         self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_mask_CSR_OCL(self):
         """
         The masked image has a masked ring around 1.5deg with value -10
@@ -243,7 +245,7 @@ class TestMask(unittest.TestCase):
 
 class TestMaskBeamstop(unittest.TestCase):
     """
-    Test for https://github.com/kif/pyFAI/issues/76
+    Test for https://github.com/silx-kit/pyFAI/issues/76
     """
     dataFile = "mock.tif"
 
@@ -289,6 +291,7 @@ class TestMaskBeamstop(unittest.TestCase):
         tth, _ = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method="LUT", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_mask_LUT_OCL(self):
         """
         With a mask with and without limits
@@ -307,6 +310,7 @@ class TestMaskBeamstop(unittest.TestCase):
         tth, _ = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
+    @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_nomask_LUT_OCL(self):
         """
         without mask, tth value should start at 0
@@ -319,20 +323,9 @@ class TestMaskBeamstop(unittest.TestCase):
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestMask("test_mask_hist"))
-    testsuite.addTest(TestMask("test_mask_splitBBox"))
-    testsuite.addTest(TestMask("test_mask_splitfull"))
-    testsuite.addTest(TestMask("test_mask_LUT"))
-    testsuite.addTest(TestMask("test_mask_CSR"))
-    testsuite.addTest(TestMask("test_mask_LUT_OCL"))
-    testsuite.addTest(TestMask("test_mask_CSR_OCL"))
-
-    testsuite.addTest(TestMaskBeamstop("test_nomask"))
-    testsuite.addTest(TestMaskBeamstop("test_mask_splitBBox"))
-    testsuite.addTest(TestMaskBeamstop("test_mask_LUT"))
-    testsuite.addTest(TestMaskBeamstop("test_mask_LUT_OCL"))
-    testsuite.addTest(TestMaskBeamstop("test_nomask_LUT"))
-    testsuite.addTest(TestMaskBeamstop("test_nomask_LUT_OCL"))
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
+    testsuite.addTest(loader(TestMask))
+    testsuite.addTest(loader(TestMaskBeamstop))
     return testsuite
 
 

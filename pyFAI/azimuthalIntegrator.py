@@ -32,28 +32,26 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "27/10/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
 logger = logging.getLogger(__name__)
+import warnings
 import tempfile
 import threading
 import gc
 import numpy
-from math import pi
+from math import pi, log
 from numpy import rad2deg
 from .geometry import Geometry
-from . import average
 from . import units
-from . import utils
-from .utils import EPS32, deg2rad
+from .utils import EPS32, deg2rad, crc32
 from .decorators import deprecated
-from .containers import Integrate1dResult
-from .containers import Integrate2dResult
-import fabio
+from .containers import Integrate1dResult, Integrate2dResult
+from .io import DefaultAiWriter
 error = None
 
 
@@ -64,11 +62,6 @@ except ImportError as error:
                    " Look-up table based azimuthal integration")
     logger.debug("Backtrace", exc_info=True)
     splitBBoxLUT = None
-
-try:
-    from .fastcrc import crc32
-except ImportError:
-    from zlib import crc32
 
 try:
     # Used for 1D integration
@@ -122,7 +115,7 @@ if ocl:
         from .opencl import azim_hist as ocl_azim  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.ocl_azim: %s",
-                       error)
+                     error)
         ocl_azim = None
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
@@ -140,10 +133,34 @@ if ocl:
         from .opencl import sort as ocl_sort
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.ocl_sort for: %s",
-                      error)
+                     error)
         ocl_sort = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
+
+# Few constants for engine names:
+OCL_CSR_ENGINE = "ocl_csr_integr"
+OCL_LUT_ENGINE = "ocl_lut_integr"
+OCL_HIST_ENGINE = "ocl_histogram"
+OCL_SORT_ENGINE = "ocl_sorter"
+EXT_LUT_ENGINE = "lut_integrator"
+EXT_CSR_ENGINE = "csr_integrator"
+
+
+class Engine(object):
+    """This class defines a regrid-engine with its locking mechanism"""
+    def __init__(self, engine=None):
+        """Constructor of the class"""
+        self.lock = threading.Semaphore()
+        self.engine = engine
+
+    def reset(self):
+        with self.lock:
+            self.engine = None
+
+    def set_engine(self, engine):
+        "should be called from a locked region"
+        self.engine = engine
 
 
 class AzimuthalIntegrator(Geometry):
@@ -206,43 +223,28 @@ class AzimuthalIntegrator(Geometry):
                           pixel1, pixel2, splineFile, detector, wavelength)
         self._nbPixCache = {}  # key=shape, value: array
 
-        #
-        # mask and maskfile are properties pointing to self.detector
+        # mask, maskfile, darkcurrent and flatfield are properties pointing to
+        # self.detector now (16/06/2017)
 
-        self._flatfield = None
-        self._darkcurrent = None
-        self._flatfield_crc = None
-        self._darkcurrent_crc = None
-        self._writer = None
-        self.flatfiles = None
-        self.darkfiles = None
+        self._lock = threading.Semaphore()
+        self.engines = {}  # key: name of the engine,
 
-        self.header = None
-
-        self._ocl_integrator = None
-        self._ocl_lut_integr = None
-        self._ocl_csr_integr = None
-        self._lut_integrator = None
-        self._csr_integrator = None
         self._ocl_sorter = None
-        self._ocl_sem = threading.Semaphore()
-        self._lut_sem = threading.Semaphore()
-        self._csr_sem = threading.Semaphore()
-        self._ocl_csr_sem = threading.Semaphore()
-        self._ocl_lut_sem = threading.Semaphore()
+
         self._empty = 0.0
 
     def reset(self):
-        """
-        Reset azimuthal integrator in addition to other arrays.
+        """Reset azimuthal integrator in addition to other arrays.
         """
         Geometry.reset(self)
-        with self._ocl_sem:
-            self._ocl_integrator = None
-            self._ocl_csr_integr = None
-        with self._lut_sem:
-            self._lut_integrator = None
-            self._csr_integrator = None
+        self.reset_engines()
+
+    def reset_engines(self):
+        """Urgently free memory by deleting all regrid-engines"""
+        with self._lock:
+            for key in list(self.engines.keys()):  # explicit copy
+                self.engines.pop(key).reset()
+        gc.collect()
 
     def create_mask(self, data, mask=None,
                     dummy=None, delta_dummy=None, mode="normal"):
@@ -322,11 +324,11 @@ class AzimuthalIntegrator(Geometry):
         :param dark: ndarray with dark noise or None
         :return: 2tuple: corrected_data, dark_actually used (or None)
         """
+        dark = dark if dark is not None else self.detector.darkcurrent
         if dark is not None:
             return data - dark, dark
-        elif self._darkcurrent is not None:
-            return data - self._darkcurrent, self._darkcurrent
-        return data, None
+        else:
+            return data, None
 
     def flat_correction(self, data, flat=None):
         """
@@ -334,13 +336,12 @@ class AzimuthalIntegrator(Geometry):
         If flat is not defined, correct for a flat set by "set_flatfiles"
 
         :param data: input ndarray with the image
-        :param dark: ndarray with dark noise or None
+        :param flat: ndarray with flatfield or None for no correction
         :return: 2tuple: corrected_data, flat_actually used (or None)
         """
+        flat = flat if flat is not None else self.detector.flatfield
         if flat is not None:
             return data / flat, flat
-        if self._flatfield is not None:
-            return data / self._flatfield, self._flatfield
         else:
             return data, None
 
@@ -413,7 +414,8 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0 there is correction for circular
+        polarization, When set to None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -448,8 +450,8 @@ class AzimuthalIntegrator(Geometry):
                                  range=tthRange)
         tthAxis = 90.0 * (b[1:] + b[:-1]) / pi
         I = val / self._nbPixCache[npt]
-        self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg",
+                      dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -504,8 +506,8 @@ class AzimuthalIntegrator(Geometry):
                                                pixelSize_in_Pos=pixelSize,
                                                empty=dummy if dummy is not None else self._empty)
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg",
+                      dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -538,7 +540,7 @@ class AzimuthalIntegrator(Geometry):
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
         :param polarization_factor: polarization factor correction
-        :type polarization_factor: float
+        :type polarization_factor: float or None
         :param dark: dark noise image
         :type dark: ndarray
         :param flat: flat field image
@@ -587,7 +589,8 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0, the circular polarization is used.
+        When None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -661,7 +664,7 @@ class AzimuthalIntegrator(Geometry):
                                                  polarization=polarization,
                                                  )
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg", dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg", dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     @deprecated
@@ -744,7 +747,8 @@ class AzimuthalIntegrator(Geometry):
 
         The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0: circular polarization.
+        None for no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -764,7 +768,7 @@ class AzimuthalIntegrator(Geometry):
                                    dark=dark,
                                    flat=flat)
 
-        pos = self.cornerArray(data.shape)
+        pos = self.corner_array(data.shape, unit=units.TTH_RAD, scale=False)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
@@ -798,8 +802,8 @@ class AzimuthalIntegrator(Geometry):
                                                   polarization=polarization,
                                                   )
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg",
-                    dark is not None, flat is not None, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg",
+                      dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
     # Default implementation:
@@ -933,9 +937,18 @@ class AzimuthalIntegrator(Geometry):
         if dark is not None:
             data = data.astype(numpy.float32) - dark
 
-        if self._ocl_integrator is None:
-            with self._ocl_sem:
-                if self._ocl_integrator is None:
+        if OCL_HIST_ENGINE in self.engines:
+            engine = self.engines[OCL_HIST_ENGINE]
+        else:
+            with self._lock:
+                if OCL_HIST_ENGINE in self.engines:
+                    engine = self.engines[OCL_HIST_ENGINE]
+                else:
+                    engine = self.engines[OCL_HIST_ENGINE] = Engine()
+        integr = engine.engine
+        if integr is None:
+            with engine.lock:
+                if integr is None:
                     size = data.size
                     fd, tmpfile = tempfile.mkstemp(".log", "pyfai-opencl-")
                     os.close(fd)
@@ -974,29 +987,30 @@ class AzimuthalIntegrator(Geometry):
                     pos0_max = pos0_maxin * EPS32
                     if integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
                         raise RuntimeError("Failed to upload 2th arrays")
-                    self._ocl_integrator = integr
-        with self._ocl_sem:
+                    engine.set_engine(integr)
+        with engine.lock:
+            integr = engine.engine
             if safe:
-                param = self._ocl_integrator.get_status()
+                param = integr.get_status()
                 if (dummy is None) and param["dummy"]:
-                    self._ocl_integrator.unsetDummyValue()
+                    integr.unsetDummyValue()
                 elif (dummy is not None) and not param["dummy"]:
                     if delta_dummy is None:
                         delta_dummy = 1e-6
-                    self._ocl_integrator.setDummyValue(dummy, delta_dummy)
+                    integr.setDummyValue(dummy, delta_dummy)
                 if (correctSolidAngle and not param["solid_angle"]):
-                    self._ocl_integrator.setSolidAngle(flat * self.solidAngleArray(shape, correctSolidAngle))
+                    integr.setSolidAngle(flat * self.solidAngleArray(shape, correctSolidAngle))
                 elif (not correctSolidAngle) and param["solid_angle"] and (flat is 1):
-                    self._ocl_integrator.unsetSolidAngle()
+                    integr.unsetSolidAngle()
                 elif not correctSolidAngle and not param["solid_angle"] and (flat is not 1):
-                    self._ocl_integrator.setSolidAngle(flat)
+                    integr.setSolidAngle(flat)
                 if (mask is not None) and not param["mask"]:
-                    self._ocl_integrator.setMask(mask)
+                    integr.setMask(mask)
                 elif (mask is None) and param["mask"]:
-                    self._ocl_integrator.unsetMask()
-            tthAxis, I, _, = self._ocl_integrator.execute(data)
+                    integr.unsetMask()
+            tthAxis, I, _, = integr.execute(data)
         tthAxis = rad2deg(tthAxis)
-        self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
+        self.__save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
     def setup_LUT(self, shape, npt, mask=None,
@@ -1018,7 +1032,7 @@ class AzimuthalIntegrator(Geometry):
         :param mask_checksum: checksum of the mask buffer
         :type mask_checksum: int (or anything else ...)
         :param unit: use to propagate the LUT object for further checkings
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
@@ -1051,8 +1065,8 @@ class AzimuthalIntegrator(Geometry):
             int2d = True
         else:
             int2d = False
-        pos0 = self.array_from_unit(shape, "center", unit)
-        dpos0 = self.array_from_unit(shape, "delta", unit)
+        pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+        dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
         if (pos1_range is None) and (not int2d):
             pos1 = None
             dpos1 = None
@@ -1112,7 +1126,7 @@ class AzimuthalIntegrator(Geometry):
         :param mask_checksum: checksum of the mask buffer
         :type mask_checksum: int (or anything else ...)
         :param unit: use to propagate the LUT object for further checkings
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
         :param split: Splitting scheme: valid options are "no", "bbox", "full"
 
         This method is called when a look-up table needs to be set-up.
@@ -1147,13 +1161,13 @@ class AzimuthalIntegrator(Geometry):
         else:
             int2d = False
         if split == "full":
-            pos = self.array_from_unit(shape, "corner", unit)
+            pos = self.array_from_unit(shape, "corner", unit, scale=False)
         else:
-            pos0 = self.array_from_unit(shape, "center", unit)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             if split == "no":
                 dpos0 = None
             else:
-                dpos0 = self.array_from_unit(shape, "delta", unit)
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
             if (pos1_range is None) and (not int2d):
                 pos1 = None
                 dpos1 = None
@@ -1719,7 +1733,7 @@ class AzimuthalIntegrator(Geometry):
                                                   weights=data,
                                                   range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
-        self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
+        self.__save2D(filename, I, bins2Th, binsChi)
 
         return I, bins2Th, binsChi
 
@@ -1835,7 +1849,7 @@ class AzimuthalIntegrator(Geometry):
                                                               empty=dummy if dummy is not None else self._empty)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
+        self.__save2D(filename, I, bins2Th, binsChi)
         return I, bins2Th, binsChi
 
     @deprecated
@@ -1917,7 +1931,8 @@ class AzimuthalIntegrator(Geometry):
 
         the polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0: circular polarization. When None there
+        is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -1978,8 +1993,8 @@ class AzimuthalIntegrator(Geometry):
                                                           polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
-                    polarization_factor=polarization_factor)
+        self.__save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
+                      polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
     @deprecated
@@ -2061,7 +2076,8 @@ class AzimuthalIntegrator(Geometry):
 
         the polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
-        correct your data. If set to 0 there is no correction at all.
+        correct your data. If set to 0: circular polarization.
+        When None, there is no correction at all.
 
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
@@ -2084,7 +2100,7 @@ class AzimuthalIntegrator(Geometry):
                                     dark=dark,
                                     flat=flat)
 
-        pos = self.cornerArray(data.shape)
+        pos = self.corner_array(data.shape, unit=units.TTH_RAD, scale=False)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
@@ -2122,8 +2138,9 @@ class AzimuthalIntegrator(Geometry):
                                                            polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        self.save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None, has_flat=flat is not None,
-                    polarization_factor=polarization_factor)
+        self.__save2D(filename, I, bins2Th, binsChi, has_dark=dark is not None,
+                      has_flat=flat is not None,
+                      polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
     xrpd2 = xrpd2_splitBBox
@@ -2134,8 +2151,9 @@ class AzimuthalIntegrator(Geometry):
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
-                    method="csr", unit=units.Q, safe=True, normalization_factor=1.0,
-                    block_size=32, profile=False, all=False):
+                    method="csr", unit=units.Q, safe=True,
+                    normalization_factor=1.0,
+                    block_size=32, profile=False, all=False, metadata=None):
         """Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
@@ -2176,7 +2194,7 @@ class AzimuthalIntegrator(Geometry):
         :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         :type method: str
         :param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
         :param safe: Do some extra checks to ensure LUT/CSR is still valid. False is faster.
         :type safe: bool
         :param normalization_factor: Value of a normalization monitor
@@ -2185,6 +2203,7 @@ class AzimuthalIntegrator(Geometry):
         :param profile: set to True to enable profiling in OpenCL
         :param all: if true return a dictionary with many more parameters (deprecated, please refer to the documentation of Integrate1dResult).
         :type all: bool
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         :rtype: Integrate1dResult, dict
         """
@@ -2195,7 +2214,15 @@ class AzimuthalIntegrator(Geometry):
         unit = units.to_unit(unit)
 
         if mask is None:
+            has_mask = "from detector"
             mask = self.mask
+            mask_crc = self.detector.get_mask_crc
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "provided"
+            mask_crc = crc32(mask)
 
         shape = data.shape
         pos0_scale = unit.scale
@@ -2224,17 +2251,27 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = None
-        elif polarization_factor is True:
-            polarization = self._polarization
+            polarization = polarization_checksum = None
         else:
-            polarization = self.polarization(shape, float(polarization_factor))
+            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
-            dark = self.darkcurrent
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
 
         if flat is None:
-            flat = self.flatfield
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
 
         I = None
         sigma = None
@@ -2243,68 +2280,68 @@ class AzimuthalIntegrator(Geometry):
 
         if (I is None) and ("lut" in method):
             mask_crc = None
-            with self._lut_sem:
+            if EXT_LUT_ENGINE not in self.engines:
+                engine = self.engines[EXT_LUT_ENGINE] = Engine()
+            else:
+                engine = self.engines[EXT_LUT_ENGINE]
+            with engine.lock:
+                integr = engine.engine
                 reset = None
-                if self._lut_integrator is None:
+                if integr is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
-                    if self._lut_integrator.unit != unit:
+                    if integr.unit != unit:
                         reset = "unit changed"
-                    if self._lut_integrator.bins != npt:
+                    if integr.bins != npt:
                         reset = "number of points changed"
-                    if self._lut_integrator.size != data.size:
+                    if integr.size != data.size:
                         reset = "input image size changed"
                     if (mask is not None) and\
-                            (not self._lut_integrator.check_mask):
+                            (not integr.check_mask):
                         reset = "mask but LUT was without mask"
-                    elif (mask is None) and (self._lut_integrator.check_mask):
+                    elif (mask is None) and (integr.check_mask):
                         reset = "no mask but LUT has mask"
                     elif (mask is not None) and\
-                            (self._lut_integrator.mask_checksum != mask_crc):
+                            (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
                     if (radial_range is None) and\
-                            (self._lut_integrator.pos0Range is not None):
+                            (integr.pos0Range is not None):
                         reset = "radial_range was defined in LUT"
                     elif (radial_range is not None) and\
-                            (self._lut_integrator.pos0Range !=
+                            (integr.pos0Range !=
                              (min(radial_range), max(radial_range) * EPS32)):
                         reset = ("radial_range is defined"
                                  " but not the same as in LUT")
                     if (azimuth_range is None) and\
-                            (self._lut_integrator.pos1Range is not None):
+                            (integr.pos1Range is not None):
                         reset = ("azimuth_range not defined and"
                                  " LUT had azimuth_range defined")
                     elif (azimuth_range is not None) and\
-                            (self._lut_integrator.pos1Range !=
+                            (integr.pos1Range !=
                              (min(azimuth_range), max(azimuth_range) * EPS32)):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s", reset)
                     try:
-                        self._lut_integrator = self.setup_LUT(shape, npt, mask,
-                                                              radial_range, azimuth_range,
-                                                              mask_checksum=mask_crc, unit=unit)
+                        integr = self.setup_LUT(shape, npt, mask,
+                                                radial_range, azimuth_range,
+                                                mask_checksum=mask_crc, unit=unit)
+
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on default forward implementation")
-                        self._lut_integrator = None
-                        self._ocl_lut_integr = None
-                        gc.collect()
+                        integr = None
+                        self.reset_engines()
                         method = self.DEFAULT_METHOD
-
-                if self._lut_integrator:
+                    else:
+                        engine.set_engine(integr)
+                if integr:
                     if ("ocl" in method) and ocl_azim_lut:
-                        with self._ocl_lut_sem:
+                        if OCL_LUT_ENGINE in self.engines:
+                            ocl_engine = self.engines[OCL_LUT_ENGINE]
+                        else:
+                            ocl_engine = self.engines[OCL_LUT_ENGINE] = Engine()
+                        with ocl_engine.lock:
                             if "," in method:
                                 c = method.index(",")
                                 platformid = int(method[c - 1])
@@ -2322,100 +2359,98 @@ class AzimuthalIntegrator(Geometry):
                                 platformid = None
                                 deviceid = None
                                 devicetype = "all"
-                            if (self._ocl_lut_integr is None) or\
-                                    (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
-                                                                                       self._lut_integrator.size,
-                                                                                       devicetype=devicetype,
-                                                                                       platformid=platformid,
-                                                                                       deviceid=deviceid,
-                                                                                       checksum=self._lut_integrator.lut_checksum)
-                            if self._ocl_lut_integr is not None:
-                                I, sum_, count = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
-                                                                                solidangle=solidangle,
-                                                                                solidangle_checksum=self._dssa_crc,
-                                                                                dummy=dummy,
-                                                                                delta_dummy=delta_dummy,
-                                                                                polarization=polarization,
-                                                                                polarization_checksum=self._polarization_crc,
-                                                                                normalization_factor=normalization_factor)
-                                qAxis = self._lut_integrator.outPos  # this will be copied later
+                            ocl_integr = ocl_engine.engine
+                            if (ocl_integr is None) or \
+                                    (ocl_integr.on_device["lut"] != integr.lut_checksum):
+                                ocl_integr = ocl_azim_lut.OCL_LUT_Integrator(integr.lut,
+                                                                             integr.size,
+                                                                             devicetype=devicetype,
+                                                                             platformid=platformid,
+                                                                             deviceid=deviceid,
+                                                                             checksum=integr.lut_checksum)
+                                ocl_engine.set_engine(ocl_integr)
+                            if ocl_integr is not None:
+                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
+                                                                      solidangle=solidangle,
+                                                                      solidangle_checksum=self._dssa_crc,
+                                                                      dummy=dummy,
+                                                                      delta_dummy=delta_dummy,
+                                                                      polarization=polarization,
+                                                                      polarization_checksum=polarization_checksum,
+                                                                      normalization_factor=normalization_factor)
+                                qAxis = integr.outPos  # this will be copied later
                                 if error_model == "azimuthal":
-                                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+
+                                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                                 if variance is not None:
-                                    var1d, a, b = self._ocl_lut_integr.integrate(variance,
-                                                                                 solidangle=None,
-                                                                                 dummy=dummy,
-                                                                                 delta_dummy=delta_dummy,
-                                                                                 normalization_factor=1.0)
+                                    var1d, a, b = ocl_integr.integrate(variance,
+                                                                       solidangle=None,
+                                                                       dummy=dummy,
+                                                                       delta_dummy=delta_dummy,
+                                                                       normalization_factor=1.0)
                                     with numpy.errstate(divide='ignore'):
                                         sigma = numpy.sqrt(a) / (b * normalization_factor)
                                     sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
-                        qAxis, I, sum_, count = self._lut_integrator.integrate(data, dark=dark, flat=flat,
-                                                                               solidAngle=solidangle,
-                                                                               dummy=dummy,
-                                                                               delta_dummy=delta_dummy,
-                                                                               polarization=polarization,
-                                                                               normalization_factor=normalization_factor)
+                        qAxis, I, sum_, count = integr.integrate(data, dark=dark, flat=flat,
+                                                                 solidAngle=solidangle,
+                                                                 dummy=dummy,
+                                                                 delta_dummy=delta_dummy,
+                                                                 polarization=polarization,
+                                                                 normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
-                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
-                            _, var1d, a, b = self._lut_integrator.integrate(variance,
-                                                                            solidAngle=None,
-                                                                            dummy=dummy,
-                                                                            delta_dummy=delta_dummy,
-                                                                            normalization_factor=1.0)
+                            _, var1d, a, b = integr.integrate(variance,
+                                                              solidAngle=None,
+                                                              dummy=dummy,
+                                                              delta_dummy=delta_dummy,
+                                                              normalization_factor=1.0)
                             with numpy.errstate(divide='ignore'):
                                 sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("csr" in method):
-            mask_crc = None
-            with self._csr_sem:
+            if EXT_CSR_ENGINE not in self.engines:
+                engine = self.engines[EXT_CSR_ENGINE] = Engine()
+            else:
+                engine = self.engines[EXT_CSR_ENGINE]
+            with engine.lock:
+                integr = engine.engine
                 reset = None
-                if self._csr_integrator is None:
+
+                if integr is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
-                    if self._csr_integrator.unit != unit:
+                    if integr.unit != unit:
                         reset = "unit changed"
-                    if self._csr_integrator.bins != npt:
+                    if integr.bins != npt:
                         reset = "number of points changed"
-                    if self._csr_integrator.size != data.size:
+                    if integr.size != data.size:
                         reset = "input image size changed"
                     if (mask is not None) and\
-                            (not self._csr_integrator.check_mask):
+                            (not integr.check_mask):
                         reset = "mask but CSR was without mask"
-                    elif (mask is None) and (self._csr_integrator.check_mask):
+                    elif (mask is None) and (integr.check_mask):
                         reset = "no mask but CSR has mask"
                     elif (mask is not None) and\
-                            (self._csr_integrator.mask_checksum != mask_crc):
+                            (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
                     if (radial_range is None) and\
-                            (self._csr_integrator.pos0Range is not None):
+                            (integr.pos0Range is not None):
                         reset = "radial_range was defined in CSR"
                     elif (radial_range is not None) and\
-                            (self._csr_integrator.pos0Range !=
+                            (integr.pos0Range !=
                              (min(radial_range), max(radial_range) * EPS32)):
                         reset = ("radial_range is defined"
                                  " but not the same as in CSR")
                     if (azimuth_range is None) and\
-                            (self._csr_integrator.pos1Range is not None):
+                            (integr.pos1Range is not None):
                         reset = ("azimuth_range not defined and"
                                  " CSR had azimuth_range defined")
                     elif (azimuth_range is not None) and\
-                            (self._csr_integrator.pos1Range !=
+                            (integr.pos1Range !=
                              (min(azimuth_range), max(azimuth_range) * EPS32)):
                         reset = ("azimuth_range requested and"
                                  " CSR's azimuth_range don't match")
@@ -2428,19 +2463,23 @@ class AzimuthalIntegrator(Geometry):
                     else:
                         split = "bbox"
                     try:
-                        self._csr_integrator = self.setup_CSR(shape, npt, mask,
-                                                              radial_range, azimuth_range,
-                                                              mask_checksum=mask_crc,
-                                                              unit=unit, split=split)
+                        integr = self.setup_CSR(shape, npt, mask,
+                                                radial_range, azimuth_range,
+                                                mask_checksum=mask_crc,
+                                                unit=unit, split=split)
                     except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
-                        self._ocl_csr_integr = None
-                        self._csr_integrator = None
-                        gc.collect()
+                        integr = None
+                        self.reset_engines()
                         method = self.DEFAULT_METHOD
-                if self._csr_integrator:
+                    else:
+                        engine.set_engine(integr)
+                if integr:
                     if ("ocl" in method) and ocl_azim_csr:
-                        with self._ocl_csr_sem:
+                        if OCL_CSR_ENGINE not in self.engines:
+                            self.engines[OCL_CSR_ENGINE] = Engine()
+                        ocl_engine = self.engines[OCL_CSR_ENGINE]
+                        with ocl_engine.lock:
                             if "," in method:
                                 c = method.index(",")
                                 platformid = int(method[c - 1])
@@ -2458,94 +2497,95 @@ class AzimuthalIntegrator(Geometry):
                                 platformid = None
                                 deviceid = None
                                 devicetype = "all"
-                            if (self._ocl_csr_integr is None) or\
-                                    (self._ocl_csr_integr.on_device["data"] != self._csr_integrator.lut_checksum):
-                                self._ocl_csr_integr = ocl_azim_csr.OCL_CSR_Integrator(self._csr_integrator.lut,
-                                                                                       self._csr_integrator.size,
-                                                                                       devicetype=devicetype,
-                                                                                       platformid=platformid,
-                                                                                       deviceid=deviceid,
-                                                                                       checksum=self._csr_integrator.lut_checksum,
-                                                                                       block_size=block_size,
-                                                                                       profile=profile)
-                            I, sum_, count = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
-                                                                            solidangle=solidangle,
-                                                                            solidangle_checksum=self._dssa_crc,
-                                                                            dummy=dummy,
-                                                                            delta_dummy=delta_dummy,
-                                                                            polarization=polarization,
-                                                                            polarization_checksum=self._polarization_crc,
-                                                                            normalization_factor=normalization_factor)
-                            qAxis = self._csr_integrator.outPos  # this will be copied later
+                            ocl_integr = ocl_engine.engine
+                            if (ocl_integr is None) or \
+                                    (ocl_integr.on_device["data"] != integr.lut_checksum):
+                                ocl_integr = ocl_azim_csr.OCL_CSR_Integrator(integr.lut,
+                                                                             integr.size,
+                                                                             devicetype=devicetype,
+                                                                             platformid=platformid,
+                                                                             deviceid=deviceid,
+                                                                             checksum=integr.lut_checksum,
+                                                                             block_size=block_size,
+                                                                             profile=profile)
+                                ocl_engine.set_engine(ocl_integr)
+                            I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
+                                                                  solidangle=solidangle,
+                                                                  solidangle_checksum=self._dssa_crc,
+                                                                  dummy=dummy,
+                                                                  delta_dummy=delta_dummy,
+                                                                  polarization=polarization,
+                                                                  polarization_checksum=polarization_checksum,
+                                                                  normalization_factor=normalization_factor)
+                            qAxis = integr.outPos  # this will be copied later
                             if error_model == "azimuthal":
-                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                             if variance is not None:
-                                var1d, a, b = self._ocl_csr_integr.integrate(variance,
-                                                                             solidangle=None,
-                                                                             dummy=dummy,
-                                                                             delta_dummy=delta_dummy)
+                                var1d, a, b = ocl_integr.integrate(variance,
+                                                                   solidangle=None,
+                                                                   dummy=dummy,
+                                                                   delta_dummy=delta_dummy)
                                 with numpy.errstate(divide='ignore'):
                                     sigma = numpy.sqrt(a) / (b * normalization_factor)
                                 sigma[b == 0] = dummy if dummy is not None else self._empty
                     else:
-                        qAxis, I, sum_, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
-                                                                               solidAngle=solidangle,
-                                                                               dummy=dummy,
-                                                                               delta_dummy=delta_dummy,
-                                                                               polarization=polarization,
-                                                                               normalization_factor=normalization_factor)
+                        qAxis, I, sum_, count = integr.integrate(data, dark=dark, flat=flat,
+                                                                 solidAngle=solidangle,
+                                                                 dummy=dummy,
+                                                                 delta_dummy=delta_dummy,
+                                                                 polarization=polarization,
+                                                                 normalization_factor=normalization_factor)
 
                         if error_model == "azimuthal":
-                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                         if variance is not None:
-                            _, var1d, a, b = self._csr_integrator.integrate(variance,
-                                                                            solidAngle=None,
-                                                                            dummy=dummy,
-                                                                            delta_dummy=delta_dummy,
-                                                                            normalization_factor=1.0)
+                            _, var1d, a, b = integr.integrate(variance,
+                                                              solidAngle=None,
+                                                              dummy=dummy,
+                                                              delta_dummy=delta_dummy,
+                                                              normalization_factor=1.0)
                             with numpy.errstate(divide='ignore'):
                                 sigma = numpy.sqrt(a) / (b * normalization_factor)
                             sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("splitpix" in method):
-#            if "full" in method:
-                if splitPixel is None:
-                    logger.warning("SplitPixelFull is not available,"
-                                " falling back on splitbbox histogram !")
-                    method = self.DEFAULT_METHOD
-                else:
-                    logger.debug("integrate1d uses SplitPixel implementation")
-                    pos = self.array_from_unit(shape, "corner", unit)
-                    qAxis, I, sum_, count = splitPixel.fullSplit1D(pos=pos,
-                                                                   weights=data,
-                                                                   bins=npt,
-                                                                   pos0Range=radial_range,
-                                                                   pos1Range=azimuth_range,
-                                                                   dummy=dummy,
-                                                                   delta_dummy=delta_dummy,
-                                                                   mask=mask,
-                                                                   dark=dark,
-                                                                   flat=flat,
-                                                                   solidangle=solidangle,
-                                                                   polarization=polarization,
-                                                                   normalization_factor=normalization_factor
-                                                                   )
-                    if error_model == "azimuthal":
-                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
-                    if variance is not None:
-                        _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
-                                                                weights=variance,
-                                                                bins=npt,
-                                                                pos0Range=radial_range,
-                                                                pos1Range=azimuth_range,
-                                                                dummy=dummy,
-                                                                delta_dummy=delta_dummy,
-                                                                mask=mask,
-                                                                normalization_factor=1.0
-                                                                )
-                        with numpy.errstate(divide='ignore'):
-                            sigma = numpy.sqrt(a) / (b * normalization_factor)
-                        sigma[b == 0] = dummy if dummy is not None else self._empty
+            if splitPixel is None:
+                logger.warning("SplitPixelFull is not available,"
+                               " falling back on splitbbox histogram !")
+                method = self.DEFAULT_METHOD
+            else:
+                logger.debug("integrate1d uses SplitPixel implementation")
+                pos = self.array_from_unit(shape, "corner", unit, scale=False)
+                qAxis, I, sum_, count = splitPixel.fullSplit1D(pos=pos,
+                                                               weights=data,
+                                                               bins=npt,
+                                                               pos0Range=radial_range,
+                                                               pos1Range=azimuth_range,
+                                                               dummy=dummy,
+                                                               delta_dummy=delta_dummy,
+                                                               mask=mask,
+                                                               dark=dark,
+                                                               flat=flat,
+                                                               solidangle=solidangle,
+                                                               polarization=polarization,
+                                                               normalization_factor=normalization_factor
+                                                               )
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
+                if variance is not None:
+                    _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
+                                                            weights=variance,
+                                                            bins=npt,
+                                                            pos0Range=radial_range,
+                                                            pos1Range=azimuth_range,
+                                                            dummy=dummy,
+                                                            delta_dummy=delta_dummy,
+                                                            mask=mask,
+                                                            normalization_factor=1.0
+                                                            )
+                    with numpy.errstate(divide='ignore'):
+                        sigma = numpy.sqrt(a) / (b * normalization_factor)
+                    sigma[b == 0] = dummy if dummy is not None else self._empty
 
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
@@ -2559,8 +2599,8 @@ class AzimuthalIntegrator(Geometry):
                     dchi = self.deltaChi(shape)
                 else:
                     dchi = None
-                pos0 = self.array_from_unit(shape, "center", unit)
-                dpos0 = self.array_from_unit(shape, "delta", unit)
+                pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
                 qAxis, I, sum_, count = splitBBox.histoBBox1d(weights=data,
                                                               pos0=pos0,
                                                               delta_pos0=dpos0,
@@ -2578,7 +2618,7 @@ class AzimuthalIntegrator(Geometry):
                                                               polarization=polarization,
                                                               normalization_factor=normalization_factor)
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                 if variance is not None:
                     _, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
                                                            pos0=pos0,
@@ -2600,7 +2640,7 @@ class AzimuthalIntegrator(Geometry):
             # Common part for  Numpy and Cython
             data = data.astype(numpy.float32)
             mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
-            pos0 = self.array_from_unit(shape, "center", unit)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range))
                 mask *= (pos0 <= max(radial_range))
@@ -2634,7 +2674,7 @@ class AzimuthalIntegrator(Geometry):
                                                                 empty=dummy if dummy is not None else self._empty,
                                                                 normalization_factor=normalization_factor)
                     if error_model == "azimuthal":
-                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)[mask]) ** 2
                     if variance is not None:
                         _, var1d, a, b = histogram.histogram(pos=pos0,
                                                              weights=variance,
@@ -2657,32 +2697,39 @@ class AzimuthalIntegrator(Geometry):
             sum_, b = numpy.histogram(pos0, npt, weights=data, range=radial_range)
             with numpy.errstate(divide='ignore'):
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)[mask]) ** 2
                 if variance is not None:
                     var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
                     sigma = numpy.sqrt(var1d) / (count * normalization_factor)
                     sigma[count == 0] = dummy if dummy is not None else self._empty
-                I = sum_ / count / normalization_factor
+                with numpy.errstate(divide='ignore'):
+                    I = sum_ / count / normalization_factor
                 I[count == 0] = dummy if dummy is not None else self._empty
 
         if pos0_scale:
             # not in place to make a copy
             qAxis = qAxis * pos0_scale
 
-        self.save1D(filename, qAxis, I, sigma, unit,
-                    dark is not None, flat is not None, polarization_factor, normalization_factor)
-
         result = Integrate1dResult(qAxis, I, sigma)
+        result._set_method_called("integrate1d")
+        result._set_compute_engine(method)
         result._set_unit(unit)
         result._set_sum(sum_)
         result._set_count(count)
-        result._set_has_dark_correction(dark is not None)
-        result._set_has_flat_correction(flat is not None)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_metadata(metadata)
+
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
 
         if all:
-            logger.warning("integrate1d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
+            logger.warning("integrate1d(all=True) is deprecated. "
+                           "Please refer to the documentation of Integrate1dResult")
 
             res = {"radial": result.radial,
                    "unit": result.unit,
@@ -2696,13 +2743,75 @@ class AzimuthalIntegrator(Geometry):
 
         return result
 
+    def integrate_radial(self, data, npt, npt_rad=100,
+                         correctSolidAngle=True,
+                         radial_range=None, azimuth_range=None,
+                         mask=None, dummy=None, delta_dummy=None,
+                         polarization_factor=None, dark=None, flat=None,
+                         method="csr", unit=units.CHI_DEG, radial_unit=units.Q,
+                         normalization_factor=1.0,):
+        """Calculate the radial integrated profile curve as I = f(chi)
+
+        :param ndarray data: 2D array from the Detector/CCD camera
+        :param int npt: number of points in the output pattern
+        :param int npt_rad: number of points in the radial space. Too few points may lead to huge rounding errors.
+        :param str filename: output filename in 2/3 column ascii format
+        :param bool correctSolidAngle: correct for solid angle of each pixel if True
+        :param radial_range: The lower and upper range of the radial unit. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :type radial_range: Tuple(float, float)
+        :param azimuth_range: The lower and upper range of the azimuthal angle in degree. If not provided, range is simply (data.min(), data.max()). Values outside the range are ignored. Optional.
+        :type azimuth_range: Tuple(float, float)
+        :param ndarray mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        :param float dummy: value for dead/masked pixels
+        :param float delta_dummy: precision for dummy value
+        :param float polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+                * 0 for circular polarization or random,
+                * None for no correction,
+                * True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param str method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        :param pyFAI.units.Unit unit: Output units, can be "chi_deg" or "chi_rad"
+        :param pyFAI.units.Unit radial_unit: unit used for radial representation, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
+        :param float normalization_factor: Value of a normalization monitor
+        :return: chi bins center positions and regrouped intensity
+        :rtype: Integrate1dResult
+        """
+        unit = units.to_unit(unit, type_=units.AZIMUTHAL_UNITS)
+        res = self.integrate2d(data, npt_rad, npt,
+                               correctSolidAngle=correctSolidAngle,
+                               mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                               polarization_factor=polarization_factor,
+                               dark=dark, flat=flat, method=method,
+                               normalization_factor=normalization_factor,
+                               radial_range=radial_range,
+                               azimuth_range=azimuth_range,
+                               unit=radial_unit)
+
+        azim_scale = unit.scale / units.CHI_DEG.scale
+        sum_ = res.sum.sum(axis=-1)
+        count = res.count.sum(axis=-1)
+        intensity = sum_ / count
+        empty = dummy if dummy is not None else self.empty
+        intensity[count == 0] = empty
+        result = Integrate1dResult(res.azimuthal * azim_scale, intensity, None)
+        result._set_method_called("integrate_radial")
+        result._set_unit(unit)
+        result._set_sum(sum_)
+        result._set_count(count)
+        result._set_has_dark_correction(dark is not None)
+        result._set_has_flat_correction(flat is not None)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        return result
+
     def integrate2d(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     method="bbox", unit=units.Q, safe=True,
-                    normalization_factor=1.0, all=False):
+                    normalization_factor=1.0, all=False, metadata=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -2732,7 +2841,9 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
+        :param polarization_factor: polarization factor between -1 (vertical)
+                and +1 (horizontal). 0 for circular polarization or random,
+                None for no correction
         :type polarization_factor: float
         :param dark: dark noise image
         :type dark: ndarray
@@ -2741,12 +2852,13 @@ class AzimuthalIntegrator(Geometry):
         :param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         :type method: str
         :param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
-        :type unit: pyFAI.units.Enum
+        :type unit: pyFAI.units.Unit
         :param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         :type safe: bool
         :param normalization_factor: Value of a normalization monitor
         :type normalization_factor: float
         :param all: if true, return many more intermediate results as a dict (deprecated, please refer to the documentation of Integrate2dResult).
+        :param metadata: JSON serializable object containing the metadata, usually a dictionary.
         :type all: bool
         :return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         :rtype: Integrate2dResult, dict
@@ -2758,7 +2870,16 @@ class AzimuthalIntegrator(Geometry):
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
         if mask is None:
+            has_mask = "from detector"
             mask = self.mask
+            mask_crc = self.detector.get_mask_crc()
+            if mask is None:
+                has_mask = False
+                mask_crc = None
+        else:
+            has_mask = "provided"
+            mask_crc = crc32(mask)
+
         shape = data.shape
 
         if radial_range:
@@ -2782,15 +2903,27 @@ class AzimuthalIntegrator(Geometry):
             solidangle = None
 
         if polarization_factor is None:
-            polarization = None
+            polarization = polarization_checksum = None
         else:
-            polarization = self.polarization(shape, polarization_factor)
+            polarization, polarization_checksum = self.polarization(shape, polarization_factor, with_checksum=True)
 
         if dark is None:
-            dark = self.darkcurrent
+            dark = self.detector.darkcurrent
+            if dark is None:
+                has_dark = False
+            else:
+                has_dark = "from detector"
+        else:
+            has_dark = "provided"
 
         if flat is None:
-            flat = self.flatfield
+            flat = self.detector.flatfield
+            if dark is None:
+                has_flat = False
+            else:
+                has_flat = "from detector"
+        else:
+            has_flat = "provided"
 
         I = None
         sigma = None
@@ -2798,58 +2931,57 @@ class AzimuthalIntegrator(Geometry):
         count = None
 
         if (I is None) and ("lut" in method):
-            logger.debug("in lut")
-            mask_crc = None
-            with self._lut_sem:
+            if EXT_LUT_ENGINE not in self.engines:
+                engine = self.engines[EXT_LUT_ENGINE] = Engine()
+            else:
+                engine = self.engines[EXT_LUT_ENGINE]
+            with engine.lock:
+                integr = engine.engine
                 reset = None
-                if self._lut_integrator is None:
+                if integr is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
-                    if self._lut_integrator.unit != unit:
+                    if integr.unit != unit:
                         reset = "unit changed"
-                    if self._lut_integrator.bins != npt:
+                    if integr.bins != npt:
                         reset = "number of points changed"
-                    if self._lut_integrator.size != data.size:
+                    if integr.size != data.size:
                         reset = "input image size changed"
-                    if (mask is not None) and (not self._lut_integrator.check_mask):
+                    if (mask is not None) and (not integr.check_mask):
                         reset = "mask but LUT was without mask"
-                    elif (mask is None) and (self._lut_integrator.check_mask):
+                    elif (mask is None) and (integr.check_mask):
                         reset = "no mask but LUT has mask"
-                    elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
+                    elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and (self._lut_integrator.pos0Range is not None):
+                    if (radial_range is None) and (integr.pos0Range is not None):
                         reset = "radial_range was defined in LUT"
-                    elif (radial_range is not None) and self._lut_integrator.pos0Range != (min(radial_range), max(radial_range) * EPS32):
+                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
                         reset = "radial_range is defined but not the same as in LUT"
-                    if (azimuth_range is None) and (self._lut_integrator.pos1Range is not None):
+                    if (azimuth_range is None) and (integr.pos1Range is not None):
                         reset = "azimuth_range not defined and LUT had azimuth_range defined"
-                    elif (azimuth_range is not None) and self._lut_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
+                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
                         reset = "azimuth_range requested and LUT's azimuth_range don't match"
                 error = False
                 if reset:
-                    logger.info("AI.integrate2d: Resetting integrator because %s", reset)
+                    logger.info("ai.integrate2d: Resetting integrator because %s", reset)
                     try:
-                        self._lut_integrator = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
-                        error = False
+                        integr = self.setup_LUT(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
-                        self._ocl_lut_integr = None
-                        gc.collect()
+                        integr = None
+                        self.reset_engines()
                         method = self.DEFAULT_METHOD
                         error = True
+                    else:
+                        error = False
+                        engine.set_engine(integr)
                 if not error:
                     if ("ocl" in method) and ocl_azim_lut:
-                        with self._ocl_lut_sem:
+                        if OCL_LUT_ENGINE in self.engines:
+                            ocl_engine = self.engines[OCL_LUT_ENGINE]
+                        else:
+                            ocl_engine = self.engines[OCL_LUT_ENGINE] = Engine()
+                        with ocl_engine.lock:
                             if "," in method:
                                 c = method.index(",")
                                 platformid = int(method[c - 1])
@@ -2867,73 +2999,70 @@ class AzimuthalIntegrator(Geometry):
                                 platformid = None
                                 deviceid = None
                                 devicetype = "all"
-                            if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
-                                                                                       self._lut_integrator.size,
-                                                                                       devicetype=devicetype,
-                                                                                       platformid=platformid,
-                                                                                       deviceid=deviceid,
-                                                                                       checksum=self._lut_integrator.lut_checksum)
-                            if not error:
-                                I, sum_, count = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
-                                                                                solidangle=solidangle,
-                                                                                solidangle_checksum=self._dssa_crc,
-                                                                                dummy=dummy,
-                                                                                delta_dummy=delta_dummy,
-                                                                                polarization=polarization,
-                                                                                polarization_checksum=self._polarization_crc,
-                                                                                normalization_factor=normalization_factor,
-                                                                                safe=safe)
+                            ocl_integr = ocl_engine.engine
+                            if (ocl_integr is None) or \
+                                    (ocl_integr.on_device["lut"] != integr.lut_checksum):
+                                ocl_integr = ocl_azim_lut.OCL_LUT_Integrator(integr.lut,
+                                                                             integr.size,
+                                                                             devicetype=devicetype,
+                                                                             platformid=platformid,
+                                                                             deviceid=deviceid,
+                                                                             checksum=integr.lut_checksum)
+                                ocl_engine.set_engine(ocl_integr)
+
+                            if (not error) and (ocl_integr is not None):
+                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
+                                                                      solidangle=solidangle,
+                                                                      solidangle_checksum=self._dssa_crc,
+                                                                      dummy=dummy,
+                                                                      delta_dummy=delta_dummy,
+                                                                      polarization=polarization,
+                                                                      polarization_checksum=polarization_checksum,
+                                                                      normalization_factor=normalization_factor,
+                                                                      safe=safe)
                                 I.shape = npt
                                 I = I.T
-                                bins_rad = self._lut_integrator.outPos0  # this will be copied later
-                                bins_azim = self._lut_integrator.outPos1
+                                bins_rad = integr.outPos0  # this will be copied later
+                                bins_azim = integr.outPos1
                     else:
-                        I, bins_rad, bins_azim, sum_, count = self._lut_integrator.integrate(data, dark=dark, flat=flat,
-                                                                                             solidAngle=solidangle,
-                                                                                             dummy=dummy,
-                                                                                             delta_dummy=delta_dummy,
-                                                                                             polarization=polarization,
-                                                                                             normalization_factor=normalization_factor
-                                                                                             )
+                        I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
+                                                                               solidAngle=solidangle,
+                                                                               dummy=dummy,
+                                                                               delta_dummy=delta_dummy,
+                                                                               polarization=polarization,
+                                                                               normalization_factor=normalization_factor
+                                                                               )
 
         if (I is None) and ("csr" in method):
-            logger.debug("in csr")
-            mask_crc = None
-            with self._lut_sem:
+            if EXT_CSR_ENGINE not in self.engines:
+                engine = self.engines[EXT_CSR_ENGINE] = Engine()
+            else:
+                engine = self.engines[EXT_CSR_ENGINE]
+            with engine.lock:
+                integr = engine.engine
                 reset = None
-                if self._csr_integrator is None:
+                if integr is None:
                     reset = "init"
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
                 if (not reset) and safe:
-                    if mask is None:
-                        mask = self.detector.mask
-                        mask_crc = self.detector._mask_crc
-                    else:
-                        mask_crc = crc32(mask)
-                    if self._csr_integrator.unit != unit:
+                    if integr.unit != unit:
                         reset = "unit changed"
-                    if self._csr_integrator.bins != npt:
+                    if integr.bins != npt:
                         reset = "number of points changed"
-                    if self._csr_integrator.size != data.size:
+                    if integr.size != data.size:
                         reset = "input image size changed"
-                    if (mask is not None) and (not self._csr_integrator.check_mask):
+                    if (mask is not None) and (not integr.check_mask):
                         reset = "mask but CSR was without mask"
-                    elif (mask is None) and (self._csr_integrator.check_mask):
+                    elif (mask is None) and (integr.check_mask):
                         reset = "no mask but CSR has mask"
-                    elif (mask is not None) and (self._csr_integrator.mask_checksum != mask_crc):
+                    elif (mask is not None) and (integr.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and (self._csr_integrator.pos0Range is not None):
+                    if (radial_range is None) and (integr.pos0Range is not None):
                         reset = "radial_range was defined in CSR"
-                    elif (radial_range is not None) and self._csr_integrator.pos0Range != (min(radial_range), max(radial_range) * EPS32):
+                    elif (radial_range is not None) and integr.pos0Range != (min(radial_range), max(radial_range) * EPS32):
                         reset = "radial_range is defined but not the same as in CSR"
-                    if (azimuth_range is None) and (self._csr_integrator.pos1Range is not None):
+                    if (azimuth_range is None) and (integr.pos1Range is not None):
                         reset = "azimuth_range not defined and CSR had azimuth_range defined"
-                    elif (azimuth_range is not None) and self._csr_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
+                    elif (azimuth_range is not None) and integr.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
                         reset = "azimuth_range requested and CSR's azimuth_range don't match"
                 error = False
                 if reset:
@@ -2945,20 +3074,26 @@ class AzimuthalIntegrator(Geometry):
                     else:
                         split = "bbox"
                     try:
-                        self._csr_integrator = self.setup_CSR(shape, npt, mask,
-                                                              radial_range, azimuth_range,
-                                                              mask_checksum=mask_crc,
-                                                              unit=unit, split=split)
-                        error = False
+                        integr = self.setup_CSR(shape, npt, mask,
+                                                radial_range, azimuth_range,
+                                                mask_checksum=mask_crc,
+                                                unit=unit, split=split)
                     except MemoryError:
                         logger.warning("MemoryError: falling back on default forward implementation")
-                        self._ocl_csr_integr = None
-                        gc.collect()
+                        integr = None
+                        self.reset_engines()
                         method = self.DEFAULT_METHOD
                         error = True
-                if not error:  # not yet implemented...
-                    if ("ocl" in method) and ocl_azim_lut:
-                        with self._ocl_lut_sem:
+                    else:
+                        error = False
+                        engine.set_engine(integr)
+                if not error:
+                    if ("ocl" in method) and ocl_azim_csr:
+                        if OCL_CSR_ENGINE in self.engines:
+                            ocl_engine = self.engines[OCL_CSR_ENGINE]
+                        else:
+                            ocl_engine = self.engines[OCL_CSR_ENGINE] = Engine()
+                        with ocl_engine.lock:
                             if "," in method:
                                 c = method.index(",")
                                 platformid = int(method[c - 1])
@@ -2976,34 +3111,36 @@ class AzimuthalIntegrator(Geometry):
                                 platformid = None
                                 deviceid = None
                                 devicetype = "all"
-                            if (self._ocl_csr_integr is None) or (self._ocl_csr_integr.on_device["data"] != self._csr_integrator.lut_checksum):
-                                self._ocl_csr_integr = ocl_azim_csr.OCL_CSR_Integrator(self._csr_integrator.lut,
-                                                                                       self._csr_integrator.size,
-                                                                                       devicetype=devicetype,
-                                                                                       platformid=platformid,
-                                                                                       deviceid=deviceid,
-                                                                                       checksum=self._csr_integrator.lut_checksum)
-                        if not error:
-                                I, sum_, count = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
-                                                                                solidangle=solidangle,
-                                                                                solidangle_checksum=self._dssa_crc,
-                                                                                dummy=dummy,
-                                                                                delta_dummy=delta_dummy,
-                                                                                polarization=polarization,
-                                                                                polarization_checksum=self._polarization_crc,
-                                                                                safe=safe,
-                                                                                normalization_factor=normalization_factor)
+                            ocl_integr = ocl_engine.engine
+                            if (ocl_integr is None) or (ocl_integr.on_device["data"] != integr.lut_checksum):
+                                ocl_integr = ocl_azim_csr.OCL_CSR_Integrator(integr.lut,
+                                                                             integr.size,
+                                                                             devicetype=devicetype,
+                                                                             platformid=platformid,
+                                                                             deviceid=deviceid,
+                                                                             checksum=integr.lut_checksum)
+                                ocl_engine.set_engine(ocl_integr)
+                        if (not error) and (ocl_integr is not None):
+                                I, sum_, count = ocl_integr.integrate(data, dark=dark, flat=flat,
+                                                                      solidangle=solidangle,
+                                                                      solidangle_checksum=self._dssa_crc,
+                                                                      dummy=dummy,
+                                                                      delta_dummy=delta_dummy,
+                                                                      polarization=polarization,
+                                                                      polarization_checksum=polarization_checksum,
+                                                                      safe=safe,
+                                                                      normalization_factor=normalization_factor)
                                 I.shape = npt
                                 I = I.T
-                                bins_rad = self._csr_integrator.outPos0  # this will be copied later
-                                bins_azim = self._csr_integrator.outPos1
+                                bins_rad = integr.outPos0  # this will be copied later
+                                bins_azim = integr.outPos1
                     else:
-                        I, bins_rad, bins_azim, sum_, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
-                                                                                             solidAngle=solidangle,
-                                                                                             dummy=dummy,
-                                                                                             delta_dummy=delta_dummy,
-                                                                                             polarization=polarization,
-                                                                                             normalization_factor=normalization_factor)
+                        I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
+                                                                               solidAngle=solidangle,
+                                                                               dummy=dummy,
+                                                                               delta_dummy=delta_dummy,
+                                                                               polarization=polarization,
+                                                                               normalization_factor=normalization_factor)
 
         if (I is None) and ("splitpix" in method):
             if splitPixel is None:
@@ -3012,7 +3149,7 @@ class AzimuthalIntegrator(Geometry):
                 method = self.DEFAULT_METHOD
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
-                pos = self.array_from_unit(shape, "corner", unit)
+                pos = self.array_from_unit(shape, "corner", unit, scale=False)
                 I, bins_rad, bins_azim, sum_, count = splitPixel.fullSplit2D(pos=pos,
                                                                              weights=data,
                                                                              bins=(npt_rad, npt_azim),
@@ -3035,8 +3172,8 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("integrate2d uses BBox implementation")
                 chi = self.chiArray(shape)
                 dchi = self.deltaChi(shape)
-                pos0 = self.array_from_unit(shape, "center", unit)
-                dpos0 = self.array_from_unit(shape, "delta", unit)
+                pos0 = self.array_from_unit(shape, "center", unit, scale=False)
+                dpos0 = self.array_from_unit(shape, "delta", unit, scale=False)
                 I, bins_rad, bins_azim, sum_, count = splitBBox.histoBBox2d(weights=data,
                                                                             pos0=pos0,
                                                                             delta_pos0=dpos0,
@@ -3059,7 +3196,7 @@ class AzimuthalIntegrator(Geometry):
             data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
             mask = self.create_mask(data, mask, dummy, delta_dummy,
                                     mode="numpy")
-            pos0 = self.array_from_unit(shape, "center", unit)
+            pos0 = self.array_from_unit(shape, "center", unit, scale=False)
             pos1 = self.chiArray(shape)
 
             if radial_range is not None:
@@ -3118,18 +3255,22 @@ class AzimuthalIntegrator(Geometry):
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
 
-        self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    has_dark=dark is not None, has_flat=flat is not None, polarization_factor=polarization_factor,
-                    normalization_factor=normalization_factor)
-
         result = Integrate2dResult(I, bins_rad, bins_azim, sigma)
+        result._set_method_called("integrate2d")
+        result._set_compute_engine(method)
         result._set_unit(unit)
         result._set_count(count)
         result._set_sum(sum_)
-        result._set_has_dark_correction(dark is not None)
-        result._set_has_flat_correction(flat is not None)
+        result._set_has_dark_correction(has_dark)
+        result._set_has_flat_correction(has_flat)
+        result._set_has_mask_applied(has_mask)
         result._set_polarization_factor(polarization_factor)
         result._set_normalization_factor(normalization_factor)
+        result._set_metadata(metadata)
+
+        if filename is not None:
+            writer = DefaultAiWriter(filename, self)
+            writer.write(result)
 
         if all:
             logger.warning("integrate2d(all=True) is deprecated. Please refer to the documentation of Integrate2dResult")
@@ -3180,7 +3321,8 @@ class AzimuthalIntegrator(Geometry):
         :type dummy: float
         :param delta_dummy: precision for dummy value
         :type delta_dummy: float
-        :param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        :param polarization_factor: polarization factor between -1 and +1.
+                               0 for circular correction, None for no correction
         :type polarization_factor: float
         :param dark: dark noise image
         :type dark: ndarray
@@ -3212,20 +3354,13 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def _create_default_writer(self):
-        """Default writer constructor"""
-        from .io import DefaultAiWriter
-        return DefaultAiWriter(None, self)
-
-    def __get_default_writer(self):
-        """Get the default writer. Used when a filename is defined."""
-        if self._writer is None:
-            self._writer = self._create_default_writer()
-        return self._writer
-
+    @deprecated
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
-        """
+        """This method save the result of a 1D integration.
+
+        Deprecated on 13/06/2017
+
         :param filename: the filename used to save the 1D integration
         :type filename: str
         :param dim1: the x coordinates of the integrated curve
@@ -3244,17 +3379,54 @@ class AzimuthalIntegrator(Geometry):
         :type polarization_factor: float
         :param normalization_factor: the monitor value
         :type normalization_factor: float
+        """
+        self.__save1D(filename=filename,
+                      dim1=dim1,
+                      I=I,
+                      error=error,
+                      dim1_unit=dim1_unit,
+                      has_dark=has_dark,
+                      has_flat=has_flat,
+                      polarization_factor=polarization_factor,
+                      normalization_factor=normalization_factor)
 
-        This method save the result of a 1D integration.
+    def __save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+                 has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
+        """This method save the result of a 1D integration.
+
+        :param filename: the filename used to save the 1D integration
+        :type filename: str
+        :param dim1: the x coordinates of the integrated curve
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float
         """
         if not filename:
             return
-        writer = self.__get_default_writer()
-        writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
+        writer = DefaultAiWriter(None, self)
+        writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat,
+                      polarization_factor, normalization_factor)
 
+    @deprecated
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
-               has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
-        """
+               has_dark=False, has_flat=False,
+               polarization_factor=None, normalization_factor=None):
+        """This method save the result of a 2D integration.
+
+        Deprecated on 13/06/2017
+
         :param filename: the filename used to save the 2D histogram
         :type filename: str
         :param dim1: the 1st coordinates of the histogram
@@ -3275,13 +3447,325 @@ class AzimuthalIntegrator(Geometry):
         :type polarization_factor: float
         :param normalization_factor: the monitor value
         :type normalization_factor: float
+        """
+        self.__save2D(filename=filename,
+                      I=I,
+                      dim1=dim1,
+                      dim2=dim2,
+                      error=error,
+                      dim1_unit=dim1_unit,
+                      has_dark=has_dark,
+                      has_flat=has_flat,
+                      polarization_factor=polarization_factor,
+                      normalization_factor=normalization_factor)
 
-        This method save the result of a 2D integration.
+    def __save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+                 has_dark=False, has_flat=False,
+                 polarization_factor=None, normalization_factor=None):
+        """This method save the result of a 2D integration.
+
+        Deprecated on 13/06/2017
+
+        :param filename: the filename used to save the 2D histogram
+        :type filename: str
+        :param dim1: the 1st coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param dim1: the 2nd coordinates of the histogram
+        :type dim1: numpy.ndarray
+        :param I: The integrated intensity
+        :type I: numpy.mdarray
+        :param error: the error bar for each intensity
+        :type error: numpy.ndarray or None
+        :param dim1_unit: the unit of the dim1 array
+        :type dim1_unit: pyFAI.units.Unit
+        :param has_dark: save the darks filenames (default: no)
+        :type has_dark: bool
+        :param has_flat: save the flat filenames (default: no)
+        :type has_flat: bool
+        :param polarization_factor: the polarization factor
+        :type polarization_factor: float
+        :param normalization_factor: the monitor value
+        :type normalization_factor: float
         """
         if not filename:
             return
-        writer = self.__get_default_writer()
-        writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat, polarization_factor, normalization_factor)
+        writer = DefaultAiWriter(None, self)
+        writer.save2D(filename, I, dim1, dim2, error, dim1_unit, has_dark, has_flat,
+                      polarization_factor, normalization_factor)
+
+    def medfilt1d(self, data, npt_rad=1024, npt_azim=512,
+                  correctSolidAngle=True,
+                  polarization_factor=None, dark=None, flat=None,
+                  method="splitpixel", unit=units.Q,
+                  percentile=50, mask=None, normalization_factor=1.0, metadata=None):
+        """Perform the 2D integration and filter along each row using a median
+        filter
+
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param correctSolidAngle: correct for solid angle of each pixel if True
+        :type correctSolidAngle: bool
+        :param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal).
+               0 for circular polarization or random,
+               None for no correction,
+               True for using the former correction
+        :type polarization_factor: float
+        :param dark: dark noise image
+        :type dark: ndarray
+        :param flat: flat field image
+        :type flat: ndarray
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param percentile: which percentile use for cutting out
+                           percentil can be a 2-tuple to specify a region to
+                           average out
+        :param mask: masked out pixels array
+        :param normalization_factor: Value of a normalization monitor
+        :type normalization_factor: float
+        :param metadata: any other metadata,
+        :type metadata: JSON serializable dict
+        :return: Integrate1D like result like
+        """
+
+        dummy = numpy.finfo(numpy.float32).min
+
+        if "ocl" in method and npt_azim and (npt_azim - 1):
+            old = npt_azim
+            npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
+            if npt_azim != old:
+                logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s",
+                               old, npt_azim)
+        res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
+                                 flat=flat, dark=dark,
+                                 unit=unit, method=method,
+                                 dummy=dummy,
+                                 correctSolidAngle=correctSolidAngle,
+                                 polarization_factor=polarization_factor,
+                                 normalization_factor=normalization_factor)
+        integ2d = res2d.intensity
+        if ("ocl" in method) and (ocl is not None):
+            if ("csr" in method) and \
+                    (OCL_CSR_ENGINE in self.engines) and \
+                    (self.engines[OCL_CSR_ENGINE].engine is not None):
+                ctx = self.engines[OCL_CSR_ENGINE].engine.ctx
+            elif "lut" in method and \
+                    (OCL_LUT_ENGINE in self.engines) and \
+                    (self.engines[OCL_LUT_ENGINE].engine is not None):
+                ctx = self.engines[OCL_LUT_ENGINE].engine.ctx
+            else:
+                ctx = None
+
+            if numpy.isfortran(integ2d) and integ2d.dtype == numpy.float32:
+                rdata = integ2d.T
+                horizontal = True
+            else:
+                rdata = numpy.ascontiguousarray(integ2d, dtype=numpy.float32)
+                horizontal = False
+
+            if OCL_SORT_ENGINE not in self.engines:
+                with self._lock:
+                    if OCL_SORT_ENGINE not in self.engines:
+                        self.engines[OCL_SORT_ENGINE] = Engine()
+            engine = self.engines[OCL_SORT_ENGINE]
+            with engine.lock:
+                sorter = engine.engine
+                if (sorter is None) or \
+                   (sorter.npt_width != rdata.shape[1]) or\
+                   (sorter.npt_height != rdata.shape[0]):
+                    logger.info("reset opencl sorter")
+                    sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+                    engine.set_engine(sorter)
+            if "__len__" in dir(percentile):
+                if horizontal:
+                    spectrum = sorter.trimmed_mean_horizontal(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+                else:
+                    spectrum = sorter.trimmed_mean_vertical(rdata, dummy, [(i / 100.0) for i in percentile]).get()
+            else:
+                if horizontal:
+                    spectrum = sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+                else:
+                    spectrum = sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
+        else:
+            dummies = (integ2d == dummy).sum(axis=0)
+            # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
+            sorted_ = numpy.zeros((npt_azim + 1, npt_rad))
+            sorted_[:npt_azim, :] = numpy.sort(integ2d, axis=0)
+
+            if "__len__" in dir(percentile):
+                # mean over the valid value
+                lower = dummies + (numpy.floor(min(percentile) * (npt_azim - dummies) / 100.)).astype(int)
+                upper = dummies + (numpy.ceil(max(percentile) * (npt_azim - dummies) / 100.)).astype(int)
+                bounds = numpy.zeros(sorted_.shape, dtype=int)
+                assert (lower >= 0).all()
+                assert (upper <= npt_azim).all()
+
+                rng = numpy.arange(npt_rad)
+                bounds[lower, rng] = 1
+                bounds[upper, rng] = 1
+                valid = (numpy.cumsum(bounds, axis=0) % 2)
+                invalid = numpy.logical_not(valid)
+                sorted_[invalid] = numpy.nan
+                spectrum = numpy.nanmean(sorted_, axis=0)
+            else:
+                # read only the valid value
+                dummies = (integ2d == dummy).sum(axis=0)
+                pos = dummies + (numpy.round(percentile * (npt_azim - dummies) / 100.)).astype(int)
+                assert (pos >= 0).all()
+                assert (pos <= npt_azim).all()
+                spectrum = sorted_[(pos, numpy.arange(npt_rad))]
+
+        result = Integrate1dResult(res2d.radial, spectrum)
+        result._set_method_called("medfilt1d")
+        result._set_compute_engine(method)
+        result._set_percentile(percentile)
+        result._set_npt_azim(npt_azim)
+        result._set_unit(unit)
+        result._set_has_mask_applied(res2d.has_mask_applied)
+        result._set_metadata(metadata)
+        result._set_has_dark_correction(res2d.has_dark_correction)
+        result._set_has_flat_correction(res2d.has_flat_correction)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        return result
+
+    def sigma_clip(self, data, npt_rad=1024, npt_azim=512,
+                   correctSolidAngle=True,
+                   polarization_factor=None, dark=None, flat=None,
+                   method="splitpixel", unit=units.Q,
+                   thres=3, max_iter=5,
+                   mask=None, normalization_factor=1.0, metadata=None):
+        """Perform the 2D integration and perform a sigm-clipping iterative
+        filter along each row. see the doc of scipy.stats.sigmaclip for the
+        options.
+
+        :param data: input image as numpy array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param bool correctSolidAngle: correct for solid angle of each pixel
+                if True
+        :param float polarization_factor: polarization factor between -1 (vertical)
+                and +1 (horizontal).
+
+                - 0 for circular polarization or random,
+                - None for no correction,
+                - True for using the former correction
+        :param ndarray dark: dark noise image
+        :param ndarray flat: flat field image
+        :param unit: unit to be used for integration
+        :param method: pathway for integration and sort
+        :param thres: cut-off for n*sigma: discard any values with (I-<I>)/sigma > thres.
+                The threshold can be a 2-tuple with sigma_low and sigma_high.
+        :param max_iter: maximum number of iterations        :param mask: masked out pixels array
+        :param float normalization_factor: Value of a normalization monitor
+        :param metadata: any other metadata,
+        :type metadata: JSON serializable dict
+        :return: Integrate1D like result like
+        """
+        # We use NaN as dummies
+        dummy = numpy.NaN
+
+        if "__len__" in dir(thres) and len(thres) > 0:
+            sigma_lo = thres[0]
+            sigma_hi = thres[-1]
+        else:
+            sigma_lo = sigma_hi = thres
+
+        if "ocl" in method and npt_azim and (npt_azim - 1):
+            old = npt_azim
+            npt_azim = 1 << int(round(log(npt_azim, 2)))  # power of two above
+            if npt_azim != old:
+                logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s",
+                               old, npt_azim)
+
+        res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
+                                 flat=flat, dark=dark,
+                                 unit=unit, method=method,
+                                 dummy=dummy,
+                                 correctSolidAngle=correctSolidAngle,
+                                 polarization_factor=polarization_factor,
+                                 normalization_factor=normalization_factor)
+        image = res2d.intensity
+        if ("ocl" in method) and (ocl is not None):
+            if ("csr" in method) and \
+                    (OCL_CSR_ENGINE in self.engines) and \
+                    (self.engines[OCL_CSR_ENGINE].engine is not None):
+                ctx = self.engines[OCL_CSR_ENGINE].engine.ctx
+            elif "lut" in method and \
+                    (OCL_LUT_ENGINE in self.engines) and \
+                    (self.engines[OCL_LUT_ENGINE].engine is not None):
+                ctx = self.engines[OCL_LUT_ENGINE].engine.ctx
+            else:
+                ctx = None
+
+            if numpy.isfortran(image) and image.dtype == numpy.float32:
+                rdata = image.T
+                horizontal = True
+            else:
+                rdata = numpy.ascontiguousarray(image, dtype=numpy.float32)
+                horizontal = False
+
+            if OCL_SORT_ENGINE not in self.engines:
+                with self._lock:
+                    if OCL_SORT_ENGINE not in self.engines:
+                        self.engines[OCL_SORT_ENGINE] = Engine()
+            engine = self.engines[OCL_SORT_ENGINE]
+            with engine.lock:
+                sorter = engine.engine
+                if (sorter is None) or \
+                   (sorter.npt_width != rdata.shape[1]) or\
+                   (sorter.npt_height != rdata.shape[0]):
+                    logger.info("reset opencl sorter")
+                    sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+                    engine.set_engine(sorter)
+
+            if horizontal:
+                res = sorter.sigma_clip_horizontal(rdata, dummy=dummy,
+                                                   sigma_lo=sigma_lo,
+                                                   sigma_hi=sigma_hi,
+                                                   max_iter=max_iter)
+            else:
+                res = sorter.sigma_clip_vertical(rdata, dummy=dummy,
+                                                 sigma_lo=sigma_lo,
+                                                 sigma_hi=sigma_hi,
+                                                 max_iter=max_iter)
+            mean = res[0].get()
+            std = res[1].get()
+        else:
+            as_strided = numpy.lib.stride_tricks.as_strided
+            mask = numpy.logical_not(numpy.isfinite(image))
+            dummies = mask.sum()
+            image[mask] = numpy.NaN
+            mean = numpy.nanmean(image, axis=0)
+            std = numpy.nanstd(image, axis=0)
+            for _ in range(max_iter):
+                mean2d = as_strided(mean, image.shape, (0, mean.strides[0]))
+                std2d = as_strided(std, image.shape, (0, std.strides[0]))
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    delta = (image - mean2d) / std2d
+                    mask = numpy.logical_or(delta > sigma_hi,
+                                            delta < -sigma_lo)
+                dummies = mask.sum()
+                if dummies == 0:
+                    break
+                image[mask] = numpy.NaN
+                mean = numpy.nanmean(image, axis=0)
+                std = numpy.nanstd(image, axis=0)
+
+        result = Integrate1dResult(res2d.radial, mean, std)
+        result._set_method_called("sigma_clip")
+        result._set_compute_engine(method)
+        result._set_percentile(thres)
+        result._set_npt_azim(npt_azim)
+        result._set_unit(unit)
+        result._set_has_mask_applied(res2d.has_mask_applied)
+        result._set_metadata(metadata)
+        result._set_has_dark_correction(res2d.has_dark_correction)
+        result._set_has_flat_correction(res2d.has_flat_correction)
+        result._set_polarization_factor(polarization_factor)
+        result._set_normalization_factor(normalization_factor)
+        return result
 
     def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
                  percentile=50, mask=None, restore_mask=True):
@@ -3299,53 +3783,10 @@ class AzimuthalIntegrator(Geometry):
         :param restore_mask: masked pixels have the same value as input data provided
         :return: bragg, amorphous
         """
-        if mask is None:
-            mask = self.mask
-        dummy = numpy.float32(data.min() - 1234.5678)
-        if "ocl" in method and npt_azim & (npt_azim - 1):
-            old = npt_azim
-            npt_azim = int(2 ** numpy.round(numpy.log2(npt_azim)))
-            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s", old, npt_azim)
-#             self._ocl_sem.acquire()
-        integ2d, radial, _ = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
-                                              unit=unit, method=method,
-                                              dummy=dummy, correctSolidAngle=True)
-        if "ocl" in method:
-            if "csr" in method and self._ocl_csr_integr:
-                ctx = self._ocl_csr_integr.ctx
-            elif "lut" in method and self._ocl_lut_integr:
-                ctx = self._ocl_lut_integr.ctx
-            else:
-                ctx = None
 
-            if numpy.isfortran(integ2d) and integ2d.dtype == numpy.float32:
-                rdata = integ2d.T
-                horizontal = True
-            else:
-                rdata = numpy.ascontiguousarray(integ2d, dtype=numpy.float32)
-                horizontal = False
-
-            if self._ocl_sorter:
-                if self._ocl_sorter.npt_width != rdata.shape[1] or self._ocl_sorter.npt_height != rdata.shape[0]:
-                    self._ocl_sorter = None
-            if not self._ocl_sorter:
-                logger.info("reset opencl sorter")
-                self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
-            if horizontal:
-                spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
-            else:
-                spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
-        else:
-            dummies = (integ2d == dummy).sum(axis=0)
-            # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
-            sorted_ = numpy.zeros((npt_azim + 1, npt_rad))
-            sorted_[:npt_azim, :] = numpy.sort(integ2d, axis=0)
-            pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)  # .clip(0, npt_azim - 1)
-            assert (pos >= 0).all()
-            assert (pos <= npt_azim).all()
-
-            spectrum = sorted_[(pos, numpy.arange(npt_rad))]
-
+        radial, spectrum = self.medfilt1d(data, npt_rad=npt_rad, npt_azim=npt_azim,
+                                          unit=unit, method=method,
+                                          percentile=percentile, mask=mask)
         # This takes 100ms and is the next to be optimized.
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                                     dim1_unit=unit, correctSolidAngle=True)
@@ -3357,79 +3798,141 @@ class AzimuthalIntegrator(Geometry):
             amorphous[wmask] = maskdata
         return bragg, amorphous
 
+    def inpainting(self, data, mask, npt_rad=1024, npt_azim=512,
+                   unit="r_m", method="splitpixel", poissonian=False,
+                   grow_mask=3):
+        """Re-invent the values of masked pixels
+
+        :param data: input image as 2d numpy array
+        :param mask: masked out pixels array
+        :param npt_rad: number of radial points
+        :param npt_azim: number of azimuthal points
+        :param unit: unit to be used for integration
+        :param method: pathway for integration
+        :param poissonian: If True, add some poisonian noise to the data to make
+                           then more realistic
+        :param grow_mask: grow mask in polar coordinated to accomodate pixel
+            splitting algoritm
+        :return: inpainting object which contains the restored image as .data
+        """
+        from .ext import inpainting
+        dummy = -1
+        delta_dummy = 0.9
+
+        assert mask.shape == self.detector.shape
+        mask = numpy.ascontiguousarray(mask, numpy.int8)
+        blank_data = numpy.zeros(mask.shape, dtype=numpy.float32)
+
+        to_mask = numpy.where(mask)
+
+        blank_mask = numpy.zeros_like(mask)
+        masked = numpy.zeros(mask.shape, dtype=numpy.float32)
+        masked[to_mask] = dummy
+
+        masked_data = data.astype(numpy.float32)  # explicit copy
+        masked_data[to_mask] = dummy
+
+        if self.chiDiscAtPi:
+            azimuth_range = (-180, 180)
+        else:
+            azimuth_range = (0, 360)
+        r = self.array_from_unit(typ="corner", unit=unit, scale=True)
+        rmax = (1.0 + numpy.finfo(numpy.float32).eps) * r[..., 0].max()
+        kwargs = {"npt_rad": npt_rad,
+                  "npt_azim": npt_azim,
+                  "unit": unit,
+                  "dummy": dummy,
+                  "delta_dummy": delta_dummy,
+                  "method": method,
+                  "correctSolidAngle": False,
+                  "mask": blank_mask,
+                  "azimuth_range": azimuth_range,
+                  "radial_range": (0, rmax),
+                  "polarization_factor": None}
+        imgb = self.integrate2d(blank_data, **kwargs)
+        imgp = self.integrate2d(masked, **kwargs)
+        imgd = self.integrate2d(masked_data, **kwargs)
+        omask = numpy.ascontiguousarray(numpy.round(imgb.intensity / dummy), numpy.int8)
+        imask = numpy.ascontiguousarray(numpy.round(imgp.intensity / dummy), numpy.int8)
+        to_paint = (imask - omask)
+
+        if grow_mask:
+            # inpaint a bit more than needed to avoid "side" effects.
+            from scipy.ndimage import binary_dilation
+            structure = [[1], [1], [1]]
+            to_paint = binary_dilation(to_paint, structure=structure, iterations=grow_mask)
+            to_paint = to_paint.astype(numpy.int8)
+
+        polar_inpainted = inpainting.polar_inpaint(imgd.intensity,
+                                                   to_paint, omask, 0)
+        r = self.array_from_unit(typ="center", unit=unit, scale=True)
+        chi = numpy.rad2deg(self.chiArray())
+        cart_inpatined = inpainting.polar_interpolate(data, mask,
+                                                      r,
+                                                      chi,
+                                                      polar_inpainted,
+                                                      imgd.radial, imgd.azimuthal)
+
+        if poissonian:
+            res = data.copy()
+            res[to_mask] = numpy.random.poisson(cart_inpatined[to_mask])
+        else:
+            res = cart_inpatined
+        return res
+
 ################################################################################
 # Some properties
 ################################################################################
 
     def set_darkcurrent(self, dark):
-        self._darkcurrent = dark
-        if dark is not None:
-            self._darkcurrent_crc = crc32(dark)
-        else:
-            self._darkcurrent_crc = None
+        self.detector.set_darkcurrent(dark)
 
     def get_darkcurrent(self):
-        return self._darkcurrent
+        return self.detector.get_darkcurrent()
 
     darkcurrent = property(get_darkcurrent, set_darkcurrent)
 
     def set_flatfield(self, flat):
-        self._flatfield = flat
-        if flat is not None:
-            self._flatfield_crc = crc32(flat)
-        else:
-            self._flatfield_crc = None
+        self.detector.set_flatfield(flat)
 
     def get_flatfield(self):
-        return self._flatfield
+        return self.detector.get_flatfield()
 
     flatfield = property(get_flatfield, set_flatfield)
 
     def set_darkfiles(self, files=None, method="mean"):
-        """
+        """Set the dark current from one or mutliple files, avaraged
+        according to the method provided.
+
+        Moved to Detector.
+
         :param files: file(s) used to compute the dark.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
-
-        Set the dark current from one or mutliple files, avaraged
-        according to the method provided
         """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_darkcurrent(None)
-        elif len(files) == 1:
-            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
-            self.darkfiles = files[0]
-        else:
-            self.set_darkcurrent(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.darkfiles = "%s(%s)" % (method, ",".join(files))
+        self.detector.set_darkfiles(files, method)
+
+    @property
+    def darkfiles(self):
+        return self.detector.darkfiles
 
     def set_flatfiles(self, files, method="mean"):
-        """
-        :param files: file(s) used to compute the dark.
+        """Set the flat field from one or mutliple files, averaged
+        according to the method provided.
+
+        Moved to Detector.
+
+        :param files: file(s) used to compute the flat-field.
         :type files: str or list(str) or None
         :param method: method used to compute the dark, "mean" or "median"
         :type method: str
-
-        Set the flat field from one or mutliple files, averaged
-        according to the method provided
         """
-        if type(files) in utils.StringTypes:
-            files = [i.strip() for i in files.split(",")]
-        elif not files:
-            files = []
-        if len(files) == 0:
-            self.set_flatfield(None)
-        elif len(files) == 1:
-            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
-            self.flatfiles = files[0]
-        else:
-            self.set_flatfield(average.average_images(files, filter_=method, fformat=None, threshold=0))
-            self.flatfiles = "%s(%s)" % (method, ",".join(files))
+        self.detector.set_flatfiles(files, method)
+
+    @property
+    def flatfiles(self):
+        return self.detector.flatfiles
 
     def get_empty(self):
         return self._empty
@@ -3437,8 +3940,11 @@ class AzimuthalIntegrator(Geometry):
     def set_empty(self, value):
         self._empty = float(value)
         # propagate empty values to integrators
-        for integrator in (self._ocl_integrator, self._ocl_lut_integr,
-                           self._ocl_csr_integr, self._lut_integrator, self._csr_integrator):
-            if integrator:
-                integrator.empty = self._empty
+        for engine in self.engines.values():
+            with engine.lock:
+                if engine.engine is not None:
+                    try:
+                        engine.engine.empty = self._empty
+                    except Exception as exeption:
+                        logger.error(exeption)
     empty = property(get_empty, set_empty)

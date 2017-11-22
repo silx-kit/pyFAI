@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/02/2017"
+__date__ = "14/09/2017"
 __status__ = "stable"
 __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
            "measure_workgroup_size", "kernel_workgroup_size"]
@@ -48,7 +48,7 @@ import numpy
 
 logger = logging.getLogger("pyFAI.opencl.common")
 
-from .utils import get_opencl_code, concatenate_cl_kernel
+from .utils import get_opencl_code
 
 if os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
     logger.warning("Use of OpenCL has been disables from environment variable: SILX_OPENCL=0")
@@ -59,13 +59,15 @@ else:
     except ImportError:
         logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
         pyopencl = None
-        class mf(object):
-            WRITE_ONLY = 1
-            READ_ONLY = 1
-            READ_WRITE = 1
     else:
         import pyopencl.array as array
         mf = pyopencl.mem_flags
+if pyopencl is None:
+    # create a dummy object
+    class mf(object):
+        WRITE_ONLY = 1
+        READ_ONLY = 1
+        READ_WRITE = 1
 
 FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
@@ -266,9 +268,6 @@ def _measure_workgroup_size(device_or_context, fast=False):
 
     return max_valid_wg
 
-def _is_nvidia_gpu(vendor, devtype):
-    return (vendor == "NVIDIA Corporation") and (devtype == "GPU")
-
 
 class OpenCL(object):
     """
@@ -277,6 +276,7 @@ class OpenCL(object):
     This is a static class.
     ocl should be the only instance and shared among all python modules.
     """
+    def _is_nvidia_gpu(vendor, devtype) : return (vendor == "NVIDIA Corporation") and (devtype == "GPU")
 
     platforms = []
     nb_devices = 0

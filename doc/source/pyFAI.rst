@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 01/12/2016
+:Date: 20/07/2016
 :Keywords: generic description of the software
 :Target: General audiance
 
@@ -245,14 +245,16 @@ the higher number of single precision units and that the GPU is usually limited 
 
 .. _Kahan_summation: http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 
-The performances of the parallel implementation based on a LUT, stored in CSR format, can reach 750 MPix/s
-on recent multi-core computer with a mid-range graphics card.
-On multi-socket server featuring high-end GPUs like Tesla cards, the performances are similar with
-the additional capability to work on multiple detector simultaneously.
+The performances of the parallel implementation based on a LUT, stored in CSR
+format, can reach 2.5 GPix/s on recent multi-core computer with a gaming
+graphics card.
+On multi-socket server featuring high-end GPUs like Tesla cards, the performances
+are similar with the additional capability to work on multiple detector
+simultaneously.
 
 .. figure:: img/benchmark.png
    :align: center
-   :alt: benchmark performed on a 2014 single-socket workstation
+   :alt: benchmark performed on a 2016 single-socket workstation and a gaming graphics card.
 
 
 Related Work

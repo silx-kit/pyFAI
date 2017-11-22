@@ -1,9 +1,46 @@
 :Author: Jérôme Kieffer
-:Date: 06/06/2016
+:Date: 14/09/2017
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.14.2: 14/09/2017
+------------------
+* Fix seg-fault with manylinux1 wheels, in fastcrc module (thanks Thomas)
+* Fix Qt4-Qt5 compatibility (thanks Vadim)
+* Easier to understand geometry transformation (thanks Jon)
+* Lower memory consumption, better cache management
+* Unified debian packaging working for 6->9
+* New detector: Mythen & CirPad (thanks Fred)
+* Clean up debug code which avoid to use pyFAI-calib2
+* pyFAI-calib2 now expect fabio >= 0.5
+* Fix issue with metadata saving in 1d
+* Fix performance regression with pyopencl >2015.2 (Thanks Andreas)
+* pyFAI saxs and waxs scripts guess now the binning of the detector (thanks Fred).
+
+0.14.1: 25/07/2017
+------------------
+* Fixes Debian 7 and 8 packages
+
+0.14.0: 20/07/2017
+------------------
+* Graphical user interface for calibration (pyFAI-calib2)
+* Goniometer calibration tools and multi-geometry enhancements
+* Integration scripts and averaging scripts are now able to normalize the data
+  from monitors found in the header.
+* Propagate metadata information as part of the integrated data
+* Common pre-processing factorization on Python, Cython and OpenCL
+* Test clean up and acceleration (avoid tests on too large images)
+* Many new tutorials http://pyfai.readthedocs.io/en/latest/usage/tutorial/index.html
+* New averaging / integration methods:
+  - Azimuthal median filtering
+  - Azimuthal trimmed mean
+  - sigma-clipping on azimuthal angle
+  - Radial averaging
+* Diffraction image inpainting to fill-up the gaps with plausible values.
+* This release correspond to 572 commits
+* Change of license: now all pyFAI is MIT license.
 
 0.13.0: 01/12/2016
 ------------------

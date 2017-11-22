@@ -197,7 +197,7 @@ static float3 _preproc3(const __global float  *image,
                         const          float  normalization_factor)
 {
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0, 0.0, 0.0);
+    float3 result = (float3)(0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         if ((!do_mask) || (!mask[i]))
@@ -231,11 +231,11 @@ static float3 _preproc3(const __global float  *image,
                 if (do_absorption)
                     result.s2 *= absorption[i];
                 if (isnan(result.s0) || isnan(result.s1) || isnan(result.s2) || (result.s2 == 0.0f))
-                    result = (float3)(0.0, 0.0, 0.0);
+                    result = (float3)(0.0f, 0.0f, 0.0f);
             }
             else
             {
-                result = (float3)(0.0, 0.0, 0.0);
+                result = (float3)(0.0f, 0.0f, 0.0f);
             }//end if do_dummy
         } // end if mask
     };//end if NIMAGE
@@ -297,7 +297,7 @@ corrections(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0, 0.0, 0.0);
+    float3 result = (float3)(0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         result = _preproc3(image,
@@ -379,7 +379,7 @@ corrections2(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0, 0.0, 0.0);
+    float3 result = (float3)(0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         result = _preproc3(image,
@@ -456,7 +456,7 @@ corrections3Poisson( const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0, 0.0, 0.0);
+    float3 result = (float3)(0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         result = _preproc3(image,
@@ -537,7 +537,7 @@ corrections3(const __global float  *image,
             )
 {
     size_t i= get_global_id(0);
-    float3 result = (float3)(0.0, 0.0, 0.0);
+    float3 result = (float3)(0.0f, 0.0f, 0.0f);
     if (i < NIMAGE)
     {
         result = _preproc3( image,

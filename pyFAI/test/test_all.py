@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "18/07/2017"
 
 import sys
 import unittest
@@ -79,6 +79,8 @@ from . import test_utils_stringutil
 from . import test_preproc
 from . import test_bayes
 from . import test_scripts
+from . import test_goniometer
+from . import test_integrate_app
 from ..opencl import test as test_opencl
 
 
@@ -96,6 +98,7 @@ def suite():
     testsuite.addTest(test_export.suite())
     testsuite.addTest(test_saxs.suite())
     testsuite.addTest(test_integrate.suite())
+    testsuite.addTest(test_integrate_app.suite())
     testsuite.addTest(test_bilinear.suite())
     testsuite.addTest(test_distortion.suite())
     testsuite.addTest(test_flat.suite())
@@ -122,6 +125,7 @@ def suite():
     testsuite.addTest(test_preproc.suite())
     testsuite.addTest(test_bayes.suite())
     testsuite.addTest(test_scripts.suite())
+    testsuite.addTest(test_goniometer.suite())
     testsuite.addTest(test_opencl.suite())
     return testsuite
 

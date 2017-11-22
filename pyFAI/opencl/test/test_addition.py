@@ -35,7 +35,7 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "06/09/2017"
 
 import logging
 import numpy
@@ -46,9 +46,11 @@ if ocl:
     import pyopencl
     import pyopencl.array
 from ..utils import get_opencl_code
+from ...test.utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 
 
+@unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
 @unittest.skipUnless(ocl, "PyOpenCl is missing")
 class TestAddition(unittest.TestCase):
 
@@ -125,9 +127,9 @@ class TestAddition(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testSuite = unittest.TestSuite()
-    testSuite.addTest(TestAddition("test_add"))
-    testSuite.addTest(TestAddition("test_measurement"))
+    testSuite.addTest(loader(TestAddition))
     return testSuite
 
 

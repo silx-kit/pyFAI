@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "03/02/2017"
+__date__ = "17/10/2017"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,9 +38,8 @@ import logging
 import threading
 from collections import OrderedDict
 import numpy
-from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
-from .utils import concatenate_cl_kernel
-from ..utils import  calc_checksum
+from .common import ocl, pyopencl, kernel_workgroup_size
+from ..utils import calc_checksum
 
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -61,19 +60,19 @@ class OCL_CSR_Integrator(OpenclProcessing):
     """
     BLOCK_SIZE = 32
     buffers = [
-           BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
-           BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
-        ]
-    kernel_files = ["preprocess.cl", "memset.cl", "ocl_azim_CSR.cl"]
+               BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
+              ]
+    kernel_files = ["kahan.cl", "preprocess.cl", "memset.cl", "ocl_azim_CSR.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
                numpy.int16: "s16_to_float",
@@ -127,7 +126,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             block_size = self.BLOCK_SIZE
 
         self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
-        self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
+        self.workgroup_size = {}
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
 
@@ -192,12 +191,14 @@ class OCL_CSR_Integrator(OpenclProcessing):
         """
         # concatenate all needed source files into a single openCL module
         kernel_file = kernel_file or self.kernel_files[-1]
-        kernels = ("preprocess.cl", "memset.cl", kernel_file)
+        kernels = self.kernel_files[:-1] + [kernel_file]
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i" % \
                           (self.bins, self.size, self.BLOCK_SIZE)
         OpenclProcessing.compile_kernels(self, kernels, compile_options)
-
+        for kernel_name, kernel in self.kernels.get_kernels().items():
+            wg = kernel_workgroup_size(self.program, kernel)
+            self.workgroup_size[kernel_name] = (min(wg, self.BLOCK_SIZE),)  # this is a tuple
 
     def set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -231,9 +232,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("outData", self.cl_mem["outData"]),
                                                             ("outCount", self.cl_mem["outCount"]),
                                                             ("outMerge", self.cl_mem["outMerge"])))
+        self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
+
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("outData", "outCount", "outMerge")))
-        for val in self.mapping.values():
-            self.cl_kernel_args[val] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
 
     def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible
@@ -244,14 +251,29 @@ class OCL_CSR_Integrator(OpenclProcessing):
 
         dest_type = numpy.dtype([i.dtype for i in self.buffers if i.name == dest][0])
         events = []
-        if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
-            copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
-            events.append(EventDescription("copy %s" % dest, copy_image))
+        if isinstance(data, pyopencl.array.Array):
+            if (data.dtype == dest_type):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], data.data)
+                events.append(EventDescription("copy D->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], data.data)
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw D->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
         else:
-            copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
-            kernel = getattr(self.program, self.mapping[data.dtype.type])
-            cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
-            events += [EventDescription("copy raw %s" % dest, copy_image), EventDescription("cast to float", cast_to_float)]
+            # Assume it is a numpy array
+            if (data.dtype == dest_type) or (data.dtype.itemsize > dest_type.itemsize):
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem[dest], numpy.ascontiguousarray(data, dest_type))
+                events.append(EventDescription("copy H->D %s" % dest, copy_image))
+            else:
+                copy_image = pyopencl.enqueue_copy(self.queue, self.cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                kernel_name = self.mapping[data.dtype.type]
+                kernel = self.kernels.get_kernel(kernel_name)
+                cast_to_float = kernel(self.queue, (self.size,), None, self.cl_mem["image_raw"], self.cl_mem[dest])
+                events += [EventDescription("copy raw H->D " + dest, copy_image),
+                           EventDescription("cast " + kernel_name, cast_to_float)]
         if self.profile:
             self.events += events
         if checksum is not None:
@@ -287,8 +309,10 @@ class OCL_CSR_Integrator(OpenclProcessing):
         events = []
         with self.sem:
             self.send_buffer(data, "image")
-            memset = self.program.memset_out(self.queue, self.wdim_bins, self.workgroup_size, *list(self.cl_kernel_args["memset_out"].values()))
-            events.append(EventDescription("memset", memset))
+            wg = self.workgroup_size["memset_out"]
+            wdim_bins = (self.bins + wg[0] - 1) & ~(wg[0] - 1),
+            memset = self.kernels.memset_out(self.queue, wdim_bins, wg, *list(self.cl_kernel_args["memset_out"].values()))
+            events.append(EventDescription("memset_out", memset))
             kw1 = self.cl_kernel_args["corrections"]
             kw2 = self.cl_kernel_args["csr_integrate"]
 
@@ -363,7 +387,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                 do_absorption = numpy.int8(0)
             kw1["do_absorption"] = do_absorption
 
-            ev = self.program.corrections(self.queue, self.wdim_data, self.workgroup_size, *list(kw1.values()))
+            wg = self.workgroup_size["corrections"]
+            ev = self.kernels.corrections(self.queue, self.wdim_data, wg, *list(kw1.values()))
             events.append(EventDescription("corrections", ev))
 
             if preprocess_only:
@@ -374,9 +399,15 @@ class OCL_CSR_Integrator(OpenclProcessing):
                     self.events += events
                 ev.wait()
                 return image
+            wg = self.workgroup_size["csr_integrate"][0]
 
-            integrate = self.program.csr_integrate(self.queue, self.wdim_bins, self.workgroup_size, *list(kw2.values()))
-            events.append(EventDescription("integrate", integrate))
+            wdim_bins = (self.bins * wg),
+            if wg == 1:
+                integrate = self.kernels.csr_integrate_single(self.queue, wdim_bins, (wg,), *kw2.values())
+                events.append(EventDescription("integrate_single", integrate))
+            else:
+                integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
+                events.append(EventDescription("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
             outCount = numpy.empty(self.bins, dtype=numpy.float32)

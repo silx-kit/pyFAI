@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2017"
+__date__ = "23/06/2017"
 __status__ = "development"
 
 import warnings
@@ -185,10 +185,11 @@ def preproc(raw,
             assert absorption.size == size, "Absorption array size is correct"
             denominator *= numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
 
-        mask |= numpy.isnan(numerator)
-        mask |= numpy.isnan(denominator)
+        mask |= numpy.logical_not(numpy.isfinite(numerator))
+        mask |= numpy.logical_not(numpy.isfinite(denominator))
+        mask |= (denominator == 0)
         if variance is not None:
-            mask |= numpy.isnan(variance)
+            mask |= numpy.logical_not(numpy.isfinite(variance))
 
         if split_result:
             result = numpy.zeros(out_shape, dtype=dtype)

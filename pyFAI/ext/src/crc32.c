@@ -19,6 +19,8 @@ THE SOFTWARE.
 */
 
 #include <stdint.h>
+#include "crc32.h"
+
 //#include <smmintrin.h>
 //#include <cpuid.h>
 #define bit_SSE4_2 (1<<20)
@@ -65,7 +67,7 @@ extern vendor_t vendor[];
 
 static uint32_t cv = VENDOR;
 
-void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
+static void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
 
   static uint32_t current = 0;
 
@@ -91,10 +93,10 @@ void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *e
 
 #endif
 
-int is_initialized=0;
-uint32_t slowcrc_table[1<<8];
+static int is_initialized=0;
+static uint32_t slowcrc_table[1<<8];
 
-void slowcrc_init() {
+static void slowcrc_init(void) {
 	uint32_t i, j, a;
 
 	for (i=0;i<(1<<8);i++) {
@@ -110,7 +112,7 @@ void slowcrc_init() {
 	is_initialized=1;
 }
 
-uint32_t slowcrc(char *str, uint32_t len) {
+static uint32_t slowcrc(char *str, uint32_t len) {
 	uint32_t lcrc=~0;
 	char *p, *e;
 
@@ -120,7 +122,7 @@ uint32_t slowcrc(char *str, uint32_t len) {
 	return ~lcrc;
 }
 
-uint32_t fastcrc(const char *str, uint32_t len) {
+static uint32_t fastcrc(const char *str, uint32_t len) {
 	uint32_t q=len/sizeof(uint32_t),
 		     r=len%sizeof(uint32_t),
 		     *p=(uint32_t*)str,
@@ -150,7 +152,7 @@ uint32_t fastcrc(const char *str, uint32_t len) {
 	return crc;
 }
 
-uint32_t crc32(char *str, uint32_t len) {
+PYFAI_VISIBILITY_HIDDEN uint32_t crc32(char *str, uint32_t len) {
   uint32_t eax, ebx, ecx, edx;
   cpuid(1, &eax, &ebx, &ecx, &edx);
 
@@ -163,3 +165,4 @@ uint32_t crc32(char *str, uint32_t len) {
   		 return slowcrc(str,len);
   	 }
 }
+

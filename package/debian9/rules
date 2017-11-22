@@ -13,13 +13,9 @@ override_dh_clean:
 
 override_dh_auto_build:
 	dh_auto_build
-	PYBUILD_SYSTEM=custom \
-	PYBUILD_BUILD_ARGS="PYTHONPATH={build_dir} http_proxy='localhost' sphinx-build -N -bhtml doc/source build/html" dh_auto_build
-
-# inactive test for now
-override_dh_auto_test:
-	PYBUILD_SYSTEM=custom \
-	PYBUILD_TEST_ARGS="PYTHONPATH={build_dir} PYFAI_TESTIMAGES=testimages PYFAI_DATA=$(shell pwd) {interpreter} ./run_tests.py" dh_auto_test
+	python setup.py build build_man build_doc
+	# PYBUILD_SYSTEM=custom \
+	# PYBUILD_BUILD_ARGS="PYTHONPATH={build_dir} http_proxy='localhost' sphinx-build -N -bhtml doc/source build/html" dh_auto_build
 
 override_dh_install:
 	dh_numpy
@@ -35,9 +31,14 @@ override_dh_install:
 	#Finally install stuff
 	dh_install
 
+# inactive test for now
+override_dh_auto_test:
+	PYBUILD_SYSTEM=custom \
+	PYBUILD_TEST_ARGS="PYTHONPATH={build_dir} PYFAI_TESTIMAGES=testimages PYFAI_DATA=$(shell pwd) {interpreter} ./run_tests.py" dh_auto_test
+
 override_dh_installman:
-	dh_installman -p pyfai doc/*.1
+	dh_installman -p pyfai build/man/*.1
 
 override_dh_installdocs:
-	dh_installdocs "build/html" -p python-pyfai-doc
+	dh_installdocs "build/sphinx/html" -p python-pyfai-doc
 	dh_installdocs

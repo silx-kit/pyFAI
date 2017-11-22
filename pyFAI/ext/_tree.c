@@ -4263,7 +4263,7 @@ static PyTypeObject __pyx_type_5pyFAI_3ext_5_tree_TreeItem = {
   0, /*tp_setattro*/
   0, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-  "TreeItem(str label=None, TreeItem parent=None)\n\n    Node of a tree ...\n\n    Each node contains:\n    \n     * children: list \n     * parent: TreeItem parent\n     * label: str \n     * order: int\n     * type: str can be \"dir\", \"file\", \"group\" or \"dataset\"\n     * extra: any object\n\n    ", /*tp_doc*/
+  "TreeItem(str label=None, TreeItem parent=None)\n\n    Node of a tree ...\n\n    Each node contains:\n\n     * children: list\n     * parent: TreeItem parent\n     * label: str\n     * order: int\n     * type: str can be \"dir\", \"file\", \"group\" or \"dataset\"\n     * extra: any object\n\n    ", /*tp_doc*/
   __pyx_tp_traverse_5pyFAI_3ext_5_tree_TreeItem, /*tp_traverse*/
   __pyx_tp_clear_5pyFAI_3ext_5_tree_TreeItem, /*tp_clear*/
   0, /*tp_richcompare*/

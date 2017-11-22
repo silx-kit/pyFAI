@@ -33,6 +33,7 @@ __license__ = "MIT"
 __copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
 
 
+from collections import OrderedDict
 import json
 import sys
 import time
@@ -214,8 +215,9 @@ class Bench(object):
         self.LIMIT = 8
         self.repeat = repeat
         self.nbr = nbr
-        self.results = {}
+        self.results = OrderedDict()
         self.meth = []
+        self._cpu = None
         self.fig = None
         self.ax = None
         self.starttime = time.time()
@@ -340,7 +342,7 @@ class Bench(object):
             print("Working on processor: %s" % self.get_cpu())
             label = "1D_" + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
-        results = {}
+        results = OrderedDict()
         first = True
         for param in ds_list:
             self.update_mp()
@@ -361,17 +363,24 @@ class Bench(object):
                 break
             self.update_mp()
             if check:
-                if "lut" in method:
+                module = sys.modules.get(AzimuthalIntegrator.__module__)
+                if module:
+                    if "lut" in method:
+                        key = module.EXT_LUT_ENGINE
+                    elif "csr" in method:
+                        key = module.EXT_CSR_ENGINE
+                    else:
+                        key = None
+                if key and module:
                     try:
-                        print("lut: shape= %s \t nbytes %.3f MB " % (bench_test.ai._lut_integrator.lut.shape, bench_test.ai._lut_integrator.lut_nbytes / 2 ** 20))
+                        integrator = bench_test.ai.engines.get(key).engine
                     except MemoryError as error:
                         print(error)
-                elif "csr" in method:
-                    try:
-                        print("csr: size= %s \t nbytes %.3f MB " % (bench_test.ai._csr_integrator.data.size, bench_test.ai._csr_integrator.lut_nbytes / 2 ** 20))
-                    except MemoryError as error:
-                        print(error)
-
+                    else:
+                        if "lut" in method:
+                            print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
+                        else:
+                            print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
             bench_test.clean()
             self.update_mp()
             try:
@@ -459,7 +468,25 @@ class Bench(object):
                 break
             self.update_mp()
             if check:
-                print("lut.shape= %s \t lut.nbytes %.3f MB " % (bench_test.ai._lut_integrator.lut.shape, bench_test.ai._lut_integrator.size * 8.0 / 1e6))
+                module = sys.modules.get(AzimuthalIntegrator.__module__)
+                if module:
+                    if "lut" in method:
+                        key = module.EXT_LUT_ENGINE
+                    elif "csr" in method:
+                        key = module.EXT_CSR_ENGINE
+                    else:
+                        key = None
+                if key and module:
+                    try:
+                        integrator = bench_test.ai.engines.get(key).engine
+                    except MemoryError as error:
+                        print(error)
+                    else:
+                        if "lut" in method:
+                            print("lut: shape= %s \t nbytes %.3f MB " % (integrator.lut.shape, integrator.lut_nbytes / 2 ** 20))
+                        else:
+                            print("csr: size= %s \t nbytes %.3f MB " % (integrator.data.size, integrator.lut_nbytes / 2 ** 20))
+
             bench_test.ai.reset()
             bench_test.clean()
             try:
@@ -491,7 +518,7 @@ class Bench(object):
         if ocl is None or not ocl.select_device(devicetype):
             print("No pyopencl or no such device: skipping benchmark")
             return
-        results = {}
+        results = OrderedDict()
         label = "Forward_OpenCL_%s_%s_bits" % (devicetype, ("64" if useFp64 else"32"))
         first = True
         for param in ds_list:

@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 31/05/2015
+:Date: 20/07/2017
 :Keywords: Installation procedure on Linux
 :Target: System administrators
 
@@ -13,7 +13,7 @@ Installation procedure on Debian/Ubuntu
 ---------------------------------------
 
 PyFAI has been designed and originally developed on Ubuntu 10.04 and debian6.
-Now, the pyFAI library is included into debian7, 8 and any recent Ubuntu and
+Now, the pyFAI library is included into debian7, 8, 9 and any recent Ubuntu and
 Mint distribution.
 To install the package provided by the distribution, use:
 
@@ -24,8 +24,8 @@ To install the package provided by the distribution, use:
 The issue with distribution based installation is the obsolescence of the version
 available.
 
-Debian7 and Ubuntu 12.04
-........................
+Debian 7 and Ubuntu 12.04
+.........................
 
 To build a more recent version, pyFAI provides you a small scripts which builds a *debian* package and installs it.
 It relies on *stdeb* and provides a single package with everything inside.
@@ -39,8 +39,8 @@ You will be prompted for your password to gain root access in order to be able t
    cd pyFAI-master
    ./build-deb7.sh
 
-Debian8 and newer
-.................
+Debian 8, 9 and newer
+.....................
 
 Thanks to the work of Frédéric-Emmanuel Picca, the debian package of pyFAI
 provides a pretty good template which allows continuous builds.
@@ -77,7 +77,7 @@ One can also built from sources:
    python3-fabio python3-fabio-dbg python3-lxml python3-lxml-dbg python3-matplotlib \
    python3-matplotlib-dbg python3-numpy python3-numpy-dbg python3-pyqt4 python3-pyqt4-dbg \
    python3-scipy python3-scipy-dbg python3-sphinx python3-sphinxcontrib.programoutput \
-   python3-tk python3-tk-dbg
+   python3-tk python3-tk-dbg python-silx python3-silx
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
@@ -99,8 +99,6 @@ is advised, via wheels packages. First install *pip* and *wheel*:
 
 .. code::
 
-    wget https://bootstrap.pypa.io/get-pip.py
-    sudo python get-pip.py
     sudo pip install pyFAI
 
 Or you can install pyFAI from the sources:

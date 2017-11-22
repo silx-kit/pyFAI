@@ -25,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-__doc__ = """Common Look-Up table datatypes"""
+"""Common Look-Up table/CSR object creaton tools """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __date__ = "13/05/2016"
@@ -34,6 +34,7 @@ __license__ = "MIT"
 
 import cython
 import numpy
+cimport numpy as cnp
 
 cdef struct lut_point:
     int idx

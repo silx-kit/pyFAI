@@ -26,14 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"test suite for masked arrays"
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for masked arrays"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "25/08/2017"
 
 
 import unittest
@@ -45,10 +46,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..utils import six
 
 
 class TestSaxs(unittest.TestCase):
@@ -69,8 +67,9 @@ class TestSaxs(unittest.TestCase):
         ss = self.ai.mask.sum()
         self.assertTrue(ss == 73533, "masked pixel = %s expected 73533" % ss)
 
+    @unittest.skipIf(UtilsTest.low_mem, "test using >100Mb")
     def testNumpy(self):
-        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        qref, Iref, _ = self.ai.saxs(self.data, self.npt)
 
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="numpy")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
@@ -87,6 +86,7 @@ class TestSaxs(unittest.TestCase):
             pylab.yscale("log")
         self.assertTrue(R < 20, "Numpy: Measure R=%s<2" % R)
 
+    @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def testCython(self):
         qref, Iref, _s = self.ai.saxs(self.data, self.npt)
         q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="cython")
@@ -140,17 +140,9 @@ class TestSaxs(unittest.TestCase):
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestSaxs("testMask"))
-    testsuite.addTest(TestSaxs("testNumpy"))
-#    testsuite.addTest(TestSaxs("testCython"))
-    testsuite.addTest(TestSaxs("testSplitBBox"))
-    testsuite.addTest(TestSaxs("testSplitPixel"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-#    testsuite.addTest(TestSaxs("test_mask_splitBBox"))
-
+    testsuite.addTest(loader(TestSaxs))
     return testsuite
 
 if __name__ == '__main__':

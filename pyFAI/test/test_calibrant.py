@@ -26,26 +26,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Test suites for calibrants"""
+
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test suites for calibrants"""
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "20/07/2017"
 
 import unittest
 import logging
 import sys
+import copy
 from .utilstest import getLogger, UtilsTest
 logger = getLogger(__file__)
-try:
-    import six
-except:
-    from pyFAI.third_party import six
-
-from ..calibrant import Calibrant, ALL_CALIBRANTS, Cell
+from ..utils import six
+from ..calibrant import Calibrant, CALIBRANT_FACTORY, Cell
 from ..detectors import ALL_DETECTORS
 from .. import AzimuthalIntegrator
 
@@ -56,23 +54,23 @@ class TestCalibrant(unittest.TestCase):
     """
     def test_factory(self):
         # by default we provide 11 calibrants
-        l = len(ALL_CALIBRANTS)
+        l = len(CALIBRANT_FACTORY)
         self.assertTrue(l > 10, "at least 11 calibrants are available, got %s" % l)
 
-        self.assertTrue("LaB6" in ALL_CALIBRANTS, "LaB6 is a calibrant")
+        self.assertTrue("LaB6" in CALIBRANT_FACTORY, "LaB6 is a calibrant")
 
         # ensure each calibrant instance is unique
-        cal1 = ALL_CALIBRANTS["LaB6"]
+        cal1 = CALIBRANT_FACTORY("LaB6")
         cal1.wavelength = 1e-10
-        cal2 = ALL_CALIBRANTS["LaB6"]
+        cal2 = CALIBRANT_FACTORY("LaB6")
         self.assertTrue(cal2.wavelength is None, "calibrant is delivered without wavelength")
 
         # check that it is possible to instantiate all calibrant
-        for _k, v in ALL_CALIBRANTS.items():
+        for _k, v in CALIBRANT_FACTORY.items():
             self.assertTrue(isinstance(v, Calibrant))
 
     def test_2th(self):
-        lab6 = ALL_CALIBRANTS["LaB6"]
+        lab6 = CALIBRANT_FACTORY("LaB6")
         lab6.wavelength = 1.54e-10
         tth = lab6.get_2th()
         self.assertTrue(len(tth) == 25, "We expect 25 rings for LaB6")
@@ -102,7 +100,7 @@ class TestCalibrant(unittest.TestCase):
             if max(det.MAX_SHAPE) > 2000:
                 continue
             ai = AzimuthalIntegrator(dist=0.01, poni1=0, poni2=0, detector=det)
-            calibrant = ALL_CALIBRANTS["LaB6"]
+            calibrant = CALIBRANT_FACTORY("LaB6")
             calibrant.set_wavelength(1e-10)
             img = calibrant.fake_calibration_image(ai)
 
@@ -117,6 +115,57 @@ class TestCalibrant(unittest.TestCase):
             self.assertTrue(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")
+
+    def test_factory_create_calibrant(self):
+        c1 = CALIBRANT_FACTORY("LaB6")
+        c2 = CALIBRANT_FACTORY("LaB6")
+        self.assertIsNot(c1, c2)
+        self.assertEquals(c1, c2)
+
+    def test_same(self):
+        c1 = CALIBRANT_FACTORY("LaB6")
+        c2 = CALIBRANT_FACTORY("LaB6")
+        self.assertEquals(c1, c2)
+
+    def test_same2(self):
+        c1 = CALIBRANT_FACTORY("LaB6")
+        c2 = CALIBRANT_FACTORY("LaB6")
+        c1.set_wavelength(1e-10)
+        c2.set_wavelength(1e-10)
+        self.assertEquals(c1, c2)
+
+    def test_not_same_dspace(self):
+        # this 2 calibrant must only be used there to test the lazy-loading
+        c1 = CALIBRANT_FACTORY("LaB6_SRM660a")
+        c2 = CALIBRANT_FACTORY("LaB6_SRM660b")
+        self.assertNotEquals(c1, c2)
+
+    def test_not_same_wavelength(self):
+        c1 = CALIBRANT_FACTORY("LaB6")
+        c1.set_wavelength(1e-10)
+        c2 = CALIBRANT_FACTORY("LaB6")
+        self.assertNotEquals(c1, c2)
+
+    def test_copy(self):
+        c1 = CALIBRANT_FACTORY("AgBh")
+        c2 = copy.copy(c1)
+        self.assertIsNot(c1, c2)
+        self.assertEquals(c1, c2)
+        c2.set_wavelength(1e-10)
+        self.assertNotEquals(c1, c2)
+
+    def test_hash(self):
+        c1 = CALIBRANT_FACTORY("AgBh")
+        c2 = CALIBRANT_FACTORY("AgBh")
+        c3 = CALIBRANT_FACTORY("AgBh")
+        c3.set_wavelength(1e-10)
+        c4 = CALIBRANT_FACTORY("LaB6")
+        store = {}
+        store[c1] = True
+        self.assertTrue(c1 in store)
+        self.assertTrue(c2 in store)
+        self.assertTrue(c3 not in store)
+        self.assertTrue(c4 not in store)
 
 
 class TestCell(unittest.TestCase):
@@ -155,6 +204,7 @@ class TestCell(unittest.TestCase):
             self.assertEquals(cd[k], td[k], msg="plans are the same for d=%s" % k)
 
     def test_helium(self):
+        # self.skipTest("Not working")
         a = 4.242
         href = "A.F. Schuch and R.L. Mills, Phys. Rev. Lett., 1961, 6, 596."
         he = Cell.cubic(a)
@@ -162,21 +212,19 @@ class TestCell(unittest.TestCase):
         he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
 
     def test_hydrogen(self):
+        # self.skipTest("Not working")
         href = "DOI: 10.1126/science.239.4844.1131"
         h = Cell.hexagonal(2.6590, 4.3340)
-        self.assertAlmostEqual(h.volume, 26.537, msg="Volume for H cell is correct")
+        self.assertAlmostEqual(h.volume, 26.537, places=3, msg="Volume for H cell is correct")
         self.assertTrue(len(h.d_spacing(1)) == 14, msg="got 14 lines for H")
         h.save("H", "Hydrogen", href, 1.0, UtilsTest.tempdir)
 
 
 def suite():
+    loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(TestCalibrant("test_factory"))
-    testsuite.addTest(TestCalibrant("test_2th"))
-    testsuite.addTest(TestCalibrant("test_fake"))
-    testsuite.addTest(TestCell("test_class"))
-    testsuite.addTest(TestCell("test_classmethods"))
-    testsuite.addTest(TestCell("test_dspacing"))
+    testsuite.addTest(loader(TestCalibrant))
+    testsuite.addTest(loader(TestCell))
     return testsuite
 
 

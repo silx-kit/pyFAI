@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2017"
+__date__ = "18/07/2017"
 __status__ = "development"
 
 import threading
@@ -269,7 +269,7 @@ class Worker(object):
         self.ai.reset()
         self.warmup(sync)
 
-    def process(self, data, normalization_factor=1.0, writer=None):
+    def process(self, data, normalization_factor=1.0, writer=None, metadata=None):
         """
         Process a frame
         #TODO:
@@ -292,6 +292,9 @@ class Worker(object):
                  "correctSolidAngle": self.correct_solid_angle,
                  "safe": self.safe
                  }
+
+        if metadata is not None:
+            kwarg["metadata"] = metadata
 
         if monitor is not None:
             kwarg["normalization_factor"] = monitor

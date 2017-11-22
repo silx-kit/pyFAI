@@ -10,7 +10,7 @@ You will need to provide a calibrant or a "d-spacing" file containing the spacin
 Angstrom (in decreasing order).
 
 If you are using a standard calibrant, look at
-https://github.com/kif/pyFAI/tree/master/calibration
+https://github.com/silx-kit/pyFAI/tree/master/calibration
 or search in the American Mineralogist database:
 [AMD]_ or in the [COD]_.
 The --calibrant option is mandatory !
@@ -136,7 +136,6 @@ Options:
   -p PIXEL, --pixel PIXEL
                         size of the pixel in micron
 
-
 Tips & Tricks
 -------------
 
@@ -148,10 +147,6 @@ entry (time-stamps will help you).
 
 Example of usage:
 -----------------
-
-
-.. command-output:: pyFAI-calib --help
-    :nostderr:
 
 Pilatus 1M image of Silver Behenate taken at ESRF-BM26:
 .......................................................

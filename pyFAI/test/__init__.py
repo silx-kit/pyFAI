@@ -26,15 +26,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Test module for pyFAI"""
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test module for pyFAI"""
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2016"
+__date__ = "25/08/2017"
 
 import sys
 import os
@@ -42,10 +42,12 @@ import unittest
 
 
 from . import utilstest
-from . import test_all
+# not importing test_all here to prevent premature initialization of UtilsTest
+# and preventing the test skipping
 
 
 def suite():
+    from . import test_all
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_all.suite())
     return test_suite
@@ -54,7 +56,7 @@ def suite():
 def run_tests():
     """Run test complete test_suite"""
     runner = unittest.TextTestRunner()
-    if not runner.run(test_all.suite()).wasSuccessful():
+    if not runner.run(suite()).wasSuccessful():
         print("Test suite failed")
         return 1
     else:

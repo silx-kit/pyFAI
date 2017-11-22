@@ -56,6 +56,16 @@
     :undoc-members:
     :show-inheritance:
 
+:mod:`goniometer` Module
+------------------------
+
+.. automodule:: pyFAI.goniometer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+
 :mod:`detectors` Module
 -----------------------
 
@@ -87,6 +97,15 @@
     :members:
     :undoc-members:
     :show-inheritance:
+
+:mod:`control_points` Module
+----------------------------
+
+.. automodule:: pyFAI.control_points
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 :mod:`peak_picker` Module
 -------------------------
@@ -175,12 +194,12 @@ Contains the progress-bar in the shell command line
     :undoc-members:
     :show-inheritance:
 
-:mod:`utils.string` Module
-..........................
+:mod:`utils.stringutil` Module
+..............................
 
 Enhanced string formatter
 
-.. automodule:: pyFAI.utils.string
+.. automodule:: pyFAI.utils.stringutil
     :members:
     :undoc-members:
     :show-inheritance:
