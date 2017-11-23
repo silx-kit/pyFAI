@@ -27,3 +27,4 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    CCD_Calibration/CCD_calibration
    Goniometer/index
    Inpainting/Inpainting
+   ThickDetector/index
