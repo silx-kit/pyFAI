@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/06/2017"
+__date__ = "24/11/2017"
 
 import logging
 import numpy
@@ -549,7 +549,7 @@ class PeakPickingTask(AbstractCalibrationTask):
                 for label in controlPoints.get_labels():
                     group = controlPoints.get(lbl=label)
                     peakModel = self.__createNewPeak(group.points)
-                    peakModel.setRingNumber(group.ring)
+                    peakModel.setRingNumber(group.ring + 1)
                     peakModel.setName(label)
                     self.model().peakSelectionModel().append(peakModel)
                 newState = self.__copyPeaks(self.__undoStack)
@@ -588,7 +588,7 @@ class PeakPickingTask(AbstractCalibrationTask):
             wavelength = wavelength / 1e10
             controlPoints = pyFAI.control_points.ControlPoints(None, calibrant, wavelength)
             for peakModel in self.model().peakSelectionModel():
-                ringNumber = peakModel.ringNumber()
+                ringNumber = peakModel.ringNumber() - 1
                 points = peakModel.coords()
                 controlPoints.append(points=points, ring=ringNumber)
             controlPoints.save(filename)
