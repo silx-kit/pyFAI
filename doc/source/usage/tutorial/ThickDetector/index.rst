@@ -18,11 +18,11 @@ for the images.
 *Disclaimer:* The Pilatus detector is a photon counting detector with a threshold
 in energy.
 In this demonstration, we consider only the photo-electric effect and consider
-the full absorption of a photon if it interacts with the sensor.
+the full absorption of a photon if it interacts with the sensor material.
 
 This document first presents an experiment on ID28 where the detector position
 is calibrated on its goniometer stage and highlights some odd behavior at high
-incidence angle where rings looks shifted and could be attributed to
+incidence angle where rings looks shifted and broadned and could be attributed to
 "thickness effect".
 In a second time, the detector is modeled as a 2D array of voxels, hence with
 some thickness, and the signal is then deconvoluted to invert this effect in a
