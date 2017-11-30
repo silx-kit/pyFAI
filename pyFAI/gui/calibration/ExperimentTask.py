@@ -27,19 +27,18 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2017"
+__date__ = "23/11/2017"
 
 import os
-import fabio
-import numpy
 import logging
-from contextlib import contextmanager
 from collections import OrderedDict
 import silx.gui.plot
 from pyFAI.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor
+from pyFAI.gui.dialog.ImageFileDialog import ImageFileDialog
+from silx.gui.plot.Colormap import Colormap
 
 _logger = logging.getLogger(__name__)
 
@@ -123,57 +122,31 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__plot2D.addImage(image, legend="image")
         self.__plot2D.resetZoom()
 
-    def createImageDialog(self, title, forMask=False):
-        dialog = qt.QFileDialog(self)
+    def getImageFromDialog(self, title, previousPath=None):
+        dialog = ImageFileDialog(self)
         dialog.setWindowTitle(title)
         dialog.setModal(True)
-
-        extensions = OrderedDict()
-        extensions["EDF image files"] = "*.edf"
-        extensions["TIFF image files"] = "*.tif *.tiff"
-        extensions["NumPy binary files"] = "*.npy"
-        extensions["CBF files"] = "*.cbf"
-        extensions["MarCCD image files"] = "*.mccd"
-        if forMask:
-            extensions["Fit2D mask files"] = "*.msk"
-
-        filters = []
-        filters.append("All supported files (%s)" % " ".join(extensions.values()))
-        for name, extension in extensions.items():
-            filters.append("%s (%s)" % (name, extension))
-        filters.append("All files (*)")
-
-        dialog.setNameFilters(filters)
-        dialog.setFileMode(qt.QFileDialog.ExistingFile)
-        return dialog
-
-    @contextmanager
-    def getImageFromDialog(self, title, forMask=False):
-        dialog = self.createImageDialog(title, forMask)
 
         if self.__dialogState is None:
             currentDirectory = os.getcwd()
             dialog.setDirectory(currentDirectory)
+            colormap = Colormap(name='inferno', normalization=Colormap.LOGARITHM)
+            dialog.setColormap(colormap)
         else:
             dialog.restoreState(self.__dialogState)
 
+        if previousPath not in [None, ""]:
+            dialog.selectPath(previousPath)
+
         result = dialog.exec_()
         if not result:
-            yield None
-            return
+            return None, None
 
         self.__dialogState = dialog.saveState()
-        filename = dialog.selectedFiles()[0]
-        try:
-            with fabio.open(filename) as image:
-                yield image
-        except Exception as e:
-            _logger.error(e.args[0])
-            _logger.debug("Backtrace", exc_info=True)
-            # FIXME Display error dialog
-            yield None
-        except KeyboardInterrupt:
-            raise
+        path = dialog.selectedPath()
+        image = dialog.selectedImage().copy()
+        dialog.clear()
+        return path, image
 
     def createSplineDialog(self, title):
         dialog = qt.QFileDialog(self)
@@ -194,25 +167,28 @@ class ExperimentTask(AbstractCalibrationTask):
         return dialog
 
     def loadImage(self):
-        with self.getImageFromDialog("Load calibration image") as image:
-            if image is not None:
-                settings = self.model().experimentSettingsModel()
-                settings.imageFile().setValue(str(image.filename))
-                settings.image().setValue(image.data.copy())
+        settings = self.model().experimentSettingsModel()
+        previousPath = settings.imageFile().value()
+        path, data = self.getImageFromDialog("Load calibration image", previousPath)
+        if data is not None:
+            settings.imageFile().setValue(path)
+            settings.image().setValue(data)
 
     def loadMask(self):
-        with self.getImageFromDialog("Load mask image", forMask=True) as image:
-            if image is not None:
-                settings = self.model().experimentSettingsModel()
-                settings.maskFile().setValue(image.filename)
-                settings.mask().setValue(image.data)
+        settings = self.model().experimentSettingsModel()
+        previousPath = settings.maskFile().value()
+        path, data = self.getImageFromDialog("Load mask image", previousPath)
+        if data is not None:
+            settings.maskFile().setValue(path)
+            settings.mask().setValue(data)
 
     def loadDark(self):
-        with self.getImageFromDialog("Load dark image") as image:
-            if image is not None:
-                settings = self.model().experimentSettingsModel()
-                settings.darkFile().setValue(image.filename)
-                settings.dark().setValue(image.data)
+        settings = self.model().experimentSettingsModel()
+        previousPath = settings.darkFile().value()
+        path, data = self.getImageFromDialog("Load dark image", previousPath)
+        if data is not None:
+            settings.darkFile().setValue(path)
+            settings.dark().setValue(data)
 
     def loadSpline(self):
         dialog = self.createSplineDialog("Load spline image")
