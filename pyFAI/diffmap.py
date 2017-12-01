@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "01/12/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """Module with GUI for diffraction mapping experiments"""
@@ -414,10 +414,6 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.group[space].attrs["unit"] = unit
             self.group[space].attrs["long_name"] = self.unit.label
             self.group[space].attrs["interpretation"] = "scalar"
-        if self.use_gpu:
-            self.ai._ocl_csr_integr.output_dummy = 0.0
-        else:
-            self.ai._csr_integrator.output_dummy = 0.0
         return tth
 
     def show_stats(self):
