@@ -400,7 +400,7 @@ class Goniometer(object):
 
     @classmethod
     def sload(cls, filename):
-        """Class method for instanciating a Gooniometer object from JSON file
+        """Class method for instanciating a Goniometer object from a JSON file
         
         :param filename: name of the JSON file
         :return: Goniometer object
