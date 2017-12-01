@@ -22,11 +22,10 @@ the full absorption of a photon if it interacts with the sensor material.
 
 This document first presents an experiment on ID28 where the detector position
 is calibrated on its goniometer stage and highlights some odd behavior at high
-incidence angle where rings looks shifted and broadned and could be attributed to
+incidence angle where rings looks shifted and broadened and could be attributed to
 "thickness effect".
 In a second time, the detector is modeled as a 2D array of voxels, hence with
-some thickness, and the signal is then deconvoluted to invert this effect in a
-third step.
+some thickness, and the signal is then deconvolved to invert this effect.
 Finally the corrected images are used to validate the correction.
 
 .. toctree::
@@ -35,5 +34,4 @@ Finally the corrected images are used to validate the correction.
    goniometer_id28
    raytracing
    deconvolution
-   validation
     
