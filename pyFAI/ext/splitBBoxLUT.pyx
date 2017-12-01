@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/06/2017"
+__date__ = "01/12/2017"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -432,7 +432,6 @@ class HistoBBox1d(object):
         if dummy is not None:
             do_dummy = True
             cdummy = <float> float(dummy)
-            output_dummy = cdummy
             if delta_dummy is None:
                 cddummy = zerof
             else:
