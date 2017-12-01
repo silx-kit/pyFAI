@@ -306,7 +306,7 @@ class IntegrationTask(AbstractCalibrationTask):
         for i, angle in enumerate(ringAngles):
             legend = "ring_%i" % (i + 1)
             color = colors[i % len(colors)]
-            htmlColor = "#%02X%02X%02X" % (color.red(), color.green(), color.blue())
+            htmlColor = "#%02X%02X%02X60" % (color.red(), color.green(), color.blue())
             self.__plot1d.addXMarker(x=angle, color=htmlColor, legend=legend)
             self.__plot2d.addXMarker(x=angle, color=htmlColor, legend=legend)
             self.__ringLegends.append(legend)
