@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/10/2017"
+__date__ = "01/12/2017"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -400,6 +400,12 @@ class Goniometer(object):
 
     @classmethod
     def sload(cls, filename):
+        """Class method for instanciating a Gooniometer object from JSON file
+        
+        :param filename: name of the JSON file
+        :return: Goniometer object
+        """
+
         with open(filename) as f:
             dico = json.load(f)
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
@@ -417,7 +423,11 @@ class Goniometer(object):
                 raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
         else:  # assume GeometryTransformation
             funct = GeometryTransformation(**tansfun)
-        gonio = cls(dico.get("param", []), funct, detector, dico.get("wavelength"))
+
+        gonio = cls(param=dico.get("param", []),
+                    trans_function=funct,
+                    detector=detector,
+                    wavelength=dico.get("wavelength"))
         return gonio
 
 
@@ -708,3 +718,38 @@ class GoniometerRefinement(Goniometer):
         else:
             idx = int(name)
         self.bounds[idx] = (mini, maxi)
+
+    @classmethod
+    def sload(cls, filename, pos_function=None):
+        """Class method for instanciating a Gooniometer object from JSON file
+        
+        :param filename: name of the JSON file
+        :param pos_function: a function taking metadata and extracting the
+                    goniometer position
+        :return: Goniometer object
+        """
+
+        with open(filename) as f:
+            dico = json.load(f)
+        assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
+        assert "trans_function" in dico, "No translation function defined in JSON file"
+        detector = Detector.from_dict(dico)
+        tansfun = dico.get("trans_function", {})
+        if "content" in tansfun:
+            content = tansfun.pop("content")
+            # May be adapted for other classes of GeometryTransformation functions
+            if content in ("GeometryTranslation", "GeometryTransformation"):
+                funct = GeometryTransformation(**tansfun)
+            elif content == "ExtendedTranformation":
+                funct = ExtendedTransformation(**tansfun)
+            else:
+                raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
+        else:  # assume GeometryTransformation
+            funct = GeometryTransformation(**tansfun)
+
+        gonio = cls(param=dico.get("param", []),
+                    trans_function=funct,
+                    pos_function=pos_function,
+                    detector=detector,
+                    wavelength=dico.get("wavelength"))
+        return gonio
