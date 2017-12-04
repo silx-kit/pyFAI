@@ -4,3 +4,4 @@ fabio
 sphinx
 sphinxcontrib-programoutput
 silx
+nbsphinx
