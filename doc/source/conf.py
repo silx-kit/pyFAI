@@ -14,6 +14,7 @@
 import sys
 import os
 
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -23,7 +24,11 @@ try:
     import pyFAI
     project_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
     build_dir = os.path.abspath(pyFAI.__file__)
-    if not build_dir.startswith(project_dir):
+    if on_rtd:
+        print("On Read The Docs")
+        print("build_dir", build_dir)
+        print("project_dir", project_dir)
+    elif not build_dir.startswith(project_dir):
         raise RuntimeError("%s looks to come from the system. Fix your PYTHONPATH and restart sphinx." % project)
 except ImportError:
     raise RuntimeError("%s is not on the path. Fix your PYTHONPATH and restart sphinx." % project)
