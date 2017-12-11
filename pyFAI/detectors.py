@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2017"
+__date__ = "07/12/2017"
 __status__ = "stable"
 
 
@@ -2505,7 +2505,7 @@ class Aarhus(Detector):
     IS_FLAT = False
     force_pixel = True
 
-    def __init__(self, pixel1=25e-6, pixel2=25e-6, radius=0.3):
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
         Detector.__init__(self, pixel1, pixel2)
         self.radius = radius
         self._pixel_corners = None
