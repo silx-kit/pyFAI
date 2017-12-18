@@ -217,6 +217,10 @@ def polar_inpaint(cython.floating[:, :] img not None,
                                 values.append((img[idx_row, idx_col],
                                                (row - idx_row) ** 2 + (col - idx_col) ** 2))
                     if len(values) == 0:
+                        zero = numpy.int8(0)
+                        if not numpy.logical_and(mask == zero, topaint == zero).any():
+                            # There is no available valid pixel on all the image
+                            raise RuntimeError("No valid pixel available according to topaint and mask masks. Fix your masks.")
                         raise RuntimeError("No value found for pixel %s,%s (row,col)" % (row, col))
                 cnt = 0.0
                 sum = 0.0
