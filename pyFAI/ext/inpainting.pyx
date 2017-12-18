@@ -186,6 +186,9 @@ def polar_inpaint(cython.floating[:, :] img not None,
                     radius = 0
                     while not values:
                         radius += 1
+                        if radius > max(npt_azim, npt_radial):
+                            # Avoid infinit loop
+                            break
                         idx_col = max(0, col - radius)
                         for idx_row in range(max(0, row - radius), min(npt_azim, row + radius + 1)):
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
@@ -209,6 +212,8 @@ def polar_inpaint(cython.floating[:, :] img not None,
                             if topaint[idx_row, idx_col] == 0 and mask[idx_row, idx_col] == 0:
                                 values.append((img[idx_row, idx_col],
                                                (row - idx_row) ** 2 + (col - idx_col) ** 2))
+                    if len(values) == 0:
+                        raise RuntimeError("No value found for pixel %s,%s (row,col)" % (row, col))
                 cnt = 0.0
                 sum = 0.0
                 for vd in values:
