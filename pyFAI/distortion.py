@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2017"
+__date__ = "18/12/2017"
 __status__ = "development"
 
 import logging
@@ -280,7 +280,7 @@ class Distortion(object):
                     mask = self.mask
                     if _distortion:
                         if use_common:
-                            self.lut = _distortion.calc_openmp(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method)
+                            self.lut = _distortion.calc_sparse(self.pos, self._shape_out, max_pixel_size=(self.delta1, self.delta2), format=self.method)
                         else:
                             if self.method == "lut":
                                 self.lut = _distortion.calc_LUT(self.pos, self._shape_out, self.bin_size, max_pixel_size=(self.delta1, self.delta2))
