@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2017"
+__date__ = "12/12/2017"
 __status__ = "stable"
 
 
@@ -2492,10 +2492,17 @@ class Aarhus(Detector):
     Cylindrical detector made of a bent imaging-plate.
     Developped at the Danish university of Aarhus
     r = 1.2m or 0.3m
+    
+    Credits:
+    Private communication; 
+    B. B. Iversen, 
+    Center for Materials Crystallography & Dept. of Chemistry and iNANO, 
+    Aarhus University.
+    
 
     The image has to be laid-out horizontally
 
-    Nota: the detector is bending towards the sample, hence reducing the sample-detector distance.
+    Nota: the detector is bend towards the sample, hence reducing the sample-detector distance.
     This is why z<0 (or p3<0)
 
     TODO: update cython code for 3d detectors

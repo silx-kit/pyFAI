@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2017"
+__date__ = "14/12/2017"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -96,7 +96,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
         _fig, ax = subplots()
 
     unit = result.unit
-    if result.sigma:
+    if result.sigma is not None:
         ax.errorbar(result.radial, result.intensity, result.sigma, label=label)
     else:
         ax.plot(result.radial, result.intensity, label=label)
