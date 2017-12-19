@@ -160,8 +160,8 @@ def polar_inpaint(cython.floating[:, :] img not None,
         assert mask.shape[0] == npt_azim, "mask.shape == img.shape"
         assert mask.shape[1] == npt_radial, "mask.shape == img.shape"
 
-    assert topaint.ndim == 2, "topaint.ndim == 2
-    assert mask.ndim == 2, "mask.ndim == 2
+    assert topaint.ndim == 2, "topaint.ndim == 2"
+    assert mask.ndim == 2, "mask.ndim == 2"
 
     res = numpy.zeros((npt_azim, npt_radial), numpy.float32)
 
