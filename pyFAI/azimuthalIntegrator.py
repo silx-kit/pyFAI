@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2017"
+__date__ = "20/12/2017"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3822,6 +3822,7 @@ class AzimuthalIntegrator(Geometry):
         assert mask.shape == self.detector.shape
         mask = numpy.ascontiguousarray(mask, numpy.int8)
         blank_data = numpy.zeros(mask.shape, dtype=numpy.float32)
+        ones_data = numpy.ones(mask.shape, dtype=numpy.float32)
 
         to_mask = numpy.where(mask)
 
@@ -3845,10 +3846,14 @@ class AzimuthalIntegrator(Geometry):
                   "delta_dummy": delta_dummy,
                   "method": method,
                   "correctSolidAngle": False,
-                  "mask": blank_mask,
                   "azimuth_range": azimuth_range,
                   "radial_range": (0, rmax),
-                  "polarization_factor": None}
+                  "polarization_factor": None,
+                  # Nullify the masks to avoid to use the detector once
+                  "dark": blank_mask,
+                  "mask": blank_mask,
+                  "flat": ones_data}
+
         imgb = self.integrate2d(blank_data, **kwargs)
         imgp = self.integrate2d(masked, **kwargs)
         imgd = self.integrate2d(masked_data, **kwargs)
