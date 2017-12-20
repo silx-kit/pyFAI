@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "08/09/2017"
+__date__ = "18/12/2017"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -519,7 +519,7 @@ def calc_LUT(float[:, :, :, ::1] pos not None, shape, bin_size, max_pixel_size,
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
-             numpy.int8_t[:, :] mask=None):
+             numpy.int8_t[:, ::1] mask=None):
     """Calculate the Look-up table as CSR format
 
     :param pos: 4D position array
@@ -656,10 +656,10 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
 @cython.boundscheck(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def calc_openmp(float[:, :, :, ::1] pos not None,
+def calc_sparse(float[:, :, :, ::1] pos not None,
                 shape,
                 max_pixel_size=(8, 8),
-                numpy.int8_t[:, :] mask=None,
+                numpy.int8_t[:, ::1] mask=None,
                 format="csr",
                 int bins_per_pixel=8):
     """Calculate the look-up table (or CSR) using OpenMP

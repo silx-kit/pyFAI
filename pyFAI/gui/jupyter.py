@@ -96,7 +96,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
         _fig, ax = subplots()
 
     unit = result.unit
-    if result.sigma:
+    if result.sigma is not None:
         ax.errorbar(result.radial, result.intensity, result.sigma, label=label)
     else:
         ax.plot(result.radial, result.intensity, label=label)

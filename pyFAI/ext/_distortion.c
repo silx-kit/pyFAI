@@ -2626,7 +2626,7 @@ static const char __pyx_k_shape_out[] = "shape_out";
 static const char __pyx_k_threading[] = "threading";
 static const char __pyx_k_tmp_index[] = "tmp_index";
 static const char __pyx_k_uncorrect[] = "uncorrect";
-static const char __pyx_k_08_09_2017[] = "08/09/2017";
+static const char __pyx_k_18_12_2017[] = "18/12/2017";
 static const char __pyx_k_Distortion[] = "Distortion";
 static const char __pyx_k_IndexError[] = "IndexError";
 static const char __pyx_k_ValueError[] = "ValueError";
@@ -2643,7 +2643,7 @@ static const char __pyx_k_signatures[] = "signatures";
 static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_MemoryError[] = "MemoryError";
 static const char __pyx_k_buffer_size[] = "buffer_size";
-static const char __pyx_k_calc_openmp[] = "calc_openmp";
+static const char __pyx_k_calc_sparse[] = "calc_sparse";
 static const char __pyx_k_correct_CSR[] = "correct_CSR";
 static const char __pyx_k_correct_LUT[] = "correct_LUT";
 static const char __pyx_k_delta_dummy[] = "delta_dummy";
@@ -2746,7 +2746,7 @@ static const char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to alloca
 static const char __pyx_k_Patching_image_as_image_is_ix_i_2[] = "Patching image as image is %ix%i and spline is %ix%i";
 static const char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
 static const char __pyx_k_No_value_specified_for_struct_at_2[] = "No value specified for struct attribute 'coef'";
-static PyObject *__pyx_kp_s_08_09_2017;
+static PyObject *__pyx_kp_s_18_12_2017;
 static PyObject *__pyx_kp_s_1_5;
 static PyObject *__pyx_kp_s_2011_2016_ESRF;
 static PyObject *__pyx_n_s_A0;
@@ -2861,9 +2861,9 @@ static PyObject *__pyx_n_s_calc_CSR;
 static PyObject *__pyx_n_s_calc_LUT;
 static PyObject *__pyx_n_s_calc_LUT_size;
 static PyObject *__pyx_n_s_calc_cartesian_positions;
-static PyObject *__pyx_n_s_calc_openmp;
 static PyObject *__pyx_n_s_calc_pos;
 static PyObject *__pyx_n_s_calc_size;
+static PyObject *__pyx_n_s_calc_sparse;
 static PyObject *__pyx_n_s_cdelta_dummy;
 static PyObject *__pyx_n_s_cdummy;
 static PyObject *__pyx_n_s_ceil;
@@ -3128,7 +3128,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_48__defaults__(CYTHON_UNUSED
 static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_30calc_size(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_mask, PyObject *__pyx_v_offset); /* proto */
 static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_8calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask); /* proto */
 static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_10calc_CSR(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask); /* proto */
-static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_openmp(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask, PyObject *__pyx_v_format, int __pyx_v_bins_per_pixel); /* proto */
+static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_sparse(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask, PyObject *__pyx_v_format, int __pyx_v_bins_per_pixel); /* proto */
 static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_14correct_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape_in, PyObject *__pyx_v_shape_out, __Pyx_memviewslice __pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy); /* proto */
 static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_16correct_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape_in, PyObject *__pyx_v_shape_out, PyObject *__pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy); /* proto */
 static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_18uncorrect_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT); /* proto */
@@ -12729,7 +12729,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_8calc_LUT(CYTHON_UNUSED PyOb
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
- *              numpy.int8_t[:, :] mask=None):
+ *              numpy.int8_t[:, ::1] mask=None):
  *     """Calculate the Look-up table as CSR format
  */
 
@@ -12806,7 +12806,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_11calc_CSR(PyObject *__pyx_s
     __pyx_v_bin_size = values[2];
     __pyx_v_max_pixel_size = values[3];
     if (values[4]) {
-      __pyx_v_mask = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[4]); if (unlikely(!__pyx_v_mask.memview)) __PYX_ERR(0, 522, __pyx_L3_error)
+      __pyx_v_mask = __Pyx_PyObject_to_MemoryviewSlice_d_dc_nn___pyx_t_5numpy_int8_t(values[4]); if (unlikely(!__pyx_v_mask.memview)) __PYX_ERR(0, 522, __pyx_L3_error)
     } else {
       __pyx_v_mask = __pyx_k__19;
       __PYX_INC_MEMVIEW(&__pyx_v_mask, 1);
@@ -13749,7 +13749,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_10calc_CSR(CYTHON_UNUSED PyO
             }
             __pyx_t_23 = __pyx_v_i;
             __pyx_t_24 = __pyx_v_j;
-            __pyx_t_22 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_23 * __pyx_v_mask.strides[0]) ) + __pyx_t_24 * __pyx_v_mask.strides[1]) ))) != 0);
+            __pyx_t_22 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ ((char *) (((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_23 * __pyx_v_mask.strides[0]) )) + __pyx_t_24)) ))) != 0);
             __pyx_t_9 = __pyx_t_22;
             __pyx_L16_bool_binop_done:;
             if (__pyx_t_9) {
@@ -14930,7 +14930,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_10calc_CSR(CYTHON_UNUSED PyO
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
- *              numpy.int8_t[:, :] mask=None):
+ *              numpy.int8_t[:, ::1] mask=None):
  *     """Calculate the Look-up table as CSR format
  */
 
@@ -14983,16 +14983,16 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_10calc_CSR(CYTHON_UNUSED PyO
 /* "pyFAI/ext/_distortion.pyx":659
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
- * def calc_openmp(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
+ * def calc_sparse(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
  *                 shape,
  *                 max_pixel_size=(8, 8),
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5pyFAI_3ext_11_distortion_12calc_openmp[] = "calc_openmp(__Pyx_memviewslice pos, shape, max_pixel_size=(8, 8), __Pyx_memviewslice mask=None, format='csr', int bins_per_pixel=8)\nCalculate the look-up table (or CSR) using OpenMP\n\n    :param pos: 4D position array\n    :param shape: output shape\n    :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel\n    :param format: can be \"CSR\" or \"LUT\"\n    :param bins_per_pixel: average splitting factor (number of pixels per bin)\n    :return: look-up table in CSR/LUT format\n    ";
-static PyMethodDef __pyx_mdef_5pyFAI_3ext_11_distortion_13calc_openmp = {"calc_openmp", (PyCFunction)__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_11_distortion_12calc_openmp};
-static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_sparse(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_5pyFAI_3ext_11_distortion_12calc_sparse[] = "calc_sparse(__Pyx_memviewslice pos, shape, max_pixel_size=(8, 8), __Pyx_memviewslice mask=None, format='csr', int bins_per_pixel=8)\nCalculate the look-up table (or CSR) using OpenMP\n\n    :param pos: 4D position array\n    :param shape: output shape\n    :param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel\n    :param format: can be \"CSR\" or \"LUT\"\n    :param bins_per_pixel: average splitting factor (number of pixels per bin)\n    :return: look-up table in CSR/LUT format\n    ";
+static PyMethodDef __pyx_mdef_5pyFAI_3ext_11_distortion_13calc_sparse = {"calc_sparse", (PyCFunction)__pyx_pw_5pyFAI_3ext_11_distortion_13calc_sparse, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5pyFAI_3ext_11_distortion_12calc_sparse};
+static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_sparse(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_pos = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_v_shape = 0;
   PyObject *__pyx_v_max_pixel_size = 0;
@@ -15001,16 +15001,16 @@ static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__py
   int __pyx_v_bins_per_pixel;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("calc_openmp (wrapper)", 0);
+  __Pyx_RefNannySetupContext("calc_sparse (wrapper)", 0);
   {
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_pos,&__pyx_n_s_shape,&__pyx_n_s_max_pixel_size,&__pyx_n_s_mask,&__pyx_n_s_format,&__pyx_n_s_bins_per_pixel,0};
     PyObject* values[6] = {0,0,0,0,0,0};
 
     /* "pyFAI/ext/_distortion.pyx":661
- * def calc_openmp(float[:, :, :, ::1] pos not None,
+ * def calc_sparse(float[:, :, :, ::1] pos not None,
  *                 shape,
  *                 max_pixel_size=(8, 8),             # <<<<<<<<<<<<<<
- *                 numpy.int8_t[:, :] mask=None,
+ *                 numpy.int8_t[:, ::1] mask=None,
  *                 format="csr",
  */
     values[2] = ((PyObject *)__pyx_tuple__22);
@@ -15036,7 +15036,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__py
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_shape)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calc_openmp", 0, 2, 6, 1); __PYX_ERR(0, 659, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calc_sparse", 0, 2, 6, 1); __PYX_ERR(0, 659, __pyx_L3_error)
         }
         case  2:
         if (kw_args > 0) {
@@ -15060,7 +15060,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__py
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "calc_openmp") < 0)) __PYX_ERR(0, 659, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "calc_sparse") < 0)) __PYX_ERR(0, 659, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -15078,7 +15078,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__py
     __pyx_v_shape = values[1];
     __pyx_v_max_pixel_size = values[2];
     if (values[3]) {
-      __pyx_v_mask = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[3]); if (unlikely(!__pyx_v_mask.memview)) __PYX_ERR(0, 662, __pyx_L3_error)
+      __pyx_v_mask = __Pyx_PyObject_to_MemoryviewSlice_d_dc_nn___pyx_t_5numpy_int8_t(values[3]); if (unlikely(!__pyx_v_mask.memview)) __PYX_ERR(0, 662, __pyx_L3_error)
     } else {
       __pyx_v_mask = __pyx_k__23;
       __PYX_INC_MEMVIEW(&__pyx_v_mask, 1);
@@ -15092,21 +15092,21 @@ static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__py
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("calc_openmp", 0, 2, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 659, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("calc_sparse", 0, 2, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 659, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pyFAI.ext._distortion.calc_openmp", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyFAI.ext._distortion.calc_sparse", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_pos.memview) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "pos"); __PYX_ERR(0, 659, __pyx_L1_error)
   }
-  __pyx_r = __pyx_pf_5pyFAI_3ext_11_distortion_12calc_openmp(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_max_pixel_size, __pyx_v_mask, __pyx_v_format, __pyx_v_bins_per_pixel);
+  __pyx_r = __pyx_pf_5pyFAI_3ext_11_distortion_12calc_sparse(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_max_pixel_size, __pyx_v_mask, __pyx_v_format, __pyx_v_bins_per_pixel);
 
   /* "pyFAI/ext/_distortion.pyx":659
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
- * def calc_openmp(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
+ * def calc_sparse(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
  *                 shape,
  *                 max_pixel_size=(8, 8),
  */
@@ -15120,7 +15120,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_11_distortion_13calc_openmp(PyObject *__py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_openmp(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask, PyObject *__pyx_v_format, int __pyx_v_bins_per_pixel) {
+static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_sparse(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask, PyObject *__pyx_v_format, int __pyx_v_bins_per_pixel) {
   int __pyx_v_shape_in0;
   int __pyx_v_shape_in1;
   int __pyx_v_shape_out0;
@@ -15277,7 +15277,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_openmp(CYTHON_UNUSED 
   Py_ssize_t __pyx_t_97;
   Py_ssize_t __pyx_t_98;
   Py_ssize_t __pyx_t_99;
-  __Pyx_RefNannySetupContext("calc_openmp", 0);
+  __Pyx_RefNannySetupContext("calc_sparse", 0);
   __Pyx_INCREF(__pyx_v_format);
 
   /* "pyFAI/ext/_distortion.pyx":676
@@ -15931,7 +15931,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_openmp(CYTHON_UNUSED 
           __pyx_t_15 = __pyx_v_j;
           if (__pyx_t_14 < 0) __pyx_t_14 += __pyx_v_mask.shape[0];
           if (__pyx_t_15 < 0) __pyx_t_15 += __pyx_v_mask.shape[1];
-          __pyx_t_13 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_14 * __pyx_v_mask.strides[0]) ) + __pyx_t_15 * __pyx_v_mask.strides[1]) ))) != 0);
+          __pyx_t_13 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ ((char *) (((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_mask.data + __pyx_t_14 * __pyx_v_mask.strides[0]) )) + __pyx_t_15)) ))) != 0);
           __pyx_t_7 = __pyx_t_13;
           __pyx_L14_bool_binop_done:;
           if (__pyx_t_7) {
@@ -18357,7 +18357,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_openmp(CYTHON_UNUSED 
   /* "pyFAI/ext/_distortion.pyx":659
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
- * def calc_openmp(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
+ * def calc_sparse(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
  *                 shape,
  *                 max_pixel_size=(8, 8),
  */
@@ -18382,7 +18382,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_12calc_openmp(CYTHON_UNUSED 
   __Pyx_XDECREF(__pyx_t_71);
   __Pyx_XDECREF(__pyx_t_72);
   __PYX_XDEC_MEMVIEW(&__pyx_t_90, 1);
-  __Pyx_AddTraceback("pyFAI.ext._distortion.calc_openmp", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pyFAI.ext._distortion.calc_sparse", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_indptr, 1);
@@ -24624,7 +24624,6 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_10Distortion_4calc_pos(CYTHO
           goto __pyx_L15_try_end;
           __pyx_L8_error:;
           __Pyx_PyThreadState_assign
-          __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
           __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
           __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -24632,6 +24631,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_11_distortion_10Distortion_4calc_pos(CYTHO
           __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
           __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
           __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
           /*except:*/ {
             __Pyx_AddTraceback("pyFAI.ext._distortion.Distortion.calc_pos", __pyx_clineno, __pyx_lineno, __pyx_filename);
             if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_11, &__pyx_t_1) < 0) __PYX_ERR(0, 1128, __pyx_L10_except_error)
@@ -44980,7 +44980,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_08_09_2017, __pyx_k_08_09_2017, sizeof(__pyx_k_08_09_2017), 0, 0, 1, 0},
+  {&__pyx_kp_s_18_12_2017, __pyx_k_18_12_2017, sizeof(__pyx_k_18_12_2017), 0, 0, 1, 0},
   {&__pyx_kp_s_1_5, __pyx_k_1_5, sizeof(__pyx_k_1_5), 0, 0, 1, 0},
   {&__pyx_kp_s_2011_2016_ESRF, __pyx_k_2011_2016_ESRF, sizeof(__pyx_k_2011_2016_ESRF), 0, 0, 1, 0},
   {&__pyx_n_s_A0, __pyx_k_A0, sizeof(__pyx_k_A0), 0, 0, 1, 1},
@@ -45095,9 +45095,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_calc_LUT, __pyx_k_calc_LUT, sizeof(__pyx_k_calc_LUT), 0, 0, 1, 1},
   {&__pyx_n_s_calc_LUT_size, __pyx_k_calc_LUT_size, sizeof(__pyx_k_calc_LUT_size), 0, 0, 1, 1},
   {&__pyx_n_s_calc_cartesian_positions, __pyx_k_calc_cartesian_positions, sizeof(__pyx_k_calc_cartesian_positions), 0, 0, 1, 1},
-  {&__pyx_n_s_calc_openmp, __pyx_k_calc_openmp, sizeof(__pyx_k_calc_openmp), 0, 0, 1, 1},
   {&__pyx_n_s_calc_pos, __pyx_k_calc_pos, sizeof(__pyx_k_calc_pos), 0, 0, 1, 1},
   {&__pyx_n_s_calc_size, __pyx_k_calc_size, sizeof(__pyx_k_calc_size), 0, 0, 1, 1},
+  {&__pyx_n_s_calc_sparse, __pyx_k_calc_sparse, sizeof(__pyx_k_calc_sparse), 0, 0, 1, 1},
   {&__pyx_n_s_cdelta_dummy, __pyx_k_cdelta_dummy, sizeof(__pyx_k_cdelta_dummy), 0, 0, 1, 1},
   {&__pyx_n_s_cdummy, __pyx_k_cdummy, sizeof(__pyx_k_cdummy), 0, 0, 1, 1},
   {&__pyx_n_s_ceil, __pyx_k_ceil, sizeof(__pyx_k_ceil), 0, 0, 1, 1},
@@ -45481,10 +45481,10 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_slice__21);
 
   /* "pyFAI/ext/_distortion.pyx":661
- * def calc_openmp(float[:, :, :, ::1] pos not None,
+ * def calc_sparse(float[:, :, :, ::1] pos not None,
  *                 shape,
  *                 max_pixel_size=(8, 8),             # <<<<<<<<<<<<<<
- *                 numpy.int8_t[:, :] mask=None,
+ *                 numpy.int8_t[:, ::1] mask=None,
  *                 format="csr",
  */
   __pyx_tuple__22 = PyTuple_Pack(2, __pyx_int_8, __pyx_int_8); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 661, __pyx_L1_error)
@@ -46244,7 +46244,7 @@ static int __Pyx_InitCachedConstants(void) {
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
- *              numpy.int8_t[:, :] mask=None):
+ *              numpy.int8_t[:, ::1] mask=None):
  *     """Calculate the Look-up table as CSR format
  */
   __pyx_tuple__142 = PyTuple_Pack(51, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_bin_size, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_bins, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_idx, __pyx_n_s_tmp_index, __pyx_n_s_err_cnt, __pyx_n_s_lut_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_indptr, __pyx_n_s_indices, __pyx_n_s_data, __pyx_n_s_outMax, __pyx_n_s_buffer, __pyx_n_s_do_mask); if (unlikely(!__pyx_tuple__142)) __PYX_ERR(0, 521, __pyx_L1_error)
@@ -46255,14 +46255,14 @@ static int __Pyx_InitCachedConstants(void) {
   /* "pyFAI/ext/_distortion.pyx":659
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
- * def calc_openmp(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
+ * def calc_sparse(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
  *                 shape,
  *                 max_pixel_size=(8, 8),
  */
   __pyx_tuple__144 = PyTuple_Pack(64, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_format, __pyx_n_s_bins_per_pixel, __pyx_n_s_shape_in0, __pyx_n_s_shape_in1, __pyx_n_s_shape_out0, __pyx_n_s_shape_out1, __pyx_n_s_size_in, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_bins, __pyx_n_s_large_size, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_lut_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_counter, __pyx_n_s_bin_number, __pyx_n_s_idx, __pyx_n_s_err_cnt, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_foffset0, __pyx_n_s_foffset1, __pyx_n_s_indptr, __pyx_n_s_indices, __pyx_n_s_idx_bin, __pyx_n_s_idx_pixel, __pyx_n_s_pixel_count, __pyx_n_s_data, __pyx_n_s_large_data, __pyx_n_s_buffer, __pyx_n_s_do_mask, __pyx_n_s_lut, __pyx_n_s_res); if (unlikely(!__pyx_tuple__144)) __PYX_ERR(0, 659, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__144);
   __Pyx_GIVEREF(__pyx_tuple__144);
-  __pyx_codeobj__145 = (PyObject*)__Pyx_PyCode_New(6, 0, 64, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__144, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_openmp, 659, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__145)) __PYX_ERR(0, 659, __pyx_L1_error)
+  __pyx_codeobj__145 = (PyObject*)__Pyx_PyCode_New(6, 0, 64, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__144, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_users_kieffer_workspace_400_pyF, __pyx_n_s_calc_sparse, 659, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__145)) __PYX_ERR(0, 659, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":856
  * @cython.wraparound(False)
@@ -46666,7 +46666,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * 
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
  * __license__ = "MIT"
- * __date__ = "08/09/2017"
+ * __date__ = "18/12/2017"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) __PYX_ERR(0, 29, __pyx_L1_error)
 
@@ -46674,7 +46674,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  * 
  * __author__ = "Jerome Kieffer"
  * __license__ = "MIT"             # <<<<<<<<<<<<<<
- * __date__ = "08/09/2017"
+ * __date__ = "18/12/2017"
  * __copyright__ = "2011-2016, ESRF"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_n_s_MIT) < 0) __PYX_ERR(0, 30, __pyx_L1_error)
@@ -46682,15 +46682,15 @@ PyMODINIT_FUNC PyInit__distortion(void)
   /* "pyFAI/ext/_distortion.pyx":31
  * __author__ = "Jerome Kieffer"
  * __license__ = "MIT"
- * __date__ = "08/09/2017"             # <<<<<<<<<<<<<<
+ * __date__ = "18/12/2017"             # <<<<<<<<<<<<<<
  * __copyright__ = "2011-2016, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_08_09_2017) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_18_12_2017) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":32
  * __license__ = "MIT"
- * __date__ = "08/09/2017"
+ * __date__ = "18/12/2017"
  * __copyright__ = "2011-2016, ESRF"             # <<<<<<<<<<<<<<
  * __contact__ = "jerome.kieffer@esrf.fr"
  * 
@@ -46698,7 +46698,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_copyright, __pyx_kp_s_2011_2016_ESRF) < 0) __PYX_ERR(0, 32, __pyx_L1_error)
 
   /* "pyFAI/ext/_distortion.pyx":33
- * __date__ = "08/09/2017"
+ * __date__ = "18/12/2017"
  * __copyright__ = "2011-2016, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
  * 
@@ -47251,21 +47251,21 @@ PyMODINIT_FUNC PyInit__distortion(void)
   /* "pyFAI/ext/_distortion.pyx":522
  * @cython.initializedcheck(False)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
- *              numpy.int8_t[:, :] mask=None):             # <<<<<<<<<<<<<<
+ *              numpy.int8_t[:, ::1] mask=None):             # <<<<<<<<<<<<<<
  *     """Calculate the Look-up table as CSR format
  * 
  */
-  __pyx_t_14 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(Py_None);
-  if (unlikely(!__pyx_t_14.memview)) __PYX_ERR(0, 522, __pyx_L1_error)
-  __pyx_k__19 = __pyx_t_14;
-  __pyx_t_14.memview = NULL;
-  __pyx_t_14.data = NULL;
+  __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_d_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_13.memview)) __PYX_ERR(0, 522, __pyx_L1_error)
+  __pyx_k__19 = __pyx_t_13;
+  __pyx_t_13.memview = NULL;
+  __pyx_t_13.data = NULL;
 
   /* "pyFAI/ext/_distortion.pyx":521
  * @cython.wraparound(False)
  * @cython.initializedcheck(False)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
- *              numpy.int8_t[:, :] mask=None):
+ *              numpy.int8_t[:, ::1] mask=None):
  *     """Calculate the Look-up table as CSR format
  */
   __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_11calc_CSR, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 521, __pyx_L1_error)
@@ -47276,26 +47276,26 @@ PyMODINIT_FUNC PyInit__distortion(void)
   /* "pyFAI/ext/_distortion.pyx":662
  *                 shape,
  *                 max_pixel_size=(8, 8),
- *                 numpy.int8_t[:, :] mask=None,             # <<<<<<<<<<<<<<
+ *                 numpy.int8_t[:, ::1] mask=None,             # <<<<<<<<<<<<<<
  *                 format="csr",
  *                 int bins_per_pixel=8):
  */
-  __pyx_t_14 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(Py_None);
-  if (unlikely(!__pyx_t_14.memview)) __PYX_ERR(0, 662, __pyx_L1_error)
-  __pyx_k__23 = __pyx_t_14;
-  __pyx_t_14.memview = NULL;
-  __pyx_t_14.data = NULL;
+  __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_d_dc_nn___pyx_t_5numpy_int8_t(Py_None);
+  if (unlikely(!__pyx_t_13.memview)) __PYX_ERR(0, 662, __pyx_L1_error)
+  __pyx_k__23 = __pyx_t_13;
+  __pyx_t_13.memview = NULL;
+  __pyx_t_13.data = NULL;
 
   /* "pyFAI/ext/_distortion.pyx":659
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
- * def calc_openmp(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
+ * def calc_sparse(float[:, :, :, ::1] pos not None,             # <<<<<<<<<<<<<<
  *                 shape,
  *                 max_pixel_size=(8, 8),
  */
-  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_13calc_openmp, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 659, __pyx_L1_error)
+  __pyx_t_15 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_11_distortion_13calc_sparse, NULL, __pyx_n_s_pyFAI_ext__distortion); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 659, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_openmp, __pyx_t_15) < 0) __PYX_ERR(0, 659, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_sparse, __pyx_t_15) < 0) __PYX_ERR(0, 659, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
 
   /* "pyFAI/ext/_distortion.pyx":856
