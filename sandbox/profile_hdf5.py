@@ -31,7 +31,7 @@ from __future__ import division, with_statement, print_function
 """Benchmark for HDF5 writing"""
 
 __author__ = "Jérôme Kieffer"
-__date__ = "2014-09-24"
+__date__ = "24/09/2014"
 
 import os
 import time
