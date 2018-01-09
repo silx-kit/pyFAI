@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 
 import os
@@ -65,11 +65,7 @@ from .blob_detection import BlobDetection
 from .massif import Massif
 from .ext.reconstruct import reconstruct
 from .ext.watershed import InverseWatershed
-
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
+from .third_party import six
 
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":

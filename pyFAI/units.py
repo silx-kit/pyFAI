@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/09/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -50,10 +50,7 @@ logger = logging.getLogger("pyFAI.units")
 import numpy
 from numpy import pi
 
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
+from .third_party import six
 
 ################################################################################
 # A few physical constants

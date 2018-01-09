@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2017"
+__date__ = "09/01/2018"
 
 import unittest
 import os
@@ -52,10 +52,7 @@ from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 tmp_dir = UtilsTest.tempdir
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..third_party import six
 
 
 @unittest.skipIf(UtilsTest.low_mem, "test using >500M")

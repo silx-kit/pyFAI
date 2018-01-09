@@ -38,7 +38,7 @@ __authors__ = ["Jerome Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2017"
+__date__ = "09/01/2018"
 __satus__ = "Production"
 import os
 import numpy
@@ -82,10 +82,7 @@ if BACKEND is None:
 
 import pyFAI.utils
 
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
 
 class AbstractMaskImageWidget(qt.QMainWindow):

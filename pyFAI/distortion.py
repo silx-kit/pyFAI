@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 
 import logging
@@ -46,10 +46,8 @@ if ocl:
     from .opencl import azim_csr as ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
-try:
-    from .third_party import six
-except ImportError:
-    import six
+from .third_party import six
+
 try:
     from .ext import _distortion
     from .ext import sparse_utils

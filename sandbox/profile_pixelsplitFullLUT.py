@@ -20,10 +20,7 @@ from pyFAI import ocl_hist_pixelsplit
 # from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
 from pyFAI import splitPixelFull
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 import scipy
 # logger = utilstest.getLogger("profile")
 

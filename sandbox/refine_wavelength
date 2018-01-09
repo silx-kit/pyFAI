@@ -43,10 +43,8 @@ import numpy
 from numpy import sin, arcsin
 from scipy.optimize import fmin_slsqp
 from pyFAI.geometryRefinement import GeometryRefinement
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
+
 
 class RefineWavelength(object):
     def __init__(self, wavelength, listFiles=None):

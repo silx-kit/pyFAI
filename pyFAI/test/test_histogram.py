@@ -45,10 +45,7 @@ from .utilstest import Rwp, getLogger
 logger = getLogger(__file__)
 from ..ext.histogram import histogram, histogram2d
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..third_party import six
 
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab

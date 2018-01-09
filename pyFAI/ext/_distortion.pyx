@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "18/12/2017"
+__date__ = "09/01/2018"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -49,10 +49,7 @@ import time
 logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..utils import expand2d
-try:
-    from ..third_party import six
-except ImportError:
-    import six
+from ..third_party import six
 import fabio
 
 from sparse_utils cimport ArrayBuilder, lut_point

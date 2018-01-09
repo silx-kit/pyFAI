@@ -29,7 +29,7 @@
 
 from __future__ import absolute_import, print_function, division
 __license__ = "MIT"
-__date__ = "06/09/2017"
+__date__ = "09/01/2018"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -39,10 +39,6 @@ import logging
 import warnings
 
 from .utilstest import UtilsTest, getLogger
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
 
 logger = getLogger(__file__)
 

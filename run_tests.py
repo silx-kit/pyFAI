@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "14/09/2017"
+__date__ = "09/01/2018"
 __license__ = "MIT"
 
 import distutils.util
@@ -265,6 +265,7 @@ def build_project(name, root_dir):
 
 
 try:
+    # pyFAI is not yet loaded, it is safer to use library from the system
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser

@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -38,10 +38,6 @@ import logging
 import numpy
 
 from . import detectors
-try:
-    from .third_party import six
-except ImportError:
-    import six
 import fabio
 logger = logging.getLogger("pyFAI.grid")
 

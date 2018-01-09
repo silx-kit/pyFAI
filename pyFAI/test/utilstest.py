@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "09/01/2018"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -41,7 +41,8 @@ import unittest
 import logging
 import numpy
 import shutil
-from argparse import ArgumentParser
+
+from pyFAI.third_party.argparse import ArgumentParser
 from ..utils import six
 from silx.resources import ExternalResources
 

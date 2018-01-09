@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/05/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 
 import logging
@@ -44,19 +44,13 @@ try:
     rconsole.spawn_server()
 except ImportError:
     print("No socket opened for debugging -> please install rfoo")
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
 
+from pyFAI.third_party import six
 import pyFAI.benchmark
 
 
 def main():
-    try:
-        from argparse import ArgumentParser
-    except:
-        from pyFAI.third_party.argparse import ArgumentParser
+    from pyFAI.third_party.argparse import ArgumentParser
     description = """Benchmark for Azimuthal integration
     """
     epilog = """  """

@@ -48,10 +48,7 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 from .. import spline
 from ..ext import _bispev
-try:
-    import six
-except ImportError:
-    from pyFAI.third_party import six
+from pyFAI.third_party import six
 
 try:
     from scipy.interpolate import fitpack

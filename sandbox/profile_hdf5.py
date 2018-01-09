@@ -35,9 +35,9 @@ __date__ = "24/09/2014"
 
 import os
 import time
-from argparse import ArgumentParser
 import tempfile
 import numpy
+from pyFAI.third_party.argparse import ArgumentParser
 from pyFAI import io
 import logging
 logger = logging.getLogger("Bench_hdf5")

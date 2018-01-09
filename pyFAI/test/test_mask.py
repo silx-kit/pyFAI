@@ -47,10 +47,7 @@ logger = getLogger(__file__)
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..third_party import six
 from .. import load, detectors, AzimuthalIntegrator
 
 

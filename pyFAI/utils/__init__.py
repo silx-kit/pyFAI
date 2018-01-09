@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/06/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 
 import logging
@@ -57,10 +57,7 @@ else:
     from os.path import exists
 
 from math import ceil, pi
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..third_party import six
 try:
     from ..ext import relabel as _relabel
 except ImportError:

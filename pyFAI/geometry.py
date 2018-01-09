@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -56,10 +56,7 @@ from . import units
 from .decorators import deprecated
 from .utils import crc32
 from . import utils
-try:
-    from .third_party import six
-except ImportError:
-    import six
+from .third_party import six
 
 logger = logging.getLogger("pyFAI.geometry")
 

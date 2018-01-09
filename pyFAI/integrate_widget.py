@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 
 import logging
@@ -58,10 +58,7 @@ from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import RADIAL_UNITS
-try:
-    from .third_party import six
-except ImportError:
-    import six
+from .third_party import six
 
 
 UIC = get_ui_file("integration.ui")

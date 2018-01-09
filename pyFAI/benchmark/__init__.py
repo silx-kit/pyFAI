@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "01/09/2017"
+__date__ = "09/01/2018"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -52,7 +52,7 @@ from .. import load
 from .. import AzimuthalIntegrator
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
-from ..utils import six
+from ..third_party import six
 try:
     from ..gui.matplotlib import pylab
     from ..gui.utils import update_fig

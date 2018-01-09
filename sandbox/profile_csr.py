@@ -15,10 +15,7 @@ pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitBBox
 from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 logger = utilstest.getLogger("profile")
 
 

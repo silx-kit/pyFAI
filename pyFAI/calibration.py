@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 
 import os
@@ -45,10 +45,7 @@ import sys
 import time
 import logging
 import math
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from .third_party.argparse import ArgumentParser
+from .third_party.argparse import ArgumentParser
 
 if sys.version_info[0] < 3:
     from urlparse import urlparse
@@ -63,10 +60,7 @@ from .gui import utils as gui_utils
 from scipy.stats import linregress
 import fabio
 from . import utils
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
+from .third_party import six
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
