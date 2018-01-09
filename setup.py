@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 
 
@@ -132,7 +132,7 @@ class build_py(_build_py):
 ########
 
 class PyTest(Command):
-    """Command to start tests running the script: run_tests.py -i"""
+    """Command to start tests running the script: run_tests.py"""
     user_options = []
 
     def initialize_options(self):
@@ -143,7 +143,7 @@ class PyTest(Command):
 
     def run(self):
         import subprocess
-        errno = subprocess.call([sys.executable, 'run_tests.py', '-i'])
+        errno = subprocess.call([sys.executable, 'run_tests.py'])
         if errno != 0:
             raise SystemExit(errno)
 
