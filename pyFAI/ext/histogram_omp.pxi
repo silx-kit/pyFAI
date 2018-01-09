@@ -26,10 +26,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Re-implementation of numpy histograms using OpenMP"""
 
-__doc__ = """Re-implementation of numpy histograms using OpenMP"""
 __author__ = "Jerome Kieffer"
-__date__ = "02/02/2017"
+__date__ = "09/01/2018"
 __license__ = "MIT"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"

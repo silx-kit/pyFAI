@@ -28,12 +28,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for peak picking class"
+"""Test suite for peak picking class"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "09/01/2018"
 
 
 import unittest

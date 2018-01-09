@@ -25,14 +25,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-__doc__ = """Calculates histograms of pos0 (tth) weighted by Intensity
+"""Calculates histograms of pos0 (tth) weighted by Intensity
 
 Splitting is done by full pixel splitting
 Histogram (direct) implementation
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/05/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 

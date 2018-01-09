@@ -27,14 +27,14 @@
 # THE SOFTWARE.
 
 from __future__ import absolute_import, division, print_function
-from unicodedata import decimal
 
-__doc__ = "test suite for worker"
+"""Test suite for worker"""
+
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "09/01/2018"
 
 import os
 import sys

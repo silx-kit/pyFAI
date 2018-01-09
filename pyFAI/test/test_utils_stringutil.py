@@ -26,11 +26,12 @@
 
 from __future__ import absolute_import, print_function, division
 
-__doc__ = """Test module for utils.string module"""
+"""Test module for utils.string module"""
+
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 

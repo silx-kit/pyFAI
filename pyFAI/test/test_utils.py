@@ -29,12 +29,13 @@
 
 from __future__ import division, print_function, absolute_import
 
-__doc__ = "test suite for utilities library"
+"""Test suite for utilities library"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "09/01/2018"
 
 import unittest
 import numpy

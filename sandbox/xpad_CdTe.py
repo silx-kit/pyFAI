@@ -27,7 +27,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """small program to transform a metrology CSV file into a detector specification file"""
+"""Small program to transform a metrology CSV file into a detector
+specification file"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"

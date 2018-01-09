@@ -25,13 +25,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-__doc__ = """Full pixel Splitting implemented using Sparse-matrix Dense-Vector
+"""Full pixel Splitting implemented using Sparse-matrix Dense-Vector
 multiplication.
 Sparse matrix represented using the CompressedSparseRow.
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/06/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 

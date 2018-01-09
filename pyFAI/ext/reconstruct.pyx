@@ -25,11 +25,11 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+"""Cython module to reconstruct the masked values of an image"""
 
-__doc__ = """Cython module to reconstruct the masked values of an image"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "01/12/2016"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 

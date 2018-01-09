@@ -27,12 +27,13 @@
 # THE SOFTWARE.
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test suite for all pyFAI modules."""
+"""Test suite for all pyFAI modules."""
+
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "09/01/2018"
 
 import sys
 import unittest

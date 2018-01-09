@@ -27,11 +27,13 @@
 #  THE SOFTWARE.
 
 """A module to relabel regions"""
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "15/05/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
+
 import cython
 import numpy
 cimport numpy

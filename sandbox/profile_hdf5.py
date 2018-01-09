@@ -28,8 +28,9 @@
 
 from __future__ import division, with_statement, print_function
 
-__doc__ = "Benchmark for HDF5 writing"
-__author__ ="Jérôme Kieffer"
+"""Benchmark for HDF5 writing"""
+
+__author__ = "Jérôme Kieffer"
 __date__ = "2014-09-24"
 
 import os

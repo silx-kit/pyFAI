@@ -26,9 +26,10 @@
 # THE SOFTWARE.
 
 """Common Look-Up table/CSR object creation tools and conversion"""
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "22/06/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
