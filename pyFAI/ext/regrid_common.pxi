@@ -39,6 +39,7 @@ cimport numpy
 import numpy
 from cython cimport floating
 from libc.math cimport fabs, M_PI
+
 cdef:
     float pi = <float> M_PI
     float piover2 = <float> (pi * 0.5)

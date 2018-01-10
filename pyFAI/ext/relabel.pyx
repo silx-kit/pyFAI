@@ -63,10 +63,10 @@ def countThem(numpy.ndarray label not None,
         float[::1] cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
         float[::1] cblured = numpy.ascontiguousarray(blured.ravel(), dtype=numpy.float32)
         size_t maxLabel = label.max()
-        numpy.ndarray[numpy.uint_t, ndim = 1] count = numpy.zeros(maxLabel + 1, dtype=numpy.uint)
-        numpy.ndarray[numpy.float32_t, ndim = 1] maxData = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim = 1] maxBlured = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim = 1] maxDelta = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        numpy.ndarray[numpy.uint_t, ndim=1] count = numpy.zeros(maxLabel + 1, dtype=numpy.uint)
+        numpy.ndarray[numpy.float32_t, ndim=1] maxData = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim=1] maxBlured = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim=1] maxDelta = numpy.zeros(maxLabel + 1, dtype=numpy.float32)
         int s, i, idx
         float d, b
     s = label.size

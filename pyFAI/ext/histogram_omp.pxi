@@ -29,7 +29,7 @@
 """Re-implementation of numpy histograms using OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __license__ = "MIT"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -43,12 +43,11 @@ import logging
 logger = logging.getLogger("pyFAI.histogram_omp")
 
 
-
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def histogram(numpy.ndarray pos not None, \
-              numpy.ndarray weights not None, \
+def histogram(numpy.ndarray pos not None,
+              numpy.ndarray weights not None,
               int bins=100,
               bin_range=None,
               pixelSize_in_Pos=None,
@@ -75,9 +74,9 @@ def histogram(numpy.ndarray pos not None, \
         int  size = pos.size
         float[:] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
         float[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.zeros(bins, dtype="float64")
-        numpy.ndarray[numpy.float64_t, ndim = 1] out_count = numpy.zeros(bins, dtype="float64")
-        numpy.ndarray[numpy.float64_t, ndim = 1] out_merge = numpy.zeros(bins, dtype="float64")
+        numpy.ndarray[numpy.float64_t, ndim=1] out_data = numpy.zeros(bins, dtype="float64")
+        numpy.ndarray[numpy.float64_t, ndim=1] out_count = numpy.zeros(bins, dtype="float64")
+        numpy.ndarray[numpy.float64_t, ndim=1] out_merge = numpy.zeros(bins, dtype="float64")
         double delta, min0, max0
         double a = 0.0
         double d = 0.0
@@ -99,7 +98,7 @@ def histogram(numpy.ndarray pos not None, \
 
     if nthread is not None:
         if isinstance(nthread, int) and (nthread > 0):
-            omp_set_num_threads(< int > nthread)
+            omp_set_num_threads(<int> nthread)
         else:
             nthread = omp_get_max_threads()
     else:
@@ -120,7 +119,7 @@ def histogram(numpy.ndarray pos not None, \
             a = cpos[i]
             fbin = get_bin_number(a, min0, delta)
             bin = < int > fbin
-            if bin<0 or bin>= bins:
+            if bin < 0 or bin >= bins:
                 continue
             thread = omp_get_thread_num()
             big_count[thread, bin] += 1.0
@@ -178,7 +177,7 @@ def histogram2d(numpy.ndarray pos0 not None,
         int  size = pos0.size
     try:
         bins0, bins1 = tuple(bins)
-    except:
+    except TypeError:
         bins0 = bins1 = int(bins)
     if bins0 <= 0:
         bins0 = 1
@@ -188,9 +187,9 @@ def histogram2d(numpy.ndarray pos0 not None,
         float[:] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
         float[:] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)
         float[:] data = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.zeros((bins0, bins1), dtype="float64")
-        numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.zeros((bins0, bins1), dtype="float64")
-        numpy.ndarray[numpy.float64_t, ndim = 2] out_merge = numpy.zeros((bins0, bins1), dtype="float64")
+        numpy.ndarray[numpy.float64_t, ndim=2] out_data = numpy.zeros((bins0, bins1), dtype="float64")
+        numpy.ndarray[numpy.float64_t, ndim=2] out_count = numpy.zeros((bins0, bins1), dtype="float64")
+        numpy.ndarray[numpy.float64_t, ndim=2] out_merge = numpy.zeros((bins0, bins1), dtype="float64")
         double min0 = pos0.min()
         double max0 = pos0.max() * EPS32
         double min1 = pos1.min()
@@ -207,7 +206,7 @@ def histogram2d(numpy.ndarray pos0 not None,
     edges1 = numpy.linspace(min1 + (0.5 * delta1), max1 - (0.5 * delta1), bins1)
     if nthread is not None:
         if isinstance(nthread, int) and (nthread > 0):
-            omp_set_num_threads(< int > nthread)
+            omp_set_num_threads(<int> nthread)
     with nogil:
         for i in range(size):
             p0 = cpos0[i]
@@ -217,7 +216,7 @@ def histogram2d(numpy.ndarray pos0 not None,
             fbin1 = get_bin_number(p1, min1, delta1)
             bin0 = < int > floor(fbin0)
             bin1 = < int > floor(fbin1)
-            if (bin0<0) or (bin1<0) or (bin0>=bins0) or (bin1>=bins1):
+            if (bin0 < 0) or (bin1 < 0) or (bin0 >= bins0) or (bin1 >= bins1):
                 continue
             out_count[bin0, bin1] += 1.0
             out_data[bin0, bin1] += d

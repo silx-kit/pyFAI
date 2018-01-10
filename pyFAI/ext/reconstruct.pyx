@@ -137,7 +137,7 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
         numpy.int8_t[:, ::1] cmask = mask.astype(numpy.int8)
     assert d0 == mask.shape[0], "mask.shape[0]"
     assert d1 == mask.shape[1], "mask.shape[1]"
-    cdef numpy.ndarray[numpy.float32_t, ndim = 2]out = numpy.zeros_like(data)
+    cdef numpy.ndarray[numpy.float32_t, ndim=2] out = numpy.zeros_like(data)
     out += data
     out[mask.astype(bool)] = 0
 
@@ -147,4 +147,3 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
             if cmask[p0, p1]:
                 out[p0, p1] += processPoint(cdata, cmask, p0, p1, d0, d1)
     return out
-
