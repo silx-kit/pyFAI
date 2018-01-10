@@ -394,8 +394,7 @@ def relabel(label, data, blured, max_size=None):
         invCutInvSortCount = numpy.zeros(max_label + 1, dtype=int)
         for i, j in enumerate(list(invSortCount[:max_size])):
             invCutInvSortCount[j] = i
-        f = lambda i:invCutInvSortCount[i]
-        return f(label)
+        return invCutInvSortCount[label]
     else:
         logger.warning("relabel Cython module is not available...")
         return label
