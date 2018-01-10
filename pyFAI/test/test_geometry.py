@@ -204,16 +204,15 @@ class TestRecprocalSpacingSquarred(unittest.TestCase):
         self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "center rd2 = (q/2pi)**2")
 
     def test_corner(self):
-        rd2 = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
-        q = self.geo.cornerQArray(self.shape)[:, :, :, 0]
+        rd2 = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:, :, :, 0]
+        q = self.geo.corner_array(self.shape, unit=units.Q, use_cython=False, scale=False)[:, :, :, 0]
         delta = rd2 - (q / (2 * numpy.pi)) ** 2
         self.assertTrue(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2, delat=%s" % delta)
 
     def test_delta(self):
-
         drd2a = self.geo.deltaRd2(self.shape)
         rd2 = self.geo.rd2Array(self.shape)
-        rc = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
+        rc = self.geo.corner_array(self.shape, unit=units.RecD2_NM, scale=False)[:, :, :, 0]
         drd2 = self.geo.deltaRd2(self.shape)
         self.assertTrue(numpy.allclose(drd2, drd2a, atol=1e-5), "delta rd2 = (q/2pi)**2, one formula with another")
         delta2 = abs(rc - numpy.atleast_3d(rd2)).max(axis=-1)

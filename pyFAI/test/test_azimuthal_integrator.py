@@ -52,6 +52,7 @@ from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 tmp_dir = UtilsTest.tempdir
+from pyFAI import units
 from ..third_party import six
 
 
@@ -202,7 +203,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         Compare cython splitPixel with results of fit2d
         """
         logger.info(self.ai.__repr__())
-        self.ai.cornerArray(self.data.shape)
+        self.ai.corner_array(self.data.shape, unit=units.TTH_RAD, scale=False)
         # this was just to enforce the initalization of the array
         t0 = time.time()
         logger.info("in test_cythonSP_vs_fit2d Before SP")

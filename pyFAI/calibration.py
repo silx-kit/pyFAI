@@ -742,7 +742,7 @@ class AbstractCalibration(object):
             tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
             # self.geoRef.chiArray(self.peakPicker.shape)
-            # self.geoRef.cornerArray(self.peakPicker.shape)
+            # self.geoRef.corner_array(self.peakPicker.shape, unit=units.TTH_RAD, scale=False)
             if win32:
                 logger.info(self.win_error)
             else:
