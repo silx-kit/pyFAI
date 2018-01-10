@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,7 +47,7 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 
-logger = logging.getLogger("pyFAI.ocl_azim_csr")
+logger = logging.getLogger(__name__)
 
 
 class OCL_Hist_Pixelsplit(object):

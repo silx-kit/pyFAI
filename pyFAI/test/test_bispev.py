@@ -41,8 +41,8 @@ import unittest
 import numpy
 import logging
 import time
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab

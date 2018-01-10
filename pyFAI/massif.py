@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 
 import sys
@@ -39,7 +39,7 @@ import os
 import threading
 from math import ceil, sqrt
 import logging
-logger = logging.getLogger("pyFAI.massif")
+logger = logging.getLogger(__name__)
 import numpy
 import fabio
 from scipy.ndimage import label

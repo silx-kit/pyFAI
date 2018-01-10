@@ -36,8 +36,9 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import unittest
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from ..utils import stringutil
 
 

@@ -39,8 +39,7 @@ __date__ = "10/01/2018"
 import unittest
 import numpy
 import logging
-from .utilstest import getLogger
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 from ..ext.marchingsquares import isocontour
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab

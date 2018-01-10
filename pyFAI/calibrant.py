@@ -54,7 +54,7 @@ import threading
 from .utils import get_calibration_dir
 from .decorators import deprecated
 
-logger = logging.getLogger("pyFAI.calibrant")
+logger = logging.getLogger(__name__)
 epsilon = 1.0e-6  # for floating point comparison
 
 

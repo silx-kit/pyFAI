@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 
 import logging
@@ -55,7 +55,7 @@ if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4,
     # Short cut fabio.factory do not exists on older versions
     fabio.factory = fabio.fabioimage.FabioImage.factory
 
-logger = logging.getLogger("pyFAI.average")
+logger = logging.getLogger(__name__)
 
 
 class ImageReductionFilter(object):

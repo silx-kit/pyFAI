@@ -39,8 +39,9 @@ __date__ = "10/01/2018"
 
 import unittest
 import numpy
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__name__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from .. import load
 from ..ext import splitBBox
 from ..ext import sparse_utils

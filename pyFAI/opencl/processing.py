@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "stable"
 
 
@@ -57,7 +57,7 @@ from .utils import concatenate_cl_kernel
 BufferDescription = namedtuple("BufferDescription", ["name", "size", "dtype", "flags"])
 EventDescription = namedtuple("EventDescription", ["name", "event"])
 
-logger = logging.getLogger("pyFAI.opencl.processing")
+logger = logging.getLogger(__name__)
 
 
 class KernelContainer(object):

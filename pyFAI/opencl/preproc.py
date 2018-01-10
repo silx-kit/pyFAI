@@ -33,7 +33,7 @@ from __future__ import absolute_import, print_function, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __copyright__ = "2015-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -43,7 +43,7 @@ import numpy
 from .common import pyopencl, mf
 from .processing import OpenclProcessing, BufferDescription, EventDescription
 
-logger = logging.getLogger("pyFAI.opencl.preproc")
+logger = logging.getLogger(__name__)
 
 
 class OCL_Preproc(OpenclProcessing):

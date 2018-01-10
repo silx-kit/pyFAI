@@ -38,8 +38,8 @@ __date__ = "10/01/2018"
 
 import unittest
 import numpy
-from .utilstest import getLogger
-logger = getLogger(__file__)
+import logging
+logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..blob_detection import BlobDetection, local_max

@@ -33,13 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import collections
 import logging
-logger = logging.getLogger("pyFAI.multi_geometry")
+logger = logging.getLogger(__name__)
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .containers import Integrate1dResult
 from .containers import Integrate2dResult

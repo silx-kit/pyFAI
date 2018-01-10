@@ -46,8 +46,8 @@ import time
 import numpy
 import itertools
 import logging
-from .utilstest import UtilsTest, getLogger, ParameterisedTestCase
-logger = getLogger(__file__)
+from .utilstest import UtilsTest, ParameterisedTestCase
+logger = logging.getLogger(__name__)
 
 from .. import geometry
 from .. import AzimuthalIntegrator

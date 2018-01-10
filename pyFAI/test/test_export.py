@@ -34,14 +34,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 
 
 import unittest
-from .utilstest import UtilsTest, getLogger
+import logging
+from .utilstest import UtilsTest
 from ..azimuthalIntegrator import AzimuthalIntegrator
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, pixelY=60):

@@ -43,7 +43,8 @@ from pyFAI import splitPixelFullLUT
 from pyFAI import ocl_azim_csr
 # from pyFAI import splitBBoxLUT
 # from pyFAI import splitBBoxCSR
-# logger = utilstest.getLogger("profile")
+# import logging
+# logger = logging.getLogger("profile")
 
 
 ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")

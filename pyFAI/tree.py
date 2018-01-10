@@ -40,7 +40,7 @@ __docformat__ = 'restructuredtext'
 import os
 import logging
 from .io import is_hdf5
-logger = logging.getLogger("tree")
+logger = logging.getLogger(__name__)
 
 from collections import namedtuple
 DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))

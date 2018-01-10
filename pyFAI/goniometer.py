@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -58,7 +58,7 @@ from .multi_geometry import MultiGeometry
 from .ext.marchingsquares import isocontour
 from .units import CONST_hc, CONST_q
 
-logger = logging.getLogger("pyFAI.goniometer")
+logger = logging.getLogger(__name__)
 
 try:
     import numexpr

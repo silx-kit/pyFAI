@@ -44,8 +44,9 @@ import fabio
 import gc
 import numpy
 import platform
-from .utilstest import Rwp, getLogger, recursive_delete
-logger = getLogger(__file__)
+import logging
+from .utilstest import Rwp, recursive_delete
+logger = logging.getLogger(__name__)
 try:
     import pyopencl
 except ImportError as error:

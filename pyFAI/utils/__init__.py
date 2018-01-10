@@ -68,7 +68,7 @@ except ImportError:
     data_dir = None
 
 import scipy.ndimage.filters
-logger = logging.getLogger("pyFAI.utils")
+logger = logging.getLogger(__name__)
 import time
 
 if sys.platform != "win32":

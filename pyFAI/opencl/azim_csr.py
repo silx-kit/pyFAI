@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -47,7 +47,7 @@ else:
 from .processing import EventDescription, OpenclProcessing, BufferDescription
 
 
-logger = logging.getLogger("pyFAI.opencl.azim_csr")
+logger = logging.getLogger(__name__)
 
 
 class OCL_CSR_Integrator(OpenclProcessing):

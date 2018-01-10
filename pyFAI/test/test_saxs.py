@@ -40,8 +40,8 @@ __date__ = "10/01/2018"
 import unittest
 import logging
 import fabio
-from .utilstest import UtilsTest, Rwp, getLogger
-logger = getLogger(__file__)
+from .utilstest import UtilsTest, Rwp
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:

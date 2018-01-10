@@ -44,7 +44,7 @@ import sys
 import collections
 import glob
 import logging
-logger = logging.getLogger("pyFAI.diffmap")
+logger = logging.getLogger(__name__)
 import numpy
 import fabio
 import json

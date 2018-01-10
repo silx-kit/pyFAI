@@ -33,14 +33,14 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 
 import sys
 import unittest
-from .utilstest import UtilsTest, getLogger
+import logging
+logger = logging.getLogger(__name__)
 
-logger = getLogger("test_all")
-
+from .utilstest import UtilsTest
 
 from . import test_average
 from . import test_dummy

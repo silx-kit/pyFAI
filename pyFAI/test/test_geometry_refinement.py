@@ -41,10 +41,11 @@ import unittest
 import os
 import numpy
 import random
+import logging
 
-from .utilstest import UtilsTest, getLogger
+from .utilstest import UtilsTest
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__file__)
 from .. import geometryRefinement
 from .. import calibrant
 GeometryRefinement = geometryRefinement.GeometryRefinement

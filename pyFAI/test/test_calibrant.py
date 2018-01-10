@@ -40,8 +40,8 @@ import unittest
 import logging
 import sys
 import copy
-from .utilstest import getLogger, UtilsTest
-logger = getLogger(__file__)
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from ..utils import six
 from ..calibrant import Calibrant, CALIBRANT_FACTORY, Cell
 from ..detectors import ALL_DETECTORS

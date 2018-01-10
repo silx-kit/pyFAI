@@ -7,8 +7,8 @@ Created on Fri Mar 07 09:52:51 2014
 from __future__ import absolute_import, division, print_function
 
 import sys, numpy, time
-import utilstest
 import fabio, pyopencl
+import logging
 from pylab import *
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
@@ -16,7 +16,7 @@ from pyFAI import splitBBox
 from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
 from pyFAI.third_party import six
-logger = utilstest.getLogger("profile")
+logger = logging.getLogger("profile")
 
 
 ai = pyFAI.load("testimages/Pilatus1M.poni")

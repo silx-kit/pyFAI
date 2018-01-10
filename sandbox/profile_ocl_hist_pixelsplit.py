@@ -17,7 +17,7 @@ print("#"*50)
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from .utilstest import UtilsTest, getLogger
+from pyFAI.test.utilstest import UtilsTest
 
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT

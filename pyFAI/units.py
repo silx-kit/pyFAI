@@ -41,12 +41,12 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger("pyFAI.units")
+logger = logging.getLogger(__name__)
 import numpy
 from numpy import pi
 

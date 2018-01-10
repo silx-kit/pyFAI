@@ -38,9 +38,9 @@ import numpy
 import logging
 import warnings
 
-from .utilstest import UtilsTest, getLogger
+from .utilstest import UtilsTest
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 from ..opencl import ocl
@@ -91,10 +91,8 @@ class TestOclSort(unittest.TestCase):
         self.vector_vert = self.sorted_vert[self.shape[0] // 2]
         self.vector_hor = self.sorted_hor[:, self.shape[1] // 2]
 
-        if logger.level < logging.INFO:
-            self.PROFILE = True
-        else:
-            self.PROFILE = False
+        # Change to True to profile the code
+        self.PROFILE = False
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

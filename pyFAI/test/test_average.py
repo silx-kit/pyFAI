@@ -40,11 +40,12 @@ __date__ = "10/01/2018"
 import unittest
 import numpy
 import os
+import logging
 import fabio
-from .utilstest import UtilsTest, getLogger
+from .utilstest import UtilsTest
 from .. import average
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 # TODO add tests from

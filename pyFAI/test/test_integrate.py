@@ -42,8 +42,9 @@ import os
 import unittest
 import numpy.testing
 import fabio
-from .utilstest import UtilsTest, Rwp, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest, Rwp
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult

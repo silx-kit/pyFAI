@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -69,7 +69,7 @@ from . import units
 from . import version
 
 
-logger = logging.getLogger("pyFAI.io")
+logger = logging.getLogger(__name__)
 try:
     import h5py
 except ImportError as error:

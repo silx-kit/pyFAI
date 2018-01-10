@@ -44,7 +44,7 @@ import os
 import sys
 import time
 import logging
-logger = logging.getLogger("pyFAI.calibration")
+logger = logging.getLogger(__name__)
 
 import math
 import numpy

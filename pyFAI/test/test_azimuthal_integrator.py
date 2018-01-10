@@ -45,8 +45,8 @@ import copy
 import fabio
 import tempfile
 import gc
-from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
-logger = getLogger(__file__)
+from .utilstest import UtilsTest, Rwp, recursive_delete
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.INFO:

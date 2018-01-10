@@ -34,15 +34,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 
 
 import unittest
 import os
 import numpy
 import sys
-from .utilstest import UtilsTest, getLogger, recursive_delete
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest, recursive_delete
+logger = logging.getLogger(__name__)
 from ..peak_picker import PeakPicker
 from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement

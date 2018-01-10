@@ -35,8 +35,9 @@ from __future__ import absolute_import, division, print_function
 
 import unittest
 import numpy
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR

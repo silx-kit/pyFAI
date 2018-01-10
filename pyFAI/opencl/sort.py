@@ -34,7 +34,7 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -48,7 +48,7 @@ if ocl:
 else:
     raise ImportError("pyopencl is not installed or no device is available")
 from .processing import OpenclProcessing
-logger = logging.getLogger("pyFAI.opencl.sort")
+logger = logging.getLogger(__name__)
 
 
 class Separator(OpenclProcessing):

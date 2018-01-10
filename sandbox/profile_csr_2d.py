@@ -42,7 +42,8 @@ pyFAI = sys.modules["pyFAI"]
 # from pyFAI import splitBBox
 # from pyFAI import splitBBoxLUT
 # from pyFAI import splitBBoxCSR
-# logger = utilstest.getLogger("profile")
+# import logging
+# logger = logging.getLogger("profile")
 ponifile = utilstest.UtilsTest.getimage("Pilatus1M.poni")
 datafile = utilstest.UtilsTest.getimage("Pilatus1M.edf")
 ai = pyFAI.load(ponifile)

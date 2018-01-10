@@ -30,7 +30,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -46,7 +46,7 @@ else:
 
 from .processing import EventDescription, OpenclProcessing, BufferDescription
 
-logger = logging.getLogger("pyFAI.opencl.azim_lut")
+logger = logging.getLogger(__name__)
 
 
 class OCL_LUT_Integrator(OpenclProcessing):

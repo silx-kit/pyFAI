@@ -52,7 +52,7 @@ try:
 except ImportError:
     from scipy.interpolate import fitpack
 import traceback
-logger = logging.getLogger("pyFAI.spline")
+logger = logging.getLogger(__name__)
 
 
 class Spline(object):

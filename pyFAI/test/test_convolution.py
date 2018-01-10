@@ -34,12 +34,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 
 import unittest
 import numpy
-from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
-logger = getLogger(__file__)
+import logging
+logger = logging.getLogger(__name__)
 from ..ext import _convolution
 import scipy.ndimage
 import scipy.misc

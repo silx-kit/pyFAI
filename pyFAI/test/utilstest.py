@@ -122,20 +122,6 @@ class UtilsTest(object):
         return cls.options
 
     @classmethod
-    def get_logger(cls, filename=__file__):
-        """
-        small helper function that initialized the logger and returns it
-        """
-        _dirname, basename = os.path.split(os.path.abspath(filename))
-        basename = os.path.splitext(basename)[0]
-        level = logging.root.level
-        mylogger = logging.getLogger(basename)
-        logger.setLevel(level)
-        mylogger.setLevel(level)
-        mylogger.debug("tests loaded from file: %s", basename)
-        return mylogger
-
-    @classmethod
     def script_path(cls, script):
         """
         Returns the path of the executable and the associated environment
@@ -215,9 +201,6 @@ def recursive_delete(dirname):
         for name in dirs:
             os.rmdir(os.path.join(root, name))
     os.rmdir(dirname)
-
-
-getLogger = UtilsTest.get_logger
 
 
 def diff_img(ref, obt, comment=""):

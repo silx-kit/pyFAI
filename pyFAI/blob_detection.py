@@ -32,13 +32,13 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-logger = logging.getLogger("pyFAI.blob_detection")
+logger = logging.getLogger(__name__)
 import numpy
 try:
     from ._convolution import gaussian_filter

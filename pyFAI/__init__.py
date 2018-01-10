@@ -32,7 +32,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "14/09/2017"
+__date__ = "10/01/2018"
 
 import sys
 import logging
@@ -49,7 +49,7 @@ except ImportError:
     raise RuntimeError("Do NOT use %s from its sources: build it and use the built version" % project)
 
 if sys.version_info < (2, 6):
-    logger = logging.getLogger("pyFAI.__init__")
+    logger = logging.getLogger(__name__)
     logger.error("pyFAI required a python version >= 2.6")
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
 

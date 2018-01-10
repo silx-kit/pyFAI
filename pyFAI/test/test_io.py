@@ -43,9 +43,10 @@ import shutil
 import numpy
 import time
 import sys
-from .utilstest import UtilsTest, getLogger
+import logging
+from .utilstest import UtilsTest
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
 

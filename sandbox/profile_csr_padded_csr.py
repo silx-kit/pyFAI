@@ -8,7 +8,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys, numpy, time
-from pyFAI.test import utilstest
+import logging
 import fabio, pyopencl
 from pylab import *
 from pyFAI.third_party import six
@@ -18,7 +18,7 @@ from pyFAI import splitBBox
 from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
 from pyFAI import ocl_azim_csr
-logger = utilstest.getLogger("profile")
+logger = logging.getLogger("profile")
 
 
 ai = pyFAI.load("testimages/Pilatus1M.poni")

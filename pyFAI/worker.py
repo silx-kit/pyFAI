@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "10/01/2018"
 __status__ = "development"
 
 import threading
@@ -93,7 +93,7 @@ import os.path
 import logging
 import json
 
-logger = logging.getLogger("pyFAI.worker")
+logger = logging.getLogger(__name__)
 
 import numpy
 import fabio

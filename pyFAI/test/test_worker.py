@@ -39,14 +39,14 @@ __date__ = "10/01/2018"
 
 import unittest
 import numpy
-from .utilstest import getLogger
+import logging
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class AzimuthalIntegratorMocked():

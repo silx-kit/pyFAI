@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -53,7 +53,7 @@ import array
 
 from .utils import StringTypes, six
 from .calibrant import Calibrant, get_calibrant, names as calibrant_names
-logger = logging.getLogger("pyFAI.control_points")
+logger = logging.getLogger(__name__)
 
 ################################################################################
 # ControlPoints

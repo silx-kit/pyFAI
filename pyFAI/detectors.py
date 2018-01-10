@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "stable"
 
 
@@ -54,7 +54,7 @@ from . import utils
 from . import average
 from .utils import binning, expand2d, crc32
 
-logger = logging.getLogger("pyFAI.detectors")
+logger = logging.getLogger(__name__)
 
 try:
     from .ext import bilinear

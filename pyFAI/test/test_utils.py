@@ -40,8 +40,9 @@ __date__ = "10/01/2018"
 import unittest
 import numpy
 import os
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from .. import utils
 from .. import _version
 
