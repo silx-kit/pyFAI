@@ -802,7 +802,6 @@ class HistoLUT2dFullSplit(object):
         if check_mask:
             cmask = self.cmask
 
-        sqrt(size) / all_bins0
         cdef numpy.ndarray[numpy.int8_t, ndim = 2] is_inside = numpy.zeros((<int> (1.5 * sqrt(size) / all_bins0), <int> (1.5 * sqrt(size) / all_bins1)), dtype=numpy.int8)
 
         with nogil:
