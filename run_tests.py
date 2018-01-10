@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __license__ = "MIT"
 
 import distutils.util
@@ -400,10 +400,7 @@ if old_importer:
     test_module = getattr(test_module, "test")
     print(dir(test_module))
     utilstest = getattr(test_module, "utilstest")
-UtilsTest = getattr(utilstest, "UtilsTest")
-UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
-UtilsTest.testimages = os.path.join(UtilsTest.image_home, "all_testimages.json")
-UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
+UtilsTest = utilstest.UtilsTest
 
 if options.low_mem:
     logger.info("Switch to low_mem mode")
