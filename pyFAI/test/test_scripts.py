@@ -49,11 +49,6 @@ except ImportError:
     qt = None
 
 try:
-    import PyMca
-except ImportError:
-    PyMca = None
-
-try:
     import silx
 except ImportError:
     silx = None
@@ -105,8 +100,8 @@ class TestScriptsHelp(unittest.TestCase):
         self.executeAppHelp("pyFAI.app.calib")
 
     def testPyfaiDrawmask(self):
-        if qt is None or (PyMca is None and silx is None):
-            self.skipTest("Library Qt, PyMca and silx are not available")
+        if qt is None or silx is None:
+            self.skipTest("Library Qt and silx are not available")
         self.executeAppHelp("pyFAI.app.drawmask")
 
     def testPyfaiIntegrate(self):
