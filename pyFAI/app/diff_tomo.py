@@ -52,11 +52,8 @@ from pyFAI import date as PyFAI_DATE
 from pyFAI.diffmap import DiffMap
 from pyFAI.third_party.argparse import ArgumentParser
 
-
-if sys.version_info[0] < 3:
-    from urlparse import urlparse
-else:
-    from urllib.parse import urlparse
+from pyFAI.third_party import six
+urlparse = six.moves.urllib.parse.urlparse
 
 
 class DiffTomo(DiffMap):

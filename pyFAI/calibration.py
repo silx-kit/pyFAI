@@ -44,16 +44,16 @@ import os
 import sys
 import time
 import logging
+logger = logging.getLogger("pyFAI.calibration")
+
 import math
+import numpy
+
 from .third_party.argparse import ArgumentParser
 
-if sys.version_info[0] < 3:
-    from urlparse import urlparse
-else:
-    from urllib.parse import urlparse
+from pyFAI.third_party import six
+urlparse = six.moves.urllib.parse.urlparse
 
-logger = logging.getLogger("pyFAI.calibration")
-import numpy
 from .gui.matplotlib import pylab, matplotlib
 from .gui.utils import update_fig
 from .gui import utils as gui_utils

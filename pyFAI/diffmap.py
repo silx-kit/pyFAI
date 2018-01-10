@@ -55,13 +55,7 @@ from .third_party import six
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
 from .third_party.argparse import ArgumentParser
-
-if sys.version_info[0] < 3:
-    bytes = str
-    from urlparse import urlparse
-else:
-    from urllib.parse import urlparse
-
+urlparse = six.moves.urllib.parse.urlparse
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
