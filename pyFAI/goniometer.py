@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/12/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -182,7 +182,7 @@ class GeometryTransformation(object):
 
 class ExtendedTransformation(object):
     """This class behaves like GeometryTransformation and extends transformation
-    to the wavelength parameter. 
+    to the wavelength parameter.
 
     This function uses numexpr for formula evaluation.
     """
@@ -295,6 +295,7 @@ class ExtendedTransformation(object):
         res["constants"] = constants
         return res
 
+
 GeometryTranslation = GeometryTransformation
 
 
@@ -401,7 +402,7 @@ class Goniometer(object):
     @classmethod
     def sload(cls, filename):
         """Class method for instanciating a Goniometer object from a JSON file
-        
+
         :param filename: name of the JSON file
         :return: Goniometer object
         """
@@ -630,9 +631,10 @@ class GoniometerRefinement(Goniometer):
         return sg
 
     def __repr__(self):
-        return "%s with %i geometries labeled: %s" % \
-                (self.__class__.__name__, len(self.single_geometries),
-                 ", ".join(self.single_geometries.keys()) + ".")
+        name = self.__class__.__name__
+        count = len(self.single_geometries)
+        geometry_list = ", ".join(self.single_geometries.keys())
+        return "%s with %i geometries labeled: %s." % (name, count, geometry_list)
 
     def residu2(self, param):
         "Actually performs the calulation of the average of the error squared"
@@ -721,7 +723,7 @@ class GoniometerRefinement(Goniometer):
     @classmethod
     def sload(cls, filename, pos_function=None):
         """Class method for instanciating a Goniometer object from a JSON file
-        
+
         :param filename: name of the JSON file
         :param pos_function: a function taking metadata and extracting the
                     goniometer position

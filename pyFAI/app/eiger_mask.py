@@ -105,5 +105,6 @@ def main():
     else:
         fabio.edfimage.edfimage(header={"data_file": infile}, data=mask).write(outfile)
 
+
 if __name__ == "__main__":
     main()

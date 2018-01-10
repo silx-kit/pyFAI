@@ -29,14 +29,14 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "17/10/2017"
+__date__ = "09/01/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 from collections import OrderedDict
 import numpy
-from .common import ocl, pyopencl, kernel_workgroup_size
+from .common import pyopencl, kernel_workgroup_size
 from ..utils import calc_checksum
 
 if pyopencl:
@@ -57,8 +57,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
     It also performs the preprocessing using the preproc kernel
     """
     BLOCK_SIZE = 32
-    buffers = [
-               BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
                BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
                BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
@@ -69,7 +68,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
                BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
                BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
-              ]
+               ]
     kernel_files = ["kahan.cl", "preprocess.cl", "memset.cl", "ocl_azim_CSR.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",

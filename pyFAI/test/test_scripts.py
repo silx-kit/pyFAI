@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 
 import sys
 import unittest
@@ -45,17 +45,17 @@ logger = getLogger(__file__)
 
 try:
     from ..gui import qt
-except:
+except ImportError:
     qt = None
 
 try:
     import PyMca
-except:
+except ImportError:
     PyMca = None
 
 try:
     import silx
-except:
+except ImportError:
     silx = None
 
 

@@ -100,11 +100,18 @@ def main():
         devices += "gpu,"
     if options.opencl_acc:
         devices += "acc,"
-    pyFAI.benchmark.run(number=options.number, repeat=options.repeat, memprof=options.memprof, max_size=options.size,
-              do_1d=options.onedim, do_2d=options.twodim, devices=devices)
+
+    pyFAI.benchmark.run(number=options.number,
+                        repeat=options.repeat,
+                        memprof=options.memprof,
+                        max_size=options.size,
+                        do_1d=options.onedim,
+                        do_2d=options.twodim,
+                        devices=devices)
 
     pyFAI.benchmark.pylab.ion()
     six.moves.input("Enter to quit")
+
 
 if __name__ == "__main__":
     main()

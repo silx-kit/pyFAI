@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "28/10/2016"
+__date__ = "10/01/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -96,18 +96,18 @@ class Spline(object):
             self.read(filename)
 
     def __repr__(self):
-        lst = ["Array size: x= %s - %s\ty= %s - %s" % \
-            (self.xmin, self.xmax, self.ymin, self.ymax)]
-        lst.append("Pixel size = %s microns, Grid spacing = %s" % \
-            (self.pixelSize, self.grid))
-        lst.append("X-Displacement spline %i X_knots, %i Y_knots and %i coef: \
-                should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.xSplineKnotsX),
-                                                                  len(self.xSplineKnotsY),
-                                                                  len(self.xSplineCoeff)))
+        lst = ["Array size: x= %s - %s\ty= %s - %s" %
+               (self.xmin, self.xmax, self.ymin, self.ymax)]
+        lst.append("Pixel size = %s microns, Grid spacing = %s" %
+                   (self.pixelSize, self.grid))
+        lst.append("X-Displacement spline %i X_knots, %i Y_knots and %i coef: "
+                   "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.xSplineKnotsX),
+                                                                        len(self.xSplineKnotsY),
+                                                                        len(self.xSplineCoeff)))
         lst.append("Y-Displacement spline %i X_knots, %i Y_knots and %i coef: "
-                "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.ySplineKnotsX),
-                                                                     len(self.ySplineKnotsY),
-                                                                     len(self.ySplineCoeff)))
+                   "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.ySplineKnotsX),
+                                                                        len(self.ySplineKnotsY),
+                                                                        len(self.ySplineCoeff)))
         return os.linesep.join(lst)
 
     def __copy__(self):
@@ -243,7 +243,7 @@ class Spline(object):
                     self.ySplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
                     self.ySplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
                     self.ySplineCoeff = numpy.array(databloc[splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
-    # Keep this at the end
+                # Keep this at the end
                 indexLine += 1
         except:
             traceback.print_exc()
@@ -330,9 +330,9 @@ class Spline(object):
                 dx=0, dy=0).transpose()
             if timing:
                 logger.info("Timing for: X-Displacement spline evaluation: %.3f sec,"
-                      " Y-Displacement Spline evaluation:  %.3f sec." %
-                      ((intermediateTime - startTime),
-                       (time.time() - intermediateTime)))
+                            " Y-Displacement Spline evaluation:  %.3f sec." %
+                            ((intermediateTime - startTime),
+                             (time.time() - intermediateTime)))
 
     def splineFuncX(self, x, y, list_of_points=False):
         """
@@ -455,20 +455,20 @@ class Spline(object):
 
         if timing:
             logger.info("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec.",
-                  intermediateTime - startTime, time.time() - intermediateTime)
+                        intermediateTime - startTime, time.time() - intermediateTime)
 
         logger.info(len(xRectBivariateSpline.get_coeffs()),
-              "x-coefs", xRectBivariateSpline.get_coeffs())
+                    "x-coefs", xRectBivariateSpline.get_coeffs())
         logger.info(len(yRectBivariateSpline.get_coeffs()),
-              "y-coefs", yRectBivariateSpline.get_coeffs())
+                    "y-coefs", yRectBivariateSpline.get_coeffs())
         logger.info(len(xRectBivariateSpline.get_knots()[0]),
-              len(xRectBivariateSpline.get_knots()[1]),
-              "x-knots", xRectBivariateSpline.get_knots())
+                    len(xRectBivariateSpline.get_knots()[1]),
+                    "x-knots", xRectBivariateSpline.get_knots())
         logger.info(len(yRectBivariateSpline.get_knots()[0]),
-              len(yRectBivariateSpline.get_knots()[1]),
-              "y-knots", yRectBivariateSpline.get_knots())
+                    len(yRectBivariateSpline.get_knots()[1]),
+                    "y-knots", yRectBivariateSpline.get_knots())
         logger.info("Residual x=%s, y=%s", xRectBivariateSpline.get_residual(),
-              yRectBivariateSpline.get_residual())
+                    yRectBivariateSpline.get_residual())
         self.xSplineKnotsX = xRectBivariateSpline.get_knots()[0]
         self.xSplineKnotsY = xRectBivariateSpline.get_knots()[1]
         self.xSplineCoeff = xRectBivariateSpline.get_coeffs()
@@ -488,7 +488,7 @@ class Spline(object):
             from fabio.edfimage import edfimage
         except ImportError:
             logger.error("You will need the Fabio library available"
-                  " from the Fable sourceforge")
+                         " from the Fable sourceforge")
             return
         self.spline2array()
 
@@ -778,6 +778,7 @@ def main():
     tilted.writeEDF("%s-tilted-t%i-p%i-d%i" %
                     (os.path.splitext(spline_file)[0],
                      tilt, rotation_tilt, distance))
+
 
 if __name__ == '__main__':
     main()

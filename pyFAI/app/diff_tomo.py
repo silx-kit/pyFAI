@@ -43,7 +43,6 @@ __satus__ = "Production"
 
 import logging
 import os
-import sys
 import glob
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -214,6 +213,7 @@ def main():
     dt.makeHDF5()
     dt.process()
     dt.show_stats()
+
 
 if __name__ == "__main__":
     main()

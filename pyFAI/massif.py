@@ -196,13 +196,11 @@ class Massif(object):
         for idx in all_points:
             out = self.nearest_peak(idx)
             if out is not None:
-                logger.debug("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
-                      (idx[1], idx[0], out[1], out[0]))
+                msg = "[ %3i, %3i ] -> [ %.1f, %.1f ]"
+                logger.debug(msg, idx[1], idx[0], out[1], out[0])
                 p0, p1 = int(round(out[0])), int(round(out[1]))
                 if mask[p0, p1]:
-
-                    if (self.data[p0, p1] > Imin) and \
-                        is_far_from_group(out, res, dmin2):
+                    if (self.data[p0, p1] > Imin) and is_far_from_group(out, res, dmin2):
                         res.append(out)
                         cnt = 0
             if len(res) >= keep or cnt > keep:

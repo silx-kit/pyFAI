@@ -29,7 +29,7 @@
 
 from __future__ import absolute_import, print_function, division
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -43,7 +43,7 @@ from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 
 
-from ..opencl import ocl, pyopencl
+from ..opencl import ocl
 if ocl:
     from ..opencl import sort as ocl_sort
 
@@ -58,7 +58,7 @@ def sigma_clip(image, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0):
     image[mask] = numpy.NaN
     mean = numpy.nanmean(image, axis=axis, dtype="float64")
     std = numpy.nanstd(image, axis=axis, dtype="float64")
-    for i in range(max_iter):
+    for _ in range(max_iter):
         if axis == 0:
             mean2d = as_strided(mean, image.shape, (0, mean.strides[0]))
             std2d = as_strided(std, image.shape, (0, std.strides[0]))
@@ -234,6 +234,7 @@ def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestOclSort))
     return testsuite
+
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

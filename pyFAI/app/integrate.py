@@ -252,5 +252,6 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
         result = integrate_shell(options, args)
     sys.exit(result)
 
+
 if __name__ == "__main__":
     main()

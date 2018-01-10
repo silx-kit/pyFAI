@@ -42,7 +42,7 @@ TODO and trick from dimitris still missing:
 """
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "02/02/2017"
+__date__ = "09/01/2018"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -242,8 +242,8 @@ class Integrator1d(object):
         kernel_file = kernel_file or "ocl_azim_kernel_2.cl"
         kernel_src = concatenate_cl_kernel([kernel_file])
 
-        compile_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i" % \
-                            (self.BLOCK_SIZE, self.nBins, self.nData)
+        template_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i"
+        compile_options = template_options % (self.BLOCK_SIZE, self.nBins, self.nData)
         if self.useFp64:
             compile_options += " -D ENABLE_FP64"
 

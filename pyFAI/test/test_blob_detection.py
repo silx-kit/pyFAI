@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 
 import unittest
 import numpy
@@ -78,10 +78,10 @@ class TestBlobDetection(unittest.TestCase):
     def test_local_max(self):
         bd = BlobDetection(self.img)
         bd._one_octave(shrink=False, refine=False, n_5=False)
-        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) == \
-                                   local_max(bd.dogs, bd.cur_mask, False)), "max test, 3x3x3")
-        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) == \
-                                   local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
+        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) ==
+                                      local_max(bd.dogs, bd.cur_mask, False)), "max test, 3x3x3")
+        self.assertTrue(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) ==
+                                      local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
 
 
 def suite():

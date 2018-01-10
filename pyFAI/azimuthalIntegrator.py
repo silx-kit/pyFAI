@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/12/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2085,20 +2085,19 @@ class AzimuthalIntegrator(Geometry):
         if splitPixel is None:
             logger.warning("splitPixel is not available,"
                            " falling back on SplitBBox !")
-            return self.xrpd2_splitBBox(
-                                    data=data,
-                                    npt_rad=npt_rad,
-                                    npt_azim=npt_azim,
-                                    filename=filename,
-                                    correctSolidAngle=correctSolidAngle,
-                                    tthRange=tthRange,
-                                    chiRange=chiRange,
-                                    mask=mask,
-                                    dummy=dummy,
-                                    delta_dummy=delta_dummy,
-                                    polarization_factor=polarization_factor,
-                                    dark=dark,
-                                    flat=flat)
+            return self.xrpd2_splitBBox(data=data,
+                                        npt_rad=npt_rad,
+                                        npt_azim=npt_azim,
+                                        filename=filename,
+                                        correctSolidAngle=correctSolidAngle,
+                                        tthRange=tthRange,
+                                        chiRange=chiRange,
+                                        mask=mask,
+                                        dummy=dummy,
+                                        delta_dummy=delta_dummy,
+                                        polarization_factor=polarization_factor,
+                                        dark=dark,
+                                        flat=flat)
 
         pos = self.corner_array(data.shape, unit=units.TTH_RAD, scale=False)
 

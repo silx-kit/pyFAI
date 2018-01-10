@@ -32,7 +32,7 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -588,11 +588,15 @@ class BlobDetection(object):
                     val[0], val[1] = val[1], val[0]
                     vect = vect[-1::-1, :]
 
-                pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
-                                       arrowprops=dict(facecolor='red', shrink=0.05),)
+                pylab.annotate("",
+                               xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]),
+                               xytext=(x, y),
+                               arrowprops=dict(facecolor='red', shrink=0.05))
 
-                pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
-                                       arrowprops=dict(facecolor='red', shrink=0.05),)
+                pylab.annotate("",
+                               xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]),
+                               xytext=(x, y),
+                               arrowprops=dict(facecolor='red', shrink=0.05))
                 pylab.plot(x, y, 'og')
                 vals.append(val)
                 vects.append(vect)

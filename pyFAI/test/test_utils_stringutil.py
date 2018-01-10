@@ -31,7 +31,7 @@ from __future__ import absolute_import, print_function, division
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -73,6 +73,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestUtilsString))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

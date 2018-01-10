@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
@@ -44,7 +44,7 @@ import fabio
 import gc
 import numpy
 import platform
-from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
+from .utilstest import Rwp, getLogger, recursive_delete
 logger = getLogger(__file__)
 try:
     import pyopencl
@@ -86,11 +86,11 @@ class TestMask(unittest.TestCase):
                          {"img": UtilsTest.getimage("Pilatus6M.cbf"),
                           "poni": UtilsTest.getimage("Pilatus6M.poni"),
                           "spline": None},
-            ]
+                         ]
         for ds in self.datasets:
             if ds["spline"] is not None:
                 data = open(ds["poni"], "r").read()
-#                spline = os.path.basename(ds["spline"])
+                # spline = os.path.basename(ds["spline"])
                 with open(ds["poni"]) as f:
                     data = []
                     for line in f:

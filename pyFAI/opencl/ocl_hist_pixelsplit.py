@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "15/06/2017"
+__date__ = "09/01/2018"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -42,7 +42,6 @@ from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .splitBBoxLUT import HistoBBox1d
 from ..utils import concatenate_cl_kernel
 from ..utils import crc32
-from pyopencl import array
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
@@ -204,8 +203,8 @@ class OCL_Hist_Pixelsplit(object):
         kernel_file = kernel_file or "ocl_hist_pixelsplit.cl"
         kernel_src = concatenate_cl_kernel([kernel_file])
 
-        compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f" % \
-                (self.bins, self.size, self.BLOCK_SIZE, numpy.finfo(numpy.float32).eps)
+        template_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f"
+        compile_options = template_options % (self.bins, self.size, self.BLOCK_SIZE, numpy.finfo(numpy.float32).eps)
         logger.info("Compiling file %s with options %s", kernel_file, compile_options)
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
@@ -231,11 +230,11 @@ class OCL_Hist_Pixelsplit(object):
         """
         self._cl_kernel_args["reduce1"] = [self._cl_mem["pos"], numpy.int32(self.pos_size), self._cl_mem["preresult"]]
         self._cl_kernel_args["reduce2"] = [self._cl_mem["preresult"], self._cl_mem["minmax"]]
-        self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"], \
-                                              numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \
-                                              numpy.int32(0), numpy.float32(0), numpy.float32(0)]
-        self._cl_kernel_args["integrate1"] = [self._cl_mem["pos"], self._cl_mem["image"], self._cl_mem["minmax"], numpy.int32(0), self.pos0Range[0], \
-                                            self.pos1Range[0], numpy.int32(0), numpy.float32(0), self._cl_mem["outData"], self._cl_mem["outCount"]]
+        self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"],
+                                               numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"],
+                                               numpy.int32(0), numpy.float32(0), numpy.float32(0)]
+        self._cl_kernel_args["integrate1"] = [self._cl_mem["pos"], self._cl_mem["image"], self._cl_mem["minmax"], numpy.int32(0), self.pos0Range[0],
+                                              self.pos1Range[0], numpy.int32(0), numpy.float32(0), self._cl_mem["outData"], self._cl_mem["outCount"]]
         self._cl_kernel_args["integrate2"] = [self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
         self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_u16", "image"]]

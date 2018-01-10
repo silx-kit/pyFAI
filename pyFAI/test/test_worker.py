@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
@@ -222,7 +222,7 @@ class TestWorker(unittest.TestCase):
         worker.nbpt_azim = 2
         try:
             worker.process(data)
-        except:
+        except Exception:
             pass
 
     def test_process_poisson(self):

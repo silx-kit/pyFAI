@@ -47,8 +47,9 @@ class SafeFormatter(string.Formatter):
             return super(SafeFormatter, self).get_field(field_name, args, kwargs)
         except KeyboardInterrupt:
             raise
-        except:
+        except Exception:
             return "{%s}" % field_name, field_name
+
 
 _safe_formater = SafeFormatter()
 

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
@@ -144,6 +144,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestSaxs))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

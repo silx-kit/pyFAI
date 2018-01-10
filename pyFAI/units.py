@@ -267,6 +267,7 @@ def to_unit(obj, type_=None):
                      "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
     return rad_unit
 
+
 # To ensure the compatibility with former code:
 Q = Q_NM = RADIAL_UNITS["q_nm^-1"]
 Q_A = RADIAL_UNITS["q_A^-1"]

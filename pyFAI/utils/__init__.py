@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 
 import logging
@@ -82,7 +82,7 @@ StringTypes = (six.binary_type, six.text_type)
 
 try:
     from ..ext.fastcrc import crc32
-except:
+except ImportError:
     from zlib import crc32
 
 
@@ -338,18 +338,18 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
         output[:k0, :k1] = input_img[k0 - 1::-1, k1 - 1::-1]
         output[:k0, s1 + k1:] = input_img[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
         output[s0 + k0:, :k1] = input_img[s0 - 1: s0 - k0 - 1:-1, k1 - 1::-1]
-    # 4 sides
+        # 4 sides
         output[k0:k0 + s0, :k1] = input_img[:s0, k1 - 1::-1]
         output[:k0, k1:k1 + s1] = input_img[k0 - 1::-1, :s1]
         output[-k0:, k1:s1 + k1] = input_img[:s0 - k0 - 1:-1, :]
         output[k0:s0 + k0, -k1:] = input_img[:, :s1 - k1 - 1:-1]
     elif mode == "nearest":
-    # 4 corners
+        # 4 corners
         output[s0 + k0:, s1 + k1:] = input_img[-1, -1]
         output[:k0, :k1] = input_img[0, 0]
         output[:k0, s1 + k1:] = input_img[0, -1]
         output[s0 + k0:, :k1] = input_img[-1, 0]
-    # 4 sides
+        # 4 sides
         output[k0:k0 + s0, :k1] = expand2d(input_img[:, 0], k1, False)
         output[:k0, k1:k1 + s1] = expand2d(input_img[0, :], k0)
         output[-k0:, k1:s1 + k1] = expand2d(input_img[-1, :], k0)
@@ -377,7 +377,7 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
 def relabel(label, data, blured, max_size=None):
     """
     Relabel limits the number of region in the label array.
-    They are ranked relatively to their max(I0)-max(blur(I0)
+    They are ranked relatively to their max(I0)-max(blur(I0))
 
     :param label: a label array coming out of ``scipy.ndimage.measurement.label``
     :param data: an array containing the raw data
@@ -387,7 +387,7 @@ def relabel(label, data, blured, max_size=None):
     """
     if _relabel:
         max_label = label.max()
-        a, b, c, d = _relabel.countThem(label, data, blured)
+        _a, _b, _c, d = _relabel.countThem(label, data, blured)
         count = d
         sortCount = count.argsort()
         invSortCount = sortCount[-1::-1]
@@ -680,10 +680,12 @@ class lazy_property(object):
         setattr(obj, self.func_name, value)
         return value
 
+
 try:
     from numpy import percentile
 except ImportError:  # backport percentile from numpy 1.6.2
     np = numpy
+
     def percentile(a, q, axis=None, out=None, overwrite_input=False):
         """
         Compute the qth percentile of the data along the specified axis.
@@ -771,22 +773,22 @@ except ImportError:  # backport percentile from numpy 1.6.2
 
         if overwrite_input:
             if axis is None:
-                sorted = a.ravel()
-                sorted.sort()
+                sorted_list = a.ravel()
+                sorted_list.sort()
             else:
                 a.sort(axis=axis)
-                sorted = a
+                sorted_list = a
         else:
-            sorted = np.sort(a, axis=axis)
+            sorted_list = np.sort(a, axis=axis)
         if axis is None:
             axis = 0
 
-        return _compute_qth_percentile(sorted, q, axis, out)
+        return _compute_qth_percentile(sorted_list, q, axis, out)
 
     # handle sequence of q's without calling sort multiple times
-    def _compute_qth_percentile(sorted, q, axis, out):
+    def _compute_qth_percentile(sorted_list, q, axis, out):
         if not np.isscalar(q):
-            p = [_compute_qth_percentile(sorted, qi, axis, None)
+            p = [_compute_qth_percentile(sorted_list, qi, axis, None)
                  for qi in q]
 
             if out is not None:
@@ -798,8 +800,8 @@ except ImportError:  # backport percentile from numpy 1.6.2
         if (q < 0) or (q > 1):
             raise ValueError("percentile must be either in the range [0,100]")
 
-        indexer = [slice(None)] * sorted.ndim
-        Nx = sorted.shape[axis]
+        indexer = [slice(None)] * sorted_list.ndim
+        Nx = sorted_list.shape[axis]
         index = q * (Nx - 1)
         i = int(index)
         if i == index:
@@ -810,14 +812,14 @@ except ImportError:  # backport percentile from numpy 1.6.2
             indexer[axis] = slice(i, i + 2)
             j = i + 1
             weights = np.array([(j - index), (index - i)], float)
-            wshape = [1] * sorted.ndim
+            wshape = [1] * sorted_list.ndim
             wshape[axis] = 2
             weights.shape = wshape
             sumval = weights.sum()
 
         # Use add.reduce in both cases to coerce data type as well as
         #   check and use out array.
-        return np.add.reduce(sorted[indexer] * weights, axis=axis, out=out) / sumval
+        return np.add.reduce(sorted_list[indexer] * weights, axis=axis, out=out) / sumval
 
 
 def convert_CamelCase(name):
@@ -839,7 +841,7 @@ def readFloatFromKeyboard(text, dictVar):
     fromkb = six.moves.input(text).strip()
     try:
         vals = [float(i) for i in fromkb.split()]
-    except:
+    except ValueError:
         logging.error("Error in parsing values")
     else:
         found = False
@@ -875,6 +877,7 @@ class FixedParameters(set):
 def roundfft(N):
     """
     This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
+
     Credit: Alessandro Mirone, ESRF, 2012
 
     :param N: interger on which one would like to do a Fourier transform
@@ -884,7 +887,6 @@ def roundfft(N):
     FA, FB, FC, FD, FE, FFF = 2, 3, 5, 7, 11, 13
     DIFF = 9999999999
     RES = 1
-    R0 = 1
     AA = 1
     for A in range(int(math.log(N) / math.log(FA) + 2)):
         BB = AA
@@ -905,17 +907,23 @@ def roundfft(N):
                                 MA, MB, MC, MD, ME, MF = A, B, C, D, E, F
                                 DIFF = abs(N - FF)
                                 RES = FF
-                            if FF > N: break
+                            if FF > N:
+                                break
                             FF = FF * FFF
-                        if EE > N: break
+                        if EE > N:
+                            break
                         EE = EE * FE
-                    if DD > N: break
+                    if DD > N:
+                        break
                     DD = DD * FD
-                if CC > N: break
+                if CC > N:
+                    break
                 CC = CC * FC
-            if BB > N: break
+            if BB > N:
+                break
             BB = BB * FB
-        if AA > N: break
+        if AA > N:
+            break
         AA = AA * FA
     return RES
 

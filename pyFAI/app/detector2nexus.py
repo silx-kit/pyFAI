@@ -155,5 +155,6 @@ def main():
             detector.set_dy(dy)
     detector.save(output)
 
+
 if __name__ == "__main__":
     main()

@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -215,6 +215,7 @@ def recursive_delete(dirname):
         for name in dirs:
             os.rmdir(os.path.join(root, name))
     os.rmdir(dirname)
+
 
 getLogger = UtilsTest.get_logger
 

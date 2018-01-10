@@ -257,8 +257,7 @@ class AIWidget(qt.QWidget):
                 "correctSolidAngle": self.__get_correct_solid_angle(),
                 "error_model": self.__get_error_model(),
                 "method": self.get_method(),
-                "npt_rad": self.__get_nbpt_rad(),
-             }
+                "npt_rad": self.__get_nbpt_rad()}
 
             if kwarg["npt_rad"] is None:
                 message = "You must provide the number of output radial bins !"
@@ -537,8 +536,8 @@ class AIWidget(qt.QWidget):
                       "azimuth_range_min": lambda a: self.azimuth_range_min.setText(str_(a)),
                       "azimuth_range_max": lambda a: self.azimuth_range_max.setText(str_(a)),
                       "do_solid_angle": self.do_solid_angle.setChecked,
-                      "do_OpenCL": self.do_OpenCL.setChecked
-                     }
+                      "do_OpenCL": self.do_OpenCL.setChecked}
+
         for key, value in setup_data.items():
             if key in dico and (value is not None):
                 value(dico[key])

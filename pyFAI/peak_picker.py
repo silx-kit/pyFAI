@@ -282,10 +282,10 @@ class PeakPicker(object):
             txt = 'Linear colour scale (skipping lowest/highest per mille)'
 
         # skip lowest and highest per mille of image values via vmin/vmax
-        sorted = data_disp.flatten()  # explicit copy
-        sorted.sort()
-        show_min = sorted[int(round(1e-3 * (sorted.size - 1)))]
-        show_max = sorted[int(round(0.999 * (sorted.size - 1)))]
+        sorted_list = data_disp.flatten()  # explicit copy
+        sorted_list.sort()
+        show_min = sorted_list[int(round(1e-3 * (sorted_list.size - 1)))]
+        show_max = sorted_list[int(round(0.999 * (sorted_list.size - 1)))]
         im = self.ax.imshow(data_disp, vmin=show_min, vmax=show_max,
                             origin="lower", interpolation="nearest",
                             )
@@ -713,8 +713,8 @@ class PeakPicker(object):
 ################################################################################
 class ControlPoints(object):
     """
-    This class contains a set of control points with (optionally) their ring number 
-    hence d-spacing and diffraction  2Theta angle ...
+    This class contains a set of control points with (optionally) their ring
+    number hence d-spacing and diffraction  2Theta angle ...
     """
     def __init__(self, filename=None, calibrant=None, wavelength=None):
         self._sem = threading.Semaphore()
@@ -784,7 +784,7 @@ class ControlPoints(object):
 
     def append_2theta_deg(self, points, angle=None, ring=None):
         """Append a group of points to a given ring
-        
+
         :param point: list of points
         :param angle: 2-theta angle in degrees
         :param: ring: ring number
@@ -798,7 +798,7 @@ class ControlPoints(object):
         """Retireves the last group of points for a given ring (by default the last)
 
         :param ring: index of ring to search for
-        :param lbl: label of the group to retrieve 
+        :param lbl: label of the group to retrieve
         """
         out = None
         with self._sem:
@@ -1077,9 +1077,9 @@ class ControlPoints(object):
     dSpacing = property(get_dSpacing, set_dSpacing)
 
     def get_labels(self):
-        """Retieve the list of labels 
-        
-        :return: list of labels as string  
+        """Retieve the list of labels
+
+        :return: list of labels as string
         """
         labels = list(self._groups.keys())
         labels.sort(key=lambda item: self._groups[item].code)

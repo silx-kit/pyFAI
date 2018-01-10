@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 
 import os
@@ -276,7 +276,7 @@ class AbstractCalibration(object):
                                  help="energy of the X-Ray beam in keV (hc=%skeV.A)." % hc, default=None)
         self.parser.add_argument("-P", "--polarization", dest="polarization_factor",
                                  type=float, default=None,
-                                 help="polarization factor, from -1 (vertical) to +1 (horizontal),"\
+                                 help="polarization factor, from -1 (vertical) to +1 (horizontal),"
                                  " default is None (no correction), synchrotrons are around 0.95")
         self.parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
                                  help="file containing the diffraction parameter (poni-file). MANDATORY for pyFAI-recalib!",
@@ -573,9 +573,11 @@ class AbstractCalibration(object):
         # GF: self.saturation ignored if none of the other options active...
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
             self.outfile = average.average_images(self.dataFiles, self.outfile,
-                                         threshold=self.saturation, minimum=self.cutBackground,
-                                         darks=self.darkFiles, flats=self.flatFiles,
-                                         filter_=self.filter)
+                                                  threshold=self.saturation,
+                                                  minimum=self.cutBackground,
+                                                  darks=self.darkFiles,
+                                                  flats=self.flatFiles,
+                                                  filter_=self.filter)
         else:
             self.outfile = self.dataFiles[0]
 
@@ -739,8 +741,8 @@ class AbstractCalibration(object):
             self.geoRef.del_chia()
             tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
-#            self.geoRef.chiArray(self.peakPicker.shape)
-#            self.geoRef.cornerArray(self.peakPicker.shape)
+            # self.geoRef.chiArray(self.peakPicker.shape)
+            # self.geoRef.cornerArray(self.peakPicker.shape)
             if win32:
                 logger.info(self.win_error)
             else:
@@ -813,7 +815,7 @@ class AbstractCalibration(object):
                     param = words[1]
                     try:
                         value = float(words[2])
-                    except:
+                    except ValueError:
                         logger.warning("invalid value")
                     else:
                         scale = 1.0
@@ -865,7 +867,7 @@ class AbstractCalibration(object):
                 if len(words) >= 4:
                     try:
                         pts_per_deg = float(words[3])
-                    except:
+                    except ValueError:
                         pts_per_deg = self.PTS_PER_DEG
                 self.extract_cpt(method, pts_per_deg)
                 self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
@@ -874,21 +876,23 @@ class AbstractCalibration(object):
                 if len(words) >= 2 and words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
-                        readFloatFromKeyboard("Enter %s in %s " % (param, self.UNITS[param]) +
-                                              "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
-                              param, self.geoRef.__getattribute__("get_%s_min" % param)(),
-                              param, self.geoRef.__getattribute__("get_%s" % param)(),
-                              param, self.geoRef.__getattribute__("get_%s_max" % param)()),
-                             {1: [self.geoRef.__getattribute__("set_%s" % param)],
-                              2: [self.geoRef.__getattribute__("set_%s_min" % param),
-                                  self.geoRef.__getattribute__("set_%s_max" % param)],
-                              3: [self.geoRef.__getattribute__("set_%s_min" % param),
-                                  self.geoRef.__getattribute__("set_%s" % param),
-                                  self.geoRef.__getattribute__("set_%s_max" % param)]})
+                        text = ("Enter %s in %s " % (param, self.UNITS[param]) +
+                                "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
+                                    param, self.geoRef.__getattribute__("get_%s_min" % param)(),
+                                    param, self.geoRef.__getattribute__("get_%s" % param)(),
+                                    param, self.geoRef.__getattribute__("get_%s_max" % param)()))
+                        values = {
+                            1: [self.geoRef.__getattribute__("set_%s" % param)],
+                            2: [self.geoRef.__getattribute__("set_%s_min" % param),
+                                self.geoRef.__getattribute__("set_%s_max" % param)],
+                            3: [self.geoRef.__getattribute__("set_%s_min" % param),
+                                self.geoRef.__getattribute__("set_%s" % param),
+                                self.geoRef.__getattribute__("set_%s_max" % param)]}
+                        readFloatFromKeyboard(text, values)
                     elif len(words) == 3:
                         try:
                             value = float(words[2])
-                        except:
+                        except ValueError:
                             logger.warning("invalid value")
                         else:
                             self.geoRef.__getattribute__("set_%s" % param)(value)
@@ -896,7 +900,7 @@ class AbstractCalibration(object):
                         try:
                             value_min = float(words[2])
                             value_max = float(words[3])
-                        except:
+                        except ValueError:
                             logger.warning("invalid value")
                         else:
                             self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
@@ -906,7 +910,7 @@ class AbstractCalibration(object):
                             value_min = float(words[2])
                             value = float(words[3])
                             value_max = float(words[4])
-                        except:
+                        except ValueError:
                             logger.warning("invalid value")
                         else:
                             self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
@@ -1439,7 +1443,7 @@ An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
         usage = "pyFAI-calib [options] -w 1 -D detector -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
         self.parser.add_argument("-r", "--reconstruct", dest="reconstruct",
-                                 help="Reconstruct image where data are masked or <0  (for Pilatus "\
+                                 help="Reconstruct image where data are masked or <0  (for Pilatus "
                                  "detectors or detectors with modules)",
                                  action="store_true", default=False)
 
@@ -2087,8 +2091,9 @@ class MultiCalib(object):
             if centerY is None:
                 centerY = fabimg.data.shape[0] // 2
             self.results[fn] = {"wavelength": wavelength, "dist": dist}
-            rec = Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
-                                                  detector=self.detector, calibrant=self.calibrant, wavelength=wavelength)
+            rec = Recalibration(dataFiles=[fn], darkFiles=self.darkFiles,
+                                flatFiles=self.flatFiles, detector=self.detector,
+                                calibrant=self.calibrant, wavelength=wavelength)
             rec.outfile = os.path.splitext(fn)[0] + ".proc.edf"
             rec.interactive = self.interactive
             rec.gui = self.gui

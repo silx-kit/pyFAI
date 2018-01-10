@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 import unittest
 import numpy
@@ -104,7 +104,7 @@ class TestAverage(unittest.TestCase):
             fformat=None)
 
         self.assertTrue(numpy.allclose(result, expected),
-                     "average with quantiles gives bad results")
+                        "average with quantiles gives bad results")
 
     def test_output_file(self):
         if fabio.hexversion < 262147:

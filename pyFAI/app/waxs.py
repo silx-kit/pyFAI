@@ -193,11 +193,12 @@ def main():
                                        polarization_factor=options.polarization_factor,
                                        metadata=fabimg.header
                                        )
-                print("%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs." %
-                      (outfile, t1 - t0, t2 - t1, time.time() - t2))
+                msg = "%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs."
+                print(msg % (outfile, t1 - t0, t2 - t1, time.time() - t2))
             else:
-                print("%s,\t reading: %.3fs\t 1D integration: %.3fs." %
-                      (outfile, t1 - t0, t2 - t1))
+                msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."
+                print(msg % (outfile, t1 - t0, t2 - t1))
+
 
 if __name__ == "__main__":
     main()

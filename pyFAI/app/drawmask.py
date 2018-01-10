@@ -148,7 +148,7 @@ if BACKEND == "SILX":
                     'vmin': None,
                 }
                 self.__plot2D.setDefaultColormap(colormap)
-            except:
+            except Exception:
                 _logger.error("Impossible to change the default colormap. Source code not compatible.", exc_info=True)
             self.__maskPanel.setDirection(qt.QBoxLayout.TopToBottom)
             self.__maskPanel.setMultipleMasks("single")
@@ -259,6 +259,7 @@ def main():
 
     mask = window.getSelectionMask()
     postProcessId21(processFile, mask)
+
 
 if __name__ == "__main__":
     main()

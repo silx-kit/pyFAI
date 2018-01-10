@@ -27,11 +27,10 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/08/2017"
+__date__ = "09/01/2018"
 
 import os
 import fabio
-import numpy
 import logging
 from contextlib import contextmanager
 from collections import OrderedDict

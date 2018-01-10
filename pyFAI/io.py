@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/09/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -234,7 +234,7 @@ class HDF5Writer(Writer):
         if fast_scan_width is not None:
             try:
                 self.fast_scan_width = int(fast_scan_width)
-            except:
+            except ValueError:
                 pass
         self.hdf5 = None
         self.group = None
@@ -497,7 +497,7 @@ class DefaultAiWriter(Writer):
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
         :type dim1_unit: pyFAI.units.Unit
-        :param has_mask: a mask was used 
+        :param has_mask: a mask was used
         :param has_dark: a dark-current was applied
         :param has_flat: flat-field was applied
         :param polarization_factor: the polarization factor
@@ -544,7 +544,7 @@ class DefaultAiWriter(Writer):
         :type error: numpy.ndarray or None
         :param dim1_unit: the unit of the dim1 array
         :type dim1_unit: pyFAI.units.Unit
-        :param has_mask: a mask was used 
+        :param has_mask: a mask was used
         :param has_dark: a dark-current was applied
         :param has_flat: flat-field was applied
         :param polarization_factor: the polarization factor

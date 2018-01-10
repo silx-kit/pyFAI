@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -490,7 +490,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.makeHDF5()
         self.init_ai()
         t0 = time.time()
-#         self._idx = -1
+        # self._idx = -1
         for f in self.inputfiles:
             self.process_one_file(f)
         tot = time.time() - t0

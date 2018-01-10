@@ -56,7 +56,6 @@ from . import units
 from .decorators import deprecated
 from .utils import crc32
 from . import utils
-from .third_party import six
 
 logger = logging.getLogger("pyFAI.geometry")
 
@@ -225,8 +224,8 @@ class Geometry(object):
         """Calculate the position of a set of points in space in the sample's centers referential.
 
         This is usually used for calculating the pixel position in space.
-        
-        Nota: dim3 is the same as dim0  
+
+        Nota: dim3 is the same as dim0
 
         :param d0: altitude on the point compared to the detector (i.e. z), may be None
         :param d1: position on the detector along the slow dimension (i.e. y)
@@ -300,8 +299,8 @@ class Geometry(object):
 
         if (path == "cython") and (_geometry is not None):
             if param is None:
-                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
-                                self._poni2, self._rot1, self._rot2, self._rot3
+                dist, poni1, poni2 = self._dist, self._poni1, self._poni2
+                rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
             p1, p2, p3 = self._calc_cartesian_positions(d1, d2, poni1, poni2)
@@ -340,8 +339,8 @@ class Geometry(object):
 
         if (_geometry is not None) and (path == "cython"):
             if param is None:
-                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
-                                self._poni2, self._rot1, self._rot2, self._rot3
+                dist, poni1, poni2 = self._dist, self._poni1, self._poni2
+                rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
@@ -376,8 +375,8 @@ class Geometry(object):
 
         if (_geometry is not None) and (path == "cython"):
             if param is None:
-                dist, poni1, poni2, rot1, rot2, rot3 = self._dist, self._poni1, \
-                                self._poni2, self._rot1, self._rot2, self._rot3
+                dist, poni1, poni2 = self._dist, self._poni1, self._poni2
+                rot1, rot2, rot3 = self._rot1, self._rot2, self._rot3
             else:
                 dist, poni1, poni2, rot1, rot2, rot3 = param[:6]
 
@@ -505,9 +504,9 @@ class Geometry(object):
     def chi(self, d1, d2, path="cython"):
         """
         Calculate the chi (azimuthal angle) for the centre of a pixel
-        at coordinate d1, d2. 
+        at coordinate d1, d2.
         Conversion to lab coordinate system is performed in calc_pos_zyx.
-        
+
         :param d1: pixel coordinate along the 1st dimention (C convention)
         :type d1: float or array of them
         :param d2: pixel coordinate along the 2nd dimention (C convention)
@@ -615,8 +614,8 @@ class Geometry(object):
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
         :param use_cython: set to False to use the slower Python path (for tests)
-        :param scale: set to False for returning the internal representation 
-                        (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                        (S.I. often) which is faster
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
@@ -761,8 +760,8 @@ class Geometry(object):
         :param shape: expected shape
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
-        :param scale: set to False for returning the internal representation 
-                (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                (S.I. often) which is faster
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
             - dim3[0]: radial angle 2th, q, r...
             - dim3[1]: azimuthal angle chi
@@ -803,8 +802,8 @@ class Geometry(object):
         :param shape: expected shape
         :type shape: 2-tuple of integer
         :param unit: string like "2th_deg" or an instance of pyFAI.units.Unit
-        :param scale: set to False for returning the internal representation 
-                (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                (S.I. often) which is faster
         :return: 3d array with shape=(\*shape,4,2) the two elements are:
 
             - dim3[0]: radial angle 2th, q, r...
@@ -943,8 +942,8 @@ class Geometry(object):
         :type typ: str
         :param unit: can be Q, TTH, R for now
         :type unit: pyFAI.units.Enum
-        :param scale: set to False for returning the internal representation 
-                (S.I. often) which is faster 
+        :param scale: set to False for returning the internal representation
+                (S.I. often) which is faster
         :return: R, Q or 2Theta array depending on unit
         :rtype: ndarray
         """
@@ -1525,24 +1524,24 @@ class Geometry(object):
         Calculate the polarization correction accoding to the
         polarization factor:
 
-        * If the polarization factor is None, 
+        * If the polarization factor is None,
             the correction is not applied (returns 1)
-        * If the polarization factor is 0 (circular polarization), 
+        * If the polarization factor is 0 (circular polarization),
             the correction correspond to (1+(cos2θ)^2)/2
-        * If the polarization factor is 1 (linear horizontal polarization), 
+        * If the polarization factor is 1 (linear horizontal polarization),
             there is no correction in the vertical plane  and a node at 2th=90, chi=0
-        * If the polarization factor is -1 (linear vertical polarization), 
+        * If the polarization factor is -1 (linear vertical polarization),
             there is no correction in the horizontal plane and a node at 2th=90, chi=90
         * If the polarization is elliptical, the polarization factor varies between -1 and +1.
 
-        The axis_offset parameter allows correction for the misalignement of 
+        The axis_offset parameter allows correction for the misalignement of
         the polarization plane (or ellipse main axis) and the the detector's X axis.
 
-        :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization) 
+        :param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (circular/random polarization)
                     and 1 (where division by 0 could occure at 2th=90, chi=0)
-        :param axis_offset: Angle between the polarization main axis and 
+        :param axis_offset: Angle between the polarization main axis and
                             detector's X direction (in radians !!!)
-        :return: 2D array with polarization correction array 
+        :return: 2D array with polarization correction array
                         (intensity/polarisation)
 
         """
@@ -1645,7 +1644,7 @@ class Geometry(object):
         """
         Computes a 2D image from a 1D integrated profile
 
-        :param tth: 1D array with radial unit, this array needs to be ordered 
+        :param tth: 1D array with radial unit, this array needs to be ordered
         :param I: scattering intensity, corresponding intensity
         :param shape: shape of the image (if not defined by the detector)
         :param dim1_unit: unit for the "tth" array
@@ -1697,7 +1696,7 @@ class Geometry(object):
         Computes a 2D image from a cake / 2D integrated image
 
         :param I: scattering intensity, as an image n_tth, n_chi
-        :param tth: 1D array with radial unit, this array needs to be ordered 
+        :param tth: 1D array with radial unit, this array needs to be ordered
         :param chi: 1D array with azimuthal unit, this array needs to be ordered
         :param shape: shape of the image (if not defined by the detector)
         :param dim1_unit: unit for the "tth" array

@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "10/01/2018"
 __status__ = "production"
 
 import os
@@ -234,37 +234,37 @@ def main():
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-V", "--version", action='version', version=version)
     parser.add_argument("-o", "--output", dest="output",
-                      type=str, default=None,
-                      help="Output/ destination of average image")
+                        type=str, default=None,
+                        help="Output/ destination of average image")
     parser.add_argument("-m", "--method", dest="method",
-                      type=str, default="",
-                      help="Method used for averaging, can be 'mean' \
-                      (default) or 'min', 'max', 'median', 'sum', 'quantiles'\
-                      , 'cutoff', 'std'. Multiple filters can be defined with \
-                      ',' separator.")
+                        type=str, default="",
+                        help="Method used for averaging, can be 'mean' \
+                        (default) or 'min', 'max', 'median', 'sum', 'quantiles'\
+                        , 'cutoff', 'std'. Multiple filters can be defined with \
+                        ',' separator.")
     parser.add_argument("-c", "--cutoff", dest="cutoff", type=float, default=None,
-                  help="Take the mean of the average +/- cutoff * std_dev.")
+                        help="Take the mean of the average +/- cutoff * std_dev.")
     parser.add_argument("-F", "--format", dest="format", type=str, default="edf",
-                  help="Output file/image format (by default EDF)")
+                        help="Output file/image format (by default EDF)")
     parser.add_argument("-d", "--dark", dest="dark", type=str, default=None,
-                  help="Dark noise to be subtracted")
+                        help="Dark noise to be subtracted")
     parser.add_argument("-f", "--flat", dest="flat", type=str, default=None,
-                  help="Flat field correction")
+                        help="Flat field correction")
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=None,
-                      help="switch to verbose/debug mode")
+                        help="switch to verbose/debug mode")
     parser.add_argument("-q", "--quantiles", dest="quantiles", default=None,
-                      help="average out between two quantiles -q 0.20-0.90")
+                        help="average out between two quantiles -q 0.20-0.90")
     parser.add_argument("--monitor-name", dest="monitor_key", default=None,
-                      help="Name of the monitor in the header of each input \
-                      files. If defined the contribution of each input file \
-                      is divided by the monitor. If the header does not \
-                      contain or contains a wrong value, the contribution of \
-                      the input file is ignored.\
-                      On EDF files, values from 'counter_pos' can accessed by \
-                      using the expected mnemonic. \
-                      For example 'counter/bmon'.")
+                        help="Name of the monitor in the header of each input \
+                        files. If defined the contribution of each input file \
+                        is divided by the monitor. If the header does not \
+                        contain or contains a wrong value, the contribution of \
+                        the input file is ignored.\
+                        On EDF files, values from 'counter_pos' can accessed by \
+                        using the expected mnemonic. \
+                        For example 'counter/bmon'.")
     parser.add_argument("--quiet", dest="verbose", default=None, action="store_false",
-                      help="Only error messages are printed out")
+                        help="Only error messages are printed out")
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
@@ -321,6 +321,7 @@ def main():
         process.process()
     else:
         logger.warning("No input file specified.")
+
 
 if __name__ == "__main__":
     main()

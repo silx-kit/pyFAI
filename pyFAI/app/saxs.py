@@ -175,8 +175,8 @@ def main():
                                        metadata=fimg.header)
             t2 = time.time()
 
-            print("%s,\t reading: %.3fs\t 1D integration: %.3fs." %
-                                (outfile, t1 - t0, t2 - t1))
+            msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."
+            print(msg % (outfile, t1 - t0, t2 - t1))
 
 
 if __name__ == "__main__":

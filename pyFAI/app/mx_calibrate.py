@@ -65,5 +65,6 @@ def main():
     c.regression()
     six.moves.input("Press enter to quit")
 
+
 if __name__ == "__main__":
     main()
