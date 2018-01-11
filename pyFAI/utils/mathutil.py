@@ -44,7 +44,7 @@ import math
 import numpy
 import time
 import scipy
-from ..decorators import deprecated
+from .decorators import deprecated
 
 try:
     from ..ext import relabel as _relabel

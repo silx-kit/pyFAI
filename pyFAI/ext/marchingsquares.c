@@ -1559,9 +1559,6 @@ static void __Pyx_WriteUnraisable(const char *name, int clineno,
 /* SetVTable.proto */
 static int __Pyx_SetVtable(PyObject *dict, void *vtable);
 
-/* ImportFrom.proto */
-static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name);
-
 /* CodeObjectCache.proto */
 typedef struct {
     PyCodeObject* code_object;
@@ -1982,7 +1979,6 @@ static const char __pyx_k_sorted[] = "sorted";
 static const char __pyx_k_stable[] = "stable";
 static const char __pyx_k_status[] = "__status__";
 static const char __pyx_k_struct[] = "struct";
-static const char __pyx_k_timeit[] = "timeit";
 static const char __pyx_k_unpack[] = "unpack";
 static const char __pyx_k_authors[] = "__authors__";
 static const char __pyx_k_contact[] = "__contact__";
@@ -2000,11 +1996,10 @@ static const char __pyx_k_TypeError[] = "TypeError";
 static const char __pyx_k_edgeCount[] = "edgeCount";
 static const char __pyx_k_enumerate[] = "enumerate";
 static const char __pyx_k_remaining[] = "remaining";
-static const char __pyx_k_09_01_2018[] = "09/01/2018";
+static const char __pyx_k_11_01_2018[] = "11/01/2018";
 static const char __pyx_k_IndexError[] = "IndexError";
 static const char __pyx_k_ValueError[] = "ValueError";
 static const char __pyx_k_cellToEdge[] = "cellToEdge";
-static const char __pyx_k_decorators[] = "decorators";
 static const char __pyx_k_isocontour[] = "isocontour";
 static const char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
 static const char __pyx_k_sort_edges[] = "sort_edges";
@@ -2054,7 +2049,7 @@ static const char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not F
 static const char __pyx_k_numpy_core_umath_failed_to_impor[] = "numpy.core.umath failed to import";
 static const char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static const char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
-static PyObject *__pyx_kp_s_09_01_2018;
+static PyObject *__pyx_kp_s_11_01_2018;
 static PyObject *__pyx_n_s_ASCII;
 static PyObject *__pyx_kp_s_Almar_Klein;
 static PyObject *__pyx_kp_s_BSD_3_clauses;
@@ -2097,7 +2092,6 @@ static PyObject *__pyx_kp_s_contiguous_and_indirect;
 static PyObject *__pyx_n_s_current;
 static PyObject *__pyx_n_s_d;
 static PyObject *__pyx_n_s_date;
-static PyObject *__pyx_n_s_decorators;
 static PyObject *__pyx_n_s_dim_x;
 static PyObject *__pyx_n_s_dim_y;
 static PyObject *__pyx_n_s_dist2;
@@ -2182,7 +2176,6 @@ static PyObject *__pyx_kp_s_strided_and_direct_or_indirect;
 static PyObject *__pyx_kp_s_strided_and_indirect;
 static PyObject *__pyx_n_s_struct;
 static PyObject *__pyx_n_s_test;
-static PyObject *__pyx_n_s_timeit;
 static PyObject *__pyx_n_s_tmpf;
 static PyObject *__pyx_n_s_tmpf1;
 static PyObject *__pyx_n_s_tmpf2;
@@ -2279,7 +2272,7 @@ static PyObject *__pyx_codeobj__27;
 static PyObject *__pyx_codeobj__29;
 static PyObject *__pyx_codeobj__31;
 
-/* "pyFAI/ext/marchingsquares.pyx":76
+/* "pyFAI/ext/marchingsquares.pyx":75
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def marching_squares(float[:, :] img, double isovalue,             # <<<<<<<<<<<<<<
@@ -2323,26 +2316,26 @@ static PyObject *__pyx_pw_5pyFAI_3ext_15marchingsquares_1marching_squares(PyObje
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_isovalue)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 1); __PYX_ERR(0, 76, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 1); __PYX_ERR(0, 75, __pyx_L3_error)
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_cellToEdge)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 2); __PYX_ERR(0, 76, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 2); __PYX_ERR(0, 75, __pyx_L3_error)
         }
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_edgeToRelativePosX)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 3); __PYX_ERR(0, 76, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 3); __PYX_ERR(0, 75, __pyx_L3_error)
         }
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_edgeToRelativePosY)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 4); __PYX_ERR(0, 76, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, 4); __PYX_ERR(0, 75, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "marching_squares") < 0)) __PYX_ERR(0, 76, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "marching_squares") < 0)) __PYX_ERR(0, 75, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 5) {
       goto __pyx_L5_argtuple_error;
@@ -2353,15 +2346,15 @@ static PyObject *__pyx_pw_5pyFAI_3ext_15marchingsquares_1marching_squares(PyObje
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
     }
-    __pyx_v_img = __Pyx_PyObject_to_MemoryviewSlice_dsds_float(values[0]); if (unlikely(!__pyx_v_img.memview)) __PYX_ERR(0, 76, __pyx_L3_error)
-    __pyx_v_isovalue = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_isovalue == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 76, __pyx_L3_error)
-    __pyx_v_cellToEdge = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[2]); if (unlikely(!__pyx_v_cellToEdge.memview)) __PYX_ERR(0, 77, __pyx_L3_error)
-    __pyx_v_edgeToRelativePosX = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[3]); if (unlikely(!__pyx_v_edgeToRelativePosX.memview)) __PYX_ERR(0, 78, __pyx_L3_error)
-    __pyx_v_edgeToRelativePosY = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[4]); if (unlikely(!__pyx_v_edgeToRelativePosY.memview)) __PYX_ERR(0, 79, __pyx_L3_error)
+    __pyx_v_img = __Pyx_PyObject_to_MemoryviewSlice_dsds_float(values[0]); if (unlikely(!__pyx_v_img.memview)) __PYX_ERR(0, 75, __pyx_L3_error)
+    __pyx_v_isovalue = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_isovalue == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 75, __pyx_L3_error)
+    __pyx_v_cellToEdge = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[2]); if (unlikely(!__pyx_v_cellToEdge.memview)) __PYX_ERR(0, 76, __pyx_L3_error)
+    __pyx_v_edgeToRelativePosX = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[3]); if (unlikely(!__pyx_v_edgeToRelativePosX.memview)) __PYX_ERR(0, 77, __pyx_L3_error)
+    __pyx_v_edgeToRelativePosY = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(values[4]); if (unlikely(!__pyx_v_edgeToRelativePosY.memview)) __PYX_ERR(0, 78, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 76, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("marching_squares", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 75, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyFAI.ext.marchingsquares.marching_squares", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2461,7 +2454,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   __pyx_pybuffernd_edges.data = NULL;
   __pyx_pybuffernd_edges.rcbuffer = &__pyx_pybuffer_edges;
 
-  /* "pyFAI/ext/marchingsquares.pyx":81
+  /* "pyFAI/ext/marchingsquares.pyx":80
  *                      numpy.int8_t[:, :] edgeToRelativePosY):
  *     cdef:
  *         int dim_y = img.shape[0]             # <<<<<<<<<<<<<<
@@ -2470,7 +2463,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
   __pyx_v_dim_y = (__pyx_v_img.shape[0]);
 
-  /* "pyFAI/ext/marchingsquares.pyx":82
+  /* "pyFAI/ext/marchingsquares.pyx":81
  *     cdef:
  *         int dim_y = img.shape[0]
  *         int dim_x = img.shape[1]             # <<<<<<<<<<<<<<
@@ -2479,21 +2472,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
   __pyx_v_dim_x = (__pyx_v_img.shape[1]);
 
-  /* "pyFAI/ext/marchingsquares.pyx":83
+  /* "pyFAI/ext/marchingsquares.pyx":82
  *         int dim_y = img.shape[0]
  *         int dim_x = img.shape[1]
  *         numpy.ndarray[numpy.float32_t, ndim=2] edges = numpy.zeros((dim_x * dim_y, 2), numpy.float32)             # <<<<<<<<<<<<<<
  *         int x, y, z, i, j, k, index, edgeCount = 0
  *         int dx1, dy1, dz1, dx2, dy2, dz2
  */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyInt_From_int((__pyx_v_dim_x * __pyx_v_dim_y)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int((__pyx_v_dim_x * __pyx_v_dim_y)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
@@ -2501,9 +2494,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   __Pyx_GIVEREF(__pyx_int_2);
   PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_2);
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_float32); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_float32); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 82, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
@@ -2521,7 +2514,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_3)) {
     PyObject *__pyx_temp[3] = {__pyx_t_2, __pyx_t_4, __pyx_t_5};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 83, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2531,7 +2524,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
     PyObject *__pyx_temp[3] = {__pyx_t_2, __pyx_t_4, __pyx_t_5};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 83, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2539,7 +2532,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 83, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_2) {
       __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_2); __pyx_t_2 = NULL;
@@ -2550,18 +2543,18 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_t_5);
     __pyx_t_4 = 0;
     __pyx_t_5 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 83, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 83, __pyx_L1_error)
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 82, __pyx_L1_error)
   __pyx_t_8 = ((PyArrayObject *)__pyx_t_1);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
     if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_edges.rcbuffer->pybuffer, (PyObject*)__pyx_t_8, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 2, 0, __pyx_stack) == -1)) {
       __pyx_v_edges = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_edges.rcbuffer->pybuffer.buf = NULL;
-      __PYX_ERR(0, 83, __pyx_L1_error)
+      __PYX_ERR(0, 82, __pyx_L1_error)
     } else {__pyx_pybuffernd_edges.diminfo[0].strides = __pyx_pybuffernd_edges.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_edges.diminfo[0].shape = __pyx_pybuffernd_edges.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_edges.diminfo[1].strides = __pyx_pybuffernd_edges.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_edges.diminfo[1].shape = __pyx_pybuffernd_edges.rcbuffer->pybuffer.shape[1];
     }
   }
@@ -2569,7 +2562,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   __pyx_v_edges = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":84
+  /* "pyFAI/ext/marchingsquares.pyx":83
  *         int dim_x = img.shape[1]
  *         numpy.ndarray[numpy.float32_t, ndim=2] edges = numpy.zeros((dim_x * dim_y, 2), numpy.float32)
  *         int x, y, z, i, j, k, index, edgeCount = 0             # <<<<<<<<<<<<<<
@@ -2578,7 +2571,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
   __pyx_v_edgeCount = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":87
+  /* "pyFAI/ext/marchingsquares.pyx":86
  *         int dx1, dy1, dz1, dx2, dy2, dz2
  *         double fx, fy, fz, ff, tmpf, tmpf1, tmpf2
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2592,7 +2585,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
       #endif
       /*try:*/ {
 
-        /* "pyFAI/ext/marchingsquares.pyx":88
+        /* "pyFAI/ext/marchingsquares.pyx":87
  *         double fx, fy, fz, ff, tmpf, tmpf1, tmpf2
  *     with nogil:
  *         for y in range(dim_y - 1):             # <<<<<<<<<<<<<<
@@ -2603,7 +2596,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
         for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_9; __pyx_t_6+=1) {
           __pyx_v_y = __pyx_t_6;
 
-          /* "pyFAI/ext/marchingsquares.pyx":89
+          /* "pyFAI/ext/marchingsquares.pyx":88
  *     with nogil:
  *         for y in range(dim_y - 1):
  *             for x in range(dim_x - 1):             # <<<<<<<<<<<<<<
@@ -2614,7 +2607,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
           for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
             __pyx_v_x = __pyx_t_11;
 
-            /* "pyFAI/ext/marchingsquares.pyx":92
+            /* "pyFAI/ext/marchingsquares.pyx":91
  * 
  *                 # Calculate index.
  *                 index = 0             # <<<<<<<<<<<<<<
@@ -2623,7 +2616,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
             __pyx_v_index = 0;
 
-            /* "pyFAI/ext/marchingsquares.pyx":93
+            /* "pyFAI/ext/marchingsquares.pyx":92
  *                 # Calculate index.
  *                 index = 0
  *                 if img[y, x] > isovalue:             # <<<<<<<<<<<<<<
@@ -2635,7 +2628,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
             __pyx_t_14 = (((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_12 * __pyx_v_img.strides[0]) ) + __pyx_t_13 * __pyx_v_img.strides[1]) ))) > __pyx_v_isovalue) != 0);
             if (__pyx_t_14) {
 
-              /* "pyFAI/ext/marchingsquares.pyx":94
+              /* "pyFAI/ext/marchingsquares.pyx":93
  *                 index = 0
  *                 if img[y, x] > isovalue:
  *                     index += 1             # <<<<<<<<<<<<<<
@@ -2644,7 +2637,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
               __pyx_v_index = (__pyx_v_index + 1);
 
-              /* "pyFAI/ext/marchingsquares.pyx":93
+              /* "pyFAI/ext/marchingsquares.pyx":92
  *                 # Calculate index.
  *                 index = 0
  *                 if img[y, x] > isovalue:             # <<<<<<<<<<<<<<
@@ -2653,7 +2646,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
             }
 
-            /* "pyFAI/ext/marchingsquares.pyx":95
+            /* "pyFAI/ext/marchingsquares.pyx":94
  *                 if img[y, x] > isovalue:
  *                     index += 1
  *                 if img[y, x + 1] > isovalue:             # <<<<<<<<<<<<<<
@@ -2665,7 +2658,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
             __pyx_t_14 = (((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_15 * __pyx_v_img.strides[0]) ) + __pyx_t_16 * __pyx_v_img.strides[1]) ))) > __pyx_v_isovalue) != 0);
             if (__pyx_t_14) {
 
-              /* "pyFAI/ext/marchingsquares.pyx":96
+              /* "pyFAI/ext/marchingsquares.pyx":95
  *                     index += 1
  *                 if img[y, x + 1] > isovalue:
  *                     index += 2             # <<<<<<<<<<<<<<
@@ -2674,7 +2667,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
               __pyx_v_index = (__pyx_v_index + 2);
 
-              /* "pyFAI/ext/marchingsquares.pyx":95
+              /* "pyFAI/ext/marchingsquares.pyx":94
  *                 if img[y, x] > isovalue:
  *                     index += 1
  *                 if img[y, x + 1] > isovalue:             # <<<<<<<<<<<<<<
@@ -2683,7 +2676,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
             }
 
-            /* "pyFAI/ext/marchingsquares.pyx":97
+            /* "pyFAI/ext/marchingsquares.pyx":96
  *                 if img[y, x + 1] > isovalue:
  *                     index += 2
  *                 if img[y + 1, x + 1] > isovalue:             # <<<<<<<<<<<<<<
@@ -2695,7 +2688,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
             __pyx_t_14 = (((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_17 * __pyx_v_img.strides[0]) ) + __pyx_t_18 * __pyx_v_img.strides[1]) ))) > __pyx_v_isovalue) != 0);
             if (__pyx_t_14) {
 
-              /* "pyFAI/ext/marchingsquares.pyx":98
+              /* "pyFAI/ext/marchingsquares.pyx":97
  *                     index += 2
  *                 if img[y + 1, x + 1] > isovalue:
  *                     index += 4             # <<<<<<<<<<<<<<
@@ -2704,7 +2697,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
               __pyx_v_index = (__pyx_v_index + 4);
 
-              /* "pyFAI/ext/marchingsquares.pyx":97
+              /* "pyFAI/ext/marchingsquares.pyx":96
  *                 if img[y, x + 1] > isovalue:
  *                     index += 2
  *                 if img[y + 1, x + 1] > isovalue:             # <<<<<<<<<<<<<<
@@ -2713,7 +2706,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
             }
 
-            /* "pyFAI/ext/marchingsquares.pyx":99
+            /* "pyFAI/ext/marchingsquares.pyx":98
  *                 if img[y + 1, x + 1] > isovalue:
  *                     index += 4
  *                 if img[y + 1, x] > isovalue:             # <<<<<<<<<<<<<<
@@ -2725,7 +2718,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
             __pyx_t_14 = (((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_19 * __pyx_v_img.strides[0]) ) + __pyx_t_20 * __pyx_v_img.strides[1]) ))) > __pyx_v_isovalue) != 0);
             if (__pyx_t_14) {
 
-              /* "pyFAI/ext/marchingsquares.pyx":100
+              /* "pyFAI/ext/marchingsquares.pyx":99
  *                     index += 4
  *                 if img[y + 1, x] > isovalue:
  *                     index += 8             # <<<<<<<<<<<<<<
@@ -2734,7 +2727,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
               __pyx_v_index = (__pyx_v_index + 8);
 
-              /* "pyFAI/ext/marchingsquares.pyx":99
+              /* "pyFAI/ext/marchingsquares.pyx":98
  *                 if img[y + 1, x + 1] > isovalue:
  *                     index += 4
  *                 if img[y + 1, x] > isovalue:             # <<<<<<<<<<<<<<
@@ -2743,7 +2736,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
             }
 
-            /* "pyFAI/ext/marchingsquares.pyx":103
+            /* "pyFAI/ext/marchingsquares.pyx":102
  * 
  *                 # Resolve ambiguity
  *                 if index == 5 or index == 10:             # <<<<<<<<<<<<<<
@@ -2754,7 +2747,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               case 5:
               case 10:
 
-              /* "pyFAI/ext/marchingsquares.pyx":105
+              /* "pyFAI/ext/marchingsquares.pyx":104
  *                 if index == 5 or index == 10:
  *                     # Calculate value of cell center (i.e. average of corners)
  *                     tmpf = 0.25 * (img[y, x] +             # <<<<<<<<<<<<<<
@@ -2764,7 +2757,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               __pyx_t_21 = __pyx_v_y;
               __pyx_t_22 = __pyx_v_x;
 
-              /* "pyFAI/ext/marchingsquares.pyx":106
+              /* "pyFAI/ext/marchingsquares.pyx":105
  *                     # Calculate value of cell center (i.e. average of corners)
  *                     tmpf = 0.25 * (img[y, x] +
  *                                    img[y, x + 1] +             # <<<<<<<<<<<<<<
@@ -2774,7 +2767,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               __pyx_t_23 = __pyx_v_y;
               __pyx_t_24 = (__pyx_v_x + 1);
 
-              /* "pyFAI/ext/marchingsquares.pyx":107
+              /* "pyFAI/ext/marchingsquares.pyx":106
  *                     tmpf = 0.25 * (img[y, x] +
  *                                    img[y, x + 1] +
  *                                    img[y + 1, x] +             # <<<<<<<<<<<<<<
@@ -2784,7 +2777,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               __pyx_t_25 = (__pyx_v_y + 1);
               __pyx_t_26 = __pyx_v_x;
 
-              /* "pyFAI/ext/marchingsquares.pyx":108
+              /* "pyFAI/ext/marchingsquares.pyx":107
  *                                    img[y, x + 1] +
  *                                    img[y + 1, x] +
  *                                    img[y + 1, x + 1])             # <<<<<<<<<<<<<<
@@ -2794,7 +2787,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               __pyx_t_27 = (__pyx_v_y + 1);
               __pyx_t_28 = (__pyx_v_x + 1);
 
-              /* "pyFAI/ext/marchingsquares.pyx":105
+              /* "pyFAI/ext/marchingsquares.pyx":104
  *                 if index == 5 or index == 10:
  *                     # Calculate value of cell center (i.e. average of corners)
  *                     tmpf = 0.25 * (img[y, x] +             # <<<<<<<<<<<<<<
@@ -2803,7 +2796,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
               __pyx_v_tmpf = (0.25 * ((((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_21 * __pyx_v_img.strides[0]) ) + __pyx_t_22 * __pyx_v_img.strides[1]) ))) + (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_23 * __pyx_v_img.strides[0]) ) + __pyx_t_24 * __pyx_v_img.strides[1]) )))) + (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_25 * __pyx_v_img.strides[0]) ) + __pyx_t_26 * __pyx_v_img.strides[1]) )))) + (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_27 * __pyx_v_img.strides[0]) ) + __pyx_t_28 * __pyx_v_img.strides[1]) )))));
 
-              /* "pyFAI/ext/marchingsquares.pyx":110
+              /* "pyFAI/ext/marchingsquares.pyx":109
  *                                    img[y + 1, x + 1])
  *                     # If below isovalue, swap
  *                     if tmpf <= isovalue:             # <<<<<<<<<<<<<<
@@ -2813,7 +2806,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               __pyx_t_14 = ((__pyx_v_tmpf <= __pyx_v_isovalue) != 0);
               if (__pyx_t_14) {
 
-                /* "pyFAI/ext/marchingsquares.pyx":111
+                /* "pyFAI/ext/marchingsquares.pyx":110
  *                     # If below isovalue, swap
  *                     if tmpf <= isovalue:
  *                         if index == 5:             # <<<<<<<<<<<<<<
@@ -2823,7 +2816,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_t_14 = ((__pyx_v_index == 5) != 0);
                 if (__pyx_t_14) {
 
-                  /* "pyFAI/ext/marchingsquares.pyx":112
+                  /* "pyFAI/ext/marchingsquares.pyx":111
  *                     if tmpf <= isovalue:
  *                         if index == 5:
  *                             index = 10             # <<<<<<<<<<<<<<
@@ -2832,7 +2825,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                   __pyx_v_index = 10;
 
-                  /* "pyFAI/ext/marchingsquares.pyx":111
+                  /* "pyFAI/ext/marchingsquares.pyx":110
  *                     # If below isovalue, swap
  *                     if tmpf <= isovalue:
  *                         if index == 5:             # <<<<<<<<<<<<<<
@@ -2842,7 +2835,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                   goto __pyx_L15;
                 }
 
-                /* "pyFAI/ext/marchingsquares.pyx":114
+                /* "pyFAI/ext/marchingsquares.pyx":113
  *                             index = 10
  *                         else:
  *                             index = 5             # <<<<<<<<<<<<<<
@@ -2854,7 +2847,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 }
                 __pyx_L15:;
 
-                /* "pyFAI/ext/marchingsquares.pyx":110
+                /* "pyFAI/ext/marchingsquares.pyx":109
  *                                    img[y + 1, x + 1])
  *                     # If below isovalue, swap
  *                     if tmpf <= isovalue:             # <<<<<<<<<<<<<<
@@ -2863,7 +2856,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
               }
 
-              /* "pyFAI/ext/marchingsquares.pyx":103
+              /* "pyFAI/ext/marchingsquares.pyx":102
  * 
  *                 # Resolve ambiguity
  *                 if index == 5 or index == 10:             # <<<<<<<<<<<<<<
@@ -2874,7 +2867,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               default: break;
             }
 
-            /* "pyFAI/ext/marchingsquares.pyx":117
+            /* "pyFAI/ext/marchingsquares.pyx":116
  * 
  *                 # For each edge ...
  *                 for i in range(cellToEdge[index, 0]):             # <<<<<<<<<<<<<<
@@ -2887,7 +2880,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
             for (__pyx_t_32 = 0; __pyx_t_32 < __pyx_t_31; __pyx_t_32+=1) {
               __pyx_v_i = __pyx_t_32;
 
-              /* "pyFAI/ext/marchingsquares.pyx":119
+              /* "pyFAI/ext/marchingsquares.pyx":118
  *                 for i in range(cellToEdge[index, 0]):
  *                     # For both ends of the edge ...
  *                     for j in range(2):             # <<<<<<<<<<<<<<
@@ -2897,7 +2890,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
               for (__pyx_t_33 = 0; __pyx_t_33 < 2; __pyx_t_33+=1) {
                 __pyx_v_j = __pyx_t_33;
 
-                /* "pyFAI/ext/marchingsquares.pyx":121
+                /* "pyFAI/ext/marchingsquares.pyx":120
  *                     for j in range(2):
  *                         # Get edge index
  *                         k = cellToEdge[index, 1 + i * 2 + j]             # <<<<<<<<<<<<<<
@@ -2908,7 +2901,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_t_35 = ((1 + (__pyx_v_i * 2)) + __pyx_v_j);
                 __pyx_v_k = (*((__pyx_t_5numpy_int8_t *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_cellToEdge.data + __pyx_t_34 * __pyx_v_cellToEdge.strides[0]) ) + __pyx_t_35 * __pyx_v_cellToEdge.strides[1]) )));
 
-                /* "pyFAI/ext/marchingsquares.pyx":123
+                /* "pyFAI/ext/marchingsquares.pyx":122
  *                         k = cellToEdge[index, 1 + i * 2 + j]
  *                         # Use these to look up the relative positions of the pixels to interpolate
  *                         dx1, dy1 = edgeToRelativePosX[k, 0], edgeToRelativePosY[k, 0]             # <<<<<<<<<<<<<<
@@ -2924,7 +2917,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_v_dx1 = __pyx_t_38;
                 __pyx_v_dy1 = __pyx_t_41;
 
-                /* "pyFAI/ext/marchingsquares.pyx":124
+                /* "pyFAI/ext/marchingsquares.pyx":123
  *                         # Use these to look up the relative positions of the pixels to interpolate
  *                         dx1, dy1 = edgeToRelativePosX[k, 0], edgeToRelativePosY[k, 0]
  *                         dx2, dy2 = edgeToRelativePosX[k, 1], edgeToRelativePosY[k, 1]             # <<<<<<<<<<<<<<
@@ -2940,7 +2933,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_v_dx2 = __pyx_t_41;
                 __pyx_v_dy2 = __pyx_t_38;
 
-                /* "pyFAI/ext/marchingsquares.pyx":126
+                /* "pyFAI/ext/marchingsquares.pyx":125
  *                         dx2, dy2 = edgeToRelativePosX[k, 1], edgeToRelativePosY[k, 1]
  *                         # Define "strength" of each corner of the cube that we need
  *                         tmpf1 = 1.0 / (epsilon + fabs(img[y + dy1, x + dx1] - isovalue))             # <<<<<<<<<<<<<<
@@ -2951,7 +2944,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_t_47 = (__pyx_v_x + __pyx_v_dx1);
                 __pyx_v_tmpf1 = (1.0 / (__pyx_v_5pyFAI_3ext_15marchingsquares_epsilon + fabs(((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_46 * __pyx_v_img.strides[0]) ) + __pyx_t_47 * __pyx_v_img.strides[1]) ))) - __pyx_v_isovalue))));
 
-                /* "pyFAI/ext/marchingsquares.pyx":127
+                /* "pyFAI/ext/marchingsquares.pyx":126
  *                         # Define "strength" of each corner of the cube that we need
  *                         tmpf1 = 1.0 / (epsilon + fabs(img[y + dy1, x + dx1] - isovalue))
  *                         tmpf2 = 1.0 / (epsilon + fabs(img[y + dy2, x + dx2] - isovalue))             # <<<<<<<<<<<<<<
@@ -2962,7 +2955,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_t_49 = (__pyx_v_x + __pyx_v_dx2);
                 __pyx_v_tmpf2 = (1.0 / (__pyx_v_5pyFAI_3ext_15marchingsquares_epsilon + fabs(((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_img.data + __pyx_t_48 * __pyx_v_img.strides[0]) ) + __pyx_t_49 * __pyx_v_img.strides[1]) ))) - __pyx_v_isovalue))));
 
-                /* "pyFAI/ext/marchingsquares.pyx":129
+                /* "pyFAI/ext/marchingsquares.pyx":128
  *                         tmpf2 = 1.0 / (epsilon + fabs(img[y + dy2, x + dx2] - isovalue))
  *                         # Apply a kind of center-of-mass method
  *                         fx, fy, ff = 0.0, 0.0, 0.0             # <<<<<<<<<<<<<<
@@ -2976,7 +2969,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_v_fy = __pyx_t_51;
                 __pyx_v_ff = __pyx_t_52;
 
-                /* "pyFAI/ext/marchingsquares.pyx":130
+                /* "pyFAI/ext/marchingsquares.pyx":129
  *                         # Apply a kind of center-of-mass method
  *                         fx, fy, ff = 0.0, 0.0, 0.0
  *                         fx += <double> dx1 * tmpf1;             # <<<<<<<<<<<<<<
@@ -2985,7 +2978,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_fx = (__pyx_v_fx + (((double)__pyx_v_dx1) * __pyx_v_tmpf1));
 
-                /* "pyFAI/ext/marchingsquares.pyx":131
+                /* "pyFAI/ext/marchingsquares.pyx":130
  *                         fx, fy, ff = 0.0, 0.0, 0.0
  *                         fx += <double> dx1 * tmpf1;
  *                         fy += <double> dy1 * tmpf1;             # <<<<<<<<<<<<<<
@@ -2994,7 +2987,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_fy = (__pyx_v_fy + (((double)__pyx_v_dy1) * __pyx_v_tmpf1));
 
-                /* "pyFAI/ext/marchingsquares.pyx":132
+                /* "pyFAI/ext/marchingsquares.pyx":131
  *                         fx += <double> dx1 * tmpf1;
  *                         fy += <double> dy1 * tmpf1;
  *                         ff += tmpf1             # <<<<<<<<<<<<<<
@@ -3003,7 +2996,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_ff = (__pyx_v_ff + __pyx_v_tmpf1);
 
-                /* "pyFAI/ext/marchingsquares.pyx":133
+                /* "pyFAI/ext/marchingsquares.pyx":132
  *                         fy += <double> dy1 * tmpf1;
  *                         ff += tmpf1
  *                         fx += <double> dx2 * tmpf2;             # <<<<<<<<<<<<<<
@@ -3012,7 +3005,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_fx = (__pyx_v_fx + (((double)__pyx_v_dx2) * __pyx_v_tmpf2));
 
-                /* "pyFAI/ext/marchingsquares.pyx":134
+                /* "pyFAI/ext/marchingsquares.pyx":133
  *                         ff += tmpf1
  *                         fx += <double> dx2 * tmpf2;
  *                         fy += <double> dy2 * tmpf2;             # <<<<<<<<<<<<<<
@@ -3021,7 +3014,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_fy = (__pyx_v_fy + (((double)__pyx_v_dy2) * __pyx_v_tmpf2));
 
-                /* "pyFAI/ext/marchingsquares.pyx":135
+                /* "pyFAI/ext/marchingsquares.pyx":134
  *                         fx += <double> dx2 * tmpf2;
  *                         fy += <double> dy2 * tmpf2;
  *                         ff += tmpf2             # <<<<<<<<<<<<<<
@@ -3030,7 +3023,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_ff = (__pyx_v_ff + __pyx_v_tmpf2);
 
-                /* "pyFAI/ext/marchingsquares.pyx":137
+                /* "pyFAI/ext/marchingsquares.pyx":136
  *                         ff += tmpf2
  *                         #
  *                         fx /= ff             # <<<<<<<<<<<<<<
@@ -3039,7 +3032,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_fx = (__pyx_v_fx / __pyx_v_ff);
 
-                /* "pyFAI/ext/marchingsquares.pyx":138
+                /* "pyFAI/ext/marchingsquares.pyx":137
  *                         #
  *                         fx /= ff
  *                         fy /= ff             # <<<<<<<<<<<<<<
@@ -3048,7 +3041,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  */
                 __pyx_v_fy = (__pyx_v_fy / __pyx_v_ff);
 
-                /* "pyFAI/ext/marchingsquares.pyx":140
+                /* "pyFAI/ext/marchingsquares.pyx":139
  *                         fy /= ff
  *                         # Append point
  *                         edges[edgeCount, 0] = <float> (x + fx)             # <<<<<<<<<<<<<<
@@ -3059,7 +3052,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_t_54 = 0;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_edges.rcbuffer->pybuffer.buf, __pyx_t_53, __pyx_pybuffernd_edges.diminfo[0].strides, __pyx_t_54, __pyx_pybuffernd_edges.diminfo[1].strides) = ((float)(__pyx_v_x + __pyx_v_fx));
 
-                /* "pyFAI/ext/marchingsquares.pyx":141
+                /* "pyFAI/ext/marchingsquares.pyx":140
  *                         # Append point
  *                         edges[edgeCount, 0] = <float> (x + fx)
  *                         edges[edgeCount, 1] = <float> (y + fy)             # <<<<<<<<<<<<<<
@@ -3070,7 +3063,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
                 __pyx_t_56 = 1;
                 *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_edges.rcbuffer->pybuffer.buf, __pyx_t_55, __pyx_pybuffernd_edges.diminfo[0].strides, __pyx_t_56, __pyx_pybuffernd_edges.diminfo[1].strides) = ((float)(__pyx_v_y + __pyx_v_fy));
 
-                /* "pyFAI/ext/marchingsquares.pyx":142
+                /* "pyFAI/ext/marchingsquares.pyx":141
  *                         edges[edgeCount, 0] = <float> (x + fx)
  *                         edges[edgeCount, 1] = <float> (y + fy)
  *                         edgeCount += 1             # <<<<<<<<<<<<<<
@@ -3084,7 +3077,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
         }
       }
 
-      /* "pyFAI/ext/marchingsquares.pyx":87
+      /* "pyFAI/ext/marchingsquares.pyx":86
  *         int dx1, dy1, dz1, dx2, dy2, dz2
  *         double fx, fy, fz, ff, tmpf, tmpf1, tmpf2
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -3102,7 +3095,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
       }
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":143
+  /* "pyFAI/ext/marchingsquares.pyx":142
  *                         edges[edgeCount, 1] = <float> (y + fy)
  *                         edgeCount += 1
  *     return edges[:edgeCount, :]             # <<<<<<<<<<<<<<
@@ -3110,12 +3103,12 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_edgeCount); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_edgeCount); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PySlice_New(Py_None, __pyx_t_1, Py_None); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_3 = PySlice_New(Py_None, __pyx_t_1, Py_None); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_3);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
@@ -3123,14 +3116,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   __Pyx_GIVEREF(__pyx_slice_);
   PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_slice_);
   __pyx_t_3 = 0;
-  __pyx_t_3 = PyObject_GetItem(((PyObject *)__pyx_v_edges), __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_3 = PyObject_GetItem(((PyObject *)__pyx_v_edges), __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":76
+  /* "pyFAI/ext/marchingsquares.pyx":75
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def marching_squares(float[:, :] img, double isovalue,             # <<<<<<<<<<<<<<
@@ -3168,7 +3161,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_marching_squares(CYTHON_
   return __pyx_r;
 }
 
-/* "pyFAI/ext/marchingsquares.pyx":147
+/* "pyFAI/ext/marchingsquares.pyx":146
  * 
  * @cython.boundscheck(False)
  * def sort_edges(edges):             # <<<<<<<<<<<<<<
@@ -3244,102 +3237,102 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
   Py_ssize_t __pyx_t_38;
   __Pyx_RefNannySetupContext("sort_edges", 0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":152
+  /* "pyFAI/ext/marchingsquares.pyx":151
  *     """
  *     cdef:
  *         int size = edges.shape[0]             # <<<<<<<<<<<<<<
  *         int[:] pos = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
  *         int[:] remaining = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edges, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edges, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 151, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 151, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_As_int(__pyx_t_2); if (unlikely((__pyx_t_3 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 151, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_size = __pyx_t_3;
 
-  /* "pyFAI/ext/marchingsquares.pyx":153
+  /* "pyFAI/ext/marchingsquares.pyx":152
  *     cdef:
  *         int size = edges.shape[0]
  *         int[:] pos = cvarray(shape=(size,), itemsize=sizeof(int), format="i")             # <<<<<<<<<<<<<<
  *         int[:] remaining = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
  *         float[:, :] dist2 = cvarray(shape=(size, size), itemsize=sizeof(float), format="f")
  */
-  __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 153, __pyx_L1_error)
+  __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 153, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 153, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_shape, __pyx_t_4) < 0) __PYX_ERR(0, 153, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_shape, __pyx_t_4) < 0) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 153, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_itemsize, __pyx_t_4) < 0) __PYX_ERR(0, 153, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_itemsize, __pyx_t_4) < 0) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_format, __pyx_n_s_i) < 0) __PYX_ERR(0, 153, __pyx_L1_error)
-  __pyx_t_4 = __Pyx_PyObject_Call(((PyObject *)__pyx_array_type), __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 153, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_format, __pyx_n_s_i) < 0) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_Call(((PyObject *)__pyx_array_type), __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_5 = __Pyx_PyObject_to_MemoryviewSlice_ds_int(__pyx_t_4);
-  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 153, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_pos = __pyx_t_5;
   __pyx_t_5.memview = NULL;
   __pyx_t_5.data = NULL;
 
-  /* "pyFAI/ext/marchingsquares.pyx":154
+  /* "pyFAI/ext/marchingsquares.pyx":153
  *         int size = edges.shape[0]
  *         int[:] pos = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
  *         int[:] remaining = cvarray(shape=(size,), itemsize=sizeof(int), format="i")             # <<<<<<<<<<<<<<
  *         float[:, :] dist2 = cvarray(shape=(size, size), itemsize=sizeof(float), format="f")
  *         float d
  */
-  __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 154, __pyx_L1_error)
+  __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 154, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 154, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_2);
   __pyx_t_2 = 0;
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_shape, __pyx_t_1) < 0) __PYX_ERR(0, 154, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_shape, __pyx_t_1) < 0) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 154, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_itemsize, __pyx_t_1) < 0) __PYX_ERR(0, 154, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_itemsize, __pyx_t_1) < 0) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_format, __pyx_n_s_i) < 0) __PYX_ERR(0, 154, __pyx_L1_error)
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_array_type), __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 154, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_format, __pyx_n_s_i) < 0) __PYX_ERR(0, 153, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_array_type), __pyx_empty_tuple, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_5 = __Pyx_PyObject_to_MemoryviewSlice_ds_int(__pyx_t_1);
-  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 154, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5.memview)) __PYX_ERR(0, 153, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_remaining = __pyx_t_5;
   __pyx_t_5.memview = NULL;
   __pyx_t_5.data = NULL;
 
-  /* "pyFAI/ext/marchingsquares.pyx":155
+  /* "pyFAI/ext/marchingsquares.pyx":154
  *         int[:] pos = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
  *         int[:] remaining = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
  *         float[:, :] dist2 = cvarray(shape=(size, size), itemsize=sizeof(float), format="f")             # <<<<<<<<<<<<<<
  *         float d
  *         int i, j, index = 0, current = 0
  */
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_GIVEREF(__pyx_t_4);
   PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4);
@@ -3347,24 +3340,24 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
   PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_2);
   __pyx_t_4 = 0;
   __pyx_t_2 = 0;
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_shape, __pyx_t_6) < 0) __PYX_ERR(0, 155, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_shape, __pyx_t_6) < 0) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyInt_FromSize_t((sizeof(float))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyInt_FromSize_t((sizeof(float))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_itemsize, __pyx_t_6) < 0) __PYX_ERR(0, 155, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_itemsize, __pyx_t_6) < 0) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_format, __pyx_n_s_f) < 0) __PYX_ERR(0, 155, __pyx_L1_error)
-  __pyx_t_6 = __Pyx_PyObject_Call(((PyObject *)__pyx_array_type), __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 155, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_format, __pyx_n_s_f) < 0) __PYX_ERR(0, 154, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_Call(((PyObject *)__pyx_array_type), __pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dsds_float(__pyx_t_6);
-  if (unlikely(!__pyx_t_7.memview)) __PYX_ERR(0, 155, __pyx_L1_error)
+  if (unlikely(!__pyx_t_7.memview)) __PYX_ERR(0, 154, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_v_dist2 = __pyx_t_7;
   __pyx_t_7.memview = NULL;
   __pyx_t_7.data = NULL;
 
-  /* "pyFAI/ext/marchingsquares.pyx":157
+  /* "pyFAI/ext/marchingsquares.pyx":156
  *         float[:, :] dist2 = cvarray(shape=(size, size), itemsize=sizeof(float), format="f")
  *         float d
  *         int i, j, index = 0, current = 0             # <<<<<<<<<<<<<<
@@ -3374,21 +3367,21 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
   __pyx_v_index = 0;
   __pyx_v_current = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":158
+  /* "pyFAI/ext/marchingsquares.pyx":157
  *         float d
  *         int i, j, index = 0, current = 0
  *         float[:, :]edges_ = numpy.ascontiguousarray(edges, numpy.float32)             # <<<<<<<<<<<<<<
  *     dist2[:, :] = 0
  *     pos[:] = 0
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 157, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 157, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 157, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_float32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_float32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 157, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_1 = NULL;
@@ -3406,7 +3399,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_1, __pyx_v_edges, __pyx_t_4};
-    __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_3, 2+__pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 158, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_3, 2+__pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 157, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -3415,14 +3408,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_1, __pyx_v_edges, __pyx_t_4};
-    __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_3, 2+__pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 158, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_3, 2+__pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 157, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   } else
   #endif
   {
-    __pyx_t_8 = PyTuple_New(2+__pyx_t_3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 158, __pyx_L1_error)
+    __pyx_t_8 = PyTuple_New(2+__pyx_t_3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 157, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     if (__pyx_t_1) {
       __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_1); __pyx_t_1 = NULL;
@@ -3433,19 +3426,19 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
     __Pyx_GIVEREF(__pyx_t_4);
     PyTuple_SET_ITEM(__pyx_t_8, 1+__pyx_t_3, __pyx_t_4);
     __pyx_t_4 = 0;
-    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 158, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 157, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_7 = __Pyx_PyObject_to_MemoryviewSlice_dsds_float(__pyx_t_6);
-  if (unlikely(!__pyx_t_7.memview)) __PYX_ERR(0, 158, __pyx_L1_error)
+  if (unlikely(!__pyx_t_7.memview)) __PYX_ERR(0, 157, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_v_edges_ = __pyx_t_7;
   __pyx_t_7.memview = NULL;
   __pyx_t_7.data = NULL;
 
-  /* "pyFAI/ext/marchingsquares.pyx":159
+  /* "pyFAI/ext/marchingsquares.pyx":158
  *         int i, j, index = 0, current = 0
  *         float[:, :]edges_ = numpy.ascontiguousarray(edges, numpy.float32)
  *     dist2[:, :] = 0             # <<<<<<<<<<<<<<
@@ -3475,7 +3468,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
       }
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":160
+  /* "pyFAI/ext/marchingsquares.pyx":159
  *         float[:, :]edges_ = numpy.ascontiguousarray(edges, numpy.float32)
  *     dist2[:, :] = 0
  *     pos[:] = 0             # <<<<<<<<<<<<<<
@@ -3497,7 +3490,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
       }
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":162
+  /* "pyFAI/ext/marchingsquares.pyx":161
  *     pos[:] = 0
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -3511,7 +3504,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
       #endif
       /*try:*/ {
 
-        /* "pyFAI/ext/marchingsquares.pyx":164
+        /* "pyFAI/ext/marchingsquares.pyx":163
  *     with nogil:
  *         # initialize the distance (squared) array:
  *         for i in range(size):             # <<<<<<<<<<<<<<
@@ -3522,7 +3515,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
         for (__pyx_t_9 = 0; __pyx_t_9 < __pyx_t_3; __pyx_t_9+=1) {
           __pyx_v_i = __pyx_t_9;
 
-          /* "pyFAI/ext/marchingsquares.pyx":165
+          /* "pyFAI/ext/marchingsquares.pyx":164
  *         # initialize the distance (squared) array:
  *         for i in range(size):
  *             remaining[i] = i             # <<<<<<<<<<<<<<
@@ -3533,7 +3526,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
           if (__pyx_t_10 < 0) __pyx_t_10 += __pyx_v_remaining.shape[0];
           *((int *) ( /* dim=0 */ (__pyx_v_remaining.data + __pyx_t_10 * __pyx_v_remaining.strides[0]) )) = __pyx_v_i;
 
-          /* "pyFAI/ext/marchingsquares.pyx":166
+          /* "pyFAI/ext/marchingsquares.pyx":165
  *         for i in range(size):
  *             remaining[i] = i
  *             for j in range(i + 1, size):             # <<<<<<<<<<<<<<
@@ -3544,7 +3537,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
           for (__pyx_t_12 = (__pyx_v_i + 1); __pyx_t_12 < __pyx_t_11; __pyx_t_12+=1) {
             __pyx_v_j = __pyx_t_12;
 
-            /* "pyFAI/ext/marchingsquares.pyx":167
+            /* "pyFAI/ext/marchingsquares.pyx":166
  *             remaining[i] = i
  *             for j in range(i + 1, size):
  *                 d = (edges_[i, 0] - edges_[j, 0]) ** 2 + (edges_[i, 1] - edges_[j, 1]) ** 2             # <<<<<<<<<<<<<<
@@ -3569,7 +3562,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
             if (__pyx_t_20 < 0) __pyx_t_20 += __pyx_v_edges_.shape[1];
             __pyx_v_d = (powf(((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_edges_.data + __pyx_t_13 * __pyx_v_edges_.strides[0]) ) + __pyx_t_14 * __pyx_v_edges_.strides[1]) ))) - (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_edges_.data + __pyx_t_15 * __pyx_v_edges_.strides[0]) ) + __pyx_t_16 * __pyx_v_edges_.strides[1]) )))), 2.0) + powf(((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_edges_.data + __pyx_t_17 * __pyx_v_edges_.strides[0]) ) + __pyx_t_18 * __pyx_v_edges_.strides[1]) ))) - (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_edges_.data + __pyx_t_19 * __pyx_v_edges_.strides[0]) ) + __pyx_t_20 * __pyx_v_edges_.strides[1]) )))), 2.0));
 
-            /* "pyFAI/ext/marchingsquares.pyx":168
+            /* "pyFAI/ext/marchingsquares.pyx":167
  *             for j in range(i + 1, size):
  *                 d = (edges_[i, 0] - edges_[j, 0]) ** 2 + (edges_[i, 1] - edges_[j, 1]) ** 2
  *                 dist2[i, j] = d             # <<<<<<<<<<<<<<
@@ -3582,7 +3575,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
             if (__pyx_t_22 < 0) __pyx_t_22 += __pyx_v_dist2.shape[1];
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dist2.data + __pyx_t_21 * __pyx_v_dist2.strides[0]) ) + __pyx_t_22 * __pyx_v_dist2.strides[1]) )) = __pyx_v_d;
 
-            /* "pyFAI/ext/marchingsquares.pyx":169
+            /* "pyFAI/ext/marchingsquares.pyx":168
  *                 d = (edges_[i, 0] - edges_[j, 0]) ** 2 + (edges_[i, 1] - edges_[j, 1]) ** 2
  *                 dist2[i, j] = d
  *                 dist2[j, i] = d             # <<<<<<<<<<<<<<
@@ -3597,7 +3590,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
           }
         }
 
-        /* "pyFAI/ext/marchingsquares.pyx":172
+        /* "pyFAI/ext/marchingsquares.pyx":171
  *         # set element in remaining to -1 when already transfered
  *         # O(n^2) implementation, not bright, any better idea is welcome
  *         remaining[0] = -1             # <<<<<<<<<<<<<<
@@ -3608,7 +3601,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
         if (__pyx_t_25 < 0) __pyx_t_25 += __pyx_v_remaining.shape[0];
         *((int *) ( /* dim=0 */ (__pyx_v_remaining.data + __pyx_t_25 * __pyx_v_remaining.strides[0]) )) = -1;
 
-        /* "pyFAI/ext/marchingsquares.pyx":173
+        /* "pyFAI/ext/marchingsquares.pyx":172
  *         # O(n^2) implementation, not bright, any better idea is welcome
  *         remaining[0] = -1
  *         pos[0] = 0             # <<<<<<<<<<<<<<
@@ -3619,7 +3612,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
         if (__pyx_t_26 < 0) __pyx_t_26 += __pyx_v_pos.shape[0];
         *((int *) ( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_26 * __pyx_v_pos.strides[0]) )) = 0;
 
-        /* "pyFAI/ext/marchingsquares.pyx":174
+        /* "pyFAI/ext/marchingsquares.pyx":173
  *         remaining[0] = -1
  *         pos[0] = 0
  *         for i in range(1, size):             # <<<<<<<<<<<<<<
@@ -3630,7 +3623,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
         for (__pyx_t_9 = 1; __pyx_t_9 < __pyx_t_3; __pyx_t_9+=1) {
           __pyx_v_i = __pyx_t_9;
 
-          /* "pyFAI/ext/marchingsquares.pyx":175
+          /* "pyFAI/ext/marchingsquares.pyx":174
  *         pos[0] = 0
  *         for i in range(1, size):
  *             current = pos[i - 1]             # <<<<<<<<<<<<<<
@@ -3641,7 +3634,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
           if (__pyx_t_27 < 0) __pyx_t_27 += __pyx_v_pos.shape[0];
           __pyx_v_current = (*((int *) ( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_27 * __pyx_v_pos.strides[0]) )));
 
-          /* "pyFAI/ext/marchingsquares.pyx":176
+          /* "pyFAI/ext/marchingsquares.pyx":175
  *         for i in range(1, size):
  *             current = pos[i - 1]
  *             index = -1             # <<<<<<<<<<<<<<
@@ -3650,7 +3643,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
  */
           __pyx_v_index = -1;
 
-          /* "pyFAI/ext/marchingsquares.pyx":177
+          /* "pyFAI/ext/marchingsquares.pyx":176
  *             current = pos[i - 1]
  *             index = -1
  *             for j in range(1, size):             # <<<<<<<<<<<<<<
@@ -3661,7 +3654,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
           for (__pyx_t_12 = 1; __pyx_t_12 < __pyx_t_11; __pyx_t_12+=1) {
             __pyx_v_j = __pyx_t_12;
 
-            /* "pyFAI/ext/marchingsquares.pyx":178
+            /* "pyFAI/ext/marchingsquares.pyx":177
  *             index = -1
  *             for j in range(1, size):
  *                 if remaining[j] == -1:             # <<<<<<<<<<<<<<
@@ -3673,7 +3666,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
             __pyx_t_29 = (((*((int *) ( /* dim=0 */ (__pyx_v_remaining.data + __pyx_t_28 * __pyx_v_remaining.strides[0]) ))) == -1L) != 0);
             if (__pyx_t_29) {
 
-              /* "pyFAI/ext/marchingsquares.pyx":179
+              /* "pyFAI/ext/marchingsquares.pyx":178
  *             for j in range(1, size):
  *                 if remaining[j] == -1:
  *                     continue             # <<<<<<<<<<<<<<
@@ -3682,7 +3675,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
  */
               goto __pyx_L12_continue;
 
-              /* "pyFAI/ext/marchingsquares.pyx":178
+              /* "pyFAI/ext/marchingsquares.pyx":177
  *             index = -1
  *             for j in range(1, size):
  *                 if remaining[j] == -1:             # <<<<<<<<<<<<<<
@@ -3691,7 +3684,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
  */
             }
 
-            /* "pyFAI/ext/marchingsquares.pyx":180
+            /* "pyFAI/ext/marchingsquares.pyx":179
  *                 if remaining[j] == -1:
  *                     continue
  *                 elif index == -1:  # not yet found a candidate             # <<<<<<<<<<<<<<
@@ -3701,7 +3694,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
             __pyx_t_29 = ((__pyx_v_index == -1L) != 0);
             if (__pyx_t_29) {
 
-              /* "pyFAI/ext/marchingsquares.pyx":181
+              /* "pyFAI/ext/marchingsquares.pyx":180
  *                     continue
  *                 elif index == -1:  # not yet found a candidate
  *                     index = remaining[j]             # <<<<<<<<<<<<<<
@@ -3712,7 +3705,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
               if (__pyx_t_30 < 0) __pyx_t_30 += __pyx_v_remaining.shape[0];
               __pyx_v_index = (*((int *) ( /* dim=0 */ (__pyx_v_remaining.data + __pyx_t_30 * __pyx_v_remaining.strides[0]) )));
 
-              /* "pyFAI/ext/marchingsquares.pyx":182
+              /* "pyFAI/ext/marchingsquares.pyx":181
  *                 elif index == -1:  # not yet found a candidate
  *                     index = remaining[j]
  *                     d = dist2[index, current]             # <<<<<<<<<<<<<<
@@ -3725,7 +3718,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
               if (__pyx_t_32 < 0) __pyx_t_32 += __pyx_v_dist2.shape[1];
               __pyx_v_d = (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dist2.data + __pyx_t_31 * __pyx_v_dist2.strides[0]) ) + __pyx_t_32 * __pyx_v_dist2.strides[1]) )));
 
-              /* "pyFAI/ext/marchingsquares.pyx":183
+              /* "pyFAI/ext/marchingsquares.pyx":182
  *                     index = remaining[j]
  *                     d = dist2[index, current]
  *                     continue             # <<<<<<<<<<<<<<
@@ -3734,7 +3727,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
  */
               goto __pyx_L12_continue;
 
-              /* "pyFAI/ext/marchingsquares.pyx":180
+              /* "pyFAI/ext/marchingsquares.pyx":179
  *                 if remaining[j] == -1:
  *                     continue
  *                 elif index == -1:  # not yet found a candidate             # <<<<<<<<<<<<<<
@@ -3743,7 +3736,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
  */
             }
 
-            /* "pyFAI/ext/marchingsquares.pyx":184
+            /* "pyFAI/ext/marchingsquares.pyx":183
  *                     d = dist2[index, current]
  *                     continue
  *                 elif dist2[j, current] < d:             # <<<<<<<<<<<<<<
@@ -3757,7 +3750,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
             __pyx_t_29 = (((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dist2.data + __pyx_t_33 * __pyx_v_dist2.strides[0]) ) + __pyx_t_34 * __pyx_v_dist2.strides[1]) ))) < __pyx_v_d) != 0);
             if (__pyx_t_29) {
 
-              /* "pyFAI/ext/marchingsquares.pyx":185
+              /* "pyFAI/ext/marchingsquares.pyx":184
  *                     continue
  *                 elif dist2[j, current] < d:
  *                     index = j             # <<<<<<<<<<<<<<
@@ -3766,7 +3759,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
  */
               __pyx_v_index = __pyx_v_j;
 
-              /* "pyFAI/ext/marchingsquares.pyx":186
+              /* "pyFAI/ext/marchingsquares.pyx":185
  *                 elif dist2[j, current] < d:
  *                     index = j
  *                     d = dist2[current, index]             # <<<<<<<<<<<<<<
@@ -3779,7 +3772,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
               if (__pyx_t_36 < 0) __pyx_t_36 += __pyx_v_dist2.shape[1];
               __pyx_v_d = (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_dist2.data + __pyx_t_35 * __pyx_v_dist2.strides[0]) ) + __pyx_t_36 * __pyx_v_dist2.strides[1]) )));
 
-              /* "pyFAI/ext/marchingsquares.pyx":184
+              /* "pyFAI/ext/marchingsquares.pyx":183
  *                     d = dist2[index, current]
  *                     continue
  *                 elif dist2[j, current] < d:             # <<<<<<<<<<<<<<
@@ -3790,7 +3783,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
             __pyx_L12_continue:;
           }
 
-          /* "pyFAI/ext/marchingsquares.pyx":187
+          /* "pyFAI/ext/marchingsquares.pyx":186
  *                     index = j
  *                     d = dist2[current, index]
  *             pos[i] = index             # <<<<<<<<<<<<<<
@@ -3801,7 +3794,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
           if (__pyx_t_37 < 0) __pyx_t_37 += __pyx_v_pos.shape[0];
           *((int *) ( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_37 * __pyx_v_pos.strides[0]) )) = __pyx_v_index;
 
-          /* "pyFAI/ext/marchingsquares.pyx":188
+          /* "pyFAI/ext/marchingsquares.pyx":187
  *                     d = dist2[current, index]
  *             pos[i] = index
  *             remaining[index] = -1             # <<<<<<<<<<<<<<
@@ -3814,7 +3807,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
         }
       }
 
-      /* "pyFAI/ext/marchingsquares.pyx":162
+      /* "pyFAI/ext/marchingsquares.pyx":161
  *     pos[:] = 0
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -3832,7 +3825,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
       }
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":189
+  /* "pyFAI/ext/marchingsquares.pyx":188
  *             pos[i] = index
  *             remaining[index] = -1
  *     return edges[pos, :]             # <<<<<<<<<<<<<<
@@ -3840,9 +3833,9 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_6 = __pyx_memoryview_fromslice(__pyx_v_pos, 1, (PyObject *(*)(char *)) __pyx_memview_get_int, (int (*)(char *, PyObject *)) __pyx_memview_set_int, 0);; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_t_6 = __pyx_memoryview_fromslice(__pyx_v_pos, 1, (PyObject *(*)(char *)) __pyx_memview_get_int, (int (*)(char *, PyObject *)) __pyx_memview_set_int, 0);; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_6);
   PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_6);
@@ -3850,14 +3843,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
   __Pyx_GIVEREF(__pyx_slice__2);
   PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_slice__2);
   __pyx_t_6 = 0;
-  __pyx_t_6 = PyObject_GetItem(__pyx_v_edges, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_t_6 = PyObject_GetItem(__pyx_v_edges, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_6;
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":147
+  /* "pyFAI/ext/marchingsquares.pyx":146
  * 
  * @cython.boundscheck(False)
  * def sort_edges(edges):             # <<<<<<<<<<<<<<
@@ -3886,7 +3879,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_2sort_edges(CYTHON_UNUSE
   return __pyx_r;
 }
 
-/* "pyFAI/ext/marchingsquares.pyx":192
+/* "pyFAI/ext/marchingsquares.pyx":191
  * 
  * 
  * def isocontour(img, isovalue=None, sorted=False):             # <<<<<<<<<<<<<<
@@ -3937,7 +3930,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_15marchingsquares_5isocontour(PyObject *__
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "isocontour") < 0)) __PYX_ERR(0, 192, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "isocontour") < 0)) __PYX_ERR(0, 191, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -3954,7 +3947,7 @@ static PyObject *__pyx_pw_5pyFAI_3ext_15marchingsquares_5isocontour(PyObject *__
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("isocontour", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 192, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("isocontour", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 191, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyFAI.ext.marchingsquares.isocontour", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -3986,7 +3979,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   __Pyx_RefNannySetupContext("isocontour", 0);
   __Pyx_INCREF(__pyx_v_isovalue);
 
-  /* "pyFAI/ext/marchingsquares.pyx":209
+  /* "pyFAI/ext/marchingsquares.pyx":208
  * 
  *     # Check image
  *     if not isinstance(img, numpy.ndarray) or (img.ndim != 2):             # <<<<<<<<<<<<<<
@@ -4000,30 +3993,30 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
     __pyx_t_1 = __pyx_t_3;
     goto __pyx_L4_bool_binop_done;
   }
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_img, __pyx_n_s_ndim); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 209, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_img, __pyx_n_s_ndim); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 208, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyObject_RichCompare(__pyx_t_4, __pyx_int_2, Py_NE); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 209, __pyx_L1_error)
+  __pyx_t_5 = PyObject_RichCompare(__pyx_t_4, __pyx_int_2, Py_NE); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 208, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 209, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 208, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_t_1 = __pyx_t_3;
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "pyFAI/ext/marchingsquares.pyx":210
+    /* "pyFAI/ext/marchingsquares.pyx":209
  *     # Check image
  *     if not isinstance(img, numpy.ndarray) or (img.ndim != 2):
  *         raise ValueError('img should be a 2D numpy array.')             # <<<<<<<<<<<<<<
  * 
  *     # Get isovalue
  */
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 210, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 209, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_Raise(__pyx_t_5, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __PYX_ERR(0, 210, __pyx_L1_error)
+    __PYX_ERR(0, 209, __pyx_L1_error)
 
-    /* "pyFAI/ext/marchingsquares.pyx":209
+    /* "pyFAI/ext/marchingsquares.pyx":208
  * 
  *     # Check image
  *     if not isinstance(img, numpy.ndarray) or (img.ndim != 2):             # <<<<<<<<<<<<<<
@@ -4032,7 +4025,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
  */
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":213
+  /* "pyFAI/ext/marchingsquares.pyx":212
  * 
  *     # Get isovalue
  *     if isovalue is None:             # <<<<<<<<<<<<<<
@@ -4043,14 +4036,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   __pyx_t_3 = (__pyx_t_1 != 0);
   if (__pyx_t_3) {
 
-    /* "pyFAI/ext/marchingsquares.pyx":214
+    /* "pyFAI/ext/marchingsquares.pyx":213
  *     # Get isovalue
  *     if isovalue is None:
  *         isovalue = 0.5 * (img.min() + img.max())             # <<<<<<<<<<<<<<
  *     else:
  *         # Will raise error if not float-like value given
  */
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_img, __pyx_n_s_min); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 214, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_img, __pyx_n_s_min); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 213, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_6 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
@@ -4063,14 +4056,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
       }
     }
     if (__pyx_t_6) {
-      __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 214, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 213, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     } else {
-      __pyx_t_5 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 214, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_CallNoArg(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 213, __pyx_L1_error)
     }
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_img, __pyx_n_s_max); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 214, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_img, __pyx_n_s_max); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 213, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_7 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_6))) {
@@ -4083,24 +4076,24 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
       }
     }
     if (__pyx_t_7) {
-      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 214, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 213, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     } else {
-      __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 214, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_CallNoArg(__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 213, __pyx_L1_error)
     }
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = PyNumber_Add(__pyx_t_5, __pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 214, __pyx_L1_error)
+    __pyx_t_6 = PyNumber_Add(__pyx_t_5, __pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 213, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyNumber_Multiply(__pyx_float_0_5, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 214, __pyx_L1_error)
+    __pyx_t_4 = PyNumber_Multiply(__pyx_float_0_5, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 213, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF_SET(__pyx_v_isovalue, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "pyFAI/ext/marchingsquares.pyx":213
+    /* "pyFAI/ext/marchingsquares.pyx":212
  * 
  *     # Get isovalue
  *     if isovalue is None:             # <<<<<<<<<<<<<<
@@ -4110,7 +4103,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
     goto __pyx_L6;
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":217
+  /* "pyFAI/ext/marchingsquares.pyx":216
  *     else:
  *         # Will raise error if not float-like value given
  *         isovalue = float(isovalue)             # <<<<<<<<<<<<<<
@@ -4118,30 +4111,30 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
  *                            CELLTOEDGE, EDGETORELATIVEPOSX, EDGETORELATIVEPOSY)
  */
   /*else*/ {
-    __pyx_t_4 = __Pyx_PyNumber_Float(__pyx_v_isovalue); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 217, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyNumber_Float(__pyx_v_isovalue); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 216, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF_SET(__pyx_v_isovalue, __pyx_t_4);
     __pyx_t_4 = 0;
   }
   __pyx_L6:;
 
-  /* "pyFAI/ext/marchingsquares.pyx":218
+  /* "pyFAI/ext/marchingsquares.pyx":217
  *         # Will raise error if not float-like value given
  *         isovalue = float(isovalue)
  *     res = marching_squares(numpy.ascontiguousarray(img, numpy.float32), isovalue,             # <<<<<<<<<<<<<<
  *                            CELLTOEDGE, EDGETORELATIVEPOSX, EDGETORELATIVEPOSY)
  *     if sorted:
  */
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_marching_squares); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 218, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_marching_squares); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 217, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 218, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 217, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 218, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_ascontiguousarray); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 217, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 218, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 217, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_float32); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 218, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_float32); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 217, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_t_7 = NULL;
@@ -4159,7 +4152,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_8)) {
     PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_v_img, __pyx_t_9};
-    __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_8, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_8, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
@@ -4168,14 +4161,14 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_8)) {
     PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_v_img, __pyx_t_9};
-    __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_8, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_8, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   } else
   #endif
   {
-    __pyx_t_11 = PyTuple_New(2+__pyx_t_10); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_11 = PyTuple_New(2+__pyx_t_10); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_11);
     if (__pyx_t_7) {
       __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_11, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -4186,27 +4179,27 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
     __Pyx_GIVEREF(__pyx_t_9);
     PyTuple_SET_ITEM(__pyx_t_11, 1+__pyx_t_10, __pyx_t_9);
     __pyx_t_9 = 0;
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_8, __pyx_t_11, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_8, __pyx_t_11, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
   }
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":219
+  /* "pyFAI/ext/marchingsquares.pyx":218
  *         isovalue = float(isovalue)
  *     res = marching_squares(numpy.ascontiguousarray(img, numpy.float32), isovalue,
  *                            CELLTOEDGE, EDGETORELATIVEPOSX, EDGETORELATIVEPOSY)             # <<<<<<<<<<<<<<
  *     if sorted:
  *         return sort_edges(res)
  */
-  if (unlikely(!__pyx_v_5pyFAI_3ext_15marchingsquares_CELLTOEDGE.memview)) { __Pyx_RaiseUnboundLocalError("CELLTOEDGE"); __PYX_ERR(0, 219, __pyx_L1_error) }
-  __pyx_t_8 = __pyx_memoryview_fromslice(__pyx_v_5pyFAI_3ext_15marchingsquares_CELLTOEDGE, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn___pyx_t_5numpy_int8_t, (int (*)(char *, PyObject *)) __pyx_memview_set_nn___pyx_t_5numpy_int8_t, 0);; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 219, __pyx_L1_error)
+  if (unlikely(!__pyx_v_5pyFAI_3ext_15marchingsquares_CELLTOEDGE.memview)) { __Pyx_RaiseUnboundLocalError("CELLTOEDGE"); __PYX_ERR(0, 218, __pyx_L1_error) }
+  __pyx_t_8 = __pyx_memoryview_fromslice(__pyx_v_5pyFAI_3ext_15marchingsquares_CELLTOEDGE, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn___pyx_t_5numpy_int8_t, (int (*)(char *, PyObject *)) __pyx_memview_set_nn___pyx_t_5numpy_int8_t, 0);; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 218, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  if (unlikely(!__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSX.memview)) { __Pyx_RaiseUnboundLocalError("EDGETORELATIVEPOSX"); __PYX_ERR(0, 219, __pyx_L1_error) }
-  __pyx_t_11 = __pyx_memoryview_fromslice(__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSX, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn___pyx_t_5numpy_int8_t, (int (*)(char *, PyObject *)) __pyx_memview_set_nn___pyx_t_5numpy_int8_t, 0);; if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 219, __pyx_L1_error)
+  if (unlikely(!__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSX.memview)) { __Pyx_RaiseUnboundLocalError("EDGETORELATIVEPOSX"); __PYX_ERR(0, 218, __pyx_L1_error) }
+  __pyx_t_11 = __pyx_memoryview_fromslice(__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSX, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn___pyx_t_5numpy_int8_t, (int (*)(char *, PyObject *)) __pyx_memview_set_nn___pyx_t_5numpy_int8_t, 0);; if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 218, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_11);
-  if (unlikely(!__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY.memview)) { __Pyx_RaiseUnboundLocalError("EDGETORELATIVEPOSY"); __PYX_ERR(0, 219, __pyx_L1_error) }
-  __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn___pyx_t_5numpy_int8_t, (int (*)(char *, PyObject *)) __pyx_memview_set_nn___pyx_t_5numpy_int8_t, 0);; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 219, __pyx_L1_error)
+  if (unlikely(!__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY.memview)) { __Pyx_RaiseUnboundLocalError("EDGETORELATIVEPOSY"); __PYX_ERR(0, 218, __pyx_L1_error) }
+  __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn___pyx_t_5numpy_int8_t, (int (*)(char *, PyObject *)) __pyx_memview_set_nn___pyx_t_5numpy_int8_t, 0);; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 218, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_t_7 = NULL;
   __pyx_t_10 = 0;
@@ -4223,7 +4216,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_6)) {
     PyObject *__pyx_temp[6] = {__pyx_t_7, __pyx_t_5, __pyx_v_isovalue, __pyx_t_8, __pyx_t_11, __pyx_t_9};
-    __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_10, 5+__pyx_t_10); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_10, 5+__pyx_t_10); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -4235,7 +4228,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_6)) {
     PyObject *__pyx_temp[6] = {__pyx_t_7, __pyx_t_5, __pyx_v_isovalue, __pyx_t_8, __pyx_t_11, __pyx_t_9};
-    __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_10, 5+__pyx_t_10); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_10, 5+__pyx_t_10); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -4245,7 +4238,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   } else
   #endif
   {
-    __pyx_t_12 = PyTuple_New(5+__pyx_t_10); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_12 = PyTuple_New(5+__pyx_t_10); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_12);
     if (__pyx_t_7) {
       __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_12, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -4265,7 +4258,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
     __pyx_t_8 = 0;
     __pyx_t_11 = 0;
     __pyx_t_9 = 0;
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_12, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 218, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_12, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
   }
@@ -4273,17 +4266,17 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
   __pyx_v_res = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":220
+  /* "pyFAI/ext/marchingsquares.pyx":219
  *     res = marching_squares(numpy.ascontiguousarray(img, numpy.float32), isovalue,
  *                            CELLTOEDGE, EDGETORELATIVEPOSX, EDGETORELATIVEPOSY)
  *     if sorted:             # <<<<<<<<<<<<<<
  *         return sort_edges(res)
  *     else:
  */
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_sorted); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 220, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_v_sorted); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 219, __pyx_L1_error)
   if (__pyx_t_3) {
 
-    /* "pyFAI/ext/marchingsquares.pyx":221
+    /* "pyFAI/ext/marchingsquares.pyx":220
  *                            CELLTOEDGE, EDGETORELATIVEPOSX, EDGETORELATIVEPOSY)
  *     if sorted:
  *         return sort_edges(res)             # <<<<<<<<<<<<<<
@@ -4291,7 +4284,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
  *         return res
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_sort_edges); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 221, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_sort_edges); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 220, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_12 = NULL;
     if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_6))) {
@@ -4304,13 +4297,13 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
       }
     }
     if (!__pyx_t_12) {
-      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_v_res); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 221, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_v_res); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
     } else {
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_6)) {
         PyObject *__pyx_temp[2] = {__pyx_t_12, __pyx_v_res};
-        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 221, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
         __Pyx_GOTREF(__pyx_t_4);
       } else
@@ -4318,19 +4311,19 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_6)) {
         PyObject *__pyx_temp[2] = {__pyx_t_12, __pyx_v_res};
-        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 221, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
         __Pyx_GOTREF(__pyx_t_4);
       } else
       #endif
       {
-        __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 221, __pyx_L1_error)
+        __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 220, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_9);
         __Pyx_GIVEREF(__pyx_t_12); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_12); __pyx_t_12 = NULL;
         __Pyx_INCREF(__pyx_v_res);
         __Pyx_GIVEREF(__pyx_v_res);
         PyTuple_SET_ITEM(__pyx_t_9, 0+1, __pyx_v_res);
-        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_9, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 221, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_9, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       }
@@ -4340,7 +4333,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
     __pyx_t_4 = 0;
     goto __pyx_L0;
 
-    /* "pyFAI/ext/marchingsquares.pyx":220
+    /* "pyFAI/ext/marchingsquares.pyx":219
  *     res = marching_squares(numpy.ascontiguousarray(img, numpy.float32), isovalue,
  *                            CELLTOEDGE, EDGETORELATIVEPOSX, EDGETORELATIVEPOSY)
  *     if sorted:             # <<<<<<<<<<<<<<
@@ -4349,7 +4342,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
  */
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":223
+  /* "pyFAI/ext/marchingsquares.pyx":222
  *         return sort_edges(res)
  *     else:
  *         return res             # <<<<<<<<<<<<<<
@@ -4361,7 +4354,7 @@ static PyObject *__pyx_pf_5pyFAI_3ext_15marchingsquares_4isocontour(CYTHON_UNUSE
     goto __pyx_L0;
   }
 
-  /* "pyFAI/ext/marchingsquares.pyx":192
+  /* "pyFAI/ext/marchingsquares.pyx":191
  * 
  * 
  * def isocontour(img, isovalue=None, sorted=False):             # <<<<<<<<<<<<<<
@@ -19245,7 +19238,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_s_09_01_2018, __pyx_k_09_01_2018, sizeof(__pyx_k_09_01_2018), 0, 0, 1, 0},
+  {&__pyx_kp_s_11_01_2018, __pyx_k_11_01_2018, sizeof(__pyx_k_11_01_2018), 0, 0, 1, 0},
   {&__pyx_n_s_ASCII, __pyx_k_ASCII, sizeof(__pyx_k_ASCII), 0, 0, 1, 1},
   {&__pyx_kp_s_Almar_Klein, __pyx_k_Almar_Klein, sizeof(__pyx_k_Almar_Klein), 0, 0, 1, 0},
   {&__pyx_kp_s_BSD_3_clauses, __pyx_k_BSD_3_clauses, sizeof(__pyx_k_BSD_3_clauses), 0, 0, 1, 0},
@@ -19288,7 +19281,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_current, __pyx_k_current, sizeof(__pyx_k_current), 0, 0, 1, 1},
   {&__pyx_n_s_d, __pyx_k_d, sizeof(__pyx_k_d), 0, 0, 1, 1},
   {&__pyx_n_s_date, __pyx_k_date, sizeof(__pyx_k_date), 0, 0, 1, 1},
-  {&__pyx_n_s_decorators, __pyx_k_decorators, sizeof(__pyx_k_decorators), 0, 0, 1, 1},
   {&__pyx_n_s_dim_x, __pyx_k_dim_x, sizeof(__pyx_k_dim_x), 0, 0, 1, 1},
   {&__pyx_n_s_dim_y, __pyx_k_dim_y, sizeof(__pyx_k_dim_y), 0, 0, 1, 1},
   {&__pyx_n_s_dist2, __pyx_k_dist2, sizeof(__pyx_k_dist2), 0, 0, 1, 1},
@@ -19373,7 +19365,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_strided_and_indirect, __pyx_k_strided_and_indirect, sizeof(__pyx_k_strided_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_struct, __pyx_k_struct, sizeof(__pyx_k_struct), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
-  {&__pyx_n_s_timeit, __pyx_k_timeit, sizeof(__pyx_k_timeit), 0, 0, 1, 1},
   {&__pyx_n_s_tmpf, __pyx_k_tmpf, sizeof(__pyx_k_tmpf), 0, 0, 1, 1},
   {&__pyx_n_s_tmpf1, __pyx_k_tmpf1, sizeof(__pyx_k_tmpf1), 0, 0, 1, 1},
   {&__pyx_n_s_tmpf2, __pyx_k_tmpf2, sizeof(__pyx_k_tmpf2), 0, 0, 1, 1},
@@ -19389,8 +19380,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 88, __pyx_L1_error)
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 210, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 87, __pyx_L1_error)
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 209, __pyx_L1_error)
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(1, 799, __pyx_L1_error)
   __pyx_builtin_ImportError = __Pyx_GetBuiltinName(__pyx_n_s_ImportError); if (!__pyx_builtin_ImportError) __PYX_ERR(1, 989, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(2, 146, __pyx_L1_error)
@@ -19408,36 +19399,36 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":143
+  /* "pyFAI/ext/marchingsquares.pyx":142
  *                         edges[edgeCount, 1] = <float> (y + fy)
  *                         edgeCount += 1
  *     return edges[:edgeCount, :]             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_slice_ = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice_)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_slice_ = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice_)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice_);
   __Pyx_GIVEREF(__pyx_slice_);
 
-  /* "pyFAI/ext/marchingsquares.pyx":189
+  /* "pyFAI/ext/marchingsquares.pyx":188
  *             pos[i] = index
  *             remaining[index] = -1
  *     return edges[pos, :]             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_slice__2 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__2)) __PYX_ERR(0, 189, __pyx_L1_error)
+  __pyx_slice__2 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_slice__2)) __PYX_ERR(0, 188, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__2);
   __Pyx_GIVEREF(__pyx_slice__2);
 
-  /* "pyFAI/ext/marchingsquares.pyx":210
+  /* "pyFAI/ext/marchingsquares.pyx":209
  *     # Check image
  *     if not isinstance(img, numpy.ndarray) or (img.ndim != 2):
  *         raise ValueError('img should be a 2D numpy array.')             # <<<<<<<<<<<<<<
  * 
  *     # Get isovalue
  */
-  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_img_should_be_a_2D_numpy_array); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 210, __pyx_L1_error)
+  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_s_img_should_be_a_2D_numpy_array); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
@@ -19684,41 +19675,41 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__25);
   __Pyx_GIVEREF(__pyx_tuple__25);
 
-  /* "pyFAI/ext/marchingsquares.pyx":76
+  /* "pyFAI/ext/marchingsquares.pyx":75
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def marching_squares(float[:, :] img, double isovalue,             # <<<<<<<<<<<<<<
  *                      numpy.int8_t[:, :] cellToEdge,
  *                      numpy.int8_t[:, :] edgeToRelativePosX,
  */
-  __pyx_tuple__26 = PyTuple_Pack(29, __pyx_n_s_img, __pyx_n_s_isovalue, __pyx_n_s_cellToEdge, __pyx_n_s_edgeToRelativePosX, __pyx_n_s_edgeToRelativePosY, __pyx_n_s_dim_y, __pyx_n_s_dim_x, __pyx_n_s_edges, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_z, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_index, __pyx_n_s_edgeCount, __pyx_n_s_dx1, __pyx_n_s_dy1, __pyx_n_s_dz1, __pyx_n_s_dx2, __pyx_n_s_dy2, __pyx_n_s_dz2, __pyx_n_s_fx, __pyx_n_s_fy, __pyx_n_s_fz, __pyx_n_s_ff, __pyx_n_s_tmpf, __pyx_n_s_tmpf1, __pyx_n_s_tmpf2); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 76, __pyx_L1_error)
+  __pyx_tuple__26 = PyTuple_Pack(29, __pyx_n_s_img, __pyx_n_s_isovalue, __pyx_n_s_cellToEdge, __pyx_n_s_edgeToRelativePosX, __pyx_n_s_edgeToRelativePosY, __pyx_n_s_dim_y, __pyx_n_s_dim_x, __pyx_n_s_edges, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_z, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_index, __pyx_n_s_edgeCount, __pyx_n_s_dx1, __pyx_n_s_dy1, __pyx_n_s_dz1, __pyx_n_s_dx2, __pyx_n_s_dy2, __pyx_n_s_dz2, __pyx_n_s_fx, __pyx_n_s_fy, __pyx_n_s_fz, __pyx_n_s_ff, __pyx_n_s_tmpf, __pyx_n_s_tmpf1, __pyx_n_s_tmpf2); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__26);
   __Pyx_GIVEREF(__pyx_tuple__26);
-  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(5, 0, 29, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_workspace_valls_pyfai_git_pyFAI, __pyx_n_s_marching_squares, 76, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 76, __pyx_L1_error)
+  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(5, 0, 29, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_workspace_valls_pyfai_git_pyFAI, __pyx_n_s_marching_squares, 75, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 75, __pyx_L1_error)
 
-  /* "pyFAI/ext/marchingsquares.pyx":147
+  /* "pyFAI/ext/marchingsquares.pyx":146
  * 
  * @cython.boundscheck(False)
  * def sort_edges(edges):             # <<<<<<<<<<<<<<
  *     """
  *     Reorder edges in such a way they become contiguous
  */
-  __pyx_tuple__28 = PyTuple_Pack(11, __pyx_n_s_edges, __pyx_n_s_size, __pyx_n_s_pos, __pyx_n_s_remaining, __pyx_n_s_dist2, __pyx_n_s_d, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_index, __pyx_n_s_current, __pyx_n_s_edges_2); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 147, __pyx_L1_error)
+  __pyx_tuple__28 = PyTuple_Pack(11, __pyx_n_s_edges, __pyx_n_s_size, __pyx_n_s_pos, __pyx_n_s_remaining, __pyx_n_s_dist2, __pyx_n_s_d, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_index, __pyx_n_s_current, __pyx_n_s_edges_2); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__28);
   __Pyx_GIVEREF(__pyx_tuple__28);
-  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(1, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_workspace_valls_pyfai_git_pyFAI, __pyx_n_s_sort_edges, 147, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 147, __pyx_L1_error)
+  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(1, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_workspace_valls_pyfai_git_pyFAI, __pyx_n_s_sort_edges, 146, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 146, __pyx_L1_error)
 
-  /* "pyFAI/ext/marchingsquares.pyx":192
+  /* "pyFAI/ext/marchingsquares.pyx":191
  * 
  * 
  * def isocontour(img, isovalue=None, sorted=False):             # <<<<<<<<<<<<<<
  *     """ isocontour(img, isovalue=None)
  * 
  */
-  __pyx_tuple__30 = PyTuple_Pack(4, __pyx_n_s_img, __pyx_n_s_isovalue, __pyx_n_s_sorted, __pyx_n_s_res); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 192, __pyx_L1_error)
+  __pyx_tuple__30 = PyTuple_Pack(4, __pyx_n_s_img, __pyx_n_s_isovalue, __pyx_n_s_sorted, __pyx_n_s_res); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__30);
   __Pyx_GIVEREF(__pyx_tuple__30);
-  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_workspace_valls_pyfai_git_pyFAI, __pyx_n_s_isocontour, 192, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 192, __pyx_L1_error)
+  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_workspace_valls_pyfai_git_pyFAI, __pyx_n_s_isocontour, 191, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 191, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -19958,7 +19949,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
  * """
  * __authors__ = ["Almar Klein", "Jerome Kieffer"]             # <<<<<<<<<<<<<<
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "09/01/2018"
+ * __date__ = "11/01/2018"
  */
   __pyx_t_1 = PyList_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19975,7 +19966,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
  * """
  * __authors__ = ["Almar Klein", "Jerome Kieffer"]
  * __contact__ = "Jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
- * __date__ = "09/01/2018"
+ * __date__ = "11/01/2018"
  * __status__ = "stable"
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_Jerome_kieffer_esrf_fr) < 0) __PYX_ERR(0, 32, __pyx_L1_error)
@@ -19983,15 +19974,15 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   /* "pyFAI/ext/marchingsquares.pyx":33
  * __authors__ = ["Almar Klein", "Jerome Kieffer"]
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "09/01/2018"             # <<<<<<<<<<<<<<
+ * __date__ = "11/01/2018"             # <<<<<<<<<<<<<<
  * __status__ = "stable"
  * __license__ = "BSD-3 clauses"
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_09_01_2018) < 0) __PYX_ERR(0, 33, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_11_01_2018) < 0) __PYX_ERR(0, 33, __pyx_L1_error)
 
   /* "pyFAI/ext/marchingsquares.pyx":34
  * __contact__ = "Jerome.kieffer@esrf.fr"
- * __date__ = "09/01/2018"
+ * __date__ = "11/01/2018"
  * __status__ = "stable"             # <<<<<<<<<<<<<<
  * __license__ = "BSD-3 clauses"
  * 
@@ -19999,7 +19990,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_status, __pyx_n_s_stable) < 0) __PYX_ERR(0, 34, __pyx_L1_error)
 
   /* "pyFAI/ext/marchingsquares.pyx":35
- * __date__ = "09/01/2018"
+ * __date__ = "11/01/2018"
  * __status__ = "stable"
  * __license__ = "BSD-3 clauses"             # <<<<<<<<<<<<<<
  * 
@@ -20024,7 +20015,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
  * from libc.math cimport M_PI, sin, floor, fabs
  * cdef double epsilon = numpy.finfo(numpy.float64).eps             # <<<<<<<<<<<<<<
  * from cython.view cimport array as cvarray
- * from ..decorators import timeit
+ * 
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 43, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -20089,48 +20080,27 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_5pyFAI_3ext_15marchingsquares_epsilon = __pyx_t_6;
 
-  /* "pyFAI/ext/marchingsquares.pyx":45
- * cdef double epsilon = numpy.finfo(numpy.float64).eps
+  /* "pyFAI/ext/marchingsquares.pyx":46
  * from cython.view cimport array as cvarray
- * from ..decorators import timeit             # <<<<<<<<<<<<<<
- * 
- * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSX = numpy.array([[0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], dtype=numpy.int8)
- */
-  __pyx_t_3 = PyList_New(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 45, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_INCREF(__pyx_n_s_timeit);
-  __Pyx_GIVEREF(__pyx_n_s_timeit);
-  PyList_SET_ITEM(__pyx_t_3, 0, __pyx_n_s_timeit);
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_decorators, __pyx_t_3, 2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 45, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_ImportFrom(__pyx_t_1, __pyx_n_s_timeit); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 45, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_timeit, __pyx_t_3) < 0) __PYX_ERR(0, 45, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-  /* "pyFAI/ext/marchingsquares.pyx":47
- * from ..decorators import timeit
  * 
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSX = numpy.array([[0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], dtype=numpy.int8)             # <<<<<<<<<<<<<<
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyList_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_array); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyList_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
-  PyList_SET_ITEM(__pyx_t_1, 0, __pyx_int_0);
+  PyList_SET_ITEM(__pyx_t_3, 0, __pyx_int_0);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_1, 1, __pyx_int_1);
-  __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 47, __pyx_L1_error)
+  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_int_1);
+  __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20138,7 +20108,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_5, 1, __pyx_int_1);
-  __pyx_t_4 = PyList_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20146,7 +20116,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_4, 1, __pyx_int_0);
-  __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20154,7 +20124,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_2, 1, __pyx_int_0);
-  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20162,7 +20132,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_7, 1, __pyx_int_1);
-  __pyx_t_8 = PyList_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_8 = PyList_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20170,7 +20140,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_8, 1, __pyx_int_1);
-  __pyx_t_9 = PyList_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_9 = PyList_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20178,7 +20148,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_9, 1, __pyx_int_0);
-  __pyx_t_10 = PyList_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_10 = PyList_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20186,7 +20156,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_10, 1, __pyx_int_0);
-  __pyx_t_11 = PyList_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_11 = PyList_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_11);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20194,7 +20164,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_11, 1, __pyx_int_0);
-  __pyx_t_12 = PyList_New(2); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_12 = PyList_New(2); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20202,7 +20172,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_12, 1, __pyx_int_1);
-  __pyx_t_13 = PyList_New(2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_13 = PyList_New(2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20210,7 +20180,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_13, 1, __pyx_int_1);
-  __pyx_t_14 = PyList_New(2); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_14 = PyList_New(2); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_14);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20218,10 +20188,10 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_14, 1, __pyx_int_0);
-  __pyx_t_15 = PyList_New(12); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_15 = PyList_New(12); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
-  __Pyx_GIVEREF(__pyx_t_1);
-  PyList_SET_ITEM(__pyx_t_15, 0, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_3);
+  PyList_SET_ITEM(__pyx_t_15, 0, __pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_5);
   PyList_SET_ITEM(__pyx_t_15, 1, __pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_4);
@@ -20244,7 +20214,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   PyList_SET_ITEM(__pyx_t_15, 10, __pyx_t_13);
   __Pyx_GIVEREF(__pyx_t_14);
   PyList_SET_ITEM(__pyx_t_15, 11, __pyx_t_14);
-  __pyx_t_1 = 0;
+  __pyx_t_3 = 0;
   __pyx_t_5 = 0;
   __pyx_t_4 = 0;
   __pyx_t_2 = 0;
@@ -20256,46 +20226,46 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __pyx_t_12 = 0;
   __pyx_t_13 = 0;
   __pyx_t_14 = 0;
-  __pyx_t_14 = PyTuple_New(1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_14 = PyTuple_New(1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_14);
   __Pyx_GIVEREF(__pyx_t_15);
   PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_15);
   __pyx_t_15 = 0;
-  __pyx_t_15 = PyDict_New(); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_15 = PyDict_New(); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
-  __pyx_t_13 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_13 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
-  __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_t_13, __pyx_n_s_int8); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_t_13, __pyx_n_s_int8); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
   __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
-  if (PyDict_SetItem(__pyx_t_15, __pyx_n_s_dtype, __pyx_t_12) < 0) __PYX_ERR(0, 47, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_15, __pyx_n_s_dtype, __pyx_t_12) < 0) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-  __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_14, __pyx_t_15); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_14, __pyx_t_15); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
   __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
   __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(__pyx_t_12);
-  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 47, __pyx_L1_error)
+  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
   __PYX_XDEC_MEMVIEW(&__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSX, 1);
   __pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSX = __pyx_t_16;
   __pyx_t_16.memview = NULL;
   __pyx_t_16.data = NULL;
 
-  /* "pyFAI/ext/marchingsquares.pyx":48
+  /* "pyFAI/ext/marchingsquares.pyx":47
  * 
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSX = numpy.array([[0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)             # <<<<<<<<<<<<<<
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
  */
-  __pyx_t_12 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_12 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
-  __pyx_t_15 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_n_s_array); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_15 = __Pyx_PyObject_GetAttrStr(__pyx_t_12, __pyx_n_s_array); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-  __pyx_t_12 = PyList_New(2); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_12 = PyList_New(2); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20303,7 +20273,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_12, 1, __pyx_int_0);
-  __pyx_t_14 = PyList_New(2); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_14 = PyList_New(2); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_14);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20311,15 +20281,15 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_14, 1, __pyx_int_1);
-  __pyx_t_3 = PyList_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_1 = PyList_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_3, 0, __pyx_int_1);
+  PyList_SET_ITEM(__pyx_t_1, 0, __pyx_int_1);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_int_1);
-  __pyx_t_13 = PyList_New(2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 48, __pyx_L1_error)
+  PyList_SET_ITEM(__pyx_t_1, 1, __pyx_int_1);
+  __pyx_t_13 = PyList_New(2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20327,7 +20297,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_13, 1, __pyx_int_0);
-  __pyx_t_11 = PyList_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_11 = PyList_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_11);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20335,7 +20305,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_11, 1, __pyx_int_0);
-  __pyx_t_10 = PyList_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_10 = PyList_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20343,7 +20313,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_10, 1, __pyx_int_1);
-  __pyx_t_9 = PyList_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_9 = PyList_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20351,7 +20321,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_9, 1, __pyx_int_1);
-  __pyx_t_8 = PyList_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_8 = PyList_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20359,7 +20329,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_8, 1, __pyx_int_0);
-  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20367,6 +20337,107 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_7, 1, __pyx_int_0);
+  __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_INCREF(__pyx_int_0);
+  __Pyx_GIVEREF(__pyx_int_0);
+  PyList_SET_ITEM(__pyx_t_2, 0, __pyx_int_0);
+  __Pyx_INCREF(__pyx_int_0);
+  __Pyx_GIVEREF(__pyx_int_0);
+  PyList_SET_ITEM(__pyx_t_2, 1, __pyx_int_0);
+  __pyx_t_4 = PyList_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_INCREF(__pyx_int_1);
+  __Pyx_GIVEREF(__pyx_int_1);
+  PyList_SET_ITEM(__pyx_t_4, 0, __pyx_int_1);
+  __Pyx_INCREF(__pyx_int_1);
+  __Pyx_GIVEREF(__pyx_int_1);
+  PyList_SET_ITEM(__pyx_t_4, 1, __pyx_int_1);
+  __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_INCREF(__pyx_int_1);
+  __Pyx_GIVEREF(__pyx_int_1);
+  PyList_SET_ITEM(__pyx_t_5, 0, __pyx_int_1);
+  __Pyx_INCREF(__pyx_int_1);
+  __Pyx_GIVEREF(__pyx_int_1);
+  PyList_SET_ITEM(__pyx_t_5, 1, __pyx_int_1);
+  __pyx_t_3 = PyList_New(12); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_GIVEREF(__pyx_t_12);
+  PyList_SET_ITEM(__pyx_t_3, 0, __pyx_t_12);
+  __Pyx_GIVEREF(__pyx_t_14);
+  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_t_14);
+  __Pyx_GIVEREF(__pyx_t_1);
+  PyList_SET_ITEM(__pyx_t_3, 2, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_13);
+  PyList_SET_ITEM(__pyx_t_3, 3, __pyx_t_13);
+  __Pyx_GIVEREF(__pyx_t_11);
+  PyList_SET_ITEM(__pyx_t_3, 4, __pyx_t_11);
+  __Pyx_GIVEREF(__pyx_t_10);
+  PyList_SET_ITEM(__pyx_t_3, 5, __pyx_t_10);
+  __Pyx_GIVEREF(__pyx_t_9);
+  PyList_SET_ITEM(__pyx_t_3, 6, __pyx_t_9);
+  __Pyx_GIVEREF(__pyx_t_8);
+  PyList_SET_ITEM(__pyx_t_3, 7, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_7);
+  PyList_SET_ITEM(__pyx_t_3, 8, __pyx_t_7);
+  __Pyx_GIVEREF(__pyx_t_2);
+  PyList_SET_ITEM(__pyx_t_3, 9, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_4);
+  PyList_SET_ITEM(__pyx_t_3, 10, __pyx_t_4);
+  __Pyx_GIVEREF(__pyx_t_5);
+  PyList_SET_ITEM(__pyx_t_3, 11, __pyx_t_5);
+  __pyx_t_12 = 0;
+  __pyx_t_14 = 0;
+  __pyx_t_1 = 0;
+  __pyx_t_13 = 0;
+  __pyx_t_11 = 0;
+  __pyx_t_10 = 0;
+  __pyx_t_9 = 0;
+  __pyx_t_8 = 0;
+  __pyx_t_7 = 0;
+  __pyx_t_2 = 0;
+  __pyx_t_4 = 0;
+  __pyx_t_5 = 0;
+  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_GIVEREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3);
+  __pyx_t_3 = 0;
+  __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_int8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_2) < 0) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_15, __pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(__pyx_t_2);
+  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __PYX_XDEC_MEMVIEW(&__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY, 1);
+  __pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY = __pyx_t_16;
+  __pyx_t_16.memview = NULL;
+  __pyx_t_16.data = NULL;
+
+  /* "pyFAI/ext/marchingsquares.pyx":48
+ * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSX = numpy.array([[0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], dtype=numpy.int8)
+ * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)
+ * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)             # <<<<<<<<<<<<<<
+ * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
+ *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing
+ */
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_int_0);
@@ -20375,108 +20446,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_2, 1, __pyx_int_0);
-  __pyx_t_4 = PyList_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_INCREF(__pyx_int_1);
-  __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_4, 0, __pyx_int_1);
-  __Pyx_INCREF(__pyx_int_1);
-  __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_4, 1, __pyx_int_1);
   __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_INCREF(__pyx_int_1);
-  __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_5, 0, __pyx_int_1);
-  __Pyx_INCREF(__pyx_int_1);
-  __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_5, 1, __pyx_int_1);
-  __pyx_t_1 = PyList_New(12); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_12);
-  PyList_SET_ITEM(__pyx_t_1, 0, __pyx_t_12);
-  __Pyx_GIVEREF(__pyx_t_14);
-  PyList_SET_ITEM(__pyx_t_1, 1, __pyx_t_14);
-  __Pyx_GIVEREF(__pyx_t_3);
-  PyList_SET_ITEM(__pyx_t_1, 2, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_13);
-  PyList_SET_ITEM(__pyx_t_1, 3, __pyx_t_13);
-  __Pyx_GIVEREF(__pyx_t_11);
-  PyList_SET_ITEM(__pyx_t_1, 4, __pyx_t_11);
-  __Pyx_GIVEREF(__pyx_t_10);
-  PyList_SET_ITEM(__pyx_t_1, 5, __pyx_t_10);
-  __Pyx_GIVEREF(__pyx_t_9);
-  PyList_SET_ITEM(__pyx_t_1, 6, __pyx_t_9);
-  __Pyx_GIVEREF(__pyx_t_8);
-  PyList_SET_ITEM(__pyx_t_1, 7, __pyx_t_8);
-  __Pyx_GIVEREF(__pyx_t_7);
-  PyList_SET_ITEM(__pyx_t_1, 8, __pyx_t_7);
-  __Pyx_GIVEREF(__pyx_t_2);
-  PyList_SET_ITEM(__pyx_t_1, 9, __pyx_t_2);
-  __Pyx_GIVEREF(__pyx_t_4);
-  PyList_SET_ITEM(__pyx_t_1, 10, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_5);
-  PyList_SET_ITEM(__pyx_t_1, 11, __pyx_t_5);
-  __pyx_t_12 = 0;
-  __pyx_t_14 = 0;
-  __pyx_t_3 = 0;
-  __pyx_t_13 = 0;
-  __pyx_t_11 = 0;
-  __pyx_t_10 = 0;
-  __pyx_t_9 = 0;
-  __pyx_t_8 = 0;
-  __pyx_t_7 = 0;
-  __pyx_t_2 = 0;
-  __pyx_t_4 = 0;
-  __pyx_t_5 = 0;
-  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_GIVEREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_1);
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_int8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_2) < 0) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_15, __pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(__pyx_t_2);
-  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 48, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __PYX_XDEC_MEMVIEW(&__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY, 1);
-  __pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSY = __pyx_t_16;
-  __pyx_t_16.memview = NULL;
-  __pyx_t_16.data = NULL;
-
-  /* "pyFAI/ext/marchingsquares.pyx":49
- * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSX = numpy.array([[0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], dtype=numpy.int8)
- * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)
- * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)             # <<<<<<<<<<<<<<
- * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
- *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing
- */
-  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_array); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_INCREF(__pyx_int_0);
-  __Pyx_GIVEREF(__pyx_int_0);
-  PyList_SET_ITEM(__pyx_t_2, 0, __pyx_int_0);
-  __Pyx_INCREF(__pyx_int_0);
-  __Pyx_GIVEREF(__pyx_int_0);
-  PyList_SET_ITEM(__pyx_t_2, 1, __pyx_int_0);
-  __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20484,7 +20454,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_5, 1, __pyx_int_0);
-  __pyx_t_15 = PyList_New(2); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_15 = PyList_New(2); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20492,7 +20462,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_15, 1, __pyx_int_0);
-  __pyx_t_4 = PyList_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20500,7 +20470,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_4, 1, __pyx_int_0);
-  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_7 = PyList_New(2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20508,7 +20478,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_7, 1, __pyx_int_1);
-  __pyx_t_8 = PyList_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_8 = PyList_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20516,7 +20486,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_8, 1, __pyx_int_1);
-  __pyx_t_9 = PyList_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_9 = PyList_New(2); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20524,7 +20494,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_9, 1, __pyx_int_1);
-  __pyx_t_10 = PyList_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_10 = PyList_New(2); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20532,7 +20502,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_10, 1, __pyx_int_1);
-  __pyx_t_11 = PyList_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_11 = PyList_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_11);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20540,7 +20510,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_11, 1, __pyx_int_1);
-  __pyx_t_13 = PyList_New(2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_13 = PyList_New(2); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20548,15 +20518,15 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_13, 1, __pyx_int_1);
-  __pyx_t_3 = PyList_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_1 = PyList_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
-  PyList_SET_ITEM(__pyx_t_3, 0, __pyx_int_0);
+  PyList_SET_ITEM(__pyx_t_1, 0, __pyx_int_0);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_int_1);
-  __pyx_t_14 = PyList_New(2); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 49, __pyx_L1_error)
+  PyList_SET_ITEM(__pyx_t_1, 1, __pyx_int_1);
+  __pyx_t_14 = PyList_New(2); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_14);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20564,7 +20534,7 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_14, 1, __pyx_int_1);
-  __pyx_t_12 = PyList_New(12); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_12 = PyList_New(12); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
   __Pyx_GIVEREF(__pyx_t_2);
   PyList_SET_ITEM(__pyx_t_12, 0, __pyx_t_2);
@@ -20586,8 +20556,8 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   PyList_SET_ITEM(__pyx_t_12, 8, __pyx_t_11);
   __Pyx_GIVEREF(__pyx_t_13);
   PyList_SET_ITEM(__pyx_t_12, 9, __pyx_t_13);
-  __Pyx_GIVEREF(__pyx_t_3);
-  PyList_SET_ITEM(__pyx_t_12, 10, __pyx_t_3);
+  __Pyx_GIVEREF(__pyx_t_1);
+  PyList_SET_ITEM(__pyx_t_12, 10, __pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_14);
   PyList_SET_ITEM(__pyx_t_12, 11, __pyx_t_14);
   __pyx_t_2 = 0;
@@ -20600,56 +20570,56 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __pyx_t_10 = 0;
   __pyx_t_11 = 0;
   __pyx_t_13 = 0;
-  __pyx_t_3 = 0;
+  __pyx_t_1 = 0;
   __pyx_t_14 = 0;
-  __pyx_t_14 = PyTuple_New(1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_14 = PyTuple_New(1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_14);
   __Pyx_GIVEREF(__pyx_t_12);
   PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_12);
   __pyx_t_12 = 0;
-  __pyx_t_12 = PyDict_New(); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_12 = PyDict_New(); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
-  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_int8); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_13);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (PyDict_SetItem(__pyx_t_12, __pyx_n_s_dtype, __pyx_t_13) < 0) __PYX_ERR(0, 49, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
-  __pyx_t_13 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_14, __pyx_t_12); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_13 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_int8); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (PyDict_SetItem(__pyx_t_12, __pyx_n_s_dtype, __pyx_t_13) < 0) __PYX_ERR(0, 48, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
+  __pyx_t_13 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_14, __pyx_t_12); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_13);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
   __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(__pyx_t_13);
-  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 49, __pyx_L1_error)
+  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
   __PYX_XDEC_MEMVIEW(&__pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSZ, 1);
   __pyx_v_5pyFAI_3ext_15marchingsquares_EDGETORELATIVEPOSZ = __pyx_t_16;
   __pyx_t_16.memview = NULL;
   __pyx_t_16.data = NULL;
 
-  /* "pyFAI/ext/marchingsquares.pyx":50
+  /* "pyFAI/ext/marchingsquares.pyx":49
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([             # <<<<<<<<<<<<<<
  *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing
  *                                                  [1, 0, 3, 0, 0],  # Case 1
  */
-  __pyx_t_13 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_13 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
-  __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_t_13, __pyx_n_s_array); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_t_13, __pyx_n_s_array); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_12);
   __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":51
+  /* "pyFAI/ext/marchingsquares.pyx":50
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
  *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing             # <<<<<<<<<<<<<<
  *                                                  [1, 0, 3, 0, 0],  # Case 1
  *                                                  [1, 0, 1, 0, 0],  # Case 2
  */
-  __pyx_t_13 = PyList_New(5); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 51, __pyx_L1_error)
+  __pyx_t_13 = PyList_New(5); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -20667,14 +20637,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_13, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":52
+  /* "pyFAI/ext/marchingsquares.pyx":51
  * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
  *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing
  *                                                  [1, 0, 3, 0, 0],  # Case 1             # <<<<<<<<<<<<<<
  *                                                  [1, 0, 1, 0, 0],  # Case 2
  *                                                  [1, 1, 3, 0, 0],  # Case 3
  */
-  __pyx_t_14 = PyList_New(5); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 52, __pyx_L1_error)
+  __pyx_t_14 = PyList_New(5); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_14);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20692,49 +20662,24 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_14, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":53
+  /* "pyFAI/ext/marchingsquares.pyx":52
  *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing
  *                                                  [1, 0, 3, 0, 0],  # Case 1
  *                                                  [1, 0, 1, 0, 0],  # Case 2             # <<<<<<<<<<<<<<
  *                                                  [1, 1, 3, 0, 0],  # Case 3
  * 
  */
-  __pyx_t_1 = PyList_New(5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_INCREF(__pyx_int_1);
-  __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_1, 0, __pyx_int_1);
-  __Pyx_INCREF(__pyx_int_0);
-  __Pyx_GIVEREF(__pyx_int_0);
-  PyList_SET_ITEM(__pyx_t_1, 1, __pyx_int_0);
-  __Pyx_INCREF(__pyx_int_1);
-  __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_1, 2, __pyx_int_1);
-  __Pyx_INCREF(__pyx_int_0);
-  __Pyx_GIVEREF(__pyx_int_0);
-  PyList_SET_ITEM(__pyx_t_1, 3, __pyx_int_0);
-  __Pyx_INCREF(__pyx_int_0);
-  __Pyx_GIVEREF(__pyx_int_0);
-  PyList_SET_ITEM(__pyx_t_1, 4, __pyx_int_0);
-
-  /* "pyFAI/ext/marchingsquares.pyx":54
- *                                                  [1, 0, 3, 0, 0],  # Case 1
- *                                                  [1, 0, 1, 0, 0],  # Case 2
- *                                                  [1, 1, 3, 0, 0],  # Case 3             # <<<<<<<<<<<<<<
- * 
- *                                                  [1, 1, 2, 0, 0],  # Case 4
- */
-  __pyx_t_3 = PyList_New(5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 54, __pyx_L1_error)
+  __pyx_t_3 = PyList_New(5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 52, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
   PyList_SET_ITEM(__pyx_t_3, 0, __pyx_int_1);
+  __Pyx_INCREF(__pyx_int_0);
+  __Pyx_GIVEREF(__pyx_int_0);
+  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_int_0);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
-  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_int_1);
-  __Pyx_INCREF(__pyx_int_3);
-  __Pyx_GIVEREF(__pyx_int_3);
-  PyList_SET_ITEM(__pyx_t_3, 2, __pyx_int_3);
+  PyList_SET_ITEM(__pyx_t_3, 2, __pyx_int_1);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_3, 3, __pyx_int_0);
@@ -20742,14 +20687,39 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_3, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":56
+  /* "pyFAI/ext/marchingsquares.pyx":53
+ *                                                  [1, 0, 3, 0, 0],  # Case 1
+ *                                                  [1, 0, 1, 0, 0],  # Case 2
+ *                                                  [1, 1, 3, 0, 0],  # Case 3             # <<<<<<<<<<<<<<
+ * 
+ *                                                  [1, 1, 2, 0, 0],  # Case 4
+ */
+  __pyx_t_1 = PyList_New(5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_INCREF(__pyx_int_1);
+  __Pyx_GIVEREF(__pyx_int_1);
+  PyList_SET_ITEM(__pyx_t_1, 0, __pyx_int_1);
+  __Pyx_INCREF(__pyx_int_1);
+  __Pyx_GIVEREF(__pyx_int_1);
+  PyList_SET_ITEM(__pyx_t_1, 1, __pyx_int_1);
+  __Pyx_INCREF(__pyx_int_3);
+  __Pyx_GIVEREF(__pyx_int_3);
+  PyList_SET_ITEM(__pyx_t_1, 2, __pyx_int_3);
+  __Pyx_INCREF(__pyx_int_0);
+  __Pyx_GIVEREF(__pyx_int_0);
+  PyList_SET_ITEM(__pyx_t_1, 3, __pyx_int_0);
+  __Pyx_INCREF(__pyx_int_0);
+  __Pyx_GIVEREF(__pyx_int_0);
+  PyList_SET_ITEM(__pyx_t_1, 4, __pyx_int_0);
+
+  /* "pyFAI/ext/marchingsquares.pyx":55
  *                                                  [1, 1, 3, 0, 0],  # Case 3
  * 
  *                                                  [1, 1, 2, 0, 0],  # Case 4             # <<<<<<<<<<<<<<
  *                                                  [2, 0, 1, 2, 3],  # Case 5 > ambiguous
  *                                                  [1, 0, 2, 0, 0],  # Case 6
  */
-  __pyx_t_11 = PyList_New(5); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 56, __pyx_L1_error)
+  __pyx_t_11 = PyList_New(5); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_11);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20767,14 +20737,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_11, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":57
+  /* "pyFAI/ext/marchingsquares.pyx":56
  * 
  *                                                  [1, 1, 2, 0, 0],  # Case 4
  *                                                  [2, 0, 1, 2, 3],  # Case 5 > ambiguous             # <<<<<<<<<<<<<<
  *                                                  [1, 0, 2, 0, 0],  # Case 6
  *                                                  [1, 2, 3, 0, 0],  # Case 7
  */
-  __pyx_t_10 = PyList_New(5); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_t_10 = PyList_New(5); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
   __Pyx_INCREF(__pyx_int_2);
   __Pyx_GIVEREF(__pyx_int_2);
@@ -20792,14 +20762,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_3);
   PyList_SET_ITEM(__pyx_t_10, 4, __pyx_int_3);
 
-  /* "pyFAI/ext/marchingsquares.pyx":58
+  /* "pyFAI/ext/marchingsquares.pyx":57
  *                                                  [1, 1, 2, 0, 0],  # Case 4
  *                                                  [2, 0, 1, 2, 3],  # Case 5 > ambiguous
  *                                                  [1, 0, 2, 0, 0],  # Case 6             # <<<<<<<<<<<<<<
  *                                                  [1, 2, 3, 0, 0],  # Case 7
  * 
  */
-  __pyx_t_9 = PyList_New(5); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_9 = PyList_New(5); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 57, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20817,14 +20787,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_9, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":59
+  /* "pyFAI/ext/marchingsquares.pyx":58
  *                                                  [2, 0, 1, 2, 3],  # Case 5 > ambiguous
  *                                                  [1, 0, 2, 0, 0],  # Case 6
  *                                                  [1, 2, 3, 0, 0],  # Case 7             # <<<<<<<<<<<<<<
  * 
  *                                                  [1, 2, 3, 0, 0],  # Case 8
  */
-  __pyx_t_8 = PyList_New(5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 59, __pyx_L1_error)
+  __pyx_t_8 = PyList_New(5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20842,14 +20812,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_8, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":61
+  /* "pyFAI/ext/marchingsquares.pyx":60
  *                                                  [1, 2, 3, 0, 0],  # Case 7
  * 
  *                                                  [1, 2, 3, 0, 0],  # Case 8             # <<<<<<<<<<<<<<
  *                                                  [1, 0, 2, 0, 0],  # Case 9
  *                                                  [2, 0, 3, 1, 2],  # Case 10 > ambiguous
  */
-  __pyx_t_7 = PyList_New(5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 61, __pyx_L1_error)
+  __pyx_t_7 = PyList_New(5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20867,14 +20837,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_7, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":62
+  /* "pyFAI/ext/marchingsquares.pyx":61
  * 
  *                                                  [1, 2, 3, 0, 0],  # Case 8
  *                                                  [1, 0, 2, 0, 0],  # Case 9             # <<<<<<<<<<<<<<
  *                                                  [2, 0, 3, 1, 2],  # Case 10 > ambiguous
  *                                                  [1, 1, 2, 0, 0],  # Case 11
  */
-  __pyx_t_4 = PyList_New(5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 62, __pyx_L1_error)
+  __pyx_t_4 = PyList_New(5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20892,14 +20862,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_4, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":63
+  /* "pyFAI/ext/marchingsquares.pyx":62
  *                                                  [1, 2, 3, 0, 0],  # Case 8
  *                                                  [1, 0, 2, 0, 0],  # Case 9
  *                                                  [2, 0, 3, 1, 2],  # Case 10 > ambiguous             # <<<<<<<<<<<<<<
  *                                                  [1, 1, 2, 0, 0],  # Case 11
  * 
  */
-  __pyx_t_15 = PyList_New(5); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 63, __pyx_L1_error)
+  __pyx_t_15 = PyList_New(5); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 62, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_15);
   __Pyx_INCREF(__pyx_int_2);
   __Pyx_GIVEREF(__pyx_int_2);
@@ -20917,14 +20887,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_2);
   PyList_SET_ITEM(__pyx_t_15, 4, __pyx_int_2);
 
-  /* "pyFAI/ext/marchingsquares.pyx":64
+  /* "pyFAI/ext/marchingsquares.pyx":63
  *                                                  [1, 0, 2, 0, 0],  # Case 9
  *                                                  [2, 0, 3, 1, 2],  # Case 10 > ambiguous
  *                                                  [1, 1, 2, 0, 0],  # Case 11             # <<<<<<<<<<<<<<
  * 
  *                                                  [1, 1, 3, 0, 0],  # Case 12
  */
-  __pyx_t_5 = PyList_New(5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 64, __pyx_L1_error)
+  __pyx_t_5 = PyList_New(5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20942,14 +20912,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_5, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":66
+  /* "pyFAI/ext/marchingsquares.pyx":65
  *                                                  [1, 1, 2, 0, 0],  # Case 11
  * 
  *                                                  [1, 1, 3, 0, 0],  # Case 12             # <<<<<<<<<<<<<<
  *                                                  [1, 0, 1, 0, 0],  # Case 13
  *                                                  [1, 0, 3, 0, 0],  # Case 14
  */
-  __pyx_t_2 = PyList_New(5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_2 = PyList_New(5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 65, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20967,14 +20937,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_2, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":67
+  /* "pyFAI/ext/marchingsquares.pyx":66
  * 
  *                                                  [1, 1, 3, 0, 0],  # Case 12
  *                                                  [1, 0, 1, 0, 0],  # Case 13             # <<<<<<<<<<<<<<
  *                                                  [1, 0, 3, 0, 0],  # Case 14
  *                                                  [0, 0, 0, 0, 0],  # Case 15
  */
-  __pyx_t_17 = PyList_New(5); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 67, __pyx_L1_error)
+  __pyx_t_17 = PyList_New(5); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_17);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -20992,14 +20962,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_17, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":68
+  /* "pyFAI/ext/marchingsquares.pyx":67
  *                                                  [1, 1, 3, 0, 0],  # Case 12
  *                                                  [1, 0, 1, 0, 0],  # Case 13
  *                                                  [1, 0, 3, 0, 0],  # Case 14             # <<<<<<<<<<<<<<
  *                                                  [0, 0, 0, 0, 0],  # Case 15
  *                                                  ], dtype=numpy.int8)
  */
-  __pyx_t_18 = PyList_New(5); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 68, __pyx_L1_error)
+  __pyx_t_18 = PyList_New(5); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
   __Pyx_INCREF(__pyx_int_1);
   __Pyx_GIVEREF(__pyx_int_1);
@@ -21017,14 +20987,14 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_18, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":69
+  /* "pyFAI/ext/marchingsquares.pyx":68
  *                                                  [1, 0, 1, 0, 0],  # Case 13
  *                                                  [1, 0, 3, 0, 0],  # Case 14
  *                                                  [0, 0, 0, 0, 0],  # Case 15             # <<<<<<<<<<<<<<
  *                                                  ], dtype=numpy.int8)
  * 
  */
-  __pyx_t_19 = PyList_New(5); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 69, __pyx_L1_error)
+  __pyx_t_19 = PyList_New(5); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_19);
   __Pyx_INCREF(__pyx_int_0);
   __Pyx_GIVEREF(__pyx_int_0);
@@ -21042,23 +21012,23 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __Pyx_GIVEREF(__pyx_int_0);
   PyList_SET_ITEM(__pyx_t_19, 4, __pyx_int_0);
 
-  /* "pyFAI/ext/marchingsquares.pyx":50
+  /* "pyFAI/ext/marchingsquares.pyx":49
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([             # <<<<<<<<<<<<<<
  *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing
  *                                                  [1, 0, 3, 0, 0],  # Case 1
  */
-  __pyx_t_20 = PyList_New(16); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_20 = PyList_New(16); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_20);
   __Pyx_GIVEREF(__pyx_t_13);
   PyList_SET_ITEM(__pyx_t_20, 0, __pyx_t_13);
   __Pyx_GIVEREF(__pyx_t_14);
   PyList_SET_ITEM(__pyx_t_20, 1, __pyx_t_14);
-  __Pyx_GIVEREF(__pyx_t_1);
-  PyList_SET_ITEM(__pyx_t_20, 2, __pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_3);
-  PyList_SET_ITEM(__pyx_t_20, 3, __pyx_t_3);
+  PyList_SET_ITEM(__pyx_t_20, 2, __pyx_t_3);
+  __Pyx_GIVEREF(__pyx_t_1);
+  PyList_SET_ITEM(__pyx_t_20, 3, __pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_11);
   PyList_SET_ITEM(__pyx_t_20, 4, __pyx_t_11);
   __Pyx_GIVEREF(__pyx_t_10);
@@ -21085,8 +21055,8 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   PyList_SET_ITEM(__pyx_t_20, 15, __pyx_t_19);
   __pyx_t_13 = 0;
   __pyx_t_14 = 0;
-  __pyx_t_1 = 0;
   __pyx_t_3 = 0;
+  __pyx_t_1 = 0;
   __pyx_t_11 = 0;
   __pyx_t_10 = 0;
   __pyx_t_9 = 0;
@@ -21099,83 +21069,83 @@ PyMODINIT_FUNC PyInit_marchingsquares(void)
   __pyx_t_17 = 0;
   __pyx_t_18 = 0;
   __pyx_t_19 = 0;
-  __pyx_t_19 = PyTuple_New(1); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_19 = PyTuple_New(1); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_19);
   __Pyx_GIVEREF(__pyx_t_20);
   PyTuple_SET_ITEM(__pyx_t_19, 0, __pyx_t_20);
   __pyx_t_20 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":70
+  /* "pyFAI/ext/marchingsquares.pyx":69
  *                                                  [1, 0, 3, 0, 0],  # Case 14
  *                                                  [0, 0, 0, 0, 0],  # Case 15
  *                                                  ], dtype=numpy.int8)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_20 = PyDict_New(); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_20 = PyDict_New(); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_20);
-  __pyx_t_18 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_18 = __Pyx_GetModuleGlobalName(__pyx_n_s_numpy); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
-  __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_18, __pyx_n_s_int8); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_17 = __Pyx_PyObject_GetAttrStr(__pyx_t_18, __pyx_n_s_int8); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_17);
   __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
-  if (PyDict_SetItem(__pyx_t_20, __pyx_n_s_dtype, __pyx_t_17) < 0) __PYX_ERR(0, 70, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_20, __pyx_n_s_dtype, __pyx_t_17) < 0) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":50
+  /* "pyFAI/ext/marchingsquares.pyx":49
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)
  * cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([             # <<<<<<<<<<<<<<
  *                                                  [0, 0, 0, 0, 0],  # Case 0: nothing
  *                                                  [1, 0, 3, 0, 0],  # Case 1
  */
-  __pyx_t_17 = __Pyx_PyObject_Call(__pyx_t_12, __pyx_t_19, __pyx_t_20); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_17 = __Pyx_PyObject_Call(__pyx_t_12, __pyx_t_19, __pyx_t_20); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_17);
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
   __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
   __Pyx_DECREF(__pyx_t_20); __pyx_t_20 = 0;
   __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(__pyx_t_17);
-  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 50, __pyx_L1_error)
+  if (unlikely(!__pyx_t_16.memview)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
   __PYX_XDEC_MEMVIEW(&__pyx_v_5pyFAI_3ext_15marchingsquares_CELLTOEDGE, 1);
   __pyx_v_5pyFAI_3ext_15marchingsquares_CELLTOEDGE = __pyx_t_16;
   __pyx_t_16.memview = NULL;
   __pyx_t_16.data = NULL;
 
-  /* "pyFAI/ext/marchingsquares.pyx":76
+  /* "pyFAI/ext/marchingsquares.pyx":75
  * @cython.wraparound(False)
  * @cython.cdivision(True)
  * def marching_squares(float[:, :] img, double isovalue,             # <<<<<<<<<<<<<<
  *                      numpy.int8_t[:, :] cellToEdge,
  *                      numpy.int8_t[:, :] edgeToRelativePosX,
  */
-  __pyx_t_17 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_15marchingsquares_1marching_squares, NULL, __pyx_n_s_pyFAI_ext_marchingsquares); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 76, __pyx_L1_error)
+  __pyx_t_17 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_15marchingsquares_1marching_squares, NULL, __pyx_n_s_pyFAI_ext_marchingsquares); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_17);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_marching_squares, __pyx_t_17) < 0) __PYX_ERR(0, 76, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_marching_squares, __pyx_t_17) < 0) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":147
+  /* "pyFAI/ext/marchingsquares.pyx":146
  * 
  * @cython.boundscheck(False)
  * def sort_edges(edges):             # <<<<<<<<<<<<<<
  *     """
  *     Reorder edges in such a way they become contiguous
  */
-  __pyx_t_17 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_15marchingsquares_3sort_edges, NULL, __pyx_n_s_pyFAI_ext_marchingsquares); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 147, __pyx_L1_error)
+  __pyx_t_17 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_15marchingsquares_3sort_edges, NULL, __pyx_n_s_pyFAI_ext_marchingsquares); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_17);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_sort_edges, __pyx_t_17) < 0) __PYX_ERR(0, 147, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_sort_edges, __pyx_t_17) < 0) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
 
-  /* "pyFAI/ext/marchingsquares.pyx":192
+  /* "pyFAI/ext/marchingsquares.pyx":191
  * 
  * 
  * def isocontour(img, isovalue=None, sorted=False):             # <<<<<<<<<<<<<<
  *     """ isocontour(img, isovalue=None)
  * 
  */
-  __pyx_t_17 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_15marchingsquares_5isocontour, NULL, __pyx_n_s_pyFAI_ext_marchingsquares); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 192, __pyx_L1_error)
+  __pyx_t_17 = PyCFunction_NewEx(&__pyx_mdef_5pyFAI_3ext_15marchingsquares_5isocontour, NULL, __pyx_n_s_pyFAI_ext_marchingsquares); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_17);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_isocontour, __pyx_t_17) < 0) __PYX_ERR(0, 192, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_isocontour, __pyx_t_17) < 0) __PYX_ERR(0, 191, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
 
   /* "pyFAI/ext/marchingsquares.pyx":1
@@ -23374,20 +23344,6 @@ static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED
 bad:
     Py_XDECREF(ob);
     return -1;
-}
-
-/* ImportFrom */
-            static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
-    PyObject* value = __Pyx_PyObject_GetAttrStr(module, name);
-    if (unlikely(!value) && PyErr_ExceptionMatches(PyExc_AttributeError)) {
-        PyErr_Format(PyExc_ImportError,
-        #if PY_MAJOR_VERSION < 3
-            "cannot import name %.230s", PyString_AS_STRING(name));
-        #else
-            "cannot import name %S", name);
-        #endif
-    }
-    return value;
 }
 
 /* CodeObjectCache */

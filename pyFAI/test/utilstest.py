@@ -94,8 +94,8 @@ class TestContext(object):
         logger.info("%s loaded from %s", self.name, self.pyFAI.__file__)
         sys.modules[self.name] = self.pyFAI
         self.reloaded = True
-        import pyFAI.decorators
-        pyFAI.decorators.depreclog.setLevel(logging.ERROR)
+        import pyFAI.utils.decorators
+        pyFAI.utils.decorators.depreclog.setLevel(logging.ERROR)
         return self.pyFAI
 
     def forceBuild(self, remove_first=True):

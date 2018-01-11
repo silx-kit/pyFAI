@@ -32,7 +32,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 
 import sys
 import logging
@@ -55,7 +55,7 @@ if sys.version_info < (2, 6):
 
 from .detectors import Detector
 from .azimuthalIntegrator import AzimuthalIntegrator
-from .decorators import depreclog
+from .utils.decorators import depreclog
 load = AzimuthalIntegrator.sload
 detector_factory = Detector.factory
 

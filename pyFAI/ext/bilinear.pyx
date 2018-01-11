@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -40,8 +40,6 @@ from cython.parallel import prange
 
 import logging
 logger = logging.getLogger("pyFAI.ext.bilinear")
-
-from ..decorators import timeit
 
 
 @cython.boundscheck(False)
