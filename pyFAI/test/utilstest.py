@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "11/01/2018"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -41,7 +41,9 @@ import unittest
 import logging
 import numpy
 import shutil
-from argparse import ArgumentParser
+import contextlib
+
+from pyFAI.third_party.argparse import ArgumentParser
 from ..utils import six
 from silx.resources import ExternalResources
 
@@ -119,20 +121,6 @@ class UtilsTest(object):
             parser.add_argument(dest="args", type=str, nargs='*')
             cls.options = parser.parse_args([])
         return cls.options
-
-    @classmethod
-    def get_logger(cls, filename=__file__):
-        """
-        small helper function that initialized the logger and returns it
-        """
-        _dirname, basename = os.path.split(os.path.abspath(filename))
-        basename = os.path.splitext(basename)[0]
-        level = logging.root.level
-        mylogger = logging.getLogger(basename)
-        logger.setLevel(level)
-        mylogger.setLevel(level)
-        mylogger.debug("tests loaded from file: %s", basename)
-        return mylogger
 
     @classmethod
     def script_path(cls, script):
@@ -215,8 +203,6 @@ def recursive_delete(dirname):
             os.rmdir(os.path.join(root, name))
     os.rmdir(dirname)
 
-getLogger = UtilsTest.get_logger
-
 
 def diff_img(ref, obt, comment=""):
     """
@@ -290,3 +276,37 @@ class ParameterisedTestCase(unittest.TestCase):
             for name in testnames:
                 suite.addTest(testcase_klass(name, param=param))
         return suite
+
+
+if sys.hexversion >= 0x030400F0:  # Python >= 3.4
+    class ParametricTestCase(unittest.TestCase):
+        pass
+
+else:
+    class ParametricTestCase(unittest.TestCase):
+        """TestCase with subTest support for Python < 3.4.
+
+        Add subTest method to support parametric tests.
+        API is the same, but behavior differs:
+        If a subTest fails, the following ones are not run.
+        """
+
+        _subtest_msg = None  # Class attribute to provide a default value
+
+        @contextlib.contextmanager
+        def subTest(self, msg=None, **params):
+            """Use as unittest.TestCase.subTest method in Python >= 3.4."""
+            # Format arguments as: '[msg] (key=value, ...)'
+            param_str = ', '.join(['%s=%s' % (k, v) for k, v in params.items()])
+            self._subtest_msg = '[%s] (%s)' % (msg or '', param_str)
+            yield
+            self._subtest_msg = None
+
+        def shortDescription(self):
+            short_desc = super(ParametricTestCase, self).shortDescription()
+            if self._subtest_msg is not None:
+                # Append subTest message to shortDescription
+                short_desc = ' '.join(
+                    [msg for msg in (short_desc, self._subtest_msg) if msg])
+
+            return short_desc if short_desc else None

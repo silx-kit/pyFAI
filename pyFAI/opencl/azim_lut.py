@@ -30,14 +30,14 @@ from __future__ import absolute_import, print_function, with_statement, division
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "11/09/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import logging
 import numpy
 from collections import OrderedDict
-from .common import ocl, pyopencl
+from .common import pyopencl
 from ..utils import calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -46,7 +46,7 @@ else:
 
 from .processing import EventDescription, OpenclProcessing, BufferDescription
 
-logger = logging.getLogger("pyFAI.opencl.azim_lut")
+logger = logging.getLogger(__name__)
 
 
 class OCL_LUT_Integrator(OpenclProcessing):
@@ -55,19 +55,18 @@ class OCL_LUT_Integrator(OpenclProcessing):
     It also performs the preprocessing using the preproc kernel
     """
     BLOCK_SIZE = 16
-    buffers = [
-           BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
-           BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
-           BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
-           BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
-           ]
+    buffers = [BufferDescription("output", 1, numpy.float32, mf.WRITE_ONLY),
+               BufferDescription("image_raw", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("image", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("variance", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark", 1, numpy.float32, mf.READ_WRITE),
+               BufferDescription("dark_variance", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("flat", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("polarization", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("solidangle", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("absorption", 1, numpy.float32, mf.READ_ONLY),
+               BufferDescription("mask", 1, numpy.int8, mf.READ_ONLY),
+               ]
     kernel_files = ["preprocess.cl", "memset.cl", "ocl_azim_LUT.cl"]
     mapping = {numpy.int8: "s8_to_float",
                numpy.uint8: "u8_to_float",
@@ -374,4 +373,3 @@ class OCL_LUT_Integrator(OpenclProcessing):
         if self.profile:
             self.events += events
         return outMerge, outData, outCount
-

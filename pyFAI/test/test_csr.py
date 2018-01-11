@@ -35,8 +35,9 @@ from __future__ import absolute_import, division, print_function
 
 import unittest
 import numpy
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
@@ -120,6 +121,7 @@ class ParamOpenclCSR(ParameterisedTestCase):
         out_ocl_csr = None
         out_ref = None
 
+
 TESTCASES = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
 
 
@@ -149,13 +151,14 @@ class Test_CSR(unittest.TestCase):
 
     def test_2d_nosplit(self):
         self.ai.reset()
-        img, tth, chi = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="histogram")
-        img_csr, tth_csr, chi_csr = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
+        result_histo = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="histogram")
+        result_nosplit = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
         # diff_crv(tth, tth_csr, "2th")
         # self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
         # self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
         # diff_img(img, img_csr, "no split")
-        self.assertLess(((img - img_csr) > 1).sum(), 6, " img are almost the same")
+        error = ((result_histo.intensity - result_nosplit.intensity) > 1).sum()
+        self.assertLess(error, 6, " img are almost the same")
 
 
 def suite():

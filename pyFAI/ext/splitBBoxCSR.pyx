@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "19/06/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -252,10 +252,10 @@ class HistoBBox1d(object):
             float delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
             numpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
+            numpy.ndarray[numpy.int32_t, ndim=1] outMax = numpy.zeros(bins, dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indices
+            numpy.ndarray[numpy.float32_t, ndim=1] data
             float[:] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
             numpy.int8_t[:] cmask
 
@@ -393,10 +393,10 @@ class HistoBBox1d(object):
             float delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, fbin0, deltaL, deltaR, deltaA, pos0
             numpy.int32_t k, idx, i, j, tmp_index, index_tmp_index, bin0, bins = self.bins, size, nnz
             bint check_mask, check_pos1
-            numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
+            numpy.ndarray[numpy.int32_t, ndim=1] outMax = numpy.zeros(bins, dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indices
+            numpy.ndarray[numpy.float32_t, ndim=1] data
             float[:] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             numpy.int8_t[:] cmask
 
@@ -514,9 +514,9 @@ class HistoBBox1d(object):
             double sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
             float data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
+            numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
+            numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+            numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
             float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
         assert weights.size == size, "weights size"
@@ -663,7 +663,7 @@ class HistoBBox2d(object):
         self.empty = 0.0
         try:
             bins0, bins1 = tuple(bins)
-        except:
+        except TypeError:
             bins0 = bins1 = bins
         if bins0 <= 0:
             bins0 = 1
@@ -884,10 +884,10 @@ class HistoBBox2d(object):
             float[:] cpos0_inf = self.cpos0_inf
             float[:] cpos1_inf = self.cpos1_inf
             float[:] cpos1_sup = self.cpos1_sup
-            numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
+            numpy.ndarray[numpy.int32_t, ndim=2] outMax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indices
+            numpy.ndarray[numpy.float32_t, ndim=1] data
             numpy.int8_t[:] cmask
 
         if self.check_mask:
@@ -1110,10 +1110,10 @@ class HistoBBox2d(object):
             bint check_mask
             float[:] cpos0 = self.cpos0
             float[:] cpos1 = self.cpos1
-            numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
-            numpy.ndarray[numpy.int32_t, ndim = 1] indices
-            numpy.ndarray[numpy.float32_t, ndim = 1] data
+            numpy.ndarray[numpy.int32_t, ndim=2] outMax = numpy.zeros((bins0, bins1), dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indptr = numpy.zeros((bins0 * bins1) + 1, dtype=numpy.int32)
+            numpy.ndarray[numpy.int32_t, ndim=1] indices
+            numpy.ndarray[numpy.float32_t, ndim=1] data
             numpy.int8_t[:] cmask
 
         if self.check_mask:
@@ -1218,12 +1218,12 @@ class HistoBBox2d(object):
             double sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
             float data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
-            numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
-            numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-            numpy.ndarray[numpy.float64_t, ndim = 1] outData_1d = outData.ravel()
-            numpy.ndarray[numpy.float64_t, ndim = 1] outCount_1d = outCount.ravel()
-            numpy.ndarray[numpy.float32_t, ndim = 1] outMerge_1d = outMerge.ravel()
+            numpy.ndarray[numpy.float64_t, ndim=2] outData = numpy.zeros(self.bins, dtype=numpy.float64)
+            numpy.ndarray[numpy.float64_t, ndim=2] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+            numpy.ndarray[numpy.float32_t, ndim=2] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
+            numpy.ndarray[numpy.float64_t, ndim=1] outData_1d = outData.ravel()
+            numpy.ndarray[numpy.float64_t, ndim=1] outCount_1d = outCount.ravel()
+            numpy.ndarray[numpy.float32_t, ndim=1] outMerge_1d = outMerge.ravel()
             float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
 

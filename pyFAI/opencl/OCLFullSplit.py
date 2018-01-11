@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "15/06/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -46,7 +46,7 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 from ..utils import crc32
-logger = logging.getLogger("pyFAI.OCLFullSplit")
+logger = logging.getLogger(__name__)
 
 
 class OCLFullSplit1d(object):

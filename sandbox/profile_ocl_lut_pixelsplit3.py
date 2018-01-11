@@ -16,10 +16,7 @@ print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
 from pyFAI import ocl_hist_pixelsplit
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 # from pyFAI import splitBBoxLUT
 # from pyFAI import splitBBoxCSR
 # logger = utilstest.getLogger("profile")

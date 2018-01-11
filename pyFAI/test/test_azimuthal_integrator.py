@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2017"
+__date__ = "10/01/2018"
 
 import unittest
 import os
@@ -45,17 +45,15 @@ import copy
 import fabio
 import tempfile
 import gc
-from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
-logger = getLogger(__file__)
+from .utilstest import UtilsTest, Rwp, recursive_delete
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 tmp_dir = UtilsTest.tempdir
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI import units
+from ..third_party import six
 
 
 @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
@@ -101,8 +99,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
         poniFile = "LaB6.poni"
 
         cls.tmpfiles = {"cython": os.path.join(tmp_dir, "cython.dat"),
-                         "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
-                         "numpy": os.path.join(tmp_dir, "numpy.dat")}
+                        "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
+                        "numpy": os.path.join(tmp_dir, "numpy.dat")}
 
         cls.fit2dFile = UtilsTest.getimage(fit2dFile)
         cls.halfFrelon = UtilsTest.getimage(halfFrelon)
@@ -154,9 +152,10 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare numpy histogram with results of fit2d
         """
-#        logger.info(self.ai.__repr__())
+        # logger.info(self.ai.__repr__())
         tth, I = self.ai.xrpd_numpy(self.data,
-                                    len(self.fit2d), self.tmpfiles["numpy"], correctSolidAngle=False)
+                                    len(self.fit2d), self.tmpfiles["numpy"],
+                                    correctSolidAngle=False)
         rwp = Rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -177,11 +176,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with results of fit2d
         """
-#        logger.info(self.ai.__repr__())
+        # logger.info(self.ai.__repr__())
         tth, I = self.ai.xrpd_cython(self.data,
-                                     len(self.fit2d), self.tmpfiles["cython"], correctSolidAngle=False, pixelSize=None)
-#        logger.info(tth)
-#        logger.info(I)
+                                     len(self.fit2d), self.tmpfiles["cython"],
+                                     correctSolidAngle=False, pixelSize=None)
+        # logger.info(tth)
+        # logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -203,7 +203,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         Compare cython splitPixel with results of fit2d
         """
         logger.info(self.ai.__repr__())
-        self.ai.cornerArray(self.data.shape)
+        self.ai.corner_array(self.data.shape, unit=units.TTH_RAD, scale=False)
         # this was just to enforce the initalization of the array
         t0 = time.time()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
@@ -214,8 +214,8 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                          correctSolidAngle=False)
         logger.info("in test_cythonSP_vs_fit2d Before")
         t1 = time.time() - t0
-#        logger.info(tth)
-#        logger.info(I)
+        # logger.info(tth)
+        # logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -314,7 +314,7 @@ class TestFlatimage(unittest.TestCase):
         det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
         I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
-#        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
+        # I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")

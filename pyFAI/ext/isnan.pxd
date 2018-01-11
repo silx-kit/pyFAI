@@ -23,6 +23,6 @@
 ###############################################################################
 
 # This header provides a compatible isnan function across platforms.
-   
+
 cdef extern from "src/isnan.h":
     bint isnan(double x) nogil

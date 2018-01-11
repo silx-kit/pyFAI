@@ -95,7 +95,6 @@ Recommended dependencies are:
 * h5py
 * pyopencl
 * PyQt5
-* pymca
 * rfoo
 * pyfftw3
 * lxml

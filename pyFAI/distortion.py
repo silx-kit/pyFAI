@@ -30,14 +30,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2017"
+__date__ = "10/01/2018"
 __status__ = "development"
 
 import logging
 import threading
 import os
 import numpy
-logger = logging.getLogger("pyFAI.distortion")
+logger = logging.getLogger(__name__)
 from math import ceil, floor
 from . import detectors
 from .opencl import ocl
@@ -46,10 +46,8 @@ if ocl:
     from .opencl import azim_csr as ocl_azim_csr
 else:
     ocl_azim_lut = ocl_azim_csr = None
-try:
-    from .third_party import six
-except ImportError:
-    import six
+from .third_party import six
+
 try:
     from .ext import _distortion
     from .ext import sparse_utils
@@ -292,8 +290,8 @@ class Distortion(object):
                         lut[:, :, :].coef = 0.0
                         outMax = numpy.zeros(self._shape_out, dtype=numpy.uint32)
                         idx = 0
-                        buffer = numpy.empty((self.delta1, self.delta2))
-                        quad = Quad(buffer)
+                        buffer_ = numpy.empty((self.delta1, self.delta2))
+                        quad = Quad(buffer_)
                         for i in range(self._shape_out[0]):
                             for j in range(self._shape_out[1]):
                                 if (mask is not None) and mask[i, j]:
@@ -401,7 +399,7 @@ class Distortion(object):
         else:  # This is deprecated and does not work with resise=True
             if self.method == "lut":
                 if _distortion is not None:
-                    out, mask = _distortion.uncorrect_LUT(image, self.shape_in, self.lut)
+                    out, _mask = _distortion.uncorrect_LUT(image, self.shape_in, self.lut)
                 else:
                     out = numpy.zeros(self.shape_in, dtype=numpy.float32)
                     lout = out.ravel()
@@ -415,7 +413,7 @@ class Distortion(object):
                         lout[self.lut[idx].idx] += val * self.lut[idx].coef
             elif self.method == "csr":
                 if _distortion is not None:
-                    out, mask = _distortion.uncorrect_CSR(image, self.shape_in, self.lut)
+                    out, _mask = _distortion.uncorrect_CSR(image, self.shape_in, self.lut)
             else:
                 raise NotImplementedError()
         return out
@@ -630,7 +628,7 @@ class Quad(object):
                             if dA > AA:
                                 dA = AA
                                 AA = -1
-                            self.box[i , h] += sign * dA
+                            self.box[i, h] += sign * dA
                             AA -= dA
                             h += 1
                 # Section Pn->B
@@ -709,7 +707,8 @@ class Quad(object):
                         dA = abs(dP)
                         while AA > 0:
                             if dA > AA:
-                                dA = AA; AA = -1
+                                dA = AA
+                                AA = -1
                             self.box[int(floor(stop)), h] += sign * dA
                             AA -= dA
                             h += 1
@@ -801,6 +800,7 @@ def test():
     from .gui.matplotlib import pylab
     pylab.imshow(out)  # , interpolation="nearest")
     pylab.show()
+
 
 if __name__ == "__main__":
     det = dis = lut = None

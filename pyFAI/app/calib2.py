@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 
 import logging
@@ -46,7 +46,6 @@ logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI-calib2")
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
-import silx.gui
 from pyFAI.gui import qt
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 
@@ -54,10 +53,7 @@ import pyFAI.calibrant
 import pyFAI.calibration
 import fabio
 
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from .third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
 try:
     from rfoo.utils import rconsole
@@ -397,7 +393,7 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
         # Make sure there is no problem at all in this funbction
         try:
             logger_uncaught.error(exception)
-        except:
+        except Exception:
             print("Error:" + str(exception))
 
 

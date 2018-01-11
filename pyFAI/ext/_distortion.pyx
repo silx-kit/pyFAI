@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "18/12/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -49,10 +49,7 @@ import time
 logger = logging.getLogger(__name__)
 from ..detectors import detector_factory
 from ..utils import expand2d
-try:
-    from ..third_party import six
-except ImportError:
-    import six
+from ..third_party import six
 import fabio
 
 from sparse_utils cimport ArrayBuilder, lut_point
@@ -160,7 +157,7 @@ cdef inline void integrate(float[:, ::1] box, float start, float stop, float slo
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
-                        box[i , h] += copysign(dA, segment_area)
+                        box[i, h] += copysign(dA, segment_area)
                         abs_area -= dA
                         h += 1
             # Section Pn->B
@@ -185,7 +182,7 @@ cdef inline void integrate(float[:, ::1] box, float start, float stop, float slo
             segment_area = calc_area(start, stop, slope, intercept)
             if segment_area != 0:
                 abs_area = fabs(segment_area)
-#                 sign = segment_area / abs_area
+                # sign = segment_area / abs_area
                 dA = (start - stop)  # always positive
                 h = 0
                 while abs_area > 0:
@@ -207,7 +204,7 @@ cdef inline void integrate(float[:, ::1] box, float start, float stop, float slo
                         if dA > abs_area:
                             dA = abs_area
                             abs_area = -1
-                        box[(<int> P) , h] += copysign(dA, segment_area)
+                        box[(<int> P), h] += copysign(dA, segment_area)
                         abs_area -= dA
                         h += 1
             # subsection P1->Pn
@@ -329,7 +326,7 @@ def calc_size(floating[:, :, :, ::1] pos not None,
     """
     cdef:
         int i, j, k, l, shape_out0, shape_out1, shape_in0, shape_in1, min0, min1, max0, max1
-        numpy.ndarray[numpy.int32_t, ndim = 2] lut_size = numpy.zeros(shape, dtype=numpy.int32)
+        numpy.ndarray[numpy.int32_t, ndim=2] lut_size = numpy.zeros(shape, dtype=numpy.int32)
         float A0, A1, B0, B1, C0, C1, D0, D1, offset0, offset1
         bint do_mask = mask is not None
         numpy.int8_t[:, ::1] cmask
@@ -533,12 +530,12 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
     delta0, delta1 = max_pixel_size
     bins = shape0 * shape1
     cdef:
-        int i, j, k, ms, ml, ns, nl, idx = 0, tmp_index, err_cnt=0
+        int i, j, k, ms, ml, ns, nl, idx = 0, tmp_index, err_cnt = 0
         int lut_size, offset0, offset1, box_size0, box_size1
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
-        numpy.ndarray[numpy.int32_t, ndim = 1] indptr, indices
-        numpy.ndarray[numpy.float32_t, ndim = 1] data
+        numpy.ndarray[numpy.int32_t, ndim=1] indptr, indices
+        numpy.ndarray[numpy.float32_t, ndim=1] data
         int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
         float[:, ::1] buffer
         bint do_mask = mask is not None
@@ -685,7 +682,7 @@ def calc_sparse(float[:, :, :, ::1] pos not None,
         int i, j, k, ms, ml, ns, nl
         int i0, i1, lut_size, offset0, offset1, box_size0, box_size1
         int counter, bin_number
-        int idx, err_cnt=0
+        int idx, err_cnt = 0
         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA,
         float area, value, foffset0, foffset1
         int[::1] indptr, indices, idx_bin, idx_pixel, pixel_count
@@ -1160,9 +1157,9 @@ class Distortion(object):
 
         """
         cdef int i, j, k, l, shape0, shape1
-        cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos
+        cdef numpy.ndarray[numpy.float32_t, ndim=4] pos
         cdef int[:, :] pos0min, pos1min, pos0max, pos1max
-        cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
+        cdef numpy.ndarray[numpy.int32_t, ndim=2] lut_size
         if self.pos is None:
             pos = self.calc_pos()
         else:
@@ -1195,8 +1192,8 @@ class Distortion(object):
             numpy.int32_t k, idx = 0
             float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
             float[:, :, :, :] pos
-            numpy.ndarray[lut_point, ndim = 3] lut
-            numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
+            numpy.ndarray[lut_point, ndim=3] lut
+            numpy.ndarray[numpy.int32_t, ndim=2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
             float[:, ::1] buffer
         shape0, shape1 = self.shape
 

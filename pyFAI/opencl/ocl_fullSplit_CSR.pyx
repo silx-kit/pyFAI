@@ -40,10 +40,10 @@ cdef float pi = <float> M_PI
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
-dtype_lut = numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
+dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 from ..utils import crc32
 cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
+cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
 
 class OCLFullSplit1d(object):
@@ -110,8 +110,8 @@ class OCLFullSplit1d(object):
             assert pos1.size == self.size
             assert delta_pos1.size == self.size
             self.check_pos1 = True
-            self.cpos1_min = numpy.ascontiguousarray((pos1-delta_pos1).ravel(), dtype=numpy.float32)
-            self.cpos1_max = numpy.ascontiguousarray((pos1+delta_pos1).ravel(), dtype=numpy.float32)
+            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=numpy.float32)
+            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float32)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
             self.pos1_max = pos1_maxin * EPS32
@@ -140,7 +140,7 @@ class OCLFullSplit1d(object):
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf,
         cdef float upper, lower, pos0_max, pos0_min, c, d
-        cdef bint allow_pos0_neg=self.allow_pos0_neg
+        cdef bint allow_pos0_neg = self.allow_pos0_neg
 
         cpos0_sup = self.cpos0_sup
         cpos0_inf = self.cpos0_inf
@@ -159,12 +159,12 @@ class OCLFullSplit1d(object):
                 upper = c + d
                 cpos0_sup[idx] = upper
                 cpos0_inf[idx] = lower
-                if not allow_pos0_neg and lower<0:
-                    lower=0
+                if not allow_pos0_neg and lower < 0:
+                    lower = 0
                 if not (check_mask and cmask[idx]):
-                    if upper>pos0_max:
+                    if upper > pos0_max:
                         pos0_max = upper
-                    if lower<pos0_min:
+                    if lower < pos0_min:
                         pos0_min = lower
 
         if pos0Range is not None and len(pos0Range) > 1:
@@ -177,7 +177,6 @@ class OCLFullSplit1d(object):
             self.pos0_min = 0
         self.pos0_max = self.pos0_maxin * EPS32
 
-
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -185,14 +184,14 @@ class OCLFullSplit1d(object):
         """
         Calculate the max number of elements in the LUT and populate it
         """
-        cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
-        cdef numpy.int32_t k,idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
+        cdef float delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
+        cdef numpy.int32_t k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef bint check_mask, check_pos1
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
+        cdef numpy.ndarray[numpy.int32_t, ndim=1] outMax = numpy.zeros(bins, dtype=numpy.int32)
         cdef float[:] cpos0_sup = self.cpos0_sup
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_min, cpos1_max
-        cdef lut_point[:,:] lut
+        cdef lut_point[:, :] lut
 
         cdef numpy.int8_t[:] cmask
         size = self.size
@@ -210,7 +209,7 @@ class OCLFullSplit1d(object):
             pos1_min = self.pos1_min
         else:
             check_pos1 = False
-#NOGIL
+
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -229,38 +228,37 @@ class OCLFullSplit1d(object):
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
-                if bin0_max >= bins :
+                if bin0_max >= bins:
                     bin0_max = bins - 1
-                if  bin0_min < 0:
+                if bin0_min < 0:
                     bin0_min = 0
 
                 if bin0_min == bin0_max:
-                    #All pixel is within a single bin
+                    # All pixel is within a single bin
                     outMax[bin0_min] += 1
 
-                else: #we have pixel spliting.
+                else:  # we have pixel spliting.
                     for i in range(bin0_min, bin0_max + 1):
                         outMax[i] += 1
 
         lut_size = outMax.max()
-        #just recycle the outMax array
-        #outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
+        # just recycle the outMax array
+        # outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
 
         self.lut_size = lut_size
 
-        lut_nbytes = bins*lut_size*sizeof(lut_point)
+        lut_nbytes = bins * lut_size * sizeof(lut_point)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
-            if memsize <  lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize))
-        #else hope we have enough memory
-        lut = view.array(shape=(bins, lut_size),itemsize=sizeof(lut_point), format="if")
-#        lut = numpy.zeros(shape=(bins, lut_size),dtype=dtype_lut)
-#        lut = < lut_point *>malloc(lut_nbytes)
-        memset(&lut[0,0], 0, lut_nbytes)
+            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            if memsize < lut_nbytes:
+                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" % (bins, lut_size, lut_nbytes, memsize))
+        # else hope we have enough memory
+        lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_point), format="if")
+        # lut = numpy.zeros(shape=(bins, lut_size),dtype=dtype_lut)
+        # lut = < lut_point *>malloc(lut_nbytes)
+        memset(&lut[0, 0], 0, lut_nbytes)
 
-        #NOGIL
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -279,18 +277,18 @@ class OCLFullSplit1d(object):
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
-                if bin0_max >= bins :
+                if bin0_max >= bins:
                     bin0_max = bins - 1
-                if  bin0_min < 0:
+                if bin0_min < 0:
                     bin0_min = 0
 
                 if bin0_min == bin0_max:
-                    #All pixel is within a single bin
+                    # All pixel is within a single bin
                     k = outMax[bin0_min]
                     lut[bin0_min, k].idx = idx
                     lut[bin0_min, k].coef = 1.0
                     outMax[bin0_min] += 1
-                else: #we have pixel splitting.
+                else:  # we have pixel splitting.
                     deltaA = 1.0 / (fbin0_max - fbin0_min)
 
                     deltaL = (bin0_min + 1) - fbin0_min
@@ -314,32 +312,30 @@ class OCLFullSplit1d(object):
                             outMax[i] += 1
 
         self.lut_max_idx = outMax
-        self._lut = lut 
+        self._lut = lut
 
     def get_lut(self):
-        """Getter for the LUT as actual numpy array""" 
+        """Getter for the LUT as actual numpy array"""
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:,:] lut = self._lut
+        cdef lut_point[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
-        cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
+        cdef bint need_decref = NEED_DECREF and ((rc_after - rc_before) >= 2)
         cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
-        memcpy(&tmp_ary[0,0], &lut[0,0], self._lut.nbytes)
+        memcpy(&tmp_ary[0, 0], &lut[0, 0], self._lut.nbytes)
         self.lut_checksum = crc32(tmp_ary)
 
-        #Ugly against bug#89
-        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+        # Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut) >= rc_before+2):
             print("Decref needed")
             Py_XDECREF(<PyObject *> self._lut)
 
-#        return tmp_ary.view(dtype=dtype_lut)
+        # return tmp_ary.view(dtype=dtype_lut)
         return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
-                                        shape=self._lut.shape,dtype=dtype_lut,
+                                        shape=self._lut.shape, dtype=dtype_lut,
                                         copy=True)
 
-
     lut = property(get_lut)
-
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -366,31 +362,31 @@ class OCLFullSplit1d(object):
         @rtype: 4-tuple of ndarrays
 
         """
-        cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
-        cdef double sum_data=0, sum_count=0, epsilon=1e-10
-        cdef float data=0, coef=0, cdummy=0, cddummy=0
-        cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
-        cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
-        cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
+        cdef numpy.int32_t i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
+        cdef double sum_data = 0, sum_count = 0, epsilon = 1e-10
+        cdef float data = 0, coef = 0, cdummy = 0, cddummy = 0
+        cdef bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+        cdef numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
-        #Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
+        # Ugly hack against bug #89: https://github.com/silx-kit/pyFAI/issues/89
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
-        cdef lut_point[:,:] lut = self._lut
+        cdef lut_point[:, :] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
-        cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
+        cdef bint need_decref = NEED_DECREF & ((rc_after - rc_before) >= 2)
 
         assert size == weights.size
 
         if dummy is not None:
             do_dummy = True
-            cdummy =  <float>float(dummy)
+            cdummy = <float> float(dummy)
             if delta_dummy is None:
-                cddummy = <float>0.0
+                cddummy = <float> 0.0
             else:
-                cddummy = <float>float(delta_dummy)
+                cddummy = <float> float(delta_dummy)
 
         if flat is not None:
             do_flat = True
@@ -411,12 +407,12 @@ class OCLFullSplit1d(object):
 
         if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-            cdata = numpy.zeros(size,dtype=numpy.float32)
+            cdata = numpy.zeros(size, dtype=numpy.float32)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
-                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
-                        #Nota: -= and /= operatore are seen as reduction in cython parallel.
+                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
+                        # Nota: -= and /= operatore are seen as reduction in cython parallel.
                         if do_dark:
                             data = data - cdark[i]
                         if do_flat:
@@ -425,9 +421,9 @@ class OCLFullSplit1d(object):
                             data = data / cpolarization[i]
                         if do_solidAngle:
                             data = data / csolidAngle[i]
-                        cdata[i]+=data
-                    else: #set all dummy_like values to cdummy. simplifies further processing
-                        cdata[i]+=cdummy
+                        cdata[i] += data
+                    else:  # set all dummy_like values to cdummy. simplifies further processing
+                        cdata[i] += cdummy
             else:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
@@ -439,20 +435,20 @@ class OCLFullSplit1d(object):
                         data = data / cpolarization[i]
                     if do_solidAngle:
                         data = data / csolidAngle[i]
-                    cdata[i]+=data
+                    cdata[i] += data
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-                cdata = numpy.zeros(size,dtype=numpy.float32)
+                cdata = numpy.zeros(size, dtype=numpy.float32)
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
-                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
-                        cdata[i]+=data
+                    if ((cddummy != 0) and (fabs(data - cdummy) > cddummy)) or ((cddummy == 0) and (data != cdummy)):
+                        cdata[i] += data
                     else:
-                        cdata[i]+=cdummy
+                        cdata[i] += cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        #TODO: what is the best: static or guided ?
+        # TODO: what is the best: static or guided ?
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0
@@ -462,7 +458,7 @@ class OCLFullSplit1d(object):
                 if idx <= 0 and coef <= 0.0:
                     continue
                 data = cdata[idx]
-                if do_dummy and data==cdummy:
+                if do_dummy and data == cdummy:
                     continue
 
                 sum_data = sum_data + coef * data
@@ -474,8 +470,8 @@ class OCLFullSplit1d(object):
             else:
                 outMerge[i] += cdummy
 
-        #Ugly against bug#89
-        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+        # Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut) >= rc_before + 2):
             print("Decref needed")
             Py_XDECREF(<PyObject *> self._lut)
-        return  self.outPos, outMerge, outData, outCount
+        return self.outPos, outMerge, outData, outCount

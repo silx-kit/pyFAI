@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2017"
+__date__ = "10/01/2018"
 __status__ = "development"
 
 import os
@@ -62,7 +62,7 @@ except ImportError:
 if os.name != "nt":
     WindowsError = RuntimeError
 
-logger = logging.getLogger("pyFAI.geometryRefinement")
+logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
 ROCA = "/opt/saxs/roca"
 

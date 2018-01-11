@@ -37,8 +37,8 @@ pylab.ion()
 import numpy
 from math import sqrt
 import fabio
-from utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+logger = logging.getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
 ai = pyFAI.AzimuthalIntegrator(detector="Pilatus1M")

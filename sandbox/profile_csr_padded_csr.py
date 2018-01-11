@@ -8,20 +8,17 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys, numpy, time
-from pyFAI.test import utilstest
+import logging
 import fabio, pyopencl
 from pylab import *
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitBBox
 from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
 from pyFAI import ocl_azim_csr
-logger = utilstest.getLogger("profile")
+logger = logging.getLogger("profile")
 
 
 ai = pyFAI.load("testimages/Pilatus1M.poni")

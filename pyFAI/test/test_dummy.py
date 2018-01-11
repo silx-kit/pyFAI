@@ -28,18 +28,20 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "Dummy test to run first to check for relative imports"
+"""Dummy test to run first to check for relative imports"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
 import sys
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 
 

@@ -39,15 +39,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/09/2017"
+__date__ = "10/01/2018"
 
 import sys
 import os
 import unittest
 import numpy
 import subprocess
-from .utilstest import getLogger, UtilsTest  # , Rwp, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 import fabio
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator

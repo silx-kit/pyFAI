@@ -35,7 +35,7 @@ __authors__ = ["Henri Payno, Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "2013 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "09/01/2018"
 
 import logging
 import numpy
@@ -43,7 +43,6 @@ import numpy
 import unittest
 from ..common import ocl, _measure_workgroup_size
 if ocl:
-    import pyopencl
     import pyopencl.array
 from ..utils import get_opencl_code
 from ...test.utilstest import UtilsTest
@@ -61,9 +60,8 @@ class TestAddition(unittest.TestCase):
             cls.ctx = ocl.create_context()
             if logger.getEffectiveLevel() <= logging.INFO:
                 cls.PROFILE = True
-                cls.queue = pyopencl.CommandQueue(
-                                cls.ctx,
-                                properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+                properties = pyopencl.command_queue_properties.PROFILING_ENABLE
+                cls.queue = pyopencl.CommandQueue(cls.ctx, properties=properties)
             else:
                 cls.PROFILE = False
                 cls.queue = pyopencl.CommandQueue(cls.ctx)
@@ -100,7 +98,10 @@ class TestAddition(unittest.TestCase):
             wg = 1 << i
             try:
                 evt = self.program.addition(self.queue, (self.shape,), (wg,),
-                       self.d_array_img.data, self.d_array_5.data, d_array_result.data, numpy.int32(self.shape))
+                                            self.d_array_img.data,
+                                            self.d_array_5.data,
+                                            d_array_result.data,
+                                            numpy.int32(self.shape))
                 evt.wait()
             except Exception as error:
                 max_valid_wg = self.program.addition.get_work_group_info(pyopencl.kernel_work_group_info.WORK_GROUP_SIZE, self.ctx.devices[0])
@@ -120,7 +121,7 @@ class TestAddition(unittest.TestCase):
         tests that all devices are working properly ...
         """
         for platform in ocl.platforms:
-            for did, device in enumerate(platform.devices):
+            for _did, device in enumerate(platform.devices):
                 meas = _measure_workgroup_size((platform.id, device.id))
                 self.assertEqual(meas, device.max_work_group_size,
                                  "Workgroup size for %s/%s: %s == %s" % (platform, device, meas, device.max_work_group_size))

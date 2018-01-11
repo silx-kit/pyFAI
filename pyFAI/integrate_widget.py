@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "10/01/2018"
 __status__ = "development"
 
 import logging
@@ -48,7 +48,7 @@ import threading
 import math
 import os.path as op
 import numpy
-logger = logging.getLogger("pyFAI.integrate_widget")
+logger = logging.getLogger(__name__)
 from .gui import qt
 import fabio
 from . import worker
@@ -58,10 +58,7 @@ from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import RADIAL_UNITS
-try:
-    from .third_party import six
-except ImportError:
-    import six
+from .third_party import six
 
 
 UIC = get_ui_file("integration.ui")
@@ -260,8 +257,7 @@ class AIWidget(qt.QWidget):
                 "correctSolidAngle": self.__get_correct_solid_angle(),
                 "error_model": self.__get_error_model(),
                 "method": self.get_method(),
-                "npt_rad": self.__get_nbpt_rad(),
-             }
+                "npt_rad": self.__get_nbpt_rad()}
 
             if kwarg["npt_rad"] is None:
                 message = "You must provide the number of output radial bins !"
@@ -540,8 +536,8 @@ class AIWidget(qt.QWidget):
                       "azimuth_range_min": lambda a: self.azimuth_range_min.setText(str_(a)),
                       "azimuth_range_max": lambda a: self.azimuth_range_max.setText(str_(a)),
                       "do_solid_angle": self.do_solid_angle.setChecked,
-                      "do_OpenCL": self.do_OpenCL.setChecked
-                     }
+                      "do_OpenCL": self.do_OpenCL.setChecked}
+
         for key, value in setup_data.items():
             if key in dico and (value is not None):
                 value(dico[key])

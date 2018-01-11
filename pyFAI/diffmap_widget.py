@@ -25,22 +25,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 from __future__ import absolute_import, print_function, division
+
+"""Module with GUI for diffraction mapping experiments"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """
 
-Module with GUI for diffraction mapping experiments
-
-
-"""
 import os
 import time
 import json
@@ -257,9 +253,9 @@ class DiffMapWidget(qt.QWidget):
             "MarCCD image files (*.mccd)",
             "Any file (*)"]
         fnames = qt.QFileDialog.getOpenFileNames(self,
-                         "Select one or more diffraction image files",
-                         qt.QDir.currentPath(),
-                         filter=self.tr(";;".join(filters)))
+                                                 "Select one or more diffraction image files",
+                                                 qt.QDir.currentPath(),
+                                                 filter=self.tr(";;".join(filters)))
         if isinstance(fnames, tuple):
             # Compatibility with PyQt5
             fnames = fnames[0]
@@ -338,15 +334,15 @@ class DiffMapWidget(qt.QWidget):
     def update_number_of_points(self):
         try:
             slow = int(self.slowMotorPts.text())
-        except:
+        except ValueError:
             slow = 1
         try:
             fast = int(self.fastMotorPts.text())
-        except:
+        except ValueError:
             fast = 1
         try:
             offset = int(self.offset.text())
-        except:
+        except ValueError:
             offset = 0
         self.numberOfPoints.setText(str(slow * fast + offset))
 
@@ -509,14 +505,14 @@ class DiffMapWidget(qt.QWidget):
 
             if self.last_idx < 0:
                 self.update_slice()
-                I = data[0, 0, :]
+                intensity = data[0, 0, :]
                 img = data[:, :, self.slice].mean(axis=2)
-                self.plot = self.axplt.plot(self.radial_data, I)[0]
+                self.plot = self.axplt.plot(self.radial_data, intensity)[0]
                 self.img = self.aximg.imshow(img, interpolation="nearest")
             else:
                 img = data[:, :, self.slice].mean(axis=2)
-                I = data.reshape(-1, npt)[:idx_img].mean(axis=0)
-                self.plot.set_ydata(I)
+                intensity = data.reshape(-1, npt)[:idx_img].mean(axis=0)
+                self.plot.set_ydata(intensity)
                 self.img.set_data(img)
             self.last_idx = idx_img
             self.fig.canvas.draw()
@@ -531,11 +527,11 @@ class DiffMapWidget(qt.QWidget):
             return
         try:
             qmin = float(self.rMin.text())
-        except:
+        except ValueError:
             qmin = 0
         try:
             qmax = float(self.rMax.text())
-        except:
+        except ValueError:
             qmax = 1e300
 
         start = (self.radial_data < qmin).sum()

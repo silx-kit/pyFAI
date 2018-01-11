@@ -41,7 +41,6 @@ by may impair performances or prevent tools from properly working:
 
 * pyopencl (for GPU computing)
 * fftw (for image analysis)
-* pymca (for mask drawing)
 * PyQt4 or PySide (for the graphical user interface)
 
 Build dependencies:

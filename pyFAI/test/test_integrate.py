@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "10/01/2018"
 
 
 import tempfile
@@ -42,8 +42,9 @@ import os
 import unittest
 import numpy.testing
 import fabio
-from .utilstest import UtilsTest, Rwp, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest, Rwp
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
@@ -306,6 +307,7 @@ def suite():
     testsuite.addTest(loader(TestIntegrateResult))
 
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

@@ -42,7 +42,6 @@ import logging
 
 from PySide.QtCore import QMetaObject
 from PySide.QtUiTools import QUiLoader
-from PySide.QtGui import QMainWindow
 
 
 _logger = logging.getLogger(__name__)

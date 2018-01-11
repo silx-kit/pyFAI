@@ -31,10 +31,7 @@ import sys, numpy, time
 from  pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 from six.moves import range
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]

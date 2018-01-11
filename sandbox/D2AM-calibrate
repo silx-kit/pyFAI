@@ -44,10 +44,7 @@ __satus__ = "development"
 import os, types, logging
 import pyFAI, pyFAI.calibration
 from pyFAI.calibration import MultiCalib
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 
 try:
     from rfoo.utils import rconsole
