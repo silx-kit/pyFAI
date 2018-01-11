@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 __status__ = "production"
 
 import os
@@ -67,7 +67,7 @@ from .peak_picker import PeakPicker
 from . import units
 from . import average
 from .utils import measure_offset, expand_args, \
-            readFloatFromKeyboard, FixedParameters, roundfft, \
+            readFloatFromKeyboard, FixedParameters, round_fft, \
             win32
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
@@ -1260,7 +1260,7 @@ class AbstractCalibration(object):
             logger.warning("Validate assumes the number of slices is even. adding one")
             slices += 1
         half_slices = slices // 2
-        npt = roundfft(int(math.sqrt(self.peakPicker.data.shape[0] ** 2 + self.peakPicker.data.shape[1] ** 2) + 1))
+        npt = round_fft(int(math.sqrt(self.peakPicker.data.shape[0] ** 2 + self.peakPicker.data.shape[1] ** 2) + 1))
 
         if self.geoRef:
             self.ai.setPyFAI(**self.geoRef.getPyFAI())

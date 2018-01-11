@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 __status__ = "production"
 
 import sys
@@ -46,7 +46,7 @@ from scipy.ndimage import label
 from scipy.ndimage.filters import median_filter
 
 from .ext.bilinear import Bilinear
-from .utils import gaussian_filter, binning, unBinning, relabel, is_far_from_group
+from .utils import gaussian_filter, binning, unbinning, relabel, is_far_from_group
 from .third_party import six
 
 if os.name != "nt":
@@ -300,7 +300,7 @@ class Massif(object):
                     relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
-                    self._labeled_massif = unBinning(relabeled, self.binning, False)
+                    self._labeled_massif = unbinning(relabeled, self.binning, False)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs.", self._number_massif)

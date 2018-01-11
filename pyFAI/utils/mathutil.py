@@ -44,6 +44,7 @@ import math
 import numpy
 import time
 import scipy
+from ..decorators import deprecated
 
 try:
     from ..ext import relabel as _relabel
@@ -368,7 +369,7 @@ def binning(input_img, binsize, norm=True):
     return out
 
 
-def unBinning(binnedArray, binsize, norm=True):
+def unbinning(binnedArray, binsize, norm=True):
     """
     :param binnedArray: input ndarray
     :param binsize: 2-tuple representing the size of the binning
@@ -389,7 +390,12 @@ def unBinning(binnedArray, binsize, norm=True):
     return out
 
 
-def shiftFFT(input_img, shift_val, method="fft"):
+@deprecated(replacement="unbinning", since_version="0.15", only_once=True)
+def unBinning(*args, **kwargs):
+    return unbinning(*args, **kwargs)
+
+
+def shift_fft(input_img, shift_val, method="fft"):
     """Do shift using FFTs
 
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
@@ -410,6 +416,11 @@ def shiftFFT(input_img, shift_val, method="fft"):
     else:
         out = scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity")
     return out
+
+
+@deprecated(replacement="shift_fft", since_version="0.15", only_once=True)
+def shiftFFT(*args, **kwargs):
+    return shift_fft(*args, **kwargs)
 
 
 def maximum_position(img):
@@ -648,7 +659,7 @@ except ImportError:
     percentile = _numpy_backport_percentile
 
 
-def roundfft(N):
+def round_fft(N):
     """
     This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
 
@@ -698,6 +709,11 @@ def roundfft(N):
             break
         AA = AA * FA
     return RES
+
+
+@deprecated(replacement="round_fft", since_version="0.15", only_once=True)
+def roundfft(*args, **kwargs):
+    return round_fft(*args, **kwargs)
 
 
 def is_far_from_group(pt, lst_pts, d2):

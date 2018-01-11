@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 
 import unittest
 import numpy
@@ -78,7 +78,7 @@ class TestUtils(unittest.TestCase):
         """
         binned = utils.binning(self.unbinned, (4, 2))
         self.assertEqual(binned.shape, (64 // 4, 32 // 2), "binned size is OK")
-        unbinned = utils.unBinning(binned, (4, 2))
+        unbinned = utils.unbinning(binned, (4, 2))
         self.assertEqual(unbinned.shape, self.unbinned.shape, "unbinned size is OK")
         self.assertAlmostEqual(unbinned.sum(), self.unbinned.sum(), 2, "content is the same")
 
@@ -92,7 +92,7 @@ class TestUtils(unittest.TestCase):
         res[5, 7] = 5
         delta = (5 - 2, 7 - 3)
         self.assertTrue(abs(utils.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
-        self.assertTrue(abs(utils.shiftFFT(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
+        self.assertTrue(abs(utils.shift_fft(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
         self.assertTrue(utils.measure_offset(res, ref) == delta, "measure offset works")
 
     def test_gaussian_filter(self):
