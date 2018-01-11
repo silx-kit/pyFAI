@@ -60,41 +60,41 @@ def copy(infile, outfile):
         shutil.copy(infile, outfile)
 
 
-class UtilsTest(object):
+class TestContext(object):
     """
-    Static class providing useful stuff for preparing tests.
+    Class providing useful stuff for preparing tests.
     """
-    options = None
-    timeout = 60  # timeout in seconds for downloading images
-    # url_base = "http://forge.epn-campus.eu/attachments/download"
-    url_base = "http://ftp.edna-site.org/pyFAI/testimages"
-    resources = ExternalResources(PACKAGE, timeout=timeout, env_key=DATA_KEY,
-                                  url_base=url_base)
-    sem = threading.Semaphore()
-    recompiled = False
-    reloaded = False
-    name = PACKAGE
-    script_dir = None
+    def __init__(self):
+        self.options = None
+        self.timeout = 60  # timeout in seconds for downloading images
+        # url_base = "http://forge.epn-campus.eu/attachments/download"
+        self.url_base = "http://ftp.edna-site.org/pyFAI/testimages"
+        self.resources = ExternalResources(PACKAGE,
+                                           timeout=self.timeout,
+                                           env_key=DATA_KEY,
+                                           url_base=self.url_base)
+        self.sem = threading.Semaphore()
+        self.recompiled = False
+        self.reloaded = False
+        self.name = PACKAGE
+        self.script_dir = None
 
-    tempdir = resources.tempdir
-    download_images = resources.download_all
-    clean_up = resources.clean_up
-    getimage = resources.getfile
-    low_mem = bool(os.environ.get("PYFAI_LOW_MEM"))
-    opencl = bool(os.environ.get("PYFAI_OPENCL", True))
+        self.download_images = self.resources.download_all
+        self.getimage = self.resources.getfile
+        self.tempdir = self.resources.tempdir
+        self.low_mem = bool(os.environ.get("PYFAI_LOW_MEM"))
+        self.opencl = bool(os.environ.get("PYFAI_OPENCL", True))
 
-    @classmethod
-    def deep_reload(cls):
-        cls.pyFAI = __import__(cls.name)
-        logger.info("%s loaded from %s", cls.name, cls.pyFAI.__file__)
-        sys.modules[cls.name] = cls.pyFAI
-        cls.reloaded = True
+    def deep_reload(self):
+        self.pyFAI = __import__(self.name)
+        logger.info("%s loaded from %s", self.name, self.pyFAI.__file__)
+        sys.modules[self.name] = self.pyFAI
+        self.reloaded = True
         import pyFAI.decorators
         pyFAI.decorators.depreclog.setLevel(logging.ERROR)
-        return cls.pyFAI
+        return self.pyFAI
 
-    @classmethod
-    def forceBuild(cls, remove_first=True):
+    def forceBuild(self, remove_first=True):
         """
         Force the recompilation of pyFAI
 
@@ -102,13 +102,12 @@ class UtilsTest(object):
         """
         return
 
-    @classmethod
-    def get_options(cls):
+    def get_options(self):
         """
         Parse the command line to analyse options ... returns options
         """
-        if cls.options is None:
-            parser = ArgumentParser(usage="Tests for %s" % cls.name)
+        if self.options is None:
+            parser = ArgumentParser(usage="Tests for %s" % self.name)
             parser.add_argument("-d", "--debug", dest="debug", help="run in debugging mode",
                                 default=False, action="store_true")
             parser.add_argument("-i", "--info", dest="info", help="run in more verbose mode ",
@@ -119,11 +118,10 @@ class UtilsTest(object):
                                 help="remove existing build and force the build of the library",
                                 default=False, action="store_true")
             parser.add_argument(dest="args", type=str, nargs='*')
-            cls.options = parser.parse_args([])
-        return cls.options
+            self.options = parser.parse_args([])
+        return self.options
 
-    @classmethod
-    def script_path(cls, script):
+    def script_path(self, script):
         """
         Returns the path of the executable and the associated environment
 
@@ -138,8 +136,8 @@ class UtilsTest(object):
         env = dict((str(k), str(v)) for k, v in os.environ.items())
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
         paths = os.environ.get("PATH", "").split(os.pathsep)
-        if cls.script_dir is not None:
-            paths.insert(0, cls.script_dir)
+        if self.script_dir is not None:
+            paths.insert(0, self.script_dir)
 
         for base in paths:
             # clean up extra quotes from paths
@@ -155,6 +153,9 @@ class UtilsTest(object):
         logger.warning("Script '%s' not found in paths: %s", script, ":".join(paths))
         script_path = script
         return script_path, env
+
+UtilsTest = TestContext()
+"""Singleton containing util context of whole the tests"""
 
 
 def Rwp(obt, ref, comment="Rwp"):
