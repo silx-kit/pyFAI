@@ -42,6 +42,9 @@ import logging
 import numpy
 import shutil
 import contextlib
+import tempfile
+import getpass
+
 
 from pyFAI.third_party.argparse import ArgumentParser
 from ..utils import six
@@ -81,9 +84,10 @@ class TestContext(object):
 
         self.download_images = self.resources.download_all
         self.getimage = self.resources.getfile
-        self.tempdir = self.resources.tempdir
         self.low_mem = bool(os.environ.get("PYFAI_LOW_MEM"))
         self.opencl = bool(os.environ.get("PYFAI_OPENCL", True))
+
+        self._tempdir = None
 
     def deep_reload(self):
         self.pyFAI = __import__(self.name)
@@ -153,6 +157,36 @@ class TestContext(object):
         logger.warning("Script '%s' not found in paths: %s", script, ":".join(paths))
         script_path = script
         return script_path, env
+
+    def _initialize_tmpdir(self):
+        """Initialize the temporary directory"""
+        if not self._tempdir:
+            with self.sem:
+                if not self._tempdir:
+                    self._tempdir = tempfile.mkdtemp("_" + getpass.getuser(),
+                                                     self.name + "_")
+
+    @property
+    def tempdir(self):
+        if not self._tempdir:
+            self._initialize_tmpdir()
+        return self._tempdir
+
+    def clean_up(self):
+        """Removes the temporary directory (and all its content !)"""
+        with self.sem:
+            if not self._tempdir:
+                return
+            if not os.path.isdir(self._tempdir):
+                return
+            for root, dirs, files in os.walk(self._tempdir, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(self._tempdir)
+            self._tempdir = None
+
 
 UtilsTest = TestContext()
 """Singleton containing util context of whole the tests"""
