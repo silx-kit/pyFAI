@@ -251,33 +251,6 @@ def diff_crv(ref, obt, comment=""):
         six.moves.input()
 
 
-class ParameterisedTestCase(unittest.TestCase):
-    """ TestCase classes that want to be parameterised should
-        inherit from this class.
-        From Eli Bendersky's website
-        http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases/
-    """
-    def __init__(self, methodName='runTest', param=None):
-        super(ParameterisedTestCase, self).__init__(methodName)
-        self.param = param
-
-    @staticmethod
-    def parameterise(testcase_klass, testcase_method=None, param=None):
-        """ Create a suite containing all tests taken from the given
-            subclass, passing them the parameter 'param'.
-        """
-        testloader = unittest.TestLoader()
-        testnames = testloader.getTestCaseNames(testcase_klass)
-        suite = unittest.TestSuite()
-
-        if testcase_method:
-            suite.addTest(testcase_klass(testcase_method, param=param))
-        else:
-            for name in testnames:
-                suite.addTest(testcase_klass(name, param=param))
-        return suite
-
-
 if sys.hexversion >= 0x030400F0:  # Python >= 3.4
     class ParametricTestCase(unittest.TestCase):
         pass
