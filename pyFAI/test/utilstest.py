@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -41,6 +41,7 @@ import unittest
 import logging
 import numpy
 import shutil
+import contextlib
 
 from pyFAI.third_party.argparse import ArgumentParser
 from ..utils import six
@@ -275,3 +276,37 @@ class ParameterisedTestCase(unittest.TestCase):
             for name in testnames:
                 suite.addTest(testcase_klass(name, param=param))
         return suite
+
+
+if sys.hexversion >= 0x030400F0:  # Python >= 3.4
+    class ParametricTestCase(unittest.TestCase):
+        pass
+
+else:
+    class ParametricTestCase(unittest.TestCase):
+        """TestCase with subTest support for Python < 3.4.
+
+        Add subTest method to support parametric tests.
+        API is the same, but behavior differs:
+        If a subTest fails, the following ones are not run.
+        """
+
+        _subtest_msg = None  # Class attribute to provide a default value
+
+        @contextlib.contextmanager
+        def subTest(self, msg=None, **params):
+            """Use as unittest.TestCase.subTest method in Python >= 3.4."""
+            # Format arguments as: '[msg] (key=value, ...)'
+            param_str = ', '.join(['%s=%s' % (k, v) for k, v in params.items()])
+            self._subtest_msg = '[%s] (%s)' % (msg or '', param_str)
+            yield
+            self._subtest_msg = None
+
+        def shortDescription(self):
+            short_desc = super(ParametricTestCase, self).shortDescription()
+            if self._subtest_msg is not None:
+                # Append subTest message to shortDescription
+                short_desc = ' '.join(
+                    [msg for msg in (short_desc, self._subtest_msg) if msg])
+
+            return short_desc if short_desc else None
