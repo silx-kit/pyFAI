@@ -52,7 +52,6 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-tmp_dir = UtilsTest.tempdir
 from pyFAI import units
 from ..utils import mathutil
 from ..third_party import six
@@ -100,6 +99,11 @@ class TestAzimHalfFrelon(unittest.TestCase):
         splineFile = "halfccd.spline"
         poniFile = "LaB6.poni"
 
+        tmp_dir = os.path.join(UtilsTest.tempdir, "TestAzimHalfFrelon")
+        if not os.path.isdir(tmp_dir):
+            os.makedirs(tmp_dir)
+        cls.tmp_dir = tmp_dir
+
         cls.tmpfiles = {"cython": os.path.join(tmp_dir, "cython.dat"),
                         "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
                         "numpy": os.path.join(tmp_dir, "numpy.dat")}
@@ -117,8 +121,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
                 else:
                     data.append(line.strip())
         cls.poniFile = os.path.join(tmp_dir, os.path.basename(poniFile))
-        if not os.path.isdir(tmp_dir):
-            os.makedirs(tmp_dir)
 
         with open(cls.poniFile, "w") as f:
             f.write(os.linesep.join(data))
@@ -359,8 +361,6 @@ class TestSaxs(unittest.TestCase):
         self.edfPilatus = UtilsTest.getimage(self.__class__.saxsPilatus)
         self.maskFile = UtilsTest.getimage(self.__class__.maskFile)
         self.maskRef = UtilsTest.getimage(self.__class__.maskRef)
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -437,8 +437,11 @@ class TestSetter(unittest.TestCase):
         shape = (10, 15)
         self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
         self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+
+        tmp_dir = os.path.join(UtilsTest.tempdir, self.id())
         if not os.path.isdir(tmp_dir):
             os.mkdir(tmp_dir)
+        self.tmp_dir = tmp_dir
 
         fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", tmp_dir)
         os.close(fd)
@@ -448,7 +451,7 @@ class TestSetter(unittest.TestCase):
         fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
 
     def tearDown(self):
-        shutil.rmtree(tmp_dir)
+        shutil.rmtree(self.tmp_dir)
 
     def test_flat(self):
         self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
