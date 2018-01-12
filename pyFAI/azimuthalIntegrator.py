@@ -1197,14 +1197,14 @@ class AzimuthalIntegrator(Geometry):
 
             if int2d:
                 raise NotImplementedError("Full pixel splitting using CSR is not yet available in 2D")
-#                return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-#                                                bins=npt,
-#                                                pos0Range=pos0Range,
-#                                                pos1Range=pos1Range,
-#                                                mask=mask,
-#                                                mask_checksum=mask_checksum,
-#                                                allow_pos0_neg=False,
-#                                                unit=unit)
+                # return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                #                                 bins=npt,
+                #                                 pos0Range=pos0Range,
+                #                                 pos1Range=pos1Range,
+                #                                 mask=mask,
+                #                                 mask_checksum=mask_checksum,
+                #                                 allow_pos0_neg=False,
+                #                                 unit=unit)
             else:
                 return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                          bins=npt,
