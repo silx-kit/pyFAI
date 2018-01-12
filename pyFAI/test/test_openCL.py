@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "12/01/2018"
 
 
 import unittest
@@ -45,7 +45,7 @@ import gc
 import numpy
 import platform
 import logging
-from .utilstest import Rwp, recursive_delete
+from .utilstest import recursive_delete
 logger = logging.getLogger(__name__)
 try:
     import pyopencl
@@ -60,6 +60,7 @@ if ocl is not None:
 from .. import load
 from ..opencl.utils import read_cl_file
 from .utilstest import UtilsTest
+from ..utils import mathutil
 
 
 class TestMask(unittest.TestCase):
@@ -123,7 +124,7 @@ class TestMask(unittest.TestCase):
                 data = fabio.open(ds["img"]).data
                 res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
                 ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
-                r = Rwp(ref, res)
+                r = mathutil.rwp(ref, res)
                 logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                 self.assertTrue(r < 6, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
                 ai.reset()
@@ -152,7 +153,7 @@ class TestMask(unittest.TestCase):
                     break
                 else:
                     ref = ai.xrpd(data, self.N)
-                    r = Rwp(ref, res)
+                    r = mathutil.rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
                 ai.reset()
@@ -180,7 +181,7 @@ class TestMask(unittest.TestCase):
                     logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
-                    r = Rwp(ref, res)
+                    r = mathutil.rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
                 ai.reset()

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "12/01/2018"
 
 import unittest
 import os
@@ -45,7 +45,7 @@ import copy
 import fabio
 import tempfile
 import gc
-from .utilstest import UtilsTest, Rwp, recursive_delete
+from .utilstest import UtilsTest, recursive_delete
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
@@ -53,6 +53,7 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 tmp_dir = UtilsTest.tempdir
 from pyFAI import units
+from ..utils import mathutil
 from ..third_party import six
 
 
@@ -156,7 +157,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         tth, I = self.ai.xrpd_numpy(self.data,
                                     len(self.fit2d), self.tmpfiles["numpy"],
                                     correctSolidAngle=False)
-        rwp = Rwp((tth, I), self.fit2d.T)
+        rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -182,7 +183,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                      correctSolidAngle=False, pixelSize=None)
         # logger.info(tth)
         # logger.info(I)
-        rwp = Rwp((tth, I), self.fit2d.T)
+        rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -216,7 +217,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         t1 = time.time() - t0
         # logger.info(tth)
         # logger.info(I)
-        rwp = Rwp((tth, I), self.fit2d.T)
+        rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -247,7 +248,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
                                                len(self.fit2d),
                                                correctSolidAngle=False)
         logger.info("After xrpd_splitPixel")
-        rwp = Rwp((tth_cy, I_cy), (tth_np, I_np))
+        rwp = mathutil.rwp((tth_cy, I_cy), (tth_np, I_np))
         logger.info("Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
@@ -277,13 +278,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
     def test_medfilt1d(self):
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr")
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr")
-        rwp = Rwp(ref, ocl)
+        rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d median Rwp = %.3f", rwp)
         self.assertLess(rwp, 1, "Rwp medfilt1d Numpy/OpenCL: %.3f" % rwp)
 
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr", percentile=(20, 80))
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr", percentile=(20, 80))
-        rwp = Rwp(ref, ocl)
+        rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
         ref = ocl = rwp = None
