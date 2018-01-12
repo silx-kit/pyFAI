@@ -46,7 +46,7 @@ import getpass
 
 
 from pyFAI.third_party.argparse import ArgumentParser
-from ..utils import six
+from ..third_party import six
 from silx.resources import ExternalResources
 
 logger = logging.getLogger(__name__)

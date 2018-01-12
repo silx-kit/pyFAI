@@ -46,7 +46,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Pilatus1M
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-from ..utils import six
+from ..third_party import six
 from ..utils import mathutil
 
 
