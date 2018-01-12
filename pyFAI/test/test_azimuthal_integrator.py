@@ -46,6 +46,7 @@ import fabio
 import tempfile
 import gc
 import shutil
+from . import utilstest
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
@@ -55,6 +56,7 @@ if logger.getEffectiveLevel() <= logging.INFO:
 from pyFAI import units
 from ..utils import mathutil
 from ..third_party import six
+from pyFAI.utils.decorators import depreclog
 
 
 @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
@@ -157,9 +159,11 @@ class TestAzimHalfFrelon(unittest.TestCase):
         Compare numpy histogram with results of fit2d
         """
         # logger.info(self.ai.__repr__())
-        tth, I = self.ai.xrpd_numpy(self.data,
-                                    len(self.fit2d), self.tmpfiles["numpy"],
-                                    correctSolidAngle=False)
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            tth, I = self.ai.xrpd_numpy(self.data,
+                                        len(self.fit2d), self.tmpfiles["numpy"],
+                                        correctSolidAngle=False)
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -180,10 +184,11 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with results of fit2d
         """
-        # logger.info(self.ai.__repr__())
-        tth, I = self.ai.xrpd_cython(self.data,
-                                     len(self.fit2d), self.tmpfiles["cython"],
-                                     correctSolidAngle=False, pixelSize=None)
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            tth, I = self.ai.xrpd_cython(self.data,
+                                         len(self.fit2d), self.tmpfiles["cython"],
+                                         correctSolidAngle=False, pixelSize=None)
         # logger.info(tth)
         # logger.info(I)
         rwp = mathutil.rwp((tth, I), self.fit2d.T)
@@ -212,10 +217,12 @@ class TestAzimHalfFrelon(unittest.TestCase):
         t0 = time.time()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
-        tth, I = self.ai.xrpd_splitPixel(self.data,
-                                         len(self.fit2d),
-                                         self.tmpfiles["cythonSP"],
-                                         correctSolidAngle=False)
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            tth, I = self.ai.xrpd_splitPixel(self.data,
+                                             len(self.fit2d),
+                                             self.tmpfiles["cythonSP"],
+                                             correctSolidAngle=False)
         logger.info("in test_cythonSP_vs_fit2d Before")
         t1 = time.time() - t0
         # logger.info(tth)
@@ -240,16 +247,18 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with numpy histogram
         """
-        tth_np, I_np = self.ai.xrpd_numpy(self.__class__.data,
-                                          len(self.fit2d),
-                                          correctSolidAngle=False)
-        tth_cy, I_cy = self.ai.xrpd_cython(self.__class__.data,
-                                           len(self.fit2d),
-                                           correctSolidAngle=False)
-        logger.info("before xrpd_splitPixel")
-        tth_sp, I_sp = self.ai.xrpd_splitPixel(self.__class__.data,
+        with utilstest.TestLogging(logger=depreclog, warning=3):
+            # Filter deprecated warning
+            tth_np, I_np = self.ai.xrpd_numpy(self.__class__.data,
+                                              len(self.fit2d),
+                                              correctSolidAngle=False)
+            tth_cy, I_cy = self.ai.xrpd_cython(self.__class__.data,
                                                len(self.fit2d),
                                                correctSolidAngle=False)
+            logger.info("before xrpd_splitPixel")
+            tth_sp, I_sp = self.ai.xrpd_splitPixel(self.__class__.data,
+                                                   len(self.fit2d),
+                                                   correctSolidAngle=False)
         logger.info("After xrpd_splitPixel")
         rwp = mathutil.rwp((tth_cy, I_cy), (tth_np, I_np))
         logger.info("Rwp = %.3f", rwp)
@@ -317,7 +326,10 @@ class TestFlatimage(unittest.TestCase):
         data = numpy.ones(shape, dtype="float64")
         det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-        I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
+
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
         # I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -337,7 +349,10 @@ class TestFlatimage(unittest.TestCase):
         data = numpy.ones(shape, dtype="float64")
         det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-        I = ai.xrpd2_splitBBox(data, 256, 256, correctSolidAngle=False, dummy=-1.0)[0]
+
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            I = ai.xrpd2_splitBBox(data, 256, 256, correctSolidAngle=False, dummy=-1.0)[0]
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")

@@ -42,6 +42,7 @@ from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.utils.decorators import depreclog
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 
@@ -55,7 +56,9 @@ class TestOpenClCSR(utilstest.ParametricTestCase):
         cls.N = 1000
         cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
         cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
-        cls.ai.xrpd_LUT(cls.data, cls.N)
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            cls.ai.xrpd_LUT(cls.data, cls.N)
 
     @classmethod
     def tearDownClass(cls):
@@ -109,7 +112,9 @@ class TestCSR(unittest.TestCase):
         cls.N = 1000
         cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
         cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
-        cls.ai.xrpd_LUT(cls.data, cls.N)
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            cls.ai.xrpd_LUT(cls.data, cls.N)
 
     @classmethod
     def tearDownClass(cls):

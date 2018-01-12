@@ -60,8 +60,10 @@ if ocl is not None:
     import pyopencl.array
 from .. import load
 from ..opencl.utils import read_cl_file
+from . import utilstest
 from .utilstest import UtilsTest
 from ..utils import mathutil
+from pyFAI.utils.decorators import depreclog
 
 
 class TestMask(unittest.TestCase):
@@ -123,7 +125,9 @@ class TestMask(unittest.TestCase):
             for ds in self.datasets:
                 ai = load(ds["poni"])
                 data = fabio.open(ds["img"]).data
-                res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
+                with utilstest.TestLogging(logger=depreclog, warning=1):
+                    # Filter deprecated warning
+                    res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
                 ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
                 r = mathutil.rwp(ref, res)
                 logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
@@ -153,7 +157,9 @@ class TestMask(unittest.TestCase):
                     logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory.", devtype, os.path.basename(ds["img"]), os.linesep, error)
                     break
                 else:
-                    ref = ai.xrpd(data, self.N)
+                    with utilstest.TestLogging(logger=depreclog, warning=1):
+                        # Filter deprecated warning
+                        ref = ai.xrpd(data, self.N)
                     r = mathutil.rwp(ref, res)
                     logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s", r, ds)
                     self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
