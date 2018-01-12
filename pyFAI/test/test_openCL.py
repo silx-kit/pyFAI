@@ -45,7 +45,8 @@ import gc
 import numpy
 import platform
 import logging
-from .utilstest import recursive_delete
+import shutil
+
 logger = logging.getLogger(__name__)
 try:
     import pyopencl
@@ -105,7 +106,7 @@ class TestMask(unittest.TestCase):
                     f.write(os.linesep.join(data))
 
     def tearDown(self):
-        recursive_delete(self.tmp_dir)
+        shutil.rmtree(self.tmp_dir)
         self.tmp_dir = self.N = self.datasets = None
 
     @unittest.skipIf(UtilsTest.low_mem, "test using >200M")

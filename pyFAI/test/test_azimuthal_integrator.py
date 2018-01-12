@@ -45,7 +45,8 @@ import copy
 import fabio
 import tempfile
 import gc
-from .utilstest import UtilsTest, recursive_delete
+import shutil
+from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
@@ -447,7 +448,7 @@ class TestSetter(unittest.TestCase):
         fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
 
     def tearDown(self):
-        recursive_delete(tmp_dir)
+        shutil.rmtree(tmp_dir)
 
     def test_flat(self):
         self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")

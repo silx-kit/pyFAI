@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "12/01/2018"
 
 
 import unittest
@@ -42,7 +42,8 @@ import os
 import numpy
 import sys
 import logging
-from .utilstest import UtilsTest, recursive_delete
+import shutil
+from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..peak_picker import PeakPicker
 from ..calibrant import Calibrant
@@ -89,7 +90,7 @@ class TestPeakPicking(unittest.TestCase):
 
     def tearDown(self):
         """Remove temporary files"""
-        recursive_delete(self.tmp_dir)
+        shutil.rmtree(self.tmp_dir)
         self.calibFile = self.ctrlPt = self.tth = self.wavelength = self.ds = None
         self.calibrant = self.maxiter = self.tmp_dir = self.logfile = self.nptfile = None
 
