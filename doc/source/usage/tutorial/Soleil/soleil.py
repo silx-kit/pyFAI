@@ -75,11 +75,10 @@ CalibrationFrame = NamedTuple("CalibrationFrame", [("idx", int),
 
 CalibrationParameters = NamedTuple("CalibrationParameters",
                                    [("distance", Parameter[Length]),
-                                    ("poni1_offset", Parameter[Length]),
-                                    ("poni1_scale", Parameter[float]),
-                                    ("poni2_offset", Parameter[Length]),
-                                    ("poni2_scale", Parameter[float]),
-                                    ("rot1", Parameter[Angle]),
+                                    ("poni1", Parameter[Length]),
+                                    ("poni2", Parameter[Length]),
+                                    ("rot1_scale", float),
+                                    ("rot1_offset", Parameter[Angle]),
                                     ("rot2", Parameter[Angle]),
                                     ("rot3", Parameter[Angle])])
 
@@ -148,7 +147,7 @@ def optimize_with_new_images(h5file: File,
         if label in gonioref.single_geometries:
             continue
         print(label)
-        sg = gonioref.new_geometry(label, image=frame.img, metadata=frame,
+        sg = gonioref.new_geometry(label, image=frame.image, metadata=frame,
                                    calibrant=calibrant)
         print(sg.extract_cp(pts_per_deg=pts_per_deg))
     print("*"*50)
@@ -186,18 +185,18 @@ def calibration(json: str, params: Calibration) -> None:
     # Let's refine poni1 and poni2 also as function of the distance:
 
     trans_function = GeometryTransformation(param_names=param_names,
-                                            pos_names=["tx", "tz"],
+                                            pos_names=["delta"],
                                             dist_expr="dist",
-                                            poni1_expr="tz * poni1_scale + poni1_offset",  # noqa
-                                            poni2_expr="tx * poni2_scale + poni2_offset",  # noqa
+                                            poni1_expr="poni1",  # noqa
+                                            poni2_expr="poni2",  # noqa
                                             rot1_expr="rot1",
-                                            rot2_expr="rot2",
+                                            rot2_expr="rot2_scale * delta + rot2_offset",  # noqa
                                             rot3_expr="rot3")
 
-    def pos_function(frame: CalibrationFrame) -> float:
+    def pos_function(frame: CalibrationFrame) -> Tuple[float]:
         """Definition of the function reading the detector position from the
         header of the image."""
-        return frame.delta
+        return (frame.delta,)
 
     gonioref = GoniometerRefinement(parameters,  # initial guess
                                     bounds=bounds,
@@ -212,12 +211,12 @@ def calibration(json: str, params: Calibration) -> None:
     # Let's populate the goniometer refinement object with the know poni
 
     with File(params.filename, mode='r') as h5file:
-        for frame in gen_metadata_idx(h5file, calibration):
+        for frame in gen_metadata_idx(h5file, params):
             base = os.path.splitext(os.path.basename(params.filename))[0]
 
             label = base + "_%d" % (frame.idx,)
-            control_points = params.filename + "_{:d}.npt".format(frame.idx)
-            ai = pyFAI.load(params.filename + "_{:d}.poni".format(frame.idx))
+            control_points = params.filename + "_{:02d}.npt".format(frame.idx)
+            ai = pyFAI.load(params.filename + "_{:02d}.poni".format(frame.idx))
             print(ai)
 
             gonioref.new_geometry(label, frame.image, frame,
@@ -249,3 +248,30 @@ def calibration(json: str, params: Calibration) -> None:
     gonioref.save(json)
 
     # pylab.show()
+
+
+# Integrate
+
+'''
+def integrate(json: str) -> None:
+    """Integrate a file with a json calibration file"""
+    filename = os.path.join(ROOT, "scan_77_01.nxs")
+    gonio = pyFAI.goniometer.Goniometer.sload(json)
+    wavelength = 4.85945727522e-11
+    multicalib = MultiCalib(os.path.join(ROOT, "scan_4_01.nxs"),
+                            MetaDataSource("",
+                                           H5PathContains("scan_data/actuator_1_1"),
+                                           H5PathOptionalItemValue("MARS/D03-1-CX0__DT__DTC_2D-MT_Tz__#1/raw_value", -1.0)),
+                            [], "LaB6", "xpad_flat", wavelength)
+
+    with h5py.File(filename, mode='r') as h5file:
+        images = []
+        positions = []
+        for metadata in gen_metadata(h5file, multicalib):
+            images.append(metadata.img)
+            positions.append((metadata.tx, metadata.tz))
+        mai = gonio.get_mg(positions)
+        res = mai.integrate1d(images, 10000)
+        jupyter.plot1d(res)
+        pylab.show()
+'''
