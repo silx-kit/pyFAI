@@ -115,8 +115,9 @@ def save_as_edf(calibration: Calibration, basedir: str) -> None:
     """
     with File(calibration.filename, mode='r') as h5file:
         for frame in gen_metadata_idx(h5file, calibration):
-            base = os.path.splitext(os.path.basename(calibration.filename))[0]
-            output = os.path.join(basedir, base + '_%d.edf' % (frame.idx,))
+            base = os.path.basename(calibration.filename)
+            output = os.path.join(basedir, base + "_{:02d}.edf".format(frame.idx))  # noqa
+            print(output)
             edfimage(frame.image).write(output)
 
 
@@ -139,7 +140,7 @@ def optimize_with_new_images(h5file: File,
 
     """
     sg = None
-    for frame in gen_metadata_all(h5file, calibration):
+    for n, frame in enumerate(gen_metadata_all(h5file, calibration)):
         print()
         base = os.path.splitext(os.path.basename(calibration.filename))[0]
 
@@ -241,9 +242,9 @@ def calibration(json: str, params: Calibration) -> None:
         with File(multi.filename, mode='r') as h5file:
             optimize_with_new_images(h5file, multi, gonioref, calibrant)
 
-    # for idx, sg in enumerate(gonioref.single_geometries.values()):
-    #    sg.geometry_refinement.set_param(gonioref.get_ai(sg.get_position()).param)
-    #    jupyter.display(sg=sg)
+    for idx, sg in enumerate(gonioref.single_geometries.values()):
+        sg.geometry_refinement.set_param(gonioref.get_ai(sg.get_position()).param)  # noqa
+        jupyter.display(sg=sg)
 
     gonioref.save(json)
 
