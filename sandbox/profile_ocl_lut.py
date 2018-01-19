@@ -30,6 +30,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys, numpy, time
+from pyFAI.utils import mathutil
 from . import utilstest
 import fabio, pyopencl
 from pylab import *
@@ -52,33 +53,33 @@ print("obt", (img == -2).sum(), (img == -1).sum())
 
 out_cyt = ai._lut_integrator.integrate(data)
 out_ocl = gpu.integrate(data)[0]
-print("NoCorr R=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "no corrections"))
+print("NoCorr R=", mathutil.rwp((out_cyt[0], out_ocl), out_cyt[:2], "no corrections"))
 nodummy = out_cyt[1]
 plot(nodummy + 1, label="no_corr")
 out_cyt = ai._lut_integrator.integrate(data, dummy= -2, delta_dummy=1.5)
 out_ocl = gpu.integrate(data, dummy= -2, delta_dummy=1.5)[0]
-print("Dummy  R=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "Dummy"))
-#print("nodummy/Dummy", utilstest.Rwp((out_cyt[0], out_cyt[1]), (out_cyt[0], nodummy), "nodummy/Dummy")
+print("Dummy  R=", mathutil.rwp((out_cyt[0], out_ocl), out_cyt[:2], "Dummy"))
+#print("nodummy/Dummy", mathutil.rwp((out_cyt[0], out_cyt[1]), (out_cyt[0], nodummy), "nodummy/Dummy")
 
 dark = numpy.random.random(data.shape)
 out_cyt = ai._lut_integrator.integrate(data, dark=dark)
 out_ocl = gpu.integrate(data, dark=dark)[0]
-print("Dark  R=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "dark"))
+print("Dark  R=", mathutil.rwp((out_cyt[0], out_ocl), out_cyt[:2], "dark"))
 
 flat = 2 * numpy.ones_like(data)
 out_cyt = ai._lut_integrator.integrate(data, flat=flat)
 out_ocl = gpu.integrate(data, flat=flat)[0]
-print("Flat  R=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "flat"))
+print("Flat  R=", mathutil.rwp((out_cyt[0], out_ocl), out_cyt[:2], "flat"))
 
 solidAngle = ai.solidAngleArray(data.shape)
 out_cyt = ai._lut_integrator.integrate(data, solidAngle=solidAngle)
 out_ocl = gpu.integrate(data, solidAngle=solidAngle)[0]
-print("SolidAngle  R=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "SolidAngle"))
+print("SolidAngle  R=", mathutil.rwp((out_cyt[0], out_ocl), out_cyt[:2], "SolidAngle"))
 
 polarization = ai.polarization(data.shape, 0.95)
 out_cyt = ai._lut_integrator.integrate(data, polarization=polarization)
 out_ocl = gpu.integrate(data, polarization=polarization)[0]
-print("PolarizationR=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "Polarization"))
+print("PolarizationR=", mathutil.rwp((out_cyt[0], out_ocl), out_cyt[:2], "Polarization"))
 
 #pyopencl.enqueue_copy(gpu._queue, img, gpu._cl_mem["image"]).wait()
 #xx = splitBBox.histoBBox1d(weights=data,

@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "12/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -49,6 +49,7 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy
 from numpy import pi
+import scipy.constants
 
 from .third_party import six
 
@@ -56,9 +57,9 @@ from .third_party import six
 # A few physical constants
 ################################################################################
 
-hc = CONST_hc = 12.398419292004204
+hc = CONST_hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e5
 """Product of h the Planck constant, and c the speed of light in vacuum
-in Angstrom.KeV"""
+in Angstrom.KeV. It is approximativly equal to 12.398419292004204."""
 
 CONST_q = 1.602176565e-19
 """One electron-volt is equal to 1.602176565⋅10-19 joules"""

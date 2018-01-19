@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -53,7 +53,7 @@ from collections import namedtuple, OrderedDict
 
 from . import detectors
 from . import units
-from .decorators import deprecated
+from .utils.decorators import deprecated
 from .utils import crc32
 from . import utils
 

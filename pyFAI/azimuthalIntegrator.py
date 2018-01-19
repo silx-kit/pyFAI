@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "12/01/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -49,7 +49,7 @@ from numpy import rad2deg
 from .geometry import Geometry
 from . import units
 from .utils import EPS32, deg2rad, crc32
-from .decorators import deprecated
+from .utils.decorators import deprecated
 from .containers import Integrate1dResult, Integrate2dResult
 from .io import DefaultAiWriter
 error = None
@@ -345,7 +345,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             return data, None
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_numpy(self, data, npt, filename=None, correctSolidAngle=True,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
                    polarization_factor=None, dark=None, flat=None):
@@ -454,7 +454,7 @@ class AzimuthalIntegrator(Geometry):
                       dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_cython(self, data, npt, filename=None, correctSolidAngle=True,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
@@ -510,7 +510,7 @@ class AzimuthalIntegrator(Geometry):
                       dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_splitBBox(self, data, npt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None,
                        dummy=None, delta_dummy=None,
@@ -667,7 +667,7 @@ class AzimuthalIntegrator(Geometry):
         self.__save1D(filename, tthAxis, I, None, "2th_deg", dark is not None, flat is not None, polarization_factor)
         return tthAxis, I
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_splitPixel(self, data, npt,
                         filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
@@ -809,7 +809,7 @@ class AzimuthalIntegrator(Geometry):
     # Default implementation:
     xrpd = xrpd_splitBBox
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_OpenCL(self, data, npt, filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
@@ -1197,14 +1197,14 @@ class AzimuthalIntegrator(Geometry):
 
             if int2d:
                 raise NotImplementedError("Full pixel splitting using CSR is not yet available in 2D")
-#                return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
-#                                                bins=npt,
-#                                                pos0Range=pos0Range,
-#                                                pos1Range=pos1Range,
-#                                                mask=mask,
-#                                                mask_checksum=mask_checksum,
-#                                                allow_pos0_neg=False,
-#                                                unit=unit)
+                # return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                #                                 bins=npt,
+                #                                 pos0Range=pos0Range,
+                #                                 pos1Range=pos1Range,
+                #                                 mask=mask,
+                #                                 mask_checksum=mask_checksum,
+                #                                 allow_pos0_neg=False,
+                #                                 unit=unit)
             else:
                 return splitPixelFullCSR.FullSplitCSR_1d(pos,
                                                          bins=npt,
@@ -1235,7 +1235,7 @@ class AzimuthalIntegrator(Geometry):
                                                 unit=unit,
                                                 )
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_LUT(self, data, npt, filename=None, correctSolidAngle=True,
                  tthRange=None, chiRange=None, mask=None,
                  dummy=None, delta_dummy=None,
@@ -1349,7 +1349,7 @@ class AzimuthalIntegrator(Geometry):
                                 unit="2th_deg",
                                 safe=safe)
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_LUT_OCL(self, data, npt, filename=None, correctSolidAngle=True,
                      tthRange=None, chiRange=None, mask=None,
                      dummy=None, delta_dummy=None,
@@ -1484,7 +1484,7 @@ class AzimuthalIntegrator(Geometry):
                                 unit="2th_deg",
                                 safe=safe)
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd_CSR_OCL(self, data, npt, filename=None, correctSolidAngle=True,
                      tthRange=None, mask=None, dummy=None, delta_dummy=None,
                      dark=None, flat=None, chiRange=None, safe=True,
@@ -1629,7 +1629,7 @@ class AzimuthalIntegrator(Geometry):
                                 safe=safe,
                                 block_size=block_size)
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd2_numpy(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
@@ -1737,7 +1737,7 @@ class AzimuthalIntegrator(Geometry):
 
         return I, bins2Th, binsChi
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd2_histogram(self, data, npt_rad, npt_azim=360,
                         filename=None, correctSolidAngle=True,
                         dark=None, flat=None,
@@ -1852,7 +1852,7 @@ class AzimuthalIntegrator(Geometry):
         self.__save2D(filename, I, bins2Th, binsChi)
         return I, bins2Th, binsChi
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd2_splitBBox(self, data, npt_rad, npt_azim=360,
                         filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
@@ -1997,7 +1997,7 @@ class AzimuthalIntegrator(Geometry):
                       polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10")
     def xrpd2_splitPixel(self, data, npt_rad, npt_azim=360,
                          filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None,
@@ -3286,7 +3286,7 @@ class AzimuthalIntegrator(Geometry):
 
         return result
 
-    @deprecated
+    @deprecated(reason="Not maintained", since_version="0.10", replacement="integrate1d")
     def saxs(self, data, npt, filename=None,
              correctSolidAngle=True, variance=None,
              error_model=None, qRange=None, chiRange=None,
@@ -3353,7 +3353,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    @deprecated
+    @deprecated(since_version="0.14", reason="Use the class DefaultAiWriter")
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False, polarization_factor=None, normalization_factor=None):
         """This method save the result of a 1D integration.
@@ -3418,7 +3418,7 @@ class AzimuthalIntegrator(Geometry):
         writer.save1D(filename, dim1, I, error, dim1_unit, has_dark, has_flat,
                       polarization_factor, normalization_factor)
 
-    @deprecated
+    @deprecated(since_version="0.14", reason="Use the class DefaultAiWriter")
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
                has_dark=False, has_flat=False,
                polarization_factor=None, normalization_factor=None):

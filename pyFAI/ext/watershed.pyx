@@ -30,7 +30,7 @@
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/01/2018"
+__date__ = "11/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -40,7 +40,6 @@ cimport numpy
 import sys
 import logging
 logger = logging.getLogger("pyFAI.ext.watershed")
-from ..decorators import timeit
 from cython.parallel import prange
 
 include "numpy_common.pxi"

@@ -36,30 +36,29 @@ from __future__ import absolute_import, division, print_function
 import unittest
 import numpy
 import logging
-from .utilstest import UtilsTest
+from . import utilstest
 logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
 from ..azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.utils.decorators import depreclog
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 
 import fabio
 
 
-class ParameterisedTestCase(unittest.TestCase):
-    """ TestCase classes that want to be parameterised should
-        inherit from this class.
-        From Eli Bendersky's website
-        http://eli.thegreenplace.net/2011/08/02/python-unit-testing-parametrized-test-cases/
-    """
+class TestOpenClCSR(utilstest.ParametricTestCase):
+
     @classmethod
     def setUpClass(cls):
         cls.N = 1000
-        cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
-        cls.ai.xrpd_LUT(cls.data, cls.N)
+        cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
+        cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            cls.ai.xrpd_LUT(cls.data, cls.N)
 
     @classmethod
     def tearDownClass(cls):
@@ -67,71 +66,55 @@ class ParameterisedTestCase(unittest.TestCase):
         cls.ai = None
         cls.data = None
 
-    def __init__(self, methodName='runTest', param=None):
-        super(ParameterisedTestCase, self).__init__(methodName)
-        self.param = param
-
-    @staticmethod
-    def parameterise(testcase_klass, param=None):
-        """ Create a suite containing all tests taken from the given
-            subclass, passing them the parameter 'param'.
-        """
-        testloader = unittest.TestLoader()
-        testnames = testloader.getTestCaseNames(testcase_klass)
-        suite = unittest.TestSuite()
-        for name in testnames:
-            suite.addTest(testcase_klass(name, param=param))
-        return suite
-
-
-class ParamOpenclCSR(ParameterisedTestCase):
-
     def setUp(self):
-        if not UtilsTest.opencl:
+        if not utilstest.UtilsTest.opencl:
             self.skipTest("User request to skip OpenCL tests")
+        if not opencl.ocl:
+            self.skipTest("OpenCL not available or skiped")
 
     def test_csr(self):
-        workgroup_size = self.param
-        out_ref = splitBBox.histoBBox1d(self.data, self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N)
-        csr = splitBBoxCSR.HistoBBox1d(self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N, unit="2th_deg")
-        if not opencl.ocl:
-            skip = True
-        else:
-            try:
-                ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, self.data.size, "ALL", profile=True, block_size=workgroup_size)
-                out_ocl_csr = ocl_csr.integrate(self.data)
-            except (opencl.pyopencl.MemoryError, MemoryError):
-                logger.warning("Skipping test due to memory error on device")
-                skip = True
-            else:
-                skip = False
-        out_cyt_csr = csr.integrate(self.data)
-        cmt = "Testing ocl_csr with workgroup_size= %s" % (workgroup_size)
-        logger.debug(cmt)
-        if skip:
-            for ref, cyth in zip(out_ref, out_cyt_csr):
-                self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
-        else:
-            for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
-                self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
-                self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
-                self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
-        csr = None
-        ocl_csr = None
-        out_ocl_csr = None
-        out_ref = None
+        testcases = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
+        for workgroup_size in testcases:
+            with self.subTest(workgroup_size=workgroup_size):
+                out_ref = splitBBox.histoBBox1d(self.data, self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N)
+                csr = splitBBoxCSR.HistoBBox1d(self.ai.ttha, self.ai._cached_array["2th_delta"], bins=self.N, unit="2th_deg")
+                if not opencl.ocl:
+                    skip = True
+                else:
+                    try:
+                        ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, self.data.size, "ALL", profile=True, block_size=workgroup_size)
+                        out_ocl_csr = ocl_csr.integrate(self.data)
+                    except (opencl.pyopencl.MemoryError, MemoryError):
+                        logger.warning("Skipping test due to memory error on device")
+                        skip = True
+                    else:
+                        skip = False
+                out_cyt_csr = csr.integrate(self.data)
+                cmt = "Testing ocl_csr with workgroup_size= %s" % (workgroup_size)
+                logger.debug(cmt)
+                if skip:
+                    for ref, cyth in zip(out_ref, out_cyt_csr):
+                        self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
+                else:
+                    for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
+                        self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
+                        self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
+                        self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
+                csr = None
+                ocl_csr = None
+                out_ocl_csr = None
+                out_ref = None
 
 
-TESTCASES = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
-
-
-class Test_CSR(unittest.TestCase):
+class TestCSR(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.N = 1000
-        cls.ai = AzimuthalIntegrator.sload(UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
-        cls.ai.xrpd_LUT(cls.data, cls.N)
+        cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
+        cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            cls.ai.xrpd_LUT(cls.data, cls.N)
 
     @classmethod
     def tearDownClass(cls):
@@ -147,7 +130,7 @@ class Test_CSR(unittest.TestCase):
         self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
         # TODO: align on splitbbox rather then splitbbox_csr
         # diff_img(img, img_csr, "splitbbox")
-        self.assertTrue(numpy.allclose(img, img_csr), " img are the same")
+        self.assertTrue(numpy.allclose(img, img_csr), "img are the same")
 
     def test_2d_nosplit(self):
         self.ai.reset()
@@ -158,17 +141,14 @@ class Test_CSR(unittest.TestCase):
         # self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
         # diff_img(img, img_csr, "no split")
         error = ((result_histo.intensity - result_nosplit.intensity) > 1).sum()
-        self.assertLess(error, 6, " img are almost the same")
+        self.assertLess(error, 6, "img are almost the same")
 
 
 def suite():
     testsuite = unittest.TestSuite()
-    if opencl.ocl:
-        for param in TESTCASES:
-            testsuite.addTest(ParameterisedTestCase.parameterise(
-                              ParamOpenclCSR, param))
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
-    testsuite.addTest(loader(Test_CSR))
+    testsuite.addTest(loader(TestCSR))
+    testsuite.addTest(loader(TestOpenClCSR))
     return testsuite
 
 

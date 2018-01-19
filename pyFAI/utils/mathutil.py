@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2018"
+__date__ = "12/01/2018"
 __status__ = "production"
 
 import logging
@@ -44,7 +44,7 @@ import math
 import numpy
 import time
 import scipy
-from ..decorators import deprecated
+from .decorators import deprecated
 
 try:
     from ..ext import relabel as _relabel
@@ -731,3 +731,30 @@ def is_far_from_group(pt, lst_pts, d2):
         if dsq <= d2:
             return False
     return True
+
+
+def rwp(obt, ref):
+    """          ___________________________
+    Calculate  \/     4 ( obt - ref)²
+               V Sum( --------------- )
+                        (obt + ref)²
+
+    This is done for symmetry reason between obt and ref
+
+    :param obt: obtained data
+    :type obt: 2-list of array of the same size
+    :param obt: reference data
+    :type obt: 2-list of array of the same size
+    :return:  Rwp value, lineary interpolated
+    """
+    ref0, ref1 = ref
+    obt0, obt1 = obt
+    big0 = numpy.concatenate((obt0, ref0))
+    big0.sort()
+    big0 = numpy.unique(big0)
+    big_ref = numpy.interp(big0, ref0, ref1, 0.0, 0.0)
+    big_obt = numpy.interp(big0, obt0, obt1, 0.0, 0.0)
+    big_mean = (big_ref + big_obt) / 2.0
+    big_delta = (big_ref - big_obt)
+    non_null = abs(big_mean) > 1e-10
+    return numpy.sqrt(((big_delta[non_null]) ** 2 / ((big_mean[non_null]) ** 2)).sum())
