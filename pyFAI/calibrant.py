@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "11/01/2018"
 __status__ = "production"
 
 
@@ -52,7 +52,7 @@ import itertools
 from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
-from .decorators import deprecated
+from .utils.decorators import deprecated
 
 logger = logging.getLogger(__name__)
 epsilon = 1.0e-6  # for floating point comparison

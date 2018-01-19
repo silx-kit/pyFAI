@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "09/01/2018"
+__date__ = "12/01/2018"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -50,6 +50,7 @@ import logging
 
 from .. import load
 from .. import AzimuthalIntegrator
+from ..utils import mathutil
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
 from ..third_party import six
@@ -387,7 +388,7 @@ class Bench(object):
             tmin *= 1000.0
             if check:
                 ref = self.get_ref(param)
-                R = utilstest.Rwp(res, ref)
+                R = mathutil.rwp(res, ref)
                 print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
                 self.update_mp()
                 if R < self.LIMIT:
@@ -533,7 +534,7 @@ class Bench(object):
             self.print_init(t1 - t0)
             self.update_mp()
             ref = ai.xrpd(data, N)
-            R = utilstest.Rwp(res, ref)
+            R = mathutil.rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             test = BenchTestGpu(param, file_name, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer(test.stmt, test.setup)

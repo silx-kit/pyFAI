@@ -34,18 +34,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "12/01/2018"
 
 import unittest
 import time
 import numpy
 import logging
 from numpy import cos
-from .utilstest import Rwp
 logger = logging.getLogger(__name__)
 from ..ext.histogram import histogram, histogram2d
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
 from ..third_party import six
+from ..utils import mathutil
 
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
@@ -169,11 +169,11 @@ class TestHistogram1d(unittest.TestCase):
         logger.info("Bin-center position for csr/numpy, max delta=%s", max_delta)
         self.assertTrue(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
 
-        rwp1 = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
+        rwp1 = mathutil.rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp Cython/Numpy = %.3f", rwp1)
         self.assertTrue(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
 
-        rwp2 = Rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
+        rwp2 = mathutil.rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp CSR/Numpy = %.3f", rwp2)
         self.assertTrue(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
 

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "12/01/2018"
 
 
 import unittest
@@ -244,6 +244,95 @@ class TestImplementations(unittest.TestCase):
         self.assertTrue(numpy.allclose(csr1[0], csr2[0], atol=2e-7), "same data 1-2")
         self.assertTrue(numpy.allclose(csr1[0], csr3[0], atol=2e-7), "same data 1-3")
         self.assertTrue(numpy.allclose(csr1[0], csr4[0], atol=2e-7), "same data 1-4")
+
+
+class TestManual(unittest.TestCase):
+
+    def test(self):
+        data = numpy.empty((20, 20), dtype=numpy.float32)
+        Q = distortion.Quad(data)
+        Q.reinit(7.5, 6.5, 2.5, 5.5, 3.5, 1.5, 8.5, 1.5)
+        Q.init_slope()
+        # print(Q.calc_area_AB(Q.A0, Q.B0)
+        # print(Q.calc_area_BC(Q.B0, Q.C0)
+        # print(Q.calc_area_CD(Q.C0, Q.D0)
+        # print(Q.calc_area_DA(Q.D0, Q.A0)
+        print(Q.calc_area())
+        Q.populate_box()
+        print(Q)
+        # print(Q.get_box().sum()
+        print(data.sum())
+        print("#" * 50)
+
+        Q.reinit(8.5, 1.5, 3.5, 1.5, 2.5, 5.5, 7.5, 6.5)
+        Q.init_slope()
+        # print(Q.calc_area_AB(Q.A0, Q.B0)
+        # print(Q.calc_area_BC(Q.B0, Q.C0)
+        # print(Q.calc_area_CD(Q.C0, Q.D0)
+        # print(Q.calc_area_DA(Q.D0, Q.A0)
+        print(Q.calc_area())
+        Q.populate_box()
+        print(Q)
+        # print(Q.get_box().sum()
+        print(data.sum())
+
+        Q.reinit(0.9, 0.9, 0.8, 6.9, 4.3, 3.9, 4.3, 0.9)
+        # Q = distortion.Quad((-0.3, 1.9), (-0.4, 2.9), (1.3, 2.9), (1.3, 1.9))
+        Q.init_slope()
+        print("calc_area_vectorial", Q.calc_area())
+        # print(Q.A0, Q.A1, Q.B0, Q.B1, Q.C0, Q.C1, Q.D0, Q.D1
+        # print("Slope", Q.pAB, Q.pBC, Q.pCD, Q.pDA
+        # print(Q.calc_area_AB(Q.A0, Q.B0), Q.calc_area_BC(Q.B0, Q.C0), Q.calc_area_CD(Q.C0, Q.D0), Q.calc_area_DA(Q.D0, Q.A0)
+        print(Q.calc_area())
+        Q.populate_box()
+        print(data.T)
+        # print(Q.get_box().sum()
+        print(Q.calc_area())
+
+        print("#" * 50)
+
+        # workin on 256x256
+        # x, y = numpy.ogrid[:256, :256]
+        # grid = numpy.logical_or(x % 10 == 0, y % 10 == 0) + numpy.ones((256, 256), numpy.float32)
+        # det = detectors.FReLoN("frelon_8_8.spline")
+
+        # working with halfccd spline
+        x, y = numpy.ogrid[:1024, :2048]
+        grid = numpy.logical_or(x % 100 == 0, y % 100 == 0) + numpy.ones((1024, 2048), numpy.float32)
+        det = detectors.FReLoN("halfccd.spline")
+        # working with halfccd spline
+        # x, y = numpy.ogrid[:2048, :2048]
+        # grid = numpy.logical_or(x % 100 == 0, y % 100 == 0).astype(numpy.float32) + numpy.ones((2048, 2048), numpy.float32)
+        # det = detectors.FReLoN("frelon.spline")
+
+        print(det, det.max_shape)
+        dis = distortion.Distortion(det)
+        print(dis)
+        lut = dis.self.calc_size()
+        print(dis.lut_size)
+        print(lut.mean())
+
+        dis.calc_LUT()
+        out = dis.correct(grid)
+        fabio.edfimage.edfimage(data=out.astype("float32")).write("test_correct.edf")
+
+        print("*" * 50)
+
+        # x, y = numpy.ogrid[:2048, :2048]
+        # grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
+        # det = detectors.FReLoN("frelon.spline")
+        # print(det, det.max_shape
+        # dis = Distortion(det)
+        # print(dis
+        # lut = dis.self.calc_size()
+        # print(dis.lut_size
+        # print("LUT mean & max", lut.mean(), lut.max()
+        # dis.calc_LUT()
+        # out = dis.correct(grid)
+        # fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
+        from ..gui.matplotlib import pylab
+        pylab.imshow(out)  # , interpolation="nearest")
+        pylab.show()
 
 
 def suite():
