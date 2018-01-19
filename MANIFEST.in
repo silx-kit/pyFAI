@@ -16,8 +16,12 @@ recursive-exclude benchmark *
 recursive-exclude test *
 recursive-exclude pyFAI.egg-info *
 exclude pyFAI.egg-info
+recursive-exclude build *
+recursive-exclude dist *
+include version.py
 include stdeb.cfg
 include setup.cfg
+exclude MANIFEST
 include MANIFEST.in
 include build-deb.sh
 include run_tests.py
@@ -27,6 +31,7 @@ include CHANGELOG.txt
 include TODO.txt
 include copyright
 include requirements.txt
+include pyproject.toml
 
 #Include doc without checkpoints
 recursive-include doc *
