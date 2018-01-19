@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2018"
+__date__ = "19/01/2018"
 __status__ = "production"
 
 import os
@@ -582,9 +582,13 @@ class AbstractCalibration(object):
             self.outfile = self.dataFiles[0]
 
         url = urlparse(self.outfile)
-        if url.scheme not in self.VALID_URL:
-            logger.warning("unexpected URL: %s", self.outfile)
-        self.basename, ext = os.path.splitext(url.path)
+        if (sys.platform == "win32") and (len(url.scheme) == 1):  # "c:" like path
+            path = self.outfile
+        else:
+            if url.scheme not in self.VALID_URL:
+                logger.warning("unexpected URL: %s", self.outfile)
+            path = url.path
+        self.basename, ext = os.path.splitext(path)
         if ext in [".gz", ".bz2"]:
             self.basename = os.path.splitext(self.basename)[0]
 
