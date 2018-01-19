@@ -12,10 +12,7 @@ from . import utilstest
 import fabio
 import pyopencl as cl
 from pylab import *
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT

@@ -28,20 +28,22 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test suites for pixel splitting scheme validation
+"""Test suites for pixel splitting scheme validation
 
 see sandbox/debug_split_pixel.py for visual validation
 """
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 import unittest
 import numpy
-from .utilstest import UtilsTest, getLogger, Rwp
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest, Rwp
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 

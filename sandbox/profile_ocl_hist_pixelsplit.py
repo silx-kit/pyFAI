@@ -12,15 +12,12 @@ import sys, numpy, time, os
 import fabio
 import pyopencl as cl
 from pylab import *
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 print("#"*50)
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from .utilstest import UtilsTest, getLogger
+from pyFAI.test.utilstest import UtilsTest
 
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT

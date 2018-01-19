@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "10/01/2018"
 
 
 import os
@@ -49,6 +49,7 @@ from .. import preproc as python_preproc
 from ..ext import preproc as cython_preproc
 from ..opencl import preproc as ocl_preproc
 from .utilstest import UtilsTest
+from ..opencl.common import ocl
 
 
 class TestPreproc(unittest.TestCase):
@@ -103,13 +104,13 @@ class TestPreproc(unittest.TestCase):
         # delta = abs(numpy.round(res, 3) - target).max()
         delta = abs(res - target).max()
         if delta <= epsilon:
-            l = ["flat != polarization",
-                 str(preproc),
-                 "raw:", str(raw),
-                 "dark", str(dark),
-                 "flat:", str(flat),
-                 "delta", str(delta)]
-            logger.warning(os.linesep.join(l))
+            ll = ["flat != polarization",
+                  str(preproc),
+                  "raw:", str(raw),
+                  "dark", str(dark),
+                  "flat:", str(flat),
+                  "delta", str(delta)]
+            logger.warning(os.linesep.join(ll))
 
         delta = abs(res - target).max()
         self.assertGreater(delta, epsilon, "flat != polarization")
@@ -118,26 +119,26 @@ class TestPreproc(unittest.TestCase):
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
         delta = abs(res - target).max()
         if delta <= epsilon:
-            l = ["flat != solidangle",
-                 str(preproc),
-                 "raw:", str(raw),
-                 "dark", str(dark),
-                 "flat:", str(flat),
-                 "delta", str(delta)]
-            logger.warning(os.linesep.join(l))
+            ll = ["flat != solidangle",
+                  str(preproc),
+                  "raw:", str(raw),
+                  "dark", str(dark),
+                  "flat:", str(flat),
+                  "delta", str(delta)]
+            logger.warning(os.linesep.join(ll))
         self.assertGreater(delta, epsilon, "flat != solidangle")
 
         res = preproc.preproc(raw, dark, absorption=flat, dummy=dummy, mask=mask, normalization_factor=scale)
         self.assertEqual(abs(numpy.round(res[2:-2, 2:-2]) - 1).max(), 0, "mask is properly applied")
         delta = abs(res - target).max()
         if delta <= epsilon:
-            l = ["flat != absorption",
-                 str(preproc),
-                 "raw:", str(raw),
-                 "dark", str(dark),
-                 "flat:", str(flat),
-                 "delta", str(delta)]
-            logger.warning(os.linesep.join(l))
+            ll = ["flat != absorption",
+                  str(preproc),
+                  "raw:", str(raw),
+                  "dark", str(dark),
+                  "flat:", str(flat),
+                  "delta", str(delta)]
+            logger.warning(os.linesep.join(ll))
         self.assertGreater(delta, epsilon, "flat != absorption")
 
         # Test all features together
@@ -152,8 +153,9 @@ class TestPreproc(unittest.TestCase):
 
     @unittest.skipIf(UtilsTest.opencl is False, "User request to skip OpenCL tests")
     def test_opencl(self):
-        if ocl_preproc.ocl is not None:
-            self.one_test(ocl_preproc)
+        if ocl is None:
+            self.skipTest("OpenCL not available")
+        self.one_test(ocl_preproc)
 
 
 def suite():

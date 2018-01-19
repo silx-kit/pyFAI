@@ -38,7 +38,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2017"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -53,7 +53,7 @@ import array
 
 from .utils import StringTypes, six
 from .calibrant import Calibrant, get_calibrant, names as calibrant_names
-logger = logging.getLogger("pyFAI.control_points")
+logger = logging.getLogger(__name__)
 
 ################################################################################
 # ControlPoints
@@ -373,8 +373,9 @@ class ControlPoints(object):
                     defaultRing = ring
                 elif lastRing is not None:
                     defaultRing = lastRing + 1
-                res = six.moves.input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " \
-                                      % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
+                msg = "Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# "
+                res = six.moves.input(msg % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing))
+                res = res.strip()
                 if res == "":
                     res = defaultRing
                 try:

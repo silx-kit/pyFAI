@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "09/01/2018"
 __satus__ = "Production"
 
 import logging
@@ -64,9 +64,10 @@ def main():
         app = qt.QApplication([])
         window = DiffMapWidget()
         window.set_config(config)
-#         window.restore()
+        # window.restore()
         window.show()
         sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()

@@ -34,19 +34,19 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
 import numpy
-from .utilstest import getLogger
+import logging
 from .. import units
 from ..worker import Worker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class AzimuthalIntegratorMocked():
@@ -222,7 +222,7 @@ class TestWorker(unittest.TestCase):
         worker.nbpt_azim = 2
         try:
             worker.process(data)
-        except:
+        except Exception:
             pass
 
     def test_process_poisson(self):

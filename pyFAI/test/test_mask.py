@@ -28,28 +28,26 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for masked arrays"
+"""Test suite for masked arrays"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
 import numpy
 import logging
 import fabio
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..third_party import six
 from .. import load, detectors, AzimuthalIntegrator
 
 

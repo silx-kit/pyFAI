@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "02/02/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -53,9 +53,9 @@ cdef inline double f_t1(double p1, double p2, double p3, double sinRot1, double 
     :param sinRot1,sinRot2,sinRot3: sine of the angles
     :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
-    return p1 * cosRot2 * cosRot3 + \
-           p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-           p3 * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+    return (p1 * cosRot2 * cosRot3 +
+            p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) -
+            p3 * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3))
 
 
 cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
@@ -67,9 +67,9 @@ cdef inline double f_t2(double p1, double p2, double p3, double sinRot1, double 
     :param sinRot1,sinRot2,sinRot3: sine of the angles
     :param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
-    return p1 * cosRot2 * sinRot3 + \
-           p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-           p3 * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+    return (p1 * cosRot2 * sinRot3 +
+            p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) -
+            p3 * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3))
 
 
 cdef inline double f_t3(double p1, double p2, double p3, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
@@ -146,10 +146,10 @@ cdef inline double f_r(double p1, double p2, double L, double sinRot1, double co
     cdef:
         double t1 = f_t1(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
         double t2 = f_t2(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-        #double t3 = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+        # double t3 = f_t3(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     return sqrt(t1 * t1 + t2 * t2)
-    #Changed 10/03/2016 ... the radius is in the pixel position.
-    #return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
+    # Changed 10/03/2016 ... the radius is in the pixel position.
+    # return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
 
 
 @cython.cdivision(True)
@@ -233,14 +233,14 @@ def calc_pos_zyx(double L, double poni1, double poni2,
     r3 = numpy.asarray(t3)
 
     if pos1.ndim == 3:
-        return r3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               r1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),\
-               r2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2])
+        return (r3.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),
+                r1.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]),
+                r2.reshape(pos1.shape[0], pos1.shape[1], pos1.shape[2]))
 
     if pos1.ndim == 2:
-        return r3.reshape(pos1.shape[0], pos1.shape[1]),\
-               r1.reshape(pos1.shape[0], pos1.shape[1]),\
-               r2.reshape(pos1.shape[0], pos1.shape[1])
+        return (r3.reshape(pos1.shape[0], pos1.shape[1]),
+                r1.reshape(pos1.shape[0], pos1.shape[1]),
+                r2.reshape(pos1.shape[0], pos1.shape[1]))
     else:
         return r3, r1, r2
 
@@ -607,11 +607,11 @@ def calc_delta_chi(cython.floating[:, ::1] centers,
     """
     cdef:
         int width, height, row, col, corn, nbcorn
-        double co, ce, delta0, delta1, delta2, delta, twopi = 2*M_PI
+        double co, ce, delta0, delta1, delta2, delta, twopi = 2 * M_PI
         double[:, ::1] res
 
     height = centers.shape[0]
-    width =  centers.shape[1]
+    width = centers.shape[1]
     assert corners.shape[0] == height, "height match"
     assert corners.shape[1] == width, "width match"
     nbcorn = corners.shape[2]
@@ -625,7 +625,7 @@ def calc_delta_chi(cython.floating[:, ::1] centers,
                 for corn in range(nbcorn):
                     co = corners[row, col, corn, 1]
                     delta1 = (co - ce + twopi) % twopi
-                    delta2 = (ce - co + twopi ) % twopi
+                    delta2 = (ce - co + twopi) % twopi
                     delta0 = min(delta1, delta2)
                     if delta0 > delta:
                         delta = delta0

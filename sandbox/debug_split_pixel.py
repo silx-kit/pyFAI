@@ -27,10 +27,7 @@
 # THE SOFTWARE.
 import utilstest
 import pyFAI, numpy
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 img = numpy.zeros((512,512))
 for i in range(1,6):img[i*100,i*100]=1
 det = pyFAI.detectors.Detector(1e-4,1e-4)

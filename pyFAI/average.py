@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/10/2017"
+__date__ = "10/01/2018"
 __status__ = "production"
 
 import logging
@@ -47,11 +47,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize.optimize import fmin
 from scipy.optimize.optimize import fminbound
 
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
-
+from .third_party import six
 from .utils import stringutil
 
 from ._version import calc_hexversion
@@ -59,7 +55,7 @@ if ("hexversion" not in dir(fabio)) or (fabio.hexversion < calc_hexversion(0, 4,
     # Short cut fabio.factory do not exists on older versions
     fabio.factory = fabio.fabioimage.FabioImage.factory
 
-logger = logging.getLogger("pyFAI.average")
+logger = logging.getLogger(__name__)
 
 
 class ImageReductionFilter(object):

@@ -29,16 +29,14 @@ matplotlib.use('Qt4Agg')
 import pylab
 from math import sqrt
 import fabio, numpy
-from utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from pyFAI.test.utilstest import UtilsTest
+logger = logging.getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.blob_detection import BlobDetection
 from pyFAI.detectors import detector_factory
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 
 
 def somme(im):

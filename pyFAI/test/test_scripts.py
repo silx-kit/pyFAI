@@ -28,34 +28,29 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """test suite to scripts
-"""
+"""Test suite to scripts"""
+
 __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 import sys
 import unittest
 import runpy
+import logging
 
-from .utilstest import getLogger
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 try:
     from ..gui import qt
-except:
+except ImportError:
     qt = None
 
 try:
-    import PyMca
-except:
-    PyMca = None
-
-try:
     import silx
-except:
+except ImportError:
     silx = None
 
 
@@ -105,8 +100,8 @@ class TestScriptsHelp(unittest.TestCase):
         self.executeAppHelp("pyFAI.app.calib")
 
     def testPyfaiDrawmask(self):
-        if qt is None or (PyMca is None and silx is None):
-            self.skipTest("Library Qt, PyMca and silx are not available")
+        if qt is None or silx is None:
+            self.skipTest("Library Qt and silx are not available")
         self.executeAppHelp("pyFAI.app.drawmask")
 
     def testPyfaiIntegrate(self):

@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "11/01/2018"
 __status__ = "production"
 
 import sys
@@ -39,18 +39,15 @@ import os
 import threading
 from math import ceil, sqrt
 import logging
-logger = logging.getLogger("pyFAI.massif")
+logger = logging.getLogger(__name__)
 import numpy
 import fabio
 from scipy.ndimage import label
 from scipy.ndimage.filters import median_filter
 
 from .ext.bilinear import Bilinear
-from .utils import gaussian_filter, binning, unBinning, relabel, is_far_from_group
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
+from .utils import gaussian_filter, binning, unbinning, relabel, is_far_from_group
+from .third_party import six
 
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -199,13 +196,11 @@ class Massif(object):
         for idx in all_points:
             out = self.nearest_peak(idx)
             if out is not None:
-                logger.debug("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
-                      (idx[1], idx[0], out[1], out[0]))
+                msg = "[ %3i, %3i ] -> [ %.1f, %.1f ]"
+                logger.debug(msg, idx[1], idx[0], out[1], out[0])
                 p0, p1 = int(round(out[0])), int(round(out[1]))
                 if mask[p0, p1]:
-
-                    if (self.data[p0, p1] > Imin) and \
-                        is_far_from_group(out, res, dmin2):
+                    if (self.data[p0, p1] > Imin) and is_far_from_group(out, res, dmin2):
                         res.append(out)
                         cnt = 0
             if len(res) >= keep or cnt > keep:
@@ -305,7 +300,7 @@ class Massif(object):
                     relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
-                    self._labeled_massif = unBinning(relabeled, self.binning, False)
+                    self._labeled_massif = unbinning(relabeled, self.binning, False)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs.", self._number_massif)

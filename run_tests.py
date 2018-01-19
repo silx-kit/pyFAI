@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "14/09/2017"
+__date__ = "10/01/2018"
 __license__ = "MIT"
 
 import distutils.util
@@ -265,6 +265,7 @@ def build_project(name, root_dir):
 
 
 try:
+    # pyFAI is not yet loaded, it is safer to use library from the system
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
@@ -280,9 +281,10 @@ PYFAI_OPENCL=False to disable OpenCL tests.
 parser = ArgumentParser(description='Run the tests.',
                         epilog=epilog)
 
-parser.add_argument("-i", "--insource",
-                    action="store_true", dest="insource", default=False,
-                    help="Use the build source and not the installed version")
+parser.add_argument("--installed",
+                    action="store_true", dest="installed", default=False,
+                    help=("Test the installed version instead of" +
+                          "building from the source"))
 parser.add_argument("-c", "--coverage", dest="coverage",
                     action="store_true", default=False,
                     help=("Report code coverage" +
@@ -360,16 +362,14 @@ if (os.path.dirname(os.path.abspath(__file__)) ==
 
 
 # import module
-if not options.insource:
+if options.installed:  # Use installed version
     try:
         module = importer(PROJECT_NAME)
-    except ImportError:
-        logger.warning(
-            "%s missing, using built (i.e. not installed) version",
+    except:
+        raise ImportError(
+            "%s not installed: Cannot run tests on installed version" %
             PROJECT_NAME)
-        options.insource = True
-
-if options.insource:
+else:  # Use built source
     build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
 
     sys.path.insert(0, build_dir)
@@ -400,10 +400,7 @@ if old_importer:
     test_module = getattr(test_module, "test")
     print(dir(test_module))
     utilstest = getattr(test_module, "utilstest")
-UtilsTest = getattr(utilstest, "UtilsTest")
-UtilsTest.image_home = os.path.join(PROJECT_DIR, 'testimages')
-UtilsTest.testimages = os.path.join(UtilsTest.image_home, "all_testimages.json")
-UtilsTest.script_dir = os.path.join(PROJECT_DIR, "scripts")
+UtilsTest = utilstest.UtilsTest
 
 if options.low_mem:
     logger.info("Switch to low_mem mode")

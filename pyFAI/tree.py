@@ -25,32 +25,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 from __future__ import absolute_import, print_function, division
+
+"""Module with list <-> tree conversion"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """
 
-Module with list <-> tree conversion
-
-"""
 import os
 import logging
 from .io import is_hdf5
-logger = logging.getLogger("tree")
+logger = logging.getLogger(__name__)
 
 from collections import namedtuple
 DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))
 
 try:
     from .ext._tree import TreeItem
-except:
+except ImportError:
     logger.error("pyFAI.ext._tree did not import")
 
     class TreeItem(object):
@@ -174,8 +171,8 @@ class ListDataSet(list):
         """
         :return: common directory
         """
-        l = [j.path.split(os.sep) for j in self]
-        common = os.path.commonprefix(l)
+        ll = [j.path.split(os.sep) for j in self]
+        common = os.path.commonprefix(ll)
         if common:
             return os.sep.join(common + [""])
 

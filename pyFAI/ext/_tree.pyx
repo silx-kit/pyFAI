@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "01/12/2016"
+__date__ = "09/01/2018"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -53,7 +53,7 @@ cdef class TreeItem(object):
     cdef public TreeItem parent
     cdef public str label
     cdef public int order
-    cdef public str type #can by "dir", "file", "group" or "dataset"
+    cdef public str type  # can by "dir", "file", "group" or "dataset"
     cdef public object extra
 
     def __init__(self, str label=None, TreeItem parent=None):

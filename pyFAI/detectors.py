@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/12/2017"
+__date__ = "10/01/2018"
 __status__ = "stable"
 
 
@@ -54,7 +54,7 @@ from . import utils
 from . import average
 from .utils import binning, expand2d, crc32
 
-logger = logging.getLogger("pyFAI.detectors")
+logger = logging.getLogger(__name__)
 
 try:
     from .ext import bilinear
@@ -964,8 +964,7 @@ class Pilatus(Detector):
             self.uniform_pixel = True
 
     def __repr__(self):
-        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % \
-                (self.name, self.pixel1, self.pixel2)
+        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
         if self.x_offset_file:
             txt += "\t delta_x= %s" % self.x_offset_file
         if self.y_offset_file:
@@ -1733,8 +1732,7 @@ class Xpad_flat(ImXPadS10):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-                (self.name, self.pixel1, self.pixel2)
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
 
     def calc_pixels_edges(self):
         """
@@ -2493,9 +2491,15 @@ class Aarhus(Detector):
     Developped at the Danish university of Aarhus
     r = 1.2m or 0.3m
 
+    Credits:
+    Private communication;
+    B. B. Iversen,
+    Center for Materials Crystallography & Dept. of Chemistry and iNANO,
+    Aarhus University
+
     The image has to be laid-out horizontally
 
-    Nota: the detector is bending towards the sample, hence reducing the sample-detector distance.
+    Nota: the detector is bend towards the sample, hence reducing the sample-detector distance.
     This is why z<0 (or p3<0)
 
     TODO: update cython code for 3d detectors

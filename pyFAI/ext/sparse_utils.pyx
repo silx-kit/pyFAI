@@ -26,9 +26,10 @@
 # THE SOFTWARE.
 
 """Common Look-Up table/CSR object creation tools and conversion"""
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "22/06/2017"
+__date__ = "09/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -148,7 +149,7 @@ cdef class Vector:
     @cython.initializedcheck(False)
     cdef inline void _append(self, int idx, float coef):
         cdef:
-            int pos, new_allocated 
+            int pos, new_allocated
             int[:] newidx
             float[:] newcoef
         pos = self.size
@@ -162,21 +163,21 @@ cdef class Vector:
             newidx[:pos] = self.idx[:pos]
             self.idx = newidx
             self.allocated = new_allocated
-            
+
         self.coef[pos] = coef
         self.idx[pos] = idx
-        
+
     def append(self, idx, coef):
         "Python implementation of _append in cython"
         self._append(<int> idx, <float> coef)
 
 
 cdef class ArrayBuilder:
-# --> see the associated PXD file
-#     cdef:
-#         int size 
-#         Vector[:] lines
-        
+    # --> see the associated PXD file
+    #     cdef:
+    #         int size
+    #         Vector[:] lines
+
     def __cinit__(self, int nlines, min_size=4):
         cdef int i
         self.size = nlines
@@ -184,12 +185,12 @@ cdef class ArrayBuilder:
         self.lines = nullarray
         for i in range(nlines):
             self.lines[i] = Vector(min_size=min_size)
-            
+
     def __dealloc__(self):
         for i in range(self.size):
             self.lines[i] = None
         self.lines = None
-        
+
     def __len__(self):
         return self.size
 
@@ -206,16 +207,16 @@ cdef class ArrayBuilder:
         for i in range(self.size):
             sum += self.lines[i].nbytes
         return sum
-    
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.initializedcheck(False)
     cdef inline void _append(self, int line, int col, float value):
-        cdef: 
+        cdef:
             Vector vector
         vector = self.lines[line]
         vector._append(col, value)
-    
+
     def append(self, line, col, value):
         'Python wrapper for _append in cython'
         self._append(<int> line, <int> col, <float> value)
@@ -240,7 +241,7 @@ cdef class ArrayBuilder:
 
     def as_CSR(self):
         cdef:
-            int i, val, start, end, total_size = 0 
+            int i, val, start, end, total_size = 0
             Vector vector
             lut_point[:, :] lut
             lut_point[:] data

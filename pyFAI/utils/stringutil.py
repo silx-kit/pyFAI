@@ -26,14 +26,14 @@
 
 from __future__ import absolute_import, print_function, division
 
+"""Module containing utilitary around string"""
+
 __author__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/02/2017"
+__date__ = "09/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """Module containing utilitary around string"""
-
 
 import string
 
@@ -47,8 +47,9 @@ class SafeFormatter(string.Formatter):
             return super(SafeFormatter, self).get_field(field_name, args, kwargs)
         except KeyboardInterrupt:
             raise
-        except:
+        except Exception:
             return "{%s}" % field_name, field_name
+
 
 _safe_formater = SafeFormatter()
 
