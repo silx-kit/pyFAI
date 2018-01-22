@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "22/01/2018"
 __status__ = "stable"
 
 
@@ -1974,7 +1974,6 @@ class Rayonix(Detector):
         bin2 = self.max_shape[1] // shape[1]
         self._binning = (bin1, bin2)
         self.shape = shape
-        self.max_shape = shape
         self._pixel1 = self.BINNED_PIXEL_SIZE[bin1]
         self._pixel2 = self.BINNED_PIXEL_SIZE[bin2]
         self._mask = False
