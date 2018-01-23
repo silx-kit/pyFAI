@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>714</width>
-    <height>622</height>
+    <width>722</width>
+    <height>712</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -120,16 +120,6 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>Detector:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="1" colspan="2">
-          <widget class="DetectorSelector" name="_detector"/>
-         </item>
          <item row="5" column="1" colspan="2">
           <widget class="CalibrantSelector" name="_calibrant"/>
          </item>
@@ -153,7 +143,48 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+        </layout>
+        <zorder>_energy</zorder>
+        <zorder>label_3</zorder>
+        <zorder>_wavelengthUnit</zorder>
+        <zorder>_energyUnit</zorder>
+        <zorder>_wavelength</zorder>
+        <zorder>label_7</zorder>
+        <zorder>label_6</zorder>
+        <zorder>_calibrant</zorder>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Detector</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
+         <item row="0" column="1">
+          <widget class="DetectorSelector" name="_detector"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Model:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="FileEdit" name="_spline">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QToolButton" name="_splineLoader">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Spline file:</string>
@@ -163,34 +194,31 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="3">
-          <widget class="QToolButton" name="_splineLoader">
+         <item row="2" column="0">
+          <widget class="QLabel" name="_detectorSizeLabel">
            <property name="text">
-            <string>...</string>
+            <string>Max size:</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1" colspan="2">
-          <widget class="FileEdit" name="_spline">
+         <item row="2" column="2">
+          <widget class="QLabel" name="_detectorSizeUnit">
+           <property name="text">
+            <string>px</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="_detectorSize">
            <property name="text">
             <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
         </layout>
-        <zorder>_energy</zorder>
-        <zorder>label_3</zorder>
-        <zorder>_wavelengthUnit</zorder>
-        <zorder>_energyUnit</zorder>
-        <zorder>_wavelength</zorder>
-        <zorder>label_7</zorder>
-        <zorder>label_6</zorder>
-        <zorder>label_8</zorder>
-        <zorder>_detector</zorder>
-        <zorder>_calibrant</zorder>
-        <zorder>label_4</zorder>
-        <zorder>_spline</zorder>
-        <zorder>_splineLoader</zorder>
        </widget>
       </item>
       <item>
@@ -216,21 +244,21 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="5" column="0">
           <widget class="QLabel" name="label_76">
            <property name="text">
             <string>Dark file:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="2">
+         <item row="5" column="2">
           <widget class="QToolButton" name="_darkLoader">
            <property name="text">
             <string>...</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="4" column="1">
           <widget class="FileEdit" name="_mask">
            <property name="text">
             <string/>
@@ -244,14 +272,14 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_78">
            <property name="text">
             <string>Mask file:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
+         <item row="4" column="2">
           <widget class="QToolButton" name="_maskLoader">
            <property name="text">
             <string>...</string>
@@ -265,7 +293,7 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="5" column="1">
           <widget class="FileEdit" name="_dark">
            <property name="enabled">
             <bool>false</bool>
@@ -289,6 +317,36 @@
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="_binningLabel">
+           <property name="text">
+            <string>Binning:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="_binning">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="_error">
+           <property name="styleSheet">
+            <string notr="true">color:red</string>
+           </property>
+           <property name="text">
+            <string>dsdfsddsf</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>

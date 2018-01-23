@@ -27,10 +27,11 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "23/01/2018"
 
 import os
 import fabio
+import numpy
 import logging
 from contextlib import contextmanager
 from collections import OrderedDict
@@ -60,6 +61,9 @@ class ExperimentTask(AbstractCalibrationTask):
         self.__plot2D.setKeepDataAspectRatio(True)
         self.__plot2D.getMaskAction().setVisible(False)
         self.__plot2D.getProfileToolbar().setVisible(False)
+        self.__plot2D.setDataMargins(0.1, 0.1, 0.1, 0.1)
+        self.__plot2D.setGraphXLabel("Y")
+        self.__plot2D.setGraphYLabel("X")
 
         colormap = {
             'name': "inferno",
@@ -91,13 +95,94 @@ class ExperimentTask(AbstractCalibrationTask):
 
         # FIXME debug purpous
         settings.calibrantModel().changed.connect(self.printSelectedCalibrant)
-        settings.detectorModel().changed.connect(self.__detectorUpdated)
-        self.__updateSplineFileVisibility()
+        settings.detectorModel().changed.connect(self.__detectorModelUpdated)
+        self.__detectorModelUpdated()
 
-    def __detectorUpdated(self):
+    def __detectorModelUpdated(self):
         detector = self.model().experimentSettingsModel().detectorModel().detector()
-        print(detector)
+
+        self._detectorSizeUnit.setVisible(detector is not None)
+        if detector is None:
+            self._detectorSize.setText("")
+        else:
+            text = [str(s) for s in detector.max_shape]
+            text = u" × ".join(text)
+            self._detectorSize.setText(text)
+
         self.__updateSplineFileVisibility()
+        self.__updateDetector()
+
+    def __displayError(self, label, message=""):
+        self._error.setVisible(True)
+        self._binning.setVisible(False)
+        self._binningLabel.setVisible(False)
+        # self._nextStep.setEnabled(False)
+        self._error.setText(label)
+        self._error.setToolTip(message)
+
+    def __updateDetectorTemplate(self):
+        try:
+            detector = self.model().experimentSettingsModel().detector()
+        except Exception:
+            detector = self.model().experimentSettingsModel().detectorModel().detector()
+
+        if detector is None:
+            self._detectorSize.setText("")
+            self.__plot2D.removeMarker("xmin")
+            self.__plot2D.removeMarker("xmax")
+            self.__plot2D.removeMarker("ymin")
+            self.__plot2D.removeMarker("ymax")
+        else:
+            try:
+                binning = detector.get_binning()
+            except Exception:
+                binning = 1, 1
+            # clamping
+            if binning[0] == 0:
+                binning = 1, binning[1]
+            if binning[1] == 0:
+                binning = binning[0], 1
+
+            shape = detector.max_shape[1] // binning[1], detector.max_shape[0] // binning[0]
+            self.__plot2D.addXMarker(x=0, legend="xmin", color="grey")
+            self.__plot2D.addXMarker(x=shape[0], legend="xmax", color="grey")
+            self.__plot2D.addYMarker(y=0, legend="ymin", color="grey")
+            self.__plot2D.addYMarker(y=shape[1], legend="ymax", color="grey")
+            dummy = numpy.array([[[0xF0, 0xF0, 0xF0]]], dtype=numpy.uint8)
+            self.__plot2D.addImage(data=dummy, scale=shape, legend="dummy", z=-10, replace=False)
+            self.__plot2D.resetZoom()
+
+    def __updateDetector(self):
+        image = self.model().experimentSettingsModel().image().value()
+        if image is None:
+            self.__displayError("No image")
+            self.__updateDetectorTemplate()
+            return
+        try:
+            detector = self.model().experimentSettingsModel().detector()
+            if detector is None:
+                self.__displayError("No detector")
+                self.__updateDetectorTemplate()
+                return
+            binning = detector.get_binning()
+        except Exception as e:
+            _logger.error(e.args[0])
+            _logger.debug("Backtrace", exc_info=True)
+            self.__displayError("Sizes not valid", "Inconsistency between image and detector")
+            self.__updateDetectorTemplate()
+            return
+
+        self._detectorSizeUnit.setVisible(detector is not None)
+        self.__updateDetectorTemplate()
+        if detector.guess_binning(image):
+            text = [str(s) for s in binning]
+            text = u" × ".join(text)
+            self._binning.setText(text)
+            self._binning.setVisible(True)
+            self._binningLabel.setVisible(True)
+            self._error.setVisible(False)
+        else:
+            self.__displayError("Sizes not valid", "Inconsistency between image and detector")
 
     def __updateSplineFileVisibility(self):
         detector = self.model().experimentSettingsModel().detectorModel().detector()
@@ -119,8 +204,9 @@ class ExperimentTask(AbstractCalibrationTask):
             self._imageSize.setText(text)
 
         image = self.model().experimentSettingsModel().image().value()
-        self.__plot2D.addImage(image, legend="image")
+        self.__plot2D.addImage(image, legend="image", z=-1, replace=False)
         self.__plot2D.resetZoom()
+        self.__updateDetector()
 
     def createImageDialog(self, title, forMask=False):
         dialog = qt.QFileDialog(self)
