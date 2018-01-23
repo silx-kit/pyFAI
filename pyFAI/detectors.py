@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/01/2018"
+__date__ = "23/01/2018"
 __status__ = "stable"
 
 
@@ -632,6 +632,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         Guess the binning/mode depending on the image shape
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :return: True if the data fit the detector
+        :rtype: bool
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -639,7 +641,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
             shape = tuple(data[:2])
         else:
             logger.warning("No shape available to guess the binning: %s", data)
-            return
+            self._binning = 1, 1
+            return False
+
         if not self.force_pixel:
             if shape != self.max_shape:
                 logger.warning("guess_binning is not implemented for %s detectors!\
@@ -647,9 +651,14 @@ class Detector(with_metaclass(DetectorMeta, object)):
         elif self.max_shape:
             bin1 = self.max_shape[0] // shape[0]
             bin2 = self.max_shape[1] // shape[1]
+            if bin1 == 0 or bin2 == 0:
+                # cancel
+                logger.warning("Impossible binning: image bigger than the detector")
+                return False
             res = self.max_shape[0] % shape[0] + self.max_shape[1] % shape[1]
             if res != 0:
                 logger.warning("Impossible binning: max_shape is %s, requested shape %s", self.max_shape, shape)
+
             old_binning = self._binning
             self._binning = (bin1, bin2)
             self.shape = shape
@@ -657,8 +666,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2 *= (1.0 * bin2 / old_binning[1])
             self._mask = False
             self._mask_crc = None
+            return res == 0
         else:
             logger.debug("guess_binning for generic detectors !")
+            self._binning = 1, 1
+            return False
 
     def calc_mask(self):
         """Method calculating the mask for a given detector
@@ -1475,6 +1487,7 @@ class Mar345(Detector):
 
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
         Detector.__init__(self, pixel1, pixel2)
+        self._default_pixel_size = pixel1, pixel2
         self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
                           int(self.max_shape[1] * 100e-6 / self.pixel2))
         self.shape = self.max_shape
@@ -1494,6 +1507,8 @@ class Mar345(Detector):
         """
         Guess the binning/mode depending on the image shape
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :return: True if the data fit the detector
+        :rtype: bool
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -1501,16 +1516,27 @@ class Mar345(Detector):
             shape = tuple(data[:2])
         else:
             logger.warning("No shape available to guess the binning: %s", data)
-            return
+            # reset the values
+            self._pixel1, self._pixel2 = self._default_pixel_size
+            self._binning = 1, 1
+            return False
 
         dim1, dim2 = shape
-        self._pixel1 = self.VALID_SIZE[dim1]
-        self._pixel2 = self.VALID_SIZE[dim2]
-        self.max_shape = shape
-        self.shape = shape
-        self._binning = (1, 1)
+        if dim1 not in self.VALID_SIZE or dim2 not in self.VALID_SIZE:
+            # reset the values
+            self._pixel1, self._pixel2 = self._default_pixel_size
+            self._binning = 1, 1
+            result = False
+        else:
+            self._pixel1 = self.VALID_SIZE[dim1]
+            self._pixel2 = self.VALID_SIZE[dim2]
+            self.max_shape = shape
+            self.shape = shape
+            self._binning = (1, 1)
+            result = True
         self._mask = False
         self._mask_crc = None
+        return result
 
 
 class ImXPadS10(Detector):
@@ -1962,6 +1988,8 @@ class Rayonix(Detector):
         """
         Guess the binning/mode depending on the image shape
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :return: True if the data fit the detector
+        :rtype: bool
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -1969,15 +1997,27 @@ class Rayonix(Detector):
             shape = tuple(data[:2])
         else:
             logger.warning("No shape available to guess the binning: %s", data)
-            return
+            self._binning = 1, 1
+            self._pixel1 = self.BINNED_PIXEL_SIZE[1]
+            self._pixel2 = self.BINNED_PIXEL_SIZE[1]
+            return False
+
         bin1 = self.max_shape[0] // shape[0]
         bin2 = self.max_shape[1] // shape[1]
         self._binning = (bin1, bin2)
         self.shape = shape
-        self._pixel1 = self.BINNED_PIXEL_SIZE[bin1]
-        self._pixel2 = self.BINNED_PIXEL_SIZE[bin2]
+        if bin1 not in self.BINNED_PIXEL_SIZE or bin2 not in self.BINNED_PIXEL_SIZE:
+            self._binning = 1, 1
+            self._pixel1 = self.BINNED_PIXEL_SIZE[1]
+            self._pixel2 = self.BINNED_PIXEL_SIZE[1]
+            result = False
+        else:
+            self._pixel1 = self.BINNED_PIXEL_SIZE[bin1]
+            self._pixel2 = self.BINNED_PIXEL_SIZE[bin2]
+            result = True
         self._mask = False
         self._mask_crc = None
+        return result
 
 
 class Rayonix133(Rayonix):
