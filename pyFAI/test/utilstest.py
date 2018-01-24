@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "24/01/2018"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -124,6 +124,14 @@ class TestContext(object):
             parser.add_argument(dest="args", type=str, nargs='*')
             self.options = parser.parse_args([])
         return self.options
+
+    def get_test_env(self):
+        """
+        Returns an associated environment with a working project.
+        """
+        env = dict((str(k), str(v)) for k, v in os.environ.items())
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
+        return env
 
     def script_path(self, script):
         """
