@@ -81,6 +81,7 @@ class TestContext(object):
         self.reloaded = False
         self.name = PACKAGE
         self.script_dir = None
+        self.installed = False
 
         self.download_images = self.resources.download_all
         self.getimage = self.resources.getfile
@@ -133,7 +134,17 @@ class TestContext(object):
         env["PYTHONPATH"] = os.pathsep.join(sys.path)
         return env
 
-    def script_path(self, script):
+    def script_path(self, script_name, module_name):
+        """Returns the script path according to it's location"""
+        if self.installed:
+            script = self.get_installed_script_path(script_name)
+        else:
+            import importlib
+            module = importlib.import_module(module_name)
+            script = module.__file__
+        return script
+
+    def get_installed_script_path(self, script):
         """
         Returns the path of the executable and the associated environment
 
@@ -145,12 +156,7 @@ class TestContext(object):
         else:
             available_extensions = [""]
 
-        env = dict((str(k), str(v)) for k, v in os.environ.items())
-        env["PYTHONPATH"] = os.pathsep.join(sys.path)
         paths = os.environ.get("PATH", "").split(os.pathsep)
-        if self.script_dir is not None:
-            paths.insert(0, self.script_dir)
-
         for base in paths:
             # clean up extra quotes from paths
             if base.startswith('"') and base.endswith('"'):
@@ -160,11 +166,11 @@ class TestContext(object):
                 print(script_path)
                 if os.path.exists(script_path):
                     # script found
-                    return script_path, env
+                    return script_path
         # script not found
         logger.warning("Script '%s' not found in paths: %s", script, ":".join(paths))
         script_path = script
-        return script_path, env
+        return script_path
 
     def _initialize_tmpdir(self):
         """Initialize the temporary directory"""
