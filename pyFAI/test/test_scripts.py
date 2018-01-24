@@ -69,19 +69,26 @@ class TestScriptsHelp(unittest.TestCase):
                              env=env)
         out, err = p.communicate()
         logging.info("Return code: %d", p.returncode)
+        try:
+            out = out.decode('utf-8')
+        except UnicodeError:
+            pass
+        try:
+            err = err.decode('utf-8')
+        except UnicodeError:
+            pass
+
         if p.returncode != 0:
-            try:
-                out = out.decode('utf-8')
-            except UnicodeError:
-                pass
-            try:
-                err = err.decode('utf-8')
-            except UnicodeError:
-                pass
+            logging.info("stdout:")
+            logging.info("%s", out)
+            logging.info("stderr:")
+            logging.info("%s", err)
+        else:
             logging.debug("stdout:")
             logging.debug("%s", out)
             logging.debug("stderr:")
             logging.debug("%s", err)
+        self.assertEqual(p.returncode, 0)
 
     def executeAppHelp(self, script_name, module_name):
         script = UtilsTest.script_path(script_name, module_name)
