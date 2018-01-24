@@ -117,11 +117,10 @@ class TestBug211(unittest.TestCase):
             e.write(fn)
             self.image_files.append(fn)
         self.res = res / 3.0
-        self.exe, self.env = UtilsTest.script_path("pyFAI-average")
         # It is not anymore a script, but a module
-        if not os.path.exists(self.exe):
-            import pyFAI.app.average
-            self.exe = pyFAI.app.average.__file__
+        import pyFAI.app.average
+        self.exe = pyFAI.app.average.__file__
+        self.env = UtilsTest.get_test_env()
 
     def tearDown(self):
         for fn in self.image_files:
