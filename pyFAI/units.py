@@ -57,7 +57,7 @@ from .third_party import six
 # A few physical constants
 ################################################################################
 
-hc = CONST_hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e5
+hc = CONST_hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 """Product of h the Planck constant, and c the speed of light in vacuum
 in Angstrom.KeV. It is approximativly equal to 12.398419292004204."""
 
