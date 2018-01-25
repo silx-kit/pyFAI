@@ -4,7 +4,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -38,8 +38,8 @@ from __future__ import absolute_import, division, print_function
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "25/01/2018"
 
 import sys
 import os
@@ -53,6 +53,7 @@ import fabio
 from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import detectors
+from .. import units
 
 
 class TestBug170(unittest.TestCase):
@@ -157,11 +158,12 @@ class TestBug211(unittest.TestCase):
                         "pyFAI-average with quantiles gives good results")
 
 
-class TestBug232(unittest.TestCase):
-    """
-    Check the copy and deepcopy methods of Azimuthal integrator
-    """
-    def test(self):
+class TestBugRegression(unittest.TestCase):
+    "just a bunch of simple tests"
+    def test_bug_232(self):
+        """
+        Check the copy and deepcopy methods of Azimuthal integrator
+        """
         det = detectors.ImXPadS10()
         ai = AzimuthalIntegrator(dist=1, detector=det)
         data = numpy.random.random(det.shape)
@@ -177,11 +179,10 @@ class TestBug232(unittest.TestCase):
         self.assertNotEqual(id(ai.detector), id(ai3.detector), "deepcopy arrays are different after copy")
 
 
-class TestBug174(unittest.TestCase):
-    """
-    wavelength change not taken into account (memoization error)
-    """
-    def test(self):
+    def test_bug_174(self):
+        """
+        wavelength change not taken into account (memoization error)
+        """
         ai = load(UtilsTest.getimage("Pilatus1M.poni"))
         data = fabio.open(UtilsTest.getimage("Pilatus1M.edf")).data
         wl1 = 1e-10
@@ -196,14 +197,18 @@ class TestBug174(unittest.TestCase):
         # print(dq)
         self.assertAlmostEqual(dq, 3.79, 2, "Q-scale difference should be around 3.8, got %s" % dq)
 
+    def test_bug_758(self):
+        """check the stored "h*c" constant is almost 12.4"""
+        hc = 12.398419292004204  # Old reference value
+        self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
+
 
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestBug170))
     testsuite.addTest(loader(TestBug211))
-    testsuite.addTest(loader(TestBug232))
-    testsuite.addTest(loader(TestBug174))
+    testsuite.addTest(loader(TestBugRegression))
     return testsuite
 
 
