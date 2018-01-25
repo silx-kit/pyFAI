@@ -30,7 +30,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __date__ = "12/01/2018"
 __license__ = "MIT"
-__copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2012-2018 European Synchrotron Radiation Facility, Grenoble, France"
 
 
 from collections import OrderedDict

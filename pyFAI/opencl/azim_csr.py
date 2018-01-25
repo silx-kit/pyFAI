@@ -33,7 +33,9 @@ __date__ = "10/01/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+import gc
 import logging
+import threading
 from collections import OrderedDict
 import numpy
 from .common import pyopencl, kernel_workgroup_size
@@ -331,6 +333,7 @@ class OCL_CSR_Integrator(OpenclProcessing):
             kw1["normalization_factor"] = numpy.float32(normalization_factor)
             kw2["do_dummy"] = do_dummy
             kw2["dummy"] = dummy
+
 
             if dark is not None:
                 do_dark = numpy.int8(1)

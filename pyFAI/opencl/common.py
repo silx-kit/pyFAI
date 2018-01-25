@@ -41,6 +41,8 @@ __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
 
 import os
 import logging
+import gc
+
 import numpy
 
 
@@ -553,3 +555,5 @@ def kernel_workgroup_size(program, kernel):
     device = program.devices[0]
     query_wg = pyopencl.kernel_work_group_info.WORK_GROUP_SIZE
     return kernel.get_work_group_info(query_wg, device)
+
+

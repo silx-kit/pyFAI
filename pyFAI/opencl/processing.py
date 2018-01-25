@@ -36,6 +36,8 @@ Common OpenCL abstract base classes for different processing
 
 from __future__ import absolute_import, print_function, division
 
+
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"

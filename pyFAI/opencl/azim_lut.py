@@ -34,7 +34,9 @@ __date__ = "10/01/2018"
 __copyright__ = "2012-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
+import gc
 import logging
+import threading
 import numpy
 from collections import OrderedDict
 from .common import pyopencl
@@ -74,6 +76,7 @@ class OCL_LUT_Integrator(OpenclProcessing):
                numpy.uint16: "u16_to_float",
                numpy.uint32: "u32_to_float",
                numpy.int32: "s32_to_float"}
+
 
     def __init__(self, lut, image_size, checksum=None, empty=None,
                  ctx=None, devicetype="all", platformid=None, deviceid=None,
@@ -215,12 +218,8 @@ class OCL_LUT_Integrator(OpenclProcessing):
                                                             ("outCount", self.cl_mem["outCount"]),
                                                             ("outMerge", self.cl_mem["outMerge"])))
         self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("outData", "outCount", "outMerge")))
-        self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["u32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
-        self.cl_kernel_args["s32_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
+        for val in self.mapping.values():
+            self.cl_kernel_args[val] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
 
     def send_buffer(self, data, dest, checksum=None):
         """Send a numpy array to the device, including the cast on the device if possible
