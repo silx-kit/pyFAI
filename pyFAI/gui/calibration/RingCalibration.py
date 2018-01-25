@@ -27,17 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/06/2017"
+__date__ = "09/01/2018"
 
 import logging
 import numpy
 import pyFAI.utils
 from pyFAI.geometryRefinement import GeometryRefinement
 from pyFAI.peak_picker import PeakPicker
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
 
 _logger = logging.getLogger(__name__)
 

@@ -29,7 +29,7 @@
 
 from __future__ import absolute_import, print_function, division
 __license__ = "MIT"
-__date__ = "06/09/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,16 +38,12 @@ import numpy
 import logging
 import warnings
 
-from .utilstest import UtilsTest, getLogger
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from .utilstest import UtilsTest
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
-from ..opencl import ocl, pyopencl
+from ..opencl import ocl
 if ocl:
     from ..opencl import sort as ocl_sort
 
@@ -62,7 +58,7 @@ def sigma_clip(image, sigma_lo=3, sigma_hi=3, max_iter=5, axis=0):
     image[mask] = numpy.NaN
     mean = numpy.nanmean(image, axis=axis, dtype="float64")
     std = numpy.nanstd(image, axis=axis, dtype="float64")
-    for i in range(max_iter):
+    for _ in range(max_iter):
         if axis == 0:
             mean2d = as_strided(mean, image.shape, (0, mean.strides[0]))
             std2d = as_strided(std, image.shape, (0, std.strides[0]))
@@ -95,10 +91,8 @@ class TestOclSort(unittest.TestCase):
         self.vector_vert = self.sorted_vert[self.shape[0] // 2]
         self.vector_hor = self.sorted_hor[:, self.shape[1] // 2]
 
-        if logger.level < logging.INFO:
-            self.PROFILE = True
-        else:
-            self.PROFILE = False
+        # Change to True to profile the code
+        self.PROFILE = False
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -238,6 +232,7 @@ def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestOclSort))
     return testsuite
+
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

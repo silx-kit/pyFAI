@@ -25,17 +25,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 from __future__ import absolute_import, print_function, division
+
+"""Module with GUI for diffraction mapping experiments"""
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2016"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """Module with GUI for diffraction mapping experiments"""
 
 import os
 import time
@@ -44,28 +44,18 @@ import sys
 import collections
 import glob
 import logging
-logger = logging.getLogger("pyFAI.diffmap")
+logger = logging.getLogger(__name__)
 import numpy
 import fabio
 import json
 
 from .opencl import ocl
 from .units import to_unit
-from .utils import six
+from .third_party import six
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
-
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from .third_party.argparse import ArgumentParser
-
-if sys.version_info[0] < 3:
-    bytes = str
-    from urlparse import urlparse
-else:
-    from urllib.parse import urlparse
-
+from .third_party.argparse import ArgumentParser
+urlparse = six.moves.urllib.parse.urlparse
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
@@ -414,10 +404,6 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.group[space].attrs["unit"] = unit
             self.group[space].attrs["long_name"] = self.unit.label
             self.group[space].attrs["interpretation"] = "scalar"
-        if self.use_gpu:
-            self.ai._ocl_csr_integr.output_dummy = 0.0
-        else:
-            self.ai._csr_integrator.output_dummy = 0.0
         return tth
 
     def show_stats(self):
@@ -498,7 +484,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.makeHDF5()
         self.init_ai()
         t0 = time.time()
-#         self._idx = -1
+        # self._idx = -1
         for f in self.inputfiles:
             self.process_one_file(f)
         tot = time.time() - t0

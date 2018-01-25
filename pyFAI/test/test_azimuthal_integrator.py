@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2017"
+__date__ = "12/01/2018"
 
 import unittest
 import os
@@ -45,17 +45,18 @@ import copy
 import fabio
 import tempfile
 import gc
-from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
-logger = getLogger(__file__)
+import shutil
+from . import utilstest
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-tmp_dir = UtilsTest.tempdir
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI import units
+from ..utils import mathutil
+from ..third_party import six
+from pyFAI.utils.decorators import depreclog
 
 
 @unittest.skipIf(UtilsTest.low_mem, "test using >500M")
@@ -100,9 +101,14 @@ class TestAzimHalfFrelon(unittest.TestCase):
         splineFile = "halfccd.spline"
         poniFile = "LaB6.poni"
 
+        tmp_dir = os.path.join(UtilsTest.tempdir, "TestAzimHalfFrelon")
+        if not os.path.isdir(tmp_dir):
+            os.makedirs(tmp_dir)
+        cls.tmp_dir = tmp_dir
+
         cls.tmpfiles = {"cython": os.path.join(tmp_dir, "cython.dat"),
-                         "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
-                         "numpy": os.path.join(tmp_dir, "numpy.dat")}
+                        "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
+                        "numpy": os.path.join(tmp_dir, "numpy.dat")}
 
         cls.fit2dFile = UtilsTest.getimage(fit2dFile)
         cls.halfFrelon = UtilsTest.getimage(halfFrelon)
@@ -117,8 +123,6 @@ class TestAzimHalfFrelon(unittest.TestCase):
                 else:
                     data.append(line.strip())
         cls.poniFile = os.path.join(tmp_dir, os.path.basename(poniFile))
-        if not os.path.isdir(tmp_dir):
-            os.makedirs(tmp_dir)
 
         with open(cls.poniFile, "w") as f:
             f.write(os.linesep.join(data))
@@ -154,10 +158,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare numpy histogram with results of fit2d
         """
-#        logger.info(self.ai.__repr__())
-        tth, I = self.ai.xrpd_numpy(self.data,
-                                    len(self.fit2d), self.tmpfiles["numpy"], correctSolidAngle=False)
-        rwp = Rwp((tth, I), self.fit2d.T)
+        # logger.info(self.ai.__repr__())
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            tth, I = self.ai.xrpd_numpy(self.data,
+                                        len(self.fit2d), self.tmpfiles["numpy"],
+                                        correctSolidAngle=False)
+        rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -177,12 +184,14 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with results of fit2d
         """
-#        logger.info(self.ai.__repr__())
-        tth, I = self.ai.xrpd_cython(self.data,
-                                     len(self.fit2d), self.tmpfiles["cython"], correctSolidAngle=False, pixelSize=None)
-#        logger.info(tth)
-#        logger.info(I)
-        rwp = Rwp((tth, I), self.fit2d.T)
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            tth, I = self.ai.xrpd_cython(self.data,
+                                         len(self.fit2d), self.tmpfiles["cython"],
+                                         correctSolidAngle=False, pixelSize=None)
+        # logger.info(tth)
+        # logger.info(I)
+        rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cython/fit2d = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -203,20 +212,22 @@ class TestAzimHalfFrelon(unittest.TestCase):
         Compare cython splitPixel with results of fit2d
         """
         logger.info(self.ai.__repr__())
-        self.ai.cornerArray(self.data.shape)
+        self.ai.corner_array(self.data.shape, unit=units.TTH_RAD, scale=False)
         # this was just to enforce the initalization of the array
         t0 = time.time()
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
-        tth, I = self.ai.xrpd_splitPixel(self.data,
-                                         len(self.fit2d),
-                                         self.tmpfiles["cythonSP"],
-                                         correctSolidAngle=False)
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            tth, I = self.ai.xrpd_splitPixel(self.data,
+                                             len(self.fit2d),
+                                             self.tmpfiles["cythonSP"],
+                                             correctSolidAngle=False)
         logger.info("in test_cythonSP_vs_fit2d Before")
         t1 = time.time() - t0
-#        logger.info(tth)
-#        logger.info(I)
-        rwp = Rwp((tth, I), self.fit2d.T)
+        # logger.info(tth)
+        # logger.info(I)
+        rwp = mathutil.rwp((tth, I), self.fit2d.T)
         logger.info("Rwp cythonSP(t=%.3fs)/fit2d = %.3f", t1, rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
@@ -236,18 +247,20 @@ class TestAzimHalfFrelon(unittest.TestCase):
         """
         Compare cython histogram with numpy histogram
         """
-        tth_np, I_np = self.ai.xrpd_numpy(self.__class__.data,
-                                          len(self.fit2d),
-                                          correctSolidAngle=False)
-        tth_cy, I_cy = self.ai.xrpd_cython(self.__class__.data,
-                                           len(self.fit2d),
-                                           correctSolidAngle=False)
-        logger.info("before xrpd_splitPixel")
-        tth_sp, I_sp = self.ai.xrpd_splitPixel(self.__class__.data,
+        with utilstest.TestLogging(logger=depreclog, warning=3):
+            # Filter deprecated warning
+            tth_np, I_np = self.ai.xrpd_numpy(self.__class__.data,
+                                              len(self.fit2d),
+                                              correctSolidAngle=False)
+            tth_cy, I_cy = self.ai.xrpd_cython(self.__class__.data,
                                                len(self.fit2d),
                                                correctSolidAngle=False)
+            logger.info("before xrpd_splitPixel")
+            tth_sp, I_sp = self.ai.xrpd_splitPixel(self.__class__.data,
+                                                   len(self.fit2d),
+                                                   correctSolidAngle=False)
         logger.info("After xrpd_splitPixel")
-        rwp = Rwp((tth_cy, I_cy), (tth_np, I_np))
+        rwp = mathutil.rwp((tth_cy, I_cy), (tth_np, I_np))
         logger.info("Rwp = %.3f", rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
@@ -277,13 +290,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
     def test_medfilt1d(self):
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr")
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr")
-        rwp = Rwp(ref, ocl)
+        rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d median Rwp = %.3f", rwp)
         self.assertLess(rwp, 1, "Rwp medfilt1d Numpy/OpenCL: %.3f" % rwp)
 
         ref = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="csr", percentile=(20, 80))
         ocl = self.ai.medfilt1d(self.data, 1000, unit="2th_deg", method="ocl_csr", percentile=(20, 80))
-        rwp = Rwp(ref, ocl)
+        rwp = mathutil.rwp(ref, ocl)
         logger.info("test_medfilt1d trimmed-mean Rwp = %.3f", rwp)
         self.assertLess(rwp, 3, "Rwp trimmed-mean Numpy/OpenCL: %.3f" % rwp)
         ref = ocl = rwp = None
@@ -313,8 +326,11 @@ class TestFlatimage(unittest.TestCase):
         data = numpy.ones(shape, dtype="float64")
         det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-        I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
-#        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
+
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            I = ai.xrpd2_splitPixel(data, 256, 2256, correctSolidAngle=False, dummy=-1.0)[0]
+        # I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
@@ -333,7 +349,10 @@ class TestFlatimage(unittest.TestCase):
         data = numpy.ones(shape, dtype="float64")
         det = Detector(1e-4, 1e-4, max_shape=shape)
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, detector=det)
-        I = ai.xrpd2_splitBBox(data, 256, 256, correctSolidAngle=False, dummy=-1.0)[0]
+
+        with utilstest.TestLogging(logger=depreclog, warning=1):
+            # Filter deprecated warning
+            I = ai.xrpd2_splitBBox(data, 256, 256, correctSolidAngle=False, dummy=-1.0)[0]
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             logging.info("Plotting results")
@@ -357,8 +376,6 @@ class TestSaxs(unittest.TestCase):
         self.edfPilatus = UtilsTest.getimage(self.__class__.saxsPilatus)
         self.maskFile = UtilsTest.getimage(self.__class__.maskFile)
         self.maskRef = UtilsTest.getimage(self.__class__.maskRef)
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -435,8 +452,11 @@ class TestSetter(unittest.TestCase):
         shape = (10, 15)
         self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
         self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+
+        tmp_dir = os.path.join(UtilsTest.tempdir, self.id())
         if not os.path.isdir(tmp_dir):
             os.mkdir(tmp_dir)
+        self.tmp_dir = tmp_dir
 
         fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", tmp_dir)
         os.close(fd)
@@ -446,7 +466,7 @@ class TestSetter(unittest.TestCase):
         fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
 
     def tearDown(self):
-        recursive_delete(tmp_dir)
+        shutil.rmtree(self.tmp_dir)
 
     def test_flat(self):
         self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")

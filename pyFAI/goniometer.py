@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/10/2017"
+__date__ = "10/01/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -58,7 +58,7 @@ from .multi_geometry import MultiGeometry
 from .ext.marchingsquares import isocontour
 from .units import CONST_hc, CONST_q
 
-logger = logging.getLogger("pyFAI.goniometer")
+logger = logging.getLogger(__name__)
 
 try:
     import numexpr
@@ -182,7 +182,7 @@ class GeometryTransformation(object):
 
 class ExtendedTransformation(object):
     """This class behaves like GeometryTransformation and extends transformation
-    to the wavelength parameter. 
+    to the wavelength parameter.
 
     This function uses numexpr for formula evaluation.
     """
@@ -295,6 +295,7 @@ class ExtendedTransformation(object):
         res["constants"] = constants
         return res
 
+
 GeometryTranslation = GeometryTransformation
 
 
@@ -400,6 +401,12 @@ class Goniometer(object):
 
     @classmethod
     def sload(cls, filename):
+        """Class method for instanciating a Goniometer object from a JSON file
+
+        :param filename: name of the JSON file
+        :return: Goniometer object
+        """
+
         with open(filename) as f:
             dico = json.load(f)
         assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
@@ -417,7 +424,11 @@ class Goniometer(object):
                 raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
         else:  # assume GeometryTransformation
             funct = GeometryTransformation(**tansfun)
-        gonio = cls(dico.get("param", []), funct, detector, dico.get("wavelength"))
+
+        gonio = cls(param=dico.get("param", []),
+                    trans_function=funct,
+                    detector=detector,
+                    wavelength=dico.get("wavelength"))
         return gonio
 
 
@@ -620,9 +631,10 @@ class GoniometerRefinement(Goniometer):
         return sg
 
     def __repr__(self):
-        return "%s with %i geometries labeled: %s" % \
-                (self.__class__.__name__, len(self.single_geometries),
-                 ", ".join(self.single_geometries.keys()) + ".")
+        name = self.__class__.__name__
+        count = len(self.single_geometries)
+        geometry_list = ", ".join(self.single_geometries.keys())
+        return "%s with %i geometries labeled: %s." % (name, count, geometry_list)
 
     def residu2(self, param):
         "Actually performs the calulation of the average of the error squared"
@@ -634,7 +646,6 @@ class GoniometerRefinement(Goniometer):
             pyFAI_param = [single_param.get(name, 0.0)
                            for name in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]]
             pyFAI_param.append(single_param.get("wavelength", self.wavelength) * 1e10)
-#             print(pyFAI_param)
             if single.geometry_refinement is not None and len(single.geometry_refinement.data) > 1:
                 sumsquare += single.geometry_refinement.chi2_wavelength(pyFAI_param)
                 npt += single.geometry_refinement.data.shape[0]
@@ -686,8 +697,8 @@ class GoniometerRefinement(Goniometer):
                 print("maxdelta on: %i %s --> %s" % (i, self.param[i], newparam[i]))
             self.param = newparam
             # update wavelength after successful optimization: not easy
-#             if self.fit_wavelength:
-#                 self.wavelength = self.
+            # if self.fit_wavelength:
+            #     self.wavelength = self.
         elif self.fit_wavelength:
             print("Restore wavelength and former parameters")
             former_wavelength = self.wavelength
@@ -708,3 +719,38 @@ class GoniometerRefinement(Goniometer):
         else:
             idx = int(name)
         self.bounds[idx] = (mini, maxi)
+
+    @classmethod
+    def sload(cls, filename, pos_function=None):
+        """Class method for instanciating a Goniometer object from a JSON file
+
+        :param filename: name of the JSON file
+        :param pos_function: a function taking metadata and extracting the
+                    goniometer position
+        :return: Goniometer object
+        """
+
+        with open(filename) as f:
+            dico = json.load(f)
+        assert dico["content"] == cls.file_version, "JSON file contains a goniometer calibration"
+        assert "trans_function" in dico, "No translation function defined in JSON file"
+        detector = Detector.from_dict(dico)
+        tansfun = dico.get("trans_function", {})
+        if "content" in tansfun:
+            content = tansfun.pop("content")
+            # May be adapted for other classes of GeometryTransformation functions
+            if content in ("GeometryTranslation", "GeometryTransformation"):
+                funct = GeometryTransformation(**tansfun)
+            elif content == "ExtendedTranformation":
+                funct = ExtendedTransformation(**tansfun)
+            else:
+                raise RuntimeError("content= %s, not in in (GeometryTranslation, GeometryTransformation, ExtendedTranformation)")
+        else:  # assume GeometryTransformation
+            funct = GeometryTransformation(**tansfun)
+
+        gonio = cls(param=dico.get("param", []),
+                    trans_function=funct,
+                    pos_function=pos_function,
+                    detector=detector,
+                    wavelength=dico.get("wavelength"))
+        return gonio

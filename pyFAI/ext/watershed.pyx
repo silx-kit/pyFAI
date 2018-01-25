@@ -30,7 +30,7 @@
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "01/12/2016"
+__date__ = "11/01/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -40,7 +40,6 @@ cimport numpy
 import sys
 import logging
 logger = logging.getLogger("pyFAI.ext.watershed")
-from ..decorators import timeit
 from cython.parallel import prange
 
 include "numpy_common.pxi"
@@ -189,14 +188,7 @@ class InverseWatershed(object):
     * merge region with high pass between them
 
     """
-#     cdef:
-#         readonly float[:, :]  data
-#         readonly size_t width, height
-#         readonly dict regions
-#         readonly numpy.int32_t[:, :] labels
-#         readonly numpy.uint8_t[:, :] borders
-#         readonly float  thres, _actual_thres
-#         readonly Bilinear bilinear
+
     NAME = "Inverse watershed"
     VERSION = "1.0"
 
@@ -273,9 +265,9 @@ class InverseWatershed(object):
         self.init_borders()
         self.init_regions()
         self.init_pass()
-#        self.merge_singleton()
-#        self.merge_twins()
-#        self.merge_intense(self.thres)
+        # self.merge_singleton()
+        # self.merge_twins()
+        # self.merge_intense(self.thres)
         logger.info("found %s regions, after merge remains %s" % (len(self.regions), len(set(self.regions.values()))))
 
     @cython.cdivision(True)
@@ -475,7 +467,7 @@ class InverseWatershed(object):
             if (region2.pass_to in region1.peaks and region1.pass_to in region2.peaks):
                 idx1 = region1.index
                 idx2 = region2.index
-#                 logger.info("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
+                # logger.info("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
                 region = region1.merge(region2)
                 region.init_values(flat)
                 for key in region.peaks:
@@ -508,7 +500,7 @@ class InverseWatershed(object):
                 idx1 = region1.index
                 region2 = regions[key2]
                 idx2 = region2.index
-#                 print("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
+                # print("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
                 region = region1.merge(region2)
                 region.init_values(flat)
                 for key in region.peaks:
@@ -536,8 +528,8 @@ class InverseWatershed(object):
             float[:] data = self.data.ravel()
             double d2, dmin2
         for i in input_points:
-            l = labels[i]
-            region = regions[l]
+            label = labels[i]
+            region = regions[label]
             keep_regions.add(region.index)
         for i in keep_regions:
             region = regions[i]

@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "15/06/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,7 +45,7 @@ if pyopencl:
 else:
     raise ImportError("pyopencl is not installed")
 
-logger = logging.getLogger("pyFAI.ocl_azim_csr")
+logger = logging.getLogger(__name__)
 
 
 class OCL_CSR_Integrator(object):

@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
@@ -43,9 +43,10 @@ import shutil
 import numpy
 import time
 import sys
-from .utilstest import UtilsTest, getLogger
+import logging
+from .utilstest import UtilsTest
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
 
@@ -163,6 +164,7 @@ def suite():
     testsuite.addTest(loader(testHDF5Writer))
     # testsuite.addTest(loader(testFabIOWriter))
     return testsuite
+
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()

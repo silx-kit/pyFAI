@@ -34,7 +34,7 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "11/09/2017"
+__date__ = "10/01/2018"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -42,13 +42,13 @@ import os
 import logging
 from collections import OrderedDict
 import numpy
-from .common import ocl, release_cl_buffers, kernel_workgroup_size, pyopencl
+from .common import ocl, release_cl_buffers, kernel_workgroup_size
 if ocl:
     import pyopencl.array
 else:
     raise ImportError("pyopencl is not installed or no device is available")
 from .processing import OpenclProcessing
-logger = logging.getLogger("pyFAI.opencl.sort")
+logger = logging.getLogger(__name__)
 
 
 class Separator(OpenclProcessing):
@@ -104,7 +104,7 @@ class Separator(OpenclProcessing):
             ("vector_vertical_2", numpy.float32, (self.npt_width,)),
             ("vector_horizontal", numpy.float32, (self.npt_height,)),
             ("vector_horizontal_2", numpy.float32, (self.npt_height,))
-                ]
+        ]
         mem = {}
         with self.sem:
             try:
@@ -352,7 +352,7 @@ class Separator(OpenclProcessing):
 
     def trimmed_mean_vertical(self, data, dummy=None, quantiles=(0.5, 0.5)):
         """
-        Perform a trimmed mean (mean without the extremes) 
+        Perform a trimmed mean (mean without the extremes)
         After sorting the data along the vertical axis (azimuthal)
 
         :param data: numpy or pyopencl array
@@ -378,7 +378,7 @@ class Separator(OpenclProcessing):
 
     def trimmed_mean_horizontal(self, data, dummy=None, quantiles=(0.5, 0.5)):
         """
-        Perform a trimmed mean (mean without the extremes) 
+        Perform a trimmed mean (mean without the extremes)
         After sorting the data along the vertical axis (azimuthal)
 
         :param data: numpy or pyopencl array
@@ -403,7 +403,7 @@ class Separator(OpenclProcessing):
         return self.cl_mem["vector_horizontal"]
 
     def mean_std_vertical(self, data, dummy=None):
-        """calculates the mean and std along a column, 
+        """calculates the mean and std along a column,
         column size has to be multiple of 8 and <8192"""
         if dummy is None:
             dummy = self.DUMMY
@@ -446,7 +446,7 @@ class Separator(OpenclProcessing):
         return self.cl_mem["vector_horizontal"], self.cl_mem["vector_horizontal_2"]
 
     def sigma_clip_vertical(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
-        """calculates iterative sigma-clipped mean and std per column. 
+        """calculates iterative sigma-clipped mean and std per column.
         column size has to be multiple of 8 and <8192"""
         if dummy is None:
             dummy = self.DUMMY
@@ -473,7 +473,7 @@ class Separator(OpenclProcessing):
         return self.cl_mem["vector_vertical"], self.cl_mem["vector_vertical_2"]
 
     def sigma_clip_horizontal(self, data, sigma_lo=3, sigma_hi=None, max_iter=5, dummy=None):
-        """calculates iterative sigma-clipped mean and std per row. 
+        """calculates iterative sigma-clipped mean and std per row.
         column size has to be multiple of 8 and <8192"""
         if dummy is None:
             dummy = self.DUMMY

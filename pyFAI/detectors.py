@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2017"
+__date__ = "23/01/2018"
 __status__ = "stable"
 
 
@@ -54,7 +54,7 @@ from . import utils
 from . import average
 from .utils import binning, expand2d, crc32
 
-logger = logging.getLogger("pyFAI.detectors")
+logger = logging.getLogger(__name__)
 
 try:
     from .ext import bilinear
@@ -632,6 +632,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         """
         Guess the binning/mode depending on the image shape
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :return: True if the data fit the detector
+        :rtype: bool
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -639,7 +641,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
             shape = tuple(data[:2])
         else:
             logger.warning("No shape available to guess the binning: %s", data)
-            return
+            self._binning = 1, 1
+            return False
+
         if not self.force_pixel:
             if shape != self.max_shape:
                 logger.warning("guess_binning is not implemented for %s detectors!\
@@ -647,9 +651,14 @@ class Detector(with_metaclass(DetectorMeta, object)):
         elif self.max_shape:
             bin1 = self.max_shape[0] // shape[0]
             bin2 = self.max_shape[1] // shape[1]
+            if bin1 == 0 or bin2 == 0:
+                # cancel
+                logger.warning("Impossible binning: image bigger than the detector")
+                return False
             res = self.max_shape[0] % shape[0] + self.max_shape[1] % shape[1]
             if res != 0:
                 logger.warning("Impossible binning: max_shape is %s, requested shape %s", self.max_shape, shape)
+
             old_binning = self._binning
             self._binning = (bin1, bin2)
             self.shape = shape
@@ -657,8 +666,11 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2 *= (1.0 * bin2 / old_binning[1])
             self._mask = False
             self._mask_crc = None
+            return res == 0
         else:
             logger.debug("guess_binning for generic detectors !")
+            self._binning = 1, 1
+            return False
 
     def calc_mask(self):
         """Method calculating the mask for a given detector
@@ -964,8 +976,7 @@ class Pilatus(Detector):
             self.uniform_pixel = True
 
     def __repr__(self):
-        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % \
-                (self.name, self.pixel1, self.pixel2)
+        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
         if self.x_offset_file:
             txt += "\t delta_x= %s" % self.x_offset_file
         if self.y_offset_file:
@@ -1476,6 +1487,7 @@ class Mar345(Detector):
 
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
         Detector.__init__(self, pixel1, pixel2)
+        self._default_pixel_size = pixel1, pixel2
         self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
                           int(self.max_shape[1] * 100e-6 / self.pixel2))
         self.shape = self.max_shape
@@ -1495,6 +1507,8 @@ class Mar345(Detector):
         """
         Guess the binning/mode depending on the image shape
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :return: True if the data fit the detector
+        :rtype: bool
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -1502,16 +1516,27 @@ class Mar345(Detector):
             shape = tuple(data[:2])
         else:
             logger.warning("No shape available to guess the binning: %s", data)
-            return
+            # reset the values
+            self._pixel1, self._pixel2 = self._default_pixel_size
+            self._binning = 1, 1
+            return False
 
         dim1, dim2 = shape
-        self._pixel1 = self.VALID_SIZE[dim1]
-        self._pixel2 = self.VALID_SIZE[dim2]
-        self.max_shape = shape
-        self.shape = shape
-        self._binning = (1, 1)
+        if dim1 not in self.VALID_SIZE or dim2 not in self.VALID_SIZE:
+            # reset the values
+            self._pixel1, self._pixel2 = self._default_pixel_size
+            self._binning = 1, 1
+            result = False
+        else:
+            self._pixel1 = self.VALID_SIZE[dim1]
+            self._pixel2 = self.VALID_SIZE[dim2]
+            self.max_shape = shape
+            self.shape = shape
+            self._binning = (1, 1)
+            result = True
         self._mask = False
         self._mask_crc = None
+        return result
 
 
 class ImXPadS10(Detector):
@@ -1733,8 +1758,7 @@ class Xpad_flat(ImXPadS10):
             self.module_size = module_size
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-                (self.name, self.pixel1, self.pixel2)
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
 
     def calc_pixels_edges(self):
         """
@@ -1964,6 +1988,8 @@ class Rayonix(Detector):
         """
         Guess the binning/mode depending on the image shape
         :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        :return: True if the data fit the detector
+        :rtype: bool
         """
         if "shape" in dir(data):
             shape = data.shape
@@ -1971,16 +1997,27 @@ class Rayonix(Detector):
             shape = tuple(data[:2])
         else:
             logger.warning("No shape available to guess the binning: %s", data)
-            return
+            self._binning = 1, 1
+            self._pixel1 = self.BINNED_PIXEL_SIZE[1]
+            self._pixel2 = self.BINNED_PIXEL_SIZE[1]
+            return False
+
         bin1 = self.max_shape[0] // shape[0]
         bin2 = self.max_shape[1] // shape[1]
         self._binning = (bin1, bin2)
         self.shape = shape
-        self.max_shape = shape
-        self._pixel1 = self.BINNED_PIXEL_SIZE[bin1]
-        self._pixel2 = self.BINNED_PIXEL_SIZE[bin2]
+        if bin1 not in self.BINNED_PIXEL_SIZE or bin2 not in self.BINNED_PIXEL_SIZE:
+            self._binning = 1, 1
+            self._pixel1 = self.BINNED_PIXEL_SIZE[1]
+            self._pixel2 = self.BINNED_PIXEL_SIZE[1]
+            result = False
+        else:
+            self._pixel1 = self.BINNED_PIXEL_SIZE[bin1]
+            self._pixel2 = self.BINNED_PIXEL_SIZE[bin2]
+            result = True
         self._mask = False
         self._mask_crc = None
+        return result
 
 
 class Rayonix133(Rayonix):
@@ -2493,9 +2530,15 @@ class Aarhus(Detector):
     Developped at the Danish university of Aarhus
     r = 1.2m or 0.3m
 
+    Credits:
+    Private communication;
+    B. B. Iversen,
+    Center for Materials Crystallography & Dept. of Chemistry and iNANO,
+    Aarhus University
+
     The image has to be laid-out horizontally
 
-    Nota: the detector is bending towards the sample, hence reducing the sample-detector distance.
+    Nota: the detector is bend towards the sample, hence reducing the sample-detector distance.
     This is why z<0 (or p3<0)
 
     TODO: update cython code for 3d detectors
@@ -2505,7 +2548,7 @@ class Aarhus(Detector):
     IS_FLAT = False
     force_pixel = True
 
-    def __init__(self, pixel1=25e-6, pixel2=25e-6, radius=0.3):
+    def __init__(self, pixel1=24.893e-6, pixel2=24.893e-6, radius=0.29989):
         Detector.__init__(self, pixel1, pixel2)
         self.radius = radius
         self._pixel_corners = None

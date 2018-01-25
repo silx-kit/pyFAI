@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/09/2017"
+__date__ = "09/01/2018"
 __status__ = "production"
 
 import os
@@ -50,10 +50,7 @@ logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
 logger = logging.getLogger("PyFAI")
 
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
 
 def main():
@@ -178,8 +175,8 @@ def main():
                                        metadata=fimg.header)
             t2 = time.time()
 
-            print("%s,\t reading: %.3fs\t 1D integration: %.3fs." %
-                                (outfile, t1 - t0, t2 - t1))
+            msg = "%s,\t reading: %.3fs\t 1D integration: %.3fs."
+            print(msg % (outfile, t1 - t0, t2 - t1))
 
 
 if __name__ == "__main__":

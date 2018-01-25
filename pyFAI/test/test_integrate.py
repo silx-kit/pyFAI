@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "12/01/2018"
 
 
 import tempfile
@@ -42,13 +42,15 @@ import os
 import unittest
 import numpy.testing
 import fabio
-from .utilstest import UtilsTest, Rwp, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
 from ..io import DefaultAiWriter
 from ..detectors import Pilatus1M
+from ..utils import mathutil
 
 
 @contextlib.contextmanager
@@ -84,7 +86,7 @@ class TestIntegrate1D(unittest.TestCase):
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, radial_range=(0.5, 5.8))
         for a in res:
             for b in res:
-                R = Rwp(res[a], res[b])
+                R = mathutil.rwp(res[a], res[b])
                 mesg = "testQ: %s vs %s measured R=%s<%s" % (a, b, R, self.Rmax)
                 if R > self.Rmax:
                     logger.error(mesg)
@@ -98,7 +100,7 @@ class TestIntegrate1D(unittest.TestCase):
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, unit="r_mm", radial_range=(20, 150))
         for a in res:
             for b in res:
-                R = Rwp(res[a], res[b])
+                R = mathutil.rwp(res[a], res[b])
                 mesg = "testR: %s vs %s measured R=%s<%s" % (a, b, R, self.Rmax)
                 if R > self.Rmax:
                     logger.error(mesg)
@@ -112,7 +114,7 @@ class TestIntegrate1D(unittest.TestCase):
             res[m] = self.ai.integrate1d(self.data, self.npt, method=m, unit="2th_deg", radial_range=(0.5, 5.5))
         for a in res:
             for b in res:
-                R = Rwp(res[a], res[b])
+                R = mathutil.rwp(res[a], res[b])
                 mesg = "test2th: %s vs %s measured R=%s<%s" % (a, b, R, self.Rmax)
                 if R > self.Rmax:
                     logger.error(mesg)
@@ -306,6 +308,7 @@ def suite():
     testsuite.addTest(loader(TestIntegrateResult))
 
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

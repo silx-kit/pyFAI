@@ -31,10 +31,7 @@ from __future__ import absolute_import, print_function, with_statement, division
 import utilstest
 import pyFAI, fabio, numpy, sys, os, optparse, time
 import pylab
-try:
-    from pyFAI.third_party import six
-except (ImportError, Exception):
-    import six
+from pyFAI.third_party import six
 
 
 def shift(input, shift):

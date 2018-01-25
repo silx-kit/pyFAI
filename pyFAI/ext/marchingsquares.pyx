@@ -30,7 +30,7 @@ Cythonized version of the marching square function for "isocontour" plot
 """
 __authors__ = ["Almar Klein", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "31/05/2016"
+__date__ = "11/01/2018"
 __status__ = "stable"
 __license__ = "BSD-3 clauses"
 
@@ -42,32 +42,31 @@ import cython
 from libc.math cimport M_PI, sin, floor, fabs
 cdef double epsilon = numpy.finfo(numpy.float64).eps
 from cython.view cimport array as cvarray
-from ..decorators import timeit
 
 cdef numpy.int8_t[:, :] EDGETORELATIVEPOSX = numpy.array([[0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], dtype=numpy.int8)
 cdef numpy.int8_t[:, :] EDGETORELATIVEPOSY = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1]], dtype=numpy.int8)
 cdef numpy.int8_t[:, :] EDGETORELATIVEPOSZ = numpy.array([[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1]], dtype=numpy.int8)
 cdef numpy.int8_t[:, :] CELLTOEDGE = numpy.array([
-                                                    [0, 0, 0, 0, 0],  # Case 0: nothing
-                                                    [1, 0, 3, 0, 0],  # Case 1
-                                                    [1, 0, 1, 0, 0],  # Case 2
-                                                    [1, 1, 3, 0, 0],  # Case 3
+                                                 [0, 0, 0, 0, 0],  # Case 0: nothing
+                                                 [1, 0, 3, 0, 0],  # Case 1
+                                                 [1, 0, 1, 0, 0],  # Case 2
+                                                 [1, 1, 3, 0, 0],  # Case 3
 
-                                                    [1, 1, 2, 0, 0],  # Case 4
-                                                    [2, 0, 1, 2, 3],  # Case 5 > ambiguous
-                                                    [1, 0, 2, 0, 0],  # Case 6
-                                                    [1, 2, 3, 0, 0],  # Case 7
+                                                 [1, 1, 2, 0, 0],  # Case 4
+                                                 [2, 0, 1, 2, 3],  # Case 5 > ambiguous
+                                                 [1, 0, 2, 0, 0],  # Case 6
+                                                 [1, 2, 3, 0, 0],  # Case 7
 
-                                                    [1, 2, 3, 0, 0],  # Case 8
-                                                    [1, 0, 2, 0, 0],  # Case 9
-                                                    [2, 0, 3, 1, 2],  # Case 10 > ambiguous
-                                                    [1, 1, 2, 0, 0],  # Case 11
+                                                 [1, 2, 3, 0, 0],  # Case 8
+                                                 [1, 0, 2, 0, 0],  # Case 9
+                                                 [2, 0, 3, 1, 2],  # Case 10 > ambiguous
+                                                 [1, 1, 2, 0, 0],  # Case 11
 
-                                                    [1, 1, 3, 0, 0],  # Case 12
-                                                    [1, 0, 1, 0, 0],  # Case 13
-                                                    [1, 0, 3, 0, 0],  # Case 14
-                                                    [0, 0, 0, 0, 0],  # Case 15
-                                                ], dtype=numpy.int8)
+                                                 [1, 1, 3, 0, 0],  # Case 12
+                                                 [1, 0, 1, 0, 0],  # Case 13
+                                                 [1, 0, 3, 0, 0],  # Case 14
+                                                 [0, 0, 0, 0, 0],  # Case 15
+                                                 ], dtype=numpy.int8)
 
 
 @cython.boundscheck(False)
@@ -80,7 +79,7 @@ def marching_squares(float[:, :] img, double isovalue,
     cdef:
         int dim_y = img.shape[0]
         int dim_x = img.shape[1]
-        numpy.ndarray[numpy.float32_t, ndim = 2] edges = numpy.zeros((dim_x * dim_y, 2), numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim=2] edges = numpy.zeros((dim_x * dim_y, 2), numpy.float32)
         int x, y, z, i, j, k, index, edgeCount = 0
         int dx1, dy1, dz1, dx2, dy2, dz2
         double fx, fy, fz, ff, tmpf, tmpf1, tmpf2
@@ -128,7 +127,7 @@ def marching_squares(float[:, :] img, double isovalue,
                         # Apply a kind of center-of-mass method
                         fx, fy, ff = 0.0, 0.0, 0.0
                         fx += <double> dx1 * tmpf1;
-                        fy += <double>dy1 * tmpf1;
+                        fy += <double> dy1 * tmpf1;
                         ff += tmpf1
                         fx += <double> dx2 * tmpf2;
                         fy += <double> dy2 * tmpf2;

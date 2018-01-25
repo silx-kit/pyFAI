@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/09/2017"
+__date__ = "10/01/2018"
 __status__ = "stable"
 __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
            "measure_workgroup_size", "kernel_workgroup_size"]
@@ -46,7 +46,7 @@ import gc
 import numpy
 
 
-logger = logging.getLogger("pyFAI.opencl.common")
+logger = logging.getLogger(__name__)
 
 from .utils import get_opencl_code
 
@@ -251,10 +251,12 @@ def _measure_workgroup_size(device_or_context, fast=False):
             wg = 1 << i
             try:
                 evt = program.addition(queue, (shape,), (wg,),
-                       d_data.data, d_data_1.data, d_res.data, numpy.int32(shape))
+                                       d_data.data, d_data_1.data, d_res.data,
+                                       numpy.int32(shape))
+
                 evt.wait()
             except Exception as error:
-                logger.info("%s on device %s for WG=%s/%s" , error, device.name, wg, shape)
+                logger.info("%s on device %s for WG=%s/%s", error, device.name, wg, shape)
                 program = queue = d_res = d_data_1 = d_data = None
                 break
             else:
@@ -327,8 +329,8 @@ class OpenCL(object):
     def __repr__(self):
         out = ["OpenCL devices:"]
         for platformid, platform in enumerate(self.platforms):
-            deviceids = ["(%s,%s) %s" % (platformid, deviceid, dev.name) \
-                for deviceid, dev in enumerate(platform.devices)]
+            deviceids = ["(%s,%s) %s" % (platformid, deviceid, dev.name)
+                         for deviceid, dev in enumerate(platform.devices)]
             out.append("[%s] %s: " % (platformid, platform.name) + ", ".join(deviceids))
         return os.linesep.join(out)
 
@@ -439,6 +441,7 @@ class OpenCL(object):
         device_id = oplat.get_devices().index(odevice)
         platform_id = pyopencl.get_platforms().index(oplat)
         return self.platforms[platform_id].devices[device_id]
+
 
 if pyopencl:
     ocl = OpenCL()

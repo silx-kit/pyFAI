@@ -27,18 +27,21 @@
 # THE SOFTWARE.
 
 from __future__ import absolute_import, division, print_function
-__doc__ = "test suite for bilinear interpolator class"
+
+"""Test suite for bilinear interpolator class"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 
 import unittest
 import numpy
-from .utilstest import getLogger, UtilsTest
-logger = getLogger("test_bilinear")
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from ..ext import bilinear
 
 

@@ -27,19 +27,20 @@
 # THE SOFTWARE.
 from __future__ import absolute_import, division, print_function
 
-__doc__ = """Test suite for all pyFAI modules."""
+"""Test suite for all pyFAI modules."""
+
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2017"
+__date__ = "12/01/2018"
 
 import sys
 import unittest
-from .utilstest import UtilsTest, getLogger
+import logging
+logger = logging.getLogger(__name__)
 
-logger = getLogger("test_all")
-
+from .utilstest import UtilsTest
 
 from . import test_average
 from . import test_dummy
@@ -76,9 +77,11 @@ from . import test_worker
 from . import test_integrate_widget
 from . import test_utils_shell
 from . import test_utils_stringutil
+from . import test_utils_mathutil
 from . import test_preproc
 from . import test_bayes
 from . import test_scripts
+from . import test_spline
 from . import test_goniometer
 from . import test_integrate_app
 from ..opencl import test as test_opencl
@@ -122,9 +125,11 @@ def suite():
     testsuite.addTest(test_integrate_widget.suite())
     testsuite.addTest(test_utils_shell.suite())
     testsuite.addTest(test_utils_stringutil.suite())
+    testsuite.addTest(test_utils_mathutil.suite())
     testsuite.addTest(test_preproc.suite())
     testsuite.addTest(test_bayes.suite())
     testsuite.addTest(test_scripts.suite())
+    testsuite.addTest(test_spline.suite())
     testsuite.addTest(test_goniometer.suite())
     testsuite.addTest(test_opencl.suite())
     return testsuite

@@ -41,27 +41,25 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/09/2017"
+__date__ = "12/01/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-logger = logging.getLogger("pyFAI.units")
+logger = logging.getLogger(__name__)
 import numpy
 from numpy import pi
+import scipy.constants
 
-try:
-    from .third_party import six
-except (ImportError, Exception):
-    import six
+from .third_party import six
 
 ################################################################################
 # A few physical constants
 ################################################################################
 
-hc = CONST_hc = 12.398419292004204
+hc = CONST_hc = scipy.constants.c * scipy.constants.h / scipy.constants.e * 1e7
 """Product of h the Planck constant, and c the speed of light in vacuum
-in Angstrom.KeV"""
+in Angstrom.KeV. It is approximativly equal to 12.398419292004204."""
 
 CONST_q = 1.602176565e-19
 """One electron-volt is equal to 1.602176565⋅10-19 joules"""
@@ -269,6 +267,7 @@ def to_unit(obj, type_=None):
         logger.error("Unable to recognize this type unit '%s' of type %s. "
                      "Valid units are %s" % (obj, type(obj), ", ".join([i for i in type_])))
     return rad_unit
+
 
 # To ensure the compatibility with former code:
 Q = Q_NM = RADIAL_UNITS["q_nm^-1"]

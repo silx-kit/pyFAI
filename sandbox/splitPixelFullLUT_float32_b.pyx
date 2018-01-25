@@ -22,15 +22,16 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__doc__ = """
-Full pixel Splitting implemented using Sparse-matrix Dense-Vector multiplication,
-Sparse matrix represented using the CompressedSparseROw.
+"""Full pixel Splitting implemented using Sparse-matrix Dense-Vector
+multiplication, sparse matrix represented using the CompressedSparseROw.
 """
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
 __date__ = "02/02/2017"
 __status__ = "stable"
 __license__ = "GPLv3+"
+
 import cython
 import os
 import sys

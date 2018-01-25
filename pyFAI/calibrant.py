@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "11/01/2018"
 __status__ = "production"
 
 
@@ -52,9 +52,9 @@ import itertools
 from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
-from .decorators import deprecated
+from .utils.decorators import deprecated
 
-logger = logging.getLogger("pyFAI.calibrant")
+logger = logging.getLogger(__name__)
 epsilon = 1.0e-6  # for floating point comparison
 
 
@@ -242,12 +242,12 @@ class Cell(object):
                 self.S23 = self.a * self.a * self.b * self.c * (cosb * cosg - cosa)
                 self.S13 = self.a * self.b * self.b * self.c * (cosg * cosa - cosb)
 
-            invd2 = self.S11 * h * h + \
-                    self.S22 * k * k + \
-                    self.S33 * l * l + \
-                    2 * self.S12 * h * k + \
-                    2 * self.S23 * k * l + \
-                    2 * self.S13 * h * l
+            invd2 = (self.S11 * h * h +
+                     self.S22 * k * k +
+                     self.S33 * l * l +
+                     2 * self.S12 * h * k +
+                     2 * self.S23 * k * l +
+                     2 * self.S13 * h * l)
             invd2 /= (self.volume) ** 2
         return sqrt(1 / invd2)
 

@@ -28,17 +28,19 @@
 
 from __future__ import division, print_function, absolute_import
 
-__doc__ = "test suite for inverse watershed space segmenting code."
+"""Test suite for inverse watershed space segmenting code."""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 import unittest
 import fabio
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+import logging
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 from ..ext import watershed
 
 
@@ -67,6 +69,7 @@ def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestWatershed))
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

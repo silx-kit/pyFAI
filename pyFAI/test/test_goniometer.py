@@ -35,20 +35,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "10/01/2018"
 
 import os
 import unittest
 import logging
-from .utilstest import getLogger, UtilsTest
-logger = getLogger(__file__)
-try:
-    from pyFAI.third_party import six
-except:
-    import six
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
 import numpy
 from ..goniometer import GeometryTranslation, Goniometer, numexpr
-logger = logging.getLogger("pyFAI.test.test_goniometer")
 
 
 @unittest.skipUnless(numexpr, "Numexpr package is missing")

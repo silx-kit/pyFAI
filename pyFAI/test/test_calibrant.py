@@ -34,15 +34,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/07/2017"
+__date__ = "12/01/2018"
 
 import unittest
 import logging
 import sys
 import copy
-from .utilstest import getLogger, UtilsTest
-logger = getLogger(__file__)
-from ..utils import six
+from .utilstest import UtilsTest
+logger = logging.getLogger(__name__)
+from ..third_party import six
 from ..calibrant import Calibrant, CALIBRANT_FACTORY, Cell
 from ..detectors import ALL_DETECTORS
 from .. import AzimuthalIntegrator
@@ -54,8 +54,8 @@ class TestCalibrant(unittest.TestCase):
     """
     def test_factory(self):
         # by default we provide 11 calibrants
-        l = len(CALIBRANT_FACTORY)
-        self.assertTrue(l > 10, "at least 11 calibrants are available, got %s" % l)
+        count = len(CALIBRANT_FACTORY)
+        self.assertTrue(count > 10, "at least 11 calibrants are available, got %s" % count)
 
         self.assertTrue("LaB6" in CALIBRANT_FACTORY, "LaB6 is a calibrant")
 
@@ -85,9 +85,8 @@ class TestCalibrant(unittest.TestCase):
         """test for fake image generation"""
         with_plot = (logger.getEffectiveLevel() <= logging.DEBUG)
         if with_plot:
-            import matplotlib
-            import matplotlib.pyplot as plt
-            fig = plt.figure()
+            from matplotlib import pyplot
+            fig = pyplot.figure()
             ax = fig.add_subplot(1, 1, 1)
 
         detectors = set(ALL_DETECTORS.values())

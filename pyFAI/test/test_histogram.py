@@ -28,26 +28,24 @@
 
 from __future__ import absolute_import, division, print_function
 
-__doc__ = "test suite for histogramming implementations"
+"""Test suite for histogramming implementations"""
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "12/01/2018"
 
 import unittest
 import time
 import numpy
 import logging
 from numpy import cos
-from .utilstest import Rwp, getLogger
-logger = getLogger(__file__)
+logger = logging.getLogger(__name__)
 from ..ext.histogram import histogram, histogram2d
 from ..ext.splitBBoxCSR import HistoBBox1d, HistoBBox2d
-try:
-    from ..third_party import six
-except (ImportError, Exception):
-    import six
+from ..third_party import six
+from ..utils import mathutil
 
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
@@ -61,7 +59,7 @@ class TestHistogram1d(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         # CSR logger should stop complaining about desactivated
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.ERROR)
 
         shape = (512, 512)
@@ -108,7 +106,7 @@ class TestHistogram1d(unittest.TestCase):
         self.I_numpy = self.weight_numpy = self.bins_csr = None
         self.data_sum = self.size = self.err_max_cnt = None
         self.bins_csr = self.I_csr = self.weight_csr = self.unweight_csr = None
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.WARNING)
 
     def test_count_numpy(self):
@@ -171,11 +169,11 @@ class TestHistogram1d(unittest.TestCase):
         logger.info("Bin-center position for csr/numpy, max delta=%s", max_delta)
         self.assertTrue(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
 
-        rwp1 = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
+        rwp1 = mathutil.rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp Cython/Numpy = %.3f", rwp1)
         self.assertTrue(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
 
-        rwp2 = Rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
+        rwp2 = mathutil.rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp CSR/Numpy = %.3f", rwp2)
         self.assertTrue(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
 
@@ -218,7 +216,7 @@ class TestHistogram2d(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         # CSR logger should stop complaining about desactivated
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.ERROR)
 
         shape = (512, 512)
@@ -271,7 +269,7 @@ class TestHistogram2d(unittest.TestCase):
         self.unweight_numpy = self.weight_numpy = None
         self.maxI = None
 
-        csr_logger = logging.getLogger("pyFAI.splitBBoxCSR")
+        csr_logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
         csr_logger.setLevel(logging.WARNING)
 
     def test_count_numpy(self):

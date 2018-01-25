@@ -34,17 +34,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/09/2017"
+__date__ = "12/01/2018"
 
 
 import unittest
 import numpy
 import sys
-from .utilstest import getLogger
-logger = getLogger(__file__)
+import logging
+logger = logging.getLogger(__name__)
 pyFAI = sys.modules["pyFAI"]
 from ..opencl import ocl
+from . import utilstest
 from .utilstest import UtilsTest
+from pyFAI.utils.decorators import depreclog
 
 
 class TestFlat1D(unittest.TestCase):
@@ -89,14 +91,19 @@ class TestFlat1D(unittest.TestCase):
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assertTrue(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
-        for meth in ["xrpd_numpy", "xrpd_cython", "xrpd_splitBBox", "xrpd_splitPixel"]:  # , "xrpd_OpenCL" ]: bug with 32 bit GPU and request 64 bit integration
-            _, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
-            logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
-            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assertTrue(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
-        if ocl and UtilsTest.opencl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
-            meth = "xrpd_OpenCL"
-            _, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+
+        xrpd_meths = ["xrpd_numpy", "xrpd_cython", "xrpd_splitBBox", "xrpd_splitPixel", "xrpd_OpenCL"]
+        for meth in xrpd_meths:
+            xrpd_func = self.ai.__getattribute__(meth)
+            if meth == "xrpd_OpenCL":
+                # xrpd_OpenCL: bug with 32 bit GPU and request 64 bit integration
+                if not ocl or not UtilsTest.opencl:
+                    continue
+                if not pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
+                    continue
+            with utilstest.TestLogging(logger=depreclog, warning=1):
+                # Filter deprecated warning
+                _, I = xrpd_func(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assertTrue(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
@@ -161,9 +168,14 @@ class TestFlat2D(unittest.TestCase):
             logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assertTrue(I.max() - I.min() < test2d[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+
         for meth in test2d_direct:
             logger.info("About to test2d_direct %s", meth)
-            I, _, _ = self.ai.__getattribute__(meth)(self.raw, self.bins, self.azim, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+
+            xrpd_func = self.ai.__getattribute__(meth)
+            with utilstest.TestLogging(logger=depreclog, warning=1):
+                # Filter deprecated warning
+                I, _, _ = xrpd_func(self.raw, self.bins, self.azim, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             I = I[numpy.where(I > 0)]
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s", meth, I.min(), I.max(), I.mean(), I.std())
             self.assertTrue(abs(I.mean() - 1) < test2d_direct[meth], "Mean should be 1 in %s" % meth)

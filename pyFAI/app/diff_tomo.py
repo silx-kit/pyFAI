@@ -38,12 +38,11 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/07/2017"
+__date__ = "09/01/2018"
 __satus__ = "Production"
 
 import logging
 import os
-import sys
 import glob
 logging.basicConfig(level=logging.INFO)
 logging.captureWarnings(True)
@@ -51,16 +50,10 @@ logger = logging.getLogger("diff_tomo")
 from pyFAI import version as PyFAI_VERSION
 from pyFAI import date as PyFAI_DATE
 from pyFAI.diffmap import DiffMap
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party.argparse import ArgumentParser
 
-
-if sys.version_info[0] < 3:
-    from urlparse import urlparse
-else:
-    from urllib.parse import urlparse
+from pyFAI.third_party import six
+urlparse = six.moves.urllib.parse.urlparse
 
 
 class DiffTomo(DiffMap):
@@ -217,6 +210,7 @@ def main():
     dt.makeHDF5()
     dt.process()
     dt.show_stats()
+
 
 if __name__ == "__main__":
     main()

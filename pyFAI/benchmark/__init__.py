@@ -28,9 +28,9 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "09/02/2017"
+__date__ = "12/01/2018"
 __license__ = "MIT"
-__copyright__ = "2012-2016 European Synchrotron Radiation Facility, Grenoble, France"
+__copyright__ = "2012-2018 European Synchrotron Radiation Facility, Grenoble, France"
 
 
 from collections import OrderedDict
@@ -50,13 +50,14 @@ import logging
 
 from .. import load
 from .. import AzimuthalIntegrator
+from ..utils import mathutil
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
-from ..utils import six
+from ..third_party import six
 try:
     from ..gui.matplotlib import pylab
     from ..gui.utils import update_fig
-except:
+except ImportError:
     pylab = None
 
     def update_fig(*ag, **kwarg):
@@ -81,11 +82,11 @@ datasets = {"Fairchild.poni": "Fairchild.edf",
 
 PONIS = {
     "Pilatus6M.poni": {'dist': 0.3, 'poni2': 0.2115772, 'poni1': 0.225406, 'detector': 'Pilatus6M'},
-    "Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1':-0.506766875792, 'rot3':-1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
-    "halfccd.poni": {'dist': 0.0994744403007, 'poni2': 0.0481217639198, 'rot1':-0.000125830018938, 'rot3': 1.57079531561, 'rot2':-0.0160719674782, 'poni1': 0.026453455358, 'pixel2': 4.684483e-05, 'pixel1': 4.8422519999999994e-05},
+    "Fairchild.poni": {'dist': 0.0882065396596, 'poni2': 0.0449457803015, 'rot1': -0.506766875792, 'rot3': -1.13774685128e-05, 'rot2': 0.0167069809441, 'poni1': 0.0302286347503, 'detector': 'Fairchild'},
+    "halfccd.poni": {'dist': 0.0994744403007, 'poni2': 0.0481217639198, 'rot1': -0.000125830018938, 'rot3': 1.57079531561, 'rot2': -0.0160719674782, 'poni1': 0.026453455358, 'pixel2': 4.684483e-05, 'pixel1': 4.8422519999999994e-05},
     "Pilatus1M.poni": {'dist': 1.58323111834, 'poni2': 0.0412277798782, 'rot1': 0.00648735642526, 'rot3': 4.12987220385e-08, 'rot2': 0.00755810191106, 'poni1': 0.0334170169115, 'detector': 'Pilatus1M'},
-    "Mar3450.poni": {'dist': 0.222549826201, 'poni2': 0.172625538874, 'rot1': 0.00164880041469, 'rot3':-1.43412739468e-08, 'rot2': 0.0438631777747, 'wavelength': 3.738e-11, 'splineFile': None, 'poni1': 0.161137340974, 'detector': 'Mar345'},
-    "Frelon2k.poni": {'dist': 0.1057363, 'poni2': 0.05660461, 'rot1': 0.027767, 'rot3':-1.8e-05, 'rot2': 0.016991, 'poni1': 0.05301968, 'pixel2': 4.722437999999999e-05, 'pixel1': 4.6831519999999995e-05}
+    "Mar3450.poni": {'dist': 0.222549826201, 'poni2': 0.172625538874, 'rot1': 0.00164880041469, 'rot3': -1.43412739468e-08, 'rot2': 0.0438631777747, 'wavelength': 3.738e-11, 'splineFile': None, 'poni1': 0.161137340974, 'detector': 'Mar345'},
+    "Frelon2k.poni": {'dist': 0.1057363, 'poni2': 0.05660461, 'rot1': 0.027767, 'rot3': -1.8e-05, 'rot2': 0.016991, 'poni1': 0.05301968, 'pixel2': 4.722437999999999e-05, 'pixel1': 4.6831519999999995e-05}
 }
 
 # Handle to the Bench instance: allows debugging from outside if needed
@@ -207,8 +208,6 @@ class Bench(object):
               "csr": "CPU_CSR_OpenMP",
               "csr_ocl": "CSR",
               }
-    _cpu = None
-    _gpu = None
 
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg", max_size=None):
         self.reference_1d = {}
@@ -233,42 +232,37 @@ class Bench(object):
         self.out_2d = (500, 360)
         self.max_size = max_size or sys.maxunicode
 
-    @classmethod
-    def get_cpu(cls):
-        if cls._cpu is None:
+    def get_cpu(self):
+        if self._cpu is None:
             if os.name == "nt":
-                cls._cpu = platform.processor()
+                self._cpu = platform.processor()
             elif os.path.exists("/proc/cpuinfo"):
                 cpuinfo = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")]
                 if not cpuinfo:
                     cpuinfo = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("cpu")]
-                cls._cpu = cpuinfo[0].strip()
+                self._cpu = cpuinfo[0].strip()
             elif os.path.exists("/usr/sbin/sysctl"):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
-                cls._cpu = proc.stdout.read().strip()
+                self._cpu = proc.stdout.read().strip()
                 if six.PY3:
-                    cls._cpu = cls._cpu.decode("ASCII")
-            old = cls._cpu
-            cls._cpu = old.replace("  ", " ")
-            while old != cls._cpu:
-                old = cls._cpu
-                cls._cpu = old.replace("  ", " ")
-        return cls._cpu
+                    self._cpu = self._cpu.decode("ASCII")
+            old = self._cpu
+            self._cpu = old.replace("  ", " ")
+            while old != self._cpu:
+                old = self._cpu
+                self._cpu = old.replace("  ", " ")
+        return self._cpu
 
-    @classmethod
-    def get_gpu(cls, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
-
+    def get_gpu(self, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
         if ocl is None:
-            cls._gpu = "NoGPU"
+            return "NoGPU"
+        try:
+            ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
+        except Exception:
+            return "NoGPU"
         else:
-            try:
-                ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
-            except:
-                cls._gpu = "NoGPU"
-            else:
-                cls._gpu = ctx.devices[0].name
-        return cls._gpu
+            return ctx.devices[0].name
 
     def get_mem(self):
         """
@@ -394,7 +388,7 @@ class Bench(object):
             tmin *= 1000.0
             if check:
                 ref = self.get_ref(param)
-                R = utilstest.Rwp(res, ref)
+                R = mathutil.rwp(res, ref)
                 print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
                 self.update_mp()
                 if R < self.LIMIT:
@@ -449,7 +443,7 @@ class Bench(object):
             label = "2D_" + self.LABELS[method]
             memory_error = (MemoryError, RuntimeError)
 
-        results = {}
+        results = OrderedDict()
         first = True
         for param in ds_list:
             self.update_mp()
@@ -540,7 +534,7 @@ class Bench(object):
             self.print_init(t1 - t0)
             self.update_mp()
             ref = ai.xrpd(data, N)
-            R = utilstest.Rwp(res, ref)
+            R = mathutil.rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             test = BenchTestGpu(param, file_name, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer(test.stmt, test.setup)

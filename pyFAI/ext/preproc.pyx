@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "25/04/2017"
+__date__ = "09/01/2018"
 __copyright__ = "2011-2017, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,7 +38,7 @@ cimport numpy as cnp
 from cython cimport floating
 from cython.parallel import prange
 from libc.math cimport fabs
-from isnan cimport isnan  
+from isnan cimport isnan
 
 ctypedef fused any_int_t:
     cnp.uint8_t
@@ -489,7 +489,7 @@ def preproc(raw,
         int size
         bint check_dummy
         cnp.int8_t[::1] cmask
-        float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, dvariance,res1
+        float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, dvariance, res1
         float[:, ::1] res2
         float cdummy, ddummy
 

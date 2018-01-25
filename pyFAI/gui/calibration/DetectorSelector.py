@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/02/2017"
+__date__ = "23/01/2018"
 
 from pyFAI.gui import qt
 import pyFAI.detectors
@@ -43,6 +43,8 @@ class DetectorSelector(qt.QComboBox):
         items = pyFAI.detectors.ALL_DETECTORS.items()
         items = sorted(items)
         for detectorName, detector in items:
+            if detector is pyFAI.detectors.Detector:
+                continue
             self.addItem(detectorName, detector)
 
         self.__model = None
