@@ -34,12 +34,13 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "24/01/2018"
 
 import sys
 import unittest
-import runpy
 import logging
+import subprocess
+from pyFAI.test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
 
@@ -56,67 +57,96 @@ except ImportError:
 
 class TestScriptsHelp(unittest.TestCase):
 
-    def executeAppHelp(self, module):
-        old_sys_argv = list(sys.argv)
+    def executeCommandLine(self, command_line, env):
+        """Execute a command line.
+
+        Log output as debug in case of bad return code.
+        """
+        logger.info("Execute: %s", " ".join(command_line))
+        p = subprocess.Popen(command_line,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             env=env)
+        out, err = p.communicate()
+        logging.info("Return code: %d", p.returncode)
         try:
-            sys.argv = [None, "--help"]
-            runpy.run_module(mod_name=module, run_name="__main__", alter_sys=True)
-        except SystemExit as e:
-            self.assertEquals(e.args[0], 0)
-        finally:
-            sys.argv = old_sys_argv
+            out = out.decode('utf-8')
+        except UnicodeError:
+            pass
+        try:
+            err = err.decode('utf-8')
+        except UnicodeError:
+            pass
+
+        if p.returncode != 0:
+            logging.info("stdout:")
+            logging.info("%s", out)
+            logging.info("stderr:")
+            logging.info("%s", err)
+        else:
+            logging.debug("stdout:")
+            logging.debug("%s", out)
+            logging.debug("stderr:")
+            logging.debug("%s", err)
+        self.assertEqual(p.returncode, 0)
+
+    def executeAppHelp(self, script_name, module_name):
+        script = UtilsTest.script_path(script_name, module_name)
+        env = UtilsTest.get_test_env()
+        command_line = [sys.executable, script, "--help"]
+        self.executeCommandLine(command_line, env)
 
     def testCheckCalib(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeAppHelp("pyFAI.app.check_calib")
+        self.executeAppHelp("check_calib", "pyFAI.app.check_calib")
 
     def testDetector2Nexus(self):
-        self.executeAppHelp("pyFAI.app.detector2nexus")
+        self.executeAppHelp("detector2nexus", "pyFAI.app.detector2nexus")
 
     def testDiffMap(self):
-        self.executeAppHelp("pyFAI.app.diff_map")
+        self.executeAppHelp("diff_map", "pyFAI.app.diff_map")
 
     def testDiffTomo(self):
-        self.executeAppHelp("pyFAI.app.diff_tomo")
+        self.executeAppHelp("diff_tomo", "pyFAI.app.diff_tomo")
 
     def testEigerMask(self):
-        self.executeAppHelp("pyFAI.app.eiger_mask")
+        self.executeAppHelp("eiger-mask", "pyFAI.app.eiger_mask")
 
     def testMxcalibrate(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeAppHelp("pyFAI.app.mx_calibrate")
+        self.executeAppHelp("MX-calibrate", "pyFAI.app.mx_calibrate")
 
     def testPyfaiAverage(self):
-        self.executeAppHelp("pyFAI.app.average")
+        self.executeAppHelp("pyFAI-average", "pyFAI.app.average")
 
     def testPyfaiBenchmark(self):
-        self.executeAppHelp("pyFAI.app.benchmark")
+        self.executeAppHelp("pyFAI-benchmark", "pyFAI.app.benchmark")
 
     def testPyfaiCalib(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeAppHelp("pyFAI.app.calib")
+        self.executeAppHelp("pyFAI-calib", "pyFAI.app.calib")
 
     def testPyfaiDrawmask(self):
         if qt is None or silx is None:
             self.skipTest("Library Qt and silx are not available")
-        self.executeAppHelp("pyFAI.app.drawmask")
+        self.executeAppHelp("pyFAI-drawmask", "pyFAI.app.drawmask")
 
     def testPyfaiIntegrate(self):
-        self.executeAppHelp("pyFAI.app.integrate")
+        self.executeAppHelp("pyFAI-integrate", "pyFAI.app.integrate")
 
     def testPyfaiRecalib(self):
         if qt is None:
             self.skipTest("Library Qt is not available")
-        self.executeAppHelp("pyFAI.app.recalib")
+        self.executeAppHelp("pyFAI-recalib", "pyFAI.app.recalib")
 
     def testPyfaiSaxs(self):
-        self.executeAppHelp("pyFAI.app.saxs")
+        self.executeAppHelp("pyFAI-saxs", "pyFAI.app.saxs")
 
     def testPyfaiWaxs(self):
-        self.executeAppHelp("pyFAI.app.waxs")
+        self.executeAppHelp("pyFAI-waxs", "pyFAI.app.waxs")
 
 
 def suite():
