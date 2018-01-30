@@ -890,11 +890,11 @@ class NexusDetector(Detector):
             if "darkcurrent" in det_grp:
                 self.darkcurrent = det_grp["darkcurrent"].value
             if "force_pixel" in det_grp:
-                self.force_pixel = det_grp["force_pixel"]
+                self.force_pixel = det_grp["force_pixel"].value
             if "binning" in det_grp:
                 self._binning = tuple(i for i in det_grp["binning"].value)
             if "pixel_size" in det_grp:
-                self._pixel1, self._pixel2 = det_grp["pixel_size"]
+                self._pixel1, self._pixel2 = det_grp["pixel_size"].value
             for what in ("max_shape", "shape"):
                 if what in det_grp:
                     self.__setattr__(what, tuple(i for i in det_grp[what].value))
