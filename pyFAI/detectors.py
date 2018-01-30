@@ -702,13 +702,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
     def set_mask(self, mask):
         with self._sem:
-            if mask is not None:
-                self.guess_binning(mask)
-            self._mask = mask
-            if mask is not None:
-                self._mask_crc = crc32(mask)
+            if mask is None:
+                self._mask = self._mask_crc = None
             else:
-                self._mask_crc = None
+                self._mask = numpy.ascontiguousarray(mask, numpy.int8)
+                self._mask_crc = crc32(self._mask)
+                self.guess_binning(self._mask)
+
     mask = property(get_mask, set_mask)
 
     def set_maskfile(self, maskfile):
