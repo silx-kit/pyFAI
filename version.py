@@ -64,7 +64,7 @@ RELEASE_LEVEL_VALUE = {"dev": 0,
 MAJOR = 0
 MINOR = 15
 MICRO = 0
-RELEV = "dev"  # <16
+RELEV = "beta"  # <16
 SERIAL = 1  # <16
 
 date = __date__
