@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys, numpy
 # coding: utf-8
 # ##########################################################################
 #
@@ -25,17 +24,19 @@ import sys, numpy
 #
 # ###########################################################################
 
+import sys
+import numpy
 print("Python %s bits" % (tuple.__itemsize__ * 8))
 print("       maxsize: %s\t maxunicode: %s" % (sys.maxsize, sys.maxunicode))
 print(sys.version)
 try:
     from distutils.sysconfig import get_config_vars
-except:
+except ImportError:
     from sysconfig import get_config_vars
 config = get_config_vars("CONFIG_ARGS")
 try:
     print("Config :" + " ".join(config))
-except:
+except Exception:
     print("Config : None")
 print("")
 print("Numpy %s" % numpy.version.version)

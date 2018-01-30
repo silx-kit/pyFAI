@@ -163,7 +163,7 @@ def optimize_with_new_images(h5file: File,
 
     """
     sg = None
-    for n, frame in enumerate(gen_metadata_all(h5file, calibration)):
+    for _, frame in enumerate(gen_metadata_all(h5file, calibration)):
         print()
         base = os.path.splitext(os.path.basename(calibration.filename))[0]
 
@@ -174,7 +174,7 @@ def optimize_with_new_images(h5file: File,
         sg = gonioref.new_geometry(label, image=frame.image, metadata=frame,
                                    calibrant=calibrant)
         print(sg.extract_cp(pts_per_deg=pts_per_deg))
-    print("*"*50)
+    print("*" * 50)
     gonioref.refine2()
     if sg:
         sg.geometry_refinement.set_param(gonioref.get_ai(sg.get_position()).param)  # noqa
@@ -265,7 +265,7 @@ def calibration(json: str, params: Calibration) -> None:
         with File(multi.filename, mode='r') as h5file:
             optimize_with_new_images(h5file, multi, gonioref, calibrant)
 
-    for idx, sg in enumerate(gonioref.single_geometries.values()):
+    for _, sg in enumerate(gonioref.single_geometries.values()):
         sg.geometry_refinement.set_param(gonioref.get_ai(sg.get_position()).param)  # noqa
         jupyter.display(sg=sg)
 
