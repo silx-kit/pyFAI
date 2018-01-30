@@ -707,9 +707,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
             if mask is None:
                 self._mask = self._mask_crc = None
             else:
-                self._mask = numpy.ascontiguousarray(mask, numpy.int8)
+                mask = numpy.ascontiguousarray(mask, numpy.int8)
+                # Mind the order: guess_binning deletes the mask
+                self.guess_binning(mask)
+                self._mask = mask
                 self._mask_crc = crc32(self._mask)
-                self.guess_binning(self._mask)
+
 
     mask = property(get_mask, set_mask)
 
