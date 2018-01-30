@@ -38,7 +38,7 @@ in a poni-file (poni_i) useable by pyFAI.
 To define a multi-geometry integrator, one needs all poni-files and one needs
 to define the output space so that all individual integrators use the same bins.
 
-.. code:: python
+.. code-block:: python
 
    import glob
    import fabio

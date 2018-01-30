@@ -17,7 +17,7 @@ Now, the pyFAI library is included into debian7, 8, 9 and any recent Ubuntu and
 Mint distribution.
 To install the package provided by the distribution, use:
 
-.. code::
+.. code-block:: shell
 
    sudo apt-get install pyfai
 
@@ -31,7 +31,7 @@ To build a more recent version, pyFAI provides you a small scripts which builds 
 It relies on *stdeb* and provides a single package with everything inside.
 You will be prompted for your password to gain root access in order to be able to install the freshly built package.
 
-.. code::
+.. code-block:: shell
 
    sudo apt-get install python-stdeb cython python-fabio
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
@@ -50,7 +50,7 @@ From silx repository
 
 You can automatically install the latest nightly built of pyFAI with:
 
-.. code::
+.. code-block:: shell
 
    wget http://www.silx.org/pub/debian/silx.list
    wget http://www.silx.org/pub/debian/silx.pref
@@ -67,7 +67,7 @@ Build from sources
 
 One can also built from sources:
 
-.. code::
+.. code-block:: shell
 
    sudo apt-get install cython cython-dbg cython3 cython3-dbg debhelper dh-python \
    python-all-dev python-all-dbg python-fabio python-fabio-dbg python-fftw python-h5py \
@@ -97,13 +97,13 @@ Installation procedure on other linux distibution
 If your distribution does not provide you pyFAI packages, using the **PIP** way
 is advised, via wheels packages. First install *pip* and *wheel*:
 
-.. code::
+.. code-block:: shell
 
     sudo pip install pyFAI
 
 Or you can install pyFAI from the sources:
 
-.. code::
+.. code-block:: shell
 
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip

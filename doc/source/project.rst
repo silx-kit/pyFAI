@@ -124,7 +124,7 @@ Building procedure
 As most of the Python projects:
 ...............................
 
-.. code::
+.. code-block:: shell
 
     python setup.py build bdist_wheel
     pip install dist/pyFAI-0.14.0*.whl --upgrade
@@ -146,7 +146,7 @@ Test suites
 
 To test the installed version of pyFAI:
 
-.. code::
+.. code-block:: shell
 
     python run_test.py
 
@@ -166,7 +166,7 @@ To run the test an internet connection is needed as 200MB of test images will be
 
 Setting the environment variable http_proxy can be necessary (depending on your network):
 
-.. code::
+.. code-block:: shell
 
    export http_proxy=http://proxy.site.org:3128
 
@@ -175,13 +175,13 @@ by asking at the helpdesk: helpdesk@esrf.fr
 
 To test the development version (built but not yet installed):
 
-.. code::
+.. code-block:: shell
 
     python setup.py build test
 
 or
 
-.. code::
+.. code-block:: shell
 
     python setup.py build
     python run_test.py -i
@@ -214,8 +214,7 @@ On Debian 8 - Jessie
 Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
 `Nightly builds <http://www.silx.org/pub/debian/binary/>`_ are available for debian8-64 bits. To install them:
 
-.. code::
-
+.. code-block:: shell
 
 	sudo apt-get update
 	sudo apt-get install pyfai
@@ -247,11 +246,11 @@ Due to the limitation of AppVeyor's build system, those installers have openMP d
 List of contributors in code
 ----------------------------
 
-::
+.. code-block:: shell
 
-    $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
+    git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 07/2017:
+As of 01/2018:
  * Jérôme Kieffer (ESRF)
  * Valentin Valls (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)

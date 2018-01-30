@@ -12,7 +12,7 @@ Using PIP
 To install pyFAI on an *Apple* computer you will need a scientific Python stack.
 MacOSX provides by default Python2.7 with Numpy which is a good basis.
 
-.. code::
+.. code-block:: shell
 
     sudo pip install matplotlib --upgrade
     sudo pip install scipy --upgrade
@@ -25,7 +25,7 @@ MacOSX provides by default Python2.7 with Numpy which is a good basis.
 
 If you get an error about the local "UTF-8", try to:
 
-.. code::
+.. code-block:: shell
 
    export LC_ALL=C
 
@@ -36,7 +36,7 @@ Installation from sources
 
 Get the sources from Github:
 
-.. code::
+.. code-block:: shell
 
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
@@ -67,7 +67,7 @@ the **AppStore**.
 As pyFAI has by default OpenMP activated, and it needs to be de-activated,
 one needs to regenerate all Cython files without OpenMP.
 
-.. code::
+.. code-block:: shell
 
     sudo pip install cython --upgrade
     rm pyFAI/ext/*.c
@@ -83,7 +83,7 @@ the alternative is to install another compiler like `gcc <https://gcc.gnu.org/>`
 or `clang <http://clang.llvm.org/>`_ on your *Apple* computer.
 As gcc & clang support OpenMP, there is no need to re-generate the cython files.
 
-.. code::
+.. code-block:: shell
 
     CC=gcc python setup.py build --openmp
     python setup.py bdist_wheel
