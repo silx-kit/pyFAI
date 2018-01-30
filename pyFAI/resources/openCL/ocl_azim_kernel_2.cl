@@ -3,7 +3,7 @@
  *            Kernel with full pixel-split
  *
  *
- *   Copyright (C) 2012 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2018 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)

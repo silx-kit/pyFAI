@@ -4,7 +4,7 @@
 #    Project: S I L X project
 #             https://github.com/silx-kit/silx
 #
-#    Copyright (C) 2012-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #

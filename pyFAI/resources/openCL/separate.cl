@@ -2,7 +2,7 @@
  * Project: Azimuthal integration
  *       https://github.com/silx-kit/pyFAI
  *
- * Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
+ * Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
  *
  * Principal author:       Jerome Kieffer (Jerome.Kieffer@ESRF.eu)
  *

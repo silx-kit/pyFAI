@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.ext.mathjax
-    ~~~~~~~~~~~~~~~~~~
+sphinx.ext.mathjax
+~~~~~~~~~~~~~~~~~~
 
-    Allow `MathJax <http://mathjax.org/>`_ to be used to display math in
-    Sphinx's HTML writer -- requires the MathJax JavaScript library on your
-    webserver/computer.
-
-    :copyright: Copyright 2007-2013 by the Sphinx team, see AUTHORS.
-    :license: BSD, see LICENSE for details.
+Allow `MathJax <http://mathjax.org/>`_ to be used to display math in
+Sphinx's HTML writer -- requires the MathJax JavaScript library on your
+webserver/computer.
 """
+
+__copyright__ = "Copyright 2007-2013 by the Sphinx team, see AUTHORS."
+__license__ = "BSD"
 
 from docutils import nodes
 
@@ -23,6 +23,7 @@ def html_visit_math(self, node):
                      self.encode(node['latex']) +
                      self.builder.config.mathjax_inline[1] + '</span>')
     raise nodes.SkipNode
+
 
 def html_visit_displaymath(self, node):
     self.body.append(self.starttag(node, 'div', CLASS='math'))
@@ -51,6 +52,7 @@ def html_visit_displaymath(self, node):
     self.body.append('</div>\n')
     raise nodes.SkipNode
 
+
 def builder_inited(app):
     if not app.config.mathjax_path:
         raise ExtensionError('mathjax_path config value must be set for the '
@@ -66,4 +68,3 @@ def setup(app):
     app.add_config_value('mathjax_inline', [r'\(', r'\)'], 'html')
     app.add_config_value('mathjax_display', [r'\[', r'\]'], 'html')
     app.connect('builder-inited', builder_inited)
-

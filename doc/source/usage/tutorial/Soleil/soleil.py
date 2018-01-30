@@ -1,4 +1,27 @@
-""" coding: utf-8 """
+# -*- coding: utf-8 -*-
+# ##########################################################################
+#
+# Copyright (C) 2015-2018 European Synchrotron Radiation Facility
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ###########################################################################
 
 from typing import Generic, Iterator, List, NamedTuple, NewType, Text, Tuple,\
     TypeVar, Union
@@ -140,7 +163,7 @@ def optimize_with_new_images(h5file: File,
 
     """
     sg = None
-    for n, frame in enumerate(gen_metadata_all(h5file, calibration)):
+    for _, frame in enumerate(gen_metadata_all(h5file, calibration)):
         print()
         base = os.path.splitext(os.path.basename(calibration.filename))[0]
 
@@ -151,7 +174,7 @@ def optimize_with_new_images(h5file: File,
         sg = gonioref.new_geometry(label, image=frame.image, metadata=frame,
                                    calibrant=calibrant)
         print(sg.extract_cp(pts_per_deg=pts_per_deg))
-    print("*"*50)
+    print("*" * 50)
     gonioref.refine2()
     if sg:
         sg.geometry_refinement.set_param(gonioref.get_ai(sg.get_position()).param)  # noqa
@@ -242,7 +265,7 @@ def calibration(json: str, params: Calibration) -> None:
         with File(multi.filename, mode='r') as h5file:
             optimize_with_new_images(h5file, multi, gonioref, calibrant)
 
-    for idx, sg in enumerate(gonioref.single_geometries.values()):
+    for _, sg in enumerate(gonioref.single_geometries.values()):
         sg.geometry_refinement.set_param(gonioref.get_ai(sg.get_position()).param)  # noqa
         jupyter.display(sg=sg)
 

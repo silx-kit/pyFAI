@@ -3,7 +3,7 @@
 #    Project: Azimuthal integration
 #             https://github.com/silx-kit/pyFAI
 #
-#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

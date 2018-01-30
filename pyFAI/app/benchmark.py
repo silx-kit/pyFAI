@@ -5,7 +5,7 @@
 #             https://github.com/silx-kit/pyFAI
 #
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2012-2016-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Authors: Jérôme Kieffer <Jerome.Kieffer@ESRF.eu>
 #
