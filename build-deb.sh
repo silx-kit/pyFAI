@@ -3,7 +3,7 @@
 #    Project: Fabio Input/Output
 #             https://github.com/silx-kit/fabio
 #
-#    Copyright (C) 2015-2017 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015-2018 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
