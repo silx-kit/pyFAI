@@ -41,3 +41,8 @@ pip-log.txt
 
 # Notebook
 .ipynb_checkpoints
+
+
+#discard generated C-files
+/pyFAI/ext/*.c
+ 
