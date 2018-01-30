@@ -604,6 +604,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
             det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["IS_CONTIGUOUS"] = self.IS_CONTIGUOUS
             det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
+            det_grp["force_pixel"] = self.force_pixel
+            det_grp["force_pixel"].attrs["info"] = "The detector class specifies the pixel size"
             if self.max_shape is not None:
                 det_grp["max_shape"] = numpy.array(self.max_shape, dtype=numpy.int32)
             if self.shape is not None:
@@ -887,10 +889,12 @@ class NexusDetector(Detector):
                 self.flatfield = det_grp["flatfield"].value
             if "darkcurrent" in det_grp:
                 self.darkcurrent = det_grp["darkcurrent"].value
-            if "pixel_size" in det_grp:
-                self.pixel1, self.pixel2 = det_grp["pixel_size"]
+            if "force_pixel" in det_grp:
+                self.force_pixel = det_grp["force_pixel"]
             if "binning" in det_grp:
                 self._binning = tuple(i for i in det_grp["binning"].value)
+            if "pixel_size" in det_grp:
+                self._pixel1, self._pixel2 = det_grp["pixel_size"]
             for what in ("max_shape", "shape"):
                 if what in det_grp:
                     self.__setattr__(what, tuple(i for i in det_grp[what].value))
