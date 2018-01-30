@@ -901,6 +901,21 @@ class NexusDetector(Detector):
                 self.uniform_pixel = False
             else:
                 self.uniform_pixel = True
+        # Populate shape and max_shape if needed
+        if self.max_shape is None:
+            if self.shape is None:
+                if self.mask is not None:
+                    self.shape = self.mask.shape
+                elif self.darkcurrent is not None:
+                    self.shape = self.darkcurrent.shape
+                elif self.flatfield is not None:
+                    self.shape = self.flatfield.shape
+                else:
+                    raise RuntimeError("Detector has no shape")
+            if self._binning is None:
+                self.max_shape = self.shape
+            else:
+                self.max_shape = tuple(i * j for i, j in zip(self.shape, self._binning))
         self._filename = filename
 
     @classmethod
