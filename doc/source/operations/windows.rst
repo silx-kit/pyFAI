@@ -122,7 +122,7 @@ The generalization of Wheel packages should help and the installation of binary
 modules should become easier.
 
 **Nota:** This requires a network access and correct proxy settings.
-At ESRF, please get in contact with the hotline (24-24) to retrive those information.
+At ESRF, please get in contact with the hotline (24-24) to retrieve those information.
 
 .. code-block:: shell
 
@@ -160,8 +160,7 @@ The latest stable release of pyFAI should also be PIP-installable (starting at v
 
 .. code-block:: shell
 
-   pip install pyFAI --upgrade
-
+   pip install numpy scipy matplotlib fabio silx h5py PyQt5 pyFAI --upgrade
 
 
 Install pyFAI from sources

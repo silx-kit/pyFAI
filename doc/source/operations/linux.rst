@@ -81,7 +81,7 @@ One can also built from sources:
    wget https://github.com/silx-kit/pyFAI/archive/master.zip
    unzip master.zip
    cd pyFAI-master
-   ./build-deb8.sh
+   ./build-deb.sh
 
 
 The first line is really long and defines all the dependence tree for building

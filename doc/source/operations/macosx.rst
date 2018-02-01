@@ -92,4 +92,4 @@ As gcc & clang support OpenMP, there is no need to re-generate the cython files.
 
 **Nota:** The usage of "python setup.py install" is now deprecated.
 It causes much more trouble as there is no installed file tracking,
-hence no way to de-install properly a package.
+hence no way to properly un-install a package.
