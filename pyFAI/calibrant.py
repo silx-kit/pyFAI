@@ -538,7 +538,7 @@ class Calibrant(object):
             return self._2th.index(angle)
         if delta:
             d2th = abs(numpy.array(self._2th) - angle)
-            if d2th.min < delta:
+            if d2th.min() < delta:
                 return d2th.argmin()
 
     def fake_calibration_image(self, ai, shape=None, Imax=1.0, U=0, V=0, W=0.0001):
