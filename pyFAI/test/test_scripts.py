@@ -42,7 +42,7 @@ import logging
 import subprocess
 from pyFAI.test.utilstest import UtilsTest
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 try:
     from ..gui import qt
@@ -62,13 +62,13 @@ class TestScriptsHelp(unittest.TestCase):
 
         Log output as debug in case of bad return code.
         """
-        logger.info("Execute: %s", " ".join(command_line))
+        _logger.info("Execute: %s", " ".join(command_line))
         p = subprocess.Popen(command_line,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              env=env)
         out, err = p.communicate()
-        logging.info("Return code: %d", p.returncode)
+        _logger.info("Return code: %d", p.returncode)
         try:
             out = out.decode('utf-8')
         except UnicodeError:
@@ -79,21 +79,25 @@ class TestScriptsHelp(unittest.TestCase):
             pass
 
         if p.returncode != 0:
-            logging.info("stdout:")
-            logging.info("%s", out)
-            logging.info("stderr:")
-            logging.info("%s", err)
+            _logger.info("stdout:")
+            _logger.info("%s", out)
+            _logger.info("stderr:")
+            _logger.info("%s", err)
         else:
-            logging.debug("stdout:")
-            logging.debug("%s", out)
-            logging.debug("stderr:")
-            logging.debug("%s", err)
+            _logger.debug("stdout:")
+            _logger.debug("%s", out)
+            _logger.debug("stderr:")
+            _logger.debug("%s", err)
         self.assertEqual(p.returncode, 0)
 
     def executeAppHelp(self, script_name, module_name):
         script = UtilsTest.script_path(script_name, module_name)
         env = UtilsTest.get_test_env()
-        command_line = [sys.executable, script, "--help"]
+        if script.endswith(".exe"):
+            command_line = [script]
+        else:
+            command_line = [sys.executable, script]
+        command_line.append("--help")
         self.executeCommandLine(command_line, env)
 
     def testCheckCalib(self):
