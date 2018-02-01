@@ -93,7 +93,11 @@ class TestScriptsHelp(unittest.TestCase):
     def executeAppHelp(self, script_name, module_name):
         script = UtilsTest.script_path(script_name, module_name)
         env = UtilsTest.get_test_env()
-        command_line = [sys.executable, script, "--help"]
+        if script.endswith(".exe"):
+            command_line = [script]
+        else:
+            command_line = [sys.executable, script]
+        command_line.append("--help")
         self.executeCommandLine(command_line, env)
 
     def testCheckCalib(self):
