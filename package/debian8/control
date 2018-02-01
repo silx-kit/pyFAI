@@ -49,7 +49,7 @@ Build-Depends: cython,
                python3-scipy-dbg,
                python3-sphinx,
                python3-sphinxcontrib.programoutput,
-               python3-nbsphinx
+               python3-nbsphinx,
                help2man
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/pyfai.git

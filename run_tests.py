@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "24/01/2018"
+__date__ = "30/01/2018"
 __license__ = "MIT"
 
 import distutils.util
@@ -179,7 +179,7 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
                          time.time() - self.__time_start, memusage, test.id())
 
 
-def report_rst(cov, package, version="0.0.0", base=""):
+def report_rst(cov, package, version="0.0.0", base="", inject_xml=None):
     """
     Generate a report of test coverage in RST (for Sphinx inclusion)
 
@@ -188,11 +188,13 @@ def report_rst(cov, package, version="0.0.0", base=""):
     :param str base: base directory of modules to include in the report
     :return: RST string
     """
-    import tempfile
-    fd, fn = tempfile.mkstemp(suffix=".xml")
-    os.close(fd)
-    cov.xml_report(outfile=fn)
-
+    if inject_xml is None:
+        import tempfile
+        fd, fn = tempfile.mkstemp(suffix=".xml")
+        os.close(fd)
+        cov.xml_report(outfile=fn)
+    else:
+        fn = inject_xml
     from lxml import etree
     xml = etree.parse(fn)
     classes = xml.xpath("//class")
@@ -440,7 +442,7 @@ if options.coverage:
     cov.stop()
     cov.save()
     with open("coverage.rst", "w") as fn:
-        fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, os.path.join(PROJECT_PATH, "build")))
+        fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
     print(cov.report())
 
 sys.exit(exit_status)

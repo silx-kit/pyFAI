@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "01/02/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1530,9 +1530,11 @@ class AzimuthalIntegrator(Geometry):
         :type deviceid: int
         :param block_size: OpenCL grid size
         :type block_size: int
+        
         Unused/deprecated arguments:
+        
         :param padded: deprecated
-
+        
         :return: (2theta, I) in degrees
         :rtype: 2-tuple of 1D arrays
 

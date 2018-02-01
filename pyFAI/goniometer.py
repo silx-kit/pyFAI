@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "01/02/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -80,6 +80,7 @@ class GeometryTransformation(object):
                  param_names, pos_names=None, constants=None,
                  content=None):
         """Constructor of the class
+        
         :param dist_expr: formula (as string) providing with the dist
         :param poni1_expr: formula (as string) providing with the poni1
         :param poni2_expr: formula (as string) providing with the poni2
@@ -90,7 +91,7 @@ class GeometryTransformation(object):
         :param pos_names: list of motor names for gonio with >1 degree of freedom
         :param constants: a dictionary with some constants the user may want to use
         :param content: Should be None or the name of the class (may be used
-            in the future to dispatch to multiple derivative classes)
+                        in the future to dispatch to multiple derivative classes)
         """
         if content is not None:
             # Ensures we use the constructor of the right class

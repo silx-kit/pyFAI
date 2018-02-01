@@ -66,7 +66,7 @@ If you installed python 2.7.10, 3.4 or newer, PIP is already installed.
 If **pip** is not yet installed on your system, download
 `get_pip.py <https://bootstrap.pypa.io/get-pip.py>`_ and run it:
 
-.. code::
+.. code-block:: shell
 
    python get-pip.py
 
@@ -104,7 +104,7 @@ Using PIP
 
 Most of the dependencies are available via PIP:
 
-.. code::
+.. code-block:: shell
 
    pip install numpy --upgrade
    pip install scipy --upgrade
@@ -122,9 +122,9 @@ The generalization of Wheel packages should help and the installation of binary
 modules should become easier.
 
 **Nota:** This requires a network access and correct proxy settings.
-At ESRF, please get in contact with the hotline (24-24) to retrive those information.
+At ESRF, please get in contact with the hotline (24-24) to retrieve those information.
 
-.. code::
+.. code-block:: shell
 
     set http_proxy=http://proxy.site.com:3128
     set https_proxy=http://proxy.site.com:3128
@@ -143,13 +143,13 @@ makes his packages faster then what you would get by simply recompiling them.
 Christoph now provides packages as wheels.
 To install them, download the wheels and use PIP:
 
-.. code::
+.. code-block:: shell
 
     pip install numpy*.whl
 
 Alternatively, you can use the wheelhouse of the silx project:
 
-.. code::
+.. code-block:: shell
 
    pip install --trusted-host www.silx.org --find-links http://www.silx.org/pub/wheelhouse/ numpy scipy matplotlib fabio PyQt5
 
@@ -158,10 +158,9 @@ Install pyFAI via PIP
 
 The latest stable release of pyFAI should also be PIP-installable (starting at version 0.10.3):
 
-.. code::
+.. code-block:: shell
 
-   pip install pyFAI --upgrade
-
+   pip install numpy scipy matplotlib fabio silx h5py PyQt5 pyFAI --upgrade
 
 
 Install pyFAI from sources
@@ -176,7 +175,7 @@ http://aka.ms/vcpython27
 
 To upgrade the C-code in pyFAI, one needs in addition Cython:
 
-.. code::
+.. code-block:: shell
 
    pip install cython --upgrade
    python setup.py bdist_wheel

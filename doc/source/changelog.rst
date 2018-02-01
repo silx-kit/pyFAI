@@ -1,9 +1,22 @@
 :Author: Jérôme Kieffer
-:Date: 14/09/2017
+:Date: 01/02/2018
 :Keywords: changelog
 
 ChangeLog of Versions
 =====================
+
+0.15.0: 01/02/2018
+------------------
+* 150 commits since last revision
+* New tutorials on image inpainting, sensor thickness correction, ... 
+* Improve scripts
+* Improve the new calibration GUI (pyFAI-calib2)
+* Use scipy physical constants instead of hard-coded values
+* Improved detector serialization and binning assessement
+* Update documentation (images, better rendering of notebook & tutorials)
+* Converge project with silx and fabio
+* Remove generated rst- and C-files from repository
+* This is the last version supporting python2.7
 
 0.14.2: 14/09/2017
 ------------------
