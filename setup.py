@@ -25,7 +25,7 @@
 # ###########################################################################*/
 
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "01/02/2018"
 __status__ = "stable"
 
 
@@ -812,7 +812,7 @@ def get_project_configuration(dry_run):
           Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
           Vicente Armando Sole (algorithm), \
           Dimitris Karkoulis (GPU), Jon Wright (adaptations) \
-          and Frederic-Emmanuel Picca",
+          Frederic-Emmanuel Picca and Valentin Valls",
                         author_email="jerome.kieffer@esrf.fr",
                         classifiers=classifiers,
                         description='Python implementation of fast azimuthal integration',
