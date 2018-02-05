@@ -45,7 +45,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "05/02/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -203,7 +203,8 @@ class Writer(object):
 
         if type(json_config) in StringTypes:
             if os.path.isfile(json_config):
-                config = json.load(open(json_config, "r"))
+                with open(json_config, "r") as f:
+                    config = json.load(f)
             else:
                 config = json.loads(json_config)
         else:

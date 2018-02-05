@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "05/02/2018"
 
 
 import unittest
@@ -97,7 +97,8 @@ class TestPeakPicking(unittest.TestCase):
     def test_peakPicking(self):
         """first test peak-picking then checks the geometry found is OK"""
         for i in self.ctrlPt:
-            pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(self.logfile, "a"))
+            with open(self.logfile, "a") as log:
+                pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=log)
             logger.info("point %s at ring #%i (tth=%.1f deg) generated %i points", self.ctrlPt[i], i, self.tth[i], len(pts))
             if len(pts) > 0:
                 self.pp.points.append(pts, ring=i)

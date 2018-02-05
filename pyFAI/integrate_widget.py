@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "05/02/2018"
 __status__ = "development"
 
 import logging
@@ -492,7 +492,8 @@ class AIWidget(qt.QWidget):
         if not op.isfile(filename):
             logger.error("No such file: %s", filename)
             return
-        data = json.load(open(filename))
+        with open(filename) as f:
+            data = json.load(f)
         self.set_config(data)
 
     def set_config(self, dico):

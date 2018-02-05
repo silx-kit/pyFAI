@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "05/02/2018"
 __status__ = "development"
 
 import threading
@@ -195,7 +195,8 @@ class Worker(object):
 #            self.config = config
 #        elif type(config) in types.StringTypes:
 #            if os.path.isfile(config):
-#                self.config = json.load(open(config, "r"))
+#                with open(config, "r") as f:
+#                    self.config = json.load(f)
 #                self.config_file(config)
 #            else:
 #                self.config = json.loads(config)
@@ -383,7 +384,8 @@ class Worker(object):
     def setJsonConfig(self, jsonconfig):
         print("start config ...")
         if os.path.isfile(jsonconfig):
-            config = json.load(open(jsonconfig, "r"))
+            with open(jsonconfig, "r") as f:
+                config = json.load(f)
         else:
             config = json.loads(jsonconfig)
         if "poni" in config:
