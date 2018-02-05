@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "05/02/2018"
 
 import unittest
 import os
@@ -51,7 +51,7 @@ from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..detectors import Detector
-if logger.getEffectiveLevel() <= logging.INFO:
+if logger.getEffectiveLevel() <= logging.DEBUG:
     import pylab
 from pyFAI import units
 from ..utils import mathutil
