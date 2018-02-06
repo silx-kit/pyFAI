@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "05/02/2018"
 __satus__ = "production"
 import sys
 import logging
@@ -111,7 +111,8 @@ def get_monitor_value(image, monitor_key):
 
 def integrate_shell(options, args):
     import json
-    config = json.load(open(options.json))
+    with open(options.json) as f:
+        config = json.load(f)
 
     ai = pyFAI.worker.make_ai(config)
     worker = pyFAI.worker.Worker(azimuthalIntegrator=ai)

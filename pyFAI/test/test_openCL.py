@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "05/02/2018"
 
 
 import unittest
@@ -94,7 +94,8 @@ class TestMask(unittest.TestCase):
                          ]
         for ds in self.datasets:
             if ds["spline"] is not None:
-                data = open(ds["poni"], "r").read()
+                with open(ds["poni"], "r") as ponifile:
+                    data = ponifile.read()
                 # spline = os.path.basename(ds["spline"])
                 with open(ds["poni"]) as f:
                     data = []
