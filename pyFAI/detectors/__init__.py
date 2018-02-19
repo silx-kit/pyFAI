@@ -49,3 +49,11 @@ from ._others import *
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
 load = NexusDetector.sload
+
+# Expose all the classes, else it is not part of the documentation
+import inspect
+__all = locals().items()
+__all = filter(lambda i: inspect.isclass(i[1]), __all)
+__all = filter(lambda i: issubclass(i[1], Detector), __all)
+__all = ["ALL_DETECTORS", "detector_factory", "load"] + [k for k, v in __all]
+__all__ = __all
