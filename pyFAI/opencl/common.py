@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "20/02/2018"
 __status__ = "stable"
 __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
            "measure_workgroup_size", "kernel_workgroup_size"]
@@ -47,9 +47,12 @@ import numpy
 logger = logging.getLogger(__name__)
 
 from .utils import get_opencl_code
+import pyFAI
 
-if os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
-    logger.warning("Use of OpenCL has been disables from environment variable: SILX_OPENCL=0")
+if not pyFAI.use_opencl:
+    pyopencl = None
+elif os.environ.get("PYFAI_OPENCL") in ["0", "False"]:
+    logger.warning("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
     pyopencl = None
 else:
     try:
@@ -60,6 +63,7 @@ else:
     else:
         import pyopencl.array as array
         mf = pyopencl.mem_flags
+
 if pyopencl is None:
     # create a dummy object
     class mf(object):

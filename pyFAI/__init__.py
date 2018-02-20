@@ -56,6 +56,17 @@ if sys.version_info < (2, 6):
 from .utils import decorators
 
 
+use_opencl = True
+"""Global configuration which allow to disable OpenCL programatically.
+It must be set before requesting any OpenCL modules.
+
+.. code-block:: python
+
+    import pyFAI
+    pyFAI.use_opencl = False
+"""
+
+
 @decorators.deprecated(replacement="pyFAI.azimuthalIntegrator.AzimuthalIntegrator", since_version="0.16")
 def AzimuthalIntegrator(*args, **kwargs):
     from .azimuthalIntegrator import AzimuthalIntegrator
