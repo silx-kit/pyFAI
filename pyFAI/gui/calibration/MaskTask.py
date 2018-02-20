@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "30/05/2017"
+__date__ = "20/02/2018"
 
 import logging
 from silx.gui import qt
@@ -36,7 +36,6 @@ from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTas
 
 import silx.gui.plot
 from silx.gui.plot.PlotTools import PositionInfo
-from silx.gui.plot import PlotActions
 
 _logger = logging.getLogger(__name__)
 
@@ -100,16 +99,20 @@ class MaskTask(AbstractCalibrationTask):
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
 
-        toolBar.addAction(PlotActions.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(PlotActions.ZoomInAction(plot, toolBar))
-        toolBar.addAction(PlotActions.ZoomOutAction(plot, toolBar))
+        from silx.gui.plot.actions import control
+        from silx.gui.plot.actions import io
+        from silx.gui.plot.actions import histogram
+
+        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
+        toolBar.addAction(control.ZoomInAction(plot, toolBar))
+        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
         toolBar.addSeparator()
-        toolBar.addAction(PlotActions.ColormapAction(plot, toolBar))
-        toolBar.addAction(PlotActions.PixelIntensitiesHistoAction(plot, toolBar))
+        toolBar.addAction(control.ColormapAction(plot, toolBar))
+        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
         toolBar.addSeparator()
-        toolBar.addAction(PlotActions.CopyAction(plot, toolBar))
-        toolBar.addAction(PlotActions.SaveAction(plot, toolBar))
-        toolBar.addAction(PlotActions.PrintAction(plot, toolBar))
+        toolBar.addAction(io.CopyAction(plot, toolBar))
+        toolBar.addAction(io.SaveAction(plot, toolBar))
+        toolBar.addAction(io.PrintAction(plot, toolBar))
 
         return toolBar
 
