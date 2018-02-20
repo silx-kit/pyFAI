@@ -36,7 +36,7 @@ import logging
 from contextlib import contextmanager
 from collections import OrderedDict
 import silx.gui.plot
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.model.WavelengthToEnergyAdaptor import WavelengthToEnergyAdaptor

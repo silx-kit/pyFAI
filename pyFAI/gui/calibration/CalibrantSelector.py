@@ -29,7 +29,7 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "17/03/2017"
 
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.calibrant
 from .model.CalibrantModel import CalibrantModel
 

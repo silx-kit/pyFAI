@@ -27,13 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/11/2017"
+__date__ = "20/02/2018"
 
 import logging
 import numpy
 import functools
-from pyFAI.gui import qt
-from pyFAI.gui import icons
+from silx.gui import qt
+from silx.gui import icons
 import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -477,8 +477,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
 
-        self._ringSelectionMode.setIcon(icons.getQIcon("search-ring"))
-        self._peakSelectionMode.setIcon(icons.getQIcon("search-peak"))
+        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
         self.__peakSelectionView = None
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
@@ -621,7 +621,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         menu.addAction(savePeaksAsFile)
 
         options = qt.QToolButton(self)
-        icon = icons.getQIcon('options')
+        icon = icons.getQIcon('pyfai:gui/icons/options')
         options.setIcon(icon)
         options.setPopupMode(qt.QToolButton.InstantPopup)
         options.setMenu(menu)

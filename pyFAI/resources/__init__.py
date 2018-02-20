@@ -117,3 +117,18 @@ def resource_filename(resource):
                             *resource.split('/'))
     else:  # Preferred way to get resources as it supports zipfile package
         return pkg_resources.resource_filename(__name__, resource)
+
+
+_integrated = False
+
+
+def silx_integration():
+    """Provide pyFAI resources accessible throug silx using a prefix."""
+    global _integrated
+    if _integrated:
+        return
+    import silx.resources
+    silx.resources.register_resource_directory("pyfai",
+                                               __name__,
+                                               _RESOURCES_DIR)
+    _integrated = True

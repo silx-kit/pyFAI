@@ -68,7 +68,7 @@ except ImportError:
 
 
 def integrate_gui(options, args):
-    from pyFAI.gui import qt
+    from silx.gui import qt
     from pyFAI.integrate_widget import AIWidget
 
     app = qt.QApplication([])

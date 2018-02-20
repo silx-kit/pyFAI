@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "20/02/2018"
 
 import os
 import sys
@@ -43,7 +43,7 @@ import numpy
 import logging
 
 try:
-    from ..gui import qt
+    from silx.gui import qt
 except ImportError:
     qt = None
 

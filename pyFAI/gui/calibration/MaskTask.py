@@ -30,7 +30,7 @@ __license__ = "MIT"
 __date__ = "30/05/2017"
 
 import logging
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 

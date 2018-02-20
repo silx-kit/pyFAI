@@ -52,7 +52,7 @@ from collections import OrderedDict
 logger = logging.getLogger(__name__)
 
 try:
-    from .gui import qt
+    from silx.gui import qt
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     qt = None

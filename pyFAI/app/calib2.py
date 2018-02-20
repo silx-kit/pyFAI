@@ -46,9 +46,10 @@ logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI-calib2")
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
-from pyFAI.gui import qt
+from silx.gui import qt
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 
+import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.calibration
 import fabio
@@ -400,6 +401,7 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
 def main():
     sys.excepthook = logUncaughtExceptions
     app = qt.QApplication([])
+    pyFAI.resources.silx_integration()
     widget = CalibrationWindow()
     setup(widget.model())
     widget.setVisible(True)

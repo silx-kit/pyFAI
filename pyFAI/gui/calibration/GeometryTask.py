@@ -27,13 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/06/2017"
+__date__ = "20/02/2018"
 
 import logging
 import numpy
 
-from pyFAI.gui import qt
-from pyFAI.gui import icons
+from silx.gui import qt
+from silx.gui import icons
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
@@ -73,11 +73,11 @@ class FitParamView(qt.QObject):
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
         if _iconVariableFixed is None:
-            _iconVariableFixed = icons.getQIcon("variable-fixed")
+            _iconVariableFixed = icons.getQIcon("pyfai:gui/icons/variable-fixed")
         if _iconVariableConstrained is None:
-            _iconVariableConstrained = icons.getQIcon("variable-constrained")
+            _iconVariableConstrained = icons.getQIcon("pyfai:gui/icons/variable-constrained")
         if _iconVariableConstrainedOut is None:
-            _iconVariableConstrainedOut = icons.getQIcon("variable-constrained-out")
+            _iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
 
     def __lineEditChanged(self):
         value = self.__lineEdit.text()

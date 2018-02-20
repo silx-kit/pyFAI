@@ -33,7 +33,7 @@ from __future__ import absolute_import
 
 __authors__ = ["T. Vincent"]
 __license__ = "MIT"
-__date__ = "26/10/2016"
+__date__ = "20/02/2018"
 
 
 import sys
@@ -47,7 +47,7 @@ if 'matplotlib' in sys.modules:
         'matplotlib already loaded, setting its backend may not work')
 
 
-from . import qt
+from silx.gui import qt
 
 import matplotlib
 

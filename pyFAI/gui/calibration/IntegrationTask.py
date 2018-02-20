@@ -33,7 +33,7 @@ import logging
 import numpy
 from collections import OrderedDict
 from .model.DataModel import DataModel
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator

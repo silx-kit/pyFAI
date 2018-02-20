@@ -59,7 +59,7 @@ def main():
         dt.process()
         dt.show_stats()
     else:
-        from pyFAI.gui import qt
+        from silx.gui import qt
         from pyFAI.diffmap_widget import DiffMapWidget
         app = qt.QApplication([])
         window = DiffMapWidget()

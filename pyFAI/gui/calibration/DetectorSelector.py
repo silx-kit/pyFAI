@@ -29,7 +29,7 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "23/01/2018"
 
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.detectors
 from .model.DetectorModel import DetectorModel
 
