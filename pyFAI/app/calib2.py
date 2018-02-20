@@ -47,6 +47,9 @@ logger = logging.getLogger("pyFAI-calib2")
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
 from silx.gui import qt
+# Make sure matplotlib is loaded first by silx
+import silx.gui.plot.matplotlib
+
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 
 import pyFAI.resources
