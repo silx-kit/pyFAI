@@ -32,7 +32,7 @@ Test coverage dependencies: coverage, lxml.
 """
 
 __authors__ = ["Jérôme Kieffer", "Thomas Vincent"]
-__date__ = "30/01/2018"
+__date__ = "20/02/2018"
 __license__ = "MIT"
 
 import distutils.util
@@ -177,6 +177,57 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
             memusage = 0
         self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s",
                          time.time() - self.__time_start, memusage, test.id())
+
+
+def report_uncovered_files(cov, build_dir, inject_xml=None):
+    """
+    Generate a report of all modules uncovered by the tests
+
+    :param cov: test coverage instance
+    :param str build_dir: Build directory
+    :return: Text report
+    """
+    import fnmatch
+
+    existing_files = []
+    for root, _dirnames, filenames in os.walk(PROJECT_NAME):
+        for filename in fnmatch.filter(filenames, '*.py'):
+            existing_files.append(os.path.join(root, filename))
+    existing_files = filter(lambda x: not x.endswith("/setup.py"), existing_files)
+    existing_files = filter(lambda x: "/test/" not in x, existing_files)
+    existing_files = filter(lambda x: "/third_party/" not in x, existing_files)
+
+    if inject_xml is None:
+        import tempfile
+        fd, fn = tempfile.mkstemp(suffix=".xml")
+        os.close(fd)
+        cov.xml_report(outfile=fn)
+    else:
+        fn = inject_xml
+    from lxml import etree
+    xml = etree.parse(fn)
+    classes = xml.xpath("//class")
+
+    build_dir = os.path.abspath(build_dir)
+
+    covered_files = []
+
+    for cl in classes:
+        filename = cl.get("filename")
+        filename = os.path.abspath(filename)
+        if filename.startswith(build_dir):
+            filename = filename[len(build_dir) + 1:]
+            covered_files.append(filename)
+
+    uncovered_files = set(existing_files) - set(covered_files)
+    uncovered_files = sorted(list(uncovered_files))
+    text = ""
+    text += "Uncovered files (%d)\n" % len(uncovered_files)
+    text += "-" * (len(text) - 1) + "\n"
+    for filename in uncovered_files:
+        text += "* %s\n" % filename
+
+    return text
 
 
 def report_rst(cov, package, version="0.0.0", base="", inject_xml=None):
@@ -350,9 +401,12 @@ if options.coverage:
     logger.info("Running test-coverage")
     import coverage
     try:
-        cov = coverage.Coverage(omit=["*test*", "*third_party*", "*/setup.py"])
+        coverage_class = coverage.Coverage
     except AttributeError:
-        cov = coverage.coverage(omit=["*test*", "*third_party*", "*/setup.py"])
+        coverage_class = coverage.coverage
+    print("|%s|" % PROJECT_NAME)
+    cov = coverage_class(include=["*/%s/*" % PROJECT_NAME],
+                         omit=["*test*", "*third_party*", "*/setup.py"])
     cov.start()
 
 
@@ -444,5 +498,7 @@ if options.coverage:
     with open("coverage.rst", "w") as fn:
         fn.write(report_rst(cov, PROJECT_NAME, PROJECT_VERSION, PROJECT_PATH))
     print(cov.report())
+    print("")
+    print(report_uncovered_files(cov, build_dir))
 
 sys.exit(exit_status)
