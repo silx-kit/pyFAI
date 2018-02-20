@@ -482,7 +482,6 @@ class TestSetter(unittest.TestCase):
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
-    testsuite.addTest(loader(TestAzimuthalIntegrator))
     testsuite.addTest(loader(TestAzimHalfFrelon))
     testsuite.addTest(loader(TestFlatimage))
     testsuite.addTest(loader(TestSetter))

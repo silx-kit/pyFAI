@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "12/01/2018"
+__date__ = "20/02/2018"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -49,7 +49,7 @@ import logging
 # To use use the locally build version of PyFAI, use ../bootstrap.py
 
 from .. import load
-from .. import AzimuthalIntegrator
+from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..utils import mathutil
 from ..test import utilstest
 from ..opencl import pyopencl, ocl
