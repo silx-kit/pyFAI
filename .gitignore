@@ -7,20 +7,16 @@
 /profile.log
 
 # Packages
-*.egg
-*.egg-info
+/*.egg
+/*.egg-info
 /dist
 /build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
+/eggs
+/develop-eggs
+/.installed.cfg
 
 # Installer logs
-pip-log.txt
+/pip-log.txt
 
 # Unit test / coverage reports
 .coverage
@@ -38,6 +34,7 @@ pip-log.txt
 # gvim crap
 *~
 *.swp
+.*
 
 # Notebook
 .ipynb_checkpoints
@@ -45,4 +42,3 @@ pip-log.txt
 
 #discard generated C-files
 /pyFAI/ext/*.c
- 
