@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/01/2018"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 import logging
@@ -51,13 +51,14 @@ if ("hexversion" in dir(fabio)) and (fabio.hexversion >= calc_hexversion(0, 2, 2
 else:
     from os.path import exists
 
+logger = logging.getLogger(__name__)
+
 from ..third_party import six
 try:
     from ..directories import data_dir
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     data_dir = None
-
-logger = logging.getLogger(__name__)
 
 if sys.platform != "win32":
     WindowsError = RuntimeError
@@ -69,6 +70,7 @@ StringTypes = (six.binary_type, six.text_type)
 try:
     from ..ext.fastcrc import crc32
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     from zlib import crc32
 
 # TODO: Added on 2018-01-01 for pyFAI 0.15

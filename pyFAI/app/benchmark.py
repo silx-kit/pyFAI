@@ -35,15 +35,19 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "20/02/2018"
 __status__ = "development"
 
 import logging
+logging.basicConfig(level=logging.INFO)
+logging.captureWarnings(True)
+logger = logging.getLogger("pyFAI.benchmark")
+
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
 except ImportError:
-    print("No socket opened for debugging -> please install rfoo")
+    logger.debug("No socket opened for debugging. Please install rfoo")
 
 from pyFAI.third_party import six
 import pyFAI.benchmark

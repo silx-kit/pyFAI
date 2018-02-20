@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2018"
+__date__ = "20/02/2018"
 __status__ = "stable"
 
 
@@ -51,21 +51,20 @@ from .. import spline
 from .. import utils
 from .. import average
 from ..utils import binning, expand2d, crc32
+from ..third_party.six import with_metaclass
 
 logger = logging.getLogger(__name__)
 
 try:
     import fabio
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     fabio = None
 try:
     from ..ext import bilinear
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     bilinear = None
-try:
-    from ..third_party.six import with_metaclass
-except ImportError:
-    from six import with_metaclass
 
 
 EPSILON = 1e-6

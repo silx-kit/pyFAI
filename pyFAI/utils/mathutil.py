@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 import logging
@@ -49,6 +49,7 @@ from .decorators import deprecated
 try:
     from ..ext import relabel as _relabel
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     _relabel = None
 
 
@@ -656,6 +657,7 @@ try:
     from numpy import percentile
 except ImportError:
     # backport percentile from numpy 1.6.2
+    logger.debug("Backtrace", exc_info=True)
     percentile = _numpy_backport_percentile
 
 

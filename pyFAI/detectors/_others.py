@@ -36,21 +36,21 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2018"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 
 import numpy
+import logging
+logger = logging.getLogger(__name__)
+
 from ._common import Detector
 from pyFAI.utils import mathutil
-
 try:
     from ..ext import bilinear
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     bilinear = None
-
-import logging
-logger = logging.getLogger(__name__)
 
 
 class Fairchild(Detector):

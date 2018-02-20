@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "20/02/2018"
 __status__ = "development"
 
 import os
@@ -50,6 +50,9 @@ from .calibrant import Calibrant, CALIBRANT_FACTORY
 from .utils.ellipse import fit_ellipse
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp
+
+logger = logging.getLogger(__name__)
+
 try:
     from scipy.optimize import basinhopping as anneal
 except ImportError:
@@ -57,13 +60,12 @@ except ImportError:
 try:
     from scipy.optimize import curve_fit
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     curve_fit = None
 
 if os.name != "nt":
     WindowsError = RuntimeError
 
-logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
 ROCA = "/opt/saxs/roca"
 
 ####################

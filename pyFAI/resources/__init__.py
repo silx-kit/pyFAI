@@ -53,11 +53,14 @@ of this modules to ensure access across different distribution schemes:
 
 __authors__ = ["V.A. Sole", "Thomas Vincent"]
 __license__ = "MIT"
-__date__ = "01/07/2016"
+__date__ = "20/02/2018"
 
 
 import os
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 # pkg_resources is useful when this package is stored in a zip
 # When pkg_resources is not available, the resources dir defaults to the
@@ -65,6 +68,7 @@ import sys
 try:
     import pkg_resources
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     pkg_resources = None
 
 

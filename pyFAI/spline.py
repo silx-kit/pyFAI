@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "12/01/2018"
+__date__ = "20/02/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -46,13 +46,15 @@ import numpy
 import logging
 import scipy.optimize
 import scipy.interpolate
+
+logger = logging.getLogger(__name__)
+
 try:
     # multithreaded version in Cython: about 2x faster on large array evaluation
     from . import _bispev as fitpack
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     from scipy.interpolate import fitpack
-import traceback
-logger = logging.getLogger(__name__)
 
 
 class Spline(object):
@@ -245,8 +247,8 @@ class Spline(object):
                     self.ySplineCoeff = numpy.array(databloc[splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
                 # Keep this at the end
                 indexLine += 1
-        except:
-            traceback.print_exc()
+        except Exception:
+            logger.error("Error while reading file", exc_info=True)
             raise IOError("Spline File parsing error: %s" % (filename))
 
     def comparison(self, ref, verbose=False):

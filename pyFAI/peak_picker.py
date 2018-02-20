@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 import os
@@ -49,9 +49,12 @@ import operator
 import numpy
 from collections import OrderedDict
 
+logger = logging.getLogger(__name__)
+
 try:
     from .gui import qt
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     qt = None
 
 if qt is not None:
@@ -67,7 +70,6 @@ from .ext.reconstruct import reconstruct
 from .ext.watershed import InverseWatershed
 from .third_party import six
 
-logger = logging.getLogger(__name__)
 if os.name != "nt":
     WindowsError = RuntimeError
 

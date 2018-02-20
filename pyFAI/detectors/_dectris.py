@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2018"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 
@@ -48,6 +48,7 @@ from pyFAI.utils import mathutil
 try:
     import fabio
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     fabio = None
 
 
