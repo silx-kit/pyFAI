@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/02/2018"
+__date__ = "28/02/2018"
 __status__ = "stable"
 
 
@@ -52,8 +52,5 @@ load = NexusDetector.sload
 
 # Expose all the classes, else it is not part of the documentation
 import inspect
-__all = locals().items()
-__all = filter(lambda i: inspect.isclass(i[1]), __all)
-__all = filter(lambda i: issubclass(i[1], Detector), __all)
-__all = ["ALL_DETECTORS", "detector_factory", "load"] + [k for k, v in __all]
-__all__ = __all
+_detector_class_names = [i[0] for i in locals().items() if inspect.isclass(i[1]) and issubclass(i[1], Detector)]
+__all__ = _detector_class_names + ["ALL_DETECTORS", "detector_factory", "load"]
