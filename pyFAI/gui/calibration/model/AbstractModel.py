@@ -29,7 +29,7 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "28/02/2017"
 
-from pyFAI.gui import qt
+from silx.gui import qt
 
 
 class AbstractModel(qt.QObject):

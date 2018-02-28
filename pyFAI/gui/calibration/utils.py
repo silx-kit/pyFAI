@@ -30,7 +30,7 @@ __license__ = "MIT"
 __date__ = "24/05/2017"
 
 
-from pyFAI.gui import qt
+from silx.gui import qt
 from pyFAI import units
 import numpy
 import collections

@@ -30,7 +30,7 @@ __license__ = "MIT"
 __date__ = "09/06/2017"
 
 import logging
-from pyFAI.gui import qt
+from silx.gui import qt
 
 _logger = logging.getLogger(__name__)
 

@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/01/2018"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 import os
@@ -77,15 +77,16 @@ from .calibrant import Calibrant, CALIBRANT_FACTORY
 try:
     from ._convolution import gaussian_filter
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     from scipy.ndimage.filters import gaussian_filter
 
 try:
     from . import morphology
+    pyFAI_morphology = True
 except ImportError:
+    logger.debug("Backtrace", exc_info=True)
     from scipy.ndimage import morphology
     pyFAI_morphology = False
-else:
-    pyFAI_morphology = True
 
 from .ext.marchingsquares import isocontour
 

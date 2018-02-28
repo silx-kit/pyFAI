@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2018"
+__date__ = "20/02/2018"
 
 import unittest
 import logging
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 from ..third_party import six
 from ..calibrant import Calibrant, get_calibrant, Cell, CALIBRANT_FACTORY
 from ..detectors import ALL_DETECTORS
-from .. import AzimuthalIntegrator
+from ..azimuthalIntegrator import AzimuthalIntegrator
 
 
 class TestCalibrant(unittest.TestCase):

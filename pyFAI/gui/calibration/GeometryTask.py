@@ -27,20 +27,19 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "13/06/2017"
+__date__ = "20/02/2018"
 
 import logging
 import numpy
 
-from pyFAI.gui import qt
-from pyFAI.gui import icons
+from silx.gui import qt
+from silx.gui import icons
 import pyFAI.utils
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
 from pyFAI.gui.calibration.RingCalibration import RingCalibration
 
 import silx.gui.plot
 from silx.gui.plot.PlotTools import PositionInfo
-from silx.gui.plot import PlotActions
 from . import utils
 from . import validators
 
@@ -73,11 +72,11 @@ class FitParamView(qt.QObject):
 
         global _iconVariableFixed, _iconVariableConstrained, _iconVariableConstrainedOut
         if _iconVariableFixed is None:
-            _iconVariableFixed = icons.getQIcon("variable-fixed")
+            _iconVariableFixed = icons.getQIcon("pyfai:gui/icons/variable-fixed")
         if _iconVariableConstrained is None:
-            _iconVariableConstrained = icons.getQIcon("variable-constrained")
+            _iconVariableConstrained = icons.getQIcon("pyfai:gui/icons/variable-constrained")
         if _iconVariableConstrainedOut is None:
-            _iconVariableConstrainedOut = icons.getQIcon("variable-constrained-out")
+            _iconVariableConstrainedOut = icons.getQIcon("pyfai:gui/icons/variable-constrained-out")
 
     def __lineEditChanged(self):
         value = self.__lineEdit.text()
@@ -268,16 +267,20 @@ class GeometryTask(AbstractCalibrationTask):
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
 
-        toolBar.addAction(PlotActions.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(PlotActions.ZoomInAction(plot, toolBar))
-        toolBar.addAction(PlotActions.ZoomOutAction(plot, toolBar))
+        from silx.gui.plot.actions import control
+        from silx.gui.plot.actions import io
+        from silx.gui.plot.actions import histogram
+
+        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
+        toolBar.addAction(control.ZoomInAction(plot, toolBar))
+        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
         toolBar.addSeparator()
-        toolBar.addAction(PlotActions.ColormapAction(plot, toolBar))
-        toolBar.addAction(PlotActions.PixelIntensitiesHistoAction(plot, toolBar))
+        toolBar.addAction(control.ColormapAction(plot, toolBar))
+        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
         toolBar.addSeparator()
-        toolBar.addAction(PlotActions.CopyAction(plot, toolBar))
-        toolBar.addAction(PlotActions.SaveAction(plot, toolBar))
-        toolBar.addAction(PlotActions.PrintAction(plot, toolBar))
+        toolBar.addAction(io.CopyAction(plot, toolBar))
+        toolBar.addAction(io.SaveAction(plot, toolBar))
+        toolBar.addAction(io.PrintAction(plot, toolBar))
 
         return toolBar
 

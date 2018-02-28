@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2018"
+__date__ = "20/02/2018"
 
 import sys
 import unittest
@@ -45,14 +45,14 @@ from pyFAI.test.utilstest import UtilsTest
 _logger = logging.getLogger(__name__)
 
 try:
-    from ..gui import qt
-except ImportError:
-    qt = None
-
-try:
     import silx
 except ImportError:
     silx = None
+
+try:
+    from silx.gui import qt
+except ImportError:
+    qt = None
 
 
 class TestScriptsHelp(unittest.TestCase):

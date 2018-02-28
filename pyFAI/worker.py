@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2018"
+__date__ = "20/02/2018"
 __status__ = "development"
 
 import threading
@@ -172,8 +172,8 @@ class Worker(object):
                  unit="r_mm", dummy=None, delta_dummy=None,
                  azimuthalIntgrator=None):
         """
-        :param azimuthalIntegrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance
-        :param azimuthalIntgrator AzimuthalIntegrator: pyFAI.AzimuthalIntegrator instance (deprecated)
+        :param AzimuthalIntegrator azimuthalIntegrator: An AzimuthalIntegrator instance
+        :param AzimuthalIntegrator azimuthalIntgrator: An AzimuthalIntegrator instance (deprecated)
         :param shapeIn: image size in input
         :param shapeOut: Integrated size: can be (1,2000) for 1D integration
         :param unit: can be "2th_deg, r_mm or q_nm^-1 ...

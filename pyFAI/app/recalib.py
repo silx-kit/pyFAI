@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "20/02/2018"
 __satus__ = "development"
 
 import logging
@@ -52,7 +52,7 @@ try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
 except ImportError:
-    logging.debug("No socket opened for debugging -> install rfoo")
+    logger.debug("No socket opened for debugging -> install rfoo")
 
 
 def main():

@@ -27,13 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "24/11/2017"
+__date__ = "20/02/2018"
 
 import logging
 import numpy
 import functools
-from pyFAI.gui import qt
-from pyFAI.gui import icons
+from silx.gui import qt
+from silx.gui import icons
 import pyFAI.utils
 import pyFAI.massif
 from pyFAI.gui.calibration.AbstractCalibrationTask import AbstractCalibrationTask
@@ -45,7 +45,6 @@ import pyFAI.control_points
 import silx.gui.plot
 import os
 from silx.gui.plot.PlotTools import PositionInfo
-from silx.gui.plot import PlotActions
 from . import utils
 
 _logger = logging.getLogger(__name__)
@@ -477,8 +476,8 @@ class PeakPickingTask(AbstractCalibrationTask):
         layout.setContentsMargins(1, 1, 1, 1)
         self._imageHolder.setLayout(layout)
 
-        self._ringSelectionMode.setIcon(icons.getQIcon("search-ring"))
-        self._peakSelectionMode.setIcon(icons.getQIcon("search-peak"))
+        self._ringSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-ring"))
+        self._peakSelectionMode.setIcon(icons.getQIcon("pyfai:gui/icons/search-peak"))
         self.__peakSelectionView = None
         self.__plot.sigPlotSignal.connect(self.__onPlotEvent)
 
@@ -621,7 +620,7 @@ class PeakPickingTask(AbstractCalibrationTask):
         menu.addAction(savePeaksAsFile)
 
         options = qt.QToolButton(self)
-        icon = icons.getQIcon('options')
+        icon = icons.getQIcon('pyfai:gui/icons/options')
         options.setIcon(icon)
         options.setPopupMode(qt.QToolButton.InstantPopup)
         options.setMenu(menu)
@@ -630,16 +629,20 @@ class PeakPickingTask(AbstractCalibrationTask):
     def __createPlotToolBar(self, plot):
         toolBar = qt.QToolBar("Plot tools", plot)
 
-        toolBar.addAction(PlotActions.ResetZoomAction(plot, toolBar))
-        toolBar.addAction(PlotActions.ZoomInAction(plot, toolBar))
-        toolBar.addAction(PlotActions.ZoomOutAction(plot, toolBar))
+        from silx.gui.plot.actions import control
+        from silx.gui.plot.actions import io
+        from silx.gui.plot.actions import histogram
+
+        toolBar.addAction(control.ResetZoomAction(plot, toolBar))
+        toolBar.addAction(control.ZoomInAction(plot, toolBar))
+        toolBar.addAction(control.ZoomOutAction(plot, toolBar))
         toolBar.addSeparator()
-        toolBar.addAction(PlotActions.ColormapAction(plot, toolBar))
-        toolBar.addAction(PlotActions.PixelIntensitiesHistoAction(plot, toolBar))
+        toolBar.addAction(control.ColormapAction(plot, toolBar))
+        toolBar.addAction(histogram.PixelIntensitiesHistoAction(plot, toolBar))
         toolBar.addSeparator()
-        toolBar.addAction(PlotActions.CopyAction(plot, toolBar))
-        toolBar.addAction(PlotActions.SaveAction(plot, toolBar))
-        toolBar.addAction(PlotActions.PrintAction(plot, toolBar))
+        toolBar.addAction(io.CopyAction(plot, toolBar))
+        toolBar.addAction(io.SaveAction(plot, toolBar))
+        toolBar.addAction(io.PrintAction(plot, toolBar))
 
         stretch = qt.QWidget(self)
         stretch.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Fixed)

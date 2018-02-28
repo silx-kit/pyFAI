@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "20/02/2018"
 __satus__ = "development"
 
 
@@ -58,6 +58,7 @@ from pyFAI.third_party.argparse import ArgumentParser
 try:
     import h5py
 except ImportError:
+    logger.debug("h5py is not available", exc_info=True)
     h5py = None
 
 

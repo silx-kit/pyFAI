@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 import logging
@@ -46,9 +46,13 @@ logging.captureWarnings(True)
 logger = logging.getLogger("pyFAI-calib2")
 logger_uncaught = logging.getLogger("pyFAI-calib2.UNCAUGHT")
 
-from pyFAI.gui import qt
+from silx.gui import qt
+# Make sure matplotlib is loaded first by silx
+import silx.gui.plot.matplotlib
+
 from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 
+import pyFAI.resources
 import pyFAI.calibrant
 import pyFAI.calibration
 import fabio
@@ -59,7 +63,7 @@ try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
 except ImportError:
-    logging.debug("No socket opened for debugging. Please install rfoo")
+    logger.debug("No socket opened for debugging. Please install rfoo")
 
 
 def configure_parser_arguments(parser):
@@ -400,6 +404,7 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
 def main():
     sys.excepthook = logUncaughtExceptions
     app = qt.QApplication([])
+    pyFAI.resources.silx_integration()
     widget = CalibrationWindow()
     setup(widget.model())
     widget.setVisible(True)

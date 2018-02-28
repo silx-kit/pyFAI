@@ -34,12 +34,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/05/2017"
+__date__ = "20/02/2018"
 __status__ = "production"
 
 
 from . import matplotlib
-from . import qt
+from silx.gui import qt
 
 main_loop = False
 

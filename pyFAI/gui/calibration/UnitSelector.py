@@ -29,7 +29,7 @@ __authors__ = ["V. Valls"]
 __license__ = "MIT"
 __date__ = "02/03/2017"
 
-from pyFAI.gui import qt
+from silx.gui import qt
 import pyFAI.units
 from .model.DataModel import DataModel
 
