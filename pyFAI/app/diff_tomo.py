@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "05/03/2018"
 __satus__ = "Production"
 
 import logging
@@ -75,7 +75,7 @@ class DiffTomo(DiffMap):
         self.slow_motor_name = "rotation"
         self.fast_motor_name = "translation"
 
-    def parse(self, *args, **kwargs):
+    def parse(self, with_config=False):
         """
         parse options from command line
         """
