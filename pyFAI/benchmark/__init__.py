@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "20/02/2018"
+__date__ = "05/03/2018"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -41,10 +41,8 @@ import timeit
 import os
 import platform
 import subprocess
-import numpy
 import fabio
 import os.path as op
-import logging
 
 # To use use the locally build version of PyFAI, use ../bootstrap.py
 
