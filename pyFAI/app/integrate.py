@@ -189,6 +189,7 @@ def integrate_shell(options, args):
 
     progress_bar.clear()
     logger.info("Processing done in %.3fs !" % (time.time() - start_time))
+    return 0
 
 
 def main():
