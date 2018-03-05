@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "05/03/2018"
 
 import os
 import sys
@@ -42,23 +42,11 @@ import unittest
 import numpy
 import logging
 
-try:
-    from silx.gui import qt
-except ImportError:
-    qt = None
-
-if qt is not None:
-    from ..integrate_widget import AIWidget
-
-from .utilstest import UtilsTest
+from silx.gui import qt
+from ...integrate_widget import AIWidget
+from pyFAI.test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
-
-
-class AIWidgetMocked():
-
-    def __init__(self, result=None):
-        pass
 
 
 class TestAIWidget(unittest.TestCase):

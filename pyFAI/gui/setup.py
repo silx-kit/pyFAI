@@ -24,13 +24,14 @@
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "22/05/2017"
+__date__ = "05/03/2018"
 
 from numpy.distutils.misc_util import Configuration
 
 
 def configuration(parent_package='', top_path=None):
     config = Configuration('gui', parent_package, top_path)
+    config.add_subpackage('test')
     config.add_subpackage('calibration')
     return config
 
