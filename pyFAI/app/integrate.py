@@ -73,14 +73,14 @@ def integrate_gui(options, args):
 
     app = qt.QApplication([])
     if not args:
-        dia = qt.QFileDialog(directory=os.getcwd())
-        dia.setFileMode(qt.QFileDialog.ExistingFiles)
-        dia.exec_()
+        dialog = qt.QFileDialog(directory=os.getcwd())
+        dialog.setFileMode(qt.QFileDialog.ExistingFiles)
+        dialog.exec_()
         try:
-            args = [str(i) for i in dia.selectedFiles()]
+            args = [str(i) for i in dialog.selectedFiles()]
         except UnicodeEncodeError as err:
             logger.error("Problem with the name of some files: %s" % (err))
-            args = [unicode(i) for i in dia.selectedFiles()]
+            args = [unicode(i) for i in dialog.selectedFiles()]
 
     window = AIWidget(args, options.output, options.format, options.slow, options.rapid, options.json)
     window.set_input_data(args)
