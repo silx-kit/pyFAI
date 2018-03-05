@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "29/05/2017"
+__date__ = "05/03/2018"
 
 import logging
 import numpy
@@ -156,16 +156,13 @@ class RingExtractor(object):
         tth_max += tth
         tth_min += tth
 
-        if geoRef:
-            ttha = geoRef.get_ttha()
-            chia = geoRef.get_chia()
-            if (ttha is None) or (ttha.shape != peakPicker.data.shape):
-                ttha = geoRef.twoThetaArray(peakPicker.data.shape)
-            if (chia is None) or (chia.shape != peakPicker.data.shape):
-                chia = geoRef.chiArray(peakPicker.data.shape)
-        else:
-            ttha = ai.twoThetaArray(peakPicker.data.shape)
-            chia = ai.chiArray(peakPicker.data.shape)
+        ttha = geoRef.get_ttha()
+        chia = geoRef.get_chia()
+        if (ttha is None) or (ttha.shape != peakPicker.data.shape):
+            ttha = geoRef.twoThetaArray(peakPicker.data.shape)
+        if (chia is None) or (chia.shape != peakPicker.data.shape):
+            chia = geoRef.chiArray(peakPicker.data.shape)
+
         rings = 0
         peakPicker.sync_init()
         if maxRings is None:
