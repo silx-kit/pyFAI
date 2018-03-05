@@ -48,7 +48,7 @@ from __future__ import absolute_import, print_function, division
 __authors__ = ["Jérôme Kieffer"]
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2018"
+__date__ = "05/03/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 __all__ = ["date", "version_info", "strictversion", "hexversion", "debianversion",
@@ -94,7 +94,6 @@ def calc_hexversion(major=0, minor=0, micro=0, releaselevel="dev", serial=0):
     :param serial: integer
     :return: integer always increasing with revision numbers
     """
-    global RELEASE_LEVEL_VALUE
     try:
         releaselevel = int(releaselevel)
     except ValueError:
