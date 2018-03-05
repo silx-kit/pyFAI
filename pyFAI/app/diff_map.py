@@ -38,7 +38,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "05/03/2018"
 __satus__ = "Production"
 
 import logging
@@ -60,7 +60,7 @@ def main():
         dt.show_stats()
     else:
         from silx.gui import qt
-        from pyFAI.diffmap_widget import DiffMapWidget
+        from pyFAI.gui.diffmap_widget import DiffMapWidget
         app = qt.QApplication([])
         window = DiffMapWidget()
         window.set_config(config)

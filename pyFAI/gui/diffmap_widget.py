@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "05/03/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -44,13 +44,13 @@ import threading
 import logging
 from silx.gui import qt
 
-from .gui.matplotlib import pyplot
-from .utils import int_, str_, get_ui_file
-from .units import to_unit
-from .integrate_widget import AIWidget
-from . import worker
-from .diffmap import DiffMap
-from .tree import ListDataSet, DataSet
+from .matplotlib import pyplot
+from ..utils import int_, str_, get_ui_file
+from ..units import to_unit
+from ..integrate_widget import AIWidget
+from .. import worker
+from ..diffmap import DiffMap
+from .utils.tree import ListDataSet, DataSet
 
 logger = logging.getLogger(__name__)
 
