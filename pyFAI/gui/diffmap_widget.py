@@ -47,7 +47,7 @@ from silx.gui import qt
 from .matplotlib import pyplot
 from ..utils import int_, str_, get_ui_file
 from ..units import to_unit
-from ..integrate_widget import AIWidget
+from .integrate_widget import AIWidget
 from .. import worker
 from ..diffmap import DiffMap
 from .utils.tree import ListDataSet, DataSet

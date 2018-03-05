@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2018"
+__date__ = "05/03/2018"
 __satus__ = "production"
 import sys
 import logging
@@ -69,7 +69,7 @@ except ImportError:
 
 def integrate_gui(options, args):
     from silx.gui import qt
-    from pyFAI.integrate_widget import AIWidget
+    from pyFAI.gui.integrate_widget import AIWidget
 
     app = qt.QApplication([])
     if not args:

@@ -43,7 +43,7 @@ import numpy
 import logging
 
 from silx.gui import qt
-from ...integrate_widget import AIWidget
+from ...gui.integrate_widget import AIWidget
 from pyFAI.test.utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
