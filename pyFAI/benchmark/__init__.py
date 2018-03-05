@@ -58,7 +58,7 @@ try:
 except ImportError:
     pylab = None
 
-    def update_fig(*ag, **kwarg):
+    def update_fig(*args, **kwargs):
         pass
 
 
