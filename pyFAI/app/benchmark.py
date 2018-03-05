@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "05/03/2018"
 __status__ = "development"
 
 import logging
@@ -96,7 +96,7 @@ def main():
 
     options = parser.parse_args()
     if options.debug:
-            pyFAI.logger.setLevel(logging.DEBUG)
+        pyFAI.logger.setLevel(logging.DEBUG)
     devices = ""
     if options.opencl_cpu:
         devices += "cpu,"
