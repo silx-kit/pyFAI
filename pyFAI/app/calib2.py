@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "05/03/2018"
 __status__ = "production"
 
 import logging
@@ -393,8 +393,8 @@ def logUncaughtExceptions(exceptionClass, exception, stack):
             # There is no backtrace
             message = '{0}: {1}'.format(exceptionClass.__name__, exception)
         logger_uncaught.error(message)
-    except Exception as _e:
-        # Make sure there is no problem at all in this funbction
+    except Exception:
+        # Make sure there is no problem at all in this function
         try:
             logger_uncaught.error(exception)
         except Exception:
