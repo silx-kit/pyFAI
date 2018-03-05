@@ -98,10 +98,10 @@ def get_monitor_value(image, monitor_key):
         monitor = average.get_monitor_value(image, monitor_key)
         return monitor
     except average.MonitorNotFound:
-        logger.warning("Monitor %s not found. No normalization applied." % monitor_key)
+        logger.warning("Monitor %s not found. No normalization applied.", monitor_key)
         return 1.0
     except Exception as e:
-        logger.warning("Fail to load monitor. No normalization applied. %s" % str(e))
+        logger.warning("Fail to load monitor. No normalization applied. %s", str(e))
         return 1.0
 
 
@@ -123,14 +123,14 @@ def integrate_shell(options, args):
         if os.path.exists(item) and os.path.isfile(item):
             image_filenames.append(item)
         else:
-            logger.warning("File %s do not exists. Ignored." % item)
+            logger.warning("File %s do not exists. Ignored.", item)
     image_filenames = sorted(image_filenames)
 
     progress_bar = ProgressBar("Integration", len(image_filenames), 20)
 
     # Integrate files one by one
     for i, item in enumerate(image_filenames):
-        logger.debug("Processing %s" % item)
+        logger.debug("Processing %s", item)
 
         if len(item) > 100:
             message = os.path.basename(item)
@@ -184,7 +184,7 @@ def integrate_shell(options, args):
             writer.close()
 
     progress_bar.clear()
-    logger.info("Processing done in %.3fs !" % (time.time() - start_time))
+    logger.info("Processing done in %.3fs !", (time.time() - start_time))
     return 0
 
 
