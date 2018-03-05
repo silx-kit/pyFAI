@@ -178,16 +178,16 @@ user interface.
         if options.mask:
             mask = urlparse(options.mask).path
             if os.path.isfile(mask):
-                logger.info("Reading Mask file from: %s" % mask)
+                logger.info("Reading Mask file from: %s", mask)
                 self.mask = os.path.abspath(mask)
             else:
-                logger.warning("No such mask file %s" % mask)
+                logger.warning("No such mask file %s", mask)
         if options.poni:
             if os.path.isfile(options.poni):
-                logger.info("Reading PONI file from: %s" % options.poni)
+                logger.info("Reading PONI file from: %s", options.poni)
                 self.poni = options.poni
             else:
-                logger.warning("No such poni file %s" % options.poni)
+                logger.warning("No such poni file %s", options.poni)
 
         if options.nTrans is not None:
             self.npt_fast = int(options.nTrans)
