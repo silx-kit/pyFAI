@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "06/03/2018"
 __satus__ = "production"
 
 import logging
@@ -51,7 +51,7 @@ from pyFAI.third_party import six
 logger = logging.getLogger("check_calib")
 
 with warnings.catch_warnings():
-    from pyFAI.calibration import CheckCalib
+    from pyFAI.gui.cli_calibration import CheckCalib
     warnings.simplefilter("ignore")
     import pylab
 

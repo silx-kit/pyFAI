@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "06/03/2018"
 __status__ = "production"
 
 import logging
@@ -54,7 +54,8 @@ from pyFAI.gui.calibration.CalibrationWindow import CalibrationWindow
 
 import pyFAI.resources
 import pyFAI.calibrant
-import pyFAI.calibration
+# TODO: This should be removed
+import pyFAI.gui.cli_calibration
 import fabio
 
 from pyFAI.third_party.argparse import ArgumentParser
@@ -274,7 +275,7 @@ def setup(model):
         settings.polarizationFactor(options.polarization_factor)
 
     if options.detector_name:
-        detector = pyFAI.calibration.get_detector(options.detector_name, args)
+        detector = pyFAI.gui.cli_calibration.get_detector(options.detector_name, args)
         settings.detectorModel().setDetector(detector)
 
     if options.spline:
