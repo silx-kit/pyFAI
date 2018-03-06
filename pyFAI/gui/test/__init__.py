@@ -38,7 +38,7 @@ import sys
 import os
 import unittest
 import logging
-from pyFAI.test.utilstest import UtilsTest
+from pyFAI.test.utilstest import test_options
 
 
 _logger = logging.getLogger(__name__)
@@ -56,6 +56,10 @@ class SkipGuiTest(unittest.TestCase):
 def suite():
 
     test_suite = unittest.TestSuite()
+
+    if not test_options.WITH_QT_TEST:
+        test_suite.addTest(SkipGuiTest(reason=test_options.WITH_QT_TEST_REASON))
+        return test_suite
 
     if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
         # On Linux and no DISPLAY available (e.g., ssh without -X)
