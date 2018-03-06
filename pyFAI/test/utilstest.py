@@ -163,11 +163,6 @@ class TestOptions(object):
         if parsed_options.low_mem or os.environ.get('PYFAI_LOW_MEM', 'True') == 'False':
             self.TEST_LOW_MEM = True
 
-        if self.WITH_QT_TEST:
-            from silx.gui import qt
-            if sys.platform == "win32" and qt.qVersion() == "5.9.2":
-                self.SKIP_TEST_FOR_ISSUE_936 = True
-
     def add_parser_argument(self, parser):
         """Add extrat arguments to the test argument parser
 
