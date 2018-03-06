@@ -32,7 +32,7 @@ from __future__ import absolute_import, division, print_function
 
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "06/03/2018"
 
 import sys
 import os
@@ -44,20 +44,34 @@ from pyFAI.test.utilstest import UtilsTest
 _logger = logging.getLogger(__name__)
 
 
+class SkipGuiTest(unittest.TestCase):
+    def __init__(self, methodName='runTest', reason=None):
+        self._reason = reason
+        unittest.TestCase.__init__(self, methodName=methodName)
+
+    def runTest(self):
+        self.skipTest("pyFAI.gui tests disabled (%s)" % self._reason)
+
+
 def suite():
 
     test_suite = unittest.TestSuite()
 
     if sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
         # On Linux and no DISPLAY available (e.g., ssh without -X)
-        _logger.warning('pyFAI.gui tests disabled (DISPLAY env. variable not set)')
+        reason = 'DISPLAY env. variable not set'
+        _logger.warning("pyFAI.gui tests disabled (%s)", reason)
+        test_suite.addTest(SkipGuiTest(reason=reason))
+        return test_suite
 
-        class SkipGUITest(unittest.TestCase):
-            def runTest(self):
-                self.skipTest(
-                    'pyFAI.gui tests disabled (DISPLAY env. variable not set)')
-
-        test_suite.addTest(SkipGUITest())
+    try:
+        import silx.gui.qt
+    except ImportError as e:
+        _logger.debug("Backtrace", exc_info=True)
+        # No Qt binding found
+        reason = e.args[0]
+        _logger.warning("pyFAI.gui tests disabled (%s)", reason)
+        test_suite.addTest(SkipGuiTest(reason=reason))
         return test_suite
 
     from . import test_integrate_widget
