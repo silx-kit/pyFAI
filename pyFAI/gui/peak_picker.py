@@ -45,6 +45,7 @@ import logging
 import gc
 import operator
 import numpy
+import fabio
 
 logger = logging.getLogger(__name__)
 
@@ -55,34 +56,27 @@ except ImportError:
     qt = None
 
 if qt is not None:
-    from .gui.utils import update_fig, maximize_fig
-    from .gui.matplotlib import matplotlib, pyplot, pylab
-    from .gui import utils as gui_utils
+    from .utils import update_fig, maximize_fig
+    from .matplotlib import matplotlib, pyplot, pylab
+    from . import utils as gui_utils
 
-import fabio
-from .control_points import ControlPoints
-from .calibrant import CALIBRANT_FACTORY
-from .blob_detection import BlobDetection
-from .massif import Massif
-from .ext.reconstruct import reconstruct
-from .ext.watershed import InverseWatershed
-from .third_party import six
-
-if os.name != "nt":
-    WindowsError = RuntimeError
+from ..control_points import ControlPoints
+from ..calibrant import CALIBRANT_FACTORY
+from ..blob_detection import BlobDetection
+from ..massif import Massif
+from ..ext.reconstruct import reconstruct
+from ..ext.watershed import InverseWatershed
+from ..third_party import six
 
 
-################################################################################
-# PeakPicker
-################################################################################
 class PeakPicker(object):
     """
-
     This class is in charge of peak picking, i.e. find bragg spots in the image
     Two methods can be used : massif or blob
-
     """
+
     VALID_METHODS = ["massif", "blob", "watershed"]
+
     help = ["Please select rings on the diffraction image. In parenthesis, some modified shortcuts for single button mouse (Apple):",
             " * Right-click (click+n):         try an auto find for a ring",
             " * Right-click + Ctrl (click+b):  create new group with one point",
@@ -131,7 +125,6 @@ class PeakPicker(object):
         self.blob = None  # used for blob   detection
         self.watershed = None  # used for inverse watershed
         self._sem = threading.Semaphore()
-#        self._semGui = threading.Semaphore()
         self.mpl_connectId = None
         self.defaultNbPoints = 100
         self._init_thread = None
@@ -495,7 +488,7 @@ class PeakPicker(object):
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)
                 return
-#            print("Remove group from ring %s label %s" % (ring, gpt.label))
+            # print("Remove group from ring %s label %s" % (ring, gpt.label))
             if gpt.annotate:
                 if gpt.annotate in self.ax.texts:
                     self.ax.texts.remove(gpt.annotate)
@@ -516,7 +509,7 @@ class PeakPicker(object):
             if not gpt:
                 logger.warning("No group of points for ring %s", ring)
                 return
-#            print("Remove 1 point from group from ring %s label %s" % (ring, gpt.label))
+            # print("Remove 1 point from group from ring %s label %s" % (ring, gpt.label))
             if gpt.annotate:
                 if gpt.annotate in self.ax.texts:
                     self.ax.texts.remove(gpt.annotate)

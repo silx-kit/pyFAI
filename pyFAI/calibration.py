@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "06/03/2018"
 __status__ = "production"
 
 import os
@@ -63,7 +63,7 @@ from . import utils
 from .third_party import six
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
-from .peak_picker import PeakPicker
+from .gui.peak_picker import PeakPicker
 from . import units
 from . import average
 from .utils import measure_offset, expand_args, \
