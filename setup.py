@@ -197,6 +197,46 @@ class BuildMan(Command):
             function_name = elements[1].strip()
             yield target_name, module_name, function_name
 
+    def run_targeted_script(self, target_name, script_name, env, log_output=False):
+        """Execute targeted script using --help and --version to help checking
+        errors. help2man is not very helpful to do it for us.
+
+        :return: True is both return code are equal to 0
+        :rtype: bool
+        """
+        import subprocess
+
+        if log_output:
+            extra_args = {}
+        else:
+            try:
+                # Python 3
+                from subprocess import DEVNULL
+            except ImportError:
+                # Python 2
+                import os
+                DEVNULL = open(os.devnull, 'wb')
+            extra_args = {'stdout': DEVNULL, 'stderr': DEVNULL}
+
+        succeeded = True
+        command_line = [sys.executable, script_name, "--help"]
+        if log_output:
+            logger.info("See the following execution of: %s", " ".join(command_line))
+        p = subprocess.Popen(command_line, env=env, **extra_args)
+        status = p.wait()
+        if log_output:
+            logger.info("Return code: %s", status)
+        succeeded = succeeded and status == 0
+        command_line = [sys.executable, script_name, "--version"]
+        if log_output:
+            logger.info("See the following execution of: %s", " ".join(command_line))
+        p = subprocess.Popen(command_line, env=env, **extra_args)
+        status = p.wait()
+        if log_output:
+            logger.info("Return code: %s", status)
+        succeeded = succeeded and status == 0
+        return succeeded
+
     def run(self):
         build = self.get_finalized_command('build')
         path = sys.path
@@ -237,10 +277,19 @@ class BuildMan(Command):
                     # Before Python 3.4, ArgParser --version was using
                     # stderr to print the version
                     command_line.append("--no-discard-stderr")
+                    # Then we dont know if the documentation will contains
+                    # durtty things
+                    succeeded = self.run_targeted_script(target_name, script_name, env, False)
+                    if not succeeded:
+                        logger.info("Error while generating man file for target '%s'.", target_name)
+                        self.run_targeted_script(target_name, script_name, env, True)
+                        raise RuntimeError("Fail to generate '%s' man documentation" % target_name)
 
                 p = subprocess.Popen(command_line, env=env)
                 status = p.wait()
                 if status != 0:
+                    logger.info("Error while generating man file for target '%s'.", target_name)
+                    self.run_targeted_script(target_name, script_name, env, True)
                     raise RuntimeError("Fail to generate '%s' man documentation" % target_name)
             finally:
                 # clean up the script
@@ -318,7 +367,6 @@ else:
 # ############################# #
 # numpy.distutils Configuration #
 # ############################# #
-
 
 def configuration(parent_package='', top_path=None):
     """Recursive construction of package info to be used in setup().
@@ -544,18 +592,73 @@ class BuildExt(build_ext):
                                       for f in ext.extra_compile_args]
             ext.extra_link_args = [self.LINK_ARGS_CONVERTER.get(f, f)
                                    for f in ext.extra_link_args]
-#
+
         elif self.compiler.compiler_type == 'unix':
-            # directly linked to bug #649: use local function, without runtime resolution
-            # ext.extra_link_args.append("-Wl,-Bsymbolic-functions")
-            # Unfortunatly not available on Manylinux1 platform
-            if sys.version_info[0] <= 2:
-                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) void ' ''')
-            else:  # Python3
-                ext.extra_compile_args.append('''-fvisibility=hidden -D'PyMODINIT_FUNC=__attribute__((visibility("default"))) PyObject* ' ''')
-            # ext.extra_link_args.append("-fvisibility=hidden")
+            # Avoids runtime symbol collision for manylinux1 platform
+            # See issue #1070
+            extern = 'extern "C" ' if ext.language == 'c++' else ''
+            return_type = 'void' if sys.version_info[0] <= 2 else 'PyObject*'
+
+            ext.extra_compile_args.append(
+                '''-fvisibility=hidden -D'PyMODINIT_FUNC=%s__attribute__((visibility("default"))) %s ' ''' % (extern, return_type))
+
+    def is_debug_interpreter(self):
+        """
+        Returns true if the script is executed with a debug interpreter.
+
+        It looks to be a non-standard code. It is not working for Windows and
+        Mac. But it have to work at least for Debian interpreters.
+
+        :rtype: bool
+        """
+        if sys.version_info >= (3, 0):
+            # It is normalized on Python 3
+            # But it is not available on Windows CPython
+            if hasattr(sys, "abiflags"):
+                return "d" in sys.abiflags
+        else:
+            # It's a Python 2 interpreter
+            # pydebug is not available on Windows/Mac OS interpreters
+            if hasattr(sys, "pydebug"):
+                return sys.pydebug
+
+        # We can't know if we uses debug interpreter
+        return False
+
+    def patch_compiler(self):
+        """
+        Patch the compiler to:
+        - always compile extensions with debug symboles (-g)
+        - only compile asserts in debug mode (-DNDEBUG)
+
+        Plus numpy.distutils/setuptools/distutils inject a lot of duplicated
+        flags. This function tries to clean up default debug options.
+        """
+        build_obj = self.distribution.get_command_obj("build")
+        if build_obj.debug:
+            debug_mode = build_obj.debug
+        else:
+            # Force debug_mode also when it uses python-dbg
+            # It is needed for Debian packaging
+            debug_mode = self.is_debug_interpreter()
+
+        if self.compiler.compiler_type == "unix":
+            args = list(self.compiler.compiler_so)
+            # clean up debug flags -g is included later in another way
+            must_be_cleaned = ["-DNDEBUG", "-g"]
+            args = filter(lambda x: x not in must_be_cleaned, args)
+            args = list(args)
+
+            # always insert symbols
+            args.append("-g")
+            # only strip asserts in release mode
+            if not debug_mode:
+                args.append('-DNDEBUG')
+            # patch options
+            self.compiler.compiler_so = list(args)
 
     def build_extensions(self):
+        self.patch_compiler()
         for ext in self.extensions:
             self.patch_extension(ext)
         build_ext.build_extensions(self)
@@ -613,7 +716,7 @@ class sdist_debian(sdist):
     Tailor made sdist for debian
     * remove auto-generated doc
     * remove cython generated .c files
-    * remove cython generated .c files
+    * remove cython generated .cpp files
     * remove .bat files
     * include .l man files
     """
@@ -842,7 +945,7 @@ def setup_package():
                         'clean', '--name')))
 
     if dry_run:
-        # DRY_RUN implies actions which do not require dependancies (i.e. NumPy)
+        # DRY_RUN implies actions which do not require dependancies, like NumPy
         try:
             from setuptools import setup
             logger.info("Use setuptools.setup")
