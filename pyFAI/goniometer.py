@@ -649,7 +649,7 @@ class GoniometerRefinement(Goniometer):
             pyFAI_param = [single_param.get(name, 0.0)
                            for name in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]]
             pyFAI_param.append(single_param.get("wavelength", self.wavelength) * 1e10)
-            if single.geometry_refinement is not None and len(single.geometry_refinement.data) > 1:
+            if (single.geometry_refinement is not None) and (len(single.geometry_refinement.data) >= 1):
                 sumsquare += single.geometry_refinement.chi2_wavelength(pyFAI_param)
                 npt += single.geometry_refinement.data.shape[0]
         return sumsquare / max(npt, 1)
