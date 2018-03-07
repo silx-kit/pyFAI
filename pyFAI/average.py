@@ -35,7 +35,7 @@ __authors__ = ["Jérôme Kieffer", "Valentin Valls"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "05/03/2018"
 __status__ = "production"
 
 import logging
@@ -494,7 +494,7 @@ def _get_monitor_value_from_edf(image, monitor_key):
 
         try:
             index = mnemonic_values.index(mnemonic)
-        except ValueError as _e:
+        except ValueError:
             logger.debug("Exception", exc_info=1)
             raise MonitorNotFound("Monitor mnemonic '%s' not found in the header key '%s'" % (mnemonic, mnemonic_values_key))
 

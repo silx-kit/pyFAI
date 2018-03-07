@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "05/03/2018"
 __status__ = "production"
 
 import os
@@ -83,7 +83,6 @@ class PreEmitStreamHandler(logging.Handler):
 def patch_logging_handler(callback):
     """Patch the logging system to have a working progress bar with out glitch.
     pyFAI define a default handler then we have to rework it"""
-    """"""
     # remove the default logging handler
     # it can come from pyFAI.__init__
     root_logger = logging.getLogger()

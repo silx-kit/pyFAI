@@ -30,17 +30,16 @@ from __future__ import absolute_import, print_function, with_statement, division
 """
 check_calib
 
-This is a very simple tool that checks a calibratation at the sub-pixel level
+This is a very simple tool that checks a calibratation at the sub-pixel level.
 
-Deprecated
-
+This software is deprecated, you should use `pyFAI-calib`.
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/01/2018"
+__date__ = "06/03/2018"
 __satus__ = "production"
 
 import logging
@@ -52,7 +51,7 @@ from pyFAI.third_party import six
 logger = logging.getLogger("check_calib")
 
 with warnings.catch_warnings():
-    from pyFAI.calibration import CheckCalib
+    from pyFAI.gui.cli_calibration import CheckCalib
     warnings.simplefilter("ignore")
     import pylab
 

@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "06/03/2018"
 __status__ = "production"
 
 import os
@@ -48,32 +48,30 @@ logger = logging.getLogger(__name__)
 
 import math
 import numpy
-
-from .third_party.argparse import ArgumentParser
-
-from pyFAI.third_party import six
-urlparse = six.moves.urllib.parse.urlparse
-
-from .gui.matplotlib import pylab, matplotlib
-from .gui.utils import update_fig
-from .gui import utils as gui_utils
 from scipy.stats import linregress
 import fabio
-from . import utils
-from .third_party import six
-from .detectors import detector_factory, Detector
-from .geometryRefinement import GeometryRefinement
+
+from pyFAI.third_party.argparse import ArgumentParser
+from pyFAI.third_party import six
+
+urlparse = six.moves.urllib.parse.urlparse
+
+from .matplotlib import pylab, matplotlib
+from .utils import update_fig
+from . import utils as gui_utils
+from ..detectors import detector_factory, Detector
+from ..geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
-from . import units
-from . import average
-from .utils import measure_offset, expand_args, \
+from .. import units
+from .. import average
+from ..utils import measure_offset, expand_args, \
             readFloatFromKeyboard, FixedParameters, round_fft, \
             win32
-from .azimuthalIntegrator import AzimuthalIntegrator
-from .units import hc
-from . import version as PyFAI_VERSION
-from . import date as PyFAI_DATE
-from .calibrant import Calibrant, CALIBRANT_FACTORY
+from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..units import hc
+from .. import version as PyFAI_VERSION
+from .. import date as PyFAI_DATE
+from ..calibrant import Calibrant, CALIBRANT_FACTORY
 try:
     from ._convolution import gaussian_filter
 except ImportError:
@@ -81,14 +79,14 @@ except ImportError:
     from scipy.ndimage.filters import gaussian_filter
 
 try:
-    from . import morphology
+    from ..ext import morphology
     pyFAI_morphology = True
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     from scipy.ndimage import morphology
     pyFAI_morphology = False
 
-from .ext.marchingsquares import isocontour
+from ..ext.marchingsquares import isocontour
 
 
 def get_detector(detector, datafiles=None):
@@ -101,7 +99,7 @@ def get_detector(detector, datafiles=None):
     :raise RuntimeError: If no detector found
     """
     res = None
-    if type(detector) in utils.StringTypes:
+    if isinstance(detector, six.string_types):
         try:
             res = detector_factory(detector)
         except RuntimeError:

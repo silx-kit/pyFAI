@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/02/2018"
+__date__ = "05/03/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -67,8 +67,7 @@ try:
     # Used for 1D integration
     from .ext import splitPixel
 except ImportError as error:
-    logger.error("Unable to import pyFAI.ext.splitPixel"
-                 " full pixel splitting: %s" % error)
+    logger.error("Unable to import pyFAI.ext.splitPixel full pixel splitting: %s", error)
     logger.debug("Backtrace", exc_info=True)
     splitPixel = None
 
@@ -84,28 +83,28 @@ try:
     from .ext import splitBBox  # IGNORE:F0401
 except ImportError as error:
     logger.error("Unable to import pyFAI.ext.splitBBox"
-                 " Bounding Box pixel splitting: %s" % error)
+                 " Bounding Box pixel splitting: %s", error)
     splitBBox = None
 
 try:
     from .ext import histogram
 except ImportError as error:
     logger.error("Unable to import pyFAI.ext.histogram"
-                 " Cython histogram implementation: %s" % error)
+                 " Cython histogram implementation: %s", error)
     histogram = None
 
 try:
     from .ext import splitBBoxCSR  # IGNORE:F0401
 except ImportError as error:
     logger.error("Unable to import pyFAI.ext.splitBBoxCSR"
-                 " CSR based azimuthal integration: %s" % error)
+                 " CSR based azimuthal integration: %s", error)
     splitBBoxCSR = None
 
 try:
     from .ext import splitPixelFullCSR  # IGNORE:F0401
 except ImportError as error:
     logger.error("Unable to import pyFAI.ext.splitPixelFullCSR"
-                 " CSR based azimuthal integration: %s" % error)
+                 " CSR based azimuthal integration: %s", error)
     splitPixelFullCSR = None
 
 
@@ -114,26 +113,22 @@ if ocl:
     try:
         from .opencl import azim_hist as ocl_azim  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_azim: %s",
-                     error)
+        logger.error("Unable to import pyFAI.ocl_azim: %s", error)
         ocl_azim = None
     try:
         from .opencl import azim_csr as ocl_azim_csr  # IGNORE:F0401
     except ImportError as error:
-        logger.error("Unable to import pyFAI.ocl_azim_csr: %s",
-                     error)
+        logger.error("Unable to import pyFAI.ocl_azim_csr: %s", error)
         ocl_azim_csr = None
     try:
         from .opencl import azim_lut as ocl_azim_lut  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_azim_lut for: %s",
-                     error)
+        logger.error("Unable to import pyFAI.ocl_azim_lut for: %s", error)
         ocl_azim_lut = None
     try:
         from .opencl import sort as ocl_sort
     except ImportError as error:  # IGNORE:W0703
-        logger.error("Unable to import pyFAI.ocl_sort for: %s",
-                     error)
+        logger.error("Unable to import pyFAI.ocl_sort for: %s", error)
         ocl_sort = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
@@ -299,8 +294,8 @@ class AzimuthalIntegrator(Geometry):
                 mask = mask[:shape[0], :shape[1]]
             except Exception as error:  # IGNORE:W0703
                 logger.error("Mask provided has wrong shape:"
-                             " expected: %s, got %s, error: %s" %
-                             (shape, mask.shape, error))
+                             " expected: %s, got %s, error: %s",
+                             shape, mask.shape, error)
                 mask = numpy.zeros(shape, dtype=bool)
         if dummy is not None:
             if delta_dummy is None:

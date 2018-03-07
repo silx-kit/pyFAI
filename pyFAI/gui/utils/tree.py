@@ -33,20 +33,20 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "05/03/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
 import os
 import logging
-from .io import is_hdf5
+from ...io import is_hdf5
 logger = logging.getLogger(__name__)
 
 from collections import namedtuple
 DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))
 
 try:
-    from .ext._tree import TreeItem
+    from ...ext._tree import TreeItem
 except ImportError:
     logger.error("pyFAI.ext._tree did not import")
 

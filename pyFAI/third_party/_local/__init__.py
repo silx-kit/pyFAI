@@ -1,6 +1,7 @@
 # coding: utf-8
 # /*##########################################################################
-# Copyright (C) 2016-2018 European Synchrotron Radiation Facility
+#
+# Copyright (c) 2015-2016 European Synchrotron Radiation Facility
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +21,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# ############################################################################*/
+# ###########################################################################*/
+"""
+Package containing external modules which can be available as it is as an
+external python library.
 
-__authors__ = ["V. Valls"]
+They are stored here to reduce python library dependancies.
+
+This package can be removed if all dependancies are available in the target
+system as python libraries.
+"""
+__authors__ = ["Valentin Valls"]
 __license__ = "MIT"
-__date__ = "05/03/2018"
-
-from numpy.distutils.misc_util import Configuration
-
-
-def configuration(parent_package='', top_path=None):
-    config = Configuration('gui', parent_package, top_path)
-    config.add_subpackage('test')
-    config.add_subpackage('utils')
-    config.add_subpackage('calibration')
-    return config
-
-
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(configuration=configuration)
+__date__ = "26/04/2017"

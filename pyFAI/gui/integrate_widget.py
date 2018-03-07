@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "05/03/2018"
 __status__ = "development"
 
 import logging
@@ -51,14 +51,14 @@ import numpy
 logger = logging.getLogger(__name__)
 from silx.gui import qt
 import fabio
-from . import worker
-from .detectors import ALL_DETECTORS, detector_factory
-from .opencl import ocl
-from .utils import float_, int_, str_, get_ui_file
-from .io import HDF5Writer
-from .azimuthalIntegrator import AzimuthalIntegrator
-from .units import RADIAL_UNITS
-from .third_party import six
+from .. import worker
+from ..detectors import ALL_DETECTORS, detector_factory
+from ..opencl import ocl
+from ..utils import float_, int_, str_, get_ui_file
+from ..io import HDF5Writer
+from ..azimuthalIntegrator import AzimuthalIntegrator
+from ..units import RADIAL_UNITS
+from ..third_party import six
 
 
 UIC = get_ui_file("integration.ui")

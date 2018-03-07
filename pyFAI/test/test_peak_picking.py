@@ -28,13 +28,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-"""Test suite for peak picking class"""
+"""Test suite for non-gui peak picking class"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/02/2018"
+__date__ = "06/03/2018"
 
 
 import unittest
@@ -45,7 +45,7 @@ import logging
 import shutil
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
-from ..peak_picker import PeakPicker
+from ..gui.peak_picker import PeakPicker
 from ..calibrant import Calibrant
 from ..geometryRefinement import GeometryRefinement
 

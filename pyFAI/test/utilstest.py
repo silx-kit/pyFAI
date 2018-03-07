@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/01/2018"
+__date__ = "06/03/2018"
 
 PACKAGE = "pyFAI"
 DATA_KEY = "PYFAI_DATA"
@@ -63,11 +63,29 @@ def copy(infile, outfile):
         shutil.copy(infile, outfile)
 
 
-class TestContext(object):
+class TestOptions(object):
     """
     Class providing useful stuff for preparing tests.
     """
     def __init__(self):
+        self.WITH_QT_TEST = True
+        """Qt tests are included"""
+
+        self.WITH_QT_TEST_REASON = ""
+        """Reason for Qt tests are disabled if any"""
+
+        self.WITH_OPENCL_TEST = True
+        """OpenCL tests are included"""
+
+        self.WITH_GL_TEST = True
+        """OpenGL tests are included"""
+
+        self.WITH_GL_TEST_REASON = ""
+        """Reason for OpenGL tests are disabled if any"""
+
+        self.TEST_LOW_MEM = False
+        """Skip tests using too much memory"""
+
         self.options = None
         self.timeout = 60  # timeout in seconds for downloading images
         # url_base = "http://forge.epn-campus.eu/attachments/download"
@@ -85,10 +103,18 @@ class TestContext(object):
 
         self.download_images = self.resources.download_all
         self.getimage = self.resources.getfile
-        self.low_mem = bool(os.environ.get("PYFAI_LOW_MEM"))
-        self.opencl = bool(os.environ.get("PYFAI_OPENCL", True))
 
         self._tempdir = None
+
+    @property
+    def low_mem(self):
+        """For compatibility"""
+        return self.TEST_LOW_MEM
+
+    @property
+    def opencl(self):
+        """For compatibility"""
+        return self.WITH_OPENCL_TEST
 
     def deep_reload(self):
         self.pyFAI = __import__(self.name)
@@ -107,24 +133,54 @@ class TestContext(object):
         """
         return
 
-    def get_options(self):
+    def configure(self, parsed_options):
+        """Configure the TestOptions class from the command line arguments and the
+        environment variables
         """
-        Parse the command line to analyse options ... returns options
+        if not parsed_options.gui:
+            self.WITH_QT_TEST = False
+            self.WITH_QT_TEST_REASON = "Skipped by command line"
+        elif os.environ.get('WITH_QT_TEST', 'True') == 'False':
+            self.WITH_QT_TEST = False
+            self.WITH_QT_TEST_REASON = "Skipped by WITH_QT_TEST env var"
+        elif sys.platform.startswith('linux') and not os.environ.get('DISPLAY', ''):
+            self.WITH_QT_TEST = False
+            self.WITH_QT_TEST_REASON = "DISPLAY env variable not set"
+
+        if not parsed_options.opencl or os.environ.get('PYFAI_OPENCL', 'True') == 'False':
+            self.WITH_OPENCL_TEST = False
+            # That's an easy way to skip OpenCL tests
+            # It disable the use of OpenCL on the full silx project
+            os.environ['PYFAI_OPENCL'] = "False"
+
+        if not parsed_options.opengl:
+            self.WITH_GL_TEST = False
+            self.WITH_GL_TEST_REASON = "Skipped by command line"
+        elif os.environ.get('WITH_GL_TEST', 'True') == 'False':
+            self.WITH_GL_TEST = False
+            self.WITH_GL_TEST_REASON = "Skipped by WITH_GL_TEST env var"
+
+        if parsed_options.low_mem or os.environ.get('PYFAI_LOW_MEM', 'True') == 'False':
+            self.TEST_LOW_MEM = True
+
+    def add_parser_argument(self, parser):
+        """Add extrat arguments to the test argument parser
+
+        :param ArgumentParser parser: An argument parser
         """
-        if self.options is None:
-            parser = ArgumentParser(usage="Tests for %s" % self.name)
-            parser.add_argument("-d", "--debug", dest="debug", help="run in debugging mode",
-                                default=False, action="store_true")
-            parser.add_argument("-i", "--info", dest="info", help="run in more verbose mode ",
-                                default=False, action="store_true")
-            parser.add_argument("-f", "--force", dest="force", help="force the build of the library",
-                                default=False, action="store_true")
-            parser.add_argument("-r", "--really-force", dest="remove",
-                                help="remove existing build and force the build of the library",
-                                default=False, action="store_true")
-            parser.add_argument(dest="args", type=str, nargs='*')
-            self.options = parser.parse_args([])
-        return self.options
+
+        parser.add_argument("-x", "--no-gui", dest="gui", default=True,
+                            action="store_false",
+                            help="Disable the test of the graphical use interface")
+        parser.add_argument("-g", "--no-opengl", dest="opengl", default=True,
+                            action="store_false",
+                            help="Disable tests using OpenGL")
+        parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
+                            action="store_false",
+                            help="Disable the test of the OpenCL part")
+        parser.add_argument("-l", "--low-mem", dest="low_mem", default=False,
+                            action="store_true",
+                            help="Disable test with large memory consumption (>100Mbyte")
 
     def get_test_env(self):
         """
@@ -202,8 +258,11 @@ class TestContext(object):
             self._tempdir = None
 
 
-UtilsTest = TestContext()
+test_options = TestOptions()
 """Singleton containing util context of whole the tests"""
+
+UtilsTest = test_options
+"""For compatibility"""
 
 
 def diff_img(ref, obt, comment=""):

@@ -42,6 +42,7 @@ import logging
 import subprocess
 from pyFAI.test.utilstest import UtilsTest
 
+
 _logger = logging.getLogger(__name__)
 
 
@@ -90,32 +91,23 @@ class TestScriptsHelp(unittest.TestCase):
         command_line.append("--help")
         self.executeCommandLine(command_line, env)
 
-    def testDetector2Nexus(self):
-        self.executeAppHelp("detector2nexus", "pyFAI.app.detector2nexus")
+    def testCheckCalib(self):
+        self.executeAppHelp("check_calib", "pyFAI.app.check_calib")
 
-    def testDiffMap(self):
-        self.executeAppHelp("diff_map", "pyFAI.app.diff_map")
+    def testMxcalibrate(self):
+        self.executeAppHelp("MX-calibrate", "pyFAI.app.mx_calibrate")
 
-    def testDiffTomo(self):
-        self.executeAppHelp("diff_tomo", "pyFAI.app.diff_tomo")
+    def testPyfaiCalib(self):
+        self.executeAppHelp("pyFAI-calib", "pyFAI.app.calib")
 
-    def testEigerMask(self):
-        self.executeAppHelp("eiger-mask", "pyFAI.app.eiger_mask")
-
-    def testPyfaiAverage(self):
-        self.executeAppHelp("pyFAI-average", "pyFAI.app.average")
-
-    def testPyfaiBenchmark(self):
-        self.executeAppHelp("pyFAI-benchmark", "pyFAI.app.benchmark")
+    def testPyfaiDrawmask(self):
+        self.executeAppHelp("pyFAI-drawmask", "pyFAI.app.drawmask")
 
     def testPyfaiIntegrate(self):
         self.executeAppHelp("pyFAI-integrate", "pyFAI.app.integrate")
 
-    def testPyfaiSaxs(self):
-        self.executeAppHelp("pyFAI-saxs", "pyFAI.app.saxs")
-
-    def testPyfaiWaxs(self):
-        self.executeAppHelp("pyFAI-waxs", "pyFAI.app.waxs")
+    def testPyfaiRecalib(self):
+        self.executeAppHelp("pyFAI-recalib", "pyFAI.app.recalib")
 
 
 def suite():

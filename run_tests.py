@@ -42,18 +42,8 @@ import subprocess
 import sys
 import time
 import unittest
-if os.name == "posix":
-    import resource
-else:
-    resource = None
-try:
-    import importlib
-except ImportError:
-    importer = __import__
-    old_importer = True
-else:
-    importer = importlib.import_module
-    old_importer = False
+import collections
+from argparse import ArgumentParser
 
 
 class StreamHandlerUnittestReady(logging.StreamHandler):
@@ -93,39 +83,60 @@ logger.setLevel(logging.WARNING)
 
 logger.info("Python %s %s", sys.version, tuple.__itemsize__ * 8)
 
+
+try:
+    import resource
+except ImportError:
+    resource = None
+    logger.warning("resource module missing")
+
+try:
+    import importlib
+    importer = importlib.import_module
+except ImportError:
+    def importer(name):
+        module = __import__(name)
+        # returns the leaf module, instead of the root module
+        subnames = name.split(".")
+        subnames.pop(0)
+        for subname in subnames:
+            module = getattr(module, subname)
+            return module
+
 try:
     import numpy
 except ImportError:
     logger.warning("numpy missing")
 else:
-    print("numpy %s from %s" % (numpy.version.version, numpy.__path__))
+    logger.info("Numpy %s", numpy.version.version)
+
 try:
     import scipy
 except ImportError:
     logger.warning("Scipy missing")
 else:
-    print("Scipy %s from %s" % (scipy.version.version, scipy.__path__))
+    logger.info("Scipy %s from %s", scipy.version.version, scipy.__path__)
 
 try:
     import fabio
 except ImportError:
     logger.warning("FabIO missing")
 else:
-    print("FabIO %s" % fabio.version)
+    logger.info("FabIO %s", fabio.version)
 
 try:
     import h5py
 except Exception as error:
     logger.warning("h5py missing: %s", error)
 else:
-    print("h5py %s" % h5py.version.version)
+    logger.info("h5py %s", h5py.version.version)
 
 try:
     import Cython
 except ImportError:
-    print("Cython missing")
+    logger.warning("Cython missing")
 else:
-    print("Cython %s" % Cython.__version__)
+    logger.info("Cython %s", Cython.__version__)
 
 
 def get_project_name(root_dir):
@@ -142,29 +153,50 @@ def get_project_name(root_dir):
     return name.split()[-1].decode('ascii')
 
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_NAME = get_project_name(PROJECT_DIR)
-logger.info("Project name: %s", PROJECT_NAME)
+class TextTestResultWithSkipList(unittest.TextTestResult):
+    """Override default TextTestResult to display list of skipped tests at the
+    end
+    """
+
+    def printErrors(self):
+        unittest.TextTestResult.printErrors(self)
+        # Print skipped tests at the end
+        self.printGroupedList("SKIPPED", self.skipped)
+
+    def printGroupedList(self, flavour, errors):
+        grouped = collections.OrderedDict()
+
+        for test, err in errors:
+            if err in grouped:
+                grouped[err] = grouped[err] + [test]
+            else:
+                grouped[err] = [test]
+
+        for err, tests in grouped.items():
+            self.stream.writeln(self.separator1)
+            for test in tests:
+                self.stream.writeln("%s: %s" % (flavour, self.getDescription(test)))
+            self.stream.writeln(self.separator2)
+            self.stream.writeln("%s" % err)
 
 
 class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
 
     def __init__(self, *arg, **kwarg):
-        super(ProfileTextTestResult, self).__init__(*arg, **kwarg)
+        unittest.TextTestRunner.resultclass.__init__(self, *arg, **kwarg)
         self.logger = logging.getLogger("memProf")
         self.logger.setLevel(min(logging.INFO, logging.root.level))
-        self.logger.handlers.append(logging.FileHandler("memprofile.log"))
+        self.logger.handlers.append(logging.FileHandler("profile.log"))
 
     def startTest(self, test):
+        unittest.TextTestRunner.resultclass.startTest(self, test)
         if resource:
             self.__mem_start = \
                 resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        self.logger.debug("Start %s", test.id())
         self.__time_start = time.time()
-        super(ProfileTextTestResult, self).startTest(test)
 
     def stopTest(self, test):
-        super(ProfileTextTestResult, self).stopTest(test)
+        unittest.TextTestRunner.resultclass.stopTest(self, test)
         # see issue 311. For other platform, get size of ru_maxrss in "man getrusage"
         if sys.platform == "darwin":
             ratio = 1e-6
@@ -176,7 +208,8 @@ class ProfileTextTestResult(unittest.TextTestRunner.resultclass):
         else:
             memusage = 0
         self.logger.info("Time: %.3fs \t RAM: %.3f Mb\t%s",
-                         time.time() - self.__time_start, memusage, test.id())
+                         time.time() - self.__time_start,
+                         memusage, test.id())
 
 
 def report_uncovered_files(cov, build_dir, inject_xml=None):
@@ -261,7 +294,7 @@ def report_rst(cov, package, version="0.0.0", base="", inject_xml=None):
             '']
     tot_sum_lines = 0
     tot_sum_hits = 0
-    print(base)
+
     for cl in classes:
         name = cl.get("name")
         fname = cl.get("filename")
@@ -289,6 +322,20 @@ def report_rst(cov, package, version="0.0.0", base="", inject_xml=None):
     return os.linesep.join(res)
 
 
+def is_debug_python():
+    """Returns true if the Python interpreter is in debug mode."""
+    try:
+        import sysconfig
+    except ImportError:  # pragma nocover
+        # Python < 2.7
+        import distutils.sysconfig as sysconfig
+
+    if sysconfig.get_config_var("Py_DEBUG"):
+        return True
+
+    return hasattr(sys, "gettotalrefcount")
+
+
 def build_project(name, root_dir):
     """Run python setup.py build for the project.
 
@@ -301,6 +348,8 @@ def build_project(name, root_dir):
     platform = distutils.util.get_platform()
     architecture = "lib.%s-%i.%i" % (platform,
                                      sys.version_info[0], sys.version_info[1])
+    if is_debug_python():
+        architecture += "-pydebug"
 
     if os.environ.get("PYBUILD_NAME") == name:
         # we are in the debian packaging way
@@ -317,20 +366,61 @@ def build_project(name, root_dir):
     return home
 
 
-try:
-    # pyFAI is not yet loaded, it is safer to use library from the system
-    from argparse import ArgumentParser
-except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+def import_project_module(project_name, project_dir):
+    """Import project module, from the system of from the project directory"""
+    # Prevent importing from source directory
+    if (os.path.dirname(os.path.abspath(__file__)) == os.path.abspath(sys.path[0])):
+        removed_from_sys_path = sys.path.pop(0)
+        logger.info("Patched sys.path, removed: '%s'", removed_from_sys_path)
+
+    if "--installed" in sys.argv:
+        try:
+            module = importer(project_name)
+        except ImportError:
+            raise ImportError(
+                "%s not installed: Cannot run tests on installed version" %
+                PROJECT_NAME)
+    else:  # Use built source
+        build_dir = build_project(project_name, project_dir)
+
+        sys.path.insert(0, build_dir)
+        logger.warning("Patched sys.path, added: '%s'", build_dir)
+        module = importer(project_name)
+    return module
+
+
+def get_test_options(project_module):
+    """Returns the test options if available, else None"""
+    module_name = project_module.__name__ + '.test.utilstest'
+    logger.info('Import %s', module_name)
+    try:
+        test_utils = importer(module_name)
+    except ImportError:
+        logger.warning("No module named '%s'. No test options available.", module_name)
+        return None
+
+    test_options = getattr(test_utils, "test_options", None)
+    return test_options
+
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_NAME = get_project_name(PROJECT_DIR)
+logger.info("Project name: %s", PROJECT_NAME)
+
+project_module = import_project_module(PROJECT_NAME, PROJECT_DIR)
+PROJECT_VERSION = getattr(project_module, 'version', '')
+PROJECT_PATH = project_module.__path__[0]
+
+test_options = get_test_options(project_module)
+"""Contains extra configuration for the tests."""
+
 
 epilog = """Environment variables:
-PYFAI_LOW_MEM: set to True to skip all tests >100Mb
+WITH_QT_TEST=False to disable graphical tests
 PYFAI_OPENCL=False to disable OpenCL tests.
+PYFAI_LOW_MEM: set to True to skip all tests >100Mb
+WITH_GL_TEST=False to disable tests using OpenGL
 """
-# WITH_QT_TEST=False to disable graphical tests,
-# SILX_TEST_LOW_MEM=True to disable tests taking large amount of memory
-# GPU=False to disable the use of a GPU with OpenCL test
-# """
 parser = ArgumentParser(description='Run the tests.',
                         epilog=epilog)
 
@@ -350,22 +440,10 @@ parser.add_argument("-v", "--verbose", default=0,
                     help="Increase verbosity. Option -v prints additional " +
                          "INFO messages. Use -vv for full verbosity, " +
                          "including debug messages and test help strings.")
-parser.add_argument("-l", "--low-mem", default=False,
-                    action="store_true", dest="low_mem",
-                    help="Use this option to discard all test using >100MB memory")
-parser.add_argument("-o", "--no-opencl", dest="opencl", default=True,
-                    action="store_false",
-                    help="Disable the test of the OpenCL part")
-
-
-# parser.add_argument("-x", "--no-gui", dest="gui", default=True,
-#                    action="store_false",
-#                    help="Disable the test of the graphical use interface")
-# parser.add_argument("-l", "--low-mem", dest="low_mem", default=False,
-#                    action="store_true",
-#                    help="Disable test with large memory consumption (>100Mbyte")
-# parser.add_argument("--qt-binding", dest="qt_binding", default=None,
-#                    help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
+parser.add_argument("--qt-binding", dest="qt_binding", default=None,
+                    help="Force using a Qt binding, from 'PyQt4', 'PyQt5', or 'PySide'")
+if test_options is not None:
+    test_options.add_parser_argument(parser)
 
 default_test_name = "%s.test.suite" % PROJECT_NAME
 parser.add_argument("test_name", nargs='*',
@@ -388,15 +466,6 @@ elif options.verbose > 1:
     test_verbosity = 2
     use_buffer = False
 
-# if not options.gui:
-#    os.environ["WITH_QT_TEST"] = "False"
-#
-# if not options.opencl:
-#    os.environ["SILX_OPENCL"] = "False"
-#
-# if options.low_mem:isy
-#    os.environ["SILX_TEST_LOW_MEM"] = "True"
-
 if options.coverage:
     logger.info("Running test-coverage")
     import coverage
@@ -409,33 +478,29 @@ if options.coverage:
                          omit=["*test*", "*third_party*", "*/setup.py"])
     cov.start()
 
-
-# Prevent importing from source directory
-if (os.path.dirname(os.path.abspath(__file__)) ==
-        os.path.abspath(sys.path[0])):
-    removed_from_sys_path = sys.path.pop(0)
-    logger.info("Patched sys.path, removed: '%s'", removed_from_sys_path)
-
-
-# import module
-if options.installed:  # Use installed version
-    try:
-        module = importer(PROJECT_NAME)
-    except:
-        raise ImportError(
-            "%s not installed: Cannot run tests on installed version" %
-            PROJECT_NAME)
-else:  # Use built source
-    build_dir = build_project(PROJECT_NAME, PROJECT_DIR)
-
-    sys.path.insert(0, build_dir)
-    logger.warning("Patched sys.path, added: '%s'", build_dir)
-    module = importer(PROJECT_NAME)
-
-
-PROJECT_VERSION = getattr(module, 'version', '')
-PROJECT_PATH = module.__path__[0]
-
+if options.qt_binding:
+    binding = options.qt_binding.lower()
+    if binding == "pyqt4":
+        logger.info("Force using PyQt4")
+        if sys.version < "3.0.0":
+            try:
+                import sip
+                sip.setapi("QString", 2)
+                sip.setapi("QVariant", 2)
+            except Exception:
+                logger.warning("Cannot set sip API")
+        import PyQt4.QtCore  # noqa
+    elif binding == "pyqt5":
+        logger.info("Force using PyQt5")
+        import PyQt5.QtCore  # noqa
+    elif binding == "pyside":
+        logger.info("Force using PySide")
+        import PySide.QtCore  # noqa
+    elif binding == "pyside2":
+        logger.info("Force using PySide2")
+        import PySide2.QtCore  # noqa
+    else:
+        raise ValueError("Qt binding '%s' is unknown" % options.qt_binding)
 
 # Run the tests
 runnerArgs = {}
@@ -443,6 +508,8 @@ runnerArgs["verbosity"] = test_verbosity
 runnerArgs["buffer"] = use_buffer
 if options.memprofile:
     runnerArgs["resultclass"] = ProfileTextTestResult
+else:
+    runnerArgs["resultclass"] = TextTestResultWithSkipList
 runner = unittest.TextTestRunner(**runnerArgs)
 
 logger.warning("Test %s %s from %s",
@@ -451,23 +518,14 @@ logger.warning("Test %s %s from %s",
 test_module_name = PROJECT_NAME + '.test'
 logger.info('Import %s', test_module_name)
 test_module = importer(test_module_name)
-utilstest = importer(test_module_name + ".utilstest")
-if old_importer:
-    test_module = getattr(test_module, "test")
-    print(dir(test_module))
-    utilstest = getattr(test_module, "utilstest")
-UtilsTest = utilstest.UtilsTest
-UtilsTest.installed = options.installed
-
-if options.low_mem:
-    logger.info("Switch to low_mem mode")
-    UtilsTest.low_mem = True
-
-if not options.opencl:
-    logger.info("Disable OpenCL tests")
-    UtilsTest.opencl = False
-
 test_suite = unittest.TestSuite()
+
+if test_options is not None:
+    # Configure the test options according to the command lines and the the environment
+    test_options.configure(options)
+else:
+    logger.warning("No test options available.")
+
 
 if not options.test_name:
     # Do not use test loader to avoid cryptic exception
@@ -478,17 +536,14 @@ else:
     test_suite.addTest(
         unittest.defaultTestLoader.loadTestsFromNames(options.test_name))
 
+# Display the result when using CTRL-C
+unittest.installHandler()
 
 result = runner.run(test_suite)
-for test, reason in result.skipped:
-    logger.warning('Skipped %s (%s): %s',
-                   test.id(), test.shortDescription() or '', reason)
 
 if result.wasSuccessful():
-    logger.info("Test suite succeeded")
     exit_status = 0
 else:
-    logger.warning("Test suite failed")
     exit_status = 1
 
 

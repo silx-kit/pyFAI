@@ -22,8 +22,8 @@
 # THE SOFTWARE.
 #
 # ###########################################################################*/
-"""Set of Qt widgets"""
+"""Module containing dependency with Qt or matplotlib GUI"""
 
-__authors__ = ["T. Vincent"]
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __license__ = "MIT"
-__date__ = "23/05/2016"
+__date__ = "06/03/2018"
