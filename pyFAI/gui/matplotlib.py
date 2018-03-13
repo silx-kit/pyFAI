@@ -71,7 +71,7 @@ elif qt.BINDING == 'PyQt4':
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # noqa
 
 elif qt.BINDING == 'PyQt5':
-    _configure('PyQt5', check=_check_matplotlib)
+    _configure('Qt5Agg', check=_check_matplotlib)
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg  # noqa
 
 from matplotlib import pyplot  # noqa
