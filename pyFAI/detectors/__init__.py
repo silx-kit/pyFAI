@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/02/2018"
+__date__ = "13/03/2018"
 __status__ = "stable"
 
 
@@ -43,6 +43,7 @@ from ._adsc import *
 from ._dectris import *
 from ._imxpad import *
 from ._rayonix import *
+from ._esrf import *
 from ._others import *
 
 
