@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "13/03/2018"
 __status__ = "production"
 
 
@@ -101,48 +101,6 @@ class Dexela2923(Detector):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
-
-
-class FReLoN(Detector):
-    """
-    FReLoN detector:
-    The spline is mandatory to correct for geometric distortion of the taper
-
-    TODO: create automatically a mask that removes pixels out of the "valid reagion"
-    """
-    MAX_SHAPE = (2048, 2048)
-
-    HAVE_TAPER = True
-
-    def __init__(self, splineFile=None):
-        super(FReLoN, self).__init__(splineFile=splineFile)
-        if splineFile:
-            self.max_shape = (int(self.spline.ymax - self.spline.ymin),
-                              int(self.spline.xmax - self.spline.xmin))
-            self.uniform_pixel = False
-        else:
-            self.max_shape = (2048, 2048)
-            self.pixel1 = 50e-6
-            self.pixel2 = 50e-6
-        self.shape = self.max_shape
-
-    def calc_mask(self):
-        """
-        Returns a generic mask for Frelon detectors...
-        All pixels which (center) turns to be out of the valid region are by default discarded
-        """
-        if not self._splineFile:
-            return
-        d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1])) + 0.5
-        d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1])) + 0.5
-        dX = self.spline.splineFuncX(d2, d1)
-        dY = self.spline.splineFuncY(d2, d1)
-        p1 = dY + d1
-        p2 = dX + d2
-        below_min = numpy.logical_or((p2 < self.spline.xmin), (p1 < self.spline.ymin))
-        above_max = numpy.logical_or((p2 > self.spline.xmax), (p1 > self.spline.ymax))
-        mask = numpy.logical_or(below_min, above_max).astype(numpy.int8)
-        return mask
 
 
 class Basler(Detector):
