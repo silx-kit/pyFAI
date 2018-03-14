@@ -27,14 +27,14 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "05/03/2018"
+__date__ = "14/03/2018"
 
 import logging
 import numpy
 import pyFAI.utils
 from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.peak_picker import PeakPicker
-from pyFAI.ext.marchingsquares import isocontour
+from ..peak_picker import PeakPicker
+from ...ext.marchingsquares import isocontour
 
 _logger = logging.getLogger(__name__)
 

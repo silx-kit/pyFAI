@@ -27,13 +27,13 @@ from __future__ import absolute_import
 
 __authors__ = ["V. Valls"]
 __license__ = "MIT"
-__date__ = "09/01/2018"
+__date__ = "14/03/2018"
 
 import logging
 import numpy
 import pyFAI.utils
-from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.peak_picker import PeakPicker
+from ...geometryRefinement import GeometryRefinement
+from ..peak_picker import PeakPicker
 
 _logger = logging.getLogger(__name__)
 
