@@ -34,12 +34,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "15/03/2018"
 
 import unittest
 import logging
 import sys
 import copy
+import numpy
 from .utilstest import UtilsTest
 logger = logging.getLogger(__name__)
 from ..third_party import six
@@ -115,6 +116,16 @@ class TestCalibrant(unittest.TestCase):
             self.assertTrue(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assertTrue(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")
+
+    def test_get_peaks(self):
+        calibrant = get_calibrant("LaB6")
+        calibrant.wavelength = 1e-10
+        ref = calibrant.get_2th()
+
+        delta = abs(calibrant.get_peaks() - numpy.rad2deg(ref))
+        self.assertLess(delta.max(), 1e-10, "results are the same")
+
+        self.assertEqual(len(calibrant.get_peaks("q_A^-1")), len(ref), "length is OK")
 
     def test_factory_create_calibrant(self):
         c1 = get_calibrant("LaB6")
