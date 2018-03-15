@@ -28,3 +28,4 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    Goniometer/index
    Inpainting/Inpainting
    ThickDetector/index
+   Soleil/index
