@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "20/02/2018"
+__date__ = "15/03/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 try:
     # multithreaded version in Cython: about 2x faster on large array evaluation
-    from . import _bispev as fitpack
+    from .ext import _bispev as fitpack
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     from scipy.interpolate import fitpack

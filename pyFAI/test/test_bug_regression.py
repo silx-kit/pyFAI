@@ -57,11 +57,12 @@ from .. import units
 from ..utils import six
 
 if six.PY2:
-    import imp
+    import importlib
+    # Not as powerfull as the Python3 version
 
     def load_source(module_name, file_path):
         "Plugin loader which does not pollute sys.module"
-        return imp.load_source(module_name, file_path)
+        return importlib.import_module(module_name, module_name.split(".")[0])
 else:
     import importlib.util
 
