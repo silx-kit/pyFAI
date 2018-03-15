@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "15/03/2018"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,7 +37,7 @@ import logging
 import threading
 import numpy
 
-from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
+from .common import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .utils import concatenate_cl_kernel
 from ..utils import crc32
 if pyopencl:
