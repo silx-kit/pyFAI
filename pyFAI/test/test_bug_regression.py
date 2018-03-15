@@ -56,18 +56,26 @@ from .. import detectors
 from .. import units
 from ..utils import six
 
-if six.PY2:
-    import importlib
-    # Not as powerfull as the Python3 version
-
-    def load_source(module_name, file_path):
-        "Plugin loader which does not pollute sys.module"
-        return importlib.import_module(module_name, module_name.split(".")[0])
-else:
+try:
     import importlib.util
+    if "module_from_spec" not in dir(importlib.util):
+        raise ImportError
+except ImportError:
+    import importlib
 
     def load_source(module_name, file_path):
-        "Plugin loader which does not pollute sys.module"
+        """Plugin loader which does not pollute sys.module,
+        
+        Not as powerful as the v3.5+ 
+        """
+        return importlib.import_module(module_name, module_name.split(".")[0])
+
+else:
+
+    def load_source(module_name, file_path):
+        """Plugin loader which does not pollute sys.module,
+        
+        Python Version >=3.5"""
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
