@@ -235,8 +235,14 @@ class TestBugRegression(unittest.TestCase):
                     try:
                         load_source(fqn, path)
                     except Exception as err:
-                        logger.error("Failed importing %s from %s with error: %s", fqn, path, err)
-                        raise err
+                        if isinstance(err, ImportError) and\
+                            "No Qt wrapper found" in err.__str__:
+                            logger.warning("Failed importing %s from %s with error: %s",
+                                           fqn, path, err)
+                        else:
+                            logger.error("Failed importing %s from %s with error: %s",
+                                         fqn, path, err)
+                            raise err
 
 
 def suite():
