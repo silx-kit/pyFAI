@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2018"
+__date__ = "16/03/2018"
 
 import sys
 import os
@@ -230,11 +230,18 @@ class TestBugRegression(unittest.TestCase):
         """Try to import every single module in the package
         """
         import pyFAI
-        print(pyFAI.__file__)
-        print(pyFAI.__name__)
+#         print(pyFAI.__file__)
+#         print(pyFAI.__name__)
         pyFAI_root = os.path.split(pyFAI.__file__)[0]
 
         for root, dirs, files in os.walk(pyFAI_root, topdown=True):
+            for adir in dirs:
+
+                subpackage_path = os.path.join(root, adir, "__init__.py")
+                subpackage = "pyFAI" + subpackage_path[len(pyFAI_root):-12].replace(os.sep, ".")
+                if os.path.isdir(subpackage_path):
+                    logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
+                    sys.modules[subpackage] = load_source(subpackage, subpackage_path)
             for name in files:
                 if name.endswith(".py"):
                     path = os.path.join(root, name)
