@@ -250,10 +250,14 @@ class TestBugRegression(unittest.TestCase):
                     try:
                         load_source(fqn, path)
                     except Exception as err:
-                        if (isinstance(err, ImportError) and
+                        if ((isinstance(err, ImportError) and
                                 "No Qt wrapper found" in err.__str__() or
-                                "pyopencl is not installed" in err.__str__()):
-                            logger.info("Failed importing %s from %s with error: %s",
+                                "pyopencl is not installed" in err.__str__() or
+                                "PySide" in err.__str__()) or 
+                            (isinstance(err, SystemError) and 
+                                "Parent module" in err.__str__())):
+
+                            logger.info("Expected failure importing %s from %s with error: %s",
                                         fqn, path, err)
                         else:
                             logger.error("Failed importing %s from %s with error: %s%s: %s",
