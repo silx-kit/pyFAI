@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2018"
+__date__ = "22/03/2018"
 __status__ = "production"
 
 
@@ -118,82 +118,6 @@ class Basler(Detector):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
-
-
-class Mar345(Detector):
-
-    """
-    Mar345 Imaging plate detector
-
-    In this detector, pixels are always square
-    The valid image size are 2300, 2000, 1600, 1200, 3450, 3000, 2400, 1800
-    """
-    force_pixel = True
-    MAX_SHAPE = (3450, 3450)
-    # Valid image width with corresponding pixel size
-    VALID_SIZE = {2300: 150e-6,
-                  2000: 150e-6,
-                  1600: 150e-6,
-                  1200: 150e-6,
-                  3450: 100e-6,
-                  3000: 100e-6,
-                  2400: 100e-6,
-                  1800: 100e-6}
-
-    aliases = ["MAR 345", "Mar3450"]
-
-    def __init__(self, pixel1=100e-6, pixel2=100e-6):
-        Detector.__init__(self, pixel1, pixel2)
-        self._default_pixel_size = pixel1, pixel2
-        self.max_shape = (int(self.max_shape[0] * 100e-6 / self.pixel1),
-                          int(self.max_shape[1] * 100e-6 / self.pixel2))
-        self.shape = self.max_shape
-#        self.mode = 1
-
-    def calc_mask(self):
-        c = [i // 2 for i in self.shape]
-        x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
-        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
-        return mask.astype(numpy.int8)
-
-    def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._pixel1, self._pixel2)
-
-    def guess_binning(self, data):
-        """
-        Guess the binning/mode depending on the image shape
-        :param data: 2-tuple with the shape of the image or the image with a .shape attribute.
-        :return: True if the data fit the detector
-        :rtype: bool
-        """
-        if "shape" in dir(data):
-            shape = data.shape
-        elif "__len__" in dir(data):
-            shape = tuple(data[:2])
-        else:
-            logger.warning("No shape available to guess the binning: %s", data)
-            # reset the values
-            self._pixel1, self._pixel2 = self._default_pixel_size
-            self._binning = 1, 1
-            return False
-
-        dim1, dim2 = shape
-        if dim1 not in self.VALID_SIZE or dim2 not in self.VALID_SIZE:
-            # reset the values
-            self._pixel1, self._pixel2 = self._default_pixel_size
-            self._binning = 1, 1
-            result = False
-        else:
-            self._pixel1 = self.VALID_SIZE[dim1]
-            self._pixel2 = self.VALID_SIZE[dim2]
-            self.max_shape = shape
-            self.shape = shape
-            self._binning = (1, 1)
-            result = True
-        self._mask = False
-        self._mask_crc = None
-        return result
 
 
 class Perkin(Detector):
