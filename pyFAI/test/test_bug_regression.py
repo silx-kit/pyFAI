@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/01/2018"
+__date__ = "16/03/2018"
 
 import sys
 import os
@@ -54,6 +54,32 @@ from .. import load
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import detectors
 from .. import units
+from ..utils import six
+
+try:
+    import importlib.util
+    if "module_from_spec" not in dir(importlib.util):
+        raise ImportError
+except ImportError:
+    import importlib
+
+    def load_source(module_name, file_path):
+        """Plugin loader which does not pollute sys.module,
+        
+        Not as powerful as the v3.5+ 
+        """
+        return importlib.import_module(module_name, module_name.split(".")[0])
+
+else:
+
+    def load_source(module_name, file_path):
+        """Plugin loader which does not pollute sys.module,
+        
+        Python Version >=3.5"""
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
 
 
 class TestBug170(unittest.TestCase):
@@ -177,7 +203,6 @@ class TestBugRegression(unittest.TestCase):
         self.assertNotEqual(id(ai.ra), id(ai3.ra), "deepcopy arrays are different after copy")
         self.assertNotEqual(id(ai.detector), id(ai3.detector), "deepcopy arrays are different after copy")
 
-
     def test_bug_174(self):
         """
         wavelength change not taken into account (memoization error)
@@ -200,6 +225,45 @@ class TestBugRegression(unittest.TestCase):
         """check the stored "h*c" constant is almost 12.4"""
         hc = 12.398419292004204  # Old reference value
         self.assertAlmostEqual(hc, units.hc, 6, "hc is correct, got %s" % units.hc)
+
+    def test_bug_808(self):
+        """Try to import every single module in the package
+        """
+        import pyFAI
+#         print(pyFAI.__file__)
+#         print(pyFAI.__name__)
+        pyFAI_root = os.path.split(pyFAI.__file__)[0]
+
+        for root, dirs, files in os.walk(pyFAI_root, topdown=True):
+            for adir in dirs:
+
+                subpackage_path = os.path.join(root, adir, "__init__.py")
+                subpackage = "pyFAI" + subpackage_path[len(pyFAI_root):-12].replace(os.sep, ".")
+                if os.path.isdir(subpackage_path):
+                    logger.info("Loading subpackage: %s from %s", subpackage, subpackage_path)
+                    sys.modules[subpackage] = load_source(subpackage, subpackage_path)
+            for name in files:
+                if name.endswith(".py"):
+                    path = os.path.join(root, name)
+                    fqn = "pyFAI" + path[len(pyFAI_root):-3].replace(os.sep, ".")
+                    logger.info("Importing %s from %s", fqn, path)
+                    try:
+                        load_source(fqn, path)
+                    except Exception as err:
+                        if ((isinstance(err, ImportError) and
+                                "No Qt wrapper found" in err.__str__() or
+                                "pyopencl is not installed" in err.__str__() or
+                                "PySide" in err.__str__()) or 
+                            (isinstance(err, SystemError) and 
+                                "Parent module" in err.__str__())):
+
+                            logger.info("Expected failure importing %s from %s with error: %s",
+                                        fqn, path, err)
+                        else:
+                            logger.error("Failed importing %s from %s with error: %s%s: %s",
+                                         fqn, path, os.linesep,
+                                         err.__class__.__name__, err)
+                            raise err
 
 
 def suite():

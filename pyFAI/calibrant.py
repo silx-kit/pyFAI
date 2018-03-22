@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2018"
+__date__ = "15/03/2018"
 __status__ = "production"
 
 
@@ -53,6 +53,7 @@ from math import sin, asin, cos, sqrt, pi, ceil
 import threading
 from .utils import get_calibration_dir
 from .utils.decorators import deprecated
+from . import units
 
 logger = logging.getLogger(__name__)
 epsilon = 1.0e-6  # for floating point comparison
@@ -494,6 +495,7 @@ class Calibrant(object):
     wavelength = property(get_wavelength, set_wavelength)
 
     def _calc_2th(self):
+        "Calculate the 2theta positions for all peaks"
         if self._wavelength is None:
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
@@ -519,6 +521,7 @@ class Calibrant(object):
         self._dSpacing = [5.0e9 * self._wavelength / sin(tth / 2.0) for tth in self._2th]
 
     def get_2th(self):
+        "Returns the 2theta positions for all peaks (cached)"
         if not self._2th:
             ds = self.dSpacing  # forces the file reading if not done
             if not ds:
@@ -541,6 +544,23 @@ class Calibrant(object):
             d2th = abs(numpy.array(self._2th) - angle)
             if d2th.min() < delta:
                 return d2th.argmin()
+
+    def get_peaks(self, unit="2th_deg"):
+        """Calculate the peak position as 
+        :return: numpy array (unlike other methods which return lists) 
+        """
+        unit = units.to_unit(unit)
+        scale = unit.scale
+        name = unit.name
+        size = len(self.get_2th())
+        if name.startswith("2th"):
+            values = numpy.array(self.get_2th())
+        elif name.startswith("q"):
+            values = 20.0 * pi / numpy.array(self.get_dSpacing()[:size])
+        else:
+            raise ValueError("Only 2\theta and *q* units are supported for now")
+
+        return values * scale
 
     def fake_calibration_image(self, ai, shape=None, Imax=1.0, U=0, V=0, W=0.0001):
         """

@@ -30,7 +30,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "15/03/2018"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -38,8 +38,8 @@ import os
 import logging
 import threading
 import numpy
-from .opencl import ocl, pyopencl
-from .ext.splitBBoxLUT import HistoBBox1d
+from .common import ocl, pyopencl
+from ..ext.splitBBoxLUT import HistoBBox1d
 from . import utils
 if pyopencl:
     mf = pyopencl.mem_flags

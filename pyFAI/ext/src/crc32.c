@@ -152,7 +152,7 @@ static uint32_t fastcrc(const char *str, uint32_t len) {
 	return crc;
 }
 
-PYFAI_VISIBILITY_HIDDEN uint32_t crc32(char *str, uint32_t len) {
+PYFAI_VISIBILITY_HIDDEN uint32_t pyFAI_crc32(char *str, uint32_t len) {
   uint32_t eax, ebx, ecx, edx;
   cpuid(1, &eax, &ebx, &ecx, &edx);
 

@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2017"
+__date__ = "15/03/2018"
 __status__ = "Production"
 __docformat__ = 'restructuredtext'
 
@@ -104,17 +104,7 @@ def plot1d(result, calibrant=None, label=None, ax=None):
     if label:
         ax.legend()
     if calibrant:
-        from pyFAI import units
-        x_values = None
-        twotheta = numpy.array([i for i in calibrant.get_2th() if i])  # in radian
-        if unit == units.TTH_DEG:
-            x_values = numpy.rad2deg(twotheta)
-        elif unit == units.TTH_RAD:
-            x_values = twotheta
-        elif unit == units.Q_A:
-            x_values = (4.e-10 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
-        elif unit == units.Q_NM:
-            x_values = (4.e-9 * numpy.pi / calibrant.wavelength) * numpy.sin(.5 * twotheta)
+        x_values = calibrant.get_peaks(unit)
         if x_values is not None:
             for x in x_values:
                 line = lines.Line2D([x, x], ax.axis()[2:4],
