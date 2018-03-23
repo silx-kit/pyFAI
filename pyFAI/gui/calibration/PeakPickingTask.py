@@ -433,7 +433,7 @@ class _PeakToolItemDelegate(qt.QStyledItemDelegate):
         editor.setSizePolicy(qt.QSizePolicy.Fixed, qt.QSizePolicy.Fixed)
 
         remove = qt.QAction(editor)
-        remove.setIcon(icons.getQIcon("remove-peak"))
+        remove.setIcon(icons.getQIcon("pyfai:gui/icons/remove-peak"))
         remove._customSignal = None
         persistantIndex = qt.QPersistentModelIndex(index)
         remove.triggered.connect(functools.partial(self.__removePeak, persistantIndex))
