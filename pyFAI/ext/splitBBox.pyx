@@ -258,9 +258,9 @@ def histoBBox1d(numpy.ndarray weights not None,
     return edges, outMerge, outData, outCount
 
 
-#@cython.cdivision(True)
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def histoBBox2d(weights not None,
                 pos0 not None,
                 delta_pos0 not None,
@@ -400,8 +400,11 @@ def histoBBox2d(weights not None,
             d1 = dpos1[idx]
             min1 = c1 - d1
             max1 = c1 + d1
-            if not allow_pos0_neg and lower0 < 0:
-                lower0 = 0
+            if not allow_pos0_neg:
+                if min0 < 0.0:
+                    min0 = 0.0
+                if max0 < 0.0:
+                    max0 = 0.0
             if max1 > (2 - chiDiscAtPi) * pi:
                 max1 = (2 - chiDiscAtPi) * pi
             if min1 < (-chiDiscAtPi) * pi:

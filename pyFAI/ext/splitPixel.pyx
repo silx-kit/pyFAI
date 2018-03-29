@@ -219,7 +219,7 @@ def fullSplit1D(numpy.ndarray pos not None,
             pos0_maxin = pos0_max
     if pos0_min < 0:
         pos0_min = 0
-    pos0_max = pos0_maxin * EPS32
+    pos0_max = calc_upper_bound(pos0_maxin)
 
     if pos1Range is not None and len(pos1Range) > 1:
         pos1_min = min(pos1Range)
@@ -229,7 +229,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         if min1 == max1 == 0:
             pos1_min = pos[:, :, 1].min()
             pos1_maxin = pos[:, :, 1].max()
-    pos1_max = pos1_maxin * EPS32
+    pos1_max = calc_upper_bound(pos1_maxin)
     dpos = (pos0_max - pos0_min) / (<double> (bins))
 
     outPos = numpy.linspace(pos0_min + 0.5 * dpos, pos0_maxin - 0.5 * dpos, bins)
@@ -362,6 +362,8 @@ def fullSplit2D(numpy.ndarray pos not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
+                bint allow_pos0_neg=0,
+                bint chiDiscAtPi=1,
                 float empty=0.0,
                 double normalization_factor=1.0
                 ):
@@ -505,6 +507,17 @@ def fullSplit2D(numpy.ndarray pos not None,
 
             if (max0 < pos0_min) or (min0 > pos0_maxin) or (max1 < pos1_min) or (min1 > pos1_maxin):
                     continue
+
+            if not allow_pos0_neg:
+                if min0 < 0.0:
+                    min0 = 0.0
+                if max0 < 0.0:
+                    max0 = 0.0
+
+            if max1 > (2 - chiDiscAtPi) * pi:
+                max1 = (2 - chiDiscAtPi) * pi
+            if min1 < (-chiDiscAtPi) * pi:
+                min1 = (-chiDiscAtPi) * pi
 
             if do_dark:
                 data -= cdark[idx]
