@@ -29,7 +29,7 @@
 """Re-implementation of numpy histograms without OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "09/01/2018"
+__date__ = "29/03/2018"
 __license__ = "MIY"
 __copyright__ = "2011-2016, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
@@ -84,10 +84,10 @@ def histogram(numpy.ndarray pos not None,
 
     if bin_range is not None:
         min0 = min(bin_range)
-        max0 = max(bin_range) * EPS32
+        max0 = calc_upper_bound(max(bin_range))
     else:
         min0 = pos.min()
-        max0 = pos.max() * EPS32
+        max0 = calc_upper_bound(pos.max())
 
     delta = (max0 - min0) / float(bins)
 
@@ -159,9 +159,9 @@ def histogram2d(numpy.ndarray pos0 not None,
         numpy.ndarray[numpy.float64_t, ndim=2] out_count = numpy.zeros((bins0, bins1), dtype="float64")
         numpy.ndarray[numpy.float64_t, ndim=2] out_merge = numpy.zeros((bins0, bins1), dtype="float64")
         double min0 = pos0.min()
-        double max0 = pos0.max() * EPS32
+        double max0 = calc_upper_bound(pos0.max())
         double min1 = pos1.min()
-        double max1 = pos1.max() * EPS32
+        double max1 = calc_upper_bound(pos1.max())
         double delta0 = (max0 - min0) / float(bins0)
         double delta1 = (max1 - min1) / float(bins1)
         double fbin0, fbin1, p0, p1, d

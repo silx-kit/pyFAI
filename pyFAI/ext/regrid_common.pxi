@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/01/2018"
+__date__ = "29/03/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -59,3 +59,18 @@ cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating de
     :return: bin number as floating point.
     """
     return (x0 - pos0_min) / delta
+
+
+@cython.cdivision(True)
+cdef inline floating calc_upper_bound(floating maximum_value) nogil:
+    """Calculate the upper_bound for an histogram, 
+    given the maximum value of all the data.
+    
+    :param maximum_value: maximum value over all elements
+    :return: the smallest 32 bit float greater than the maximum
+    """
+    if maximum_value > 0:
+        return maximum_value * EPS32
+    else:
+        return maximum_value / EPS32
+ 
