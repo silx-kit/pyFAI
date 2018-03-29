@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "09/01/2018"
+__date__ = "29/03/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -168,7 +168,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         data_t cdummy = 0, cddummy = 0, data = 0
         position_t deltaR = 0, deltaL = 0, one_over_area = 0
         position_t pos0_min = 0, pos0_max = 0, pos0_maxin = 0, pos1_min = 0, pos1_max = 0, pos1_maxin = 0
-        position_t aera_pixel = 0, sum_area = 0, sub_area = 0, dpos = 0, fbin0_min = 0, fbin0_max = 0
+        position_t area_pixel = 0, sum_area = 0, sub_area = 0, dpos = 0, fbin0_min = 0, fbin0_max = 0
         position_t a0 = 0, b0 = 0, c0 = 0, d0 = 0, max0 = 0, min0 = 0, a1 = 0, b1 = 0, c1 = 0, d1 = 0, max1 = 0, min1 = 0
         double epsilon = 1e-10
 
@@ -316,8 +316,8 @@ def fullSplit1D(numpy.ndarray pos not None,
             else:
                 bin0_min = max(0, bin0_min)
                 bin0_max = min(bins, bin0_max + 1)
-                aera_pixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
-                one_over_area = 1.0 / aera_pixel
+                area_pixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+                one_over_area = 1.0 / area_pixel
 
                 integrate(buffer, bins, a0, a1, b0, b1)  # A-B
                 integrate(buffer, bins, b0, b1, c0, c1)  # B-C
@@ -334,9 +334,9 @@ def fullSplit1D(numpy.ndarray pos not None,
                     outData[i] += sub_area * data
 
                 # Check the total area:
-                if fabs(sum_area - aera_pixel) / aera_pixel > 1e-6 and bin0_min != 0 and bin0_max != bins:
+                if fabs(sum_area - area_pixel) / area_pixel > 1e-6 and bin0_min != 0 and bin0_max != bins:
                     with gil:
-                        print("area_pixel=%s area_sum=%s, Error= %s" % (aera_pixel, sum_area, (aera_pixel - sum_area) / aera_pixel))
+                        print("area_pixel=%s area_sum=%s, Error= %s" % (area_pixel, sum_area, (area_pixel - sum_area) / area_pixel))
                 buffer[bin0_min:bin0_max] = 0
         for i in range(bins):
             if outCount[i] > epsilon:
@@ -419,7 +419,7 @@ def fullSplit2D(numpy.ndarray pos not None,
         double cdummy = 0, cddummy = 0, data = 0
         double min0 = 0, max0 = 0, min1 = 0, max1 = 0, deltaR = 0, deltaL = 0, deltaU = 0, deltaD = 0, one_over_area = 0
         double pos0_min = 0, pos0_max = 0, pos1_min = 0, pos1_max = 0, pos0_maxin = 0, pos1_maxin = 0
-        double aera_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
+        double area_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
         double a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
         double epsilon = 1e-10
         int bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
@@ -554,10 +554,10 @@ def fullSplit2D(numpy.ndarray pos not None,
                     outData[bin0_min, bin1_min] += data
                 else:
                     # spread on more than 2 bins
-                    aera_pixel = fbin1_max - fbin1_min
+                    area_pixel = fbin1_max - fbin1_min
                     deltaD = (<double> (bin1_min + 1)) - fbin1_min
                     deltaU = fbin1_max - (<double> bin1_max)
-                    one_over_area = 1.0 / aera_pixel
+                    one_over_area = 1.0 / area_pixel
 
                     outCount[bin0_min, bin1_min] += one_over_area * deltaD
                     outData[bin0_min, bin1_min] += data * one_over_area * deltaD
@@ -573,27 +573,27 @@ def fullSplit2D(numpy.ndarray pos not None,
                 # spread on more than 2 bins in dim 0
                 if bin1_min == bin1_max:
                     # All pixel fall on 1 bins in dim 1
-                    aera_pixel = fbin0_max - fbin0_min
+                    area_pixel = fbin0_max - fbin0_min
                     deltaL = (<double> (bin0_min + 1)) - fbin0_min
-                    one_over_area = deltaL / aera_pixel
+                    one_over_area = deltaL / area_pixel
                     outCount[bin0_min, bin1_min] += one_over_area
                     outData[bin0_min, bin1_min] += data * one_over_area
                     deltaR = fbin0_max - (<double> bin0_max)
-                    one_over_area = deltaR / aera_pixel
+                    one_over_area = deltaR / area_pixel
                     outCount[bin0_max, bin1_min] += one_over_area
                     outData[bin0_max, bin1_min] += data * one_over_area
-                    one_over_area = 1.0 / aera_pixel
+                    one_over_area = 1.0 / area_pixel
                     for i in range(bin0_min + 1, bin0_max):
                             outCount[i, bin1_min] += one_over_area
                             outData[i, bin1_min] += data * one_over_area
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
-                    aera_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
+                    area_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
                     deltaL = (<double> (bin0_min + 1.0)) - fbin0_min
                     deltaR = fbin0_max - (<double> bin0_max)
                     deltaD = (<double> (bin1_min + 1.0)) - fbin1_min
                     deltaU = fbin1_max - (<double> bin1_max)
-                    one_over_area = 1.0 / aera_pixel
+                    one_over_area = 1.0 / area_pixel
 
                     outCount[bin0_min, bin1_min] += one_over_area * deltaL * deltaD
                     outData[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD
