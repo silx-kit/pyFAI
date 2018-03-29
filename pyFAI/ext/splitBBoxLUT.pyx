@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/01/2018"
+__date__ = "29/03/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -139,7 +139,7 @@ class HistoBBox1d(object):
             self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float32)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
-            self.pos1_max = pos1_maxin * EPS32
+            self.pos1_max = calc_upper_bound(<double> pos1_maxin)
         else:
             self.check_pos1 = False
             self.cpos1_min = None
@@ -203,7 +203,7 @@ class HistoBBox1d(object):
             self.pos0_maxin = pos0_max
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = self.pos0_maxin * EPS32
+        self.pos0_max = calc_upper_bound(<double> self.pos0_maxin)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -883,10 +883,10 @@ class HistoBBox2d(object):
 
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = self.pos0_maxin * EPS32
+        self.pos0_max = calc_upper_bound(<double> self.pos0_maxin)
         self.cpos0_sup = cpos0_sup
         self.cpos0_inf = cpos0_inf
-        self.pos1_max = self.pos1_maxin * EPS32
+        self.pos1_max = calc_upper_bound(<double> self.pos1_maxin)
         self.cpos1_sup = cpos1_sup
         self.cpos1_inf = cpos1_inf
 

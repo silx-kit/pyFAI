@@ -426,6 +426,7 @@ def fullSplit2D(numpy.ndarray pos not None,
         double area_pixel = 0, fbin0_min = 0, fbin0_max = 0, fbin1_min = 0, fbin1_max = 0
         double a0 = 0, a1 = 0, b0 = 0, b1 = 0, c0 = 0, c1 = 0, d0 = 0, d1 = 0
         double epsilon = 1e-10
+        double delta0, delta1
         int bin0_max = 0, bin0_min = 0, bin1_max = 0, bin1_min = 0, i = 0, j = 0, idx = 0
 
     if pos0Range is not None and len(pos0Range) == 2:
@@ -434,7 +435,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     else:
         pos0_min = pos[:, :, 0].min()
         pos0_maxin = pos[:, :, 0].max()
-    pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    pos0_max = calc_upper_bound(pos0_maxin)
 
     if pos1Range is not None and len(pos1Range) > 1:
         pos1_min = min(pos1Range)
@@ -442,12 +443,12 @@ def fullSplit2D(numpy.ndarray pos not None,
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()
-    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    pos1_max = calc_upper_bound(pos1_maxin)
 
-    cdef double dpos0 = (pos0_max - pos0_min) / (<double> (bins0))
-    cdef double dpos1 = (pos1_max - pos1_min) / (<double> (bins1))
-    edges0 = numpy.linspace(pos0_min + 0.5 * dpos0, pos0_maxin - 0.5 * dpos0, bins0)
-    edges1 = numpy.linspace(pos1_min + 0.5 * dpos1, pos1_maxin - 0.5 * dpos1, bins1)
+    delta0 = (pos0_max - pos0_min) / (<double> (bins0))
+    delta1 = (pos1_max - pos1_min) / (<double> (bins1))
+    edges0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_maxin - 0.5 * delta0, bins0)
+    edges1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_maxin - 0.5 * delta1, bins1)
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -544,7 +545,7 @@ def fullSplit2D(numpy.ndarray pos not None,
                 max1 = pos1_maxin
 
             # Treat data for pixel on chi discontinuity
-            if ((max1 - min1) / dpos1) > (bins1 / 2.0):
+            if ((max1 - min1) / delta1) > (bins1 / 2.0):
                 if pos1_maxin - max1 > min1 - pos1_min:
                     min1 = max1
                     max1 = pos1_maxin
@@ -552,10 +553,10 @@ def fullSplit2D(numpy.ndarray pos not None,
                     max1 = min1
                     min1 = pos1_min
 
-            fbin0_min = get_bin_number(min0, pos0_min, dpos0)
-            fbin0_max = get_bin_number(max0, pos0_min, dpos0)
-            fbin1_min = get_bin_number(min1, pos1_min, dpos1)
-            fbin1_max = get_bin_number(max1, pos1_min, dpos1)
+            fbin0_min = get_bin_number(min0, pos0_min, delta0)
+            fbin0_max = get_bin_number(max0, pos0_min, delta0)
+            fbin1_min = get_bin_number(min1, pos1_min, delta1)
+            fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
             bin0_min = < int > fbin0_min
             bin0_max = < int > fbin0_max
