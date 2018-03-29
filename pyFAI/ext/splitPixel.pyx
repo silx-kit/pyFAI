@@ -385,6 +385,8 @@ def fullSplit2D(numpy.ndarray pos not None,
     :param flat: array (of float64) with flat-field image
     :param polarization: array (of float64) with polarization correction
     :param solidangle: array (of float64)with solid angle corrections
+    :param allow_pos0_neg: set to true to allow negative radial values.
+    :param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
     :param empty: value of output bins without any contribution when dummy is None
     :param normalization_factor: divide the valid result by this value
 
@@ -635,11 +637,11 @@ def fullSplit2D(numpy.ndarray pos not None,
                             outData[bin0_max, j] += data * one_over_area * deltaR
 
     # with nogil:
-    for i in range(bins0):
-        for j in range(bins1):
-            if outCount[i, j] > epsilon:
-                outMerge[i, j] = outData[i, j] / outCount[i, j] / normalization_factor
-            else:
-                outMerge[i, j] = cdummy
+        for i in range(bins0):
+            for j in range(bins1):
+                if outCount[i, j] > epsilon:
+                    outMerge[i, j] = outData[i, j] / outCount[i, j] / normalization_factor
+                else:
+                    outMerge[i, j] = cdummy
 
     return outMerge.T, edges0, edges1, outData.T, outCount.T
