@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "29/03/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3158,7 +3158,9 @@ class AzimuthalIntegrator(Geometry):
                                                                              flat=flat,
                                                                              solidangle=solidangle,
                                                                              polarization=polarization,
-                                                                             normalization_factor=normalization_factor)
+                                                                             normalization_factor=normalization_factor,
+                                                                             chiDiscAtPi=self.chiDiscAtPi,
+                                                                             empty=dummy if dummy is not None else self._empty)
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
                 logger.warning("splitBBox is not available;"
@@ -3185,7 +3187,9 @@ class AzimuthalIntegrator(Geometry):
                                                                             flat=flat,
                                                                             solidangle=solidangle,
                                                                             polarization=polarization,
-                                                                            normalization_factor=normalization_factor)
+                                                                            normalization_factor=normalization_factor,
+                                                                            chiDiscAtPi=self.chiDiscAtPi,
+                                                                            empty=dummy if dummy is not None else self._empty)
 
         if (I is None):
             logger.debug("integrate2d uses cython implementation")
