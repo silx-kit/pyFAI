@@ -32,19 +32,20 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/03/2018"
+__date__ = "03/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
 import os
 import sys
 import logging
-logger = logging.getLogger("pyFAI.ext.splitBBoxCSR")
+logger = logging.getLogger(__name__)
 from cython.parallel import prange
 import numpy
-cimport numpy
+cimport numpy as cnp
 include "regrid_common.pxi"
 from ..utils import crc32
+from ..utils.decorators import deprecated
 
 
 class HistoBBox1d(object):
@@ -108,9 +109,9 @@ class HistoBBox1d(object):
         self.data = self.nnz = self.indices = self.indptr = None
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
-        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
+        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float64)
         if delta_pos0 is not None:
-            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
+            self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float64)
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
             self.calc_boundaries(pos0Range)
@@ -121,8 +122,8 @@ class HistoBBox1d(object):
             assert pos1.size == self.size, "pos1 size"
             assert delta_pos1.size == self.size, "delta_pos1.size == self.size"
             self.check_pos1 = True
-            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=numpy.float32)
-            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float32)
+            self.cpos1_min = numpy.ascontiguousarray((pos1 - delta_pos1).ravel(), dtype=numpy.float64)
+            self.cpos1_max = numpy.ascontiguousarray((pos1 + delta_pos1).ravel(), dtype=numpy.float64)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
             self.pos1_max = calc_upper_bound(<double> pos1_maxin)
@@ -136,13 +137,14 @@ class HistoBBox1d(object):
             self.calc_lut()
         else:
             self.calc_lut_nosplit()
-        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta,
+
+        self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
                                      self.pos0_maxin - 0.5 * self.delta,
                                      self.bins)
         self.lut_checksum = crc32(self.data)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
-        self.lut_nbytes = sum([i.nbytes for i in self.lut])
+        self.lut_nbytes = sum([i.nbytes for i in self.lut])      
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -207,8 +209,8 @@ class HistoBBox1d(object):
             int size = self.cpos0.size
             bint check_mask = self.check_mask
             numpy.int8_t[:] cmask
-            float[:] cpos0
-            float upper, lower, pos0_max, pos0_min, c, d
+            double[::1] cpos0
+            double upper, lower, pos0_max, pos0_min, c, d
             bint allow_pos0_neg = self.allow_pos0_neg
 
         if pos0Range is not None and len(pos0Range) > 1:
@@ -612,7 +614,13 @@ class HistoBBox1d(object):
                 outMerge[i] += sum_data / sum_count / normalization_factor
             else:
                 outMerge[i] += cdummy
-        return self.outPos, outMerge, outData, outCount
+        return self.bin_centers, outMerge, outData, outCount
+
+    @property
+    @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
+    def outPos(self):
+        return self.bin_centers
+
 
 ################################################################################
 # Bidimensionnal regrouping
@@ -708,8 +716,8 @@ class HistoBBox2d(object):
         else:
             self.calc_lut_nosplit()
 
-        self.outPos0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, self.pos0_maxin - 0.5 * self.delta0, bins0)
-        self.outPos1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, self.pos1_maxin - 0.5 * self.delta1, bins1)
+        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, self.pos0_maxin - 0.5 * self.delta0, bins0)
+        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, self.pos1_maxin - 0.5 * self.delta1, bins1)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_checksum = crc32(self.data)
@@ -1319,4 +1327,14 @@ class HistoBBox2d(object):
                 outMerge_1d[i] += sum_data / sum_count / normalization_factor
             else:
                 outMerge_1d[i] += cdummy
-        return outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
+        return outMerge.T, self.bin_centers0, self.bin_centers1, outData.T, outCount.T
+
+    @property
+    @deprecated(replacement="bin_centers0", since_version="0.16", only_once=True)
+    def outPos0(self):
+        return self.bin_centers0
+
+    @property
+    @deprecated(replacement="bin_centers1", since_version="0.16", only_once=True)
+    def outPos1(self):
+        return self.bin_centers1
