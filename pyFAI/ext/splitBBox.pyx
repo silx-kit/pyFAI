@@ -31,7 +31,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/03/2018"
+__date__ = "03/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -39,9 +39,6 @@ include "regrid_common.pxi"
 
 import logging
 logger = logging.getLogger(__name__)
-
-from . import sparse_utils
-from .sparse_utils cimport ArrayBuilder
 
 
 @cython.cdivision(True)
@@ -96,29 +93,31 @@ def histoBBox1d(numpy.ndarray weights not None,
     assert bins > 1, "at lease one bin"
     cdef:
         ssize_t  idx, bin0_max, bin0_min
-        float data, deltaR, deltaL, deltaA, epsilon = 1e-10, cdummy = 0, ddummy = 0
-        double pos0_min = 0, pos1_min = 0, pos0_max = 0, pos1_max = 0
-        double pos0_maxin = 0, pos1_maxin = 0, min0 = 0, max0 = 0, fbin0_min = 0, fbin0_max = 0
+        data_t data, cdummy = 0.0, ddummy = 0.0
+        acc_t epsilon = 1e-10, 
+        position_t pos0_min = 0.0, pos1_min = 0.0, pos0_max = 0.0, pos1_max = 0.0
+        position_t pos0_maxin = 0.0, pos1_maxin = 0.0, min0 = 0.0, max0 = 0.0, fbin0_min = 0.0, fbin0_max = 0.0
         bint check_pos1 = False, check_mask = False, check_dummy = False
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
         double delta
 
-        numpy.ndarray[numpy.float32_t, ndim=1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim=1] cpos0, dpos0, cpos1, dpos1, cpos0_lower, cpos0_upper
-        numpy.int8_t[:] cmask
-        float[:] cflat, cdark, cpolarization, csolidangle
-
-    cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
-    dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
+        data_t[::1] cdata, cflat, cdark, cpolarization, csolidangle
+        position_t[::1] cpos0, dpos0, cpos1, dpos1, cpos0_lower, cpos0_upper
+        mask_t[::1] cmask
+        acc_t inv_area, delta_right, delta_left, delta_up, delta_down 
+        
+    cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+    cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
+    dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
     cdef:
-        numpy.ndarray[numpy.float64_t, ndim=1] outData = numpy.zeros(bins, dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim=1] outCount = numpy.zeros(bins, dtype=numpy.float64)
+        numpy.ndarray[numpy.float64_t, ndim=1] sum_data = numpy.zeros(bins, dtype=numpy.float64)
+        numpy.ndarray[numpy.float64_t, ndim=1] sum_count = numpy.zeros(bins, dtype=numpy.float64)
         numpy.ndarray[numpy.float32_t, ndim=1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
 
     if mask is not None:
         assert mask.size == size, "mask size"
         check_mask = True
-        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -135,11 +134,11 @@ def histoBBox1d(numpy.ndarray weights not None,
     if dark is not None:
         assert dark.size == size, "dark current array size"
         do_dark = True
-        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=data_d)
     if flat is not None:
         assert flat.size == size, "flat-field array size"
         do_flat = True
-        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=data_d)
     if polarization is not None:
         do_polarization = True
         assert polarization.size == size, "polarization array size"
@@ -149,8 +148,8 @@ def histoBBox1d(numpy.ndarray weights not None,
         assert solidangle.size == size, "Solid angle array size"
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
-    cpos0_lower = numpy.zeros(size, dtype=numpy.float32)
-    cpos0_upper = numpy.zeros(size, dtype=numpy.float32)
+    cpos0_lower = numpy.zeros(size, dtype=position_d)
+    cpos0_upper = numpy.zeros(size, dtype=position_d)
     pos0_min = cpos0[0]
     pos0_max = cpos0[0]
     with nogil:
@@ -185,7 +184,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         pos1_maxin = max(pos1Range)
         pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta = (pos0_max - pos0_min) / (<double> (bins))
+    delta = (pos0_max - pos0_min) / (<position_t> (bins))
 
     with nogil:
         for idx in range(size):
@@ -226,36 +225,36 @@ def histoBBox1d(numpy.ndarray weights not None,
 
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
-                outCount[bin0_min] += 1.0
-                outData[bin0_min] += data
+                sum_count[bin0_min] += 1.0
+                sum_data[bin0_min] += data
 
             else:
                 # we have pixel spliting.
-                deltaA = 1.0 / (fbin0_max - fbin0_min)
+                inv_area = 1.0 / (fbin0_max - fbin0_min)
 
-                deltaL = < float > (bin0_min + 1) - fbin0_min
-                deltaR = fbin0_max - (<float> bin0_max)
+                delta_left = < float > (bin0_min + 1) - fbin0_min
+                delta_right = fbin0_max - (<float> bin0_max)
 
-                outCount[bin0_min] += (deltaA * deltaL)
-                outData[bin0_min] += (data * deltaA * deltaL)
+                sum_count[bin0_min] += (inv_area * delta_left)
+                sum_data[bin0_min] += (data * inv_area * delta_left)
 
-                outCount[bin0_max] += (deltaA * deltaR)
-                outData[bin0_max] += (data * deltaA * deltaR)
+                sum_count[bin0_max] += (inv_area * delta_right)
+                sum_data[bin0_max] += (data * inv_area * delta_right)
 
                 if bin0_min + 1 < bin0_max:
                     for idx in range(bin0_min + 1, bin0_max):
-                        outCount[idx] += deltaA
-                        outData[idx] += (data * deltaA)
+                        sum_count[idx] += inv_area
+                        sum_data[idx] += (data * inv_area)
 
         for idx in range(bins):
-                if outCount[idx] > epsilon:
-                    outMerge[idx] = outData[idx] / outCount[idx] / normalization_factor
+                if sum_count[idx] > epsilon:
+                    outMerge[idx] = sum_data[idx] / sum_count[idx] / normalization_factor
                 else:
                     outMerge[idx] = cdummy
 
-    edges = numpy.linspace(pos0_min + 0.5 * delta, pos0_maxin - 0.5 * delta, bins)
+    bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_maxin - 0.5 * delta, bins)
 
-    return edges, outMerge, outData, outCount
+    return bin_centers, outMerge, sum_data, sum_count
 
 
 @cython.cdivision(True)
@@ -306,7 +305,7 @@ def histoBBox2d(weights not None,
     :param normalization_factor: divide the result by this value
 
 
-    :return: I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    :return: I, bin_centers0, bin_centers1, weighted histogram(2D), unweighted histogram (2D)
     """
 
     cdef ssize_t bins0, bins1, i, j, idx
@@ -325,29 +324,30 @@ def histoBBox2d(weights not None,
         bins1 = 1
     cdef:
         #Related to data: single precision
-        float[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        float[::1] cflat, cdark, cpolarization, csolidangle
-        float cdummy, ddummy
+        data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
+        data_t[::1] cflat, cdark, cpolarization, csolidangle
+        data_t cdummy, ddummy
         
         #related to positions: double precision
-        double[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float64)
-        double[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float64)
-        double[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float64)
-        double[::1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=numpy.float64)
-        double[::1] cpos0_upper = numpy.empty(size, dtype=numpy.float64)
-        double[::1] cpos0_lower = numpy.empty(size, dtype=numpy.float64)
-        double[::1] cpos1_upper = numpy.empty(size, dtype=numpy.float64)
-        double[::1] cpos1_lower = numpy.empty(size, dtype=numpy.float64)
-        double[:, ::1] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
-        double[:, ::1] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
-        float[:, ::1] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float32)
-        char[::1] cmask
+        position_t[::1] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
+        position_t[::1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
+        position_t[::1] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=position_d)
+        position_t[::1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=position_d)
+        position_t[::1] cpos0_upper = numpy.empty(size, dtype=position_d)
+        position_t[::1] cpos0_lower = numpy.empty(size, dtype=position_d)
+        position_t[::1] cpos1_upper = numpy.empty(size, dtype=position_d)
+        position_t[::1] cpos1_lower = numpy.empty(size, dtype=position_d)
+        acc_t[:, ::1] sum_data = numpy.zeros((bins0, bins1), dtype=acc_d)
+        acc_t[:, ::1] sum_count = numpy.zeros((bins0, bins1), dtype=acc_d)
+        data_t[:, ::1] outMerge = numpy.zeros((bins0, bins1), dtype=data_d)
+        mask_t[::1] cmask
 
-        double c0, c1, d0, d1
-        double min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, delta0, delta1
-        double pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
-        double fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10
-        double  area_pixel, one_over_area
+        position_t c0, c1, d0, d1
+        position_t min0, max0, min1, max1, delta0, delta1
+        position_t pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
+        position_t fbin0_min, fbin0_max, fbin1_min, fbin1_max, 
+        acc_t data, epsilon = 1e-10
+        acc_t  inv_area, delta_up, delta_down, delta_right, delta_left
         ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
         bint check_mask = False, check_dummy = False
         bint do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
@@ -355,7 +355,7 @@ def histoBBox2d(weights not None,
     if mask is not None:
         assert mask.size == size, "mask size"
         check_mask = True
-        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
 
     if (dummy is not None) and delta_dummy is not None:
         check_dummy = True
@@ -440,8 +440,8 @@ def histoBBox2d(weights not None,
     pos0_max = calc_upper_bound(pos0_maxin)
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<double> bins0)
-    delta1 = (pos1_max - pos1_min) / (<double> bins1)
+    delta0 = (pos0_max - pos0_min) / (<position_t> bins0)
+    delta1 = (pos1_max - pos1_min) / (<position_t> bins1)
 
     with nogil:
         for idx in range(size):
@@ -463,8 +463,8 @@ def histoBBox2d(weights not None,
 
             min0 = cpos0_lower[idx]
             max0 = cpos0_upper[idx]
-            min1 = cpos1[idx] - dpos1[idx]
-            max1 = cpos1[idx] + dpos1[idx]
+            min1 = cpos1_lower[idx]
+            max1 = cpos1_upper[idx]
 
             if (max0 < pos0_min) or (max1 < pos1_min) or (min0 > pos0_maxin) or (min1 > pos1_maxin):
                 continue
@@ -492,87 +492,84 @@ def histoBBox2d(weights not None,
                 # No spread along dim0
                 if bin1_min == bin1_max:
                     # All pixel is within a single bin
-                    outCount[bin0_min, bin1_min] += 1.0
-                    outData[bin0_min, bin1_min] += data
+                    sum_count[bin0_min, bin1_min] += 1.0
+                    sum_data[bin0_min, bin1_min] += data
                 else:
                     # spread on 2 or more bins in dim1 
-                    deltaD = (<double> (bin1_min + 1)) - fbin1_min
-                    deltaU = fbin1_max - (bin1_max)
-                    area_pixel = (fbin1_max - fbin1_min)
-                    one_over_area = 1.0 / area_pixel
+                    delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
+                    delta_up = fbin1_max - (bin1_max)
+                    inv_area = 1.0 / (fbin1_max - fbin1_min)
 
-                    outCount[bin0_min, bin1_min] += one_over_area * deltaD
-                    outData[bin0_min, bin1_min] += data * one_over_area * deltaD
+                    sum_count[bin0_min, bin1_min] += inv_area * delta_down
+                    sum_data[bin0_min, bin1_min] += data * inv_area * delta_down
 
-                    outCount[bin0_min, bin1_max] += one_over_area * deltaU
-                    outData[bin0_min, bin1_max] += data * one_over_area * deltaU
+                    sum_count[bin0_min, bin1_max] += inv_area * delta_up
+                    sum_data[bin0_min, bin1_max] += data * inv_area * delta_up
                     for j in range(bin1_min + 1, bin1_max):
-                        outCount[bin0_min, j] += one_over_area
-                        outData[bin0_min, j] += data * one_over_area
+                        sum_count[bin0_min, j] += inv_area
+                        sum_data[bin0_min, j] += data * inv_area
 
             else:
                 # spread on 2 or more bins in dim 0
                 if bin1_min == bin1_max:
                     # All pixel fall inside the same bins in dim 1
-                    area_pixel = (fbin0_max - fbin0_min)
-                    one_over_area = 1.0 / area_pixel
+                    inv_area = 1.0 / (fbin0_max - fbin0_min)
                     
-                    deltaL = (<double> (bin0_min + 1)) - fbin0_min
-                    outCount[bin0_min, bin1_min] += one_over_area * deltaL
-                    outData[bin0_min, bin1_min] += data * one_over_area * deltaL
-                    deltaR = fbin0_max - (<double> bin0_max)
-                    outCount[bin0_max, bin1_min] += one_over_area * deltaR
-                    outData[bin0_max, bin1_min] += data * one_over_area * deltaR
+                    delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
+                    sum_count[bin0_min, bin1_min] += inv_area * delta_left
+                    sum_data[bin0_min, bin1_min] += data * inv_area * delta_left
+                    delta_right = fbin0_max - (<acc_t> bin0_max)
+                    sum_count[bin0_max, bin1_min] += inv_area * delta_right
+                    sum_data[bin0_max, bin1_min] += data * inv_area * delta_right
                     for i in range(bin0_min + 1, bin0_max):
-                            outCount[i, bin1_min] += one_over_area
-                            outData[i, bin1_min] += data * one_over_area
+                            sum_count[i, bin1_min] += inv_area
+                            sum_data[i, bin1_min] += data * inv_area
                 else:
                     # spread on n pix in dim0 and m pixel in dim1:
-                    area_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
-                    one_over_area = 1.0 / area_pixel
+                    inv_area = 1.0 / (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
 
-                    deltaL = (<double> (bin0_min + 1)) - fbin0_min
-                    deltaR = fbin0_max - (<double> bin0_max)
-                    deltaD = (<double> (bin1_min + 1)) - fbin1_min
-                    deltaU = fbin1_max - (<double> bin1_max)
+                    delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
+                    delta_right = fbin0_max - (<acc_t> bin0_max)
+                    delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
+                    delta_up = fbin1_max - (<acc_t> bin1_max)
                                         
-                    outCount[bin0_min, bin1_min] += one_over_area * deltaL * deltaD
-                    outData[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD
+                    sum_count[bin0_min, bin1_min] += inv_area * delta_left * delta_down
+                    sum_data[bin0_min, bin1_min] += data * inv_area * delta_left * delta_down
 
-                    outCount[bin0_min, bin1_max] += one_over_area * deltaL * deltaU
-                    outData[bin0_min, bin1_max] += data * one_over_area * deltaL * deltaU
+                    sum_count[bin0_min, bin1_max] += inv_area * delta_left * delta_up
+                    sum_data[bin0_min, bin1_max] += data * inv_area * delta_left * delta_up
 
-                    outCount[bin0_max, bin1_min] += one_over_area * deltaR * deltaD
-                    outData[bin0_max, bin1_min] += data * one_over_area * deltaR * deltaD
+                    sum_count[bin0_max, bin1_min] += inv_area * delta_right * delta_down
+                    sum_data[bin0_max, bin1_min] += data * inv_area * delta_right * delta_down
 
-                    outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU
-                    outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU
+                    sum_count[bin0_max, bin1_max] += inv_area * delta_right * delta_up
+                    sum_data[bin0_max, bin1_max] += data * inv_area * delta_right * delta_up
                     for i in range(bin0_min + 1, bin0_max):
-                            outCount[i, bin1_min] += one_over_area * deltaD
-                            outData[i, bin1_min] += data * one_over_area * deltaD
+                            sum_count[i, bin1_min] += inv_area * delta_down
+                            sum_data[i, bin1_min] += data * inv_area * delta_down
                             for j in range(bin1_min + 1, bin1_max):
-                                outCount[i, j] += one_over_area
-                                outData[i, j] += data * one_over_area
-                            outCount[i, bin1_max] += one_over_area * deltaU
-                            outData[i, bin1_max] += data * one_over_area * deltaU
+                                sum_count[i, j] += inv_area
+                                sum_data[i, j] += data * inv_area
+                            sum_count[i, bin1_max] += inv_area * delta_up
+                            sum_data[i, bin1_max] += data * inv_area * delta_up
                     for j in range(bin1_min + 1, bin1_max):
-                            outCount[bin0_min, j] += one_over_area * deltaL
-                            outData[bin0_min, j] += data * one_over_area * deltaL
+                            sum_count[bin0_min, j] += inv_area * delta_left
+                            sum_data[bin0_min, j] += data * inv_area * delta_left
 
-                            outCount[bin0_max, j] += one_over_area * deltaR
-                            outData[bin0_max, j] += data * one_over_area * deltaR
+                            sum_count[bin0_max, j] += inv_area * delta_right
+                            sum_data[bin0_max, j] += data * inv_area * delta_right
 
         for i in range(bins0):
             for j in range(bins1):
-                if outCount[i, j] > epsilon:
-                    outMerge[i, j] = outData[i, j] / outCount[i, j] / normalization_factor
+                if sum_count[i, j] > epsilon:
+                    outMerge[i, j] = sum_data[i, j] / sum_count[i, j] / normalization_factor
                 else:
                     outMerge[i, j] = cdummy
 
-    edges0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_maxin - 0.5 * delta0, bins0)
-    edges1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_maxin - 0.5 * delta1, bins1)
+    bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_maxin - 0.5 * delta0, bins0)
+    bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_maxin - 0.5 * delta1, bins1)
     return (numpy.asarray(outMerge).T,
-            edges0,
-            edges1,
-            numpy.asarray(outData).T, 
-            numpy.asarray(outCount).T)
+            bin_centers0,
+            bin_centers1,
+            numpy.asarray(sum_data).T, 
+            numpy.asarray(sum_count).T)

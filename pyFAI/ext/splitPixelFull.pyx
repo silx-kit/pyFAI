@@ -33,7 +33,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/01/2018"
+__date__ = "03/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -43,9 +43,6 @@ import numpy
 from libc.math cimport floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 from cython.view cimport array as cvarray
-
-ctypedef float data_t
-ctypedef double position_t
 
 include "regrid_common.pxi"
 

@@ -29,7 +29,7 @@
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/03/2018"
+__date__ = "03/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -39,6 +39,23 @@ cimport numpy
 import numpy
 from cython cimport floating
 from libc.math cimport fabs, M_PI
+
+# How position are stored
+ctypedef double position_t
+position_d = numpy.float64
+
+# How weights or data are stored 
+ctypedef float data_t
+data_d = numpy.float32
+
+# how data are accumulated 
+ctypedef double acc_t
+acc_d = numpy.float64
+
+# type of the mask:
+ctypedef char mask_t
+mask_d = numpy.int8
+
 
 cdef:
     float pi = <float> M_PI
@@ -73,4 +90,3 @@ cdef inline floating calc_upper_bound(floating maximum_value) nogil:
         return maximum_value * EPS32
     else:
         return maximum_value / EPS32
- 

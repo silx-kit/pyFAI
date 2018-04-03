@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/03/2018"
+__date__ = "03/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython

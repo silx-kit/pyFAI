@@ -33,7 +33,7 @@ Histogram (direct) implementation
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/03/2018"
+__date__ = "03/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -45,9 +45,6 @@ from libc.string cimport memset
 from cython cimport view
 
 include "regrid_common.pxi"
-
-ctypedef double position_t
-ctypedef double data_t
 
 cdef inline position_t area4(position_t a0,
                              position_t a1,
@@ -415,8 +412,6 @@ def fullSplit2D(numpy.ndarray pos not None,
         numpy.ndarray[numpy.float64_t, ndim=2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
         numpy.ndarray[numpy.float64_t, ndim=2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
         numpy.ndarray[numpy.float64_t, ndim=2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim=1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim=1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)
         numpy.int8_t[:] cmask
         double[:] cflat, cdark, cpolarization, csolidangle
         bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
