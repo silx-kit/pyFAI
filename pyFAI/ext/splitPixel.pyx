@@ -336,7 +336,9 @@ def fullSplit1D(numpy.ndarray pos not None,
             else:
                 merged[i] = cdummy
                 
-    bin_centers = numpy.linspace(pos0_min + 0.5 * dpos, pos0_maxin - 0.5 * dpos, bins)
+    bin_centers = numpy.linspace(pos0_min + 0.5 * dpos, 
+                                 pos0_max - 0.5 * dpos, 
+                                 bins)
 
     return (bin_centers, numpy.asarray(merged), numpy.asarray(sum_data), numpy.asarray(sum_count))
 
@@ -635,8 +637,12 @@ def fullSplit2D(numpy.ndarray pos not None,
                 else:
                     merged[i, j] = cdummy
 
-    bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_maxin - 0.5 * delta0, bins0)
-    bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_maxin - 0.5 * delta1, bins1)
+    bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, 
+                                  pos0_max - 0.5 * delta0, 
+                                  bins0)
+    bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, 
+                                  pos1_max - 0.5 * delta1, 
+                                  bins1)
 
     return (numpy.asarray(merged).T, 
             bin_centers0, 

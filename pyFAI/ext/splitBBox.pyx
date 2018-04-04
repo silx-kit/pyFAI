@@ -31,7 +31,7 @@ Splitting is done on the pixel's bounding box similar to fit2D
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/04/2018"
+__date__ = "04/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -252,7 +252,7 @@ def histoBBox1d(numpy.ndarray weights not None,
                 else:
                     outMerge[idx] = cdummy
 
-    bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_maxin - 0.5 * delta, bins)
+    bin_centers = numpy.linspace(pos0_min + 0.5 * delta, pos0_max - 0.5 * delta, bins)
 
     return bin_centers, outMerge, sum_data, sum_count
 
@@ -566,8 +566,8 @@ def histoBBox2d(weights not None,
                 else:
                     outMerge[i, j] = cdummy
 
-    bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_maxin - 0.5 * delta0, bins0)
-    bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_maxin - 0.5 * delta1, bins1)
+    bin_centers0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_max - 0.5 * delta0, bins0)
+    bin_centers1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_max - 0.5 * delta1, bins1)
     return (numpy.asarray(outMerge).T,
             bin_centers0,
             bin_centers1,

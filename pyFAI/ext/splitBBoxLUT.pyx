@@ -148,7 +148,7 @@ class HistoBBox1d(object):
         self._lut_checksum = None
         self.calc_lut()
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
-                                          self.pos0_maxin - 0.5 * self.delta,
+                                          self.pos0_max - 0.5 * self.delta,
                                           self.bins)
 
         self.unit = unit
@@ -808,8 +808,12 @@ class HistoBBox2d(object):
         self.lut_max_idx = None
         self._lut = None
         self.calc_lut()
-        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, self.pos0_maxin - 0.5 * self.delta0, bins0)
-        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, self.pos1_maxin - 0.5 * self.delta1, bins1)
+        self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
+                                           self.pos0_max - 0.5 * self.delta0, 
+                                           bins0)
+        self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
+                                           self.pos1_max - 0.5 * self.delta1, 
+                                           bins1)
         self.unit = unit
         # Calculated at export time to python
         self._lut_checksum = None

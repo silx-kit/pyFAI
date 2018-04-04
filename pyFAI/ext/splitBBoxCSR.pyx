@@ -109,13 +109,13 @@ class HistoBBox1d(object):
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=position_d)
-        if delta_pos0 is not None:
+        if delta_pos0 is None:
+            self.calc_boundaries_nosplit(pos0Range)
+        else:
             self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=position_d)
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
             self.calc_boundaries(pos0Range)
-        else:
-            self.calc_boundaries_nosplit(pos0Range)
 
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size, "pos1 size"
@@ -131,14 +131,14 @@ class HistoBBox1d(object):
             self.cpos1_min = None
             self.pos1_max = None
 
-        self.delta = (self.pos0_max - self.pos0_min) / bins
+        self.delta = (self.pos0_max - self.pos0_min) / (<position_t> bins)
         if delta_pos0 is not None:
             self.calc_lut()
         else:
             self.calc_lut_nosplit()
 
         self.bin_centers = numpy.linspace(self.pos0_min + 0.5 * self.delta,
-                                          self.pos0_maxin - 0.5 * self.delta,
+                                          self.pos0_max - 0.5 * self.delta,
                                           self.bins)
         self.lut_checksum = crc32(self.data)
         self.unit = unit
@@ -726,10 +726,10 @@ class HistoBBox2d(object):
             self.calc_lut_nosplit()
 
         self.bin_centers0 = numpy.linspace(self.pos0_min + 0.5 * self.delta0, 
-                                           self.pos0_maxin - 0.5 * self.delta0, 
+                                           self.pos0_max - 0.5 * self.delta0, 
                                            bins0)
         self.bin_centers1 = numpy.linspace(self.pos1_min + 0.5 * self.delta1, 
-                                           self.pos1_maxin - 0.5 * self.delta1, 
+                                           self.pos1_max - 0.5 * self.delta1, 
                                            bins1)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)

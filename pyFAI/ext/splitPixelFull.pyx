@@ -33,7 +33,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/04/2018"
+__date__ = "04/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 
@@ -247,7 +247,9 @@ def fullSplit1D(numpy.ndarray pos not None,
     # pos1_max = pos1_maxin * 1.00001
     dpos = (pos0_max - pos0_min) / (<double> (bins))
 
-    outPos = numpy.linspace(pos0_min + 0.5 * dpos, pos0_maxin - 0.5 * dpos, bins)
+    outPos = numpy.linspace(pos0_min + 0.5 * dpos, 
+                            pos0_max - 0.5 * dpos, 
+                            bins)
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -483,8 +485,12 @@ def fullSplit2D(numpy.ndarray pos not None,
 
     delta0 = (pos0_max - pos0_min) / (<double> (all_bins0))
     delta1 = (pos1_max - pos1_min) / (<double> (all_bins1))
-    edges0 = numpy.linspace(pos0_min + 0.5 * delta0, pos0_maxin - 0.5 * delta0, all_bins0)
-    edges1 = numpy.linspace(pos1_min + 0.5 * delta1, pos1_maxin - 0.5 * delta1, all_bins1)
+    edges0 = numpy.linspace(pos0_min + 0.5 * delta0, 
+                            pos0_max - 0.5 * delta0, 
+                            all_bins0)
+    edges1 = numpy.linspace(pos1_min + 0.5 * delta1, 
+                            pos1_max - 0.5 * delta1, 
+                            all_bins1)
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
