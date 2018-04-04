@@ -41,24 +41,19 @@ logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
-from ..azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.utils.decorators import depreclog
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 
-import fabio
 
-
-class TestOpenClCSR(utilstest.ParametricTestCase):
+class TestCSR(utilstest.ParametricTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.N = 1000
-        cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
-        cls.data[cls.data < 0] = 0
+        cls.N = 800
+        cls.data, cls.ai = utilstest.create_fake_data(poissonian=False)
         # Force the initialization of all caches
-        cls.ai.integrate2d(cls.data, cls.N, unit="2th_deg")
+        cls.ai.delta_array(unit="2th_deg")
 
     @classmethod
     def tearDownClass(cls):
@@ -66,13 +61,8 @@ class TestOpenClCSR(utilstest.ParametricTestCase):
         cls.ai = None
         cls.data = None
 
-    def setUp(self):
-        if not utilstest.UtilsTest.opencl:
-            self.skipTest("User request to skip OpenCL tests")
-        if not opencl.ocl:
-            self.skipTest("OpenCL not available or skiped")
-
-    def test_csr(self):
+    @unittest.skipIf((utilstest.UtilsTest.opencl is None) or (opencl.ocl is None), "Test on OpenCL disabled")
+    def test_opencl_csr(self):
         testcases = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
         for workgroup_size in testcases:
             with self.subTest(workgroup_size=workgroup_size):
@@ -109,21 +99,6 @@ class TestOpenClCSR(utilstest.ParametricTestCase):
                 out_ocl_csr = None
                 out_ref = None
 
-
-class TestCSR(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.N = 1000
-        cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
-        cls.data[cls.data < 0] = 0
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.N = None
-        cls.ai = None
-        cls.data = None
-
     def test_2d_splitbbox(self):
         self.ai.reset()
         img, tth, chi = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="splitbbox")
@@ -133,8 +108,8 @@ class TestCSR(unittest.TestCase):
         error = (img - img_csr)
         logger.debug("ref: %s; obt: %s", img.shape, img_csr.shape)
         logger.debug("error mean: %s, std: %s", error.mean(), error.std())
-        self.assertLess(error.mean(), 1e-3, "img are almost the same")
-        self.assertLess(error.std(), 1, "img are almost the same")
+        self.assertLess(error.mean(), 0.1, "img are almost the same")
+        self.assertLess(error.std(), 3, "img are almost the same")
 
     def test_2d_nosplit(self):
         self.ai.reset()
@@ -146,13 +121,13 @@ class TestCSR(unittest.TestCase):
         logger.debug("ref: %s; obt: %s", result_histo.intensity.shape, result_nosplit.intensity.shape)
         logger.debug("error mean: %s, std: %s", error.mean(), error.std())
         self.assertLess(error.mean(), 1e-3, "img are almost the same")
-        self.assertLess(error.std(), 1, "img are almost the same")
+        self.assertLess(error.std(), 3, "img are almost the same")
+
 
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestCSR))
-    testsuite.addTest(loader(TestOpenClCSR))
     return testsuite
 
 
