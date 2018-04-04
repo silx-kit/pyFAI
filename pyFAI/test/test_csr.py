@@ -41,7 +41,6 @@ logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
-from pyFAI.utils.decorators import depreclog
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 
