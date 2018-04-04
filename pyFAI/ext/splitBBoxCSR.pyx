@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/04/2018"
+__date__ = "04/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -1010,7 +1010,7 @@ class HistoBBox2d(object):
 
                     else:
                         # spread on more than 2 bins
-                        delta_down = (<position_t> (bin1_min + 1)) - fbin1_min
+                        delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
                         delta_up = fbin1_max - bin1_max
                         inv_area = 1.0 / (fbin1_max - fbin1_min)
 
@@ -1034,14 +1034,14 @@ class HistoBBox2d(object):
                     if bin1_min == bin1_max:
                         # All pixel fall on 1 bins in dim 1
                         inv_area = 1.0 / (fbin0_max - fbin0_min)
-                        delta_left = (<position_t> (bin0_min + 1)) - fbin0_min
+                        delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
 
                         k = outmax[bin0_min, bin1_min]
                         indices[indptr[bin0_min * bins1 + bin1_min] + k] = idx
                         data[indptr[bin0_min * bins1 + bin1_min] + k] = inv_area * delta_left
-                        outmax[bin0_min, bin1_min] = k+1
+                        outmax[bin0_min, bin1_min] = k + 1
 
-                        delta_right = fbin0_max - (<position_t> bin0_max)
+                        delta_right = fbin0_max - (<acc_t> bin0_max)
 
                         k = outmax[bin0_max, bin1_min]
                         indices[indptr[bin0_max * bins1 + bin1_min] + k] = idx
@@ -1056,10 +1056,10 @@ class HistoBBox2d(object):
 
                     else:
                         # spread on n pix in dim0 and m pixel in dim1:
-                        delta_left = (<position_t> (bin0_min + 1)) - fbin0_min
-                        delta_right = fbin0_max - (<position_t> bin0_max)
-                        delta_down = (<position_t> (bin1_min + 1)) - fbin1_min
-                        delta_up = fbin1_max - (<position_t> bin1_max)
+                        delta_left = (<acc_t> (bin0_min + 1)) - fbin0_min
+                        delta_right = fbin0_max - (<acc_t> bin0_max)
+                        delta_down = (<acc_t> (bin1_min + 1)) - fbin1_min
+                        delta_up = fbin1_max - (<acc_t> bin1_max)
                         inv_area = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
 
                         k = outmax[bin0_min, bin1_min]
