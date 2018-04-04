@@ -407,8 +407,8 @@ def fullSplit2D(numpy.ndarray pos not None,
         position_t[:, :, ::1] cpos = numpy.ascontiguousarray(pos, dtype=position_d)
         data_t[::1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=data_d)
         acc_t[:, ::1] sum_data = numpy.zeros((bins0, bins1), dtype=acc_d)
-        acc_t[:, ::1] sum_count = numpy.zeros((bins0, bins1), dtype=numpy.float64)
-        data_t[:, ::1] merged = numpy.zeros((bins0, bins1), dtype=numpy.float64)
+        acc_t[:, ::1] sum_count = numpy.zeros((bins0, bins1), dtype=acc_d)
+        data_t[:, ::1] merged = numpy.zeros((bins0, bins1), dtype=data_d)
         mask_t[:] cmask
         data_t[:] cflat, cdark, cpolarization, csolidangle
         bint check_mask = False, do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidangle = False
@@ -437,9 +437,8 @@ def fullSplit2D(numpy.ndarray pos not None,
         pos1_maxin = pos[:, :, 1].max()
     pos1_max = calc_upper_bound(pos1_maxin)
 
-    delta0 = (pos0_max - pos0_min) / (<positon_t> (bins0))
-    delta1 = (pos1_max - pos1_min) / (<positon_t> (bins1))
-    
+    delta0 = (pos0_max - pos0_min) / (<acc_t> (bins0))
+    delta1 = (pos1_max - pos1_min) / (<acc_t> (bins1))
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
@@ -457,7 +456,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     if mask is not None:
         check_mask = True
         assert mask.size == size, "mask size"
-        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_t)
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=mask_d)
     if dark is not None:
         do_dark = True
         assert dark.size == size, "dark current array size"
