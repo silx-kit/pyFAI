@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/03/2018"
+__date__ = "04/04/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -641,7 +641,7 @@ class AzimuthalIntegrator(Geometry):
         if mask is None:
             mask = self.mask
 
-        # outPos, outMerge, outData, outCount
+        # bin_centers, outMerge, outData, outCount
         tthAxis, I, _, _ = splitBBox.histoBBox1d(weights=data,
                                                  pos0=tth,
                                                  delta_pos0=dtth,
@@ -2374,7 +2374,7 @@ class AzimuthalIntegrator(Geometry):
                                                                       polarization=polarization,
                                                                       polarization_checksum=polarization_checksum,
                                                                       normalization_factor=normalization_factor)
-                                qAxis = integr.outPos  # this will be copied later
+                                qAxis = integr.bin_centers  # this will be copied later
                                 if error_model == "azimuthal":
 
                                     variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
@@ -2513,7 +2513,7 @@ class AzimuthalIntegrator(Geometry):
                                                                   polarization=polarization,
                                                                   polarization_checksum=polarization_checksum,
                                                                   normalization_factor=normalization_factor)
-                            qAxis = integr.outPos  # this will be copied later
+                            qAxis = integr.bin_centers  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, shape=shape)) ** 2
                             if variance is not None:
@@ -3018,8 +3018,8 @@ class AzimuthalIntegrator(Geometry):
                                                                       safe=safe)
                                 I.shape = npt
                                 I = I.T
-                                bins_rad = integr.outPos0  # this will be copied later
-                                bins_azim = integr.outPos1
+                                bins_rad = integr.bin_centers0  # this will be copied later
+                                bins_azim = integr.bin_centers1
                     else:
                         I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
                                                                                solidAngle=solidangle,
@@ -3128,8 +3128,8 @@ class AzimuthalIntegrator(Geometry):
                                                                       normalization_factor=normalization_factor)
                                 I.shape = npt
                                 I = I.T
-                                bins_rad = integr.outPos0  # this will be copied later
-                                bins_azim = integr.outPos1
+                                bins_rad = integr.bin_centers0  # this will be copied later
+                                bins_azim = integr.bin_centers1
                     else:
                         I, bins_rad, bins_azim, sum_, count = integr.integrate(data, dark=dark, flat=flat,
                                                                                solidAngle=solidangle,
