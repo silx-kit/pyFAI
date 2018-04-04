@@ -617,7 +617,8 @@ class HistoBBox1d(object):
                 merged[i] += acc_data / acc_count / normalization_factor
             else:
                 merged[i] += cdummy
-        return self.bin_centers, merged, sum_data, sum_count
+        return (self.bin_centers, numpy.asarray(merged), 
+                numpy.asarray(sum_data), numpy.asarray(sum_count))
 
     @property
     @deprecated(replacement="bin_centers", since_version="0.16", only_once=True)
@@ -952,7 +953,7 @@ class HistoBBox2d(object):
         indptr = numpy.concatenate(([numpy.int32(0)],
                                     numpy.asarray(outmax).ravel().cumsum(dtype=numpy.int32)))
         self.nnz = nnz = indptr[bins0 * bins1]
-        self.indptr = indptr
+        self.indptr = numpy.asarray(indptr)
         # Just recycle the outmax array
         outmax[:, :] = 0
         lut_nbytes = nnz * (sizeof(float) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
