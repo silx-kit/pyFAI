@@ -214,7 +214,7 @@ class HistoBBox1d(object):
         cdef:
             position_t delta = self.delta, pos0_min = self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max 
             acc_t delta_left, delta_right, inv_area
-            ssize_t k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
+            int k, idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
             bint check_mask, check_pos1
             numpy.int32_t[::1] outmax = numpy.zeros(bins, dtype=numpy.int32)
             position_t[:] cpos0_sup = self.cpos0_sup
@@ -252,8 +252,8 @@ class HistoBBox1d(object):
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
                 fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = < numpy.int32_t > fbin0_min
-                bin0_max = < numpy.int32_t > fbin0_max
+                bin0_min = <int> fbin0_min
+                bin0_max = <int> fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -309,8 +309,8 @@ class HistoBBox1d(object):
 
                 fbin0_min = get_bin_number(min0, pos0_min, delta)
                 fbin0_max = get_bin_number(max0, pos0_min, delta)
-                bin0_min = <ssize_t> fbin0_min
-                bin0_max = <ssize_t> fbin0_max
+                bin0_min = <int> fbin0_min
+                bin0_max = <int> fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -414,7 +414,7 @@ class HistoBBox1d(object):
 
         """
         cdef:
-            ssize_t i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
+            int i = 0, j = 0, idx = 0, bins = self.bins, lut_size = self.lut_size, size = self.size
             acc_t acc_data = 0, acc_count = 0, epsilon = 1e-10
             data_t data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False
@@ -911,9 +911,9 @@ class HistoBBox2d(object):
         cdef:
             position_t delta0 = self.delta0, pos0_min = self.pos0_min, min0, max0, fbin0_min, fbin0_max
             position_t delta1 = self.delta1, pos1_min = self.pos1_min, min1, max1, fbin1_min, fbin1_max
-            ssize_t bin0_min, bin0_max, bins0 = self.bins[0]
-            ssize_t bin1_min, bin1_max, bins1 = self.bins[1]
-            ssize_t k, idx, lut_size, i, j, size = self.size
+            int bin0_min, bin0_max, bins0 = self.bins[0]
+            int bin1_min, bin1_max, bins1 = self.bins[1]
+            int k, idx, lut_size, i, j, size = self.size
             bint check_mask
             position_t[::1] cpos0_sup = self.cpos0_sup
             position_t[::1] cpos0_inf = self.cpos0_inf
@@ -939,11 +939,11 @@ class HistoBBox2d(object):
                 min1 = cpos1_inf[idx]
                 max1 = cpos1_sup[idx]
 
-                bin0_min = <ssize_t> get_bin_number(min0, pos0_min, delta0)
-                bin0_max = <ssize_t> get_bin_number(max0, pos0_min, delta0)
+                bin0_min = <int> get_bin_number(min0, pos0_min, delta0)
+                bin0_max = <int> get_bin_number(max0, pos0_min, delta0)
 
-                bin1_min = <ssize_t> get_bin_number(min1, pos1_min, delta1)
-                bin1_max = <ssize_t> get_bin_number(max1, pos1_min, delta1)
+                bin1_min = <int> get_bin_number(min1, pos1_min, delta1)
+                bin1_max = <int> get_bin_number(max1, pos1_min, delta1)
 
                 if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
