@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/03/2018"
+__date__ = "26/03/2018"
 __status__ = "production"
 
 
@@ -562,14 +562,14 @@ class Calibrant(object):
 
         return values * scale
 
-    def fake_calibration_image(self, ai, shape=None, Imax=1.0, U=0, V=0, W=0.0001):
+    def fake_calibration_image(self, ai, shape=None, Imax=1.0,
+                               U=0, V=0, W=0.0001):
         """
         Generates a fake calibration image from an azimuthal integrator
 
         :param ai: azimuthal integrator
         :param Imax: maximum intensity of rings
-        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
-
+        :param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W) 
         """
         if shape is None:
             if ai.detector.shape:
@@ -578,6 +578,14 @@ class Calibrant(object):
                 shape = ai.detector.max_shape
         if shape is None:
             raise RuntimeError("No shape available")
+        if (self.wavelength is None) and (ai._wavelength is not None):
+            self.wavelength = ai.wavelength
+        elif (self.wavelength is None) and (ai._wavelength is None):
+            raise RuntimeError("Wavelength needed to calculate 2theta position")
+        elif (self.wavelength is not None) and (ai._wavelength is not None) and\
+                abs(self.wavelength - ai.wavelength) > 1e-15:
+            logger.warning("Mismatch between wavelength for calibrant (%s) and azimutal integrator (%s)",
+                           self.wavelength, ai.wavelength)
         tth = ai.twoThetaArray(shape)
         tth_min = tth.min()
         tth_max = tth.max()
