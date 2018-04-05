@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2018 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2018"
+__date__ = "05/04/2018"
 
 import sys
 import os
@@ -55,6 +55,7 @@ from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import detectors
 from .. import units
 from ..utils import six
+from math import pi
 
 try:
     import importlib.util
@@ -253,8 +254,8 @@ class TestBugRegression(unittest.TestCase):
                         if ((isinstance(err, ImportError) and
                                 "No Qt wrapper found" in err.__str__() or
                                 "pyopencl is not installed" in err.__str__() or
-                                "PySide" in err.__str__()) or 
-                            (isinstance(err, SystemError) and 
+                                "PySide" in err.__str__()) or
+                            (isinstance(err, SystemError) and
                                 "Parent module" in err.__str__())):
 
                             logger.info("Expected failure importing %s from %s with error: %s",
@@ -264,6 +265,52 @@ class TestBugRegression(unittest.TestCase):
                                          fqn, path, os.linesep,
                                          err.__class__.__name__, err)
                             raise err
+
+    def test_bug_816(self):
+        "Ensure the chi-disontinuity is properly set"
+        detector = detectors.detector_factory("Pilatus 300k")
+        positions = detector.get_pixel_corners()
+        # y_min = positions[..., 1].min()
+        y_max = positions[..., 1].max()
+        # x_min = positions[..., 0].min()
+        x_max = positions[..., 2].max()
+
+        expected = {  # poni -> azimuthal range in both convention
+                    (0, 0): [(0, pi / 2), (0, pi / 2)],
+                    (y_max / 2, x_max / 2): [(-pi, pi), (0, 2 * pi)],
+                    (y_max, 0): [(-pi / 2, 0), (3 * pi / 2, 2 * pi)],
+                    (0, x_max): [(pi / 2, pi), (pi / 2, pi)],
+                    (y_max, x_max): [(-pi, -pi / 2), (pi, 3 * pi / 2)],
+                   }
+
+        for poni, chi_range in expected.items():
+            logger.debug("%s, %s", poni, chi_range)
+            ai = AzimuthalIntegrator(0.1, *poni, detector=detector)
+            chi_pi_center = ai.chiArray()
+            logger.debug("disc @pi center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_center.min(), chi_pi_center.max())
+            chi_pi_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]
+            logger.debug("disc @pi corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range, chi_pi_corner.min(), chi_pi_corner.max())
+
+            self.assertAlmostEquals(chi_pi_center.min(), chi_range[0][0], msg="chi_pi_center.min", delta=0.1)
+            self.assertAlmostEquals(chi_pi_corner.min(), chi_range[0][0], msg="chi_pi_corner.min", delta=0.1)
+            self.assertAlmostEquals(chi_pi_center.max(), chi_range[0][1], msg="chi_pi_center.max", delta=0.1)
+            self.assertAlmostEquals(chi_pi_corner.max(), chi_range[0][1], msg="chi_pi_corner.max", delta=0.1)
+
+            ai.reset()
+            ai.setChiDiscAtZero()
+
+            logger.debug("Updated range %s %s %s %s", chi_range[0], chi_range[1], ai.chiDiscAtPi, list(ai._cached_array.keys()))
+            chi_0_center = ai.chiArray()
+            logger.debug("disc @0 center: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_center.min(), chi_0_center.max())
+            chi_0_corner = ai.array_from_unit(typ="corner", unit="r_m", scale=False)[1:-1, 1:-1, :, 1]  # Discard pixel from border...
+            logger.debug("disc @0 corner: poni: %s; expected: %s; got: %.2f, %.2f", poni, chi_range[1], chi_0_corner.min(), chi_0_corner.max())
+
+            dmin = lambda v: v - chi_range[1][0]
+            dmax = lambda v: v - chi_range[1][1]
+            self.assertAlmostEquals(dmin(chi_0_center.min()), 0, msg="chi_0_center.min", delta=0.1)
+            self.assertAlmostEquals(dmin(chi_0_corner.min()), 0, msg="chi_0_corner.min", delta=0.1)
+            self.assertAlmostEquals(dmax(chi_0_center.max()), 0, msg="chi_0_center.max", delta=0.1)
+            self.assertAlmostEquals(dmax(chi_0_corner.max()), 0, msg="chi_0_corner.max", delta=0.1)
 
 
 def suite():
