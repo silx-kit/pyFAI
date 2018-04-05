@@ -36,7 +36,7 @@ __contact__ = "jerome.kieffer@esrf.fr"
 
 from libc.math cimport floor
 import logging
-logger = logging.getLogger(__name__+"_nomp")
+logger = logging.getLogger(__name__ + "_nomp")
 
 
 @cython.cdivision(True)
