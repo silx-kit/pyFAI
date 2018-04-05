@@ -39,12 +39,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "05/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
-from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
+from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt, pi
 import numpy
 import os
 import threading
@@ -656,7 +656,8 @@ class Geometry(object):
                             res = _geometry.calc_rad_azim(self.dist, self.poni1, self.poni2,
                                                           self.rot1, self.rot2, self.rot3,
                                                           p1, p2, p3,
-                                                          space, self._wavelength)
+                                                          space, self._wavelength,
+                                                          chi_discontinuity_at_pi=self.chiDiscAtPi)
                         except KeyError:
                             logger.warning("No fast path for space: %s", space)
                         except AttributeError as err:
@@ -685,6 +686,9 @@ class Geometry(object):
                         y = pos[..., 1]
                         z = pos[..., 0]
                         chi = numpy.arctan2(y, x)
+                        if not self.chiDiscAtPi:
+                            twoPi = 2.0 * numpy.pi
+                            chi = (chi + twoPi) % twoPi
                         corners = numpy.zeros((shape[0], shape[1], 4, 2),
                                               dtype=numpy.float32)
                         if chi.shape[:2] == shape:
@@ -1433,6 +1437,16 @@ class Geometry(object):
         else:
             raise RuntimeError("Only 6 or 7-uplet are possible")
         self.reset()
+
+    def set_rot_from_quaternion(self, w, x, y, z):
+        """Quaternions are convieniant ways to represent 3D rotation
+        This method allows to define rot1(left-handed), rot2(left-handed) and 
+        rot3 (right handed) as definied in the documentation from a quaternion.
+        
+        :param w: Real part of the quaternion (correspond to cos alpha)  
+        
+        """
+        pass
 
     def make_headers(self, type_="list"):
         """Create a configuration for the
