@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2018"
+__date__ = "04/04/2018"
 
 import os
 import sys
@@ -94,7 +94,7 @@ class TestAIWidget(unittest.TestCase):
     def test_process_numpy_2d(self):
         ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = [[[7.5, 5.3], [50.1, 12.6]]]
+        expected = [[[5.6, 4.5], [41.8, 9.3]]]
 
         widget = AIWidget(json_file=None)
         widget.set_ponifile(ponifile)
@@ -121,7 +121,7 @@ class TestAIWidget(unittest.TestCase):
     def test_process_array_2d(self):
         ponifile = UtilsTest.getimage("Pilatus1M.poni")
         data = numpy.array([[0, 0], [0, 100], [0, 0]])
-        expected = [[[[7.5, 5.3], [50.1, 12.6]], [2.0, 2.0], [-124.5, -124.2]]]
+        expected = [[[[5.6, 4.5], [41.8, 9.3]], [2.0, 2.0], [-124.5, -124.2]]]
 
         widget = AIWidget(json_file=None)
         widget.set_ponifile(ponifile)

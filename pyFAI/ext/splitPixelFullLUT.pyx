@@ -26,7 +26,7 @@
 #  THE SOFTWARE.
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "10/01/2018"
+__date__ = "04/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -151,7 +151,9 @@ class HistoLUT1dFullSplit(object):
         self.pos1Range = pos1Range
 
         self.calc_lut()
-        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta, self.pos0_maxin - 0.5 * self.delta, self.bins)
+        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
+                                     self.pos0_max - 0.5 * self.delta, 
+                                     self.bins)
         self.lut_checksum = crc32(self.data)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)

@@ -41,24 +41,18 @@ logger = logging.getLogger(__name__)
 from .. import opencl
 from ..ext import splitBBox
 from ..ext import splitBBoxCSR
-from ..azimuthalIntegrator import AzimuthalIntegrator
-from pyFAI.utils.decorators import depreclog
 if opencl.ocl:
     from ..opencl import azim_csr as ocl_azim_csr
 
-import fabio
 
-
-class TestOpenClCSR(utilstest.ParametricTestCase):
+class TestCSR(utilstest.ParametricTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.N = 1000
-        cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
-        with utilstest.TestLogging(logger=depreclog, warning=1):
-            # Filter deprecated warning
-            cls.ai.xrpd_LUT(cls.data, cls.N)
+        cls.N = 800
+        cls.data, cls.ai = utilstest.create_fake_data(poissonian=False)
+        # Force the initialization of all caches
+        cls.ai.delta_array(unit="2th_deg")
 
     @classmethod
     def tearDownClass(cls):
@@ -66,13 +60,8 @@ class TestOpenClCSR(utilstest.ParametricTestCase):
         cls.ai = None
         cls.data = None
 
-    def setUp(self):
-        if not utilstest.UtilsTest.opencl:
-            self.skipTest("User request to skip OpenCL tests")
-        if not opencl.ocl:
-            self.skipTest("OpenCL not available or skiped")
-
-    def test_csr(self):
+    @unittest.skipIf((utilstest.UtilsTest.opencl is None) or (opencl.ocl is None), "Test on OpenCL disabled")
+    def test_opencl_csr(self):
         testcases = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
         for workgroup_size in testcases:
             with self.subTest(workgroup_size=workgroup_size):
@@ -97,6 +86,10 @@ class TestOpenClCSR(utilstest.ParametricTestCase):
                         self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
                 else:
                     for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
+                        logger.debug("hist vs ocl_csr %s; hist vs csr: %s; csr vs ocl_csr: %s",
+                                     abs(ref - ocl).max(),
+                                     abs(ref - cyth).max(),
+                                     abs(cyth - ocl).max())
                         self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
                         self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
                         self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
@@ -105,50 +98,35 @@ class TestOpenClCSR(utilstest.ParametricTestCase):
                 out_ocl_csr = None
                 out_ref = None
 
-
-class TestCSR(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.N = 1000
-        cls.ai = AzimuthalIntegrator.sload(utilstest.UtilsTest.getimage("Pilatus1M.poni"))
-        cls.data = fabio.open(utilstest.UtilsTest.getimage("Pilatus1M.edf")).data
-        with utilstest.TestLogging(logger=depreclog, warning=1):
-            # Filter deprecated warning
-            cls.ai.xrpd_LUT(cls.data, cls.N)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.N = None
-        cls.ai = None
-        cls.data = None
-
     def test_2d_splitbbox(self):
         self.ai.reset()
-        img, tth, chi = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="splitbbox_LUT")
-        img_csr, tth_csr, chi_csr = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="splitbbox_csr")
+        img, tth, chi = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="splitbbox")
+        img_csr, tth_csr, chi_csr = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="csr")
         self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
         self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
-        # TODO: align on splitbbox rather then splitbbox_csr
-        # diff_img(img, img_csr, "splitbbox")
-        self.assertTrue(numpy.allclose(img, img_csr), "img are the same")
+        error = (img - img_csr)
+        logger.debug("ref: %s; obt: %s", img.shape, img_csr.shape)
+        logger.debug("error mean: %s, std: %s", error.mean(), error.std())
+        self.assertLess(error.mean(), 0.1, "img are almost the same")
+        self.assertLess(error.std(), 3, "img are almost the same")
 
     def test_2d_nosplit(self):
         self.ai.reset()
         result_histo = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="histogram")
         result_nosplit = self.ai.integrate2d(self.data, self.N, unit="2th_deg", method="nosplit_csr")
-        # diff_crv(tth, tth_csr, "2th")
-        # self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
-        # self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
-        # diff_img(img, img_csr, "no split")
-        error = ((result_histo.intensity - result_nosplit.intensity) > 1).sum()
-        self.assertLess(error, 6, "img are almost the same")
+        self.assertTrue(numpy.allclose(result_histo.radial, result_nosplit.radial), " 2Th are the same")
+        self.assertTrue(numpy.allclose(result_histo.azimuthal, result_nosplit.azimuthal, atol=1e-5), " Chi are the same")
+        error = (result_histo.intensity - result_nosplit.intensity)
+        logger.debug("ref: %s; obt: %s", result_histo.intensity.shape, result_nosplit.intensity.shape)
+        logger.debug("error mean: %s, std: %s", error.mean(), error.std())
+        self.assertLess(error.mean(), 1e-3, "img are almost the same")
+        self.assertLess(error.std(), 3, "img are almost the same")
 
 
 def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestCSR))
-    testsuite.addTest(loader(TestOpenClCSR))
     return testsuite
 
 
