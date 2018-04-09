@@ -430,4 +430,4 @@ class OCL_CSR_Integrator(OpenclProcessing):
             ev.wait()
         if self.profile:
             self.events += events
-        return out_merged, out_sum_data, out_sum_count
+        return merged, sum_data, sum_count
