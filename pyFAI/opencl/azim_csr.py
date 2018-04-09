@@ -29,7 +29,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "MIT"
-__date__ = "10/01/2018"
+__date__ = "09/04/2018"
 __copyright__ = "2014-2017, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -133,9 +133,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         self.buffers += [BufferDescription("data", self.data_size, numpy.float32, mf.READ_ONLY),
                          BufferDescription("indices", self.data_size, numpy.int32, mf.READ_ONLY),
                          BufferDescription("indptr", (self.bins + 1), numpy.int32, mf.READ_ONLY),
-                         BufferDescription("outData", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("outCount", self.bins, numpy.float32, mf.WRITE_ONLY),
-                         BufferDescription("outMerge", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("sum_data", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("sum_count", self.bins, numpy.float32, mf.WRITE_ONLY),
+                         BufferDescription("merged", self.bins, numpy.float32, mf.WRITE_ONLY),
                          ]
         try:
             self.set_profiling(profile)
@@ -226,12 +226,12 @@ class OCL_CSR_Integrator(OpenclProcessing):
                                                             ("indptr", self.cl_mem["indptr"]),
                                                             ("do_dummy", numpy.int8(0)),
                                                             ("dummy", numpy.float32(0)),
-                                                            ("outData", self.cl_mem["outData"]),
-                                                            ("outCount", self.cl_mem["outCount"]),
-                                                            ("outMerge", self.cl_mem["outMerge"])))
+                                                            ("sum_data", self.cl_mem["sum_data"]),
+                                                            ("sum_count", self.cl_mem["sum_count"]),
+                                                            ("merged", self.cl_mem["merged"])))
         self.cl_kernel_args["csr_integrate_single"] = self.cl_kernel_args["csr_integrate"]
 
-        self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("outData", "outCount", "outMerge")))
+        self.cl_kernel_args["memset_out"] = OrderedDict(((i, self.cl_mem[i]) for i in ("sum_data", "sum_count", "merged")))
         self.cl_kernel_args["u8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["s8_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
         self.cl_kernel_args["u16_to_float"] = OrderedDict(((i, self.cl_mem[i]) for i in ("image_raw", "image")))
@@ -280,7 +280,8 @@ class OCL_CSR_Integrator(OpenclProcessing):
                   dark=None, flat=None, solidangle=None, polarization=None, absorption=None,
                   dark_checksum=None, flat_checksum=None, solidangle_checksum=None,
                   polarization_checksum=None, absorption_checksum=None,
-                  preprocess_only=False, safe=True, normalization_factor=1.0):
+                  preprocess_only=False, safe=True, normalization_factor=1.0,
+                  out_merged=None, out_sum_data=None, out_sum_count=None):
         """
         Before performing azimuthal integration, the preprocessing is:
 
@@ -301,6 +302,9 @@ class OCL_CSR_Integrator(OpenclProcessing):
         :param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
         :param preprocess_only: return the dark subtracted; flat field & solidangle & polarization corrected image, else
         :param normalization_factor: divide raw signal by this value
+        :param out_merged: destination array or pyopencl array for averaged data
+        :param out_sum_data: destination array or pyopencl array for sum of all data
+        :param out_sum_count: destination array or pyopencl array for sum of the number of pixels
         :return: averaged data, weighted histogram, unweighted histogram
         """
         events = []
@@ -404,16 +408,26 @@ class OCL_CSR_Integrator(OpenclProcessing):
             else:
                 integrate = self.kernels.csr_integrate(self.queue, wdim_bins, (wg,), *kw2.values())
                 events.append(EventDescription("integrate", integrate))
-            outMerge = numpy.empty(self.bins, dtype=numpy.float32)
-            outData = numpy.empty(self.bins, dtype=numpy.float32)
-            outCount = numpy.empty(self.bins, dtype=numpy.float32)
-            ev = pyopencl.enqueue_copy(self.queue, outMerge, self.cl_mem["outMerge"])
-            events.append(EventDescription("copy D->H outMerge", ev))
-            ev = pyopencl.enqueue_copy(self.queue, outData, self.cl_mem["outData"])
-            events.append(EventDescription("copy D->H outData", ev))
-            ev = pyopencl.enqueue_copy(self.queue, outCount, self.cl_mem["outCount"])
-            events.append(EventDescription("copy D->H outCount", ev))
+            if out_merged is None:
+                merged = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                merged = out_merged.data
+            if out_sum_count is None:
+                sum_count = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                sum_count = out_sum_count.data
+            if out_sum_data is None:
+                sum_data = numpy.empty(self.bins, dtype=numpy.float32)
+            else:
+                sum_data = out_sum_data.data
+
+            ev = pyopencl.enqueue_copy(self.queue, merged, self.cl_mem["merged"])
+            events.append(EventDescription("copy D->H merged", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sum_data, self.cl_mem["sum_data"])
+            events.append(EventDescription("copy D->H sum_data", ev))
+            ev = pyopencl.enqueue_copy(self.queue, sum_count, self.cl_mem["sum_count"])
+            events.append(EventDescription("copy D->H sum_count", ev))
             ev.wait()
         if self.profile:
             self.events += events
-        return outMerge, outData, outCount
+        return out_merged, out_sum_data, out_sum_count
