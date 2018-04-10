@@ -431,3 +431,6 @@ class OCL_CSR_Integrator(OpenclProcessing):
         if self.profile:
             self.events += events
         return merged, sum_data, sum_count
+
+    # Name of the default "process" method
+    __call__ = integrate
