@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "10/04/2018"
 
 
 import unittest
@@ -122,7 +122,7 @@ class TestSolidAngle(unittest.TestCase):
         aarhus = detector_factory("Aarhus")
         aarhus.binning = (10, 10)
         ai = AzimuthalIntegrator(aarhus.radius, detector=aarhus)
-        cosa = numpy.fromfunction(ai.cosIncidance,
+        cosa = numpy.fromfunction(ai.cos_incidence,
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
@@ -138,7 +138,7 @@ class TestSolidAngle(unittest.TestCase):
         aarhus = detector_factory("Aarhus")
         aarhus.binning = (10, 10)
         ai = AzimuthalIntegrator(aarhus.radius * 1.5, detector=aarhus)
-        cosa = numpy.fromfunction(ai.cosIncidance,
+        cosa = numpy.fromfunction(ai.cos_incidence,
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
@@ -155,7 +155,7 @@ class TestSolidAngle(unittest.TestCase):
         aarhus = detector_factory("Aarhus")
         aarhus.binning = (10, 10)
         ai = AzimuthalIntegrator(aarhus.radius * 0.5, detector=aarhus)
-        cosa = numpy.fromfunction(ai.cosIncidance,
+        cosa = numpy.fromfunction(ai.cos_incidence,
                                   aarhus.shape, dtype=numpy.float32)
         maxi = cosa.max()
         mini = cosa.min()
