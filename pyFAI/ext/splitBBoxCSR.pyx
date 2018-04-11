@@ -32,7 +32,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/04/2018"
+__date__ = "10/04/2018"
 __status__ = "stable"
 __license__ = "MIT"
 import cython
@@ -1163,7 +1163,7 @@ class HistoBBox2d(object):
         indptr = numpy.concatenate(([numpy.int32(0)], 
                                     numpy.asarray(outmax).ravel().cumsum(dtype=numpy.int32)))
         self.nnz = nnz = indptr[bins0 * bins1]
-        self.indptr = indptr
+        self.indptr = numpy.asarray(indptr)
         # Just recycle the outmax array
         outmax[:, :] = 0
         lut_nbytes = nnz * (sizeof(float) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)

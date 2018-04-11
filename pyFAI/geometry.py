@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/04/2018"
+__date__ = "10/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -143,17 +143,12 @@ class Geometry(object):
                       self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True  # chi discontinuity (radians), pi by default
         self._cached_array = {}  # dict for caching all arrays
-        self._dssa = None
-        self._dssa_crc = None  # checksum associated with _dssa
         self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
         self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
-        self._cosa = None  # cosine of the incidance angle
         self._transmission_normal = None
-        self._transmission_corr = None
-        self._transmission_crc = None
 
         if detector:
             if isinstance(detector, utils.StringTypes):
@@ -979,7 +974,7 @@ class Geometry(object):
                 out = self.delta_array(shape, unit, scale=scale)
         return out
 
-    def cosIncidance(self, d1, d2, path="cython"):
+    def cos_incidence(self, d1, d2, path="cython"):
         """
         Calculate the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
@@ -1064,10 +1059,10 @@ class Geometry(object):
             dY = sY[1:, :] - sY[:-1, :]
             ds = (dX + 1.0) * (dY + 1.0)
 
-        if self._cosa is None:
-            self._cosa = self.cosIncidance(d1, d2)
-        dsa = ds * self._cosa ** self._dssa_order
-
+        cosa = self._cached_array.get("cos_incidence")
+        if cosa is None:
+            cosa = self._cached_array["cos_incidence"] = self.cos_incidence(d1, d2)
+        dsa = ds * cosa ** self._dssa_order
         return dsa
 
     def solidAngleArray(self, shape=None, order=3, absolute=False):
@@ -1083,18 +1078,23 @@ class Geometry(object):
         SA = pix1*pix2/dist^2 * cos(incidence)^3
 
         """
-        if self._dssa is None:
-            if order is True:
-                self._dssa_order = 3.0
-            else:
-                self._dssa_order = float(order)
-            self._dssa = numpy.fromfunction(self.diffSolidAngle,
-                                            shape, dtype=numpy.float32)
-            self._dssa_crc = crc32(self._dssa)
-        if absolute:
-            return self._dssa * self.pixel1 * self.pixel2 / self._dist / self._dist
+        if order is True:
+            self._dssa_order = 3.0
         else:
-            return self._dssa
+            self._dssa_order = float(order)
+
+        key = "solid_angle#%s" % (self._dssa_order)
+        key_crc = "solid_angle#%s_crc" % (self._dssa_order)
+        dssa = self._cached_array.get(key)
+        if dssa is None:
+            dssa = numpy.fromfunction(self.diffSolidAngle,
+                                      shape, dtype=numpy.float32)
+            self._cached_array[key_crc] = crc32(dssa)
+            self._cached_array[key] = dssa
+        if absolute:
+            return dssa * self.pixel1 * self.pixel2 / self._dist / self._dist
+        else:
+            return dssa
 
     def save(self, filename):
         """
@@ -1517,11 +1517,7 @@ class Geometry(object):
             lastOversampling = float(self._oversampling)
 
         self._oversampling = iOversampling
-        self._cached_arrays["2th_center"] = None
-        self._cached_arrays["q_center"] = None
-        self._dssa = None
-        self._cached_array["chi_center"] = None
-
+        self.reset()
         self.pixel1 /= self._oversampling / lastOversampling
         self.pixel2 /= self._oversampling / lastOversampling
 
@@ -1620,10 +1616,10 @@ class Geometry(object):
             return
 
         with self._sem:
-            if (t0 == self._transmission_normal) \
-                and (shape is None or
-                     (shape == self._transmission_corr.shape)):
-                return self._transmission_corr
+            if (t0 == self._transmission_normal):
+                transmission_corr = self._cached_array.get("transmission_corr")
+                if ((shape is None) or (transmission_corr is not None and shape == transmission_corr.shape)):
+                    return transmission_corr
 
             if shape is None:
                 raise RuntimeError(("You should provide a shape if the"
@@ -1631,11 +1627,17 @@ class Geometry(object):
 
         with self._sem:
             self._transmission_normal = t0
-            if self._cosa is None:
-                self._cosa = numpy.fromfunction(self.cosIncidance, shape, dtype=numpy.float32)
-            self._transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / self._cosa)) / (1 - t0)
-            self._transmission_crc = crc32(self._transmission_corr)
-        return self._transmission_corr
+            cosa = self._cached_array.get("cos_incidence")
+            if cosa is None:
+                cosa = numpy.fromfunction(self.cos_incidence,
+                                          shape,
+                                          dtype=numpy.float32)
+                self._cached_array["cos_incidence"] = cosa
+            transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / cosa)) / (1 - t0)
+            self._cached_array["transmission_crc"] = crc32(transmission_corr)
+            self._cached_array["transmission_corr"] = transmission_corr
+
+        return transmission_corr
 
     def reset(self):
         """
@@ -1644,11 +1646,7 @@ class Geometry(object):
         """
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
-        self._dssa = None
         self._transmission_normal = None
-        self._transmission_corr = None
-        self._transmission_crc = None
-        self._cosa = None
         self._cached_array = {}
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
@@ -1775,13 +1773,12 @@ class Geometry(object):
         new = self.__class__(detector=self.detector)
         # transfer numerical values:
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
+                     "chiDiscAtPi", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_crc', '_transmission_normal',
+                     '_transmission_normal',
                      ]
-        array = ["_dssa",
-                 '_cosa', '_transmission_normal', '_transmission_corr']
-        for key in numerical + array:
+        # array = []
+        for key in numerical:
             new.__setattr__(key, self.__getattribute__(key))
         new.param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
@@ -1793,12 +1790,10 @@ class Geometry(object):
         :param memo: dict with modified objects
         :return: a deep copy of itself."""
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
-                     "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
+                     "chiDiscAtPi", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
-                     '_transmission_crc', '_transmission_normal',
+                     '_transmission_normal',
                      ]
-        array = ["_dssa",
-                 '_cosa', '_transmission_normal', '_transmission_corr']
         if memo is None:
             memo = {}
         new = self.__class__()
@@ -1810,12 +1805,6 @@ class Geometry(object):
             old_value = self.__getattribute__(key)
             memo[id(old_value)] = old_value
             new.__setattr__(key, old_value)
-        for key in array:
-            value = self.__getattribute__(key)
-            if value is not None:
-                new.__setattr__(key, 1 * value)
-            else:
-                new.__setattr__(key, None)
         new_param = [new._dist, new._poni1, new._poni2,
                      new._rot1, new._rot2, new._rot3]
         memo[id(self.param)] = new_param
@@ -2123,3 +2112,26 @@ class Geometry(object):
         return self.detector.get_mask()
 
     mask = property(get_mask, set_mask)
+
+    # Property to provide _dssa and _dssa_crc and so one to maintain the API
+    @property
+    def _dssa(self):
+        key = "solid_angle#%s" % (self._dssa_order)
+        return self._cached_array.get(key)
+
+    @property
+    def _dssa_crc(self):
+        key = "solid_angle#%s_crc" % (self._dssa_order)
+        return self._cached_array.get(key)
+
+    @property
+    def _cosa(self):
+        return self._cached_array.get("cos_incidence")
+
+    @property
+    def _transmission_crc(self):
+        return self._cached_array.get("transmission_crc")
+
+    @property
+    def _transmission_corr(self):
+        return self._cached_array.get("transmission_corr")
