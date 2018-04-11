@@ -3497,7 +3497,8 @@ class AzimuthalIntegrator(Geometry):
                   correctSolidAngle=True,
                   polarization_factor=None, dark=None, flat=None,
                   method="splitpixel", unit=units.Q,
-                  percentile=50, mask=None, normalization_factor=1.0, metadata=None):
+                  percentile=50, dummy=None, delta_dummy=None,
+                  mask=None, normalization_factor=1.0, metadata=None):
         """Perform the 2D integration and filter along each row using a median
         filter
 
@@ -3527,8 +3528,9 @@ class AzimuthalIntegrator(Geometry):
         :type metadata: JSON serializable dict
         :return: Integrate1D like result like
         """
-
-        dummy = numpy.finfo(numpy.float32).min
+        if dummy is None:
+            dummy = dummy = numpy.finfo(numpy.float32).min
+            delta_dummy = None
 
         if "ocl" in method and npt_azim and (npt_azim - 1):
             old = npt_azim
@@ -3539,7 +3541,7 @@ class AzimuthalIntegrator(Geometry):
         res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                  flat=flat, dark=dark,
                                  unit=unit, method=method,
-                                 dummy=dummy,
+                                 dummy=dummy, delta_dummy=delta_dummy,
                                  correctSolidAngle=correctSolidAngle,
                                  polarization_factor=polarization_factor,
                                  normalization_factor=normalization_factor)
