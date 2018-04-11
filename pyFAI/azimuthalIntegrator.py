@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2018"
+__date__ = "11/04/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3633,7 +3633,7 @@ class AzimuthalIntegrator(Geometry):
                    correctSolidAngle=True,
                    polarization_factor=None, dark=None, flat=None,
                    method="splitpixel", unit=units.Q,
-                   thres=3, max_iter=5,
+                   thres=3, max_iter=5, dummy=None, delta_dummy=None,
                    mask=None, normalization_factor=1.0, metadata=None):
         """Perform the 2D integration and perform a sigm-clipping iterative
         filter along each row. see the doc of scipy.stats.sigmaclip for the
@@ -3663,7 +3663,9 @@ class AzimuthalIntegrator(Geometry):
         :return: Integrate1D like result like
         """
         # We use NaN as dummies
-        dummy = numpy.NaN
+        if dummy is None:
+            dummy = numpy.NaN
+            delta_dummy = None
 
         if "__len__" in dir(thres) and len(thres) > 0:
             sigma_lo = thres[0]
@@ -3681,7 +3683,7 @@ class AzimuthalIntegrator(Geometry):
         res2d = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                  flat=flat, dark=dark,
                                  unit=unit, method=method,
-                                 dummy=dummy,
+                                 dummy=dummy, delta_dummy=delta_dummy,
                                  correctSolidAngle=correctSolidAngle,
                                  polarization_factor=polarization_factor,
                                  normalization_factor=normalization_factor)
