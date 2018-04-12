@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "29/03/2018"
 __status__ = "development"
 
 import threading
@@ -339,17 +339,19 @@ class Worker(object):
                 result = numpy.vstack(integrated_result).T
 
         except Exception as err:
-            err2 = ["error in integration",
+            err2 = ["error in integration do_2d: %s" % self.do_2D(),
+                    str(err.__class__.__name__),
                     str(err),
                     "data.shape: %s" % (data.shape,),
                     "data.size: %s" % data.size,
                     "ai:",
                     str(self.ai),
-                    "csr:",
+                    "method:",
+                    kwarg.get("method")
                     # str(self.ai._csr_integrator),
                     # "csr size: %s" % self.ai._lut_integrator.size
                     ]
-            logger.error("; ".join(err2))
+            logger.error("\n".join(err2))
             raise err
 
         if writer is not None:
