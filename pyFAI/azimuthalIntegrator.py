@@ -3529,7 +3529,7 @@ class AzimuthalIntegrator(Geometry):
         :return: Integrate1D like result like
         """
         if dummy is None:
-            dummy = dummy = numpy.finfo(numpy.float32).min
+            dummy = numpy.finfo(numpy.float32).min
             delta_dummy = None
 
         if "ocl" in method and npt_azim and (npt_azim - 1):
