@@ -41,7 +41,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "12/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -210,7 +210,7 @@ register_radial_unit("d*2_nm^-2",
 register_radial_unit("log10(q.m)_None",
                      scale=1.0,
                      label=r"log10($q$.m)",
-                     equation=lambda x, y, z, wavelength: numpy.log10(eq_q(x, y, z, wavelength) * 1e9))
+                     equation=lambda x, y, z, wavelength: numpy.log10(1e9 * eq_q(x, y, z, wavelength)))
 
 register_radial_unit("log(q.nm)_None",
                      scale=1.0,
@@ -225,7 +225,7 @@ register_radial_unit("log(1+q.nm)_None",
 register_radial_unit("log(1+q.A)_None",
                      scale=1.0,
                      label=r"log(1+$q$.A)",
-                     equation=lambda x, y, z, wavelength: numpy.log1p(eq_q(x, y, z, wavelength) * 10.0))
+                     equation=lambda x, y, z, wavelength: numpy.log1p(0.1 * eq_q(x, y, z, wavelength)))
 
 register_radial_unit("arcsinh(q.nm)_None",
                      scale=1.0,
@@ -235,7 +235,7 @@ register_radial_unit("arcsinh(q.nm)_None",
 register_radial_unit("arcsinh(q.A)_None",
                      scale=1.0,
                      label=r"arcsinh($q$.A)",
-                     equation=lambda x, y, z, wavelength: numpy.arcsinh(eq_q(x, y, z, wavelength) * 10.0))
+                     equation=lambda x, y, z, wavelength: numpy.arcsinh(0.1 * eq_q(x, y, z, wavelength)))
 
 
 LENGTH_UNITS = {"m": Unit("m", scale=1., label=r"length $l$ ($m$)"),
