@@ -1443,9 +1443,21 @@ class Geometry(object):
         This method allows to define rot1(left-handed), rot2(left-handed) and 
         rot3 (right handed) as definied in the documentation from a quaternion.
         
-        :param w: Real part of the quaternion (correspond to cos alpha)  
-        
+        :param w: Real part of the quaternion (correspond to cos alpha/2)  
+        :param x: Imaginary part of the quaternion, correspond to u1*sin(alpha/2)
+        :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
+        :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/21)
         """
+        # TODO
+        pass
+
+    def quaternion(self, param=None):
+        """Calculate the quaternion associated to the current rotations 
+        from rot1, rot2, rot3
+        
+        :param param: use this set of parameters instead of the default one. 
+        """
+        # TODO
         pass
 
     def make_headers(self, type_="list"):
@@ -1826,7 +1838,7 @@ class Geometry(object):
         this system (JK = Jerome Kieffer) as follows:
         JK1 = PB2 (Y)
         JK2 = PB1 (X)
-        JK3 = -PB3 (-Z)
+        JK3 = PB3 (Z)
         ...slight differences will result from the order
         FIXME: make backwards and forwards converter helper function
 
