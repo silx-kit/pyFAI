@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2018"
+__date__ = "13/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -272,7 +272,7 @@ class Geometry(object):
             else:
                 p3 = (L + p3).ravel()
                 assert size == p3.size
-            coord_det = numpy.vstack((p1, p2, -p3))
+            coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
             t1, t2, t3 = coord_sample
             t1.shape = shape
@@ -1852,19 +1852,20 @@ class Geometry(object):
         sin_rot2 = sin(param[4])
         sin_rot3 = sin(param[5])
 
-        # Rotation about axis 1
+        # Rotation about axis 1: Note this rotation is left-handed
         rot1 = numpy.array([[1.0, 0.0, 0.0],
-                            [0.0, cos_rot1, -sin_rot1],
-                            [0.0, sin_rot1, cos_rot1]])
+                            [0.0, cos_rot1, sin_rot1],
+                            [0.0, -sin_rot1, cos_rot1]])
         # Rotation about axis 2. Note this rotation is left-handed
-        rot2 = numpy.array([[cos_rot2, 0.0, sin_rot2],
+        rot2 = numpy.array([[cos_rot2, 0.0, -sin_rot2],
                             [0.0, 1.0, 0.0],
-                            [-sin_rot2, 0.0, cos_rot2]])
-        # Rotation about axis 3
+                            [sin_rot2, 0.0, cos_rot2]])
+        # Rotation about axis 3: Note this rotation is right-handed
         rot3 = numpy.array([[cos_rot3, -sin_rot3, 0.0],
                             [sin_rot3, cos_rot3, 0.0],
-                            [0.0, 0.0, -1.0]])
-        rotation_matrix = numpy.dot(numpy.dot(rot3, rot2), rot1)  # 3x3 matrix
+                            [0.0, 0.0, 1.0]])
+        rotation_matrix = numpy.dot(numpy.dot(rot3, rot2),
+                                    rot1)  # 3x3 matrix
 
         return rotation_matrix
 
