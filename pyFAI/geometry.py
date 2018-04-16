@@ -1441,23 +1441,31 @@ class Geometry(object):
     def set_rot_from_quaternion(self, w, x, y, z):
         """Quaternions are convieniant ways to represent 3D rotation
         This method allows to define rot1(left-handed), rot2(left-handed) and 
-        rot3 (right handed) as definied in the documentation from a quaternion.
+        rot3 (right handed) as definied in the documentation from a quaternion, 
+        expressed in the right handed (x1, x2, x3) basis set.  
+        
+        Uses the transformations-library from C. Gohlke
         
         :param w: Real part of the quaternion (correspond to cos alpha/2)  
         :param x: Imaginary part of the quaternion, correspond to u1*sin(alpha/2)
         :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
         :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/21)
         """
-        # TODO
-        pass
+        from .third_party.transformations import euler_from_quaternion
+
+        euler = euler_from_quaternion((w, x, y, z), axes='sxyz')
+        self._rot1 = -euler[0]
+        self._rot2 = -euler[1]
+        self._rot3 = euler[2]
 
     def quaternion(self, param=None):
         """Calculate the quaternion associated to the current rotations 
         from rot1, rot2, rot3. 
         
-        Uses the transformation library from C. Gohlke
+        Uses the transformations-library from C. Gohlke
         
-        :param param: use this set of parameters instead of the default one. 
+        :param param: use this set of parameters instead of the default one.
+        :return: numpy array with 4 elements [w, x, y, z] 
         """
         from .third_party.transformations import quaternion_from_euler
         if param is None:
@@ -1891,6 +1899,7 @@ class Geometry(object):
                                     rot1)  # 3x3 matrix
 
         return rotation_matrix
+
 
 # ############################################
 # Accessors and public properties of the class
