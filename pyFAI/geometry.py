@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/04/2018"
+__date__ = "16/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1453,12 +1453,23 @@ class Geometry(object):
 
     def quaternion(self, param=None):
         """Calculate the quaternion associated to the current rotations 
-        from rot1, rot2, rot3
+        from rot1, rot2, rot3. 
+        
+        Uses the transformation library from C. Gohlke
         
         :param param: use this set of parameters instead of the default one. 
         """
-        # TODO
-        pass
+        from .third_party.transformations import quaternion_from_euler
+        if param is None:
+            rot1 = self.rot1
+            rot2 = self.rot2
+            rot3 = self.rot3
+        else:
+            rot1 = param[3]
+            rot2 = param[4]
+            rot3 = param[5]
+
+        return quaternion_from_euler(-rot1, -rot2, rot3, axes="sxyz")
 
     def make_headers(self, type_="list"):
         """Create a configuration for the
