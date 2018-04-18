@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "16/04/2018"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -68,6 +68,66 @@ except ImportError:
 
 # Parameter set used in PyFAI:
 PoniParam = namedtuple("PoniParam", ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"])
+
+
+
+class BaseTransformation(object):
+    """This class, once instanciated, behaves like a function (via the __call__
+    method). It is responsible for taking any input geometry and translate it
+    into a set of parameters compatible with pyFAI, i.e. a tuple with:
+    (dist, poni1, poni2, rot1, rot2, rot3)
+    
+    This class relies on a user provided function which does the work.
+    """
+    def __init__(self, funct, param_names, pos_names=None):
+        """Constructor of the class
+        
+        :param funct: function which takes as parameter the param_names and the pos_name 
+        :param param_names: list of names of the parameters used in the model
+        :param pos_names: list of motor names for gonio with >1 degree of freedom
+        """
+        self.callable = funct
+        self.variables = {}
+        self.param_names = tuple(param_names)
+        if pos_names is not None:
+            self.pos_names = tuple(pos_names)
+        else:
+            self.pos_names = ("pos",)
+        for key in self.param_names + self.pos_names:
+            if key in self.variables:
+                raise RuntimeError("The keyword %s is already defined, please chose another variable name")
+            self.variables[key] = numpy.NaN
+        self.codes = []
+
+    def __call__(self, param, pos):
+        """This makes the class instance behave like a function,
+        actually a function that translates the n-parameter of the detector
+        positioning on the goniometer and the m-parameters.
+        :param param: parameter of the fit
+        :param pos: position of the goniometer (representation from the
+            goniometer)
+        :return: 6-tuple with (dist, poni1, poni2, rot1, rot2, rot3) as needed
+            for pyFAI.
+        """
+        variables = self.variables.copy()
+        for name, value in zip(self.param_names, param):
+            variables[name] = value
+        if len(self.pos_names) == 1:
+            variables[self.pos_names[0]] = pos
+        else:
+            for name, value in zip(self.pos_names, pos):
+                variables[name] = value
+
+        res = self.callable(**variables)
+        return PoniParam(*res)
+
+    def __repr__(self):
+        return "BaseTransformation with param: %s and pos: %s" % (self.param_names, self.pos_names)
+
+    def to_dict(self):
+        """Export the instance representation for serialization as a dictionary
+        """
+        raise RuntimeError("BaseTransformation is not serializable")
 
 
 class GeometryTransformation(object):
