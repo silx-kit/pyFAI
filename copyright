@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: pyfai
 Source: https://github.com/silx-kit/pyFAI
-Files-Excluded: pyFAI/third_party
+Files-Excluded: pyFAI/third_party/_local
 
 Files: *
 Copyright: 2011-2017 European Synchrotron Radiation Facility
@@ -30,6 +30,11 @@ License: BSD-3
 Files: pyFAI/gui/_pyside_dynamic.py
 Copyright: Copyright (c) 2011 Sebastian Wiesner <lunaryorn@gmail.com>
 License: MIT
+
+Files: pyFAI/third_party/transformation.py
+Copyright: 2006-2018, Christoph Gohlke, University of California
+License: BSD-3
+
 
 License: BSD-3
  Redistribution and use in source and binary forms, with or without

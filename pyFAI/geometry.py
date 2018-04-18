@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2018"
+__date__ = "16/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -272,7 +272,7 @@ class Geometry(object):
             else:
                 p3 = (L + p3).ravel()
                 assert size == p3.size
-            coord_det = numpy.vstack((p1, p2, -p3))
+            coord_det = numpy.vstack((p1, p2, p3))
             coord_sample = numpy.dot(self.rotation_matrix(param), coord_det)
             t1, t2, t3 = coord_sample
             t1.shape = shape
@@ -1441,12 +1441,43 @@ class Geometry(object):
     def set_rot_from_quaternion(self, w, x, y, z):
         """Quaternions are convieniant ways to represent 3D rotation
         This method allows to define rot1(left-handed), rot2(left-handed) and 
-        rot3 (right handed) as definied in the documentation from a quaternion.
+        rot3 (right handed) as definied in the documentation from a quaternion, 
+        expressed in the right handed (x1, x2, x3) basis set.  
         
-        :param w: Real part of the quaternion (correspond to cos alpha)  
+        Uses the transformations-library from C. Gohlke
         
+        :param w: Real part of the quaternion (correspond to cos alpha/2)  
+        :param x: Imaginary part of the quaternion, correspond to u1*sin(alpha/2)
+        :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
+        :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/21)
         """
-        pass
+        from .third_party.transformations import euler_from_quaternion
+
+        euler = euler_from_quaternion((w, x, y, z), axes='sxyz')
+        self._rot1 = -euler[0]
+        self._rot2 = -euler[1]
+        self._rot3 = euler[2]
+
+    def quaternion(self, param=None):
+        """Calculate the quaternion associated to the current rotations 
+        from rot1, rot2, rot3. 
+        
+        Uses the transformations-library from C. Gohlke
+        
+        :param param: use this set of parameters instead of the default one.
+        :return: numpy array with 4 elements [w, x, y, z] 
+        """
+        from .third_party.transformations import quaternion_from_euler
+        if param is None:
+            rot1 = self.rot1
+            rot2 = self.rot2
+            rot3 = self.rot3
+        else:
+            rot1 = param[3]
+            rot2 = param[4]
+            rot3 = param[5]
+
+        return quaternion_from_euler(-rot1, -rot2, rot3, axes="sxyz")
 
     def make_headers(self, type_="list"):
         """Create a configuration for the
@@ -1826,7 +1857,7 @@ class Geometry(object):
         this system (JK = Jerome Kieffer) as follows:
         JK1 = PB2 (Y)
         JK2 = PB1 (X)
-        JK3 = -PB3 (-Z)
+        JK3 = PB3 (Z)
         ...slight differences will result from the order
         FIXME: make backwards and forwards converter helper function
 
@@ -1852,21 +1883,23 @@ class Geometry(object):
         sin_rot2 = sin(param[4])
         sin_rot3 = sin(param[5])
 
-        # Rotation about axis 1
+        # Rotation about axis 1: Note this rotation is left-handed
         rot1 = numpy.array([[1.0, 0.0, 0.0],
-                            [0.0, cos_rot1, -sin_rot1],
-                            [0.0, sin_rot1, cos_rot1]])
+                            [0.0, cos_rot1, sin_rot1],
+                            [0.0, -sin_rot1, cos_rot1]])
         # Rotation about axis 2. Note this rotation is left-handed
-        rot2 = numpy.array([[cos_rot2, 0.0, sin_rot2],
+        rot2 = numpy.array([[cos_rot2, 0.0, -sin_rot2],
                             [0.0, 1.0, 0.0],
-                            [-sin_rot2, 0.0, cos_rot2]])
-        # Rotation about axis 3
+                            [sin_rot2, 0.0, cos_rot2]])
+        # Rotation about axis 3: Note this rotation is right-handed
         rot3 = numpy.array([[cos_rot3, -sin_rot3, 0.0],
                             [sin_rot3, cos_rot3, 0.0],
-                            [0.0, 0.0, -1.0]])
-        rotation_matrix = numpy.dot(numpy.dot(rot3, rot2), rot1)  # 3x3 matrix
+                            [0.0, 0.0, 1.0]])
+        rotation_matrix = numpy.dot(numpy.dot(rot3, rot2),
+                                    rot1)  # 3x3 matrix
 
         return rotation_matrix
+
 
 # ############################################
 # Accessors and public properties of the class

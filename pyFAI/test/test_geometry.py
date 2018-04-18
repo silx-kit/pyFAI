@@ -36,7 +36,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/04/2018"
+__date__ = "17/04/2018"
 
 
 import unittest
@@ -53,6 +53,7 @@ from .. import geometry
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from .. import units
 from ..detectors import detector_factory
+from ..third_party import transformations
 import fabio
 
 if sys.platform == "win32":
@@ -226,6 +227,21 @@ class TestFastPath(utilstest.ParametricTestCase):
     EPSILON = 3e-7
     EPSILON_R = 1e-5
     EPSILON_A = 1e-5
+    matrices = None
+    geometries = None
+    quaternions = None
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestFastPath, cls).setUpClass()
+        cls.calc_geometries()
+
+    @classmethod
+    def tearDownClass(cls):
+        super(TestFastPath, cls).tearDownClass()
+        cls.matrices = None
+        cls.geometries = None
+        cls.quaternions = None
 
     def setUp(self):
         utilstest.ParametricTestCase.setUp(self)
@@ -236,7 +252,8 @@ class TestFastPath(utilstest.ParametricTestCase):
         geometry.logger.setLevel(self.former_loglevel)
         utilstest.ParametricTestCase.setUp(self)
 
-    def getGeometries(self):
+    @classmethod
+    def calc_geometries(cls):
         detectors = ("Pilatus100k", "ImXPadS10")
         number_of_geometries = 2
 
@@ -255,26 +272,54 @@ class TestFastPath(utilstest.ParametricTestCase):
             {'wavelength': 1e-10, 'dist': 0.13655542730645986, 'rot1':-0.16145635108891077, 'poni1': 0.16271587645146157, 'rot2':-0.443426307059295, 'rot3': 0.40517456402269536, 'poni2': 0.05248001026597382, 'detector': 'Pilatus100k'}
         ]
 
+        matrices = [[[ 0.84465919, -0.29127499, -0.44912107], [ 0.34507215, 0.93768707, 0.04084325], [ 0.4092384 , -0.1894778 , 0.89253689]],
+                    [[ 0.94770834, 0.21018393, -0.24014914], [-0.28296736, 0.9013857 , -0.3277702 ], [ 0.14757497, 0.37858492, 0.91372594]],
+                    [[ 0.91240314, -0.27245408, -0.30543295], [ 0.19890928, 0.94736169, -0.25088028], [ 0.35770884, 0.16815051, 0.91856943]],
+                    [[ 0.95324989, 0.25774197, 0.15774577], [-0.30093165, 0.85715139, 0.41800912], [-0.02747351, -0.44593785, 0.89464219]],
+                    [[ 0.92110587, -0.35804283, -0.1528702 ], [ 0.27777593, 0.87954879, -0.38630875], [ 0.27277188, 0.3133676 , 0.90961324]],
+                    [[ 0.83015106, -0.32566669, 0.45253776], [ 0.35605693, 0.93426745, 0.01917795], [-0.42903692, 0.14520861, 0.891539  ]]
+                ]
+        quaternions = [[ 0.95849924, -0.06007335, -0.2238811 , 0.16597487],
+                       [ 0.96989948, 0.18206916, -0.09993925, -0.12711402],
+                       [ 0.97189689, 0.10778684, -0.17057926, 0.1212483 ],
+                       [ 0.96242447, -0.22441942, 0.04811268, -0.14512142],
+                       [ 0.96310279, 0.18162037, -0.11048719, 0.16504437],
+                       [ 0.95602792, 0.03295684, 0.23053058, 0.1782698 ]
+                       ]
+
         for _ in range(number_of_geometries):
             geo = {"dist": 0.01 + random.random(),
                    "poni1": random.random() - 0.5,
                    "poni2": random.random() - 0.5,
-                   "rot1": random.random() - 0.5,
-                   "rot2": random.random() - 0.5,
-                   "rot3": random.random() - 0.5,
+                   "rot1": (random.random() - 0.5) * numpy.pi,
+                   "rot2": (random.random() - 0.5) * numpy.pi,
+                   "rot3": (random.random() - 0.5) * numpy.pi,
                    "wavelength": 1e-10}
 
             for det in detectors:
                 dico = geo.copy()
                 dico["detector"] = det
                 geometries.append(dico)
+                q = transformations.quaternion_from_euler(-dico["rot1"], -dico["rot2"], dico["rot3"], axes="sxyz")
+                quaternions.append(q)
+                matrices.append(transformations.quaternion_matrix(q)[:3, :3])
+        cls.geometries = geometries
+        cls.quaternions = quaternions
+        cls.matrices = matrices
 
-        return geometries
+    @classmethod
+    def get_geometries(cls, what="geometries"):
+        if what == "geometries":
+            return cls.geometries
+        elif what == "quaternions":
+            return cls.quaternions
+        elif what == "matrices":
+            return cls.matrices
 
     def test_corner_array(self):
         """Test pyFAI.geometry.corner_array with full detectors
         """
-        geometries = self.getGeometries()
+        geometries = self.get_geometries()
         count_a = 17
         dunits = dict((u.split("_")[0], v) for u, v in units.RADIAL_UNITS.items())
         params = itertools.product(geometries, dunits.values())
@@ -300,7 +345,7 @@ class TestFastPath(utilstest.ParametricTestCase):
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with full detectors"""
-        geometries = self.getGeometries()
+        geometries = self.get_geometries()
         for geometryParams in geometries:
             with self.subTest(geometry=geometry):
                 geo = geometry.Geometry(**geometryParams)
@@ -318,7 +363,7 @@ class TestFastPath(utilstest.ParametricTestCase):
 
     def test_deltachi(self):
         """Test the deltaChi"""
-        geometries = self.getGeometries()
+        geometries = self.get_geometries()
         for geometryParams in geometries:
             with self.subTest(geometry=geometryParams):
                 geo = geometry.Geometry(**geometryParams)
@@ -336,6 +381,18 @@ class TestFastPath(utilstest.ParametricTestCase):
                 self.assertTrue(numpy.alltrue(delta.max() < self.EPSILON), msg)
                 logger.debug(msg)
 
+    def test_quaternions(self):
+        "test the various geometry transformation in quaternions and rotation matrices"
+        geometries = self.get_geometries()
+        quaternions = self.get_geometries("quaternions")
+        matrices = self.get_geometries("matrices")
+        self.assertEqual(len(geometries), len(quaternions), "length is the same")
+        self.assertEqual(len(geometries), len(matrices), "length is the same")
+        for kwds, quat, mat in zip(geometries, quaternions, matrices):
+            geo = geometry.Geometry(**kwds)
+            self.assert_(numpy.allclose(geo.rotation_matrix(), mat), "matrice are the same %s" % kwds)
+            self.assert_(numpy.allclose(geo.quaternion(), quat), "quaternions are the same %s" % kwds)
+
 
 class TestGeometry(utilstest.ParametricTestCase):
 
@@ -352,7 +409,7 @@ class TestGeometry(utilstest.ParametricTestCase):
                      ("chi", ("numpy", "cython"))]
         return functions
 
-    def getGeometries(self):
+    def get_geometries(self):
         pixels = {"detector": "Pilatus100k",
                   "wavelength": 1e-10}
         geometries = [{'dist': 1, 'rot1': 0, 'rot2': 0, 'rot3': 0},
@@ -370,7 +427,7 @@ class TestGeometry(utilstest.ParametricTestCase):
     def test_geometry_functions(self):
         "Test functions like tth, qFunct, rfunction... fake detectors"
         functions = self.getFunctions()
-        geometries = self.getGeometries()
+        geometries = self.get_geometries()
         params = [(k[0], k[1], g) for k, g in itertools.product(functions, geometries)]
         for func, varargs, kwds in params:
             with self.subTest(function=func, varargs=varargs, kwds=kwds):
@@ -389,7 +446,7 @@ class TestGeometry(utilstest.ParametricTestCase):
 
     def test_XYZ(self):
         """Test the calc_pos_zyx with fake detectors"""
-        geometries = self.getGeometries()
+        geometries = self.get_geometries()
         params = itertools.product((False, True), geometries)
         for corners, kwds in params:
             with self.subTest(corners=corners, kwds=kwds):
