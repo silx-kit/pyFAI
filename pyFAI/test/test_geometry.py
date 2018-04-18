@@ -464,8 +464,6 @@ class TestGeometry(utilstest.ParametricTestCase):
                 logger.debug(msg)
 
 
-
-
 class TestCalcFrom(unittest.TestCase):
     """
     Test case for testing "calcfrom1d/calcfrom2d geometry
