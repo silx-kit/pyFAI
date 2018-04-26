@@ -39,7 +39,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/04/2018"
+__date__ = "26/04/2018"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1634,15 +1634,17 @@ class Geometry(object):
 
             let_t = \\frac{1-exp(ln(t0)/cos(incidence))}{1 - t0}
 
+            
         See reference on:
         J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
 
         :param t0: value of the normal transmission (from 0 to 1)
         :param shape: shape of the array
-        :return: actual
+        :return: Correction to be applied on the data (as a flatfield)
         """
         shape = self.get_shape(shape)
-        if t0 < 0 or t0 > 1:
+        t0 = float(t0)
+        if (t0 < 0.0) or (t0 > 1.0):
             logger.error("Impossible value for normal transmission: %s", t0)
             return
 
@@ -1652,9 +1654,9 @@ class Geometry(object):
                 if ((shape is None) or (transmission_corr is not None and shape == transmission_corr.shape)):
                     return transmission_corr
 
-            if shape is None:
-                raise RuntimeError(("You should provide a shape if the"
-                                    " geometry is not yet initiallized"))
+        if shape is None:
+            raise RuntimeError(("You should provide a shape if the"
+                                " geometry is not yet initiallized"))
 
         with self._sem:
             self._transmission_normal = t0
@@ -1664,7 +1666,7 @@ class Geometry(object):
                                           shape,
                                           dtype=numpy.float32)
                 self._cached_array["cos_incidence"] = cosa
-            transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / cosa)) / (1 - t0)
+            transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / cosa)) / (1.0 - t0)
             self._cached_array["transmission_crc"] = crc32(transmission_corr)
             self._cached_array["transmission_corr"] = transmission_corr
 
