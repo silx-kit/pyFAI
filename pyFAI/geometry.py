@@ -1440,13 +1440,13 @@ class Geometry(object):
 
     def set_rot_from_quaternion(self, w, x, y, z):
         """Quaternions are convieniant ways to represent 3D rotation
-        This method allows to define rot1(left-handed), rot2(left-handed) and 
-        rot3 (right handed) as definied in the documentation from a quaternion, 
-        expressed in the right handed (x1, x2, x3) basis set.  
-        
+        This method allows to define rot1(left-handed), rot2(left-handed) and
+        rot3 (right handed) as definied in the documentation from a quaternion,
+        expressed in the right handed (x1, x2, x3) basis set.
+
         Uses the transformations-library from C. Gohlke
-        
-        :param w: Real part of the quaternion (correspond to cos alpha/2)  
+
+        :param w: Real part of the quaternion (correspond to cos alpha/2)
         :param x: Imaginary part of the quaternion, correspond to u1*sin(alpha/2)
         :param y: Imaginary part of the quaternion, correspond to u2*sin(alpha/2)
         :param z: Imaginary part of the quaternion, correspond to u3*sin(alpha/21)
@@ -1459,13 +1459,13 @@ class Geometry(object):
         self._rot3 = euler[2]
 
     def quaternion(self, param=None):
-        """Calculate the quaternion associated to the current rotations 
-        from rot1, rot2, rot3. 
-        
+        """Calculate the quaternion associated to the current rotations
+        from rot1, rot2, rot3.
+
         Uses the transformations-library from C. Gohlke
-        
+
         :param param: use this set of parameters instead of the default one.
-        :return: numpy array with 4 elements [w, x, y, z] 
+        :return: numpy array with 4 elements [w, x, y, z]
         """
         from .third_party.transformations import quaternion_from_euler
         if param is None:
@@ -1634,17 +1634,15 @@ class Geometry(object):
 
             let_t = \\frac{1-exp(ln(t0)/cos(incidence))}{1 - t0}
 
-            
         See reference on:
         J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
 
         :param t0: value of the normal transmission (from 0 to 1)
         :param shape: shape of the array
-        :return: Correction to be applied on the data (as a flatfield)
+        :return: actual
         """
         shape = self.get_shape(shape)
-        t0 = float(t0)
-        if (t0 < 0.0) or (t0 > 1.0):
+        if t0 < 0 or t0 > 1:
             logger.error("Impossible value for normal transmission: %s", t0)
             return
 
@@ -1654,9 +1652,9 @@ class Geometry(object):
                 if ((shape is None) or (transmission_corr is not None and shape == transmission_corr.shape)):
                     return transmission_corr
 
-        if shape is None:
-            raise RuntimeError(("You should provide a shape if the"
-                                " geometry is not yet initiallized"))
+            if shape is None:
+                raise RuntimeError(("You should provide a shape if the"
+                                    " geometry is not yet initiallized"))
 
         with self._sem:
             self._transmission_normal = t0
@@ -1666,7 +1664,7 @@ class Geometry(object):
                                           shape,
                                           dtype=numpy.float32)
                 self._cached_array["cos_incidence"] = cosa
-            transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / cosa)) / (1.0 - t0)
+            transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / cosa)) / (1 - t0)
             self._cached_array["transmission_crc"] = crc32(transmission_corr)
             self._cached_array["transmission_corr"] = transmission_corr
 
@@ -2058,13 +2056,16 @@ class Geometry(object):
     chia = property(get_chia, set_chia, del_chia, "chi array in cache")
 
     def get_dssa(self):
-        return self._dssa
+        key = "solid_angle#%s" % (self._dssa_order)
+        return self._cached_array.get(key)
 
     def set_dssa(self, _):
         logger.error("You are not allowed to modify solid angle array")
 
     def del_dssa(self):
-        self._dssa = None
+        self._cached_array["solid_angle#%s" % (self._dssa_order)] = None
+        self._cached_array["solid_angle#%s_crc" % (self._dssa_order)] = None
+
     dssa = property(get_dssa, set_dssa, del_dssa, "solid angle array in cache")
 
     def get_qa(self):
