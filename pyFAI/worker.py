@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/03/2018"
+__date__ = "30/04/2018"
 __status__ = "development"
 
 import threading
@@ -612,15 +612,17 @@ class PixelwiseWorker(object):
         if device is not None:
             logger.warning("GPU is not yet implemented")
 
-    def process(self, data, normalization_factor=None):
+    def process(self, data, variance=None, normalization_factor=None):
         """
         Process the data and apply a normalization factor
         :param data: input data
+        :param variance: the variance associated to the data
         :param normalization: normalization factor
         :return: processed data
         """
         if preproc is not None:
-            proc_data = preproc(data,
+            temp_data = preproc(data,
+                                variance=variance,
                                 dark=self.dark,
                                 flat=self.flat,
                                 solidangle=self.solidangle,
@@ -631,6 +633,14 @@ class PixelwiseWorker(object):
                                 delta_dummy=self.delta_dummy,
                                 normalization_factor=normalization_factor,
                                 empty=None)
+            if variance is not None:
+                proc_data = temp_data[..., 0]
+                proc_variance = temp_data[..., 1]
+                proc_norm = temp_data[..., 2]
+                proc_data /= proc_norm
+                proc_variance /= proc_norm
+            else:
+                proc_data = temp_data
         else:
             if self.dummy is not None:
                 if self.delta_dummy is None:
@@ -655,7 +665,24 @@ class PixelwiseWorker(object):
                 proc_data /= normalization_factor
             if do_mask:
                 proc_data[self.mask] = self.dummy or 0
-        return proc_data
+
+            if variance is not None:
+                proc_variance = numpy.array(variance, dtype=numpy.float32)
+                if self.flat is not None:
+                    proc_variance /= self.flat
+                if self.solidangle is not None:
+                    proc_variance /= self.solidangle
+                if self.polarization is not None:
+                    proc_variance /= self.polarization
+                if normalization_factor is not None:
+                    proc_variance /= normalization_factor
+                if do_mask:
+                    proc_variance[self.mask] = self.dummy or 0
+
+        if variance is not None:
+            return proc_data, proc_variance
+        else:
+            return proc_data
 
 
 class DistortionWorker(object):
