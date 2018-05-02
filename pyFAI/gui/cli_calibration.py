@@ -2170,7 +2170,7 @@ class CheckCalib(object):
         else:
             self.ai = None
         if img:
-            self.img = fabio.open(img)
+            self.img = fabio.open(img).data
         else:
             self.img = None
         self.mask = None
