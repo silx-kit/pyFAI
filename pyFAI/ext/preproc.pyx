@@ -28,8 +28,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "09/01/2018"
-__copyright__ = "2011-2017, ESRF"
+__date__ = "03/05/2018"
+__copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -62,8 +62,8 @@ cdef floating[::1]c1_preproc(floating[::1] data,
                              floating[::1] polarization=None,
                              floating[::1] absorption=None,
                              any_int_t[::1] mask=None,
-                             floating dummy=0,
-                             floating delta_dummy=0,
+                             floating dummy=0.0,
+                             floating delta_dummy=0.0,
                              bint check_dummy=False,
                              floating normalization_factor=1.0,
                              ) nogil:
@@ -86,8 +86,8 @@ cdef floating[::1]c1_preproc(floating[::1] data,
     """
     cdef:
         int size, i
-        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, do_polarization
-        bint is_valid
+        bint check_mask, do_dark, do_flat, do_solidangle, do_absorption, 
+        bint do_polarization, is_valid
         floating[::1] result
         floating one_value, one_num, one_den, one_flat
 
@@ -125,7 +125,7 @@ cdef floating[::1]c1_preproc(floating[::1] data,
             if do_dark:
                 one_num = one_num - dark[i]
             if do_flat:
-                one_den = one_den * flat[i]
+                one_den = one_den * one_flat
             if do_polarization:
                 one_den = one_den * polarization[i]
             if do_solidangle:
@@ -190,7 +190,7 @@ cdef floating[:, ::1]c2_preproc(floating[::1] data,
         do_absorption = absorption is not None
         do_polarization = polarization is not None
         check_mask = mask is not None
-        result = numpy.zeros((size, 2), dtype=data.dtype)
+        result = numpy.zeros((size, 2), dtype=numpy.asarray(data).dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -284,7 +284,7 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
         do_absorption = absorption is not None
         do_polarization = polarization is not None
         check_mask = mask is not None
-        result = numpy.zeros((size, 3), dtype=data.dtype)
+        result = numpy.zeros((size, 3), dtype=numpy.asarray(data).dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = one_var = data[i]
@@ -388,7 +388,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
         check_mask = mask is not None
         do_variance = variance is not None
         do_dark_variance = dark_variance is not None
-        result = numpy.zeros((size, 3), dtype=data.dtype)
+        result = numpy.zeros((size, 2), dtype=numpy.asarray(data).dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -456,7 +456,7 @@ def preproc(raw,
             mask=None,
             dummy=None,
             delta_dummy=None,
-            float normalization_factor=1.0,
+            normalization_factor=None,
             empty=None,
             bint split_result=False,
             variance=None,
@@ -491,7 +491,7 @@ def preproc(raw,
         cnp.int8_t[::1] cmask
         float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, dvariance, res1
         float[:, ::1] res2
-        float cdummy, ddummy
+        float cdummy, ddummy, cnorm_factor
 
     # initialization of values:
     size = raw.size
@@ -515,6 +515,11 @@ def preproc(raw,
         check_dummy = False
         cdummy = empty or 0.0
         ddummy = 0.0
+
+    if normalization_factor is None:
+        cnorm_factor = 1.0
+    else:
+        cnorm_factor = float(normalization_factor)
 
     if dark is not None:
         assert dark.size == size, "Dark array size is correct"
@@ -564,20 +569,20 @@ def preproc(raw,
         if (variance is not None):
             out_shape += [3]
             res2 = c3_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                              cmask, cdummy, ddummy, check_dummy, normalization_factor, cvariance, dvariance)
+                              cmask, cdummy, ddummy, check_dummy, cnorm_factor, cvariance, dvariance)
         elif poissonian:
             out_shape += [3]
             res2 = cp_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                              cmask, cdummy, ddummy, check_dummy, normalization_factor)
+                              cmask, cdummy, ddummy, check_dummy, cnorm_factor)
         else:
             out_shape += [2]
             res2 = c2_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                              cmask, cdummy, ddummy, check_dummy, normalization_factor)
+                              cmask, cdummy, ddummy, check_dummy, cnorm_factor)
         res = numpy.asarray(res2)
         res.shape = out_shape
     else:
         res1 = c1_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                          cmask, cdummy, ddummy, check_dummy, normalization_factor)
+                          cmask, cdummy, ddummy, check_dummy, cnorm_factor)
         res = numpy.asarray(res1)
         res.shape = shape
     return res

@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2018"
+__date__ = "03/05/2018"
 __status__ = "development"
 
 import threading
@@ -103,10 +103,13 @@ from .distortion import Distortion
 from . import units
 try:
     from .ext.preproc import preproc
+    USE_CYTHON = True
 except ImportError as err:
     logger.warning("Unable to import preproc: %s", err)
     preproc = None
-# from .io import h5py, HDF5Writer
+    USE_CYTHON = False
+else:
+    USE_CYTHON = True
 
 
 def make_ai(config):
@@ -573,7 +576,7 @@ class PixelwiseWorker(object):
     Simple worker doing dark, flat, solid angle and polarization correction
     """
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
-                 mask=None, dummy=None, delta_dummy=None, device=None):
+                 mask=None, dummy=None, delta_dummy=None, device=None, empty=None):
         """Constructor of the worker
 
         :param dark: array
@@ -581,6 +584,7 @@ class PixelwiseWorker(object):
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
+        :param empty: value given for 
         """
         self.ctx = None
         if dark is not None:
@@ -609,8 +613,7 @@ class PixelwiseWorker(object):
 
         self.dummy = dummy
         self.delta_dummy = delta_dummy
-        if device is not None:
-            logger.warning("GPU is not yet implemented")
+        self.empty = float(empty) if empty else 0.0
 
     def process(self, data, variance=None, normalization_factor=None):
         """
@@ -618,9 +621,10 @@ class PixelwiseWorker(object):
         :param data: input data
         :param variance: the variance associated to the data
         :param normalization: normalization factor
-        :return: processed data
+        :return: processed data, optionally with the assiciated error if variance is provided
         """
-        if preproc is not None:
+        propagate_error = (variance is not None)
+        if (preproc is not None) and USE_CYTHON:
             temp_data = preproc(data,
                                 variance=variance,
                                 dark=self.dark,
@@ -632,13 +636,14 @@ class PixelwiseWorker(object):
                                 dummy=self.dummy,
                                 delta_dummy=self.delta_dummy,
                                 normalization_factor=normalization_factor,
-                                empty=None)
-            if variance is not None:
+                                empty=self.empty,
+                                poissonian=0)
+            if propagate_error:
                 proc_data = temp_data[..., 0]
                 proc_variance = temp_data[..., 1]
                 proc_norm = temp_data[..., 2]
                 proc_data /= proc_norm
-                proc_variance /= proc_norm
+                proc_error = numpy.sqrt(proc_variance) / proc_norm
             else:
                 proc_data = temp_data
         else:
@@ -664,23 +669,24 @@ class PixelwiseWorker(object):
             if normalization_factor is not None:
                 proc_data /= normalization_factor
             if do_mask:
-                proc_data[self.mask] = self.dummy or 0
+                proc_data[self.mask] = self.dummy or self.empty
 
             if variance is not None:
-                proc_variance = numpy.array(variance, dtype=numpy.float32)
-                if self.flat is not None:
-                    proc_variance /= self.flat
-                if self.solidangle is not None:
-                    proc_variance /= self.solidangle
-                if self.polarization is not None:
-                    proc_variance /= self.polarization
-                if normalization_factor is not None:
-                    proc_variance /= normalization_factor
-                if do_mask:
-                    proc_variance[self.mask] = self.dummy or 0
+                proc_error = numpy.sqrt(variance)
 
-        if variance is not None:
-            return proc_data, proc_variance
+                if self.flat is not None:
+                    proc_error /= self.flat
+                if self.solidangle is not None:
+                    proc_error /= self.solidangle
+                if self.polarization is not None:
+                    proc_error /= self.polarization
+                if normalization_factor is not None:
+                    proc_error /= normalization_factor
+                if do_mask:
+                    proc_error[self.mask] = self.dummy or self.empty
+
+        if propagate_error:
+            return proc_data, proc_error
         else:
             return proc_data
 
@@ -736,12 +742,16 @@ class DistortionWorker(object):
             self.distortion = Distortion(detector, method="LUT", device=device,
                                          mask=self.mask, empty=self.dummy or 0)
 
-    def process(self, data, normalization_factor=1.0):
+    def process(self, data, variance=None,
+                normalization_factor=1.0):
         """
         Process the data and apply a normalization factor
         :param data: input data
+        :param variance: the variance associated to the data
         :param normalization: normalization factor
         :return: processed data
+        
+        TODO: manage variance in distortion correction
         """
         if preproc is not None:
             proc_data = preproc(data,

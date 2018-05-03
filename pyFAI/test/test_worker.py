@@ -34,14 +34,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "03/05/2018"
 
 
 import unittest
 import numpy
 import logging
-from .. import units
-from ..worker import Worker
+from .. import units, worker
+from ..worker import Worker, PixelwiseWorker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
@@ -246,6 +246,36 @@ class TestWorker(unittest.TestCase):
         worker.do_poisson = True
         result = worker.process(data)
         self.assertIsNone(result)
+
+    def test_pixelwiseworker(self):
+        shape = (5, 7)
+        size = numpy.prod(shape)
+        ref = numpy.random.randint(0, 60000, size=size).reshape(shape).astype("uint16")
+        dark = numpy.random.poisson(10, size=size).reshape(shape).astype("uint16")
+        raw = ref + dark
+        flat = numpy.random.normal(1.0, 0.1, size=size).reshape(shape)
+        signal = ref / flat
+        precision = 1e-2
+
+        # Without error propagation
+        # Numpy path
+        worker.USE_CYTHON = False
+        pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5)
+        res_np = pww.process(raw)
+        err = abs(res_np - signal).max()
+        self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
+
+        # Cython path
+        worker.USE_CYTHON = True
+        res_cy = pww.process(raw)
+        err = abs(res_cy - signal).max()
+        self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
+
+
+        # With Poissonian errors
+        # TODO
+        # With other  errors
+
 
 
 def suite():
