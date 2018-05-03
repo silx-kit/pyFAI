@@ -13,6 +13,6 @@ fabio
 scipy
 matplotlib
 mako
-pyopencl==2015.1
+pyopencl
 numexpr
 silx
