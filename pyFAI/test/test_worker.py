@@ -34,14 +34,14 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/01/2018"
+__date__ = "04/05/2018"
 
 
 import unittest
 import numpy
 import logging
-from .. import units
-from ..worker import Worker
+from .. import units, worker
+from ..worker import Worker, PixelwiseWorker
 from ..azimuthalIntegrator import AzimuthalIntegrator
 from ..containers import Integrate1dResult
 from ..containers import Integrate2dResult
@@ -246,6 +246,49 @@ class TestWorker(unittest.TestCase):
         worker.do_poisson = True
         result = worker.process(data)
         self.assertIsNone(result)
+
+    def test_pixelwiseworker(self):
+        shape = (5, 7)
+        size = numpy.prod(shape)
+        ref = numpy.random.randint(0, 60000, size=size).reshape(shape).astype("uint16")
+        dark = numpy.random.poisson(10, size=size).reshape(shape).astype("uint16")
+        raw = ref + dark
+        flat = numpy.random.normal(1.0, 0.1, size=size).reshape(shape)
+        signal = ref / flat
+        precision = 1e-2
+
+        # Without error propagation
+        # Numpy path
+        worker.USE_CYTHON = False
+        pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5, dtype="float64")
+        res_np = pww.process(raw, normalization_factor=6.0)
+        err = abs(res_np - signal / 6.0).max()
+        self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
+
+        # Cython path
+        worker.USE_CYTHON = True
+        res_cy = pww.process(raw, normalization_factor=7.0)
+        err = abs(res_cy - signal / 7.0).max()
+        self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
+
+        # With Poissonian errors
+        # Numpy path
+        worker.USE_CYTHON = False
+        pww = PixelwiseWorker(dark=dark)
+        res_np, err_np = pww.process(raw, variance=ref, normalization_factor=2.0)
+        delta_res = abs(res_np - ref / 2.0).max()
+        delta_err = abs(err_np - numpy.sqrt(ref) / 2.0).max()
+
+        self.assertLess(delta_res, precision, "Numpy intensity calculation are OK: %s" % err)
+        self.assertLess(delta_err, precision, "Numpy error calculation are OK: %s" % err)
+
+        # Cython path
+        worker.USE_CYTHON = True
+        res_cy, err_cy = pww.process(raw, variance=ref, normalization_factor=2.0)
+        delta_res = abs(res_cy - ref / 2.0).max()
+        delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
+        self.assertLess(delta_res, precision, "Cython intensity calculation are OK: %s" % err)
+        self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
 
 
 def suite():

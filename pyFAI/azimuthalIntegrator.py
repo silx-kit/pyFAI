@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2018"
+__date__ = "03/05/2018"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2637,7 +2637,9 @@ class AzimuthalIntegrator(Geometry):
             data = data.astype(numpy.float32)
             mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit, scale=False)
-            if radial_range is not None:
+            if radial_range is None:
+                radial_range = (pos0.min(), pos0.max() * EPS32)
+            else:
                 mask *= (pos0 >= min(radial_range))
                 mask *= (pos0 <= max(radial_range))
             if azimuth_range is not None:
@@ -2657,15 +2659,14 @@ class AzimuthalIntegrator(Geometry):
             data = data[mask]
             if variance is not None:
                 variance = variance[mask]
-            if radial_range is None:
-                radial_range = (pos0.min(), pos0.max() * EPS32)
 
-            if ("cython" in method):
+            if ("cython" in method) or ("histogram" in method):
                 if histogram is not None:
                     logger.debug("integrate1d uses cython implementation")
                     qAxis, I, sum_, count = histogram.histogram(pos=pos0,
                                                                 weights=data,
                                                                 bins=npt,
+                                                                bin_range=radial_range,
                                                                 pixelSize_in_Pos=0,
                                                                 empty=dummy if dummy is not None else self._empty,
                                                                 normalization_factor=normalization_factor)
@@ -2675,6 +2676,7 @@ class AzimuthalIntegrator(Geometry):
                         _, var1d, a, b = histogram.histogram(pos=pos0,
                                                              weights=variance,
                                                              bins=npt,
+                                                             bin_range=radial_range,
                                                              pixelSize_in_Pos=1,
                                                              empty=dummy if dummy is not None else self._empty)
                         with numpy.errstate(divide='ignore'):
