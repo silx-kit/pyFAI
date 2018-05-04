@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "03/05/2018"
+__date__ = "04/05/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -246,8 +246,8 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
                                 floating[::1] polarization=None,
                                 floating[::1] absorption=None,
                                 any_int_t[::1] mask=None,
-                                floating dummy=0,
-                                floating delta_dummy=0,
+                                floating dummy=0.0,
+                                floating delta_dummy=0.0,
                                 bint check_dummy=False,
                                 floating normalization_factor=1.0,
                                 ) nogil:
@@ -267,7 +267,7 @@ cdef floating[:, ::1]cp_preproc(floating[::1] data,
 
     NaN are always considered as invalid
 
-    Empty pixels are 0 both num, var and den
+    Empty pixels are 0.0 for both signal, variance and normalization
     """
     cdef:
         int size, i
@@ -369,7 +369,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
     :param dark_variance: variance of the dark
     NaN are always considered as invalid
 
-    Empty pixels are 0 both num, var and den
+    Empty pixels are 0.0 for both signal, variance and normalization 
     """
     cdef:
         int size, i
@@ -388,7 +388,7 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
         check_mask = mask is not None
         do_variance = variance is not None
         do_dark_variance = dark_variance is not None
-        result = numpy.zeros((size, 2), dtype=numpy.asarray(data).dtype)
+        result = numpy.zeros((size, 3), dtype=numpy.asarray(data).dtype)
 
     for i in prange(size, nogil=True, schedule="static"):
         one_num = data[i]
@@ -447,6 +447,79 @@ cdef floating[:, ::1]c3_preproc(floating[::1] data,
 @cython.cdivision(True)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
+def _preproc(floating[::1] raw,
+             shape,
+             bint check_dummy,
+             floating dummy,
+             floating delta_dummy,
+             floating normalization_factor,
+             floating empty,
+             floating[::1] dark=None,
+             floating[::1] flat=None,
+             floating[::1] solidangle=None,
+             floating[::1] polarization=None,
+             floating[::1] absorption=None,
+             any_int_t[::1] mask=None,
+             bint split_result=False,
+             floating[::1] variance=None,
+             floating[::1] dark_variance=None,
+             bint poissonian=False,
+             ):
+    """specialized preprocessing step for all corrections
+
+    :param raw: raw value, as a numpy array, 1D with specialized dtype
+    :param mask: array non null  where data should be ignored
+    :param dummy: value of invalid data
+    :param delta_dummy: precision for invalid data
+    :param dark: array containing the value of the dark noise, to be subtracted
+    :param flat: Array containing the flatfield image. It is also checked for dummies if relevant.
+    :param solidangle: the value of the solid_angle. This processing may be performed during the rebinning instead. left for compatibility
+    :param polarization: Correction for polarization of the incident beam
+    :param absorption: Correction for absorption in the sensor volume
+    :param normalization_factor: final value is divided by this
+    :param empty: value to be given for empty bins
+    :param variance: variance of the data
+    :param dark_variance: variance of the dark
+    :param poissonian: set to True to consider the variance is equal to raw signal
+
+    All calculation are performed in the precision of raw dtype
+
+    NaN are always considered as invalid
+    """
+    cdef:
+        int size
+        floating[::1] res1d 
+        floating[:, ::1] res2d
+
+    # initialization of values:
+    size = raw.size
+
+    if split_result or (variance is not None) or poissonian:
+        out_shape = list(shape)
+        split_result = True
+        if (variance is not None):
+            out_shape += [3]
+            res2d = c3_preproc(raw, dark, flat, solidangle, polarization, absorption,
+                               mask, dummy, delta_dummy, check_dummy, normalization_factor, 
+                               variance, dark_variance)
+        elif poissonian:
+            out_shape += [3]
+            res2d = cp_preproc(raw, dark, flat, solidangle, polarization, absorption,
+                               mask, dummy, delta_dummy, check_dummy, normalization_factor)
+        else:
+            out_shape += [2]
+            res2d = c2_preproc(raw, dark, flat, solidangle, polarization, absorption,
+                               mask, dummy, delta_dummy, check_dummy, normalization_factor)
+        res = numpy.asarray(res2d)
+        res.shape = out_shape
+    else:
+        res1d = c1_preproc(raw, dark, flat, solidangle, polarization, absorption,
+                           mask, dummy, delta_dummy, check_dummy, normalization_factor)
+        res = numpy.asarray(res1d)
+        res.shape = shape
+    return res
+
+
 def preproc(raw,
             dark=None,
             flat=None,
@@ -462,6 +535,7 @@ def preproc(raw,
             variance=None,
             dark_variance=None,
             bint poissonian=False,
+            dtype=numpy.float32
             ):
     """Common preprocessing step for all
 
@@ -478,111 +552,87 @@ def preproc(raw,
     :param empty: value to be given for empty bins
     :param variance: variance of the data
     :param dark_variance: variance of the dark
+    :param poissonian: set to True to consider the variance is equal to raw signal
+    :param dtype: type for working: float32 or float64
 
-    All calculation are performed in single precision floating point.
+    All calculation are performed in the `dtype` precision
 
     NaN are always considered as invalid
 
     if neither empty nor dummy is provided, empty pixels are 0
     """
     cdef:
-        int size
         bint check_dummy
-        cnp.int8_t[::1] cmask
-        float[::1] cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt, cvariance, dvariance, res1
-        float[:, ::1] res2
-        float cdummy, ddummy, cnorm_factor
 
-    # initialization of values:
+    shape = raw.shape
     size = raw.size
-    cdata = numpy.ascontiguousarray(raw.ravel(), dtype=numpy.float32)
-
-    if (mask is None) or (mask is False):
-        cmask = None
-    else:
-        assert mask.size == size, "Mask array size is correct"
-        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-
-    if (dummy is not None) and (delta_dummy is not None):
-        check_dummy = True
-        cdummy = float(dummy)
-        ddummy = float(delta_dummy)
-    elif (dummy is not None):
-        check_dummy = True
-        cdummy = float(dummy)
-        ddummy = 0.0
-    else:
-        check_dummy = False
-        cdummy = empty or 0.0
-        ddummy = 0.0
-
-    if normalization_factor is None:
-        cnorm_factor = 1.0
-    else:
-        cnorm_factor = float(normalization_factor)
-
+    dtype = numpy.dtype(dtype).type
+    raw = numpy.ascontiguousarray(raw.ravel(), dtype=dtype)
     if dark is not None:
         assert dark.size == size, "Dark array size is correct"
-        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
-    else:
-        cdark = None
+        dark = numpy.ascontiguousarray(dark.ravel(), dtype=dtype)
 
     if flat is not None:
         assert flat.size == size, "Flat array size is correct"
-        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
-    else:
-        cflat = None
+        flat = numpy.ascontiguousarray(flat.ravel(), dtype=dtype)
 
     if polarization is not None:
         assert polarization.size == size, "Polarization array size is correct"
-        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
-    else:
-        cpolarization = None
+        polarization = numpy.ascontiguousarray(polarization.ravel(), dtype=dtype)
 
     if solidangle is not None:
         assert solidangle.size == size, "Solid angle array size is correct"
-        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
-    else:
-        csolidangle = None
+        solidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=dtype)
 
     if absorption is not None:
         assert absorption.size == size, "Absorption array size is correct"
-        cabsorpt = numpy.ascontiguousarray(absorption.ravel(), dtype=numpy.float32)
-    else:
-        cabsorpt = None
+        absorpt = numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
 
     if variance is not None:
         assert variance.size == size, "Variance array size is correct"
-        cvariance = numpy.ascontiguousarray(variance.ravel(), dtype=numpy.float32)
-    else:
-        cvariance = None
+        variance = numpy.ascontiguousarray(variance.ravel(), dtype=dtype)
+
     if dark_variance is not None:
         assert dark_variance.size == size, "Dark_variance array size is correct"
-        dvariance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=numpy.float32)
-    else:
-        dvariance = None
+        dark_variance = numpy.ascontiguousarray(dark_variance.ravel(), dtype=dtype)
 
-    shape = raw.shape
-    if split_result or (variance is not None) or poissonian:
-        out_shape = list(shape)
-        split_result = True
-        if (variance is not None):
-            out_shape += [3]
-            res2 = c3_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                              cmask, cdummy, ddummy, check_dummy, cnorm_factor, cvariance, dvariance)
-        elif poissonian:
-            out_shape += [3]
-            res2 = cp_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                              cmask, cdummy, ddummy, check_dummy, cnorm_factor)
-        else:
-            out_shape += [2]
-            res2 = c2_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                              cmask, cdummy, ddummy, check_dummy, cnorm_factor)
-        res = numpy.asarray(res2)
-        res.shape = out_shape
+    if (dummy is None):
+        check_dummy = False
+        dummy = delta_dummy = dtype(empty or 0.0)
+        
     else:
-        res1 = c1_preproc(cdata, cdark, cflat, csolidangle, cpolarization, cabsorpt,
-                          cmask, cdummy, ddummy, check_dummy, cnorm_factor)
-        res = numpy.asarray(res1)
-        res.shape = shape
-    return res
+        check_dummy = True
+        dummy = dtype(dummy)
+        if (delta_dummy is None):
+            delta_dummy = dtype(0.0)
+        else:
+            delta_dummy = dtype(delta_dummy)
+
+    if normalization_factor is not None:
+        normalization_factor = dtype(normalization_factor)
+    else:
+        normalization_factor = dtype(1.0)
+
+    if (mask is None) or (mask is False):
+        mask = None
+    else:
+        assert mask.size == size, "Mask array size is correct"
+        mask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+    
+    return _preproc(raw,
+                    shape,
+                    check_dummy,
+                    dummy,
+                    delta_dummy,
+                    normalization_factor,
+                    empty,
+                    dark,
+                    flat,
+                    solidangle,
+                    polarization,
+                    absorption,
+                    mask,
+                    split_result,
+                    variance,
+                    dark_variance,
+                    poissonian)

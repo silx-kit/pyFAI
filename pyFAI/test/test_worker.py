@@ -34,7 +34,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2018"
+__date__ = "04/05/2018"
 
 
 import unittest
@@ -255,27 +255,40 @@ class TestWorker(unittest.TestCase):
         raw = ref + dark
         flat = numpy.random.normal(1.0, 0.1, size=size).reshape(shape)
         signal = ref / flat
-        precision = 1e-2
+        precision = 1e-3
 
         # Without error propagation
         # Numpy path
         worker.USE_CYTHON = False
-        pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5)
-        res_np = pww.process(raw)
-        err = abs(res_np - signal).max()
+        pww = PixelwiseWorker(dark=dark, flat=flat, dummy=-5, dtype="float64")
+        res_np = pww.process(raw, normalization_factor=6.0)
+        err = abs(res_np - signal / 6.0).max()
         self.assertLess(err, precision, "Numpy calculation are OK: %s" % err)
 
         # Cython path
         worker.USE_CYTHON = True
-        res_cy = pww.process(raw)
-        err = abs(res_cy - signal).max()
+        res_cy = pww.process(raw, normalization_factor=7.0)
+        err = abs(res_cy - signal / 7.0).max()
         self.assertLess(err, precision, "Cython calculation are OK: %s" % err)
 
-
         # With Poissonian errors
-        # TODO
-        # With other  errors
+        # Numpy path
+        worker.USE_CYTHON = False
+        pww = PixelwiseWorker(dark=dark)
+        res_np, err_np = pww.process(raw, variance=ref, normalization_factor=2.0)
+        delta_res = abs(res_np - ref / 2.0).max()
+        delta_err = abs(err_np - numpy.sqrt(ref) / 2.0).max()
 
+        self.assertLess(delta_res, precision, "Numpy intensity calculation are OK: %s" % err)
+        self.assertLess(delta_err, precision, "Numpy error calculation are OK: %s" % err)
+
+        # Cython path
+        worker.USE_CYTHON = True
+        res_cy, err_cy = pww.process(raw, variance=ref, normalization_factor=2.0)
+        delta_res = abs(res_cy - ref / 2.0).max()
+        delta_err = abs(err_cy - numpy.sqrt(ref) / 2.0).max()
+        self.assertLess(delta_res, precision, "Cython intensity calculation are OK: %s" % err)
+        self.assertLess(delta_err, precision, "Cython error calculation are OK: %s" % err)
 
 
 def suite():

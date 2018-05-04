@@ -85,7 +85,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2018"
+__date__ = "04/05/2018"
 __status__ = "development"
 
 import threading
@@ -570,13 +570,16 @@ class Worker(object):
             self._normalization_factor = value
     normalization_factor = property(get_normalization_factor, set_normalization_factor)
 
+    __call__ = process
+
 
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
     def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
-                 mask=None, dummy=None, delta_dummy=None, device=None, empty=None):
+                 mask=None, dummy=None, delta_dummy=None, device=None,
+                 empty=None, dtype="float32"):
         """Constructor of the worker
 
         :param dark: array
@@ -584,7 +587,8 @@ class PixelwiseWorker(object):
         :param solidangle: solid-angle array
         :param polarization: numpy array with 2D polarization corrections
         :param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
-        :param empty: value given for 
+        :param empty: value given for empty pixels by default
+        :param dtype: unit (and precision) in which to perform calculation: float32 or float64
         """
         self.ctx = None
         if dark is not None:
@@ -614,6 +618,7 @@ class PixelwiseWorker(object):
         self.dummy = dummy
         self.delta_dummy = delta_dummy
         self.empty = float(empty) if empty else 0.0
+        self.dtype = numpy.dtype(dtype).type
 
     def process(self, data, variance=None, normalization_factor=None):
         """
@@ -637,7 +642,8 @@ class PixelwiseWorker(object):
                                 delta_dummy=self.delta_dummy,
                                 normalization_factor=normalization_factor,
                                 empty=self.empty,
-                                poissonian=0)
+                                poissonian=0,
+                                dtype=self.dtype)
             if propagate_error:
                 proc_data = temp_data[..., 0]
                 proc_variance = temp_data[..., 1]
@@ -689,6 +695,8 @@ class PixelwiseWorker(object):
             return proc_data, proc_error
         else:
             return proc_data
+
+    __call__ = process
 
 
 class DistortionWorker(object):
@@ -794,3 +802,5 @@ class DistortionWorker(object):
             return self.distortion.correct(proc_data, self.dummy, self.delta_dummy)
         else:
             return data
+
+    __call__ = process
