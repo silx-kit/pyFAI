@@ -453,7 +453,6 @@ def _preproc(floating[::1] raw,
              floating dummy,
              floating delta_dummy,
              floating normalization_factor,
-             floating empty,
              floating[::1] dark=None,
              floating[::1] flat=None,
              floating[::1] solidangle=None,
@@ -586,7 +585,7 @@ def preproc(raw,
 
     if absorption is not None:
         assert absorption.size == size, "Absorption array size is correct"
-        absorpt = numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
+        absorption = numpy.ascontiguousarray(absorption.ravel(), dtype=dtype)
 
     if variance is not None:
         assert variance.size == size, "Variance array size is correct"
@@ -625,7 +624,6 @@ def preproc(raw,
                     dummy,
                     delta_dummy,
                     normalization_factor,
-                    empty,
                     dark,
                     flat,
                     solidangle,
