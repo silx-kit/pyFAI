@@ -255,7 +255,7 @@ class TestWorker(unittest.TestCase):
         raw = ref + dark
         flat = numpy.random.normal(1.0, 0.1, size=size).reshape(shape)
         signal = ref / flat
-        precision = 1e-3
+        precision = 1e-2
 
         # Without error propagation
         # Numpy path
