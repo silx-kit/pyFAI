@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "07/05/2018"
 __status__ = "development"
 
 import logging
@@ -352,18 +352,14 @@ class Distortion(object):
         else:
             if self.lut is None:
                 self.calc_LUT()
-            if self.method == "lut":
-                if _distortion is not None:
-                    out = _distortion.correct_LUT(image, self.shape_in, self._shape_out, self.lut,
-                                                  dummy=dummy, delta_dummy=delta_dummy)
-                else:
+            if _distortion is not None:
+                out = _distortion.correct(image, self.shape_in, self._shape_out, self.lut,
+                                          dummy=dummy, delta_dummy=delta_dummy)
+            else:
+                if self.method == "lut":
                     big = image.ravel().take(self.lut.idx) * self.lut.coef
                     out = big.sum(axis=-1)
-            elif self.method == "csr":
-                if _distortion is not None:
-                    out = _distortion.correct_CSR(image, self.shape_in, self._shape_out, self.lut,
-                                                  dummy=dummy, delta_dummy=delta_dummy)
-                else:
+                elif self.method == "csr":
                     big = self.lut[0] * image.ravel().take(self.lut[1])
                     indptr = self.lut[2]
                     out = numpy.zeros(indptr.size - 1)
