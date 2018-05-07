@@ -28,8 +28,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "10/01/2018"
-__copyright__ = "2011-2016, ESRF"
+__date__ = "07/05/2018"
+__copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -846,10 +846,10 @@ def calc_sparse(float[:, :, :, ::1] pos not None,
     return res
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
 def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
 
@@ -923,10 +923,10 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
     return out
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
 def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
@@ -1004,10 +1004,10 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None):
     return out
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
 def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
@@ -1042,10 +1042,10 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     return out, mask
 
 
-@cython.cdivision(True)
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.initializedcheck(False)
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
 def uncorrect_CSR(image, shape, LUT):
     """Take an image which has been corrected and transform it into it's raw (with loss of information)
 
