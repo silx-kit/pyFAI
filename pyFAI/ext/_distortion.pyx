@@ -842,11 +842,81 @@ def calc_sparse(cnp.float32_t[:, :, :, ::1] pos not None,
     return res
 
 
+def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=None,
+            method="double"):
+    """Correct an image based on the look-up table calculated ... 
+    dispatch according to LUT type
+
+    :param image: 2D-array with the image
+    :param shape_in: shape of input image
+    :param shape_out: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :param method: integration method: can be "kahan" using single precision 
+            compensated for error or "double" in double precision (64 bits)
+    
+    :return: corrected 2D image
+    """
+    if len(LUT) == 3: #CSR format:
+        return correct_CSR(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
+    else: # LUT format
+        return correct_LUT(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
+
+
 # @cython.cdivision(True)
 # @cython.boundscheck(False)
 # @cython.wraparound(False)
 # @cython.initializedcheck(False)
-def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dummy=None, delta_dummy=None):
+def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, 
+                dummy=None, delta_dummy=None, method="double"):
+    """Correct an image based on the look-up table calculated ...
+    dispatch between kahan and double 
+
+    :param image: 2D-array with the image
+    :param shape_in: shape of input image
+    :param shape_out: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :param method: integration method: can be "kahan" using single precision 
+            compensated for error or "double" in double precision (64 bits)
+
+    :return: corrected 2D image
+    """
+    shape_in0, shape_in1 = shape_in
+    shape_out0, shape_out1 = shape_out
+    lshape0 = LUT.shape[0]
+    lshape1 = LUT.shape[1]
+    assert shape_out0 * shape_out1 == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
+    shape_img0, shape_img1 = image.shape[:2]
+    if (shape_img0 != shape_in0) or (shape_img1 != shape_in1):
+        new_image = numpy.zeros((shape_in0, shape_in1), dtype=numpy.float32)
+        if shape_img0 < shape_in0:
+            if shape_img1 < shape_in1:
+                new_image[:shape_img0, :shape_img1] = image
+            else:
+                new_image[:shape_img0, :] = image[:, :shape_in1]
+        else:
+            if shape_img1 < shape_in1:
+                new_image[:, :shape_img1] = image[:shape_in0, :]
+            else:
+                new_image[:, :] = image[:shape_in0, :shape_in1]
+        logger.warning("Patching image as image is %ix%i and expected input is %ix%i and output is %ix%i",
+                       shape_img1, shape_img0, shape_in1, shape_in0, shape_out1, shape_out0)
+        image = new_image
+    if method == "kahan":
+        return correct_LUT_kahan(image, shape_out, LUT, dummy, delta_dummy)
+    else:
+        return correct_LUT_double(image, shape_out, LUT, dummy, delta_dummy)
+        
+        
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
+def correct_LUT_kahan(image, shape_out, lut_point[:, ::1] LUT not None, 
+                      dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
 
     :param image: 2D-array with the image
@@ -867,33 +937,14 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
         cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
-    shape_in0, shape_in1 = shape_in
-    shape_out0, shape_out1 = shape_out
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
-    assert shape_out0 * shape_out1 == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
-    shape_img0, shape_img1 = image.shape
-    if (shape_img0 != shape_in0) or (shape_img1 != shape_in1):
-        new_image = numpy.zeros((shape_in0, shape_in1), dtype=numpy.float32)
-        if shape_img0 < shape_in0:
-            if shape_img1 < shape_in1:
-                new_image[:shape_img0, :shape_img1] = image
-            else:
-                new_image[:shape_img0, :] = image[:, :shape_in1]
-        else:
-            if shape_img1 < shape_in1:
-                new_image[:, :shape_img1] = image[:shape_in0, :]
-            else:
-                new_image[:, :] = image[:shape_in0, :shape_in1]
-        logger.warning("Patching image as image is %ix%i and expected input is %ix%i and output is %ix%i",
-                       shape_img1, shape_img0, shape_in1, shape_in0, shape_out1, shape_out0)
-        image = new_image
+    assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
 
-    out = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
+    out = numpy.zeros(shape_out, dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
-    assert size == shape_in0 * shape_in1, "size == shape_in0 * shape_in1"
     for i in prange(lshape0, nogil=True, schedule="static"):
         sum = 0.0
         error = 0.0  # Implement Kahan summation
@@ -913,6 +964,62 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, dumm
             t = sum + y
             error = (t - sum) - y
             sum = t
+        if do_dummy and (sum == 0.0):
+            sum = cdummy
+        lout[i] += sum  # this += is for Cython's reduction
+    return out
+
+
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
+def correct_LUT_double(image, shape_out, lut_point[:, ::1] LUT not None, 
+                       dummy=None, delta_dummy=None):
+    """Correct an image based on the look-up table calculated ... 
+    double precision accumulated
+
+    :param image: 2D-array with the image
+    :param shape_in: shape of input image
+    :param shape_out: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :return: corrected 2D image
+    """
+    cdef:
+        int i, j, lshape0, lshape1, idx, size
+        float value, cdummy, cdelta_dummy
+        double sum, coef
+        cnp.float32_t[::1] lout, lin
+        bint do_dummy = dummy is not None
+    if do_dummy:
+        cdummy = dummy
+        if delta_dummy is None:
+            cdelta_dummy = 0.0
+    lshape0 = LUT.shape[0]
+    lshape1 = LUT.shape[1]
+    assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
+
+    out = numpy.zeros(shape_out, dtype=numpy.float32)
+    lout = out.ravel()
+    lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
+    size = lin.size
+    for i in prange(lshape0, nogil=True, schedule="static"):
+        sum = 0.0
+        for j in range(lshape1):
+            idx = LUT[i, j].idx
+            coef = LUT[i, j].coef
+            if coef <= 0:
+                continue
+            if idx >= size:
+                with gil:
+                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
+                    continue
+            value = lin[idx]
+            if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
+                continue
+            sum = value * coef + sum
         if do_dummy and (sum == 0.0):
             sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
