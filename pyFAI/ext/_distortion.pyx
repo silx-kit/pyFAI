@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "07/05/2018"
+__date__ = "14/05/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -39,7 +39,7 @@ from cython cimport view, floating
 from cython.parallel import prange
 from cpython.ref cimport PyObject, Py_XDECREF
 from libc.string cimport memset, memcpy
-from libc.math cimport floor, ceil, fabs, copysign
+from libc.math cimport floor, ceil, fabs, copysign, sqrt
 import logging
 import threading
 import types
@@ -842,6 +842,74 @@ def calc_sparse(cnp.float32_t[:, :, :, ::1] pos not None,
     return res
 
 
+def resize_image_2D(image not None,
+                    shape=None):
+    """
+    Reshape the image in such a way it has the required shape 
+    
+    :param image: 2D-array with the image
+    :param shape: expected shape of input image
+    :return: 2D image with the proper shape 
+    """
+    if shape is None:
+        return image
+    assert image.ndim == 2, "image is 2D"
+    shape_in0, shape_in1 = shape
+    shape_img0, shape_img1 = image.shape
+    if (shape_img0 == shape_in0) and (shape_img1 == shape_in1):
+        return image
+
+    new_image = numpy.zeros((shape_in0, shape_in1), dtype=numpy.float32)
+    if shape_img0 < shape_in0:
+        if shape_img1 < shape_in1:
+            new_image[:shape_img0, :shape_img1] = image
+        else:
+            new_image[:shape_img0, :] = image[:, :shape_in1]
+    else:
+        if shape_img1 < shape_in1:
+            new_image[:, :shape_img1] = image[:shape_in0, :]
+        else:
+            new_image[:, :] = image[:shape_in0, :shape_in1]
+    logger.warning("Patching image of shape %ix%i on expected size of %ix%i",
+                   shape_img1, shape_img0, shape_in1, shape_in0)
+    return new_image
+    
+
+def resize_image_3D(image not None,
+                    shape=None):
+    """
+    Reshape the image in such a way it has the required shape
+    This version is optimized for n-channel images used after preprocesing like:
+    nlines * ncolumn * (value, variance, normalization)   
+    
+    :param image: 3D-array with the preprocessed image
+    :param shape: expected shape of input image (2D only)
+    :return: 3D image with the proper shape 
+    """
+    if shape is None:
+        return image
+    assert image.ndim == 3, "image is 3D"
+    shape_in0, shape_in1 = shape
+    shape_img0, shape_img1, nchan = image.shape
+    if (shape_img0 == shape_in0) and (shape_img1 == shape_in1):
+        return image
+
+    new_image = numpy.zeros((shape_in0, shape_in1, nchan), dtype=numpy.float32)
+    if shape_img0 < shape_in0:
+        if shape_img1 < shape_in1:
+            new_image[:shape_img0, :shape_img1, :] = image
+        else:
+            new_image[:shape_img0, :, :] = image[:, :shape_in1, :]
+    else:
+        if shape_img1 < shape_in1:
+            new_image[:, :shape_img1, :] = image[:shape_in0, :, :]
+        else:
+            new_image[:, :, :] = image[:shape_in0, :shape_in1, :]
+    logger.warning("Patching image of shape %ix%i on expected size of %ix%i",
+                   shape_img1, shape_img0, shape_in1, shape_in0)
+    return new_image
+
+
 def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=None,
             method="double"):
     """Correct an image based on the look-up table calculated ... 
@@ -858,10 +926,34 @@ def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=No
     
     :return: corrected 2D image
     """
-    if len(LUT) == 3: #CSR format:
-        return correct_CSR(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
-    else: # LUT format
-        return correct_LUT(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
+    if (image.ndim == 3): 
+        # new generation of processing with (signal, variance, normalization)
+        preprocessed_data = True
+        image = resize_image_3D(image, shape_in)
+    else:
+        preprocessed_data = False
+        image = resize_image_2D(image, shape_in)
+        
+    if len(LUT) == 3: 
+        # CSR format:
+        if preprocessed_data:
+            return correct_CSR_preproc_double(image, shape_out, LUT, dummy, delta_dummy)
+        else:
+            return correct_CSR(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
+    else:  
+        # LUT format
+        if preprocessed_data:
+            shape_out0, shape_out1 = shape_out
+            lshape0 = LUT.shape[0]
+            lshape1 = LUT.shape[1]
+            assert shape_out0 * shape_out1 == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
+#             if method == "kahan":
+#                 return correct_LUT_preproc_kahan(image, shape_out, LUT, dummy, delta_dummy)
+#             else:
+#                 return correct_LUT_preproc_double(image, shape_out, LUT, dummy, delta_dummy)
+            return correct_LUT_preproc_double(image, shape_out, LUT, dummy, delta_dummy)
+        else:
+            return correct_LUT(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
 
 
 # @cython.cdivision(True)
@@ -884,27 +976,11 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None,
 
     :return: corrected 2D image
     """
-    shape_in0, shape_in1 = shape_in
     shape_out0, shape_out1 = shape_out
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
     assert shape_out0 * shape_out1 == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
-    shape_img0, shape_img1 = image.shape[:2]
-    if (shape_img0 != shape_in0) or (shape_img1 != shape_in1):
-        new_image = numpy.zeros((shape_in0, shape_in1), dtype=numpy.float32)
-        if shape_img0 < shape_in0:
-            if shape_img1 < shape_in1:
-                new_image[:shape_img0, :shape_img1] = image
-            else:
-                new_image[:shape_img0, :] = image[:, :shape_in1]
-        else:
-            if shape_img1 < shape_in1:
-                new_image[:, :shape_img1] = image[:shape_in0, :]
-            else:
-                new_image[:, :] = image[:shape_in0, :shape_in1]
-        logger.warning("Patching image as image is %ix%i and expected input is %ix%i and output is %ix%i",
-                       shape_img1, shape_img0, shape_in1, shape_in0, shape_out1, shape_out0)
-        image = new_image
+    image = resize_image_2D(image, shape_in)
     if method == "kahan":
         return correct_LUT_kahan(image, shape_out, LUT, dummy, delta_dummy)
     else:
@@ -1044,30 +1120,10 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None,
     :param method: integration method: can be "kahan" using single precision compensated for error or "double" in double precision (64 bits)
     :return: corrected 2D image
     
-    Nota: if 
+    Nota: patch image on proper buffer size if needed.  
     
     """
-    
-    shape_in0, shape_in1 = shape_in
-    shape_out0, shape_out1 = shape_out
-    shape_img0, shape_img1 = image.shape
-    if (shape_img0 != shape_in0) or (shape_img1 != shape_in1):
-        new_image = numpy.zeros((shape_in0, shape_in1), dtype=numpy.float32)
-        if shape_img0 < shape_in0:
-            if shape_img1 < shape_in1:
-                new_image[:shape_img0, :shape_img1] = image
-            else:
-                new_image[:shape_img0, :] = image[:, :shape_in1]
-        else:
-            if shape_img1 < shape_in1:
-                new_image[:, :shape_img1] = image[:shape_in0, :]
-            else:
-                new_image[:, :] = image[:shape_in0, :shape_in1]
-        logger.warning("Patching image as image is %ix%i and expected input is %ix%i and output is %ix%i",
-                       shape_img1, shape_img0, shape_in1, shape_in0, shape_out1, shape_out0)
-        image = new_image
-    size = image.size
-    assert size == shape_in0 * shape_in1, "size == shape_in0 * shape_in1"
+    image = resize_image_2D(image, shape_in)
 
     if method == "kahan":
         return correct_CSR_kahan(image, shape_out, LUT, dummy, delta_dummy)
@@ -1169,6 +1225,7 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
 
     data, indices, indptr = LUT
     bins = indptr.size - 1
+    assert numpy.prod(shape_out) == bins, "shape_out0*shape_out1 == indptr.size-1"
     out = numpy.zeros(shape_out, dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
@@ -1193,6 +1250,200 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
             sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
     return out
+
+
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
+def correct_LUT_preproc_double(image, shape_out, 
+                               lut_point[:, ::1] LUT not None, 
+                               dummy=None, delta_dummy=None):
+    """Correct an image based on the look-up table calculated ...
+    implementation using double precision accumulator 
+
+    :param image: 2D-array with the image
+    :param shape_in: shape of input image
+    :param shape_out: shape of output image
+    :param LUT: Look up table, here a 2D-array of struct
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :param method: integration method: can be "kahan" using single precision 
+            compensated for error or "double" in double precision (64 bits)
+
+    :return: corrected 2D image + array with (signal, variance, norm) 
+    """
+
+    cdef:
+        int i, j, lshape0, lshape1, idx, size, nchan
+        float value, cdummy, cdelta_dummy
+        double sum_sig, sum_var, sum_norm, coef
+        cnp.float32_t[::1]  lout, lerr
+        cnp.float32_t[:, ::1] lin, lprop
+        bint do_dummy = dummy is not None
+        
+    if do_dummy:
+        cdummy = dummy
+        if delta_dummy is None:
+            cdelta_dummy = 0.0
+    lshape0 = LUT.shape[0]
+    lshape1 = LUT.shape[1]
+    assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
+
+    nchan = image.shape[2] 
+    shape_out0, shape_out1 = shape_out
+    
+    prop = numpy.zeros((shape_out0, shape_out1, nchan), dtype=numpy.float32)
+    lprop = lprop.reshape((-1, nchan))
+    out = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
+    lout = out.ravel()
+    lin = numpy.ascontiguousarray(image, dtype=numpy.float32).reshape((-1, nchan))
+    if nchan == 3:
+        err = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
+        lerr = err.ravel()
+    size = lin.shape[0]
+    for i in prange(lshape0, nogil=True, schedule="static"):
+        sum_sig = 0.0
+        sum_var = 0.0
+        sum_norm = 0.0
+        for j in range(lshape1):
+            idx = LUT[i, j].idx
+            coef = LUT[i, j].coef
+            if coef <= 0:
+                continue
+            if idx >= size:
+                with gil:
+                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
+                    continue
+            value = lin[idx, 0]
+            if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
+                continue
+            sum_sig = value * coef + sum_sig
+            if nchan == 2: 
+                # case (signal, norm)
+                sum_norm = coef * lin[idx, 1] + sum_norm
+            elif nchan == 3: 
+                # case (signal, variance,  normalization)
+                sum_var = coef * coef * lin[idx, 1] + sum_var
+                sum_norm = coef * lin[idx, 2] + sum_norm
+
+        if do_dummy and (sum_sig == 0.0):
+            lout[i] += cdummy  # this += is for Cython's reduction
+        else:
+            lout[i] += sum_sig / sum_norm
+            lprop[i, 0] += sum_sig 
+            if nchan == 2: 
+                # case (signal, norm)
+                lprop[i, 1] += sum_norm
+            elif nchan == 3:
+                # case (signal, variance,  normalization)
+                lprop[i, 1] += sum_var
+                lprop[i, 2] += sum_norm
+                lerr[i] += sqrt(sum_var) / sum_norm
+
+    if nchan == 3:
+        return out, err, prop
+    else:
+        return out, prop
+
+
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.initializedcheck(False)
+def correct_CSR_preproc_double(image, shape_out, 
+                               LUT not None, 
+                               dummy=None, delta_dummy=None):
+    """Correct an image based on the look-up table calculated ...
+    implementation using double precision accumulator 
+
+    :param image: 2D-array with the image
+    :param shape_in: shape of input image
+    :param shape_out: shape of output image
+    :param LUT: Look up table, here a 3-tuple array of ndarray
+    :param dummy: value for invalid pixels
+    :param delta_dummy: precision for invalid pixels
+    :param method: integration method: can be "kahan" using single precision 
+            compensated for error or "double" in double precision (64 bits)
+
+    :return: corrected 2D image + array with (signal, variance, norm) 
+    """
+
+    cdef:
+        int i, j, lshape0, lshape1, idx, size, bins, nchan
+        float value, cdummy, cdelta_dummy
+        double sum_sig, sum_var, sum_norm, coef
+        cnp.float32_t[::1]  lout, lerr, data
+        cnp.float32_t[:, ::1] lin, lprop
+        int[::1] indices, indptr
+        bint do_dummy = dummy is not None
+        
+    if do_dummy:
+        cdummy = dummy
+        if delta_dummy is None:
+            cdelta_dummy = 0.0
+    data, indices, indptr = LUT
+    bins = indptr.size - 1
+    assert numpy.prod(shape_out) == bins, "shape_out0*shape_out1 == indptr.size-1"
+
+    nchan = image.shape[2] 
+    shape_out0, shape_out1 = shape_out
+    
+    prop = numpy.zeros((shape_out0, shape_out1, nchan), dtype=numpy.float32)
+    lprop = lprop.reshape((-1, nchan))
+    out = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
+    lout = out.ravel()
+    lin = numpy.ascontiguousarray(image, dtype=numpy.float32).reshape((-1, nchan))
+    if nchan == 3:
+        err = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
+        lerr = err.ravel()
+    size = lin.shape[0]
+    
+    for i in prange(bins, nogil=True, schedule="static"):
+        sum_sig = 0.0
+        sum_var = 0.0
+        sum_norm = 0.0
+
+        for j in range(indptr[i], indptr[i + 1]):
+            idx = indices[j]
+            coef = data[j]
+            if coef <= 0.0:
+                continue
+            if idx >= size:
+                with gil:
+                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
+                    continue
+
+            value = lin[idx, 0]
+            if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
+                continue
+            sum_sig = value * coef + sum_sig
+            if nchan == 2: 
+                # case (signal, norm)
+                sum_norm = coef * lin[idx, 1] + sum_norm
+            elif nchan == 3: 
+                # case (signal, variance,  normalization)
+                sum_var = coef * coef * lin[idx, 1] + sum_var
+                sum_norm = coef * lin[idx, 2] + sum_norm
+
+        if do_dummy and (sum_sig == 0.0):
+            lout[i] += cdummy  # this += is for Cython's reduction
+        else:
+            lout[i] += sum_sig / sum_norm
+            lprop[i, 0] += sum_sig 
+            if nchan == 2: 
+                # case (signal, norm)
+                lprop[i, 1] += sum_norm
+            elif nchan == 3:
+                # case (signal, variance,  normalization)
+                lprop[i, 1] += sum_var
+                lprop[i, 2] += sum_norm
+                lerr[i] += sqrt(sum_var) / sum_norm
+
+    if nchan == 3:
+        return out, err, prop
+    else:
+        return out, prop
 
 
 # @cython.cdivision(True)
