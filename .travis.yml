@@ -21,10 +21,12 @@ addons:
       - libatlas-base-dev
       - libqtcore4
 #For OpenCL:
-      - libboost-python1.54.0
-      - libboost-python1.54-dev
+      - python-cffi
+      - python3-cffi
+      - ocl-icd-libopencl1
       - opencl-headers
       - python-pyopencl
+      - python3-pyopencl
 # command to install dependencies
 
 before_install:
