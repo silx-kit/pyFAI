@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "22/05/2018"
 
 
 import unittest
@@ -55,22 +55,25 @@ class TestHalfCCD(unittest.TestCase):
     splineFile = "halfccd.spline"
     fit2d_cor = "halfccd.fit2d.edf"
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        super(TestHalfCCD, cls).setUpClass()
         """Download files"""
-        self.fit2dFile = UtilsTest.getimage(self.__class__.fit2d_cor)
-        self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
-        self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
-        self.det = detectors.FReLoN(self.splineFile)
-        self.fit2d = fabio.open(self.fit2dFile).data
-        self.ref = _distortion.Distortion(self.det)
-        self.raw = fabio.open(self.halfFrelon).data
-        self.dis = distortion.Distortion(self.det, method="LUT")
-        self.larger = numpy.zeros(self.det.shape)
-        self.larger[:-1, :] = self.raw
+        cls.fit2dFile = UtilsTest.getimage(cls.fit2d_cor)
+        cls.halfFrelon = UtilsTest.getimage(cls.halfFrelon)
+        cls.splineFile = UtilsTest.getimage(cls.splineFile)
+        cls.det = detectors.FReLoN(cls.splineFile)
+        cls.fit2d = fabio.open(cls.fit2dFile).data
+        cls.ref = _distortion.Distortion(cls.det)
+        cls.raw = fabio.open(cls.halfFrelon).data
+        cls.dis = distortion.Distortion(cls.det, method="LUT")
+        cls.larger = numpy.zeros(cls.det.shape)
+        cls.larger[:-1, :] = cls.raw
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = self.ref = None
+    @classmethod
+    def tearDownClass(cls):
+        super(TestHalfCCD, cls).tearDownClass()
+        cls.larger = cls.fit2dFile = cls.halfFrelon = cls.splineFile = cls.det = cls.dis = cls.fit2d = cls.raw = cls.ref = None
 
     @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def test_pos_lut(self):
