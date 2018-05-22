@@ -69,11 +69,16 @@ class TestHalfCCD(unittest.TestCase):
         cls.dis = distortion.Distortion(cls.det, method="LUT")
         cls.larger = numpy.zeros(cls.det.shape)
         cls.larger[:-1, :] = cls.raw
+        cls.preproc = numpy.zeros(cls.raw.shape + (3,))
+        cls.preproc[:, :, 0] = cls.raw
+        cls.preproc[:, :, 1] = cls.raw  # assume poissonian noise
+        cls.preproc[:, :, 2] = 1
 
     @classmethod
     def tearDownClass(cls):
         super(TestHalfCCD, cls).tearDownClass()
-        cls.larger = cls.fit2dFile = cls.halfFrelon = cls.splineFile = cls.det = cls.dis = cls.fit2d = cls.raw = cls.ref = None
+        cls.larger = cls.fit2dFile = cls.halfFrelon = cls.splineFile = None
+        cls.preproc = cls.det = cls.dis = cls.fit2d = cls.raw = cls.ref = None
 
     @unittest.skipIf(UtilsTest.low_mem, "skipping test using >100M")
     def test_pos_lut(self):
@@ -159,6 +164,25 @@ class TestHalfCCD(unittest.TestCase):
         logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
         self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
+        a, b, c = self.dis.correct(self.preproc)
+        cor = a[:-1, :]
+        error = b[:-1, :]
+        delta = abs(cor - self.fit2d)
+        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
+        mask = numpy.where(self.fit2d == 0)
+        denom = self.fit2d.copy()
+        denom[mask] = 1
+        ratio = delta / denom
+        ratio[mask] = 0
+        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        self.assertTrue(numpy.alltrue(a >= b), "signal is greater then error")
+        self.assertTrue(numpy.alltrue(b >= 0), "error is positive")
+        self.assertTrue(numpy.any(b > 0), "error is not null")
+        self.assertTrue(numpy.alltrue(c >= 0), "propagated array is positive")
+        self.assertTrue(numpy.any(c > 0), "propagated array is not null")
+
     def test_csr_vs_fit2d(self):
         """Compare reference spline correction vs fit2d's code
 
@@ -181,6 +205,26 @@ class TestHalfCCD(unittest.TestCase):
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
         logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
         self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+
+        # Now test with error propagation
+        a, b, c = self.dis.correct(self.preproc)
+        cor = a[:-1, :]
+        error = b[:-1, :]
+        delta = abs(cor - self.fit2d)
+        logger.info("Delta max: %s mean: %s", delta.max(), delta.mean())
+        mask = numpy.where(self.fit2d == 0)
+        denom = self.fit2d.copy()
+        denom[mask] = 1
+        ratio = delta / denom
+        ratio[mask] = 0
+        good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
+        logger.info("ratio of good points (less than 1/1000 relative error): %.4f", good_points_ratio)
+        self.assertTrue(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
+        self.assertTrue(numpy.alltrue(a >= b), "signal is greater then error")
+        self.assertTrue(numpy.alltrue(b >= 0), "error is positive")
+        self.assertTrue(numpy.any(b > 0), "error is not null")
+        self.assertTrue(numpy.alltrue(c >= 0), "propagated array is positive")
+        self.assertTrue(numpy.any(c > 0), "propagated array is not null")
 
 
 class TestImplementations(unittest.TestCase):

@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "14/05/2018"
+__date__ = "22/05/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -1286,6 +1286,8 @@ def correct_LUT_preproc_double(image, shape_out,
         cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
+    else:
+        dummy = numpy.NaN
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
@@ -1294,7 +1296,7 @@ def correct_LUT_preproc_double(image, shape_out,
     shape_out0, shape_out1 = shape_out
     
     prop = numpy.zeros((shape_out0, shape_out1, nchan), dtype=numpy.float32)
-    lprop = lprop.reshape((-1, nchan))
+    lprop = prop.reshape((-1, nchan))
     out = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).reshape((-1, nchan))
@@ -1327,10 +1329,12 @@ def correct_LUT_preproc_double(image, shape_out,
                 sum_var = coef * coef * lin[idx, 1] + sum_var
                 sum_norm = coef * lin[idx, 2] + sum_norm
 
-        if do_dummy and (sum_sig == 0.0):
+        if do_dummy and (sum_norm == 0.0):
             lout[i] += cdummy  # this += is for Cython's reduction
+            if nchan == 3:
+                lerr[i] += cdummy
         else:
-            lout[i] += sum_sig / sum_norm
+            lout[i] += sum_sig 
             lprop[i, 0] += sum_sig 
             if nchan == 2: 
                 # case (signal, norm)
@@ -1339,7 +1343,7 @@ def correct_LUT_preproc_double(image, shape_out,
                 # case (signal, variance,  normalization)
                 lprop[i, 1] += sum_var
                 lprop[i, 2] += sum_norm
-                lerr[i] += sqrt(sum_var) / sum_norm
+                lerr[i] += sqrt(sum_var)
 
     if nchan == 3:
         return out, err, prop
@@ -1382,6 +1386,8 @@ def correct_CSR_preproc_double(image, shape_out,
         cdummy = dummy
         if delta_dummy is None:
             cdelta_dummy = 0.0
+    else:
+        cdummy = numpy.NaN
     data, indices, indptr = LUT
     bins = indptr.size - 1
     assert numpy.prod(shape_out) == bins, "shape_out0*shape_out1 == indptr.size-1"
@@ -1390,7 +1396,7 @@ def correct_CSR_preproc_double(image, shape_out,
     shape_out0, shape_out1 = shape_out
     
     prop = numpy.zeros((shape_out0, shape_out1, nchan), dtype=numpy.float32)
-    lprop = lprop.reshape((-1, nchan))
+    lprop = prop.reshape((-1, nchan))
     out = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
     lout = out.ravel()
     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).reshape((-1, nchan))
@@ -1426,10 +1432,12 @@ def correct_CSR_preproc_double(image, shape_out,
                 sum_var = coef * coef * lin[idx, 1] + sum_var
                 sum_norm = coef * lin[idx, 2] + sum_norm
 
-        if do_dummy and (sum_sig == 0.0):
+        if do_dummy and (sum_norm == 0.0):  # No contribution to this output pixel
             lout[i] += cdummy  # this += is for Cython's reduction
+            if nchan == 3:
+                lerr[i] += cdummy
         else:
-            lout[i] += sum_sig / sum_norm
+            lout[i] += sum_sig
             lprop[i, 0] += sum_sig 
             if nchan == 2: 
                 # case (signal, norm)
@@ -1438,7 +1446,7 @@ def correct_CSR_preproc_double(image, shape_out,
                 # case (signal, variance,  normalization)
                 lprop[i, 1] += sum_var
                 lprop[i, 2] += sum_norm
-                lerr[i] += sqrt(sum_var) / sum_norm
+                lerr[i] += sqrt(sum_var)
 
     if nchan == 3:
         return out, err, prop
