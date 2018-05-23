@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/02/2018"
+__date__ = "23/05/2018"
 __status__ = "stable"
 __all__ = ["ocl", "pyopencl", "mf", "release_cl_buffers", "allocate_cl_buffers",
            "measure_workgroup_size", "kernel_workgroup_size"]
@@ -405,9 +405,11 @@ class OpenCL(object):
         :param devicetype: string in ["cpu","gpu", "all", "acc"]
         :param useFp64: boolean specifying if double precision will be used
         :param platformid: integer
-        :param devid: integer
+        :param deviceid: integer
+        :param cached: put in cache
         :return: OpenCL context on the selected device
         """
+        ctx = None
         if (platformid is not None) and (deviceid is not None):
             platformid = int(platformid)
             deviceid = int(deviceid)
@@ -423,10 +425,16 @@ class OpenCL(object):
             if (platformid, deviceid) in self.context_cache:
                 ctx = self.context_cache[(platformid, deviceid)]
             else:
-                ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-                if cached:
-                    self.context_cache[(platformid, deviceid)] = ctx
-        else:
+                try:
+                    ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+                except pyopencl.LogicError:
+                    logger.warning("Unable to create context on device %s with driver %s",
+                                   self.platforms[platformid].devices[deviceid],
+                                   self.platforms[platformid])
+                else:
+                    if cached:  # store in cache
+                        self.context_cache[(platformid, deviceid)] = ctx
+        if ctx is None:
             logger.warning("Last chance to get an OpenCL device ... probably not the one requested")
             ctx = pyopencl.create_some_context(interactive=False)
         return ctx
