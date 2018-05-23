@@ -28,7 +28,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "MIT"
-__date__ = "22/05/2018"
+__date__ = "23/05/2018"
 __copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -845,11 +845,11 @@ def calc_sparse(cnp.float32_t[:, :, :, ::1] pos not None,
 def resize_image_2D(image not None,
                     shape=None):
     """
-    Reshape the image in such a way it has the required shape 
-    
+    Reshape the image in such a way it has the required shape
+
     :param image: 2D-array with the image
     :param shape: expected shape of input image
-    :return: 2D image with the proper shape 
+    :return: 2D image with the proper shape
     """
     if shape is None:
         return image
@@ -873,18 +873,18 @@ def resize_image_2D(image not None,
     logger.warning("Patching image of shape %ix%i on expected size of %ix%i",
                    shape_img1, shape_img0, shape_in1, shape_in0)
     return new_image
-    
+
 
 def resize_image_3D(image not None,
                     shape=None):
     """
     Reshape the image in such a way it has the required shape
     This version is optimized for n-channel images used after preprocesing like:
-    nlines * ncolumn * (value, variance, normalization)   
-    
+    nlines * ncolumn * (value, variance, normalization)
+
     :param image: 3D-array with the preprocessed image
     :param shape: expected shape of input image (2D only)
-    :return: 3D image with the proper shape 
+    :return: 3D image with the proper shape
     """
     if shape is None:
         return image
@@ -912,7 +912,7 @@ def resize_image_3D(image not None,
 
 def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=None,
             method="double"):
-    """Correct an image based on the look-up table calculated ... 
+    """Correct an image based on the look-up table calculated ...
     dispatch according to LUT type
 
     :param image: 2D-array with the image
@@ -921,26 +921,26 @@ def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=No
     :param LUT: Look up table, here a 2D-array of struct
     :param dummy: value for invalid pixels
     :param delta_dummy: precision for invalid pixels
-    :param method: integration method: can be "kahan" using single precision 
+    :param method: integration method: can be "kahan" using single precision
             compensated for error or "double" in double precision (64 bits)
-    
+
     :return: corrected 2D image
     """
-    if (image.ndim == 3): 
+    if (image.ndim == 3):
         # new generation of processing with (signal, variance, normalization)
         preprocessed_data = True
         image = resize_image_3D(image, shape_in)
     else:
         preprocessed_data = False
         image = resize_image_2D(image, shape_in)
-        
-    if len(LUT) == 3: 
+
+    if len(LUT) == 3:
         # CSR format:
         if preprocessed_data:
             return correct_CSR_preproc_double(image, shape_out, LUT, dummy, delta_dummy)
         else:
             return correct_CSR(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
-    else:  
+    else:
         # LUT format
         if preprocessed_data:
             shape_out0, shape_out1 = shape_out
@@ -956,14 +956,14 @@ def correct(image, shape_in, shape_out, LUT not None, dummy=None, delta_dummy=No
             return correct_LUT(image, shape_in, shape_out, LUT, dummy, delta_dummy, method)
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
-def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None, 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None,
                 dummy=None, delta_dummy=None, method="double"):
     """Correct an image based on the look-up table calculated ...
-    dispatch between kahan and double 
+    dispatch between kahan and double
 
     :param image: 2D-array with the image
     :param shape_in: shape of input image
@@ -971,7 +971,7 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None,
     :param LUT: Look up table, here a 2D-array of struct
     :param dummy: value for invalid pixels
     :param delta_dummy: precision for invalid pixels
-    :param method: integration method: can be "kahan" using single precision 
+    :param method: integration method: can be "kahan" using single precision
             compensated for error or "double" in double precision (64 bits)
 
     :return: corrected 2D image
@@ -985,13 +985,13 @@ def correct_LUT(image, shape_in, shape_out, lut_point[:, ::1] LUT not None,
         return correct_LUT_kahan(image, shape_out, LUT, dummy, delta_dummy)
     else:
         return correct_LUT_double(image, shape_out, LUT, dummy, delta_dummy)
-        
-        
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
-def correct_LUT_kahan(image, shape_out, lut_point[:, ::1] LUT not None, 
+
+
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+def correct_LUT_kahan(image, shape_out, lut_point[:, ::1] LUT not None,
                       dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
 
@@ -1046,13 +1046,13 @@ def correct_LUT_kahan(image, shape_out, lut_point[:, ::1] LUT not None,
     return out
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
-def correct_LUT_double(image, shape_out, lut_point[:, ::1] LUT not None, 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+def correct_LUT_double(image, shape_out, lut_point[:, ::1] LUT not None,
                        dummy=None, delta_dummy=None):
-    """Correct an image based on the look-up table calculated ... 
+    """Correct an image based on the look-up table calculated ...
     double precision accumulated
 
     :param image: 2D-array with the image
@@ -1102,11 +1102,11 @@ def correct_LUT_double(image, shape_out, lut_point[:, ::1] LUT not None,
     return out
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
-def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None, 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None,
                 variance=None, method="double"):
     """
     Correct an image based on the look-up table calculated ...
@@ -1119,9 +1119,9 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None,
     :param delta_dummy: precision for invalid pixels
     :param method: integration method: can be "kahan" using single precision compensated for error or "double" in double precision (64 bits)
     :return: corrected 2D image
-    
-    Nota: patch image on proper buffer size if needed.  
-    
+
+    Nota: patch image on proper buffer size if needed.
+
     """
     image = resize_image_2D(image, shape_in)
 
@@ -1129,16 +1129,16 @@ def correct_CSR(image, shape_in, shape_out, LUT, dummy=None, delta_dummy=None,
         return correct_CSR_kahan(image, shape_out, LUT, dummy, delta_dummy)
     else:
         return correct_CSR_double(image, shape_out, LUT, dummy, delta_dummy)
-    
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
+
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     """
-    Correct an image based on the look-up table calculated ... 
-    using kahan's error compensated algorithm 
+    Correct an image based on the look-up table calculated ...
+    using kahan's error compensated algorithm
 
     :param image: 2D-array with the image
     :param shape_in: shape of input image
@@ -1193,14 +1193,14 @@ def correct_CSR_kahan(image, shape_out, LUT, dummy=None, delta_dummy=None):
     return out
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
     """
-    Correct an image based on the look-up table calculated ... 
-    using double precision accumulator 
+    Correct an image based on the look-up table calculated ...
+    using double precision accumulator
 
     :param image: 2D-array with the image
     :param shape_in: shape of input image
@@ -1245,22 +1245,22 @@ def correct_CSR_double(image, shape_out, LUT, dummy=None, delta_dummy=None):
             value = lin[idx]
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
-            sum = sum + value * coef  # += operator not allowed in // sections 
+            sum = sum + value * coef  # += operator not allowed in // sections
         if do_dummy and (sum == 0.0):
             sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
     return out
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
-def correct_LUT_preproc_double(image, shape_out, 
-                               lut_point[:, ::1] LUT not None, 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+def correct_LUT_preproc_double(image, shape_out,
+                               lut_point[:, ::1] LUT not None,
                                dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
-    implementation using double precision accumulator 
+    implementation using double precision accumulator
 
     :param image: 2D-array with the image
     :param shape_in: shape of input image
@@ -1268,10 +1268,10 @@ def correct_LUT_preproc_double(image, shape_out,
     :param LUT: Look up table, here a 2D-array of struct
     :param dummy: value for invalid pixels
     :param delta_dummy: precision for invalid pixels
-    :param method: integration method: can be "kahan" using single precision 
+    :param method: integration method: can be "kahan" using single precision
             compensated for error or "double" in double precision (64 bits)
 
-    :return: corrected 2D image + array with (signal, variance, norm) 
+    :return: corrected 2D image + array with (signal, variance, norm)
     """
 
     cdef:
@@ -1281,7 +1281,7 @@ def correct_LUT_preproc_double(image, shape_out,
         cnp.float32_t[::1]  lout, lerr
         cnp.float32_t[:, ::1] lin, lprop
         bint do_dummy = dummy is not None
-        
+
     if do_dummy:
         cdummy = dummy
         if delta_dummy is None:
@@ -1292,9 +1292,9 @@ def correct_LUT_preproc_double(image, shape_out,
     lshape1 = LUT.shape[1]
     assert numpy.prod(shape_out) == LUT.shape[0], "shape_out0 * shape_out1 == LUT.shape[0]"
 
-    nchan = image.shape[2] 
+    nchan = image.shape[2]
     shape_out0, shape_out1 = shape_out
-    
+
     prop = numpy.zeros((shape_out0, shape_out1, nchan), dtype=numpy.float32)
     lprop = prop.reshape((-1, nchan))
     out = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
@@ -1321,10 +1321,10 @@ def correct_LUT_preproc_double(image, shape_out,
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
             sum_sig = value * coef + sum_sig
-            if nchan == 2: 
+            if nchan == 2:
                 # case (signal, norm)
                 sum_norm = coef * lin[idx, 1] + sum_norm
-            elif nchan == 3: 
+            elif nchan == 3:
                 # case (signal, variance,  normalization)
                 sum_var = coef * coef * lin[idx, 1] + sum_var
                 sum_norm = coef * lin[idx, 2] + sum_norm
@@ -1334,9 +1334,9 @@ def correct_LUT_preproc_double(image, shape_out,
             if nchan == 3:
                 lerr[i] += cdummy
         else:
-            lout[i] += sum_sig 
-            lprop[i, 0] += sum_sig 
-            if nchan == 2: 
+            lout[i] += sum_sig
+            lprop[i, 0] += sum_sig
+            if nchan == 2:
                 # case (signal, norm)
                 lprop[i, 1] += sum_norm
             elif nchan == 3:
@@ -1351,15 +1351,15 @@ def correct_LUT_preproc_double(image, shape_out,
         return out, prop
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
-def correct_CSR_preproc_double(image, shape_out, 
-                               LUT not None, 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+def correct_CSR_preproc_double(image, shape_out,
+                               LUT not None,
                                dummy=None, delta_dummy=None):
     """Correct an image based on the look-up table calculated ...
-    implementation using double precision accumulator 
+    implementation using double precision accumulator
 
     :param image: 2D-array with the image
     :param shape_in: shape of input image
@@ -1367,10 +1367,10 @@ def correct_CSR_preproc_double(image, shape_out,
     :param LUT: Look up table, here a 3-tuple array of ndarray
     :param dummy: value for invalid pixels
     :param delta_dummy: precision for invalid pixels
-    :param method: integration method: can be "kahan" using single precision 
+    :param method: integration method: can be "kahan" using single precision
             compensated for error or "double" in double precision (64 bits)
 
-    :return: corrected 2D image + array with (signal, variance, norm) 
+    :return: corrected 2D image + array with (signal, variance, norm)
     """
 
     cdef:
@@ -1381,7 +1381,7 @@ def correct_CSR_preproc_double(image, shape_out,
         cnp.float32_t[:, ::1] lin, lprop
         int[::1] indices, indptr
         bint do_dummy = dummy is not None
-        
+
     if do_dummy:
         cdummy = dummy
         if delta_dummy is None:
@@ -1392,9 +1392,9 @@ def correct_CSR_preproc_double(image, shape_out,
     bins = indptr.size - 1
     assert numpy.prod(shape_out) == bins, "shape_out0*shape_out1 == indptr.size-1"
 
-    nchan = image.shape[2] 
+    nchan = image.shape[2]
     shape_out0, shape_out1 = shape_out
-    
+
     prop = numpy.zeros((shape_out0, shape_out1, nchan), dtype=numpy.float32)
     lprop = prop.reshape((-1, nchan))
     out = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
@@ -1404,7 +1404,7 @@ def correct_CSR_preproc_double(image, shape_out,
         err = numpy.zeros((shape_out0, shape_out1), dtype=numpy.float32)
         lerr = err.ravel()
     size = lin.shape[0]
-    
+
     for i in prange(bins, nogil=True, schedule="static"):
         sum_sig = 0.0
         sum_var = 0.0
@@ -1424,10 +1424,10 @@ def correct_CSR_preproc_double(image, shape_out,
             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
                 continue
             sum_sig = value * coef + sum_sig
-            if nchan == 2: 
+            if nchan == 2:
                 # case (signal, norm)
                 sum_norm = coef * lin[idx, 1] + sum_norm
-            elif nchan == 3: 
+            elif nchan == 3:
                 # case (signal, variance,  normalization)
                 sum_var = coef * coef * lin[idx, 1] + sum_var
                 sum_norm = coef * lin[idx, 2] + sum_norm
@@ -1438,8 +1438,8 @@ def correct_CSR_preproc_double(image, shape_out,
                 lerr[i] += cdummy
         else:
             lout[i] += sum_sig
-            lprop[i, 0] += sum_sig 
-            if nchan == 2: 
+            lprop[i, 0] += sum_sig
+            if nchan == 2:
                 # case (signal, norm)
                 lprop[i, 1] += sum_norm
             elif nchan == 3:
@@ -1454,10 +1454,10 @@ def correct_CSR_preproc_double(image, shape_out,
         return out, prop
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     """
     Take an image which has been corrected and transform it into it's raw (with loss of information)
@@ -1467,12 +1467,12 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     :param LUT: Look up table, here a 2D-array of struct
     :return: uncorrected 2D image and a mask (pixels in raw image not existing)
     """
-    cdef: 
+    cdef:
         int idx, j
         float total, coef
         cnp.int8_t[::1] lmask
-        cnp.float32_t[::1] lout, lin 
-        
+        cnp.float32_t[::1] lout, lin
+
     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
     out = numpy.zeros(shape, dtype=numpy.float32)
     mask = numpy.zeros(shape, dtype=numpy.int8)
@@ -1495,10 +1495,10 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     return out, mask
 
 
-# @cython.cdivision(True)
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.initializedcheck(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
 def uncorrect_CSR(image, shape, LUT):
     """Take an image which has been corrected and transform it into it's raw (with loss of information)
 
