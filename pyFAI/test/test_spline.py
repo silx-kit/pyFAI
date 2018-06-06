@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/06/2018"
+__date__ = "06/06/2018"
 
 
 import unittest
@@ -53,32 +53,32 @@ class TestSpline(utilstest.ParametricTestCase):
         """
         spline_file = utilstest.UtilsTest.getimage("frelon.spline")
 
-        default_center = (0, 0)
-        default_distance = 0
-        default_tilt = 0
-        default_rotation_tilt = 0
+        default_center = (1000, 1500)
+        default_distance = 500
+        default_tilt = 1
+        default_rotation_tilt = 45
 
         test_cases = [
             (default_center, default_distance, default_tilt, default_rotation_tilt),
-            ((1000, 1000), default_distance, default_tilt, default_rotation_tilt),
-            (default_center, 1, default_tilt, default_rotation_tilt),
-            (default_center, 10, default_tilt, default_rotation_tilt),
-            (default_center, 1000, default_tilt, default_rotation_tilt),
-            (default_center, default_distance, 1, default_rotation_tilt),
-            (default_center, default_distance, 10, default_rotation_tilt),
-            (default_center, default_distance, default_tilt, 10),
-            (default_center, default_distance, default_tilt, 90),
-            (default_center, default_distance, default_tilt, 180),
+#             ((1000, 1000), default_distance, default_tilt, default_rotation_tilt),
+#             (default_center, 1, default_tilt, default_rotation_tilt),
+#             (default_center, 10, default_tilt, default_rotation_tilt),
+#             (default_center, 1000, default_tilt, default_rotation_tilt),
+#             (default_center, default_distance, 1, default_rotation_tilt),
+#             (default_center, default_distance, 10, default_rotation_tilt),
+#             (default_center, default_distance, default_tilt, 10),
+#             (default_center, default_distance, default_tilt, 90),
+#             (default_center, default_distance, default_tilt, 180),
         ]
 
         for center, distance, tilt, rotation_tilt in test_cases:
             with self.subTest(center=center, distance=distance, tilt=tilt, rotation_tilt=rotation_tilt):
-                print(center, distance, tilt, rotation_tilt)
                 spline = pyFAI.spline.Spline()
                 spline.read(spline_file)
                 logger.info("Original Spline: %s", spline)
                 spline.spline2array(timing=True)
                 _tilted = spline.tilt(center, tilt, rotation_tilt, distance, timing=True)
+                # As there is not assesement, just validate the execution of the code
                 # tilted.writeEDF("%s-tilted-t%i-p%i-d%i" %
                 #                  (os.path.splitext(spline_file)[0],
                 #                  tilt, rotation_tilt, distance))
@@ -91,7 +91,7 @@ class TestSpline(utilstest.ParametricTestCase):
         spline.spline2array()
         print("delta_x=", spline.xDispArray.shape)
         print("delta_y=", spline.yDispArray.shape)
-        new_spline = spline.flipud().fliplr().fliplrud()
+        new_spline = spline.flipud(False).fliplr(False).fliplrud(False)
         new_spline.array2spline(smoothing=0.1)
         self.assertLess(abs(new_spline.xDispArray - spline.xDispArray).max(), 1e-6, "X data are OK")
         self.assertLess(abs(new_spline.yDispArray - spline.yDispArray).max(), 1e-6, "Y data are OK")
