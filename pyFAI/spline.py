@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "05/06/2018"
+__date__ = "06/06/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -697,9 +697,11 @@ class Spline(object):
                                  dx=0, dy=0)
         return delta0 + pos[0], delta1 + pos[1]
 
-    def flipud(self):
-        """
-        Flip the spline up-down
+    def flipud(self, fit=True):
+        """Flip the spline upside-down
+        
+        :param fit: set to False to disable fitting of the coef, 
+                    or provide a value for the smoothing factor 
         :return: new spline object
         """
         self.spline2array()
@@ -712,12 +714,18 @@ class Spline(object):
         other.yDispArray = -numpy.flipud(self.yDispArray)
         other.pixelSize = self.pixelSize
         other.grid = self.grid
-        other.array2spline()
+        if fit is not False:
+            if fit is True:
+                other.array2spline()
+            else:
+                other.array2spline(fit)
         return other
 
-    def fliplr(self):
-        """
-        Flip the spline
+    def fliplr(self, fit=True):
+        """Flip the spline horizontally
+        
+        :param fit: set to False to disable fitting of the coef, 
+            or provide a value for the smoothing factor 
         :return: new spline object
         """
         self.spline2array()
@@ -730,12 +738,18 @@ class Spline(object):
         other.yDispArray = numpy.fliplr(self.yDispArray)
         other.pixelSize = self.pixelSize
         other.grid = self.grid
-        other.array2spline()
+        if fit is not False:
+            if fit is True:
+                other.array2spline()
+            else:
+                other.array2spline(fit)
         return other
 
-    def fliplrud(self):
-        """
-        Flip the spline left-right and up-down
+    def fliplrud(self, fit=True):
+        """Flip the spline upside-down and horizontally
+        
+        :param fit: set to False to disable fitting of the coef, 
+            or provide a value for the smoothing factor         
         :return: new spline object
         """
         self.spline2array()
@@ -748,5 +762,9 @@ class Spline(object):
         other.yDispArray = -numpy.flipud(numpy.fliplr(self.yDispArray))
         other.pixelSize = self.pixelSize
         other.grid = self.grid
-        other.array2spline()
+        if fit is not False:
+            if fit is True:
+                other.array2spline()
+            else:
+                other.array2spline(fit)
         return other
