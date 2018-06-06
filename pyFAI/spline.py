@@ -36,7 +36,7 @@ from __future__ import print_function, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "MIT"
-__date__ = "15/03/2018"
+__date__ = "05/06/2018"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -302,8 +302,8 @@ class Spline(object):
         :param timing: profile the calculation or not
         :type timing: bool
 
-        :return: Nothing !
-        :rtype: float or ndarray
+        :return: xDispArray, yDispArray
+        :rtype: 2-tuple of ndarray
 
         Evaluate a bivariate B-spline and its derivatives. Return a
         rank-2 array of spline function values (or spline derivative
@@ -335,6 +335,7 @@ class Spline(object):
                             " Y-Displacement Spline evaluation:  %.3f sec." %
                             ((intermediateTime - startTime),
                              (time.time() - intermediateTime)))
+        return self.xDispArray, self.yDispArray
 
     def splineFuncX(self, x, y, list_of_points=False):
         """
@@ -434,15 +435,15 @@ class Spline(object):
         """
         self.xmin = 0.0
         self.ymin = 0.0
-        self.xmax = float(self.xDispArray.shape[0] - 1)
-        self.ymax = float(self.yDispArray.shape[1] - 1)
+        self.xmax = self.xDispArray.shape[1] - 1.0
+        self.ymax = self.yDispArray.shape[0] - 1.0
 
         if timing:
             startTime = time.time()
 
         xRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
-            numpy.arange(self.ymax + 1),
+            numpy.arange(self.ymax + 1.0),
             self.xDispArray.transpose(),
             s=smoothing)
 
@@ -451,7 +452,7 @@ class Spline(object):
 
         yRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
             numpy.arange(self.xmax + 1.0),
-            numpy.arange(self.ymax + 1),
+            numpy.arange(self.ymax + 1.0),
             self.yDispArray.transpose(),
             s=smoothing)
 

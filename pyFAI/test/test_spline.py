@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2018"
+__date__ = "05/06/2018"
 
 
 import unittest
@@ -82,6 +82,25 @@ class TestSpline(utilstest.ParametricTestCase):
                 # tilted.writeEDF("%s-tilted-t%i-p%i-d%i" %
                 #                  (os.path.splitext(spline_file)[0],
                 #                  tilt, rotation_tilt, distance))
+
+    def test_half_ccd(self):
+        "Test the half_ccd back and forth"
+        spline_file = utilstest.UtilsTest.getimage("halfccd.spline")
+        spline = pyFAI.spline.Spline(spline_file)
+        print(spline.xmin, spline.xmax, spline.ymin, spline.ymax)
+        spline.spline2array()
+        print("delta_x=", spline.xDispArray.shape)
+        print("delta_y=", spline.yDispArray.shape)
+        new_spline = spline.flipud().fliplr().fliplrud()
+        new_spline.array2spline(smoothing=0.1)
+        self.assertLess(abs(new_spline.xDispArray - spline.xDispArray).max(), 1e-6, "X data are OK")
+        self.assertLess(abs(new_spline.yDispArray - spline.yDispArray).max(), 1e-6, "Y data are OK")
+        self.assertLess(abs(spline.xSplineKnotsX - new_spline.xSplineKnotsX).max(), 1e-6, "xSplineKnotsX data are OK")
+        self.assertLess(abs(spline.xSplineKnotsY - new_spline.xSplineKnotsY).max(), 1e-6, "xSplineKnotsY data are OK")
+        self.assertLess(abs(spline.xSplineCoeff - new_spline.xSplineCoeff).max(), 1e-6, "xSplineCoeff data are OK")
+        self.assertLess(abs(spline.ySplineKnotsX - new_spline.ySplineKnotsX).max(), 1e-6, "ySplineKnotsX data are OK")
+        self.assertLess(abs(spline.ySplineKnotsY - new_spline.ySplineKnotsY).max(), 1e-6, "ySplineKnotsY data are OK")
+        self.assertLess(abs(spline.ySplineCoeff - new_spline.ySplineCoeff).max(), 1e-6, "ySplineCoeff data are OK")
 
 
 def suite():
