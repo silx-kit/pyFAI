@@ -29,12 +29,12 @@
 """Re-implementation of numpy histograms without OpenMP"""
 
 __author__ = "Jerome Kieffer"
-__date__ = "04/04/2018"
-__license__ = "MIY"
-__copyright__ = "2011-2016, ESRF"
+__date__ = "07/06/2018"
+__license__ = "MIT"
+__copyright__ = "2011-2018, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-from libc.math cimport floor
+from libc.math cimport floor, sqrt
 import logging
 logger = logging.getLogger(__name__ + "_nomp")
 
@@ -75,9 +75,8 @@ def histogram(numpy.ndarray pos not None,
         data_t[::1] out_merge = numpy.zeros(bins, dtype=data_d)
         position_t delta, min0, max0, maxin0
         position_t a = 0.0
-        position_t d = 0.0
+        acc_t d = 0.0
         position_t fbin = 0.0
-        position_t tmp_count, tmp_data = 0.0
         position_t epsilon = 1e-10
         int bin = 0, i, idx
     if pixelSize_in_Pos:
@@ -95,12 +94,12 @@ def histogram(numpy.ndarray pos not None,
 
     with nogil:
         for i in range(size):
-            d = cdata[i]
             a = cpos[i]
             fbin = get_bin_number(a, min0, delta)
             bin = < int > fbin
             if bin < 0 or bin >= bins:
                 continue
+            d = cdata[i]
             out_count[bin] += 1.0
             out_data[bin] += d
 
@@ -169,7 +168,8 @@ def histogram2d(numpy.ndarray pos0 not None,
         position_t max1 = calc_upper_bound(<position_t> pos1.max())
         position_t delta0 = (max0 - min0) / float(bins0)
         position_t delta1 = (max1 - min1) / float(bins1)
-        position_t fbin0, fbin1, p0, p1, d
+        position_t fbin0, fbin1, p0, p1
+        acc_t d
         position_t epsilon = 1e-10
 
     if split:
@@ -202,3 +202,101 @@ def histogram2d(numpy.ndarray pos0 not None,
             bin_centers0, bin_centers1, 
             numpy.asarray(out_data), 
             numpy.asarray(out_count))
+
+
+# @cython.cdivision(True)
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+def histogram_preproc(numpy.ndarray pos not None,
+                      numpy.ndarray weights not None,
+                      int bins=100,
+                      bin_range=None,
+                      pixelSize_in_Pos=None,
+                      nthread=None,
+                      double empty=0.0,
+                      double normalization_factor=1.0):
+    """
+    Calculates histogram of pos weighted by weights 
+    in the case data have been preprocessed, i.e. each datapoint contains 
+    (signal, normalization) or (signal, variance, normalization)  
+
+    :param pos: 2Theta array
+    :param weights: array with intensities, variance and normalization
+    :param bins: number of output bins
+    :param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED
+    :param nthread: OpenMP is disabled. unused
+    :param empty: value given to empty bins
+    :param normalization_factor: divide the result by this value
+
+    :return: 2theta, I, weighted histogram, raw histogram
+    """
+    cdef int nchan, ndim
+    
+    assert bins > 1
+    ndim = weights.ndim
+    nchan = weights.shape[ndim - 1]
+    assert pos.size == weights.size // nchan
+    cdef:
+        int  size = pos.size
+        position_t[::1] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=position_d)
+        data_t[:, ::1] cdata = numpy.ascontiguousarray(weights, dtype=data_d).reshape(-1, nchan)
+        acc_t[:, ::1] out_prop = numpy.zeros((bins, nchan + 1), dtype=acc_d)
+        data_t[:, ::1] out_error, out_signal = numpy.zeros(bins, dtype=data_d)
+        position_t delta, min0, max0, maxin0
+        position_t a = 0.0
+        position_t fbin = 0.0
+        position_t epsilon = 1e-10
+        int bin = 0, i, j
+    
+    if nchan==3:
+        out_error = numpy.zeros(bins, dtype=data_d)
+    
+    if pixelSize_in_Pos:
+        logger.warning("No pixel splitting in histogram")
+
+    if bin_range is not None:
+        min0 = min(bin_range)
+        maxin0 = max(bin_range)
+    else:
+        min0 = pos.min()
+        maxin0 = pos.max()
+    max0 = calc_upper_bound(maxin0)
+
+    delta = (max0 - min0) / float(bins)
+
+    with nogil:
+        for i in range(size):
+            a = cpos[i]
+            fbin = get_bin_number(a, min0, delta)
+            bin = < int > fbin
+            if bin < 0 or bin >= bins:
+                continue
+            for j in range(nchan - 1):
+                out_prop[bin, j] = cdata[i, j]
+            
+            out_prop[bin, nchan - 1] += cdata[i, nchan - 1] * normalization_factor
+            out_prop[bin, nchan] += 1.0
+
+        for bin in range(bins):
+            if out_prop[bin, nchan] > epsilon:
+                out_signal[bin] = out_prop[bin, 0] / out_prop[bin, nchan - 1]
+                if nchan == 3:
+                    out_error[bin] = sqrt(out_prop[bin, 1]) / out_prop[bin, nchan - 1]
+            else:
+                out_signal[bin] = empty
+                if nchan == 3:
+                    out_error[bin] = empty
+
+    out_pos = numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins)
+    
+    if nchan == 3:
+        return (out_pos, 
+                numpy.asarray(out_signal), 
+                numpy.asarray(out_error), 
+                numpy.asarray(out_prop))
+
+    else:
+        return (out_pos, 
+                numpy.asarray(out_signal), 
+                None,
+                numpy.asarray(out_prop))
