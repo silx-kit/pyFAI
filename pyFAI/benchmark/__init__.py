@@ -28,7 +28,7 @@ from __future__ import print_function, division
 
 
 __author__ = "Jérôme Kieffer"
-__date__ = "05/03/2018"
+__date__ = "07/06/2018"
 __license__ = "MIT"
 __copyright__ = "2012-2017 European Synchrotron Radiation Facility, Grenoble, France"
 
@@ -577,14 +577,14 @@ class Bench(object):
             self.fig.show()
             self.ax = self.fig.add_subplot(1, 1, 1)
             self.ax.set_autoscale_on(False)
-            self.ax.set_xlabel("Image size in Mega-Pixels")
-            self.ax.set_ylabel("Frames processed per second")
+            self.ax.set_xlabel("Image size in mega-pixels")
+            self.ax.set_ylabel("Frame per second (log scale)")
             self.ax.set_yscale("log", basey=2)
-            t = [1, 2, 5, 10, 20, 50, 100, 200, 400, 500]
+            t = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.5, 17)
-            self.ax.set_ylim(0.5, 500)
+            self.ax.set_ylim(0.5, 1500)
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
             update_fig(self.fig)
 
@@ -729,7 +729,6 @@ def run_benchmark(number=10, repeat=1, memprof=False, max_size=1000,
     bench.print_res()
     bench.update_mp()
 
-    bench.ax.set_ylim(0.5, 1000)
     return bench.results
 
 
