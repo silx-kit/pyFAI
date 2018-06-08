@@ -155,7 +155,7 @@ class Perkin4K(Detector):
     DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 100e-6
 
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
-        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        super(Perkin4K, self).__init__(pixel1=pixel1, pixel2=pixel2)
         if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
             self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
             self.shape = tuple(s // b for s, b in zip(self.max_shape, self._binning))
